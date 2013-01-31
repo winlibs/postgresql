@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{54994B86-0436-4501-91D8-7D6972F2C760}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\dict_snowball\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\dict_snowball\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\dict_snowball\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\dict_snowball\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>src/include;src/include/port/win32;src/include/port/win32_msvc;src\include\snowball;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;__WINDOWS__;__WIN32__;EXEC_BACKEND;WIN32_STACK_RLIMIT=4194304;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_DEBUG;DEBUG=1;_USE_32BIT_TIME_T;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>false</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DisableSpecificWarnings>4018;4244;4273;4102;4090;4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <AssemblerListingLocation>.\Debug\dict_snowball\</AssemblerListingLocation>
+      <ObjectFileName>.\Debug\dict_snowball\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug\dict_snowball\</ProgramDataBaseFileName>
+      <BrowseInformation>false</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <OutputFile>.\Debug\dict_snowball\dict_snowball.dll</OutputFile>
+      <AdditionalDependencies>Debug\postgres\postgres.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <StackReserveSize>4194304</StackReserveSize>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Debug\dict_snowball\dict_snowball.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>false</GenerateMapFile>
+      <MapFileName>.\Debug\dict_snowball\dict_snowball.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImportLibrary>Debug\dict_snowball\dict_snowball.lib</ImportLibrary>
+      <ModuleDefinitionFile>.\Debug\dict_snowball\dict_snowball.def</ModuleDefinitionFile>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Message>Generate DEF file</Message>
+      <Command>perl src\tools\msvc\gendef.pl Debug\dict_snowball Win32</Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>src/include;src/include/port/win32;src/include/port/win32_msvc;src\include\snowball;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;__WINDOWS__;__WIN32__;EXEC_BACKEND;WIN32_STACK_RLIMIT=4194304;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_USE_32BIT_TIME_T;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <DisableSpecificWarnings>4018;4244;4273;4102;4090;4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <AssemblerListingLocation>.\Release\dict_snowball\</AssemblerListingLocation>
+      <ObjectFileName>.\Release\dict_snowball\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release\dict_snowball\</ProgramDataBaseFileName>
+      <BrowseInformation>false</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <OutputFile>.\Release\dict_snowball\dict_snowball.dll</OutputFile>
+      <AdditionalDependencies>Release\postgres\postgres.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <StackReserveSize>4194304</StackReserveSize>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Release\dict_snowball\dict_snowball.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>false</GenerateMapFile>
+      <MapFileName>.\Release\dict_snowball\dict_snowball.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImportLibrary>Release\dict_snowball\dict_snowball.lib</ImportLibrary>
+      <ModuleDefinitionFile>.\Release\dict_snowball\dict_snowball.def</ModuleDefinitionFile>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Message>Generate DEF file</Message>
+      <Command>perl src\tools\msvc\gendef.pl Release\dict_snowball Win32</Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\backend\snowball\dict_snowball.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\api.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_danish.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_dutch.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_english.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_finnish.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_french.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_german.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_hungarian.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_italian.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_norwegian.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_porter.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_portuguese.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_spanish.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_1_swedish.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_ISO_8859_2_romanian.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_KOI8_R_russian.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_danish.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_dutch.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_english.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_finnish.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_french.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_german.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_hungarian.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_italian.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_norwegian.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_porter.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_portuguese.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_romanian.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_russian.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_spanish.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_swedish.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\stem_UTF_8_turkish.c" />
+    <ClCompile Include="src\backend\snowball\libstemmer\utilities.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="postgres.vcxproj">
+      <Project>{65253101-473A-4CE1-9BDD-FCA8DC97DE68}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

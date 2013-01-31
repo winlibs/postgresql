@@ -1,0 +1,763 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{65253101-473A-4CE1-9BDD-FCA8DC97DE68}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\postgres\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\Debug\postgres\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\postgres\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\Release\postgres\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>src/include;src/include/port/win32;src/include/port/win32_msvc;src\backend;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;__WINDOWS__;__WIN32__;EXEC_BACKEND;WIN32_STACK_RLIMIT=4194304;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;BUILDING_DLL;_DEBUG;DEBUG=1;_USE_32BIT_TIME_T;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>false</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <DisableSpecificWarnings>4018;4244;4273;4102;4090;4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <AssemblerListingLocation>.\Debug\postgres\</AssemblerListingLocation>
+      <ObjectFileName>.\Debug\postgres\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug\postgres\</ProgramDataBaseFileName>
+      <BrowseInformation>false</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <OutputFile>.\Debug\postgres\postgres.exe</OutputFile>
+      <AdditionalDependencies>wsock32.lib;ws2_32.lib;secur32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <StackReserveSize>4194304</StackReserveSize>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Debug\postgres\postgres.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>false</GenerateMapFile>
+      <MapFileName>.\Debug\postgres\postgres.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImportLibrary>Debug\postgres\postgres.lib</ImportLibrary>
+      <ModuleDefinitionFile>.\Debug\postgres\postgres.def</ModuleDefinitionFile>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Message>Generate DEF file</Message>
+      <Command>perl src\tools\msvc\gendef.pl Debug\postgres Win32</Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>src/include;src/include/port/win32;src/include/port/win32_msvc;src\backend;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;__WINDOWS__;__WIN32__;EXEC_BACKEND;WIN32_STACK_RLIMIT=4194304;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;BUILDING_DLL;_USE_32BIT_TIME_T;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <DisableSpecificWarnings>4018;4244;4273;4102;4090;4267;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <AdditionalOptions>/MP %(AdditionalOptions)</AdditionalOptions>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <AssemblerListingLocation>.\Release\postgres\</AssemblerListingLocation>
+      <ObjectFileName>.\Release\postgres\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release\postgres\</ProgramDataBaseFileName>
+      <BrowseInformation>false</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <OutputFile>.\Release\postgres\postgres.exe</OutputFile>
+      <AdditionalDependencies>wsock32.lib;ws2_32.lib;secur32.lib;wldap32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <IgnoreSpecificDefaultLibraries>libc;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <StackReserveSize>4194304</StackReserveSize>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Release\postgres\postgres.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>false</GenerateMapFile>
+      <MapFileName>.\Release\postgres\postgres.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+      <ImportLibrary>Release\postgres\postgres.lib</ImportLibrary>
+      <ModuleDefinitionFile>.\Release\postgres\postgres.def</ModuleDefinitionFile>
+    </Link>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Message>Generate DEF file</Message>
+      <Command>perl src\tools\msvc\gendef.pl Release\postgres Win32</Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="src\backend\access\common\heaptuple.c" />
+    <ClCompile Include="src\backend\access\common\indextuple.c" />
+    <ClCompile Include="src\backend\access\common\printtup.c" />
+    <ClCompile Include="src\backend\access\common\reloptions.c" />
+    <ClCompile Include="src\backend\access\common\scankey.c" />
+    <ClCompile Include="src\backend\access\common\tupconvert.c" />
+    <ClCompile Include="src\backend\access\common\tupdesc.c" />
+    <ClCompile Include="src\backend\access\gin\ginarrayproc.c" />
+    <ClCompile Include="src\backend\access\gin\ginbtree.c" />
+    <ClCompile Include="src\backend\access\gin\ginbulk.c" />
+    <ClCompile Include="src\backend\access\gin\gindatapage.c" />
+    <ClCompile Include="src\backend\access\gin\ginentrypage.c" />
+    <ClCompile Include="src\backend\access\gin\ginfast.c" />
+    <ClCompile Include="src\backend\access\gin\ginget.c" />
+    <ClCompile Include="src\backend\access\gin\gininsert.c" />
+    <ClCompile Include="src\backend\access\gin\ginscan.c" />
+    <ClCompile Include="src\backend\access\gin\ginutil.c" />
+    <ClCompile Include="src\backend\access\gin\ginvacuum.c" />
+    <ClCompile Include="src\backend\access\gin\ginxlog.c" />
+    <ClCompile Include="src\backend\access\gist\gist.c" />
+    <ClCompile Include="src\backend\access\gist\gistbuild.c" />
+    <ClCompile Include="src\backend\access\gist\gistbuildbuffers.c" />
+    <ClCompile Include="src\backend\access\gist\gistget.c" />
+    <ClCompile Include="src\backend\access\gist\gistproc.c" />
+    <ClCompile Include="src\backend\access\gist\gistscan.c" />
+    <ClCompile Include="src\backend\access\gist\gistsplit.c" />
+    <ClCompile Include="src\backend\access\gist\gistutil.c" />
+    <ClCompile Include="src\backend\access\gist\gistvacuum.c" />
+    <ClCompile Include="src\backend\access\gist\gistxlog.c" />
+    <ClCompile Include="src\backend\access\hash\hash.c" />
+    <ClCompile Include="src\backend\access\hash\hashfunc.c" />
+    <ClCompile Include="src\backend\access\hash\hashinsert.c" />
+    <ClCompile Include="src\backend\access\hash\hashovfl.c" />
+    <ClCompile Include="src\backend\access\hash\hashpage.c" />
+    <ClCompile Include="src\backend\access\hash\hashscan.c" />
+    <ClCompile Include="src\backend\access\hash\hashsearch.c" />
+    <ClCompile Include="src\backend\access\hash\hashsort.c" />
+    <ClCompile Include="src\backend\access\hash\hashutil.c" />
+    <ClCompile Include="src\backend\access\heap\heapam.c" />
+    <ClCompile Include="src\backend\access\heap\hio.c" />
+    <ClCompile Include="src\backend\access\heap\pruneheap.c" />
+    <ClCompile Include="src\backend\access\heap\rewriteheap.c" />
+    <ClCompile Include="src\backend\access\heap\syncscan.c" />
+    <ClCompile Include="src\backend\access\heap\tuptoaster.c" />
+    <ClCompile Include="src\backend\access\heap\visibilitymap.c" />
+    <ClCompile Include="src\backend\access\index\genam.c" />
+    <ClCompile Include="src\backend\access\index\indexam.c" />
+    <ClCompile Include="src\backend\access\nbtree\nbtcompare.c" />
+    <ClCompile Include="src\backend\access\nbtree\nbtinsert.c" />
+    <ClCompile Include="src\backend\access\nbtree\nbtpage.c" />
+    <ClCompile Include="src\backend\access\nbtree\nbtree.c" />
+    <ClCompile Include="src\backend\access\nbtree\nbtsearch.c" />
+    <ClCompile Include="src\backend\access\nbtree\nbtsort.c" />
+    <ClCompile Include="src\backend\access\nbtree\nbtutils.c" />
+    <ClCompile Include="src\backend\access\nbtree\nbtxlog.c" />
+    <ClCompile Include="src\backend\access\spgist\spgdoinsert.c" />
+    <ClCompile Include="src\backend\access\spgist\spginsert.c" />
+    <ClCompile Include="src\backend\access\spgist\spgkdtreeproc.c" />
+    <ClCompile Include="src\backend\access\spgist\spgquadtreeproc.c" />
+    <ClCompile Include="src\backend\access\spgist\spgscan.c" />
+    <ClCompile Include="src\backend\access\spgist\spgtextproc.c" />
+    <ClCompile Include="src\backend\access\spgist\spgutils.c" />
+    <ClCompile Include="src\backend\access\spgist\spgvacuum.c" />
+    <ClCompile Include="src\backend\access\spgist\spgxlog.c" />
+    <ClCompile Include="src\backend\access\transam\clog.c" />
+    <ClCompile Include="src\backend\access\transam\multixact.c" />
+    <ClCompile Include="src\backend\access\transam\rmgr.c" />
+    <ClCompile Include="src\backend\access\transam\slru.c" />
+    <ClCompile Include="src\backend\access\transam\subtrans.c" />
+    <ClCompile Include="src\backend\access\transam\transam.c" />
+    <ClCompile Include="src\backend\access\transam\twophase.c" />
+    <ClCompile Include="src\backend\access\transam\twophase_rmgr.c" />
+    <ClCompile Include="src\backend\access\transam\varsup.c" />
+    <ClCompile Include="src\backend\access\transam\xact.c" />
+    <ClCompile Include="src\backend\access\transam\xlog.c" />
+    <ClCompile Include="src\backend\access\transam\xlogfuncs.c" />
+    <ClCompile Include="src\backend\access\transam\xlogutils.c" />
+    <ClCompile Include="src\backend\bootstrap\bootparse.c" />
+    <ClCompile Include="src\backend\bootstrap\bootstrap.c" />
+    <ClCompile Include="src\backend\catalog\aclchk.c" />
+    <ClCompile Include="src\backend\catalog\catalog.c" />
+    <ClCompile Include="src\backend\catalog\dependency.c" />
+    <ClCompile Include="src\backend\catalog\heap.c" />
+    <ClCompile Include="src\backend\catalog\index.c" />
+    <ClCompile Include="src\backend\catalog\indexing.c" />
+    <ClCompile Include="src\backend\catalog\namespace.c" />
+    <ClCompile Include="src\backend\catalog\objectaddress.c" />
+    <ClCompile Include="src\backend\catalog\pg_aggregate.c" />
+    <ClCompile Include="src\backend\catalog\pg_collation.c" />
+    <ClCompile Include="src\backend\catalog\pg_constraint.c" />
+    <ClCompile Include="src\backend\catalog\pg_conversion.c" />
+    <ClCompile Include="src\backend\catalog\pg_db_role_setting.c" />
+    <ClCompile Include="src\backend\catalog\pg_depend.c" />
+    <ClCompile Include="src\backend\catalog\pg_enum.c" />
+    <ClCompile Include="src\backend\catalog\pg_inherits.c" />
+    <ClCompile Include="src\backend\catalog\pg_largeobject.c" />
+    <ClCompile Include="src\backend\catalog\pg_namespace.c" />
+    <ClCompile Include="src\backend\catalog\pg_operator.c" />
+    <ClCompile Include="src\backend\catalog\pg_proc.c" />
+    <ClCompile Include="src\backend\catalog\pg_range.c" />
+    <ClCompile Include="src\backend\catalog\pg_shdepend.c" />
+    <ClCompile Include="src\backend\catalog\pg_type.c" />
+    <ClCompile Include="src\backend\catalog\storage.c" />
+    <ClCompile Include="src\backend\catalog\toasting.c" />
+    <ClCompile Include="src\backend\commands\aggregatecmds.c" />
+    <ClCompile Include="src\backend\commands\alter.c" />
+    <ClCompile Include="src\backend\commands\analyze.c" />
+    <ClCompile Include="src\backend\commands\async.c" />
+    <ClCompile Include="src\backend\commands\cluster.c" />
+    <ClCompile Include="src\backend\commands\collationcmds.c" />
+    <ClCompile Include="src\backend\commands\comment.c" />
+    <ClCompile Include="src\backend\commands\constraint.c" />
+    <ClCompile Include="src\backend\commands\conversioncmds.c" />
+    <ClCompile Include="src\backend\commands\copy.c" />
+    <ClCompile Include="src\backend\commands\createas.c" />
+    <ClCompile Include="src\backend\commands\dbcommands.c" />
+    <ClCompile Include="src\backend\commands\define.c" />
+    <ClCompile Include="src\backend\commands\discard.c" />
+    <ClCompile Include="src\backend\commands\dropcmds.c" />
+    <ClCompile Include="src\backend\commands\explain.c" />
+    <ClCompile Include="src\backend\commands\extension.c" />
+    <ClCompile Include="src\backend\commands\foreigncmds.c" />
+    <ClCompile Include="src\backend\commands\functioncmds.c" />
+    <ClCompile Include="src\backend\commands\indexcmds.c" />
+    <ClCompile Include="src\backend\commands\lockcmds.c" />
+    <ClCompile Include="src\backend\commands\opclasscmds.c" />
+    <ClCompile Include="src\backend\commands\operatorcmds.c" />
+    <ClCompile Include="src\backend\commands\portalcmds.c" />
+    <ClCompile Include="src\backend\commands\prepare.c" />
+    <ClCompile Include="src\backend\commands\proclang.c" />
+    <ClCompile Include="src\backend\commands\schemacmds.c" />
+    <ClCompile Include="src\backend\commands\seclabel.c" />
+    <ClCompile Include="src\backend\commands\sequence.c" />
+    <ClCompile Include="src\backend\commands\tablecmds.c" />
+    <ClCompile Include="src\backend\commands\tablespace.c" />
+    <ClCompile Include="src\backend\commands\trigger.c" />
+    <ClCompile Include="src\backend\commands\tsearchcmds.c" />
+    <ClCompile Include="src\backend\commands\typecmds.c" />
+    <ClCompile Include="src\backend\commands\user.c" />
+    <ClCompile Include="src\backend\commands\vacuum.c" />
+    <ClCompile Include="src\backend\commands\vacuumlazy.c" />
+    <ClCompile Include="src\backend\commands\variable.c" />
+    <ClCompile Include="src\backend\commands\view.c" />
+    <ClCompile Include="src\backend\executor\execAmi.c" />
+    <ClCompile Include="src\backend\executor\execCurrent.c" />
+    <ClCompile Include="src\backend\executor\execGrouping.c" />
+    <ClCompile Include="src\backend\executor\execJunk.c" />
+    <ClCompile Include="src\backend\executor\execMain.c" />
+    <ClCompile Include="src\backend\executor\execProcnode.c" />
+    <ClCompile Include="src\backend\executor\execQual.c" />
+    <ClCompile Include="src\backend\executor\execScan.c" />
+    <ClCompile Include="src\backend\executor\execTuples.c" />
+    <ClCompile Include="src\backend\executor\execUtils.c" />
+    <ClCompile Include="src\backend\executor\functions.c" />
+    <ClCompile Include="src\backend\executor\instrument.c" />
+    <ClCompile Include="src\backend\executor\nodeAgg.c" />
+    <ClCompile Include="src\backend\executor\nodeAppend.c" />
+    <ClCompile Include="src\backend\executor\nodeBitmapAnd.c" />
+    <ClCompile Include="src\backend\executor\nodeBitmapHeapscan.c" />
+    <ClCompile Include="src\backend\executor\nodeBitmapIndexscan.c" />
+    <ClCompile Include="src\backend\executor\nodeBitmapOr.c" />
+    <ClCompile Include="src\backend\executor\nodeCtescan.c" />
+    <ClCompile Include="src\backend\executor\nodeForeignscan.c" />
+    <ClCompile Include="src\backend\executor\nodeFunctionscan.c" />
+    <ClCompile Include="src\backend\executor\nodeGroup.c" />
+    <ClCompile Include="src\backend\executor\nodeHash.c" />
+    <ClCompile Include="src\backend\executor\nodeHashjoin.c" />
+    <ClCompile Include="src\backend\executor\nodeIndexonlyscan.c" />
+    <ClCompile Include="src\backend\executor\nodeIndexscan.c" />
+    <ClCompile Include="src\backend\executor\nodeLimit.c" />
+    <ClCompile Include="src\backend\executor\nodeLockRows.c" />
+    <ClCompile Include="src\backend\executor\nodeMaterial.c" />
+    <ClCompile Include="src\backend\executor\nodeMergeAppend.c" />
+    <ClCompile Include="src\backend\executor\nodeMergejoin.c" />
+    <ClCompile Include="src\backend\executor\nodeModifyTable.c" />
+    <ClCompile Include="src\backend\executor\nodeNestloop.c" />
+    <ClCompile Include="src\backend\executor\nodeRecursiveunion.c" />
+    <ClCompile Include="src\backend\executor\nodeResult.c" />
+    <ClCompile Include="src\backend\executor\nodeSeqscan.c" />
+    <ClCompile Include="src\backend\executor\nodeSetOp.c" />
+    <ClCompile Include="src\backend\executor\nodeSort.c" />
+    <ClCompile Include="src\backend\executor\nodeSubplan.c" />
+    <ClCompile Include="src\backend\executor\nodeSubqueryscan.c" />
+    <ClCompile Include="src\backend\executor\nodeTidscan.c" />
+    <ClCompile Include="src\backend\executor\nodeUnique.c" />
+    <ClCompile Include="src\backend\executor\nodeValuesscan.c" />
+    <ClCompile Include="src\backend\executor\nodeWindowAgg.c" />
+    <ClCompile Include="src\backend\executor\nodeWorktablescan.c" />
+    <ClCompile Include="src\backend\executor\spi.c" />
+    <ClCompile Include="src\backend\executor\tstoreReceiver.c" />
+    <ClCompile Include="src\backend\foreign\foreign.c" />
+    <ClCompile Include="src\backend\lib\dllist.c" />
+    <ClCompile Include="src\backend\lib\stringinfo.c" />
+    <ClCompile Include="src\backend\libpq\auth.c" />
+    <ClCompile Include="src\backend\libpq\be-fsstubs.c" />
+    <ClCompile Include="src\backend\libpq\be-secure.c" />
+    <ClCompile Include="src\backend\libpq\crypt.c" />
+    <ClCompile Include="src\backend\libpq\hba.c" />
+    <ClCompile Include="src\backend\libpq\ip.c" />
+    <ClCompile Include="src\backend\libpq\md5.c" />
+    <ClCompile Include="src\backend\libpq\pqcomm.c" />
+    <ClCompile Include="src\backend\libpq\pqformat.c" />
+    <ClCompile Include="src\backend\libpq\pqsignal.c" />
+    <ClCompile Include="src\backend\main\main.c" />
+    <ClCompile Include="src\backend\nodes\bitmapset.c" />
+    <ClCompile Include="src\backend\nodes\copyfuncs.c" />
+    <ClCompile Include="src\backend\nodes\equalfuncs.c" />
+    <ClCompile Include="src\backend\nodes\list.c" />
+    <ClCompile Include="src\backend\nodes\makefuncs.c" />
+    <ClCompile Include="src\backend\nodes\nodeFuncs.c" />
+    <ClCompile Include="src\backend\nodes\nodes.c" />
+    <ClCompile Include="src\backend\nodes\outfuncs.c" />
+    <ClCompile Include="src\backend\nodes\params.c" />
+    <ClCompile Include="src\backend\nodes\print.c" />
+    <ClCompile Include="src\backend\nodes\read.c" />
+    <ClCompile Include="src\backend\nodes\readfuncs.c" />
+    <ClCompile Include="src\backend\nodes\tidbitmap.c" />
+    <ClCompile Include="src\backend\nodes\value.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_copy.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_cx.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_erx.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_eval.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_main.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_misc.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_mutation.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_ox1.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_ox2.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_pmx.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_pool.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_px.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_random.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_recombination.c" />
+    <ClCompile Include="src\backend\optimizer\geqo\geqo_selection.c" />
+    <ClCompile Include="src\backend\optimizer\path\allpaths.c" />
+    <ClCompile Include="src\backend\optimizer\path\clausesel.c" />
+    <ClCompile Include="src\backend\optimizer\path\costsize.c" />
+    <ClCompile Include="src\backend\optimizer\path\equivclass.c" />
+    <ClCompile Include="src\backend\optimizer\path\indxpath.c" />
+    <ClCompile Include="src\backend\optimizer\path\joinpath.c" />
+    <ClCompile Include="src\backend\optimizer\path\joinrels.c" />
+    <ClCompile Include="src\backend\optimizer\path\orindxpath.c" />
+    <ClCompile Include="src\backend\optimizer\path\pathkeys.c" />
+    <ClCompile Include="src\backend\optimizer\path\tidpath.c" />
+    <ClCompile Include="src\backend\optimizer\plan\analyzejoins.c" />
+    <ClCompile Include="src\backend\optimizer\plan\createplan.c" />
+    <ClCompile Include="src\backend\optimizer\plan\initsplan.c" />
+    <ClCompile Include="src\backend\optimizer\plan\planagg.c" />
+    <ClCompile Include="src\backend\optimizer\plan\planmain.c" />
+    <ClCompile Include="src\backend\optimizer\plan\planner.c" />
+    <ClCompile Include="src\backend\optimizer\plan\setrefs.c" />
+    <ClCompile Include="src\backend\optimizer\plan\subselect.c" />
+    <ClCompile Include="src\backend\optimizer\prep\prepjointree.c" />
+    <ClCompile Include="src\backend\optimizer\prep\prepqual.c" />
+    <ClCompile Include="src\backend\optimizer\prep\preptlist.c" />
+    <ClCompile Include="src\backend\optimizer\prep\prepunion.c" />
+    <ClCompile Include="src\backend\optimizer\util\clauses.c" />
+    <ClCompile Include="src\backend\optimizer\util\joininfo.c" />
+    <ClCompile Include="src\backend\optimizer\util\pathnode.c" />
+    <ClCompile Include="src\backend\optimizer\util\placeholder.c" />
+    <ClCompile Include="src\backend\optimizer\util\plancat.c" />
+    <ClCompile Include="src\backend\optimizer\util\predtest.c" />
+    <ClCompile Include="src\backend\optimizer\util\relnode.c" />
+    <ClCompile Include="src\backend\optimizer\util\restrictinfo.c" />
+    <ClCompile Include="src\backend\optimizer\util\tlist.c" />
+    <ClCompile Include="src\backend\optimizer\util\var.c" />
+    <ClCompile Include="src\backend\parser\analyze.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\debug\postgres\src_backend_parser_analyze.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\release\postgres\src_backend_parser_analyze.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="src\backend\parser\gram.c" />
+    <ClCompile Include="src\backend\parser\keywords.c" />
+    <ClCompile Include="src\backend\parser\kwlookup.c" />
+    <ClCompile Include="src\backend\parser\parse_agg.c" />
+    <ClCompile Include="src\backend\parser\parse_clause.c" />
+    <ClCompile Include="src\backend\parser\parse_coerce.c" />
+    <ClCompile Include="src\backend\parser\parse_collate.c" />
+    <ClCompile Include="src\backend\parser\parse_cte.c" />
+    <ClCompile Include="src\backend\parser\parse_expr.c" />
+    <ClCompile Include="src\backend\parser\parse_func.c" />
+    <ClCompile Include="src\backend\parser\parse_node.c" />
+    <ClCompile Include="src\backend\parser\parse_oper.c" />
+    <ClCompile Include="src\backend\parser\parse_param.c" />
+    <ClCompile Include="src\backend\parser\parse_relation.c" />
+    <ClCompile Include="src\backend\parser\parse_target.c" />
+    <ClCompile Include="src\backend\parser\parse_type.c" />
+    <ClCompile Include="src\backend\parser\parse_utilcmd.c" />
+    <ClCompile Include="src\backend\parser\parser.c" />
+    <ClCompile Include="src\backend\parser\scansup.c" />
+    <ClCompile Include="src\backend\port\dynloader\win32.c" />
+    <ClCompile Include="src\backend\port\win32\crashdump.c" />
+    <ClCompile Include="src\backend\port\win32\mingwcompat.c" />
+    <ClCompile Include="src\backend\port\win32\security.c" />
+    <ClCompile Include="src\backend\port\win32\signal.c" />
+    <ClCompile Include="src\backend\port\win32\socket.c" />
+    <ClCompile Include="src\backend\port\win32\timer.c" />
+    <ClCompile Include="src\backend\port\win32_latch.c" />
+    <ClCompile Include="src\backend\port\win32_sema.c" />
+    <ClCompile Include="src\backend\port\win32_shmem.c" />
+    <ClCompile Include="src\backend\postmaster\autovacuum.c" />
+    <ClCompile Include="src\backend\postmaster\bgwriter.c" />
+    <ClCompile Include="src\backend\postmaster\checkpointer.c" />
+    <ClCompile Include="src\backend\postmaster\fork_process.c" />
+    <ClCompile Include="src\backend\postmaster\pgarch.c" />
+    <ClCompile Include="src\backend\postmaster\pgstat.c" />
+    <ClCompile Include="src\backend\postmaster\postmaster.c" />
+    <ClCompile Include="src\backend\postmaster\startup.c" />
+    <ClCompile Include="src\backend\postmaster\syslogger.c" />
+    <ClCompile Include="src\backend\postmaster\walwriter.c" />
+    <ClCompile Include="src\backend\regex\regcomp.c" />
+    <ClCompile Include="src\backend\regex\regerror.c" />
+    <ClCompile Include="src\backend\regex\regexec.c" />
+    <ClCompile Include="src\backend\regex\regfree.c" />
+    <ClCompile Include="src\backend\regex\regprefix.c" />
+    <ClCompile Include="src\backend\replication\basebackup.c" />
+    <ClCompile Include="src\backend\replication\repl_gram.c" />
+    <ClCompile Include="src\backend\replication\syncrep.c" />
+    <ClCompile Include="src\backend\replication\walreceiver.c" />
+    <ClCompile Include="src\backend\replication\walreceiverfuncs.c" />
+    <ClCompile Include="src\backend\replication\walsender.c" />
+    <ClCompile Include="src\backend\rewrite\rewriteDefine.c" />
+    <ClCompile Include="src\backend\rewrite\rewriteHandler.c" />
+    <ClCompile Include="src\backend\rewrite\rewriteManip.c" />
+    <ClCompile Include="src\backend\rewrite\rewriteRemove.c" />
+    <ClCompile Include="src\backend\rewrite\rewriteSupport.c" />
+    <ClCompile Include="src\backend\storage\buffer\buf_init.c" />
+    <ClCompile Include="src\backend\storage\buffer\buf_table.c" />
+    <ClCompile Include="src\backend\storage\buffer\bufmgr.c" />
+    <ClCompile Include="src\backend\storage\buffer\freelist.c" />
+    <ClCompile Include="src\backend\storage\buffer\localbuf.c" />
+    <ClCompile Include="src\backend\storage\file\buffile.c" />
+    <ClCompile Include="src\backend\storage\file\copydir.c" />
+    <ClCompile Include="src\backend\storage\file\fd.c" />
+    <ClCompile Include="src\backend\storage\file\reinit.c" />
+    <ClCompile Include="src\backend\storage\freespace\freespace.c" />
+    <ClCompile Include="src\backend\storage\freespace\fsmpage.c" />
+    <ClCompile Include="src\backend\storage\freespace\indexfsm.c" />
+    <ClCompile Include="src\backend\storage\ipc\ipc.c" />
+    <ClCompile Include="src\backend\storage\ipc\ipci.c" />
+    <ClCompile Include="src\backend\storage\ipc\pmsignal.c" />
+    <ClCompile Include="src\backend\storage\ipc\procarray.c" />
+    <ClCompile Include="src\backend\storage\ipc\procsignal.c" />
+    <ClCompile Include="src\backend\storage\ipc\shmem.c" />
+    <ClCompile Include="src\backend\storage\ipc\shmqueue.c" />
+    <ClCompile Include="src\backend\storage\ipc\sinval.c" />
+    <ClCompile Include="src\backend\storage\ipc\sinvaladt.c" />
+    <ClCompile Include="src\backend\storage\ipc\standby.c" />
+    <ClCompile Include="src\backend\storage\large_object\inv_api.c" />
+    <ClCompile Include="src\backend\storage\lmgr\deadlock.c" />
+    <ClCompile Include="src\backend\storage\lmgr\lmgr.c" />
+    <ClCompile Include="src\backend\storage\lmgr\lock.c" />
+    <ClCompile Include="src\backend\storage\lmgr\lwlock.c" />
+    <ClCompile Include="src\backend\storage\lmgr\predicate.c" />
+    <ClCompile Include="src\backend\storage\lmgr\proc.c" />
+    <ClCompile Include="src\backend\storage\lmgr\s_lock.c" />
+    <ClCompile Include="src\backend\storage\lmgr\spin.c" />
+    <ClCompile Include="src\backend\storage\page\bufpage.c" />
+    <ClCompile Include="src\backend\storage\page\itemptr.c" />
+    <ClCompile Include="src\backend\storage\smgr\md.c" />
+    <ClCompile Include="src\backend\storage\smgr\smgr.c" />
+    <ClCompile Include="src\backend\storage\smgr\smgrtype.c" />
+    <ClCompile Include="src\backend\tcop\dest.c" />
+    <ClCompile Include="src\backend\tcop\fastpath.c" />
+    <ClCompile Include="src\backend\tcop\postgres.c" />
+    <ClCompile Include="src\backend\tcop\pquery.c" />
+    <ClCompile Include="src\backend\tcop\utility.c" />
+    <ClCompile Include="src\backend\tsearch\dict.c" />
+    <ClCompile Include="src\backend\tsearch\dict_ispell.c" />
+    <ClCompile Include="src\backend\tsearch\dict_simple.c" />
+    <ClCompile Include="src\backend\tsearch\dict_synonym.c" />
+    <ClCompile Include="src\backend\tsearch\dict_thesaurus.c" />
+    <ClCompile Include="src\backend\tsearch\regis.c" />
+    <ClCompile Include="src\backend\tsearch\spell.c" />
+    <ClCompile Include="src\backend\tsearch\to_tsany.c" />
+    <ClCompile Include="src\backend\tsearch\ts_locale.c" />
+    <ClCompile Include="src\backend\tsearch\ts_parse.c" />
+    <ClCompile Include="src\backend\tsearch\ts_selfuncs.c" />
+    <ClCompile Include="src\backend\tsearch\ts_typanalyze.c" />
+    <ClCompile Include="src\backend\tsearch\ts_utils.c" />
+    <ClCompile Include="src\backend\tsearch\wparser.c" />
+    <ClCompile Include="src\backend\tsearch\wparser_def.c" />
+    <ClCompile Include="src\backend\utils\adt\acl.c" />
+    <ClCompile Include="src\backend\utils\adt\array_selfuncs.c" />
+    <ClCompile Include="src\backend\utils\adt\array_typanalyze.c" />
+    <ClCompile Include="src\backend\utils\adt\array_userfuncs.c" />
+    <ClCompile Include="src\backend\utils\adt\arrayfuncs.c" />
+    <ClCompile Include="src\backend\utils\adt\arrayutils.c" />
+    <ClCompile Include="src\backend\utils\adt\ascii.c" />
+    <ClCompile Include="src\backend\utils\adt\bool.c" />
+    <ClCompile Include="src\backend\utils\adt\cash.c" />
+    <ClCompile Include="src\backend\utils\adt\char.c" />
+    <ClCompile Include="src\backend\utils\adt\date.c" />
+    <ClCompile Include="src\backend\utils\adt\datetime.c" />
+    <ClCompile Include="src\backend\utils\adt\datum.c" />
+    <ClCompile Include="src\backend\utils\adt\dbsize.c" />
+    <ClCompile Include="src\backend\utils\adt\domains.c" />
+    <ClCompile Include="src\backend\utils\adt\encode.c" />
+    <ClCompile Include="src\backend\utils\adt\enum.c" />
+    <ClCompile Include="src\backend\utils\adt\float.c" />
+    <ClCompile Include="src\backend\utils\adt\format_type.c" />
+    <ClCompile Include="src\backend\utils\adt\formatting.c" />
+    <ClCompile Include="src\backend\utils\adt\genfile.c" />
+    <ClCompile Include="src\backend\utils\adt\geo_ops.c" />
+    <ClCompile Include="src\backend\utils\adt\geo_selfuncs.c" />
+    <ClCompile Include="src\backend\utils\adt\inet_cidr_ntop.c" />
+    <ClCompile Include="src\backend\utils\adt\inet_net_pton.c" />
+    <ClCompile Include="src\backend\utils\adt\int.c" />
+    <ClCompile Include="src\backend\utils\adt\int8.c" />
+    <ClCompile Include="src\backend\utils\adt\json.c" />
+    <ClCompile Include="src\backend\utils\adt\like.c" />
+    <ClCompile Include="src\backend\utils\adt\lockfuncs.c" />
+    <ClCompile Include="src\backend\utils\adt\mac.c" />
+    <ClCompile Include="src\backend\utils\adt\misc.c" />
+    <ClCompile Include="src\backend\utils\adt\nabstime.c" />
+    <ClCompile Include="src\backend\utils\adt\name.c" />
+    <ClCompile Include="src\backend\utils\adt\network.c" />
+    <ClCompile Include="src\backend\utils\adt\numeric.c" />
+    <ClCompile Include="src\backend\utils\adt\numutils.c" />
+    <ClCompile Include="src\backend\utils\adt\oid.c" />
+    <ClCompile Include="src\backend\utils\adt\oracle_compat.c" />
+    <ClCompile Include="src\backend\utils\adt\pg_locale.c" />
+    <ClCompile Include="src\backend\utils\adt\pg_lzcompress.c" />
+    <ClCompile Include="src\backend\utils\adt\pgstatfuncs.c" />
+    <ClCompile Include="src\backend\utils\adt\pseudotypes.c" />
+    <ClCompile Include="src\backend\utils\adt\quote.c" />
+    <ClCompile Include="src\backend\utils\adt\rangetypes.c" />
+    <ClCompile Include="src\backend\utils\adt\rangetypes_gist.c" />
+    <ClCompile Include="src\backend\utils\adt\regexp.c" />
+    <ClCompile Include="src\backend\utils\adt\regproc.c" />
+    <ClCompile Include="src\backend\utils\adt\ri_triggers.c" />
+    <ClCompile Include="src\backend\utils\adt\rowtypes.c" />
+    <ClCompile Include="src\backend\utils\adt\ruleutils.c" />
+    <ClCompile Include="src\backend\utils\adt\selfuncs.c" />
+    <ClCompile Include="src\backend\utils\adt\tid.c" />
+    <ClCompile Include="src\backend\utils\adt\timestamp.c" />
+    <ClCompile Include="src\backend\utils\adt\trigfuncs.c" />
+    <ClCompile Include="src\backend\utils\adt\tsginidx.c" />
+    <ClCompile Include="src\backend\utils\adt\tsgistidx.c" />
+    <ClCompile Include="src\backend\utils\adt\tsquery.c" />
+    <ClCompile Include="src\backend\utils\adt\tsquery_cleanup.c" />
+    <ClCompile Include="src\backend\utils\adt\tsquery_gist.c" />
+    <ClCompile Include="src\backend\utils\adt\tsquery_op.c" />
+    <ClCompile Include="src\backend\utils\adt\tsquery_rewrite.c" />
+    <ClCompile Include="src\backend\utils\adt\tsquery_util.c" />
+    <ClCompile Include="src\backend\utils\adt\tsrank.c" />
+    <ClCompile Include="src\backend\utils\adt\tsvector.c" />
+    <ClCompile Include="src\backend\utils\adt\tsvector_op.c" />
+    <ClCompile Include="src\backend\utils\adt\tsvector_parser.c" />
+    <ClCompile Include="src\backend\utils\adt\txid.c" />
+    <ClCompile Include="src\backend\utils\adt\uuid.c" />
+    <ClCompile Include="src\backend\utils\adt\varbit.c" />
+    <ClCompile Include="src\backend\utils\adt\varchar.c" />
+    <ClCompile Include="src\backend\utils\adt\varlena.c" />
+    <ClCompile Include="src\backend\utils\adt\version.c" />
+    <ClCompile Include="src\backend\utils\adt\windowfuncs.c" />
+    <ClCompile Include="src\backend\utils\adt\xid.c" />
+    <ClCompile Include="src\backend\utils\adt\xml.c" />
+    <ClCompile Include="src\backend\utils\cache\attoptcache.c" />
+    <ClCompile Include="src\backend\utils\cache\catcache.c" />
+    <ClCompile Include="src\backend\utils\cache\inval.c" />
+    <ClCompile Include="src\backend\utils\cache\lsyscache.c" />
+    <ClCompile Include="src\backend\utils\cache\plancache.c" />
+    <ClCompile Include="src\backend\utils\cache\relcache.c" />
+    <ClCompile Include="src\backend\utils\cache\relmapper.c" />
+    <ClCompile Include="src\backend\utils\cache\spccache.c" />
+    <ClCompile Include="src\backend\utils\cache\syscache.c" />
+    <ClCompile Include="src\backend\utils\cache\ts_cache.c" />
+    <ClCompile Include="src\backend\utils\cache\typcache.c" />
+    <ClCompile Include="src\backend\utils\error\assert.c" />
+    <ClCompile Include="src\backend\utils\error\elog.c" />
+    <ClCompile Include="src\backend\utils\fmgr\dfmgr.c" />
+    <ClCompile Include="src\backend\utils\fmgr\fmgr.c" />
+    <ClCompile Include="src\backend\utils\fmgr\funcapi.c" />
+    <ClCompile Include="src\backend\utils\fmgrtab.c" />
+    <ClCompile Include="src\backend\utils\hash\dynahash.c" />
+    <ClCompile Include="src\backend\utils\hash\hashfn.c" />
+    <ClCompile Include="src\backend\utils\init\globals.c" />
+    <ClCompile Include="src\backend\utils\init\miscinit.c" />
+    <ClCompile Include="src\backend\utils\init\postinit.c" />
+    <ClCompile Include="src\backend\utils\mb\conv.c" />
+    <ClCompile Include="src\backend\utils\mb\encnames.c" />
+    <ClCompile Include="src\backend\utils\mb\mbutils.c" />
+    <ClCompile Include="src\backend\utils\mb\wchar.c" />
+    <ClCompile Include="src\backend\utils\mb\wstrcmp.c" />
+    <ClCompile Include="src\backend\utils\mb\wstrncmp.c" />
+    <ClCompile Include="src\backend\utils\misc\guc.c" />
+    <ClCompile Include="src\backend\utils\misc\help_config.c" />
+    <ClCompile Include="src\backend\utils\misc\pg_rusage.c" />
+    <ClCompile Include="src\backend\utils\misc\ps_status.c" />
+    <ClCompile Include="src\backend\utils\misc\rbtree.c" />
+    <ClCompile Include="src\backend\utils\misc\superuser.c" />
+    <ClCompile Include="src\backend\utils\misc\tzparser.c" />
+    <ClCompile Include="src\backend\utils\mmgr\aset.c" />
+    <ClCompile Include="src\backend\utils\mmgr\mcxt.c" />
+    <ClCompile Include="src\backend\utils\mmgr\portalmem.c" />
+    <ClCompile Include="src\backend\utils\resowner\resowner.c" />
+    <ClCompile Include="src\backend\utils\sort\logtape.c" />
+    <ClCompile Include="src\backend\utils\sort\sortsupport.c" />
+    <ClCompile Include="src\backend\utils\sort\tuplesort.c" />
+    <ClCompile Include="src\backend\utils\sort\tuplestore.c" />
+    <ClCompile Include="src\backend\utils\time\combocid.c" />
+    <ClCompile Include="src\backend\utils\time\snapmgr.c" />
+    <ClCompile Include="src\backend\utils\time\tqual.c" />
+    <ClCompile Include="src\port\chklocale.c" />
+    <ClCompile Include="src\port\crypt.c">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\debug\postgres\src_port_crypt.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\release\postgres\src_port_crypt.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="src\port\dirent.c" />
+    <ClCompile Include="src\port\dirmod.c" />
+    <ClCompile Include="src\port\erand48.c" />
+    <ClCompile Include="src\port\exec.c" />
+    <ClCompile Include="src\port\fls.c" />
+    <ClCompile Include="src\port\fseeko.c" />
+    <ClCompile Include="src\port\getaddrinfo.c" />
+    <ClCompile Include="src\port\getopt.c" />
+    <ClCompile Include="src\port\getopt_long.c" />
+    <ClCompile Include="src\port\getrusage.c" />
+    <ClCompile Include="src\port\gettimeofday.c" />
+    <ClCompile Include="src\port\inet_aton.c" />
+    <ClCompile Include="src\port\inet_net_ntop.c" />
+    <ClCompile Include="src\port\kill.c" />
+    <ClCompile Include="src\port\noblock.c" />
+    <ClCompile Include="src\port\open.c" />
+    <ClCompile Include="src\port\path.c" />
+    <ClCompile Include="src\port\pg_crc.c" />
+    <ClCompile Include="src\port\pgcheckdir.c" />
+    <ClCompile Include="src\port\pgmkdirp.c" />
+    <ClCompile Include="src\port\pgsleep.c" />
+    <ClCompile Include="src\port\pgstrcasecmp.c" />
+    <ClCompile Include="src\port\qsort.c" />
+    <ClCompile Include="src\port\qsort_arg.c" />
+    <ClCompile Include="src\port\random.c" />
+    <ClCompile Include="src\port\rint.c" />
+    <ClCompile Include="src\port\snprintf.c" />
+    <ClCompile Include="src\port\sprompt.c" />
+    <ClCompile Include="src\port\srandom.c" />
+    <ClCompile Include="src\port\strlcat.c" />
+    <ClCompile Include="src\port\strlcpy.c" />
+    <ClCompile Include="src\port\thread.c" />
+    <ClCompile Include="src\port\win32env.c" />
+    <ClCompile Include="src\port\win32error.c" />
+    <ClCompile Include="src\port\win32setlocale.c" />
+    <ClCompile Include="src\timezone\localtime.c" />
+    <ClCompile Include="src\timezone\pgtz.c" />
+    <ClCompile Include="src\timezone\strftime.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="src\backend\bootstrap\bootparse.y">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Running bison on src\backend\bootstrap\bootparse.y</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">perl "src\tools\msvc\pgbison.pl" "src\backend\bootstrap\bootparse.y"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src\backend\bootstrap\bootparse.c;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Running bison on src\backend\bootstrap\bootparse.y</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">perl "src\tools\msvc\pgbison.pl" "src\backend\bootstrap\bootparse.y"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src\backend\bootstrap\bootparse.c;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="src\backend\bootstrap\bootscanner.l">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Running flex on src\backend\bootstrap\bootscanner.l</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">perl "src\tools\msvc\pgflex.pl" "src\backend\bootstrap\bootscanner.l"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src\backend\bootstrap\bootscanner.c;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Running flex on src\backend\bootstrap\bootscanner.l</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">perl "src\tools\msvc\pgflex.pl" "src\backend\bootstrap\bootscanner.l"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src\backend\bootstrap\bootscanner.c;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="src\backend\parser\gram.y">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Running bison on src\backend\parser\gram.y</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">perl "src\tools\msvc\pgbison.pl" "src\backend\parser\gram.y"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src\backend\parser\gram.c;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Running bison on src\backend\parser\gram.y</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">perl "src\tools\msvc\pgbison.pl" "src\backend\parser\gram.y"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src\backend\parser\gram.c;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="src\backend\parser\scan.l">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Running flex on src\backend\parser\scan.l</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">perl "src\tools\msvc\pgflex.pl" "src\backend\parser\scan.l"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src\backend\parser\scan.c;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Running flex on src\backend\parser\scan.l</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">perl "src\tools\msvc\pgflex.pl" "src\backend\parser\scan.l"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src\backend\parser\scan.c;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="src\backend\replication\repl_gram.y">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Running bison on src\backend\replication\repl_gram.y</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">perl "src\tools\msvc\pgbison.pl" "src\backend\replication\repl_gram.y"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src\backend\replication\repl_gram.c;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Running bison on src\backend\replication\repl_gram.y</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">perl "src\tools\msvc\pgbison.pl" "src\backend\replication\repl_gram.y"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src\backend\replication\repl_gram.c;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="src\backend\replication\repl_scanner.l">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Running flex on src\backend\replication\repl_scanner.l</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">perl "src\tools\msvc\pgflex.pl" "src\backend\replication\repl_scanner.l"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src\backend\replication\repl_scanner.c;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Running flex on src\backend\replication\repl_scanner.l</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">perl "src\tools\msvc\pgflex.pl" "src\backend\replication\repl_scanner.l"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src\backend\replication\repl_scanner.c;%(Outputs)</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="src\backend\utils\misc\guc-file.l">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Running flex on src\backend\utils\misc\guc-file.l</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">perl "src\tools\msvc\pgflex.pl" "src\backend\utils\misc\guc-file.l"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src\backend\utils\misc\guc-file.c;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Running flex on src\backend\utils\misc\guc-file.l</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">perl "src\tools\msvc\pgflex.pl" "src\backend\utils\misc\guc-file.l"</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src\backend\utils\misc\guc-file.c;%(Outputs)</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="src\backend\win32ver.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

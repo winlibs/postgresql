@@ -30,9 +30,9 @@ ADD_SECLIB=bufferoverflowU.lib
 OPT=/Od /Zi /MDd
 LOPT=/DEBUG
 DEBUGDEF=/D _DEBUG
-OUTFILENAME=libpqd
+OUTFILENAME=libpq_debug
 !ELSE
-OPT=/O2 /MD
+OPT=/O2 /Zi /MD
 LOPT=
 DEBUGDEF=/D NDEBUG
 OUTFILENAME=libpq
@@ -181,7 +181,7 @@ pg_config_paths.h: win32.mak
 CPP_PROJ=/nologo /W3 /EHsc $(OPT) /I "..\..\include" /I "..\..\include\port\win32" /I "..\..\include\port\win32_msvc" /I "..\..\port" /I. /I "$(SSL_INC)" \
  /D "FRONTEND" $(DEBUGDEF) \
  /D "WIN32" /D "_WINDOWS" /Fp"$(INTDIR)\libpq.pch" \
- /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c  \
+ /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\$(OUTFILENAME).pdb" /FD /c  \
  /D "_CRT_SECURE_NO_DEPRECATE" $(ADD_DEFINES)
 
 !IFDEF USE_SSL

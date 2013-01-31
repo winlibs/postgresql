@@ -10,8 +10,8 @@ All prebuilt libraries are available in the php-libs
 ## Requirements
 
   * postgres sources, fetch our patched [version](https://github.com/winlibs/) or the original [sources](http://www.postgresql.org)
-
   * Common tools used to compile PHP
+  * openssl libs (optional)
 
 
 ## Compilation

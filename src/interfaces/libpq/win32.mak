@@ -115,6 +115,7 @@ CLEAN :
 	-@erase "$(INTDIR)\open.obj"
 	-@erase "$(INTDIR)\win32error.obj"
 	-@erase "$(INTDIR)\win32setlocale.obj"
+	-@erase "$(INTDIR)\fe_memutils.obj"
 	-@erase "$(OUTDIR)\$(OUTFILENAME).lib"
 	-@erase "$(OUTDIR)\$(OUTFILENAME)dll.lib"
 	-@erase "$(OUTDIR)\libpq.res"
@@ -161,7 +162,8 @@ LIB32_OBJS= \
 	"$(INTDIR)\open.obj" \
 	"$(INTDIR)\win32error.obj" \
 	"$(INTDIR)\win32setlocale.obj" \
-	"$(INTDIR)\pthread-win32.obj"
+	"$(INTDIR)\pthread-win32.obj" \
+	"$(INTDIR)\fe_memutils.obj"
 
 
 config: ..\..\include\pg_config.h ..\..\include\pg_config_ext.h pg_config_paths.h  ..\..\include\pg_config_os.h
@@ -343,6 +345,11 @@ LINK32_OBJS= \
 "$(INTDIR)\win32setlocale.obj" : ..\..\port\win32setlocale.c
 	$(CPP) @<<
 	$(CPP_PROJ) /I"." ..\..\port\win32setlocale.c
+<<
+
+"$(INTDIR)\fe_memutils.obj" : ..\..\common\fe_memutils.c
+	$(CPP) @<<
+	$(CPP_PROJ) /I"." ..\..\common\fe_memutils.c
 <<
 
 .c{$(CPP_OBJS)}.obj:

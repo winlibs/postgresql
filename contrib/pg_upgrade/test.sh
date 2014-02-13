@@ -6,16 +6,26 @@
 # runs the regression tests (to put in some data), runs pg_dumpall,
 # runs pg_upgrade, runs pg_dumpall again, compares the dumps.
 #
-# Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+# Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
 # Portions Copyright (c) 1994, Regents of the University of California
 
 set -e
 
 : ${MAKE=make}
-: ${PGPORT=50432}
-export PGPORT
 
+# Guard against parallel make issues (see comments in pg_regress.c)
+unset MAKEFLAGS
+unset MAKELEVEL
+
+# Set listen_addresses desirably
 testhost=`uname -s`
+
+case $testhost in
+	MINGW*)	LISTEN_ADDRESSES="localhost" ;;
+	*)		LISTEN_ADDRESSES="" ;;
+esac
+
+POSTMASTER_OPTS="-F -c listen_addresses=$LISTEN_ADDRESSES"
 
 temp_root=$PWD/tmp_check
 
@@ -40,8 +50,9 @@ if [ "$1" = '--install' ]; then
 	# We need to make it use psql from our temporary installation,
 	# because otherwise the installcheck run below would try to
 	# use psql from the proper installation directory, which might
-	# be outdated or missing.
-	EXTRA_REGRESS_OPTS=--psqldir=$bindir
+	# be outdated or missing. But don't override anything else that's
+	# already in EXTRA_REGRESS_OPTS.
+	EXTRA_REGRESS_OPTS="$EXTRA_REGRESS_OPTS --psqldir=$bindir"
 	export EXTRA_REGRESS_OPTS
 fi
 
@@ -54,27 +65,57 @@ newsrc=`cd ../.. && pwd`
 PATH=$bindir:$PATH
 export PATH
 
-PGDATA=$temp_root/data
+BASE_PGDATA=$temp_root/data
+PGDATA="$BASE_PGDATA.old"
 export PGDATA
-rm -rf "$PGDATA" "$PGDATA".old
-
-unset PGDATABASE
-unset PGUSER
-unset PGSERVICE
-unset PGSSLMODE
-unset PGREQUIRESSL
-unset PGCONNECT_TIMEOUT
-unset PGHOST
-unset PGHOSTADDR
+rm -rf "$BASE_PGDATA" "$PGDATA"
 
 logdir=$PWD/log
 rm -rf "$logdir"
 mkdir "$logdir"
 
+# Clear out any environment vars that might cause libpq to connect to
+# the wrong postmaster (cf pg_regress.c)
+#
+# Some shells, such as NetBSD's, return non-zero from unset if the variable
+# is already unset. Since we are operating under 'set -e', this causes the
+# script to fail. To guard against this, set them all to an empty string first.
+PGDATABASE="";        unset PGDATABASE
+PGUSER="";            unset PGUSER
+PGSERVICE="";         unset PGSERVICE
+PGSSLMODE=""          unset PGSSLMODE
+PGREQUIRESSL="";      unset PGREQUIRESSL
+PGCONNECT_TIMEOUT=""; unset PGCONNECT_TIMEOUT
+PGHOST=""             unset PGHOST
+PGHOSTADDR="";        unset PGHOSTADDR
+
+# Select a non-conflicting port number, similarly to pg_regress.c
+PG_VERSION_NUM=`grep '#define PG_VERSION_NUM' $newsrc/src/include/pg_config.h | awk '{print $3}'`
+PGPORT=`expr $PG_VERSION_NUM % 16384 + 49152`
+export PGPORT
+
+i=0
+while psql -X postgres </dev/null 2>/dev/null
+do
+	i=`expr $i + 1`
+	if [ $i -eq 16 ]
+	then
+		echo port $PGPORT apparently in use
+		exit 1
+	fi
+	PGPORT=`expr $PGPORT + 1`
+	export PGPORT
+done
+
+# buildfarm may try to override port via EXTRA_REGRESS_OPTS ...
+EXTRA_REGRESS_OPTS="$EXTRA_REGRESS_OPTS --port=$PGPORT"
+export EXTRA_REGRESS_OPTS
+
+# enable echo so the user can see what is being executed
 set -x
 
-$oldbindir/initdb
-$oldbindir/pg_ctl start -l "$logdir/postmaster1.log" -w
+$oldbindir/initdb -N
+$oldbindir/pg_ctl start -l "$logdir/postmaster1.log" -o "$POSTMASTER_OPTS" -w
 if "$MAKE" -C "$oldsrc" installcheck; then
 	pg_dumpall -f "$temp_root"/dump1.sql || pg_dumpall1_status=$?
 	if [ "$newsrc" != "$oldsrc" ]; then
@@ -111,13 +152,13 @@ if [ -n "$pg_dumpall1_status" ]; then
 	exit 1
 fi
 
-mv "${PGDATA}" "${PGDATA}.old"
+PGDATA=$BASE_PGDATA
 
-initdb
+initdb -N
 
-pg_upgrade -d "${PGDATA}.old" -D "${PGDATA}" -b "$oldbindir" -B "$bindir"
+pg_upgrade $PG_UPGRADE_OPTS -d "${PGDATA}.old" -D "${PGDATA}" -b "$oldbindir" -B "$bindir" -p "$PGPORT" -P "$PGPORT"
 
-pg_ctl start -l "$logdir/postmaster2.log" -w
+pg_ctl start -l "$logdir/postmaster2.log" -o "$POSTMASTER_OPTS" -w
 
 case $testhost in
 	MINGW*)	cmd /c analyze_new_cluster.bat ;;
@@ -126,6 +167,11 @@ esac
 
 pg_dumpall -f "$temp_root"/dump2.sql || pg_dumpall2_status=$?
 pg_ctl -m fast stop
+
+# no need to echo commands anymore
+set +x
+echo
+
 if [ -n "$pg_dumpall2_status" ]; then
 	echo "pg_dumpall of post-upgrade database cluster failed"
 	exit 1

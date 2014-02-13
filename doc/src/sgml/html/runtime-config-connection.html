@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -203,22 +203,6 @@ CLASS="APPLICATION"
         only be set at server start.
        </P
 ><P
->        Increasing this parameter might cause <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
-        to request more <SPAN
-CLASS="SYSTEMITEM"
->System V</SPAN
-> shared
-        memory or semaphores than your operating system's default configuration
-        allows. See <A
-HREF="kernel-resources.html#SYSVIPC"
->Section 17.4.1</A
-> for information on how to
-        adjust those parameters, if necessary.
-       </P
-><P
 >        When running a standby server, you must set this parameter to the
         same or higher value than on the master server. Otherwise, queries
         will not be allowed in the standby server.
@@ -274,24 +258,31 @@ CLASS="VARNAME"
 ></DD
 ><DT
 ><A
-NAME="GUC-UNIX-SOCKET-DIRECTORY"
+NAME="GUC-UNIX-SOCKET-DIRECTORIES"
 ></A
 ><TT
 CLASS="VARNAME"
->unix_socket_directory</TT
+>unix_socket_directories</TT
 > (<TT
 CLASS="TYPE"
 >string</TT
 >)</DT
 ><DD
 ><P
->        Specifies the directory of the Unix-domain socket on which the
-        server is to listen for
-        connections from client applications.  The default is normally
+>        Specifies the directory of the Unix-domain socket(s) on which the
+        server is to listen for connections from client applications.
+        Multiple sockets can be created by listing multiple directories
+        separated by commas.  Whitespace between entries is
+        ignored; surround a directory name with double quotes if you need
+        to include whitespace or commas in the name.
+        An empty value
+        specifies not listening on any Unix-domain sockets, in which case
+        only TCP/IP sockets can be used to connect to the server.
+        The default value is normally
         <TT
 CLASS="FILENAME"
 >/tmp</TT
->, but can be changed at build time.
+>, but that can be changed at build time.
         This parameter can only be set at server start.
        </P
 ><P
@@ -320,11 +311,11 @@ CLASS="REPLACEABLE"
 ></TT
 >.lock</TT
 > will be
-        created in the <TT
+        created in each of the <TT
 CLASS="VARNAME"
->unix_socket_directory</TT
-> directory.  Neither
-        file should ever be removed manually.
+>unix_socket_directories</TT
+> directories.
+        Neither file should ever be removed manually.
        </P
 ><P
 >        This parameter is irrelevant on Windows, which does not have
@@ -344,8 +335,8 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->        Sets the owning group of the Unix-domain socket.  (The owning
-        user of the socket is always the user that starts the
+>        Sets the owning group of the Unix-domain socket(s).  (The owning
+        user of the sockets is always the user that starts the
         server.)  In combination with the parameter
         <TT
 CLASS="VARNAME"
@@ -374,7 +365,7 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->        Sets the access permissions of the Unix-domain socket.  Unix-domain
+>        Sets the access permissions of the Unix-domain socket(s).  Unix-domain
         sockets use the usual Unix file system permission set.
         The parameter value is expected to be a numeric mode
         specified in the format accepted by the

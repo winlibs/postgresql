@@ -26,8 +26,8 @@ PG_MODULE_MAGIC;
 #define ARRPTR(x)  ( (double *) ARR_DATA_PTR(x) )
 #define ARRNELEMS(x)  ArrayGetNItems( ARR_NDIM(x), ARR_DIMS(x))
 
-extern int	cube_yyparse();
-extern void cube_yyerror(const char *message);
+extern int	cube_yyparse(NDBOX **result);
+extern void cube_yyerror(NDBOX **result, const char *message);
 extern void cube_scanner_init(const char *str);
 extern void cube_scanner_finish(void);
 
@@ -35,7 +35,6 @@ extern void cube_scanner_finish(void);
 ** Input/Output routines
 */
 PG_FUNCTION_INFO_V1(cube_in);
-PG_FUNCTION_INFO_V1(cube);
 PG_FUNCTION_INFO_V1(cube_a_f8_f8);
 PG_FUNCTION_INFO_V1(cube_a_f8);
 PG_FUNCTION_INFO_V1(cube_out);
@@ -49,7 +48,6 @@ PG_FUNCTION_INFO_V1(cube_ur_coord);
 PG_FUNCTION_INFO_V1(cube_subset);
 
 Datum		cube_in(PG_FUNCTION_ARGS);
-Datum		cube(PG_FUNCTION_ARGS);
 Datum		cube_a_f8_f8(PG_FUNCTION_ARGS);
 Datum		cube_a_f8(PG_FUNCTION_ARGS);
 Datum		cube_out(PG_FUNCTION_ARGS);
@@ -158,12 +156,12 @@ Datum
 cube_in(PG_FUNCTION_ARGS)
 {
 	char	   *str = PG_GETARG_CSTRING(0);
-	void	   *result;
+	NDBOX	   *result;
 
 	cube_scanner_init(str);
 
 	if (cube_yyparse(&result) != 0)
-		cube_yyerror("bogus input");
+		cube_yyerror(&result, "bogus input");
 
 	cube_scanner_finish();
 
@@ -266,7 +264,7 @@ cube_subset(PG_FUNCTION_ARGS)
 				(errcode(ERRCODE_ARRAY_ELEMENT_ERROR),
 				 errmsg("cannot work with arrays containing NULLs")));
 
-	dx = (int4 *) ARR_DATA_PTR(idx);
+	dx = (int32 *) ARR_DATA_PTR(idx);
 
 	dim = ARRNELEMS(idx);
 	size = offsetof(NDBOX, x[0]) +sizeof(double) * 2 * dim;
@@ -1360,7 +1358,7 @@ cube_enlarge(PG_FUNCTION_ARGS)
 {
 	NDBOX	   *a = PG_GETARG_NDBOX(0);
 	double		r = PG_GETARG_FLOAT8(1);
-	int4		n = PG_GETARG_INT32(2);
+	int32		n = PG_GETARG_INT32(2);
 	NDBOX	   *result;
 	int			dim = 0;
 	int			size;

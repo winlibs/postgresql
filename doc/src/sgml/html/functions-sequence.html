@@ -9,13 +9,13 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
 HREF="functions.html"><LINK
 REL="PREVIOUS"
-TITLE="JSON Functions"
+TITLE="JSON Functions and Operators"
 HREF="functions-json.html"><LINK
 REL="NEXT"
 TITLE="Conditional Expressions"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,7 +53,7 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="JSON Functions"
+TITLE="JSON Functions and Operators"
 HREF="functions-json.html"
 ACCESSKEY="P"
 >Prev</A
@@ -96,23 +96,19 @@ NAME="FUNCTIONS-SEQUENCE"
 >9.16. Sequence Manipulation Functions</A
 ></H1
 ><P
->   This section describes <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->'s
-   functions for operating on <I
+>   This section describes functions for operating on <I
 CLASS="FIRSTTERM"
->sequence objects</I
->.
-   Sequence objects (also called sequence generators or just
-   sequences) are special single-row tables created with <A
+>sequence
+   objects</I
+>, also called sequence generators or just sequences.
+   Sequence objects are special single-row tables created with <A
 HREF="sql-createsequence.html"
 >CREATE SEQUENCE</A
 >.
-   A sequence object is usually used to generate unique identifiers
+   Sequence objects are commonly used to generate unique identifiers
    for rows of a table.  The sequence functions, listed in <A
 HREF="functions-sequence.html#FUNCTIONS-SEQUENCE-TABLE"
->Table 9-40</A
+>Table 9-41</A
 >, provide simple, multiuser-safe
    methods for obtaining successive sequence values from sequence
    objects.
@@ -124,7 +120,7 @@ NAME="FUNCTIONS-SEQUENCE-TABLE"
 ></A
 ><P
 ><B
->Table 9-40. Sequence Functions</B
+>Table 9-41. Sequence Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -692,7 +688,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->JSON Functions</TD
+>JSON Functions and Operators</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

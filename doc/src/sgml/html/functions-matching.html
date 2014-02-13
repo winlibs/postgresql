@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1338,24 +1338,24 @@ CLASS="FUNCTION"
 >    Some examples:
 </P><PRE
 CLASS="PROGRAMLISTING"
->&#13;SELECT foo FROM regexp_split_to_table('the quick brown fox jumped over the lazy dog', E'\\s+') AS foo;
+>&#13;SELECT foo FROM regexp_split_to_table('the quick brown fox jumps over the lazy dog', E'\\s+') AS foo;
   foo   
---------
+-------
  the    
  quick  
  brown  
  fox    
- jumped 
+ jumps 
  over   
  the    
  lazy   
  dog    
 (9 rows)
 
-SELECT regexp_split_to_array('the quick brown fox jumped over the lazy dog', E'\\s+');
+SELECT regexp_split_to_array('the quick brown fox jumps over the lazy dog', E'\\s+');
               regexp_split_to_array             
-------------------------------------------------
- {the,quick,brown,fox,jumped,over,the,lazy,dog}
+-----------------------------------------------
+ {the,quick,brown,fox,jumps,over,the,lazy,dog}
 (1 row)
 
 SELECT foo FROM regexp_split_to_table('the quick brown fox', E'\\s*') AS foo;
@@ -4075,7 +4075,7 @@ CLASS="LITERAL"
     and <TT
 CLASS="LITERAL"
 >^</TT
->and <TT
+> and <TT
 CLASS="LITERAL"
 >$</TT
 >

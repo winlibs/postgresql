@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
 HREF="reference-client.html"><LINK
 REL="PREVIOUS"
-TITLE="pg_dumpall"
-HREF="app-pg-dumpall.html"><LINK
+TITLE="pg_isready"
+HREF="app-pg-isready.html"><LINK
 REL="NEXT"
 TITLE="pg_restore"
 HREF="app-pgrestore.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="pg_dumpall"
-HREF="app-pg-dumpall.html"
+TITLE="pg_isready"
+HREF="app-pg-isready.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="APP-PGRECEIVEXLOG"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN82616"
+NAME="AEN85717"
 ></A
 ><H2
 >Name</H2
@@ -106,7 +106,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN82622"
+NAME="AEN85723"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82627"
+NAME="AEN85728"
 ></A
 ><H2
 >   Description
@@ -208,7 +208,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82647"
+NAME="AEN85748"
 ></A
 ><H2
 >Options</H2
@@ -301,6 +301,45 @@ CLASS="VARIABLELIST"
 ><DT
 ><TT
 CLASS="OPTION"
+>-d <TT
+CLASS="REPLACEABLE"
+><I
+>connstr</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--dbname=<TT
+CLASS="REPLACEABLE"
+><I
+>connstr</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        Specifies parameters used to connect to the server, as a connection
+        string. See <A
+HREF="libpq-connect.html#LIBPQ-CONNSTRING"
+>Section 31.1.1</A
+> for more information.
+       </P
+><P
+>        The option is called <TT
+CLASS="LITERAL"
+>--dbname</TT
+> for consistency with other
+        client applications, but because <SPAN
+CLASS="APPLICATION"
+>pg_receivexlog</SPAN
+>
+        doesn't connect to any particular database in the cluster, database
+        name in the connection string will be ignored.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-h <TT
 CLASS="REPLACEABLE"
 ><I
@@ -378,9 +417,10 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        Specifies the number of seconds between status packets sent back to the
-        server. This is required if replication timeout is configured on the
-        server, and allows for easier monitoring. A value of zero disables the
-        status updates completely. The default value is 10 seconds.
+        server. This allows for easier monitoring of the progress from server.
+        A value of zero disables the periodic status updates completely,
+        although an update will still be sent when requested by the server, to
+        avoid timeout disconnect. The default value is 10 seconds.
        </P
 ></DD
 ><DT
@@ -515,7 +555,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82755"
+NAME="AEN85869"
 ></A
 ><H2
 >Environment</H2
@@ -537,7 +577,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82761"
+NAME="AEN85875"
 ></A
 ><H2
 >Notes</H2
@@ -572,7 +612,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82769"
+NAME="AEN85883"
 ></A
 ><H2
 >Examples</H2
@@ -600,7 +640,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82777"
+NAME="AEN85891"
 ></A
 ><H2
 >See Also</H2
@@ -624,7 +664,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="app-pg-dumpall.html"
+HREF="app-pg-isready.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -654,7 +694,7 @@ ALIGN="left"
 VALIGN="top"
 ><SPAN
 CLASS="APPLICATION"
->pg_dumpall</SPAN
+>pg_isready</SPAN
 ></TD
 ><TD
 WIDTH="34%"

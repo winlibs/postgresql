@@ -3,7 +3,7 @@
 #################################################################
 # create_help.pl -- converts SGML docs to internal psql help
 #
-# Copyright (c) 2000-2012, PostgreSQL Global Development Group
+# Copyright (c) 2000-2013, PostgreSQL Global Development Group
 #
 # src/bin/psql/create_help.pl
 #################################################################
@@ -202,8 +202,7 @@ print HFILE "
 
 
 #define QL_HELP_COUNT	"
-  . scalar(keys %entries)
-  . "		/* number of help items */
+  . scalar(keys %entries) . "		/* number of help items */
 #define QL_MAX_CMD_LEN	$maxlen		/* largest strlen(cmd) */
 
 

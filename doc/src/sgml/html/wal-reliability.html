@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Reliability and the Write-Ahead Log"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -179,7 +179,7 @@ CLASS="ACRONYM"
 >        On <SPAN
 CLASS="PRODUCTNAME"
 >Linux</SPAN
->, IDE drives can be queried using
+>, IDE and SATA drives can be queried using
         <TT
 CLASS="COMMAND"
 >hdparm -I</TT
@@ -248,13 +248,9 @@ CLASS="COMMAND"
 CLASS="PRODUCTNAME"
 >Solaris</SPAN
 >, the disk write cache is controlled by
-        <A
-HREF="http://www.sun.com/bigadmin/content/submitted/format_utility.jsp"
-TARGET="_top"
-><TT
-CLASS="LITERAL"
+        <TT
+CLASS="COMMAND"
 >format -e</TT
-></A
 >.
         (The Solaris <ACRONYM
 CLASS="ACRONYM"
@@ -354,7 +350,7 @@ HREF="pgtestfsync.html"
 CLASS="APPLICATION"
 >pg_test_fsync</SPAN
 ></A
-> module to see
+> program to see
    if you are affected.  If you are affected, the performance benefits
    of the BBU can be regained by turning off write barriers in
    the file system or reconfiguring the disk controller, if that is
@@ -368,8 +364,9 @@ CLASS="APPLICATION"
    there is little it can do to make sure the data has arrived at a truly
    non-volatile storage area. Rather, it is the
    administrator's responsibility to make certain that all storage components
-   ensure data integrity.  Avoid disk controllers that have non-battery-backed
-   write caches.  At the drive level, disable write-back caching if the
+   ensure integrity for both data and file-system metadata.
+   Avoid disk controllers that have non-battery-backed write caches.
+   At the drive level, disable write-back caching if the
    drive cannot guarantee the data will be written before shutdown.
    If you use SSDs, be aware that many of these do not honor cache flush
    commands by default.
@@ -418,6 +415,88 @@ HREF="runtime-config-wal.html#GUC-FULL-PAGE-WRITES"
 > parameter. Battery-Backed Unit
    (BBU) disk controllers do not prevent partial page writes unless
    they guarantee that data is written to the BBU as full (8kB) pages.
+  </P
+><P
+>   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> also protects against some kinds of data corruption
+   on storage devices that may occur because of hardware errors or media failure over time,
+   such as reading/writing garbage data.
+   <P
+></P
+></P><UL
+><LI
+><P
+>      Each individual record in a WAL file is protected by a CRC-32 (32-bit) check
+      that allows us to tell if record contents are correct. The CRC value
+      is set when we write each WAL record and checked during crash recovery,
+      archive recovery and replication.
+     </P
+></LI
+><LI
+><P
+>      Data pages are not currently checksummed, though full page images recorded
+      in WAL records will be protected. Data pages have a 16-bit field available
+      for future use with a data page checksum feature.
+     </P
+></LI
+><LI
+><P
+>      Internal data structures such as <TT
+CLASS="FILENAME"
+>pg_clog</TT
+>, <TT
+CLASS="FILENAME"
+>pg_subtrans</TT
+>, <TT
+CLASS="FILENAME"
+>pg_multixact</TT
+>,
+      <TT
+CLASS="FILENAME"
+>pg_serial</TT
+>, <TT
+CLASS="FILENAME"
+>pg_notify</TT
+>, <TT
+CLASS="FILENAME"
+>pg_stat</TT
+>, <TT
+CLASS="FILENAME"
+>pg_snapshots</TT
+> are not directly
+      checksummed, nor are pages protected by full page writes. However, where
+      such data structures are persistent, WAL records are written that allow
+      recent changes to be accurately rebuilt at crash recovery and those
+      WAL records are protected as discussed above.
+     </P
+></LI
+><LI
+><P
+>      Individual state files in <TT
+CLASS="FILENAME"
+>pg_twophase</TT
+> are protected by CRC-32.
+     </P
+></LI
+><LI
+><P
+>      Temporary data files used in larger SQL queries for sorts,
+      materializations and intermediate results are not currently checksummed,
+      nor will WAL records be written for changes to those files.
+     </P
+></LI
+></UL
+><P>
+  </P
+><P
+>   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> does not protect against correctable memory errors
+   and it is assumed you will operate using RAM that uses industry standard
+   Error Correcting Codes (ECC) or better protection.
   </P
 ></DIV
 ><DIV

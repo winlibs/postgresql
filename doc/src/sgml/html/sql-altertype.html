@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERTYPE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN65306"
+NAME="AEN67553"
 ></A
 ><H2
 >Name</H2
@@ -104,7 +104,7 @@ NAME="AEN65306"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN65311"
+NAME="AEN67558"
 ></A
 ><H2
 >Synopsis</H2
@@ -147,7 +147,7 @@ CLASS="REPLACEABLE"
 ><I
 >new_attribute_name</I
 ></TT
->
+> [ CASCADE | RESTRICT ]
 ALTER TYPE <TT
 CLASS="REPLACEABLE"
 ><I
@@ -158,7 +158,7 @@ CLASS="REPLACEABLE"
 ><I
 >new_name</I
 ></TT
-> [ CASCADE | RESTRICT ]
+>
 ALTER TYPE <TT
 CLASS="REPLACEABLE"
 ><I
@@ -175,7 +175,7 @@ CLASS="REPLACEABLE"
 ><I
 >name</I
 ></TT
-> ADD VALUE <TT
+> ADD VALUE [ IF NOT EXISTS ] <TT
 CLASS="REPLACEABLE"
 ><I
 >new_enum_value</I
@@ -242,7 +242,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65336"
+NAME="AEN67583"
 ></A
 ><H2
 >Description</H2
@@ -332,20 +332,29 @@ CLASS="LITERAL"
 ><DT
 ><TT
 CLASS="LITERAL"
->ADD VALUE [ BEFORE | AFTER ]</TT
+>ADD VALUE [ IF NOT EXISTS ] [ BEFORE | AFTER ]</TT
 ></DT
 ><DD
 ><P
->      This form adds a new value to an enum type. If the new value's place in
-      the enum's ordering is not specified using <TT
+>      This form adds a new value to an enum type.  The new value's place in
+      the enum's ordering can be specified as being <TT
 CLASS="LITERAL"
 >BEFORE</TT
-> or
-      <TT
+>
+      or <TT
 CLASS="LITERAL"
 >AFTER</TT
->, then the new item is placed at the end of the
-      list of values.
+> one of the existing values.  Otherwise,
+      the new item is added at the end of the list of values.
+     </P
+><P
+>      If <TT
+CLASS="LITERAL"
+>IF NOT EXISTS</TT
+> is specified, it is not an error if
+      the type already contains the new value: a notice is issued but no other
+      action is taken. Otherwise, an error will occur if the new value is
+      already present.
      </P
 ></DD
 ><DT
@@ -418,7 +427,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65399"
+NAME="AEN67648"
 ></A
 ><H2
 >Parameters</H2
@@ -549,7 +558,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65448"
+NAME="AEN67697"
 ></A
 ><H2
 >Notes</H2
@@ -585,7 +594,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65456"
+NAME="AEN67705"
 ></A
 ><H2
 >Examples</H2
@@ -641,7 +650,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65472"
+NAME="AEN67721"
 ></A
 ><H2
 >Compatibility</H2

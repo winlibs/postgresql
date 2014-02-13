@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE VIEW
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "CREATE VIEW" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE VIEW" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,7 +33,7 @@ CREATE_VIEW \- define a new view
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] VIEW \fIname\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ]
+CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] [ RECURSIVE ] VIEW \fIname\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ]
     [ WITH ( \fIview_option_name\fR [= \fIview_option_value\fR] [, \&.\&.\&. ] ) ]
     AS \fIquery\fR
 .fi
@@ -60,6 +60,37 @@ TEMPORARY
 is specified or not)\&.
 .RE
 .PP
+RECURSIVE
+.RS 4
+Creates a recursive view\&. The syntax
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE RECURSIVE VIEW \fIname\fR (\fIcolumns\fR) AS SELECT \fI\&.\&.\&.\fR;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+
+is equivalent to
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE VIEW \fIname\fR AS WITH RECURSIVE \fIname\fR (\fIcolumns\fR) AS (SELECT \fI\&.\&.\&.\fR) SELECT \fIcolumns\fR FROM \fIname\fR;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+
+A view column list must be specified for a recursive view\&.
+.RE
+.PP
 \fIname\fR
 .RS 4
 The name (optionally schema\-qualified) of a view to be created\&.
@@ -74,7 +105,7 @@ WITH ( \fIview_option_name\fR [= \fIview_option_value\fR] [, \&.\&.\&. ] )
 .RS 4
 This clause specifies optional parameters for a view; currently, the only supported parameter name is
 security_barrier, which should be enabled when a view is intended to provide row\-level security\&. See
-Section 37.4, \(lqRules and Privileges\(rq, in the documentation
+Section 38.5, \(lqRules and Privileges\(rq, in the documentation
 for full details\&.
 .RE
 .PP
@@ -87,12 +118,6 @@ or
 command which will provide the columns and rows of the view\&.
 .RE
 .SH "NOTES"
-.PP
-Currently, views are read only: the system will not allow an insert, update, or delete on a view\&. You can get the effect of an updatable view by creating
-INSTEAD
-triggers on the view, which must convert attempted inserts, etc\&. on the view into appropriate actions on other tables\&. For more information see
-CREATE TRIGGER (\fBCREATE_TRIGGER\fR(7))\&. Another possibility is to create rules (see
-CREATE RULE (\fBCREATE_RULE\fR(7))), but in practice triggers are easier to understand and use correctly\&.
 .PP
 Use the
 DROP VIEW (\fBDROP_VIEW\fR(7))
@@ -125,12 +150,133 @@ CREATE VIEW vista AS SELECT text \*(AqHello World\*(Aq AS hello;
 .\}
 .PP
 Access to tables referenced in the view is determined by permissions of the view owner\&. In some cases, this can be used to provide secure but restricted access to the underlying tables\&. However, not all views are secure against tampering; see
-Section 37.4, \(lqRules and Privileges\(rq, in the documentation
+Section 38.5, \(lqRules and Privileges\(rq, in the documentation
 for details\&. Functions called in the view are treated the same as if they had been called directly from the query using the view\&. Therefore the user of a view must have permissions to call all functions used by the view\&.
 .PP
 When
 \fBCREATE OR REPLACE VIEW\fR
 is used on an existing view, only the view\*(Aqs defining SELECT rule is changed\&. Other view properties, including ownership, permissions, and non\-SELECT rules, remain unchanged\&. You must own the view to replace it (this includes being a member of the owning role)\&.
+.SS "Updatable Views"
+.\" updatable views
+.PP
+Simple views are automatically updatable: the system will allow
+\fBINSERT\fR,
+\fBUPDATE\fR
+and
+\fBDELETE\fR
+statements to be used on the view in the same way as on a regular table\&. A view is automatically updatable if it satisfies all of the following conditions:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The view must have exactly one entry in its
+FROM
+list, which must be a table or another updatable view\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The view definition must not contain
+WITH,
+DISTINCT,
+GROUP BY,
+HAVING,
+LIMIT, or
+OFFSET
+clauses at the top level\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The view definition must not contain set operations (UNION,
+INTERSECT
+or
+EXCEPT) at the top level\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+All columns in the view\*(Aqs select list must be simple references to columns of the underlying relation\&. They cannot be expressions, literals or functions\&. System columns cannot be referenced, either\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+No column of the underlying relation can appear more than once in the view\*(Aqs select list\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The view must not have the
+security_barrier
+property\&.
+.RE
+.PP
+If the view is automatically updatable the system will convert any
+\fBINSERT\fR,
+\fBUPDATE\fR
+or
+\fBDELETE\fR
+statement on the view into the corresponding statement on the underlying base relation\&.
+.PP
+If an automatically updatable view contains a
+WHERE
+condition, the condition restricts which rows of the base relation are available to be modified by
+\fBUPDATE\fR
+and
+\fBDELETE\fR
+statements on the view\&. However, an
+\fBUPDATE\fR
+is allowed to change a row so that it no longer satisfies the
+WHERE
+condition, and thus is no longer visible through the view\&. Similarly, an
+\fBINSERT\fR
+command can potentially insert base\-relation rows that do not satisfy the
+WHERE
+condition and thus are not visible through the view\&.
+.PP
+A more complex view that does not satisfy all these conditions is read\-only by default: the system will not allow an insert, update, or delete on the view\&. You can get the effect of an updatable view by creating
+INSTEAD OF
+triggers on the view, which must convert attempted inserts, etc\&. on the view into appropriate actions on other tables\&. For more information see
+CREATE TRIGGER (\fBCREATE_TRIGGER\fR(7))\&. Another possibility is to create rules (see
+CREATE RULE (\fBCREATE_RULE\fR(7))), but in practice triggers are easier to understand and use correctly\&.
+.PP
+Note that the user performing the insert, update or delete on the view must have the corresponding insert, update or delete privilege on the view\&. In addition the view\*(Aqs owner must have the relevant privileges on the underlying base relations, but the user performing the update does not need any permissions on the underlying base relations (see
+Section 38.5, \(lqRules and Privileges\(rq, in the documentation)\&.
 .SH "EXAMPLES"
 .PP
 Create a view consisting of all comedy films:
@@ -153,6 +299,21 @@ film
 table at the time of view creation\&. Though
 *
 was used to create the view, columns added later to the table will not be part of the view\&.
+.PP
+Create a recursive view consisting of the numbers from 1 to 100:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE RECURSIVE VIEW nums_1_100 (n) AS
+    VALUES (1)
+UNION ALL
+    SELECT n+1 FROM nums_1_100 WHERE n < 100;
+.fi
+.if n \{\
+.RE
+.\}
 .SH "COMPATIBILITY"
 .PP
 The SQL standard specifies some additional capabilities for the
@@ -175,11 +336,17 @@ The optional clauses for the full SQL command are:
 .PP
 CHECK OPTION
 .RS 4
-This option has to do with updatable views\&. All
+This option controls the behavior of automatically updatable views\&. When given,
 \fBINSERT\fR
 and
 \fBUPDATE\fR
-commands on the view will be checked to ensure data satisfy the view\-defining condition (that is, the new data would be visible through the view)\&. If they do not, the update will be rejected\&.
+commands on the view will be checked to ensure new rows satisfy the view\-defining condition (that is, the new rows would be visible through the view)\&. If they do not, the update will be rejected\&. Without
+CHECK OPTION,
+\fBINSERT\fR
+and
+\fBUPDATE\fR
+commands on the view are allowed to create rows that are not visible through the view\&. (The latter behavior is the only one currently provided by
+PostgreSQL\&.)
 .RE
 .PP
 LOCAL
@@ -202,6 +369,8 @@ is specified\&.
 \fBCREATE OR REPLACE VIEW\fR
 is a
 PostgreSQL
-language extension\&. So is the concept of a temporary view\&.
+language extension\&. So is the concept of a temporary view\&. The
+WITH
+clause is an extension as well\&.
 .SH "SEE ALSO"
-ALTER VIEW (\fBALTER_VIEW\fR(7)), DROP VIEW (\fBDROP_VIEW\fR(7))
+ALTER VIEW (\fBALTER_VIEW\fR(7)), DROP VIEW (\fBDROP_VIEW\fR(7)), CREATE MATERIALIZED VIEW (\fBCREATE_MATERIALIZED_VIEW\fR(7))

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERTABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN64309"
+NAME="AEN66555"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN64309"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN64314"
+NAME="AEN66560"
 ></A
 ><H2
 >Synopsis</H2
@@ -468,7 +468,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64376"
+NAME="AEN66622"
 ></A
 ><H2
 >Description</H2
@@ -574,20 +574,15 @@ CLASS="LITERAL"
 ><DD
 ><P
 >      These forms set or remove the default value for a column.
-      The default values only apply to subsequent <TT
+      Default values only apply in subsequent <TT
 CLASS="COMMAND"
 >INSERT</TT
 >
-      commands; they do not cause rows already in the table to change.
-      Defaults can also be created for views, in which case they are
-      inserted into <TT
+      or <TT
 CLASS="COMMAND"
->INSERT</TT
-> statements on the view before
-      the view's <TT
-CLASS="LITERAL"
->ON INSERT</TT
-> rule is applied.
+>UPDATE</TT
+> commands; they do not cause rows already in the
+      table to change.
      </P
 ></DD
 ><DT
@@ -775,7 +770,7 @@ CLASS="LITERAL"
       it just sets the strategy to be pursued during future table updates.
       See <A
 HREF="storage-toast.html"
->Section 56.2</A
+>Section 58.2</A
 > for more information.
      </P
 ></DD
@@ -924,9 +919,16 @@ CLASS="LITERAL"
 >, by scanning the table to ensure there
       are no rows for which the constraint is not satisfied.
       Nothing happens if the constraint is already marked valid.
-      The value of separating validation from initial creation of the
-      constraint is that validation requires a lesser lock on the table
-      than constraint creation does.
+     </P
+><P
+>      Validation can be a long process on larger tables and currently requires
+      an <TT
+CLASS="LITERAL"
+>ACCESS EXCLUSIVE</TT
+> lock.  The value of separating
+      validation from initial creation is that you can defer validation to less
+      busy times, or can be used to give additional time to correct pre-existing
+      errors while preventing new errors.
      </P
 ></DD
 ><DT
@@ -1422,7 +1424,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64660"
+NAME="AEN66907"
 ></A
 ><H2
 >Parameters</H2
@@ -1682,7 +1684,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64761"
+NAME="AEN67008"
 ></A
 ><H2
 >Notes</H2
@@ -1887,7 +1889,7 @@ HREF="ddl.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64810"
+NAME="AEN67057"
 ></A
 ><H2
 >Examples</H2
@@ -2059,7 +2061,7 @@ ALTER TABLE distributors DROP CONSTRAINT distributors_pkey,
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64854"
+NAME="AEN67101"
 ></A
 ><H2
 >Compatibility</H2
@@ -2108,7 +2110,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64867"
+NAME="AEN67114"
 ></A
 ><H2
 >See Also</H2

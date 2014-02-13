@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="ALTER OPERATOR FAMILY"
 HREF="sql-alteropfamily.html"><LINK
 REL="NEXT"
-TITLE="ALTER SCHEMA"
-HREF="sql-alterschema.html"><LINK
+TITLE="ALTER RULE"
+HREF="sql-alterrule.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="ALTER SCHEMA"
-HREF="sql-alterschema.html"
+TITLE="ALTER RULE"
+HREF="sql-alterrule.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-ALTERROLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN63791"
+NAME="AEN65974"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN63791"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN63796"
+NAME="AEN65979"
 ></A
 ><H2
 >Synopsis</H2
@@ -193,12 +193,12 @@ CLASS="REPLACEABLE"
 >value</I
 ></TT
 > | DEFAULT }
-ALTER ROLE <TT
+ALTER ROLE { <TT
 CLASS="REPLACEABLE"
 ><I
 >name</I
 ></TT
-> [ IN DATABASE <TT
+> | ALL } [ IN DATABASE <TT
 CLASS="REPLACEABLE"
 ><I
 >database_name</I
@@ -209,12 +209,12 @@ CLASS="REPLACEABLE"
 >configuration_parameter</I
 ></TT
 > FROM CURRENT
-ALTER ROLE <TT
+ALTER ROLE { <TT
 CLASS="REPLACEABLE"
 ><I
 >name</I
 ></TT
-> [ IN DATABASE <TT
+> | ALL } [ IN DATABASE <TT
 CLASS="REPLACEABLE"
 ><I
 >database_name</I
@@ -225,12 +225,12 @@ CLASS="REPLACEABLE"
 >configuration_parameter</I
 ></TT
 >
-ALTER ROLE <TT
+ALTER ROLE { <TT
 CLASS="REPLACEABLE"
 ><I
 >name</I
 ></TT
-> [ IN DATABASE <TT
+> | ALL } [ IN DATABASE <TT
 CLASS="REPLACEABLE"
 ><I
 >database_name</I
@@ -240,7 +240,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN63819"
+NAME="AEN66002"
 ></A
 ><H2
 >Description</H2
@@ -306,8 +306,26 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >IN
    DATABASE</TT
-> clause is specified, only for sessions in
-   the named database. Whenever the role subsequently
+> clause is specified, only for sessions in the named
+   database.  If <TT
+CLASS="LITERAL"
+>ALL</TT
+> is specified instead of a role name,
+   this changes the setting for all roles.  Using <TT
+CLASS="LITERAL"
+>ALL</TT
+>
+   with <TT
+CLASS="LITERAL"
+>IN DATABASE</TT
+> is effectively the same as using the
+   command <TT
+CLASS="LITERAL"
+>ALTER DATABASE ... SET ...</TT
+>.
+  </P
+><P
+>   Whenever the role subsequently
    starts a new session, the specified value becomes the session
    default, overriding whatever setting is present in
    <TT
@@ -328,21 +346,25 @@ HREF="sql-set-session-authorization.html"
 > does not cause new
    configuration values to be set.
    Settings set for all databases are overridden by database-specific settings
-   attached to a role.
-   Superusers can change anyone's session defaults. Roles having
+   attached to a role.  Settings for specific databases or specific roles override
+   settings for all roles.
+  </P
+><P
+>   Superusers can change anyone's session defaults. Roles having
    <TT
 CLASS="LITERAL"
 >CREATEROLE</TT
 > privilege can change defaults for non-superuser
    roles. Ordinary roles can only set defaults for themselves.
    Certain configuration variables cannot be set this way, or can only be
-   set if a superuser issues the command.
+   set if a superuser issues the command.  Only superusers can change a setting
+   for all roles in all databases.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN63840"
+NAME="AEN66029"
 ></A
 ><H2
 >Parameters</H2
@@ -549,7 +571,7 @@ HREF="runtime-config.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN63923"
+NAME="AEN66112"
 ></A
 ><H2
 >Notes</H2
@@ -610,7 +632,7 @@ HREF="sql-alterdatabase.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN63937"
+NAME="AEN66126"
 ></A
 ><H2
 >Examples</H2
@@ -684,7 +706,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN63956"
+NAME="AEN66145"
 ></A
 ><H2
 >Compatibility</H2
@@ -702,7 +724,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN63961"
+NAME="AEN66150"
 ></A
 ><H2
 >See Also</H2
@@ -712,6 +734,9 @@ HREF="sql-createrole.html"
 >, <A
 HREF="sql-droprole.html"
 >DROP ROLE</A
+>, <A
+HREF="sql-alterdatabase.html"
+>ALTER DATABASE</A
 >, <A
 HREF="sql-set.html"
 >SET</A
@@ -750,7 +775,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="sql-alterschema.html"
+HREF="sql-alterrule.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -774,7 +799,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->ALTER SCHEMA</TD
+>ALTER RULE</TD
 ></TR
 ></TABLE
 ></DIV

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Monitoring Database Activity"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -115,22 +115,20 @@ CLASS="PRODUCTNAME"
    the configure script to make the probes available.
   </P
 ><P
->   Currently, only the
+>   Currently, the
    <A
-HREF="http://opensolaris.org/os/community/dtrace/"
+HREF="https://en.wikipedia.org/wiki/DTrace"
 TARGET="_top"
 >DTrace</A
 >
-   utility is supported, which is available
-   on OpenSolaris, Solaris 10, and Mac OS X Leopard. It is expected that
-   DTrace will be available in the future on FreeBSD and possibly other
-   operating systems.  The
+   utility is supported, which, at the time of this writing, is available
+   on Solaris, Mac OS X, FreeBSD, NetBSD, and Oracle Linux.  The
    <A
 HREF="http://sourceware.org/systemtap/"
 TARGET="_top"
 >SystemTap</A
 > project
-   for Linux also provides a DTrace equivalent.  Supporting other dynamic
+   for Linux provides a DTrace equivalent and can also be used.  Supporting other dynamic
    tracing utilities is theoretically possible by changing the definitions for
    the macros in <TT
 CLASS="FILENAME"

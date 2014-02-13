@@ -4,7 +4,7 @@
  *	  prototypes for catalog/index.c.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/catalog/index.h
@@ -59,7 +59,8 @@ extern Oid index_create(Relation heapRelation,
 			 bool initdeferred,
 			 bool allow_system_table_mods,
 			 bool skip_build,
-			 bool concurrent);
+			 bool concurrent,
+			 bool is_internal);
 
 extern void index_constraint_create(Relation heapRelation,
 						Oid indexRelationId,
@@ -71,7 +72,8 @@ extern void index_constraint_create(Relation heapRelation,
 						bool mark_as_primary,
 						bool update_pgindex,
 						bool remove_old_dependencies,
-						bool allow_system_table_mods);
+						bool allow_system_table_mods,
+						bool is_internal);
 
 extern void index_drop(Oid indexId, bool concurrent);
 

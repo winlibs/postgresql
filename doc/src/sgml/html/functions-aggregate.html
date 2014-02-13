@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -104,11 +104,11 @@ CLASS="FIRSTTERM"
    are listed in
    <A
 HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE"
->Table 9-45</A
+>Table 9-46</A
 > and
    <A
 HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
->Table 9-46</A
+>Table 9-47</A
 >.
    The special syntax considerations for aggregate
    functions are explained in <A
@@ -128,7 +128,7 @@ NAME="FUNCTIONS-AGGREGATE-TABLE"
 ></A
 ><P
 ><B
->Table 9-45. General-Purpose Aggregate Functions</B
+>Table 9-46. General-Purpose Aggregate Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -423,6 +423,34 @@ CLASS="TYPE"
 CLASS="FUNCTION"
 >bool_and</CODE
 ></TD
+></TR
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
+>json_agg(<TT
+CLASS="REPLACEABLE"
+><I
+>record</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>record</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>json</TT
+>
+      </TD
+><TD
+>aggregates records as a JSON array of objects</TD
 ></TR
 ><TR
 ><TD
@@ -730,6 +758,10 @@ CLASS="FUNCTION"
 >,
    <CODE
 CLASS="FUNCTION"
+>json_agg</CODE
+>,
+   <CODE
+CLASS="FUNCTION"
 >string_agg</CODE
 >,
    and <CODE
@@ -761,7 +793,7 @@ CLASS="SCREEN"
 ><P
 >   <A
 HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
->Table 9-46</A
+>Table 9-47</A
 > shows
    aggregate functions typically used in statistical analysis.
    (These are separated out merely to avoid cluttering the listing
@@ -788,7 +820,7 @@ NAME="FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
 ></A
 ><P
 ><B
->Table 9-46. Aggregate Functions for Statistics</B
+>Table 9-47. Aggregate Functions for Statistics</B
 ></P
 ><TABLE
 BORDER="1"

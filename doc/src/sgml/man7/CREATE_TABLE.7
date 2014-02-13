@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TABLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "CREATE TABLE" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE TABLE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -143,9 +143,7 @@ COMPATIBILITY\&.
 UNLOGGED
 .RS 4
 If specified, the table is created as an unlogged table\&. Data written to unlogged tables is not written to the write\-ahead log (see
-Chapter 29, Reliability and the Write-Ahead Log, in the documentation), which makes them considerably faster than ordinary tables\&. However, they are not crash\-safe: an unlogged table is automatically truncated after a crash or unclean shutdown\&. The contents of an unlogged table are also not replicated to standby servers\&. Any indexes created on an unlogged table are automatically unlogged as well; however, unlogged
-GiST indexes
-are currently not supported and cannot be created on an unlogged table\&.
+Chapter 29, Reliability and the Write-Ahead Log, in the documentation), which makes them considerably faster than ordinary tables\&. However, they are not crash\-safe: an unlogged table is automatically truncated after a crash or unclean shutdown\&. The contents of an unlogged table are also not replicated to standby servers\&. Any indexes created on an unlogged table are automatically unlogged as well\&.
 .RE
 .PP
 IF NOT EXISTS
@@ -231,13 +229,14 @@ is specified\&. The default behavior is to exclude default expressions, resultin
 .sp
 Not\-null constraints are always copied to the new table\&.
 CHECK
-constraints will only be copied if
+constraints will be copied only if
 INCLUDING CONSTRAINTS
-is specified; other types of constraints will never be copied\&. Also, no distinction is made between column constraints and table constraints \(em when constraints are requested, all check constraints are copied\&.
-.sp
-Any indexes on the original table will not be created on the new table, unless the
+is specified\&. Indexes,
+PRIMARY KEY, and
+UNIQUE
+constraints on the original table will be created on the new table only if the
 INCLUDING INDEXES
-clause is specified\&.
+clause is specified\&. No distinction is made between column constraints and table constraints\&.
 .sp
 STORAGE
 settings for the copied column definitions will only be copied if
@@ -247,7 +246,7 @@ STORAGE
 settings, resulting in the copied columns in the new table having type\-specific default settings\&. For more on
 STORAGE
 settings, see
-Section 56.2, \(lqTOAST\(rq, in the documentation\&.
+Section 58.2, \(lqTOAST\(rq, in the documentation\&.
 .sp
 Comments for the copied columns, constraints, and indexes will only be copied if
 INCLUDING COMMENTS
@@ -262,7 +261,7 @@ INHERITS, columns and constraints copied by
 LIKE
 are not merged with similarly named columns and constraints\&. If the same name is specified explicitly or in another
 LIKE
-clause, an error is signalled\&.
+clause, an error is signaled\&.
 .sp
 The
 LIKE
@@ -361,7 +360,7 @@ CREATE INDEX (\fBCREATE_INDEX\fR(7))\&.
 The access method must support
 amgettuple
 (see
-Chapter 52, Index Access Method Interface Definition, in the documentation); at present this means
+Chapter 54, Index Access Method Interface Definition, in the documentation); at present this means
 GIN
 cannot be used\&. Although it\*(Aqs allowed, there is little point in using B\-tree or hash indexes with an exclusion constraint, because this does nothing that an ordinary unique constraint doesn\*(Aqt do better\&. So in practice the access method will always be
 GiST
@@ -375,22 +374,25 @@ allows you to specify an exclusion constraint on a subset of the table; internal
 .PP
 REFERENCES \fIreftable\fR [ ( \fIrefcolumn\fR ) ] [ MATCH \fImatchtype\fR ] [ ON DELETE \fIaction\fR ] [ ON UPDATE \fIaction\fR ] (column constraint), FOREIGN KEY ( \fIcolumn_name\fR [, \&.\&.\&. ] ) REFERENCES \fIreftable\fR [ ( \fIrefcolumn\fR [, \&.\&.\&. ] ) ] [ MATCH \fImatchtype\fR ] [ ON DELETE \fIaction\fR ] [ ON UPDATE \fIaction\fR ] (table constraint)
 .RS 4
-These clauses specify a foreign key constraint, which requires that a group of one or more columns of the new table must only contain values that match values in the referenced column(s) of some row of the referenced table\&. If
+These clauses specify a foreign key constraint, which requires that a group of one or more columns of the new table must only contain values that match values in the referenced column(s) of some row of the referenced table\&. If the
 \fIrefcolumn\fR
-is omitted, the primary key of the
+list is omitted, the primary key of the
 \fIreftable\fR
 is used\&. The referenced columns must be the columns of a non\-deferrable unique or primary key constraint in the referenced table\&. Note that foreign key constraints cannot be defined between temporary tables and permanent tables\&.
 .sp
 A value inserted into the referencing column(s) is matched against the values of the referenced table and referenced columns using the given match type\&. There are three match types:
 MATCH FULL,
 MATCH PARTIAL, and
-MATCH SIMPLE, which is also the default\&.
-MATCH FULL
-will not allow one column of a multicolumn foreign key to be null unless all foreign key columns are null\&.
 MATCH SIMPLE
-allows some foreign key columns to be null while other parts of the foreign key are not null\&.
+(which is the default)\&.
+MATCH FULL
+will not allow one column of a multicolumn foreign key to be null unless all foreign key columns are null; if they are all null, the row is not required to have a match in the referenced table\&.
+MATCH SIMPLE
+allows any of the foreign key columns to be null; if any of them are null, the row is not required to have a match in the referenced table\&.
 MATCH PARTIAL
-is not yet implemented\&.
+is not yet implemented\&. (Of course,
+NOT NULL
+constraints can be applied to the referencing column(s) to prevent these cases from arising\&.)
 .sp
 In addition, when the data in the referenced columns is changed, certain actions are performed on the data in this table\*(Aqs columns\&. The
 ON DELETE
@@ -414,7 +416,7 @@ except that the check is not deferrable\&.
 .PP
 CASCADE
 .RS 4
-Delete any rows referencing the deleted row, or update the value of the referencing column to the new value of the referenced column, respectively\&.
+Delete any rows referencing the deleted row, or update the values of the referencing column(s) to the new values of the referenced columns, respectively\&.
 .RE
 .PP
 SET NULL
@@ -424,10 +426,10 @@ Set the referencing column(s) to null\&.
 .PP
 SET DEFAULT
 .RS 4
-Set the referencing column(s) to their default values\&.
+Set the referencing column(s) to their default values\&. (There must be a row in the referenced table matching the default values, if they are not null, or the operation will fail\&.)
 .RE
 .sp
-If the referenced column(s) are changed frequently, it might be wise to add an index to the foreign key column so that referential actions associated with the foreign key column can be performed more efficiently\&.
+If the referenced column(s) are changed frequently, it might be wise to add an index to the referencing column(s) so that referential actions associated with the foreign key constraint can be performed more efficiently\&.
 .RE
 .PP
 DEFERRABLE, NOT DEFERRABLE
@@ -559,7 +561,7 @@ CREATE INDEX (\fBCREATE_INDEX\fR(7))\&. The storage parameters currently availab
 toast\&., which can be used to control the behavior of the table\*(Aqs secondary
 TOAST
 table, if any (see
-Section 56.2, \(lqTOAST\(rq, in the documentation
+Section 58.2, \(lqTOAST\(rq, in the documentation
 for more information about TOAST)\&. Note that the TOAST table inherits the
 autovacuum_*
 values from its parent table, if there are no
@@ -1104,4 +1106,4 @@ are extensions\&.
 Typed tables implement a subset of the SQL standard\&. According to the standard, a typed table has columns corresponding to the underlying composite type as well as one other column that is the
 \(lqself\-referencing column\(rq\&. PostgreSQL does not support these self\-referencing columns explicitly, but the same effect can be had using the OID feature\&.
 .SH "SEE ALSO"
-ALTER TABLE (\fBALTER_TABLE\fR(7)), DROP TABLE (\fBDROP_TABLE\fR(7)), CREATE TABLESPACE (\fBCREATE_TABLESPACE\fR(7)), CREATE TYPE (\fBCREATE_TYPE\fR(7))
+ALTER TABLE (\fBALTER_TABLE\fR(7)), DROP TABLE (\fBDROP_TABLE\fR(7)), CREATE TABLE AS (\fBCREATE_TABLE_AS\fR(7)), CREATE TABLESPACE (\fBCREATE_TABLESPACE\fR(7)), CREATE TYPE (\fBCREATE_TYPE\fR(7))

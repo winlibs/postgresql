@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -575,7 +575,7 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->        Abort any statement that takes over the specified number of
+>        Abort any statement that takes more than the specified number of
         milliseconds, starting from the time the command arrives at the server
         from the client.  If <TT
 CLASS="VARNAME"
@@ -595,8 +595,74 @@ CLASS="VARNAME"
         <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
-> is not recommended because it
-        affects all sessions.
+> is not recommended because it would
+        affect all sessions.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-LOCK-TIMEOUT"
+></A
+><TT
+CLASS="VARNAME"
+>lock_timeout</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</DT
+><DD
+><P
+>        Abort any statement that waits longer than the specified number of
+        milliseconds while attempting to acquire a lock on a table, index,
+        row, or other database object.  The time limit applies separately to
+        each lock acquisition attempt.  The limit applies both to explicit
+        locking requests (such as <TT
+CLASS="COMMAND"
+>LOCK TABLE</TT
+>, or <TT
+CLASS="COMMAND"
+>SELECT
+        FOR UPDATE</TT
+> without <TT
+CLASS="LITERAL"
+>NOWAIT</TT
+>) and to implicitly-acquired
+        locks.  If <TT
+CLASS="VARNAME"
+>log_min_error_statement</TT
+> is set to
+        <TT
+CLASS="LITERAL"
+>ERROR</TT
+> or lower, the statement that timed out will be
+        logged.  A value of zero (the default) turns this off.
+       </P
+><P
+>        Unlike <TT
+CLASS="VARNAME"
+>statement_timeout</TT
+>, this timeout can only occur
+        while waiting for locks.  Note that if <TT
+CLASS="VARNAME"
+>statement_timeout</TT
+>
+        is nonzero, it is rather pointless to set <TT
+CLASS="VARNAME"
+>lock_timeout</TT
+> to
+        the same or larger value, since the statement timeout would always
+        trigger first.
+       </P
+><P
+>        Setting <TT
+CLASS="VARNAME"
+>lock_timeout</TT
+> in
+        <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> is not recommended because it would
+        affect all sessions.
        </P
 ></DD
 ><DT
@@ -1092,6 +1158,10 @@ CLASS="LITERAL"
         partially-significant digits; this is especially useful for dumping
         float data that needs to be restored exactly.  Or it can be set
         negative to suppress unwanted digits.
+        See also <A
+HREF="datatype-numeric.html#DATATYPE-FLOAT"
+>Section 8.1.3</A
+>.
        </P
 ></DD
 ><DT
@@ -1389,7 +1459,7 @@ CLASS="TYPE"
 >        Soft upper limit of the size of the set returned by GIN index scans. For more
         information see <A
 HREF="gin-tips.html"
->Section 55.4</A
+>Section 57.4</A
 >.
        </P
 ></DD

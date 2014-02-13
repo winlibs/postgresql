@@ -4,7 +4,7 @@
  *	  WAL replay logic for SP-GiST
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -84,7 +84,6 @@ spgRedoCreateIndex(XLogRecPtr lsn, XLogRecord *record)
 	page = (Page) BufferGetPage(buffer);
 	SpGistInitMetapage(page);
 	PageSetLSN(page, lsn);
-	PageSetTLI(page, ThisTimeLineID);
 	MarkBufferDirty(buffer);
 	UnlockReleaseBuffer(buffer);
 
@@ -93,7 +92,6 @@ spgRedoCreateIndex(XLogRecPtr lsn, XLogRecord *record)
 	SpGistInitBuffer(buffer, SPGIST_LEAF);
 	page = (Page) BufferGetPage(buffer);
 	PageSetLSN(page, lsn);
-	PageSetTLI(page, ThisTimeLineID);
 	MarkBufferDirty(buffer);
 	UnlockReleaseBuffer(buffer);
 
@@ -102,7 +100,6 @@ spgRedoCreateIndex(XLogRecPtr lsn, XLogRecord *record)
 	SpGistInitBuffer(buffer, SPGIST_LEAF | SPGIST_NULLS);
 	page = (Page) BufferGetPage(buffer);
 	PageSetLSN(page, lsn);
-	PageSetTLI(page, ThisTimeLineID);
 	MarkBufferDirty(buffer);
 	UnlockReleaseBuffer(buffer);
 }
@@ -139,7 +136,7 @@ spgRedoAddLeaf(XLogRecPtr lsn, XLogRecord *record)
 				SpGistInitBuffer(buffer,
 					 SPGIST_LEAF | (xldata->storesNulls ? SPGIST_NULLS : 0));
 
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				/* insert new tuple */
 				if (xldata->offnumLeaf != xldata->offnumHeadLeaf)
@@ -171,7 +168,6 @@ spgRedoAddLeaf(XLogRecPtr lsn, XLogRecord *record)
 				}
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 			UnlockReleaseBuffer(buffer);
@@ -187,7 +183,7 @@ spgRedoAddLeaf(XLogRecPtr lsn, XLogRecord *record)
 		if (BufferIsValid(buffer))
 		{
 			page = BufferGetPage(buffer);
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				SpGistInnerTuple tuple;
 
@@ -198,7 +194,6 @@ spgRedoAddLeaf(XLogRecPtr lsn, XLogRecord *record)
 								  xldata->blknoLeaf, xldata->offnumLeaf);
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 			UnlockReleaseBuffer(buffer);
@@ -251,7 +246,7 @@ spgRedoMoveLeafs(XLogRecPtr lsn, XLogRecord *record)
 				SpGistInitBuffer(buffer,
 					 SPGIST_LEAF | (xldata->storesNulls ? SPGIST_NULLS : 0));
 
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				int			i;
 
@@ -264,7 +259,6 @@ spgRedoMoveLeafs(XLogRecPtr lsn, XLogRecord *record)
 				}
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 			UnlockReleaseBuffer(buffer);
@@ -280,7 +274,7 @@ spgRedoMoveLeafs(XLogRecPtr lsn, XLogRecord *record)
 		if (BufferIsValid(buffer))
 		{
 			page = BufferGetPage(buffer);
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				spgPageIndexMultiDelete(&state, page, toDelete, xldata->nMoves,
 						state.isBuild ? SPGIST_PLACEHOLDER : SPGIST_REDIRECT,
@@ -289,7 +283,6 @@ spgRedoMoveLeafs(XLogRecPtr lsn, XLogRecord *record)
 										toInsert[nInsert - 1]);
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 			UnlockReleaseBuffer(buffer);
@@ -305,7 +298,7 @@ spgRedoMoveLeafs(XLogRecPtr lsn, XLogRecord *record)
 		if (BufferIsValid(buffer))
 		{
 			page = BufferGetPage(buffer);
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				SpGistInnerTuple tuple;
 
@@ -316,7 +309,6 @@ spgRedoMoveLeafs(XLogRecPtr lsn, XLogRecord *record)
 								  xldata->blknoDst, toInsert[nInsert - 1]);
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 			UnlockReleaseBuffer(buffer);
@@ -353,7 +345,7 @@ spgRedoAddNode(XLogRecPtr lsn, XLogRecord *record)
 			if (BufferIsValid(buffer))
 			{
 				page = BufferGetPage(buffer);
-				if (!XLByteLE(lsn, PageGetLSN(page)))
+				if (lsn > PageGetLSN(page))
 				{
 					PageIndexTupleDelete(page, xldata->offnum);
 					if (PageAddItem(page, (Item) innerTuple, innerTuple->size,
@@ -363,7 +355,6 @@ spgRedoAddNode(XLogRecPtr lsn, XLogRecord *record)
 							 innerTuple->size);
 
 					PageSetLSN(page, lsn);
-					PageSetTLI(page, ThisTimeLineID);
 					MarkBufferDirty(buffer);
 				}
 				UnlockReleaseBuffer(buffer);
@@ -399,7 +390,7 @@ spgRedoAddNode(XLogRecPtr lsn, XLogRecord *record)
 				if (xldata->newPage)
 					SpGistInitBuffer(buffer, 0);
 
-				if (!XLByteLE(lsn, PageGetLSN(page)))
+				if (lsn > PageGetLSN(page))
 				{
 					addOrReplaceTuple(page, (Item) innerTuple,
 									  innerTuple->size, xldata->offnumNew);
@@ -413,7 +404,6 @@ spgRedoAddNode(XLogRecPtr lsn, XLogRecord *record)
 					if (xldata->blknoParent != xldata->blknoNew)
 					{
 						PageSetLSN(page, lsn);
-						PageSetTLI(page, ThisTimeLineID);
 					}
 					MarkBufferDirty(buffer);
 				}
@@ -430,7 +420,7 @@ spgRedoAddNode(XLogRecPtr lsn, XLogRecord *record)
 			if (BufferIsValid(buffer))
 			{
 				page = BufferGetPage(buffer);
-				if (!XLByteLE(lsn, PageGetLSN(page)))
+				if (lsn > PageGetLSN(page))
 				{
 					SpGistDeadTuple dt;
 
@@ -464,7 +454,6 @@ spgRedoAddNode(XLogRecPtr lsn, XLogRecord *record)
 					if (xldata->blknoParent != xldata->blkno)
 					{
 						PageSetLSN(page, lsn);
-						PageSetTLI(page, ThisTimeLineID);
 					}
 					MarkBufferDirty(buffer);
 				}
@@ -495,7 +484,7 @@ spgRedoAddNode(XLogRecPtr lsn, XLogRecord *record)
 			if (BufferIsValid(buffer))
 			{
 				page = BufferGetPage(buffer);
-				if (!XLByteLE(lsn, PageGetLSN(page)))
+				if (lsn > PageGetLSN(page))
 				{
 					SpGistInnerTuple innerTuple;
 
@@ -506,7 +495,6 @@ spgRedoAddNode(XLogRecPtr lsn, XLogRecord *record)
 									  xldata->blknoNew, xldata->offnumNew);
 
 					PageSetLSN(page, lsn);
-					PageSetTLI(page, ThisTimeLineID);
 					MarkBufferDirty(buffer);
 				}
 				UnlockReleaseBuffer(buffer);
@@ -552,13 +540,12 @@ spgRedoSplitTuple(XLogRecPtr lsn, XLogRecord *record)
 			if (xldata->newPage)
 				SpGistInitBuffer(buffer, 0);
 
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				addOrReplaceTuple(page, (Item) postfixTuple,
 								  postfixTuple->size, xldata->offnumPostfix);
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 			UnlockReleaseBuffer(buffer);
@@ -574,7 +561,7 @@ spgRedoSplitTuple(XLogRecPtr lsn, XLogRecord *record)
 		if (BufferIsValid(buffer))
 		{
 			page = BufferGetPage(buffer);
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				PageIndexTupleDelete(page, xldata->offnumPrefix);
 				if (PageAddItem(page, (Item) prefixTuple, prefixTuple->size,
@@ -588,7 +575,6 @@ spgRedoSplitTuple(XLogRecPtr lsn, XLogRecord *record)
 									  xldata->offnumPostfix);
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 			UnlockReleaseBuffer(buffer);
@@ -670,7 +656,7 @@ spgRedoPickSplit(XLogRecPtr lsn, XLogRecord *record)
 			if (BufferIsValid(srcBuffer))
 			{
 				srcPage = BufferGetPage(srcBuffer);
-				if (!XLByteLE(lsn, PageGetLSN(srcPage)))
+				if (lsn > PageGetLSN(srcPage))
 				{
 					/*
 					 * We have it a bit easier here than in doPickSplit(),
@@ -737,7 +723,7 @@ spgRedoPickSplit(XLogRecPtr lsn, XLogRecord *record)
 			if (BufferIsValid(destBuffer))
 			{
 				destPage = (Page) BufferGetPage(destBuffer);
-				if (XLByteLE(lsn, PageGetLSN(destPage)))
+				if (lsn <= PageGetLSN(destPage))
 					destPage = NULL;	/* don't do any page updates */
 			}
 			else
@@ -764,13 +750,11 @@ spgRedoPickSplit(XLogRecPtr lsn, XLogRecord *record)
 	if (srcPage != NULL)
 	{
 		PageSetLSN(srcPage, lsn);
-		PageSetTLI(srcPage, ThisTimeLineID);
 		MarkBufferDirty(srcBuffer);
 	}
 	if (destPage != NULL)
 	{
 		PageSetLSN(destPage, lsn);
-		PageSetTLI(destPage, ThisTimeLineID);
 		MarkBufferDirty(destBuffer);
 	}
 
@@ -790,7 +774,7 @@ spgRedoPickSplit(XLogRecPtr lsn, XLogRecord *record)
 				SpGistInitBuffer(buffer,
 								 (xldata->storesNulls ? SPGIST_NULLS : 0));
 
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				addOrReplaceTuple(page, (Item) innerTuple, innerTuple->size,
 								  xldata->offnumInner);
@@ -807,7 +791,6 @@ spgRedoPickSplit(XLogRecPtr lsn, XLogRecord *record)
 				}
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 			UnlockReleaseBuffer(buffer);
@@ -842,7 +825,7 @@ spgRedoPickSplit(XLogRecPtr lsn, XLogRecord *record)
 			{
 				page = BufferGetPage(buffer);
 
-				if (!XLByteLE(lsn, PageGetLSN(page)))
+				if (lsn > PageGetLSN(page))
 				{
 					SpGistInnerTuple parent;
 
@@ -852,7 +835,6 @@ spgRedoPickSplit(XLogRecPtr lsn, XLogRecord *record)
 									xldata->blknoInner, xldata->offnumInner);
 
 					PageSetLSN(page, lsn);
-					PageSetTLI(page, ThisTimeLineID);
 					MarkBufferDirty(buffer);
 				}
 				UnlockReleaseBuffer(buffer);
@@ -900,7 +882,7 @@ spgRedoVacuumLeaf(XLogRecPtr lsn, XLogRecord *record)
 		if (BufferIsValid(buffer))
 		{
 			page = BufferGetPage(buffer);
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				spgPageIndexMultiDelete(&state, page,
 										toDead, xldata->nDead,
@@ -943,7 +925,6 @@ spgRedoVacuumLeaf(XLogRecPtr lsn, XLogRecord *record)
 				}
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 			UnlockReleaseBuffer(buffer);
@@ -971,13 +952,12 @@ spgRedoVacuumRoot(XLogRecPtr lsn, XLogRecord *record)
 		if (BufferIsValid(buffer))
 		{
 			page = BufferGetPage(buffer);
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				/* The tuple numbers are in order */
 				PageIndexMultiDelete(page, toDelete, xldata->nDelete);
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 			UnlockReleaseBuffer(buffer);
@@ -1017,7 +997,7 @@ spgRedoVacuumRedirect(XLogRecPtr lsn, XLogRecord *record)
 		if (BufferIsValid(buffer))
 		{
 			page = BufferGetPage(buffer);
-			if (!XLByteLE(lsn, PageGetLSN(page)))
+			if (lsn > PageGetLSN(page))
 			{
 				SpGistPageOpaque opaque = SpGistPageGetOpaque(page);
 				int			i;
@@ -1060,7 +1040,6 @@ spgRedoVacuumRedirect(XLogRecPtr lsn, XLogRecord *record)
 				}
 
 				PageSetLSN(page, lsn);
-				PageSetTLI(page, ThisTimeLineID);
 				MarkBufferDirty(buffer);
 			}
 
@@ -1111,78 +1090,6 @@ spg_redo(XLogRecPtr lsn, XLogRecord *record)
 
 	MemoryContextSwitchTo(oldCxt);
 	MemoryContextReset(opCtx);
-}
-
-static void
-out_target(StringInfo buf, RelFileNode node)
-{
-	appendStringInfo(buf, "rel %u/%u/%u ",
-					 node.spcNode, node.dbNode, node.relNode);
-}
-
-void
-spg_desc(StringInfo buf, uint8 xl_info, char *rec)
-{
-	uint8		info = xl_info & ~XLR_INFO_MASK;
-
-	switch (info)
-	{
-		case XLOG_SPGIST_CREATE_INDEX:
-			appendStringInfo(buf, "create_index: rel %u/%u/%u",
-							 ((RelFileNode *) rec)->spcNode,
-							 ((RelFileNode *) rec)->dbNode,
-							 ((RelFileNode *) rec)->relNode);
-			break;
-		case XLOG_SPGIST_ADD_LEAF:
-			out_target(buf, ((spgxlogAddLeaf *) rec)->node);
-			appendStringInfo(buf, "add leaf to page: %u",
-							 ((spgxlogAddLeaf *) rec)->blknoLeaf);
-			break;
-		case XLOG_SPGIST_MOVE_LEAFS:
-			out_target(buf, ((spgxlogMoveLeafs *) rec)->node);
-			appendStringInfo(buf, "move %u leafs from page %u to page %u",
-							 ((spgxlogMoveLeafs *) rec)->nMoves,
-							 ((spgxlogMoveLeafs *) rec)->blknoSrc,
-							 ((spgxlogMoveLeafs *) rec)->blknoDst);
-			break;
-		case XLOG_SPGIST_ADD_NODE:
-			out_target(buf, ((spgxlogAddNode *) rec)->node);
-			appendStringInfo(buf, "add node to %u:%u",
-							 ((spgxlogAddNode *) rec)->blkno,
-							 ((spgxlogAddNode *) rec)->offnum);
-			break;
-		case XLOG_SPGIST_SPLIT_TUPLE:
-			out_target(buf, ((spgxlogSplitTuple *) rec)->node);
-			appendStringInfo(buf, "split node %u:%u to %u:%u",
-							 ((spgxlogSplitTuple *) rec)->blknoPrefix,
-							 ((spgxlogSplitTuple *) rec)->offnumPrefix,
-							 ((spgxlogSplitTuple *) rec)->blknoPostfix,
-							 ((spgxlogSplitTuple *) rec)->offnumPostfix);
-			break;
-		case XLOG_SPGIST_PICKSPLIT:
-			out_target(buf, ((spgxlogPickSplit *) rec)->node);
-			appendStringInfo(buf, "split leaf page");
-			break;
-		case XLOG_SPGIST_VACUUM_LEAF:
-			out_target(buf, ((spgxlogVacuumLeaf *) rec)->node);
-			appendStringInfo(buf, "vacuum leaf tuples on page %u",
-							 ((spgxlogVacuumLeaf *) rec)->blkno);
-			break;
-		case XLOG_SPGIST_VACUUM_ROOT:
-			out_target(buf, ((spgxlogVacuumRoot *) rec)->node);
-			appendStringInfo(buf, "vacuum leaf tuples on root page %u",
-							 ((spgxlogVacuumRoot *) rec)->blkno);
-			break;
-		case XLOG_SPGIST_VACUUM_REDIRECT:
-			out_target(buf, ((spgxlogVacuumRedirect *) rec)->node);
-			appendStringInfo(buf, "vacuum redirect tuples on page %u, newest XID %u",
-							 ((spgxlogVacuumRedirect *) rec)->blkno,
-						 ((spgxlogVacuumRedirect *) rec)->newestRedirectXid);
-			break;
-		default:
-			appendStringInfo(buf, "unknown spgist op code %u", info);
-			break;
-	}
 }
 
 void

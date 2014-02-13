@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="APP-PGRESTORE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN82787"
+NAME="AEN85901"
 ></A
 ><H2
 >Name</H2
@@ -111,7 +111,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN82794"
+NAME="AEN85908"
 ></A
 ><H2
 >Synopsis</H2
@@ -552,8 +552,9 @@ CLASS="APPLICATION"
         lead to decreased performance because of thrashing.
        </P
 ><P
->        Only the custom archive format is supported with this option.
-        The input file must be a regular file (not, for example, a
+>        Only the custom and directory archive formats are supported
+        with this option.
+        The input must be a regular file or directory (not, for example, a
         pipe).  This option is ignored when emitting a script rather
         than connecting directly to a database server.  Also, multiple
         jobs cannot be used together with the
@@ -808,7 +809,7 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        Specify the superuser user name to use when disabling triggers.
-        This is only relevant if <TT
+        This is relevant only if <TT
 CLASS="OPTION"
 >--disable-triggers</TT
 > is used.
@@ -834,7 +835,11 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Restore definition and/or data of named table only.  This can be
+>        Restore definition and/or data of named table only. Multiple tables
+        may be specified with multiple <TT
+CLASS="OPTION"
+>-t</TT
+> switches. This can be
         combined with the <TT
 CLASS="OPTION"
 >-n</TT
@@ -942,7 +947,7 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->        This option is only relevant when performing a data-only restore.
+>        This option is relevant only when performing a data-only restore.
         It instructs <SPAN
 CLASS="APPLICATION"
 >pg_restore</SPAN
@@ -957,12 +962,12 @@ CLASS="APPLICATION"
         <TT
 CLASS="OPTION"
 >--disable-triggers</TT
-> must be done as superuser.  So, you
+> must be done as superuser.  So you
         should also specify a superuser name with <TT
 CLASS="OPTION"
 >-S</TT
->, or
-        preferably run <SPAN
+> or,
+        preferably, run <SPAN
 CLASS="APPLICATION"
 >pg_restore</SPAN
 > as a
@@ -1296,7 +1301,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83208"
+NAME="AEN86323"
 ></A
 ><H2
 >Environment</H2
@@ -1338,7 +1343,11 @@ CLASS="APPLICATION"
    (see <A
 HREF="libpq-envars.html"
 >Section 31.14</A
->).
+>).  However, it does not read
+   <TT
+CLASS="ENVAR"
+>PGDATABASE</TT
+> when a database name is not supplied.
   </P
 ></DIV
 ><DIV
@@ -1657,7 +1666,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83301"
+NAME="AEN86417"
 ></A
 ><H2
 >See Also</H2

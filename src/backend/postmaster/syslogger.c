@@ -13,7 +13,7 @@
  *
  * Author: Andreas Pflug <pgadmin@pse-consulting.de>
  *
- * Copyright (c) 2004-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2004-2013, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -141,6 +141,7 @@ static volatile sig_atomic_t rotation_requested = false;
 static pid_t syslogger_forkexec(void);
 static void syslogger_parseArgs(int argc, char *argv[]);
 #endif
+NON_EXEC_STATIC void SysLoggerMain(int argc, char *argv[]) __attribute__((noreturn));
 static void process_pipe_input(char *logbuffer, int *bytes_in_logbuffer);
 static void flush_pipe_input(char *logbuffer, int *bytes_in_logbuffer);
 static void open_csvlogfile(void);
@@ -251,7 +252,7 @@ SysLoggerMain(int argc, char *argv[])
 		elog(FATAL, "setsid() failed: %m");
 #endif
 
-	InitializeLatchSupport();		/* needed for latch waits */
+	InitializeLatchSupport();	/* needed for latch waits */
 
 	/* Initialize private latch for use by signal handlers */
 	InitLatch(&sysLoggerLatch);
@@ -582,8 +583,8 @@ SysLogger_Start(void)
 
 	/*
 	 * The initial logfile is created right in the postmaster, to verify that
-	 * the Log_directory is writable.  We save the reference time so that
-	 * the syslogger child process can recompute this file name.
+	 * the Log_directory is writable.  We save the reference time so that the
+	 * syslogger child process can recompute this file name.
 	 *
 	 * It might look a bit strange to re-do this during a syslogger restart,
 	 * but we must do so since the postmaster closed syslogFile after the
@@ -633,6 +634,20 @@ SysLogger_Start(void)
 			/* now we redirect stderr, if not done already */
 			if (!redirection_done)
 			{
+#ifdef WIN32
+				int			fd;
+#endif
+
+				/*
+				 * Leave a breadcrumb trail when redirecting, in case the user
+				 * forgets that redirection is active and looks only at the
+				 * original stderr target file.
+				 */
+				ereport(LOG,
+						(errmsg("redirecting log output to logging collector process"),
+						 errhint("Future log output will appear in directory \"%s\".",
+								 Log_directory)));
+
 #ifndef WIN32
 				fflush(stdout);
 				if (dup2(syslogPipe[1], fileno(stdout)) < 0)
@@ -648,8 +663,6 @@ SysLogger_Start(void)
 				close(syslogPipe[1]);
 				syslogPipe[1] = -1;
 #else
-				int			fd;
-
 				/*
 				 * open the pipe in binary mode and make sure stderr is binary
 				 * after it's been dup'ed into, to avoid disturbing the pipe
@@ -1057,6 +1070,17 @@ pipeThread(void *arg)
 		{
 			bytes_in_logbuffer += bytesRead;
 			process_pipe_input(logbuffer, &bytes_in_logbuffer);
+		}
+
+		/*
+		 * If we've filled the current logfile, nudge the main thread to do a
+		 * log rotation.
+		 */
+		if (Log_RotationSize > 0)
+		{
+			if (ftell(syslogFile) >= Log_RotationSize * 1024L ||
+				(csvlogFile != NULL && ftell(csvlogFile) >= Log_RotationSize * 1024L))
+				SetLatch(&sysLoggerLatch);
 		}
 		LeaveCriticalSection(&sysloggerSection);
 	}

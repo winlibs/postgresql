@@ -4,7 +4,7 @@
  *	  XML data type support.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/backend/utils/adt/xml.c
@@ -67,6 +67,7 @@
 #endif
 #endif   /* USE_LIBXML */
 
+#include "access/htup_details.h"
 #include "catalog/namespace.h"
 #include "catalog/pg_type.h"
 #include "commands/dbcommands.h"
@@ -1498,7 +1499,7 @@ xml_pstrdup(const char *string)
 /*
  * xmlPgEntityLoader --- entity loader callback function
  *
- * Silently prevent any external entity URL from being loaded.  We don't want
+ * Silently prevent any external entity URL from being loaded.	We don't want
  * to throw an error, so instead make the entity appear to expand to an empty
  * string.
  *
@@ -1608,6 +1609,7 @@ xml_errorHandler(void *data, xmlErrorPtr error)
 		case XML_FROM_NONE:
 		case XML_FROM_MEMORY:
 		case XML_FROM_IO:
+
 			/*
 			 * Suppress warnings about undeclared entities.  We need to do
 			 * this to avoid problems due to not loading DTD definitions.
@@ -2001,6 +2003,12 @@ map_sql_value_to_xml_value(Datum value, Oid type, bool xml_escape_strings)
 		char	   *str;
 
 		/*
+		 * Flatten domains; the special-case treatments below should apply to,
+		 * eg, domains over boolean not just boolean.
+		 */
+		type = getBaseType(type);
+
+		/*
 		 * Special XSD formatting for some data types
 		 */
 		switch (type)
@@ -2284,7 +2292,7 @@ schema_get_xml_visible_tables(Oid nspid)
 	StringInfoData query;
 
 	initStringInfo(&query);
-	appendStringInfo(&query, "SELECT oid FROM pg_catalog.pg_class WHERE relnamespace = %u AND relkind IN ('r', 'v') AND pg_catalog.has_table_privilege (oid, 'SELECT') ORDER BY relname;", nspid);
+	appendStringInfo(&query, "SELECT oid FROM pg_catalog.pg_class WHERE relnamespace = %u AND relkind IN ('r', 'm', 'v') AND pg_catalog.has_table_privilege (oid, 'SELECT') ORDER BY relname;", nspid);
 
 	return query_to_oid_list(query.data);
 }
@@ -2310,7 +2318,7 @@ static List *
 database_get_xml_visible_tables(void)
 {
 	/* At the moment there is no order required here. */
-	return query_to_oid_list("SELECT oid FROM pg_catalog.pg_class WHERE relkind IN ('r', 'v') AND pg_catalog.has_table_privilege (pg_class.oid, 'SELECT') AND relnamespace IN (" XML_VISIBLE_SCHEMAS ");");
+	return query_to_oid_list("SELECT oid FROM pg_catalog.pg_class WHERE relkind IN ('r', 'm', 'v') AND pg_catalog.has_table_privilege (pg_class.oid, 'SELECT') AND relnamespace IN (" XML_VISIBLE_SCHEMAS ");");
 }
 
 
@@ -2432,7 +2440,7 @@ xmldata_root_element_start(StringInfo result, const char *eltname,
 		else
 			appendStringInfo(result, " xsi:noNamespaceSchemaLocation=\"#\"");
 	}
-	appendStringInfo(result, ">\n\n");
+	appendStringInfo(result, ">\n");
 }
 
 
@@ -2466,8 +2474,11 @@ query_to_xml_internal(const char *query, char *tablename,
 				 errmsg("invalid query")));
 
 	if (!tableforest)
+	{
 		xmldata_root_element_start(result, xmltn, xmlschema,
 								   targetns, top_level);
+		appendStringInfoString(result, "\n");
+	}
 
 	if (xmlschema)
 		appendStringInfo(result, "%s\n\n", xmlschema);
@@ -2630,6 +2641,7 @@ schema_to_xml_internal(Oid nspid, const char *xmlschema, bool nulls,
 	result = makeStringInfo();
 
 	xmldata_root_element_start(result, xmlsn, xmlschema, targetns, top_level);
+	appendStringInfoString(result, "\n");
 
 	if (xmlschema)
 		appendStringInfo(result, "%s\n\n", xmlschema);
@@ -2673,7 +2685,7 @@ schema_to_xml(PG_FUNCTION_ARGS)
 	Oid			nspid;
 
 	schemaname = NameStr(*name);
-	nspid = LookupExplicitNamespace(schemaname);
+	nspid = LookupExplicitNamespace(schemaname, false);
 
 	PG_RETURN_XML_P(stringinfo_to_xmltype(schema_to_xml_internal(nspid, NULL,
 									   nulls, tableforest, targetns, true)));
@@ -2719,7 +2731,7 @@ schema_to_xmlschema_internal(const char *schemaname, bool nulls,
 
 	result = makeStringInfo();
 
-	nspid = LookupExplicitNamespace(schemaname);
+	nspid = LookupExplicitNamespace(schemaname, false);
 
 	xsd_schema_element_start(result, targetns);
 
@@ -2777,7 +2789,7 @@ schema_to_xml_and_xmlschema(PG_FUNCTION_ARGS)
 	StringInfo	xmlschema;
 
 	schemaname = NameStr(*name);
-	nspid = LookupExplicitNamespace(schemaname);
+	nspid = LookupExplicitNamespace(schemaname, false);
 
 	xmlschema = schema_to_xmlschema_internal(schemaname, nulls,
 											 tableforest, targetns);
@@ -2807,6 +2819,7 @@ database_to_xml_internal(const char *xmlschema, bool nulls,
 	result = makeStringInfo();
 
 	xmldata_root_element_start(result, xmlcn, xmlschema, targetns, true);
+	appendStringInfoString(result, "\n");
 
 	if (xmlschema)
 		appendStringInfo(result, "%s\n\n", xmlschema);

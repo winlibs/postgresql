@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-COMMENT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN66091"
+NAME="AEN68341"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN66091"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN66096"
+NAME="AEN68346"
 ></A
 ><H2
 >Synopsis</H2
@@ -185,6 +185,12 @@ CLASS="REPLACEABLE"
 >object_name</I
 ></TT
 > |
+  EVENT TRIGGER <TT
+CLASS="REPLACEABLE"
+><I
+>object_name</I
+></TT
+> |
   FOREIGN DATA WRAPPER <TT
 CLASS="REPLACEABLE"
 ><I
@@ -228,6 +234,12 @@ CLASS="REPLACEABLE"
 CLASS="REPLACEABLE"
 ><I
 >large_object_oid</I
+></TT
+> |
+  MATERIALIZED VIEW <TT
+CLASS="REPLACEABLE"
+><I
+>object_name</I
 ></TT
 > |
   OPERATOR <TT
@@ -378,7 +390,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66144"
+NAME="AEN68396"
 ></A
 ><H2
 >Description</H2
@@ -440,14 +452,14 @@ CLASS="FUNCTION"
 >
     (see <A
 HREF="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE"
->Table 9-54</A
+>Table 9-55</A
 >).
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66162"
+NAME="AEN68414"
 ></A
 ><H2
 >Parameters</H2
@@ -706,7 +718,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66252"
+NAME="AEN68504"
 ></A
 ><H2
 >Notes</H2
@@ -723,7 +735,7 @@ NAME="AEN66252"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66255"
+NAME="AEN68507"
 ></A
 ><H2
 >Examples</H2
@@ -765,6 +777,7 @@ COMMENT ON FUNCTION my_function (timestamp) IS 'Returns Roman Numeral';
 COMMENT ON INDEX my_index IS 'Enforces uniqueness on employee ID';
 COMMENT ON LANGUAGE plpython IS 'Python support for stored procedures';
 COMMENT ON LARGE OBJECT 346344 IS 'Planning document';
+COMMENT ON MATERIALIZED VIEW my_matview IS 'Summary of order history';
 COMMENT ON OPERATOR ^ (text, text) IS 'Performs intersection of two texts';
 COMMENT ON OPERATOR - (NONE, integer) IS 'Unary minus';
 COMMENT ON OPERATOR CLASS int4ops USING btree IS '4 byte integer operators for btrees';
@@ -788,7 +801,7 @@ COMMENT ON VIEW my_view IS 'View of departmental costs';</PRE
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66263"
+NAME="AEN68515"
 ></A
 ><H2
 >Compatibility</H2

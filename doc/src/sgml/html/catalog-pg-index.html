@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 45. System Catalogs</TD
+>Chapter 47. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOG-PG-INDEX"
->45.25. <TT
+>47.26. <TT
 CLASS="STRUCTNAME"
 >pg_index</TT
 ></A
@@ -112,11 +112,11 @@ CLASS="STRUCTNAME"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN90450"
+NAME="AEN93880"
 ></A
 ><P
 ><B
->Table 45-25. <TT
+>Table 47-26. <TT
 CLASS="STRUCTNAME"
 >pg_index</TT
 > Columns</B
@@ -316,11 +316,7 @@ CLASS="TYPE"
 ><TD
 >&nbsp;</TD
 ><TD
->       If both this flag and <TT
-CLASS="STRUCTFIELD"
->indisready</TT
-> are
-       true, the index is currently valid for queries.  False means the
+>       If true, the index is currently valid for queries.  False means the
        index is possibly incomplete: it must still be modified by
        <TT
 CLASS="COMMAND"
@@ -385,6 +381,24 @@ CLASS="COMMAND"
 >UPDATE</TT
 >
        operations.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>indislive</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bool</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>       If false, the index is in process of being dropped, and should be
+       ignored for all purposes (including HOT-safety decisions)
       </TD
 ></TR
 ><TR

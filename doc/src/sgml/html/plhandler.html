@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Internals"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="CHAPTER"
 ><A
 NAME="PLHANDLER"
 ></A
->Chapter 49. Writing A Procedural Language Handler</H1
+>Chapter 51. Writing A Procedural Language Handler</H1
 ><P
 >    All calls to functions that are written in a language other than
     the current <SPAN
@@ -411,6 +411,25 @@ CLASS="APPLICATION"
 CLASS="COMMAND"
 >CREATE FUNCTION</TT
 > command.)
+    While the choice of exactly what to check is mostly left to the
+    discretion of the validator function, note that the core
+    <TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+> code only executes <TT
+CLASS="LITERAL"
+>SET</TT
+> clauses
+    attached to a function when <TT
+CLASS="VARNAME"
+>check_function_bodies</TT
+> is on.
+    Therefore, checks whose results might be affected by GUC parameters
+    definitely should be skipped when <TT
+CLASS="VARNAME"
+>check_function_bodies</TT
+> is
+    off, to avoid false failures when reloading a dump.
    </P
 ><P
 >    If an inline handler is provided by a procedural language, it

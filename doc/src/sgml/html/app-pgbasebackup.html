@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="APP-PGBASEBACKUP"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN81080"
+NAME="AEN83936"
 ></A
 ><H2
 >Name</H2
@@ -106,7 +106,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN81086"
+NAME="AEN83942"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81091"
+NAME="AEN83947"
 ></A
 ><H2
 >   Description
@@ -253,7 +253,7 @@ CLASS="LITERAL"
 CLASS="VARNAME"
 >full_page_writes</TT
 > on the master and
-      not to use the tool like <SPAN
+      not to use a tool like <SPAN
 CLASS="APPLICATION"
 >pg_compresslog</SPAN
 > as
@@ -270,7 +270,7 @@ CLASS="VARNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81129"
+NAME="AEN83985"
 ></A
 ><H2
 >Options</H2
@@ -416,6 +416,24 @@ CLASS="PRODUCTNAME"
 ></DL
 ></DIV
 ><P></P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-R</TT
+><BR><TT
+CLASS="OPTION"
+>--write-recovery-conf</TT
+></DT
+><DD
+><P
+>        Write a minimal <TT
+CLASS="FILENAME"
+>recovery.conf</TT
+> in the output directory (or into
+        the base archive file when using tar format) to ease setting
+        up a standby server.
+       </P
 ></DD
 ><DT
 ><TT
@@ -686,6 +704,45 @@ CLASS="VARIABLELIST"
 ><DT
 ><TT
 CLASS="OPTION"
+>-d <TT
+CLASS="REPLACEABLE"
+><I
+>connstr</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--dbname=<TT
+CLASS="REPLACEABLE"
+><I
+>connstr</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        Specifies parameters used to connect to the server, as a connection
+        string. See <A
+HREF="libpq-connect.html#LIBPQ-CONNSTRING"
+>Section 31.1.1</A
+> for more information.
+       </P
+><P
+>        The option is called <TT
+CLASS="LITERAL"
+>--dbname</TT
+> for consistency with other
+        client applications, but because <SPAN
+CLASS="APPLICATION"
+>pg_basebackup</SPAN
+>
+        doesn't connect to any particular database in the cluster, database
+        name in the connection string will be ignored.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-h <TT
 CLASS="REPLACEABLE"
 ><I
@@ -763,13 +820,10 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        Specifies the number of seconds between status packets sent back to the
-        server. This is required when streaming the transaction log (using
-        <TT
-CLASS="LITERAL"
->--xlog=stream</TT
->) if replication timeout is configured
-        on the server, and allows for easier monitoring. A value of zero disables
-        the status updates completely. The default value is 10 seconds.
+        server. This allows for easier monitoring of the progress from server.
+        A value of zero disables the periodic status updates completely,
+        although an update will still be sent when requested by the server, to
+        avoid timeout disconnect. The default value is 10 seconds.
        </P
 ></DD
 ><DT
@@ -904,7 +958,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81346"
+NAME="AEN84222"
 ></A
 ><H2
 >Environment</H2
@@ -926,7 +980,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81352"
+NAME="AEN84228"
 ></A
 ><H2
 >Notes</H2
@@ -944,11 +998,19 @@ CLASS="PRODUCTNAME"
    for all additional tablespaces must be identical whenever a backup is
    restored. The main data directory, however, is relocatable to any location.
   </P
+><P
+>   <SPAN
+CLASS="APPLICATION"
+>pg_basebackup</SPAN
+> works with servers of the same
+   or an older major version, down to 9.1. However, WAL streaming mode (-X
+   stream) only works with server version 9.3.
+  </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81357"
+NAME="AEN84235"
 ></A
 ><H2
 >Examples</H2
@@ -1014,7 +1076,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81375"
+NAME="AEN84253"
 ></A
 ><H2
 >See Also</H2

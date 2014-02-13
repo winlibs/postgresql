@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -599,6 +599,52 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > was
         compiled.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-IGNORE-CHECKSUM-FAILURE"
+></A
+><TT
+CLASS="VARNAME"
+>ignore_checksum_failure</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</DT
+><DD
+><P
+>        Only has effect if <A
+HREF="app-initdb.html#APP-INITDB-DATA-CHECKSUMS"
+>data checksums</A
+> are enabled.
+       </P
+><P
+>        Detection of a checksum failure during a read normally causes
+        <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> to report an error, aborting the current
+        transaction.  Setting <TT
+CLASS="VARNAME"
+>ignore_checksum_failure</TT
+> to on causes
+        the system to ignore the failure (but still report a warning), and
+        continue processing.  This behavior may <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>cause crashes, propagate
+        or hide corruption, or other serious problems</I
+></SPAN
+>.  However, it may allow
+        you to get past the error and retrieve undamaged tuples that might still be
+        present in the table if the block header is still sane. If the header is
+        corrupt an error will be reported even if this option is enabled. The
+        default setting is <TT
+CLASS="LITERAL"
+>off</TT
+>, and it can only be changed by a superuser.
        </P
 ></DD
 ><DT

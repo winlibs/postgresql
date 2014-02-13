@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER TABLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "ALTER TABLE" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "ALTER TABLE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -126,13 +126,11 @@ clause must be provided if there is no implicit or assignment cast from old to n
 .PP
 SET/DROP DEFAULT
 .RS 4
-These forms set or remove the default value for a column\&. The default values only apply to subsequent
+These forms set or remove the default value for a column\&. Default values only apply in subsequent
 \fBINSERT\fR
-commands; they do not cause rows already in the table to change\&. Defaults can also be created for views, in which case they are inserted into
-\fBINSERT\fR
-statements on the view before the view\*(Aqs
-ON INSERT
-rule is applied\&.
+or
+\fBUPDATE\fR
+commands; they do not cause rows already in the table to change\&.
 .RE
 .PP
 SET/DROP NOT NULL
@@ -200,7 +198,7 @@ bytea
 values run faster, at the penalty of increased storage space\&. Note that
 SET STORAGE
 doesn\*(Aqt itself change anything in the table, it just sets the strategy to be pursued during future table updates\&. See
-Section 56.2, \(lqTOAST\(rq, in the documentation
+Section 58.2, \(lqTOAST\(rq, in the documentation
 for more information\&.
 .RE
 .PP
@@ -265,7 +263,11 @@ Adding a constraint using an existing index can be helpful in situations where a
 VALIDATE CONSTRAINT
 .RS 4
 This form validates a foreign key or check constraint that was previously created as
-NOT VALID, by scanning the table to ensure there are no rows for which the constraint is not satisfied\&. Nothing happens if the constraint is already marked valid\&. The value of separating validation from initial creation of the constraint is that validation requires a lesser lock on the table than constraint creation does\&.
+NOT VALID, by scanning the table to ensure there are no rows for which the constraint is not satisfied\&. Nothing happens if the constraint is already marked valid\&.
+.sp
+Validation can be a long process on larger tables and currently requires an
+ACCESS EXCLUSIVE
+lock\&. The value of separating validation from initial creation is that you can defer validation to less busy times, or can be used to give additional time to correct pre\-existing errors while preventing new errors\&.
 .RE
 .PP
 DROP CONSTRAINT [ IF EXISTS ]

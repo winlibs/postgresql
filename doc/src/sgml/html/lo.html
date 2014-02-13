@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -114,7 +114,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN140667"
+NAME="AEN148003"
 >F.20.1. Rationale</A
 ></H2
 ><P
@@ -184,7 +184,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN140682"
+NAME="AEN148018"
 >F.20.2. How to Use It</A
 ></H2
 ><P
@@ -202,7 +202,18 @@ CREATE TRIGGER t_raster BEFORE UPDATE OR DELETE ON image
 CLASS="LITERAL"
 >BEFORE UPDATE OR DELETE</TT
 > trigger, and give the column
-   name as the sole trigger argument.  If you need multiple <TT
+   name as the sole trigger argument.  You can also restrict the trigger
+   to only execute on updates to the column by using <TT
+CLASS="LITERAL"
+>BEFORE UPDATE
+   OF</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>column_name</I
+></TT
+>.
+   If you need multiple <TT
 CLASS="TYPE"
 >lo</TT
 >
@@ -215,7 +226,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN140689"
+NAME="AEN148027"
 >F.20.3. Limitations</A
 ></H2
 ><P
@@ -277,7 +288,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN140705"
+NAME="AEN148043"
 >F.20.4. Author</A
 ></H2
 ><P

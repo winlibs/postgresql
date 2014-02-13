@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_resetxlog
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "PG_RESETXLOG" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PG_RESETXLOG" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ pg_resetxlog \- reset the write\-ahead log and other control information of a Po
 .\" pg_resetxlog
 .SH "SYNOPSIS"
 .HP \w'\fBpg_resetxlog\fR\ 'u
-\fBpg_resetxlog\fR [\fB\-f\fR] [\fB\-n\fR] [\fB\-o\fR\ \fIoid\fR] [\fB\-x\fR\ \fIxid\fR] [\fB\-e\fR\ \fIxid_epoch\fR] [\fB\-m\fR\ \fImxid\fR] [\fB\-O\fR\ \fImxoff\fR] [\fB\-l\fR\ \fItimelineid\fR,\fIfileid\fR,\fIseg\fR] \fIdatadir\fR
+\fBpg_resetxlog\fR [\fB\-f\fR] [\fB\-n\fR] [\fB\-o\fR\ \fIoid\fR] [\fB\-x\fR\ \fIxid\fR] [\fB\-e\fR\ \fIxid_epoch\fR] [\fB\-m\fR\ \fImxid\fR,\fImxid\fR] [\fB\-O\fR\ \fImxoff\fR] [\fB\-l\fR\ \fIxlogfile\fR] \fIdatadir\fR
 .SH "DESCRIPTION"
 .PP
 
@@ -67,7 +67,7 @@ The
 \fB\-m\fR,
 \fB\-O\fR, and
 \fB\-l\fR
-options allow the next OID, next transaction ID, next transaction ID\*(Aqs epoch, next multitransaction ID, next multitransaction offset, and WAL starting address values to be set manually\&. These are only needed when
+options allow the next OID, next transaction ID, next transaction ID\*(Aqs epoch, next and oldest multitransaction ID, next multitransaction offset, and WAL starting address values to be set manually\&. These are only needed when
 \fBpg_resetxlog\fR
 is unable to determine appropriate values by reading
 pg_control\&. Safe values can be determined as follows:
@@ -98,9 +98,11 @@ will work (five trailing zeroes provide the proper multiplier)\&.
 .sp -1
 .IP \(bu 2.3
 .\}
-A safe value for the next multitransaction ID (\fB\-m\fR) can be determined by looking for the numerically largest file name in the directory
+A safe value for the next multitransaction ID (first part of
+\fB\-m\fR) can be determined by looking for the numerically largest file name in the directory
 pg_multixact/offsets
-under the data directory, adding one, and then multiplying by 65536\&. As above, the file names are in hexadecimal, so the easiest way to do this is to specify the option value in hexadecimal and add four zeroes\&.
+under the data directory, adding one, and then multiplying by 65536\&. Conversely, a safe value for the oldest multitransaction ID (second part of
+\fB\-m\fR) can be determined by looking for the numerically smallest file name in the same directory and multiplying by 65536\&. As above, the file names are in hexadecimal, so the easiest way to do this is to specify the option value in hexadecimal and append four zeroes\&.
 .RE
 .sp
 .RS 4
@@ -113,7 +115,7 @@ under the data directory, adding one, and then multiplying by 65536\&. As above,
 .\}
 A safe value for the next multitransaction offset (\fB\-O\fR) can be determined by looking for the numerically largest file name in the directory
 pg_multixact/members
-under the data directory, adding one, and then multiplying by 65536\&. As above, the file names are in hexadecimal, so the easiest way to do this is to specify the option value in hexadecimal and add four zeroes\&.
+under the data directory, adding one, and then multiplying by 52352\&. As above, the file names are in hexadecimal\&. There is no simple recipe such as the ones above of appending zeroes\&.
 .RE
 .sp
 .RS 4
@@ -128,15 +130,12 @@ The WAL starting address (\fB\-l\fR) should be larger than any WAL segment file 
 pg_xlog
 under the data directory\&. These names are also in hexadecimal and have three parts\&. The first part is the
 \(lqtimeline ID\(rq
-and should usually be kept the same\&. Do not choose a value larger than 255 (0xFF) for the third part; instead increment the second part and reset the third part to 0\&. For example, if
+and should usually be kept the same\&. For example, if
 00000001000000320000004A
 is the largest entry in
-pg_xlog,
-\-l 0x1,0x32,0x4B
-will work; but if the largest entry is
-000000010000003A000000FF, choose
-\-l 0x1,0x3B,0x0
-or more\&.
+pg_xlog, use
+\-l 00000001000000320000004B
+or higher\&.
 .if n \{\
 .sp
 .\}

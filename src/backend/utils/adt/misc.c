@@ -3,7 +3,7 @@
  * misc.c
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -24,10 +24,12 @@
 #include "catalog/pg_tablespace.h"
 #include "catalog/pg_type.h"
 #include "commands/dbcommands.h"
+#include "common/relpath.h"
 #include "funcapi.h"
 #include "miscadmin.h"
 #include "parser/keywords.h"
 #include "postmaster/syslogger.h"
+#include "rewrite/rewriteHandler.h"
 #include "storage/fd.h"
 #include "storage/pmsignal.h"
 #include "storage/proc.h"
@@ -93,11 +95,11 @@ pg_signal_backend(int pid, int sig)
 
 	/*
 	 * BackendPidGetProc returns NULL if the pid isn't valid; but by the time
-	 * we reach kill(), a process for which we get a valid proc here might have
-	 * terminated on its own.  There's no way to acquire a lock on an arbitrary
-	 * process to prevent that. But since so far all the callers of this
-	 * mechanism involve some request for ending the process anyway, that it
-	 * might end on its own first is not a problem.
+	 * we reach kill(), a process for which we get a valid proc here might
+	 * have terminated on its own.	There's no way to acquire a lock on an
+	 * arbitrary process to prevent that. But since so far all the callers of
+	 * this mechanism involve some request for ending the process anyway, that
+	 * it might end on its own first is not a problem.
 	 */
 	if (proc == NULL)
 	{
@@ -382,16 +384,16 @@ pg_sleep(PG_FUNCTION_ARGS)
 	float8		endtime;
 
 	/*
-	 * We break the requested sleep into segments of no more than 1 second, to
-	 * put an upper bound on how long it will take us to respond to a cancel
-	 * or die interrupt.  (Note that pg_usleep is interruptible by signals on
-	 * some platforms but not others.)	Also, this method avoids exposing
-	 * pg_usleep's upper bound on allowed delays.
+	 * We sleep using WaitLatch, to ensure that we'll wake up promptly if an
+	 * important signal (such as SIGALRM or SIGINT) arrives.  Because
+	 * WaitLatch's upper limit of delay is INT_MAX milliseconds, and the user
+	 * might ask for more than that, we sleep for at most 10 minutes and then
+	 * loop.
 	 *
 	 * By computing the intended stop time initially, we avoid accumulation of
 	 * extra delay across multiple sleeps.	This also ensures we won't delay
-	 * less than the specified time if pg_usleep is interrupted by other
-	 * signals such as SIGHUP.
+	 * less than the specified time when WaitLatch is terminated early by a
+	 * non-query-cancelling signal such as SIGHUP.
 	 */
 
 #ifdef HAVE_INT64_TIMESTAMP
@@ -405,15 +407,22 @@ pg_sleep(PG_FUNCTION_ARGS)
 	for (;;)
 	{
 		float8		delay;
+		long		delay_ms;
 
 		CHECK_FOR_INTERRUPTS();
+
 		delay = endtime - GetNowFloat();
-		if (delay >= 1.0)
-			pg_usleep(1000000L);
+		if (delay >= 600.0)
+			delay_ms = 600000;
 		else if (delay > 0.0)
-			pg_usleep((long) ceil(delay * 1000000.0));
+			delay_ms = (long) ceil(delay * 1000.0);
 		else
 			break;
+
+		(void) WaitLatch(&MyProc->procLatch,
+						 WL_LATCH_SET | WL_TIMEOUT,
+						 delay_ms);
+		ResetLatch(&MyProc->procLatch);
 	}
 
 	PG_RETURN_VOID();
@@ -522,4 +531,53 @@ pg_collation_for(PG_FUNCTION_ARGS)
 	if (!collid)
 		PG_RETURN_NULL();
 	PG_RETURN_TEXT_P(cstring_to_text(generate_collation_name(collid)));
+}
+
+
+/*
+ * pg_relation_is_updatable - determine which update events the specified
+ * relation supports.
+ *
+ * This relies on relation_is_updatable() in rewriteHandler.c, which see
+ * for additional information.
+ */
+Datum
+pg_relation_is_updatable(PG_FUNCTION_ARGS)
+{
+	Oid			reloid = PG_GETARG_OID(0);
+	bool		include_triggers = PG_GETARG_BOOL(1);
+
+	PG_RETURN_INT32(relation_is_updatable(reloid, include_triggers));
+}
+
+/*
+ * pg_column_is_updatable - determine whether a column is updatable
+ *
+ * Currently we just check whether the column's relation is updatable.
+ * Eventually we might allow views to have some updatable and some
+ * non-updatable columns.
+ *
+ * Also, this function encapsulates the decision about just what
+ * information_schema.columns.is_updatable actually means.	It's not clear
+ * whether deletability of the column's relation should be required, so
+ * we want that decision in C code where we could change it without initdb.
+ */
+Datum
+pg_column_is_updatable(PG_FUNCTION_ARGS)
+{
+	Oid			reloid = PG_GETARG_OID(0);
+	AttrNumber	attnum = PG_GETARG_INT16(1);
+	bool		include_triggers = PG_GETARG_BOOL(2);
+	int			events;
+
+	/* System columns are never updatable */
+	if (attnum <= 0)
+		PG_RETURN_BOOL(false);
+
+	events = relation_is_updatable(reloid, include_triggers);
+
+	/* We require both updatability and deletability of the relation */
+#define REQ_EVENTS ((1 << CMD_UPDATE) | (1 << CMD_DELETE))
+
+	PG_RETURN_BOOL((events & REQ_EVENTS) == REQ_EVENTS);
 }

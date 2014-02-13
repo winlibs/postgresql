@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER VIEW
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "ALTER VIEW" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "ALTER VIEW" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -68,13 +68,11 @@ Do not throw an error if the view does not exist\&. A notice is issued in this c
 .PP
 SET/DROP DEFAULT
 .RS 4
-These forms set or remove the default value for a column\&. A default value associated with a view column is inserted into
+These forms set or remove the default value for a column\&. A view column\*(Aqs default value is substituted into any
 \fBINSERT\fR
-statements on the view before the view\*(Aqs
-ON INSERT
-rule is applied, if the
-\fBINSERT\fR
-does not specify a value for the column\&.
+or
+\fBUPDATE\fR
+command whose target is the view, before applying any rules or triggers for the view\&. The view\*(Aqs default will therefore take precedence over any default values from underlying relations\&.
 .RE
 .PP
 \fInew_owner\fR
@@ -97,7 +95,7 @@ The new schema for the view\&.
 The name of a view option to be set or reset\&.
 .RE
 .PP
-\fIview_option_name\fR
+\fIview_option_value\fR
 .RS 4
 The new value for a view option\&.
 .RE
@@ -120,6 +118,22 @@ bar:
 .\}
 .nf
 ALTER VIEW foo RENAME TO bar;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To attach a default column value to an updatable view:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE TABLE base_table (id int, ts timestamptz);
+CREATE VIEW a_view AS SELECT * FROM base_table;
+ALTER VIEW a_view ALTER COLUMN ts SET DEFAULT now();
+INSERT INTO base_table(id) VALUES(1);  \-\- ts will receive a NULL
+INSERT INTO a_view(id) VALUES(2);  \-\- ts will receive the current time
 .fi
 .if n \{\
 .RE

@@ -32,7 +32,7 @@
  * happen, it would tie up KnownAssignedXids indefinitely, so we protect
  * ourselves by pruning the array when a valid list of running XIDs arrives.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -51,6 +51,7 @@
 #include "access/xact.h"
 #include "access/twophase.h"
 #include "miscadmin.h"
+#include "storage/proc.h"
 #include "storage/procarray.h"
 #include "storage/spin.h"
 #include "utils/builtins.h"
@@ -399,7 +400,7 @@ ProcArrayEndTransaction(PGPROC *proc, TransactionId latestXid)
 		pgxact->xmin = InvalidTransactionId;
 		/* must be cleared with xid/xmin: */
 		pgxact->vacuumFlags &= ~PROC_VACUUM_STATE_MASK;
-		pgxact->inCommit = false;		/* be sure this is cleared in abort */
+		pgxact->delayChkpt = false;		/* be sure this is cleared in abort */
 		proc->recoveryConflictPending = false;
 
 		/* Clear the subtransaction-XID cache too while holding the lock */
@@ -426,7 +427,7 @@ ProcArrayEndTransaction(PGPROC *proc, TransactionId latestXid)
 		pgxact->xmin = InvalidTransactionId;
 		/* must be cleared with xid/xmin: */
 		pgxact->vacuumFlags &= ~PROC_VACUUM_STATE_MASK;
-		pgxact->inCommit = false;		/* be sure this is cleared in abort */
+		pgxact->delayChkpt = false;		/* be sure this is cleared in abort */
 		proc->recoveryConflictPending = false;
 
 		Assert(pgxact->nxids == 0);
@@ -461,11 +462,34 @@ ProcArrayClearTransaction(PGPROC *proc)
 
 	/* redundant, but just in case */
 	pgxact->vacuumFlags &= ~PROC_VACUUM_STATE_MASK;
-	pgxact->inCommit = false;
+	pgxact->delayChkpt = false;
 
 	/* Clear the subtransaction-XID cache too */
 	pgxact->nxids = 0;
 	pgxact->overflowed = false;
+}
+
+/*
+ * ProcArrayInitRecovery -- initialize recovery xid mgmt environment
+ *
+ * Remember up to where the startup process initialized the CLOG and subtrans
+ * so we can ensure it's initialized gaplessly up to the point where necessary
+ * while in recovery.
+ */
+void
+ProcArrayInitRecovery(TransactionId initializedUptoXID)
+{
+	Assert(standbyState == STANDBY_INITIALIZED);
+	Assert(TransactionIdIsNormal(initializedUptoXID));
+
+	/*
+	 * we set latestObservedXid to the xid SUBTRANS has been initialized upto,
+	 * so we can extend it from that point onwards in
+	 * RecordKnownAssignedTransactionIds, and when we get consistent in
+	 * ProcArrayApplyRecoveryInfo().
+	 */
+	latestObservedXid = initializedUptoXID;
+	TransactionIdRetreat(latestObservedXid);
 }
 
 /*
@@ -500,6 +524,13 @@ ProcArrayApplyRecoveryInfo(RunningTransactions running)
 	 * Remove stale transactions, if any.
 	 */
 	ExpireOldKnownAssignedTransactionIds(running->oldestRunningXid);
+
+	/*
+	 * Remove stale locks, if any.
+	 *
+	 * Locks are always assigned to the toplevel xid so we don't need to care
+	 * about subxcnt/subxids (and by extension not about ->suboverflowed).
+	 */
 	StandbyReleaseOldLocks(running->xcnt, running->xids);
 
 	/*
@@ -556,7 +587,10 @@ ProcArrayApplyRecoveryInfo(RunningTransactions running)
 	Assert(standbyState == STANDBY_INITIALIZED);
 
 	/*
-	 * OK, we need to initialise from the RunningTransactionsData record
+	 * OK, we need to initialise from the RunningTransactionsData record.
+	 *
+	 * NB: this can be reached at least twice, so make sure new code can deal
+	 * with that.
 	 */
 
 	/*
@@ -580,13 +614,13 @@ ProcArrayApplyRecoveryInfo(RunningTransactions running)
 	 * Allocate a temporary array to avoid modifying the array passed as
 	 * argument.
 	 */
-	xids = palloc(sizeof(TransactionId) * running->xcnt);
+	xids = palloc(sizeof(TransactionId) * (running->xcnt + running->subxcnt));
 
 	/*
 	 * Add to the temp array any xids which have not already completed.
 	 */
 	nxids = 0;
-	for (i = 0; i < running->xcnt; i++)
+	for (i = 0; i < running->xcnt + running->subxcnt; i++)
 	{
 		TransactionId xid = running->xids[i];
 
@@ -628,20 +662,38 @@ ProcArrayApplyRecoveryInfo(RunningTransactions running)
 	pfree(xids);
 
 	/*
+	 * latestObservedXid is at least set to the the point where SUBTRANS was
+	 * started up to (c.f. ProcArrayInitRecovery()) or to the biggest xid
+	 * RecordKnownAssignedTransactionIds() was called for.  Initialize
+	 * subtrans from thereon, up to nextXid - 1.
+	 *
+	 * We need to duplicate parts of RecordKnownAssignedTransactionId() here,
+	 * because we've just added xids to the known assigned xids machinery that
+	 * haven't gone through RecordKnownAssignedTransactionId().
+	 */
+	Assert(TransactionIdIsNormal(latestObservedXid));
+	TransactionIdAdvance(latestObservedXid);
+	while (TransactionIdPrecedes(latestObservedXid, running->nextXid))
+	{
+		ExtendSUBTRANS(latestObservedXid);
+		TransactionIdAdvance(latestObservedXid);
+	}
+	TransactionIdRetreat(latestObservedXid);  /* = running->nextXid - 1 */
+
+	/* ----------
 	 * Now we've got the running xids we need to set the global values that
 	 * are used to track snapshots as they evolve further.
 	 *
-	 * - latestCompletedXid which will be the xmax for snapshots -
-	 * lastOverflowedXid which shows whether snapshots overflow - nextXid
+	 * - latestCompletedXid which will be the xmax for snapshots
+	 * - lastOverflowedXid which shows whether snapshots overflow
+	 * - nextXid
 	 *
 	 * If the snapshot overflowed, then we still initialise with what we know,
 	 * but the recovery snapshot isn't fully valid yet because we know there
 	 * are some subxids missing. We don't know the specific subxids that are
 	 * missing, so conservatively assume the last one is latestObservedXid.
+	 * ----------
 	 */
-	latestObservedXid = running->nextXid;
-	TransactionIdRetreat(latestObservedXid);
-
 	if (running->subxid_overflow)
 	{
 		standbyState = STANDBY_SNAPSHOT_PENDING;
@@ -736,6 +788,10 @@ ProcArrayApplyXidAssignment(TransactionId topxid,
 	 */
 	for (i = 0; i < nsubxids; i++)
 		SubTransSetParent(subxids[i], topxid, false);
+
+	/* KnownAssignedXids isn't maintained yet, so we're done for now */
+	if (standbyState == STANDBY_INITIALIZED)
+		return;
 
 	/*
 	 * Uses same locking as transaction commit
@@ -1306,14 +1362,6 @@ GetSnapshotData(Snapshot snapshot)
 	/* initialize xmin calculation with xmax */
 	globalxmin = xmin = xmax;
 
-	/*
-	 * If we're in recovery then snapshot data comes from a different place,
-	 * so decide which route we take before grab the lock. It is possible for
-	 * recovery to end before we finish taking snapshot, and for newly
-	 * assigned transaction ids to be added to the procarray. Xmax cannot
-	 * change while we hold ProcArrayLock, so those newly added transaction
-	 * ids would be filtered away, so we need not be concerned about them.
-	 */
 	snapshot->takenDuringRecovery = RecoveryInProgress();
 
 	if (!snapshot->takenDuringRecovery)
@@ -1428,6 +1476,12 @@ GetSnapshotData(Snapshot snapshot)
 		 * Either way we need to change the way XidInMVCCSnapshot() works
 		 * depending upon when the snapshot was taken, or change normal
 		 * snapshot processing so it matches.
+		 *
+		 * Note: It is possible for recovery to end before we finish taking
+		 * the snapshot, and for newly assigned transaction ids to be added to
+		 * the ProcArray.  xmax cannot change while we hold ProcArrayLock, so
+		 * those newly added transaction ids would be filtered away, so we
+		 * need not be concerned about them.
 		 */
 		subcount = KnownAssignedXidsGetAndSetXmin(snapshot->subxip, &xmin,
 												  xmax);
@@ -1628,15 +1682,13 @@ GetRunningTransactionData(void)
 	oldestRunningXid = ShmemVariableCache->nextXid;
 
 	/*
-	 * Spin over procArray collecting all xids and subxids.
+	 * Spin over procArray collecting all xids
 	 */
 	for (index = 0; index < arrayP->numProcs; index++)
 	{
 		int			pgprocno = arrayP->pgprocnos[index];
-		volatile PGPROC *proc = &allProcs[pgprocno];
 		volatile PGXACT *pgxact = &allPgXact[pgprocno];
 		TransactionId xid;
-		int			nxids;
 
 		/* Fetch xid just once - see GetNewTransactionId */
 		xid = pgxact->xid;
@@ -1653,30 +1705,46 @@ GetRunningTransactionData(void)
 		if (TransactionIdPrecedes(xid, oldestRunningXid))
 			oldestRunningXid = xid;
 
-		/*
-		 * Save subtransaction XIDs. Other backends can't add or remove
-		 * entries while we're holding XidGenLock.
-		 */
-		nxids = pgxact->nxids;
-		if (nxids > 0)
-		{
-			memcpy(&xids[count], (void *) proc->subxids.xids,
-				   nxids * sizeof(TransactionId));
-			count += nxids;
-			subcount += nxids;
+		if (pgxact->overflowed)
+			suboverflowed = true;
+	}
 
-			if (pgxact->overflowed)
-				suboverflowed = true;
+	/*
+	 * Spin over procArray collecting all subxids, but only if there hasn't
+	 * been a suboverflow.
+	 */
+	if (!suboverflowed)
+	{
+		for (index = 0; index < arrayP->numProcs; index++)
+		{
+			int			pgprocno = arrayP->pgprocnos[index];
+			volatile PGPROC *proc = &allProcs[pgprocno];
+			volatile PGXACT *pgxact = &allPgXact[pgprocno];
+			int			nxids;
 
 			/*
-			 * Top-level XID of a transaction is always less than any of its
-			 * subxids, so we don't need to check if any of the subxids are
-			 * smaller than oldestRunningXid
+			 * Save subtransaction XIDs. Other backends can't add or remove
+			 * entries while we're holding XidGenLock.
 			 */
+			nxids = pgxact->nxids;
+			if (nxids > 0)
+			{
+				memcpy(&xids[count], (void *) proc->subxids.xids,
+					   nxids * sizeof(TransactionId));
+				count += nxids;
+				subcount += nxids;
+
+				/*
+				 * Top-level XID of a transaction is always less than any of
+				 * its subxids, so we don't need to check if any of the
+				 * subxids are smaller than oldestRunningXid
+				 */
+			}
 		}
 	}
 
-	CurrentRunningXacts->xcnt = count;
+	CurrentRunningXacts->xcnt = count - subcount;
+	CurrentRunningXacts->subxcnt = subcount;
 	CurrentRunningXacts->subxid_overflow = suboverflowed;
 	CurrentRunningXacts->nextXid = ShmemVariableCache->nextXid;
 	CurrentRunningXacts->oldestRunningXid = oldestRunningXid;
@@ -1758,65 +1826,70 @@ GetOldestActiveTransactionId(void)
 }
 
 /*
- * GetTransactionsInCommit -- Get the XIDs of transactions that are committing
+ * GetVirtualXIDsDelayingChkpt -- Get the VXIDs of transactions that are
+ * delaying checkpoint because they have critical actions in progress.
  *
- * Constructs an array of XIDs of transactions that are currently in commit
- * critical sections, as shown by having inCommit set in their PGXACT entries.
+ * Constructs an array of VXIDs of transactions that are currently in commit
+ * critical sections, as shown by having delayChkpt set in their PGXACT.
  *
- * *xids_p is set to a palloc'd array that should be freed by the caller.
- * The return value is the number of valid entries.
+ * Returns a palloc'd array that should be freed by the caller.
+ * *nvxids is the number of valid entries.
  *
- * Note that because backends set or clear inCommit without holding any lock,
+ * Note that because backends set or clear delayChkpt without holding any lock,
  * the result is somewhat indeterminate, but we don't really care.  Even in
  * a multiprocessor with delayed writes to shared memory, it should be certain
- * that setting of inCommit will propagate to shared memory when the backend
- * takes the WALInsertLock, so we cannot fail to see an xact as inCommit if
+ * that setting of delayChkpt will propagate to shared memory when the backend
+ * takes a lock, so we cannot fail to see an virtual xact as delayChkpt if
  * it's already inserted its commit record.  Whether it takes a little while
- * for clearing of inCommit to propagate is unimportant for correctness.
+ * for clearing of delayChkpt to propagate is unimportant for correctness.
  */
-int
-GetTransactionsInCommit(TransactionId **xids_p)
+VirtualTransactionId *
+GetVirtualXIDsDelayingChkpt(int *nvxids)
 {
+	VirtualTransactionId *vxids;
 	ProcArrayStruct *arrayP = procArray;
-	TransactionId *xids;
-	int			nxids;
+	int			count = 0;
 	int			index;
 
-	xids = (TransactionId *) palloc(arrayP->maxProcs * sizeof(TransactionId));
-	nxids = 0;
+	/* allocate what's certainly enough result space */
+	vxids = (VirtualTransactionId *)
+		palloc(sizeof(VirtualTransactionId) * arrayP->maxProcs);
 
 	LWLockAcquire(ProcArrayLock, LW_SHARED);
 
 	for (index = 0; index < arrayP->numProcs; index++)
 	{
 		int			pgprocno = arrayP->pgprocnos[index];
+		volatile PGPROC *proc = &allProcs[pgprocno];
 		volatile PGXACT *pgxact = &allPgXact[pgprocno];
-		TransactionId pxid;
 
-		/* Fetch xid just once - see GetNewTransactionId */
-		pxid = pgxact->xid;
+		if (pgxact->delayChkpt)
+		{
+			VirtualTransactionId vxid;
 
-		if (pgxact->inCommit && TransactionIdIsValid(pxid))
-			xids[nxids++] = pxid;
+			GET_VXID_FROM_PGPROC(vxid, *proc);
+			if (VirtualTransactionIdIsValid(vxid))
+				vxids[count++] = vxid;
+		}
 	}
 
 	LWLockRelease(ProcArrayLock);
 
-	*xids_p = xids;
-	return nxids;
+	*nvxids = count;
+	return vxids;
 }
 
 /*
- * HaveTransactionsInCommit -- Are any of the specified XIDs in commit?
+ * HaveVirtualXIDsDelayingChkpt -- Are any of the specified VXIDs delaying?
  *
- * This is used with the results of GetTransactionsInCommit to see if any
- * of the specified XIDs are still in their commit critical sections.
+ * This is used with the results of GetVirtualXIDsDelayingChkpt to see if any
+ * of the specified VXIDs are still in critical sections of code.
  *
- * Note: this is O(N^2) in the number of xacts that are/were in commit, but
+ * Note: this is O(N^2) in the number of vxacts that are/were delaying, but
  * those numbers should be small enough for it not to be a problem.
  */
 bool
-HaveTransactionsInCommit(TransactionId *xids, int nxids)
+HaveVirtualXIDsDelayingChkpt(VirtualTransactionId *vxids, int nvxids)
 {
 	bool		result = false;
 	ProcArrayStruct *arrayP = procArray;
@@ -1827,19 +1900,19 @@ HaveTransactionsInCommit(TransactionId *xids, int nxids)
 	for (index = 0; index < arrayP->numProcs; index++)
 	{
 		int			pgprocno = arrayP->pgprocnos[index];
+		volatile PGPROC *proc = &allProcs[pgprocno];
 		volatile PGXACT *pgxact = &allPgXact[pgprocno];
-		TransactionId pxid;
+		VirtualTransactionId vxid;
 
-		/* Fetch xid just once - see GetNewTransactionId */
-		pxid = pgxact->xid;
+		GET_VXID_FROM_PGPROC(vxid, *proc);
 
-		if (pgxact->inCommit && TransactionIdIsValid(pxid))
+		if (pgxact->delayChkpt && VirtualTransactionIdIsValid(vxid))
 		{
 			int			i;
 
-			for (i = 0; i < nxids; i++)
+			for (i = 0; i < nvxids; i++)
 			{
-				if (xids[i] == pxid)
+				if (VirtualTransactionIdEquals(vxid, vxids[i]))
 				{
 					result = true;
 					break;
@@ -1935,6 +2008,8 @@ BackendXidGetPid(TransactionId xid)
 
 /*
  * IsBackendPid -- is a given pid a running backend
+ *
+ * This is not called by the backend, but is called by external modules.
  */
 bool
 IsBackendPid(int pid)
@@ -2593,17 +2668,10 @@ RecordKnownAssignedTransactionIds(TransactionId xid)
 {
 	Assert(standbyState >= STANDBY_INITIALIZED);
 	Assert(TransactionIdIsValid(xid));
+	Assert(TransactionIdIsValid(latestObservedXid));
 
 	elog(trace_recovery(DEBUG4), "record known xact %u latestObservedXid %u",
 		 xid, latestObservedXid);
-
-	/*
-	 * If the KnownAssignedXids machinery isn't up yet, do nothing.
-	 */
-	if (standbyState <= STANDBY_INITIALIZED)
-		return;
-
-	Assert(TransactionIdIsValid(latestObservedXid));
 
 	/*
 	 * When a newly observed xid arrives, it is frequently the case that it is
@@ -2615,22 +2683,34 @@ RecordKnownAssignedTransactionIds(TransactionId xid)
 		TransactionId next_expected_xid;
 
 		/*
-		 * Extend clog and subtrans like we do in GetNewTransactionId() during
-		 * normal operation using individual extend steps. Typical case
-		 * requires almost no activity.
+		 * Extend subtrans like we do in GetNewTransactionId() during normal
+		 * operation using individual extend steps. Note that we do not need
+		 * to extend clog since its extensions are WAL logged.
+		 *
+		 * This part has to be done regardless of standbyState since we
+		 * immediately start assigning subtransactions to their toplevel
+		 * transactions.
 		 */
 		next_expected_xid = latestObservedXid;
-		TransactionIdAdvance(next_expected_xid);
-		while (TransactionIdPrecedesOrEquals(next_expected_xid, xid))
+		while (TransactionIdPrecedes(next_expected_xid, xid))
 		{
-			ExtendCLOG(next_expected_xid);
-			ExtendSUBTRANS(next_expected_xid);
-
 			TransactionIdAdvance(next_expected_xid);
+			ExtendSUBTRANS(next_expected_xid);
+		}
+		Assert(next_expected_xid == xid);
+
+		/*
+		 * If the KnownAssignedXids machinery isn't up yet, there's nothing
+		 * more to do since we don't track assigned xids yet.
+		 */
+		if (standbyState <= STANDBY_INITIALIZED)
+		{
+			latestObservedXid = xid;
+			return;
 		}
 
 		/*
-		 * Add the new xids onto the KnownAssignedXids array.
+		 * Add (latestObservedXid, xid] onto the KnownAssignedXids array.
 		 */
 		next_expected_xid = latestObservedXid;
 		TransactionIdAdvance(next_expected_xid);

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 39. <SPAN
+>Chapter 40. <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > - <ACRONYM
@@ -99,7 +99,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPGSQL-PORTING"
->39.12. Porting from <SPAN
+>40.12. Porting from <SPAN
 CLASS="PRODUCTNAME"
 >Oracle</SPAN
 > PL/SQL</A
@@ -168,7 +168,7 @@ CLASS="LITERAL"
        behavior, which is not the default,
        as explained in <A
 HREF="plpgsql-implementation.html#PLPGSQL-VAR-SUBST"
->Section 39.10.1</A
+>Section 40.10.1</A
 >.
        It's often best to avoid such ambiguities in the first place,
        but if you have to port a large amount of code that depends on
@@ -188,7 +188,7 @@ CLASS="PRODUCTNAME"
        a string literal.  Therefore you need to use dollar quoting or escape
        single quotes in the function body. (See <A
 HREF="plpgsql-development-tips.html#PLPGSQL-QUOTE-TIPS"
->Section 39.11.1</A
+>Section 40.11.1</A
 >.)
       </P
 ></LI
@@ -226,7 +226,7 @@ CLASS="APPLICATION"
        to be swapped when porting.  This incompatibility is unfortunate
        but is unlikely to be changed. (See <A
 HREF="plpgsql-control-structures.html#PLPGSQL-INTEGER-FOR"
->Section 39.6.3.5</A
+>Section 40.6.3.5</A
 >.)
       </P
 ></LI
@@ -259,13 +259,13 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN57652"
->39.12.1. Porting Examples</A
+NAME="AEN59527"
+>40.12.1. Porting Examples</A
 ></H2
 ><P
 >    <A
 HREF="plpgsql-porting.html#PGSQL-PORTING-EX1"
->Example 39-7</A
+>Example 40-8</A
 > shows how to port a simple
     function from <SPAN
 CLASS="APPLICATION"
@@ -282,7 +282,7 @@ NAME="PGSQL-PORTING-EX1"
 ></A
 ><P
 ><B
->Example 39-7. Porting a Simple Function from <SPAN
+>Example 40-8. Porting a Simple Function from <SPAN
 CLASS="APPLICATION"
 >PL/SQL</SPAN
 > to <SPAN
@@ -410,7 +410,7 @@ $$ LANGUAGE plpgsql;</PRE
 ><P
 >    <A
 HREF="plpgsql-porting.html#PLPGSQL-PORTING-EX2"
->Example 39-8</A
+>Example 40-9</A
 > shows how to port a
     function that creates another function and how to handle the
     ensuing quoting problems.
@@ -422,7 +422,7 @@ NAME="PLPGSQL-PORTING-EX2"
 ></A
 ><P
 ><B
->Example 39-8. Porting a Function that Creates Another Function from <SPAN
+>Example 40-9. Porting a Function that Creates Another Function from <SPAN
 CLASS="APPLICATION"
 >PL/SQL</SPAN
 > to <SPAN
@@ -554,7 +554,7 @@ CLASS="STRUCTFIELD"
 ><P
 >    <A
 HREF="plpgsql-porting.html#PLPGSQL-PORTING-EX3"
->Example 39-9</A
+>Example 40-10</A
 > shows how to port a function
     with <TT
 CLASS="LITERAL"
@@ -571,7 +571,7 @@ CLASS="FUNCTION"
     using a combination of other
     functions. In <A
 HREF="plpgsql-porting.html#PLPGSQL-PORTING-APPENDIX"
->Section 39.12.3</A
+>Section 40.12.3</A
 > there is a
     <SPAN
 CLASS="APPLICATION"
@@ -590,7 +590,7 @@ NAME="PLPGSQL-PORTING-EX3"
 ></A
 ><P
 ><B
->Example 39-9. Porting a Procedure With String Manipulation and
+>Example 40-10. Porting a Procedure With String Manipulation and
     <TT
 CLASS="LITERAL"
 >OUT</TT
@@ -709,7 +709,7 @@ CLASS="PROGRAMLISTING"
 ><P
 >    <A
 HREF="plpgsql-porting.html#PLPGSQL-PORTING-EX4"
->Example 39-10</A
+>Example 40-11</A
 > shows how to port a procedure
     that uses numerous features that are specific to Oracle.
    </P
@@ -720,7 +720,7 @@ NAME="PLPGSQL-PORTING-EX4"
 ></A
 ><P
 ><B
->Example 39-10. Porting a Procedure from <SPAN
+>Example 40-11. Porting a Procedure from <SPAN
 CLASS="APPLICATION"
 >PL/SQL</SPAN
 > to <SPAN
@@ -969,7 +969,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-PORTING-OTHER"
->39.12.2. Other Things to Watch For</A
+>40.12.2. Other Things to Watch For</A
 ></H2
 ><P
 >    This section explains a few other things to watch for when porting
@@ -988,7 +988,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="PLPGSQL-PORTING-EXCEPTIONS"
->39.12.2.1. Implicit Rollback after Exceptions</A
+>40.12.2.1. Implicit Rollback after Exceptions</A
 ></H3
 ><P
 >     In <SPAN
@@ -1051,8 +1051,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN57798"
->39.12.2.2. <TT
+NAME="AEN59673"
+>40.12.2.2. <TT
 CLASS="COMMAND"
 >EXECUTE</TT
 ></A
@@ -1079,7 +1079,7 @@ CLASS="FUNCTION"
 >quote_ident</CODE
 > as described in <A
 HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN"
->Section 39.5.4</A
+>Section 40.5.4</A
 >.  Constructs of the
      type <TT
 CLASS="LITERAL"
@@ -1094,7 +1094,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="PLPGSQL-PORTING-OPTIMIZATION"
->39.12.2.3. Optimizing <SPAN
+>40.12.2.3. Optimizing <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > Functions</A
@@ -1142,7 +1142,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-PORTING-APPENDIX"
->39.12.3. Appendix</A
+>40.12.3. Appendix</A
 ></H2
 ><P
 >    This section contains the code for a set of Oracle-compatible
@@ -1191,7 +1191,7 @@ BEGIN
         ELSE
             RETURN pos + beg_index - 1;
         END IF;
-    ELSE
+    ELSIF beg_index &lt; 0 THEN
         ss_length := char_length(string_to_search);
         length := char_length(string);
         beg := length + beg_index - ss_length + 2;
@@ -1207,6 +1207,8 @@ BEGIN
             beg := beg - 1;
         END LOOP;
 
+        RETURN 0;
+    ELSE
         RETURN 0;
     END IF;
 END;
@@ -1246,7 +1248,7 @@ BEGIN
         ELSE
             RETURN beg;
         END IF;
-    ELSE
+    ELSIF beg_index &lt; 0 THEN
         ss_length := char_length(string_to_search);
         length := char_length(string);
         beg := length + beg_index - ss_length + 2;
@@ -1266,6 +1268,8 @@ BEGIN
             beg := beg - 1;
         END LOOP;
 
+        RETURN 0;
+    ELSE
         RETURN 0;
     END IF;
 END;

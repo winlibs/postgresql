@@ -3,7 +3,7 @@
  * datetime.c
  *	  Support functions for date/time types.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -19,6 +19,7 @@
 #include <limits.h>
 #include <math.h>
 
+#include "access/htup_details.h"
 #include "access/xact.h"
 #include "catalog/pg_type.h"
 #include "funcapi.h"
@@ -944,6 +945,17 @@ DecodeDateTime(char **field, int *ftype, int nf,
 				break;
 
 			case DTK_TIME:
+
+				/*
+				 * This might be an ISO time following a "t" field.
+				 */
+				if (ptype != 0)
+				{
+					/* Sanity check; should not fail this test */
+					if (ptype != DTK_TIME)
+						return DTERR_BAD_FORMAT;
+					ptype = 0;
+				}
 				dterr = DecodeTime(field[i], fmask, INTERVAL_FULL_RANGE,
 								   &tmask, tm, fsec);
 				if (dterr)
@@ -1443,12 +1455,6 @@ DetermineTimeZoneOffset(struct pg_tm * tm, pg_tz *tzp)
 				after_isdst;
 	int			res;
 
-	if (tzp == session_timezone && HasCTZSet)
-	{
-		tm->tm_isdst = 0;		/* for lack of a better idea */
-		return CTimeZone;
-	}
-
 	/*
 	 * First, generate the pg_time_t value corresponding to the given
 	 * y/m/d/h/m/s taken as GMT time.  If this overflows, punt and decide the
@@ -1547,8 +1553,8 @@ overflow:
  * Returns 0 if successful, DTERR code if bogus input detected.
  *
  * Note that support for time zone is here for
- * SQL92 TIME WITH TIME ZONE, but it reveals
- * bogosity with SQL92 date/time standards, since
+ * SQL TIME WITH TIME ZONE, but it reveals
+ * bogosity with SQL date/time standards, since
  * we must infer a time zone from current time.
  * - thomas 2000-03-10
  * Allow specifying date to get a better time zone,
@@ -2169,7 +2175,7 @@ DecodeDate(char *str, int fmask, int *tmask, bool *is2digits,
 			str++;
 
 		if (*str == '\0')
-			return DTERR_BAD_FORMAT;		/* end of string after separator */
+			return DTERR_BAD_FORMAT;	/* end of string after separator */
 
 		field[nf] = str;
 		if (isdigit((unsigned char) *str))
@@ -2883,7 +2889,7 @@ DecodeInterval(char **field, int *ftype, int nf, int range,
 				Assert(*field[i] == '-' || *field[i] == '+');
 
 				/*
-				 * Check for signed hh:mm or hh:mm:ss.  If so, process exactly
+				 * Check for signed hh:mm or hh:mm:ss.	If so, process exactly
 				 * like DTK_TIME case above, plus handling the sign.
 				 */
 				if (strchr(field[i] + 1, ':') != NULL &&

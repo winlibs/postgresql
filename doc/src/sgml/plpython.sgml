@@ -302,7 +302,7 @@ $$ LANGUAGE plpythonu;
       <para>
        PostgreSQL <type>smallint</type> and <type>int</type> are
        converted to Python <type>int</type>.
-       PostgreSQL <type>bigint</type> is converted
+       PostgreSQL <type>bigint</type> and <type>oid</type> are converted
        to <type>long</type> in Python 2 and to <type>int</type> in
        Python 3.
       </para>
@@ -953,6 +953,17 @@ foo = rv[i]["my_column"]
           <command>UPDATE</command> without <literal>RETURNING</literal>, or
           <command>DROP TABLE</command>.  But it is OK to use these methods on
           a result set containing zero rows.
+         </para>
+        </listitem>
+       </varlistentry>
+
+       <varlistentry>
+        <term><literal><function>__str__</function>()</literal></term>
+        <listitem>
+         <para>
+          The standard <literal>__str__</literal> method is defined so that it
+          is possible for example to debug query execution results
+          using <literal>plpy.debug(rv)</literal>.
          </para>
         </listitem>
        </varlistentry>

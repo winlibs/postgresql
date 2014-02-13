@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Interface Functions"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SPI-SPI-CURSOR-OPEN"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN60467"
+NAME="AEN62385"
 ></A
 ><H2
 >Name</H2
@@ -106,7 +106,7 @@ CLASS="FUNCTION"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN60473"
+NAME="AEN62391"
 ></A
 ><H2
 >Synopsis</H2
@@ -134,7 +134,7 @@ CLASS="PARAMETER"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN60480"
+NAME="AEN62398"
 ></A
 ><H2
 >Description</H2
@@ -171,7 +171,7 @@ CLASS="FUNCTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN60488"
+NAME="AEN62406"
 ></A
 ><H2
 >Arguments</H2
@@ -239,18 +239,6 @@ CLASS="PARAMETER"
 ><P
 >      An array describing which parameters are null.  Must have same length as
       the statement's number of arguments.
-      <TT
-CLASS="LITERAL"
->n</TT
-> indicates a null value (entry in
-      <TT
-CLASS="PARAMETER"
->values</TT
-> will be ignored); a space indicates a
-      nonnull value (entry in <TT
-CLASS="PARAMETER"
->values</TT
-> is valid).
      </P
 ><P
 >      If <TT
@@ -263,8 +251,32 @@ CLASS="SYMBOL"
       <CODE
 CLASS="FUNCTION"
 >SPI_cursor_open</CODE
-> assumes that no parameters are
-      null.
+> assumes that no parameters
+      are null.  Otherwise, each entry of the <TT
+CLASS="PARAMETER"
+>nulls</TT
+>
+      array should be <TT
+CLASS="LITERAL"
+>'&nbsp;'</TT
+> if the corresponding parameter
+      value is non-null, or <TT
+CLASS="LITERAL"
+>'n'</TT
+> if the corresponding parameter
+      value is null.  (In the latter case, the actual value in the
+      corresponding <TT
+CLASS="PARAMETER"
+>values</TT
+> entry doesn't matter.)  Note
+      that <TT
+CLASS="PARAMETER"
+>nulls</TT
+> is not a text string, just an array:
+      it does not need a <TT
+CLASS="LITERAL"
+>'\0'</TT
+> terminator.
      </P
 ></DD
 ><DT
@@ -288,7 +300,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN60531"
+NAME="AEN62452"
 ></A
 ><H2
 >Return Value</H2

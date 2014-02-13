@@ -4,7 +4,7 @@
  *		Routines for handling specialized SET variables.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -18,6 +18,7 @@
 
 #include <ctype.h>
 
+#include "access/htup_details.h"
 #include "access/xact.h"
 #include "catalog/pg_authid.h"
 #include "commands/variable.h"
@@ -326,6 +327,7 @@ check_timezone(char **newval, void **extra, GucSource source)
 #else
 		myextra.CTimeZone = -interval->time;
 #endif
+		myextra.session_timezone = pg_tzset_offset(myextra.CTimeZone);
 		myextra.HasCTZSet = true;
 
 		pfree(interval);
@@ -340,6 +342,7 @@ check_timezone(char **newval, void **extra, GucSource source)
 		{
 			/* Here we change from SQL to Unix sign convention */
 			myextra.CTimeZone = -hours * SECS_PER_HOUR;
+			myextra.session_timezone = pg_tzset_offset(myextra.CTimeZone);
 			myextra.HasCTZSet = true;
 		}
 		else

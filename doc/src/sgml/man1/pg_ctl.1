@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_ctl
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "PG_CTL" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PG_CTL" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -110,6 +110,8 @@ mode will abort all server processes immediately, without a clean shutdown\&. Th
 mode effectively executes a stop followed by a start\&. This allows changing the
 \fBpostgres\fR
 command\-line options\&.
+\fBrestart\fR
+might fail if relative paths specified were specified on the command\-line during server start\&.
 .PP
 
 \fBreload\fR
@@ -166,7 +168,7 @@ Attempt to allow server crashes to produce core files, on platforms where this i
 .PP
 \fB\-D \fR\fB\fIdatadir\fR\fR, \fB\-\-pgdata \fR\fB\fIdatadir\fR\fR
 .RS 4
-Specifies the file system location of the database files\&. If this is omitted, the environment variable
+Specifies the file system location of the database configuration files\&. If this is omitted, the environment variable
 \fBPGDATA\fR
 is used\&.
 .RE
@@ -252,7 +254,9 @@ repeatedly attempts to connect to the server\&. When waiting for shutdown,
 \fBpg_ctl\fR
 waits for the server to remove its
 PID
-file\&.
+file\&. This option allows the entry of an
+SSL
+passphrase on startup\&.
 \fBpg_ctl\fR
 returns an exit code based on the success of the startup or shutdown\&.
 .RE

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 39. <SPAN
+>Chapter 40. <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > - <ACRONYM
@@ -99,8 +99,16 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPGSQL-TRIGGER"
->39.9. Trigger Procedures</A
+>40.9. Trigger Procedures</A
 ></H1
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="PLPGSQL-DML-TRIGGER"
+>40.9.1. Triggers on data changes</A
+></H2
 ><P
 >    <SPAN
 CLASS="APPLICATION"
@@ -157,10 +165,7 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >UPDATE</TT
 > operations in row-level
-       triggers. This variable is <TT
-CLASS="SYMBOL"
->NULL</TT
-> in statement-level triggers
+       triggers. This variable is unassigned in statement-level triggers
        and for <TT
 CLASS="COMMAND"
 >DELETE</TT
@@ -185,10 +190,7 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >DELETE</TT
 > operations in row-level
-       triggers. This variable is <TT
-CLASS="SYMBOL"
->NULL</TT
-> in statement-level triggers
+       triggers. This variable is unassigned in statement-level triggers
        and for <TT
 CLASS="COMMAND"
 >INSERT</TT
@@ -524,7 +526,7 @@ CLASS="LITERAL"
 ><P
 >    <A
 HREF="plpgsql-trigger.html#PLPGSQL-TRIGGER-EXAMPLE"
->Example 39-3</A
+>Example 40-3</A
 > shows an example of a
     trigger procedure in <SPAN
 CLASS="APPLICATION"
@@ -538,7 +540,7 @@ NAME="PLPGSQL-TRIGGER-EXAMPLE"
 ></A
 ><P
 ><B
->Example 39-3. A <SPAN
+>Example 40-3. A <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > Trigger Procedure</B
@@ -589,7 +591,7 @@ CREATE TRIGGER emp_stamp BEFORE INSERT OR UPDATE ON emp
     can be thought of as auditing changes to a table.
     <A
 HREF="plpgsql-trigger.html#PLPGSQL-TRIGGER-AUDIT-EXAMPLE"
->Example 39-4</A
+>Example 40-4</A
 > shows an example of an
     audit trigger procedure in <SPAN
 CLASS="APPLICATION"
@@ -603,7 +605,7 @@ NAME="PLPGSQL-TRIGGER-AUDIT-EXAMPLE"
 ></A
 ><P
 ><B
->Example 39-4. A <SPAN
+>Example 40-4. A <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > Trigger Procedure For Auditing</B
@@ -667,7 +669,7 @@ AFTER INSERT OR UPDATE OR DELETE ON emp
     the last modified timestamp derived from the audit trail for each entry.
     <A
 HREF="plpgsql-trigger.html#PLPGSQL-VIEW-TRIGGER-AUDIT-EXAMPLE"
->Example 39-5</A
+>Example 40-5</A
 > shows an example
     of an audit trigger on a view in <SPAN
 CLASS="APPLICATION"
@@ -681,7 +683,7 @@ NAME="PLPGSQL-VIEW-TRIGGER-AUDIT-EXAMPLE"
 ></A
 ><P
 ><B
->Example 39-5. A <SPAN
+>Example 40-5. A <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > View Trigger Procedure For Auditing</B
@@ -762,7 +764,7 @@ INSTEAD OF INSERT OR UPDATE OR DELETE ON emp_view
     of measured or observed data (called fact tables) might be extremely large.
     <A
 HREF="plpgsql-trigger.html#PLPGSQL-TRIGGER-SUMMARY-EXAMPLE"
->Example 39-6</A
+>Example 40-6</A
 > shows an example of a
     trigger procedure in <SPAN
 CLASS="APPLICATION"
@@ -777,7 +779,7 @@ NAME="PLPGSQL-TRIGGER-SUMMARY-EXAMPLE"
 ></A
 ><P
 ><B
->Example 39-6. A <SPAN
+>Example 40-6. A <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > Trigger Procedure For Maintaining A Summary Table</B
@@ -930,6 +932,115 @@ DELETE FROM sales_fact WHERE product_key = 1;
 SELECT * FROM sales_summary_bytime;
 UPDATE sales_fact SET units_sold = units_sold * 2;
 SELECT * FROM sales_summary_bytime;</PRE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="PLPGSQL-EVENT-TRIGGER"
+>40.9.2. Triggers on events</A
+></H2
+><P
+>    <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> can be used to define event
+    triggers.  <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> requires that a procedure that
+    is to be called as an event trigger must be declared as a function with
+    no arguments and a return type of <TT
+CLASS="LITERAL"
+>event_trigger</TT
+>.
+   </P
+><P
+>    When a <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> function is called as a
+    event trigger, several special variables are created automatically
+    in the top-level block. They are:
+
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="VARNAME"
+>TG_EVENT</TT
+></DT
+><DD
+><P
+>       Data type <TT
+CLASS="TYPE"
+>text</TT
+>; a string representing the event the
+       trigger is fired for.
+      </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
+>TG_TAG</TT
+></DT
+><DD
+><P
+>       Data type <TT
+CLASS="TYPE"
+>text</TT
+>; variable that contains the command tag
+       for which the trigger is fired.
+      </P
+></DD
+></DL
+></DIV
+><P>
+  </P
+><P
+>    <A
+HREF="plpgsql-trigger.html#PLPGSQL-EVENT-TRIGGER-EXAMPLE"
+>Example 40-7</A
+> shows an example of a
+    event trigger procedure in <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>.
+   </P
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="PLPGSQL-EVENT-TRIGGER-EXAMPLE"
+></A
+><P
+><B
+>Example 40-7. A <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> Event Trigger Procedure</B
+></P
+><P
+>     This example trigger simply raises a <TT
+CLASS="LITERAL"
+>NOTICE</TT
+> message
+     each time a supported command is executed.
+    </P
+><PRE
+CLASS="PROGRAMLISTING"
+>CREATE OR REPLACE FUNCTION snitch() RETURNS event_trigger AS $$
+BEGIN
+    RAISE NOTICE 'snitch: % %', tg_event, tg_tag;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE EVENT TRIGGER snitch ON ddl_command_start EXECUTE PROCEDURE snitch();</PRE
+></DIV
 ></DIV
 ></DIV
 ><DIV

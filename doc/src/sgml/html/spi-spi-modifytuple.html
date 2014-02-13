@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Memory Management"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SPI-SPI-MODIFYTUPLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN61597"
+NAME="AEN63527"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN61597"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN61602"
+NAME="AEN63532"
 ></A
 ><H2
 >Synopsis</H2
@@ -133,7 +133,7 @@ CLASS="PARAMETER"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN61610"
+NAME="AEN63540"
 ></A
 ><H2
 >Description</H2
@@ -149,7 +149,7 @@ CLASS="FUNCTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN61614"
+NAME="AEN63544"
 ></A
 ><H2
 >Arguments</H2
@@ -196,11 +196,7 @@ CLASS="PARAMETER"
 ></DT
 ><DD
 ><P
->      number of column numbers in the array
-      <TT
-CLASS="PARAMETER"
->colnum</TT
->
+>      number of columns to be changed
      </P
 ></DD
 ><DT
@@ -213,8 +209,11 @@ CLASS="PARAMETER"
 ></DT
 ><DD
 ><P
->      array of the numbers of the columns that are to be changed
-      (column numbers start at 1)
+>      an array of length <TT
+CLASS="PARAMETER"
+>ncols</TT
+>, containing the numbers
+      of the columns that are to be changed (column numbers start at 1)
      </P
 ></DD
 ><DT
@@ -227,7 +226,11 @@ CLASS="PARAMETER"
 ></DT
 ><DD
 ><P
->      new values for the specified columns
+>      an array of length <TT
+CLASS="PARAMETER"
+>ncols</TT
+>, containing the
+      new values for the specified columns
      </P
 ></DD
 ><DT
@@ -235,16 +238,54 @@ CLASS="PARAMETER"
 CLASS="LITERAL"
 >const char * <TT
 CLASS="PARAMETER"
->Nulls</TT
+>nulls</TT
 ></TT
 ></DT
 ><DD
 ><P
->      which new values are null, if any (see
+>      an array of length <TT
+CLASS="PARAMETER"
+>ncols</TT
+>, describing which
+      new values are null
+     </P
+><P
+>      If <TT
+CLASS="PARAMETER"
+>nulls</TT
+> is <TT
+CLASS="SYMBOL"
+>NULL</TT
+> then
       <CODE
 CLASS="FUNCTION"
->SPI_execute_plan</CODE
-> for the format)
+>SPI_modifytuple</CODE
+> assumes that no new values
+      are null.  Otherwise, each entry of the <TT
+CLASS="PARAMETER"
+>nulls</TT
+>
+      array should be <TT
+CLASS="LITERAL"
+>'&nbsp;'</TT
+> if the corresponding new value is
+      non-null, or <TT
+CLASS="LITERAL"
+>'n'</TT
+> if the corresponding new value is
+      null.  (In the latter case, the actual value in the corresponding
+      <TT
+CLASS="PARAMETER"
+>values</TT
+> entry doesn't matter.)  Note that
+      <TT
+CLASS="PARAMETER"
+>nulls</TT
+> is not a text string, just an array: it
+      does not need a <TT
+CLASS="LITERAL"
+>'\0'</TT
+> terminator.
      </P
 ></DD
 ></DL
@@ -253,7 +294,7 @@ CLASS="FUNCTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN61655"
+NAME="AEN63596"
 ></A
 ><H2
 >Return Value</H2

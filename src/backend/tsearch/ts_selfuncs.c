@@ -3,7 +3,7 @@
  * ts_selfuncs.c
  *	  Selectivity estimation functions for text search operators.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -13,6 +13,7 @@
  */
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "catalog/pg_statistic.h"
 #include "catalog/pg_type.h"
 #include "miscadmin.h"
@@ -318,7 +319,7 @@ tsquery_opr_selec(QueryItem *item, char *operand,
 			 * exclusive.  We treat occurrences as independent events.
 			 *
 			 * This is only a good plan if we have a pretty fair number of
-			 * MCELEMs available; we set the threshold at 100.  If no stats or
+			 * MCELEMs available; we set the threshold at 100.	If no stats or
 			 * insufficient stats, arbitrarily use DEFAULT_TS_MATCH_SEL*4.
 			 */
 			if (lookup == NULL || length < 100)

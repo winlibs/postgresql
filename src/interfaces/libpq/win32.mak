@@ -30,9 +30,9 @@ ADD_SECLIB=bufferoverflowU.lib
 OPT=/Od /Zi /MDd
 LOPT=/DEBUG
 DEBUGDEF=/D _DEBUG
-OUTFILENAME=libpq_debug
+OUTFILENAME=libpqd
 !ELSE
-OPT=/O2 /Zi /MD
+OPT=/O2 /MD
 LOPT=
 DEBUGDEF=/D NDEBUG
 OUTFILENAME=libpq
@@ -83,6 +83,7 @@ ALL : config "$(OUTDIR)\$(OUTFILENAME).lib" "$(OUTDIR)\$(OUTFILENAME).dll"
 CLEAN :
 	-@erase "$(INTDIR)\getaddrinfo.obj"
 	-@erase "$(INTDIR)\pgstrcasecmp.obj"
+	-@erase "$(INTDIR)\pqsignal.obj"
 	-@erase "$(INTDIR)\thread.obj"
 	-@erase "$(INTDIR)\inet_aton.obj"
 	-@erase "$(INTDIR)\crypt.obj"
@@ -102,7 +103,6 @@ CLEAN :
 	-@erase "$(INTDIR)\fe-secure.obj"
 	-@erase "$(INTDIR)\libpq-events.obj"
 	-@erase "$(INTDIR)\pqexpbuffer.obj"
-	-@erase "$(INTDIR)\pqsignal.obj"
 	-@erase "$(INTDIR)\win32.obj"
 	-@erase "$(INTDIR)\wchar.obj"
 	-@erase "$(INTDIR)\encnames.obj"
@@ -131,6 +131,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\win32.obj" \
 	"$(INTDIR)\getaddrinfo.obj" \
 	"$(INTDIR)\pgstrcasecmp.obj" \
+	"$(INTDIR)\pqsignal.obj" \
 	"$(INTDIR)\thread.obj" \
 	"$(INTDIR)\inet_aton.obj" \
 	"$(INTDIR)\crypt.obj" \
@@ -150,7 +151,6 @@ LIB32_OBJS= \
 	"$(INTDIR)\fe-secure.obj" \
 	"$(INTDIR)\libpq-events.obj" \
 	"$(INTDIR)\pqexpbuffer.obj" \
-	"$(INTDIR)\pqsignal.obj" \
 	"$(INTDIR)\wchar.obj" \
 	"$(INTDIR)\encnames.obj" \
 	"$(INTDIR)\snprintf.obj" \
@@ -164,10 +164,13 @@ LIB32_OBJS= \
 	"$(INTDIR)\pthread-win32.obj"
 
 
-config: ..\..\include\pg_config.h pg_config_paths.h  ..\..\include\pg_config_os.h
+config: ..\..\include\pg_config.h ..\..\include\pg_config_ext.h pg_config_paths.h  ..\..\include\pg_config_os.h
 
 ..\..\include\pg_config.h: ..\..\include\pg_config.h.win32
 	copy ..\..\include\pg_config.h.win32 ..\..\include\pg_config.h
+
+..\..\include\pg_config_ext.h: ..\..\include\pg_config_ext.h.win32
+	copy ..\..\include\pg_config_ext.h.win32 ..\..\include\pg_config_ext.h
 
 ..\..\include\pg_config_os.h:
 	copy ..\..\include\port\win32.h ..\..\include\pg_config_os.h
@@ -181,7 +184,7 @@ pg_config_paths.h: win32.mak
 CPP_PROJ=/nologo /W3 /EHsc $(OPT) /I "..\..\include" /I "..\..\include\port\win32" /I "..\..\include\port\win32_msvc" /I "..\..\port" /I. /I "$(SSL_INC)" \
  /D "FRONTEND" $(DEBUGDEF) \
  /D "WIN32" /D "_WINDOWS" /Fp"$(INTDIR)\libpq.pch" \
- /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\$(OUTFILENAME).pdb" /FD /c  \
+ /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c  \
  /D "_CRT_SECURE_NO_DEPRECATE" $(ADD_DEFINES)
 
 !IFDEF USE_SSL
@@ -244,6 +247,11 @@ LINK32_OBJS= \
 "$(INTDIR)\pgstrcasecmp.obj" : ..\..\port\pgstrcasecmp.c
 	$(CPP) @<<
 	$(CPP_PROJ) ..\..\port\pgstrcasecmp.c
+<<
+
+"$(INTDIR)\pqsignal.obj" : ..\..\port\pqsignal.c
+	$(CPP) @<<
+	$(CPP_PROJ) ..\..\port\pqsignal.c
 <<
 
 "$(INTDIR)\thread.obj" : ..\..\port\thread.c

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/Python - Python Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 42. PL/Python - Python Procedural Language</TD
+>Chapter 43. PL/Python - Python Procedural Language</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPYTHON-DATA"
->42.3. Data Values</A
+>43.3. Data Values</A
 ></H1
 ><P
 >   Generally speaking, the aim of PL/Python is to provide
@@ -109,8 +109,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN58937"
->42.3.1. Data Type Mapping</A
+NAME="AEN60813"
+>43.3.1. Data Type Mapping</A
 ></H2
 ><P
 >    Function arguments are converted from their PostgreSQL type to a
@@ -145,7 +145,10 @@ CLASS="TYPE"
        PostgreSQL <TT
 CLASS="TYPE"
 >bigint</TT
-> is converted
+> and <TT
+CLASS="TYPE"
+>oid</TT
+> are converted
        to <TT
 CLASS="TYPE"
 >long</TT
@@ -296,8 +299,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN58987"
->42.3.2. Null, None</A
+NAME="AEN60864"
+>43.3.2. Null, None</A
 ></H2
 ><P
 >   If an SQL null value is passed to a
@@ -311,7 +314,7 @@ CLASS="FUNCTION"
 >
    shown in <A
 HREF="plpython-funcs.html"
->Section 42.2</A
+>Section 43.2</A
 > will return the wrong answer for null
    inputs. We could add <TT
 CLASS="LITERAL"
@@ -352,7 +355,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPYTHON-ARRAYS"
->42.3.3. Arrays, Lists</A
+>43.3.3. Arrays, Lists</A
 ></H2
 ><P
 >   SQL array values are passed into PL/Python as a Python list.  To
@@ -398,8 +401,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN59005"
->42.3.4. Composite Types</A
+NAME="AEN60882"
+>43.3.4. Composite Types</A
 ></H2
 ><P
 >   Composite-type arguments are passed to the function as Python mappings. The
@@ -554,8 +557,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN59034"
->42.3.5. Set-returning Functions</A
+NAME="AEN60911"
+>43.3.5. Set-returning Functions</A
 ></H2
 ><P
 >   A <SPAN

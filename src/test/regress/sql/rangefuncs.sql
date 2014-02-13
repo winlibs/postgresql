@@ -7,7 +7,7 @@ INSERT INTO foo2 VALUES(1, 111);
 
 CREATE FUNCTION foot(int) returns setof foo2 as 'SELECT * FROM foo2 WHERE fooid = $1;' LANGUAGE SQL;
 
--- supposed to fail with ERROR
+-- function with implicit LATERAL
 select * from foo2, foot(foo2.fooid) z where foo2.f2 = z.f2;
 
 -- function in subselect
@@ -285,6 +285,13 @@ AS $$ SELECT a, b
               generate_series(1,$1) b(b) $$ LANGUAGE sql;
 SELECT * FROM foo(3);
 DROP FUNCTION foo(int);
+
+-- case that causes change of typmod knowledge during inlining
+CREATE OR REPLACE FUNCTION foo()
+RETURNS TABLE(a varchar(5))
+AS $$ SELECT 'hello'::varchar(5) $$ LANGUAGE sql STABLE;
+SELECT * FROM foo() GROUP BY 1;
+DROP FUNCTION foo();
 
 --
 -- some tests on SQL functions with RETURNING

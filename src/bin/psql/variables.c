@@ -1,7 +1,7 @@
 /*
  * psql - the PostgreSQL interactive terminal
  *
- * Copyright (c) 2000-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2013, PostgreSQL Global Development Group
  *
  * src/bin/psql/variables.c
  */
@@ -115,8 +115,6 @@ ParseVariableBool(const char *value)
 		psql_error("unrecognized Boolean value; assuming \"on\"\n");
 		return true;
 	}
-	/* suppress compiler warning */
-	return true;
 }
 
 

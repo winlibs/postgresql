@@ -43,6 +43,8 @@ SUBDIRS = \
 		pgcrypto	\
 		pgrowlocks	\
 		pgstattuple	\
+		pg_xlogdump	\
+		postgres_fdw	\
 		seg		\
 		spi		\
 		tablefunc	\
@@ -50,7 +52,8 @@ SUBDIRS = \
 		test_parser	\
 		tsearch2	\
 		unaccent	\
-		vacuumlo
+		vacuumlo	\
+		worker_spi
 
 ifeq ($(with_openssl),yes)
 SUBDIRS += sslinfo

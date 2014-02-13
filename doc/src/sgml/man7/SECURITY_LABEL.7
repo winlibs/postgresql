@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SECURITY LABEL
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "SECURITY LABEL" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "SECURITY LABEL" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,9 +40,11 @@ SECURITY LABEL [ FOR \fIprovider\fR ] ON
   AGGREGATE \fIagg_name\fR (\fIagg_type\fR [, \&.\&.\&.] ) |
   DATABASE \fIobject_name\fR |
   DOMAIN \fIobject_name\fR |
+  EVENT TRIGGER \fIobject_name\fR |
   FOREIGN TABLE \fIobject_name\fR
   FUNCTION \fIfunction_name\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) |
   LARGE OBJECT \fIlarge_object_oid\fR |
+  MATERIALIZED VIEW \fIobject_name\fR |
   [ PROCEDURAL ] LANGUAGE \fIobject_name\fR |
   ROLE \fIobject_name\fR |
   SCHEMA \fIobject_name\fR |

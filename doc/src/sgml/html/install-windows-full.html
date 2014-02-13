@@ -10,7 +10,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Installation from Source Code on Windows"
@@ -29,7 +29,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -47,7 +47,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -128,11 +128,15 @@ CLASS="PRODUCTNAME"
 CLASS="PRODUCTNAME"
 >Visual Studio</SPAN
 > environment set up, the easiest
-  way is to use the compilers in the <SPAN
+  ways are to use the compilers in the <SPAN
 CLASS="PRODUCTNAME"
->Windows SDK</SPAN
->,
-  which is a free download from Microsoft.
+>Windows SDK 7.1</SPAN
+>
+  or those from <SPAN
+CLASS="PRODUCTNAME"
+>Visual Studio Express 2012 for Windows
+  Desktop</SPAN
+>, which are both free downloads from Microsoft.
  </P
 ><P
 >  PostgreSQL is known to support compilation using the compilers shipped with
@@ -142,14 +146,14 @@ CLASS="PRODUCTNAME"
 > to
   <SPAN
 CLASS="PRODUCTNAME"
->Visual Studio 2010</SPAN
+>Visual Studio 2012</SPAN
 > (including Express editions),
   as well as standalone Windows SDK releases 6.0 to 7.1.
   64-bit PostgreSQL builds are only supported with
   <SPAN
 CLASS="PRODUCTNAME"
 >Microsoft Windows SDK</SPAN
-> version 6.0a and above or
+> version 6.0a to 7.1 or
   <SPAN
 CLASS="PRODUCTNAME"
 >Visual Studio 2008</SPAN
@@ -159,12 +163,16 @@ CLASS="PRODUCTNAME"
 >  The tools for building using <SPAN
 CLASS="PRODUCTNAME"
 >Visual C++</SPAN
->,
-  are in the <TT
+> or
+  <SPAN
+CLASS="PRODUCTNAME"
+>Platform SDK</SPAN
+> are in the
+  <TT
 CLASS="FILENAME"
 >src/tools/msvc</TT
-> directory. When building,
-  make sure there are no tools from <SPAN
+> directory. When building, make sure
+  there are no tools from <SPAN
 CLASS="PRODUCTNAME"
 >MinGW</SPAN
 > or
@@ -191,16 +199,27 @@ CLASS="PRODUCTNAME"
 CLASS="APPLICATION"
 >CMD shell</SPAN
 > listed under the SDK on the Start Menu.
-  In recent SDK versions you can change the targeted CPU architecture by using
-  the <TT
+  In recent SDK versions you can change the targeted CPU architecture, build
+  type, and target OS by using the <TT
 CLASS="COMMAND"
 >setenv</TT
-> command.
-  All commands should be run from the <TT
+> command, e.g.
+  <TT
+CLASS="COMMAND"
+>setenv /x86 /release /xp</TT
+> to target Windows XP or later
+  with a 32-bit release build. See <TT
+CLASS="COMMAND"
+>/?</TT
+> for other options to
+  <TT
+CLASS="COMMAND"
+>setenv</TT
+>.  All commands should be run from the
+  <TT
 CLASS="FILENAME"
 >src\tools\msvc</TT
->
-  directory.
+> directory.
  </P
 ><P
 >  Before you build, you may need to edit the file <TT
@@ -253,7 +272,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN25574"
+NAME="AEN26177"
 >16.1.1. Requirements</A
 ></H2
 ><P
@@ -280,11 +299,12 @@ CLASS="PRODUCTNAME"
 ></DT
 ><DD
 ><P
->      It is recommended that you upgrade to the latest supported version
-      of the <SPAN
+>      If your build environment doesn't ship with a supported version of the
+      <SPAN
 CLASS="PRODUCTNAME"
 >Microsoft Windows SDK</SPAN
-> (currently
+> it
+      is recommended that you upgrade to the latest version (currently
       version 7.1), available for download from
       <A
 HREF="http://www.microsoft.com/downloads/"
@@ -298,7 +318,7 @@ TARGET="_top"
 CLASS="APPLICATION"
 >Windows Headers and Libraries</SPAN
 > part of the SDK.
-      If you install the <SPAN
+      If you install a <SPAN
 CLASS="PRODUCTNAME"
 >Windows SDK</SPAN
 >
@@ -310,6 +330,8 @@ CLASS="APPLICATION"
 CLASS="PRODUCTNAME"
 >Visual Studio</SPAN
 > to build.
+      Note that as of Version 8.0a the Windows SDK no longer ships with a
+      complete command-line build environment.
      </P
 ></DD
 ><DT
@@ -373,33 +395,81 @@ CLASS="PRODUCTNAME"
 ></DT
 ><DD
 ><P
->      Bison and Flex are required to build from Git, but not required when
-      building from a release file. Note that only Bison 1.875 or versions
-      2.2 and later will work. Also, Flex version 2.5.31 or later is required.
-      Bison can be downloaded from <A
-HREF="http://gnuwin32.sourceforge.net"
+>      <SPAN
+CLASS="PRODUCTNAME"
+>Bison</SPAN
+> and <SPAN
+CLASS="PRODUCTNAME"
+>Flex</SPAN
+> are
+      required to build from Git, but not required when building from a release
+      file. Only <SPAN
+CLASS="PRODUCTNAME"
+>Bison</SPAN
+> 1.875 or versions 2.2 and later
+      will work. <SPAN
+CLASS="PRODUCTNAME"
+>Flex</SPAN
+> must be version 2.5.31 or later.
+     </P
+><P
+>      Both <SPAN
+CLASS="PRODUCTNAME"
+>Bison</SPAN
+> and <SPAN
+CLASS="PRODUCTNAME"
+>Flex</SPAN
+>
+      are included in the <SPAN
+CLASS="PRODUCTNAME"
+>msys</SPAN
+> tool suite, available
+      from <A
+HREF="http://www.mingw.org/wiki/MSYS"
 TARGET="_top"
->http://gnuwin32.sourceforge.net</A
->.
-      Flex can be downloaded from
-      <A
-HREF="http://www.postgresql.org/ftp/misc/winflex/"
-TARGET="_top"
->http://www.postgresql.org/ftp/misc/winflex/</A
->.
-      If you are using <SPAN
+>http://www.mingw.org/wiki/MSYS</A
+> as part of the
+      <SPAN
+CLASS="PRODUCTNAME"
+>MinGW</SPAN
+> compiler suite. You can also get
+      <SPAN
+CLASS="PRODUCTNAME"
+>msys</SPAN
+> as part of
+      <SPAN
 CLASS="PRODUCTNAME"
 >msysGit</SPAN
-> for accessing the
-      PostgreSQL <SPAN
-CLASS="PRODUCTNAME"
->Git</SPAN
-> repository you probably already
-      have recent versions of bison and flex in your <SPAN
-CLASS="PRODUCTNAME"
->Git</SPAN
+> from <A
+HREF="http://git-scm.com/"
+TARGET="_top"
+>http://git-scm.com/</A
+>.
+     </P
+><P
+>      You will need to add the directory containing
+      <TT
+CLASS="FILENAME"
+>flex.exe</TT
+> and <TT
+CLASS="FILENAME"
+>bison.exe</TT
+> to the
+      PATH environment variable in <TT
+CLASS="FILENAME"
+>buildenv.pl</TT
+> unless
+      they are already in PATH. In the case of MinGW, the directory is the
+      <TT
+CLASS="FILENAME"
+>\msys\1.0\bin</TT
+> subdirectory of your MinGW
+      installation directory. For msysGit, it's the <TT
+CLASS="FILENAME"
+>bin</TT
 >
-      binary directory.
+      directory in your Git install directory. Do not add the MinGW compiler
+      tools themselves to PATH.
      </P
 ><DIV
 CLASS="NOTE"
@@ -418,7 +488,26 @@ CLASS="FILENAME"
         Consider installing into <TT
 CLASS="FILENAME"
 >C:\GnuWin32</TT
-> instead.
+> or use the
+        NTFS short name path to GnuWin32 in your PATH environment setting
+        (e.g. <TT
+CLASS="FILENAME"
+>C:\PROGRA~1\GnuWin32</TT
+>).
+       </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>       The obsolete "winflex" binaries distributed on the PostgreSQL FTP site
+       and referenced in older documentation will fail with "flex: fatal
+       internal error, exec failed" on 64-bit Windows hosts. Use flex from
+       msys instead.
        </P
 ></BLOCKQUOTE
 ></DIV
@@ -581,7 +670,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN25676"
+NAME="AEN26296"
 >16.1.2. Special Considerations for 64-bit Windows</A
 ></H2
 ><P
@@ -620,7 +709,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN25684"
+NAME="AEN26304"
 >16.1.3. Building</A
 ></H2
 ><P
@@ -686,7 +775,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN25700"
+NAME="AEN26320"
 >16.1.4. Cleaning and Installing</A
 ></H2
 ><P
@@ -733,7 +822,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN25711"
+NAME="AEN26331"
 >16.1.5. Running the Regression Tests</A
 ></H2
 ><P
@@ -792,7 +881,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN25724"
+NAME="AEN26344"
 >16.1.6. Building the Documentation</A
 ></H2
 ><P

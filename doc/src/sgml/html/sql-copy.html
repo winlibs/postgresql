@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-COPY"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN66369"
+NAME="AEN68621"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN66369"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN66374"
+NAME="AEN68626"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,6 +124,11 @@ CLASS="REPLACEABLE"
 CLASS="REPLACEABLE"
 ><I
 >filename</I
+></TT
+>' | PROGRAM '<TT
+CLASS="REPLACEABLE"
+><I
+>command</I
 ></TT
 >' | STDIN }
     [ [ WITH ] ( <TT
@@ -154,6 +159,11 @@ CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
+>' | PROGRAM '<TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
 >' | STDOUT }
     [ [ WITH ] ( <TT
 CLASS="REPLACEABLE"
@@ -182,6 +192,12 @@ CLASS="REPLACEABLE"
 ></TT
 >
     OIDS [ <TT
+CLASS="REPLACEABLE"
+><I
+>boolean</I
+></TT
+> ]
+    FREEZE [ <TT
 CLASS="REPLACEABLE"
 ><I
 >boolean</I
@@ -228,7 +244,7 @@ CLASS="REPLACEABLE"
 ><I
 >column_name</I
 ></TT
-> [, ...] ) |
+> [, ...] )
     ENCODING '<TT
 CLASS="REPLACEABLE"
 ><I
@@ -239,7 +255,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66397"
+NAME="AEN68652"
 ></A
 ><H2
 >Description</H2
@@ -308,6 +324,16 @@ CLASS="PRODUCTNAME"
    the name must be specified from the viewpoint of the server. When
    <TT
 CLASS="LITERAL"
+>PROGRAM</TT
+> is specified, the server executes the
+   given command, and reads from its standard input, or writes to its
+   standard output. The command must be specified from the viewpoint of the
+   server, and be executable by the <TT
+CLASS="LITERAL"
+>postgres</TT
+> user. When
+   <TT
+CLASS="LITERAL"
 >STDIN</TT
 > or <TT
 CLASS="LITERAL"
@@ -320,7 +346,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66416"
+NAME="AEN68673"
 ></A
 ><H2
 >Parameters</H2
@@ -384,12 +410,39 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      The absolute path name of the input or output file.  Windows users
-      might need to use an <TT
+>      The path name of the input or output file.  An input file name can be
+      an absolute or relative path, but an output file name must be an absolute
+      path.  Windows users might need to use an <TT
 CLASS="LITERAL"
 >E''</TT
-> string and double any backslashes
-      used in the path name.
+> string and
+      double any backslashes used in the path name.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PROGRAM</TT
+></DT
+><DD
+><P
+>      A command to execute. In <TT
+CLASS="COMMAND"
+>COPY FROM</TT
+>, the input is
+      read from standard output of the command, and in <TT
+CLASS="COMMAND"
+>COPY TO</TT
+>,
+      the output is written to the standard input of the command.
+     </P
+><P
+>      Note that the command is invoked by the shell, so if you need to pass
+      any arguments to shell command that come from an untrusted source, you
+      must be careful to strip or escape any special characters that might
+      have a special meaning for the shell. For security reasons, it is best
+      to use a fixed command string, or at least avoid passing any user input
+      in it.
      </P
 ></DD
 ><DT
@@ -499,6 +552,30 @@ CLASS="REPLACEABLE"
 >query</I
 ></TT
 >.)
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FREEZE</TT
+></DT
+><DD
+><P
+>      Requests copying the data with rows already frozen, just as they
+      would be after running the <TT
+CLASS="COMMAND"
+>VACUUM FREEZE</TT
+> command.
+      This is intended as a performance option for initial data loading.
+      Rows will be frozen only if the table being loaded has been created
+      or truncated in the current subtransaction, there are no cursors
+      open and there are no older snapshots held by this transaction.
+     </P
+><P
+>      Note that all other sessions will immediately be able to see the data
+      once it has been successfully loaded. This violates the normal rules
+      of MVCC visibility and users specifying should be aware of the
+      potential problems this might cause.
      </P
 ></DD
 ><DT
@@ -698,7 +775,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66544"
+NAME="AEN68816"
 ></A
 ><H2
 >Outputs</H2
@@ -729,7 +806,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66551"
+NAME="AEN68823"
 ></A
 ><H2
 >Notes</H2
@@ -809,12 +886,22 @@ CLASS="COMMAND"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > user (the user ID the
-    server runs as), not the client. <TT
+    server runs as), not the client. Similarly,
+    the command specified with <TT
+CLASS="LITERAL"
+>PROGRAM</TT
+> is executed directly
+    by the server, not by the client application, must be executable by the
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> user.
+    <TT
 CLASS="COMMAND"
 >COPY</TT
-> naming a
-    file is only allowed to database superusers, since it allows reading
-    or writing any file that the server has privileges to access.
+> naming a file or command is only allowed to
+    database superusers, since it allows reading or writing any file that the
+    server has privileges to access.
    </P
 ><P
 >    Do not confuse <TT
@@ -870,6 +957,13 @@ CLASS="COMMAND"
     a file specified by a relative path. The path will be interpreted
     relative to the working directory of the server process (normally
     the cluster's data directory), not the client's working directory.
+   </P
+><P
+>    Executing a command with <TT
+CLASS="LITERAL"
+>PROGRAM</TT
+> might be restricted
+    by the operating system's access control mechanisms, such as SELinux.
    </P
 ><P
 >    <TT
@@ -959,14 +1053,14 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66607"
+NAME="AEN68883"
 ></A
 ><H2
 >File Formats</H2
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN66609"
+NAME="AEN68885"
 ></A
 ><H3
 >Text Format</H3
@@ -1057,7 +1151,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN66629"
+NAME="AEN68905"
 ></A
 ><TABLE
 BORDER="1"
@@ -1259,7 +1353,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN66692"
+NAME="AEN68968"
 ></A
 ><H3
 >CSV Format</H3
@@ -1452,7 +1546,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN66736"
+NAME="AEN69012"
 ></A
 ><H3
 >Binary Format</H3
@@ -1508,7 +1602,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT3"
 ><A
-NAME="AEN66749"
+NAME="AEN69025"
 ></A
 ><H4
 >File Header</H4
@@ -1601,7 +1695,7 @@ is left for a later release.
 ><DIV
 CLASS="REFSECT3"
 ><A
-NAME="AEN66775"
+NAME="AEN69051"
 ></A
 ><H4
 >Tuples</H4
@@ -1653,7 +1747,7 @@ OIDs to be shown as null if that ever proves desirable.
 ><DIV
 CLASS="REFSECT3"
 ><A
-NAME="AEN66786"
+NAME="AEN69062"
 ></A
 ><H4
 >File Trailer</H4
@@ -1672,7 +1766,7 @@ NAME="AEN66786"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66790"
+NAME="AEN69066"
 ></A
 ><H2
 >Examples</H2
@@ -1702,6 +1796,14 @@ CLASS="PROGRAMLISTING"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >COPY (SELECT * FROM country WHERE country_name LIKE 'A%') TO '/usr1/proj/bray/sql/a_list_countries.copy';</PRE
+><P>
+  </P
+><P
+>   To copy into a compressed file, you can pipe the output through an external
+   compression program:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>COPY country TO PROGRAM 'gzip &#62; /usr1/proj/bray/sql/country_data.gz';</PRE
 ><P>
   </P
 ><P
@@ -1755,7 +1857,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66809"
+NAME="AEN69087"
 ></A
 ><H2
 >Compatibility</H2

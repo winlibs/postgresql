@@ -3,7 +3,7 @@
  * pg_dump.h
  *	  Common header file for the pg_dump utility
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/bin/pg_dump/pg_dump.h
@@ -58,17 +58,6 @@ typedef struct SimpleOidList
 	SimpleOidListCell *tail;
 } SimpleOidList;
 
-typedef struct SimpleStringListCell
-{
-	struct SimpleStringListCell *next;
-	char		val[1];			/* VARIABLE LENGTH FIELD */
-} SimpleStringListCell;
-
-typedef struct SimpleStringList
-{
-	SimpleStringListCell *head;
-	SimpleStringListCell *tail;
-} SimpleStringList;
 
 /*
  * The data structures used to store system catalog information.  Every
@@ -120,7 +109,9 @@ typedef enum
 	DO_BLOB,
 	DO_BLOB_DATA,
 	DO_PRE_DATA_BOUNDARY,
-	DO_POST_DATA_BOUNDARY
+	DO_POST_DATA_BOUNDARY,
+	DO_EVENT_TRIGGER,
+	DO_REFRESH_MATVIEW
 } DumpableObjectType;
 
 typedef struct _dumpableObject
@@ -163,6 +154,7 @@ typedef struct _typeInfo
 	 * produce something different than typname
 	 */
 	char	   *rolname;		/* name of owner, or empty string */
+	char	   *typacl;
 	Oid			typelem;
 	Oid			typrelid;
 	char		typrelkind;		/* 'r', 'v', 'c', etc */
@@ -192,6 +184,7 @@ typedef struct _funcInfo
 	Oid		   *argtypes;
 	Oid			prorettype;
 	char	   *proacl;
+	char	   *proiargs;
 } FuncInfo;
 
 /* AggInfo is a superset of FuncInfo */
@@ -243,6 +236,7 @@ typedef struct _tableInfo
 	char	   *relacl;
 	char		relkind;
 	char		relpersistence; /* relation persistence */
+	bool		relispopulated; /* relation is populated */
 	char	   *reltablespace;	/* relation tablespace */
 	char	   *reloptions;		/* options specified by WITH (...) */
 	char	   *toast_reloptions;		/* ditto, for the TOAST table */
@@ -258,6 +252,7 @@ typedef struct _tableInfo
 	/* these two are set only if table is a sequence owned by a column: */
 	Oid			owning_tab;		/* OID of table owning sequence */
 	int			owning_col;		/* attr # of column owning sequence */
+	int			relpages;
 
 	bool		interesting;	/* true if need to collect more data */
 
@@ -321,6 +316,7 @@ typedef struct _indxInfo
 	bool		indisclustered;
 	/* if there is an associated constraint object, its dumpId: */
 	DumpId		indexconstraint;
+	int			relpages;		/* relpages of the underlying table */
 } IndxInfo;
 
 typedef struct _ruleInfo
@@ -353,6 +349,18 @@ typedef struct _triggerInfo
 	bool		tginitdeferred;
 	char	   *tgdef;
 } TriggerInfo;
+
+typedef struct _evttriggerInfo
+{
+	DumpableObject dobj;
+	char	   *evtname;
+	char	   *evtevent;
+	char	   *evtowner;
+	char	   *evttags;
+	char	   *evtfname;
+	char		evttype;
+	char		evtenabled;
+} EventTriggerInfo;
 
 /*
  * struct ConstraintInfo is used for all constraint types.	However we
@@ -518,9 +526,7 @@ extern CollInfo *findCollationByOid(Oid oid);
 extern NamespaceInfo *findNamespaceByOid(Oid oid);
 
 extern void simple_oid_list_append(SimpleOidList *list, Oid val);
-extern void simple_string_list_append(SimpleStringList *list, const char *val);
 extern bool simple_oid_list_member(SimpleOidList *list, Oid val);
-extern bool simple_string_list_member(SimpleStringList *list, const char *val);
 
 extern void parseOidArray(const char *str, Oid *array, int arraysize);
 
@@ -528,6 +534,7 @@ extern void sortDumpableObjects(DumpableObject **objs, int numObjs,
 					DumpId preBoundaryId, DumpId postBoundaryId);
 extern void sortDumpableObjectsByTypeName(DumpableObject **objs, int numObjs);
 extern void sortDumpableObjectsByTypeOid(DumpableObject **objs, int numObjs);
+extern void sortDataAndIndexObjectsBySize(DumpableObject **objs, int numObjs);
 
 /*
  * version specific routines
@@ -564,5 +571,6 @@ extern ForeignServerInfo *getForeignServers(Archive *fout,
 extern DefaultACLInfo *getDefaultACLs(Archive *fout, int *numDefaultACLs);
 extern void getExtensionMembership(Archive *fout, ExtensionInfo extinfo[],
 					   int numExtensions);
+extern EventTriggerInfo *getEventTriggers(Archive *fout, int *numEventTriggers);
 
 #endif   /* PG_DUMP_H */

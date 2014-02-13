@@ -3,7 +3,7 @@
  * postgres.c
  *	  POSTGRES C Backend Interface
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -72,6 +72,7 @@
 #include "utils/memutils.h"
 #include "utils/ps_status.h"
 #include "utils/snapmgr.h"
+#include "utils/timeout.h"
 #include "utils/timestamp.h"
 #include "mb/pg_wchar.h"
 
@@ -191,6 +192,7 @@ static int	InteractiveBackend(StringInfo inBuf);
 static int	interactive_getc(void);
 static int	SocketBackend(StringInfo inBuf);
 static int	ReadCommand(StringInfo inBuf);
+static void forbidden_in_wal_sender(char firstchar);
 static List *pg_rewrite_query(Query *query);
 static bool check_log_statement(List *stmt_list);
 static int	errdetail_execute(List *raw_parsetree_list);
@@ -2386,9 +2388,9 @@ start_xact_command(void)
 		/* Set statement timeout running, if any */
 		/* NB: this mustn't be enabled until we are within an xact */
 		if (StatementTimeout > 0)
-			enable_sig_alarm(StatementTimeout, true);
+			enable_timeout_after(STATEMENT_TIMEOUT, StatementTimeout);
 		else
-			cancel_from_timeout = false;
+			disable_timeout(STATEMENT_TIMEOUT, false);
 
 		xact_started = true;
 	}
@@ -2400,7 +2402,7 @@ finish_xact_command(void)
 	if (xact_started)
 	{
 		/* Cancel any active statement timeout before committing */
-		disable_sig_alarm(true);
+		disable_timeout(STATEMENT_TIMEOUT, false);
 
 		/* Now commit the command */
 		ereport(DEBUG3,
@@ -2521,6 +2523,13 @@ quickdie(SIGNAL_ARGS)
 {
 	sigaddset(&BlockSig, SIGQUIT);		/* prevent nested calls */
 	PG_SETMASK(&BlockSig);
+
+	/*
+	 * Prevent interrupts while exiting; though we just blocked signals that
+	 * would queue new interrupts, one may have been pending.  We don't want a
+	 * quickdie() downgraded to a mere query cancel.
+	 */
+	HOLD_INTERRUPTS();
 
 	/*
 	 * If we're aborting out of client auth, don't risk trying to send
@@ -2881,7 +2890,22 @@ ProcessInterrupts(void)
 					(errcode(ERRCODE_QUERY_CANCELED),
 					 errmsg("canceling authentication due to timeout")));
 		}
-		if (cancel_from_timeout)
+
+		/*
+		 * If LOCK_TIMEOUT and STATEMENT_TIMEOUT indicators are both set, we
+		 * prefer to report the former; but be sure to clear both.
+		 */
+		if (get_timeout_indicator(LOCK_TIMEOUT, true))
+		{
+			ImmediateInterruptOK = false;		/* not idle anymore */
+			(void) get_timeout_indicator(STATEMENT_TIMEOUT, true);
+			DisableNotifyInterrupt();
+			DisableCatchupInterrupt();
+			ereport(ERROR,
+					(errcode(ERRCODE_LOCK_NOT_AVAILABLE),
+					 errmsg("canceling statement due to lock timeout")));
+		}
+		if (get_timeout_indicator(STATEMENT_TIMEOUT, true))
 		{
 			ImmediateInterruptOK = false;		/* not idle anymore */
 			DisableNotifyInterrupt();
@@ -3230,13 +3254,14 @@ get_stats_option_name(const char *arg)
  * coming from the client, or PGC_SUSET for insecure options coming from
  * a superuser client.
  *
- * Returns the database name extracted from the command line, if any.
+ * If a database name is present in the command line arguments, it's
+ * returned into *dbname (this is allowed only if *dbname is initially NULL).
  * ----------------------------------------------------------------
  */
-const char *
-process_postgres_switches(int argc, char *argv[], GucContext ctx)
+void
+process_postgres_switches(int argc, char *argv[], GucContext ctx,
+						  const char **dbname)
 {
-	const char *dbname;
 	bool		secure = (ctx == PGC_POSTMASTER);
 	int			errs = 0;
 	GucSource	gucsource;
@@ -3287,7 +3312,8 @@ process_postgres_switches(int argc, char *argv[], GucContext ctx)
 
 			case 'b':
 				/* Undocumented flag used for binary upgrades */
-				IsBinaryUpgrade = true;
+				if (secure)
+					IsBinaryUpgrade = true;
 				break;
 
 			case 'C':
@@ -3304,7 +3330,8 @@ process_postgres_switches(int argc, char *argv[], GucContext ctx)
 				break;
 
 			case 'E':
-				EchoQuery = true;
+				if (secure)
+					EchoQuery = true;
 				break;
 
 			case 'e':
@@ -3329,11 +3356,12 @@ process_postgres_switches(int argc, char *argv[], GucContext ctx)
 				break;
 
 			case 'j':
-				UseNewLine = 0;
+				if (secure)
+					UseNewLine = 0;
 				break;
 
 			case 'k':
-				SetConfigOption("unix_socket_directory", optarg, ctx, gucsource);
+				SetConfigOption("unix_socket_directories", optarg, ctx, gucsource);
 				break;
 
 			case 'l':
@@ -3447,13 +3475,10 @@ process_postgres_switches(int argc, char *argv[], GucContext ctx)
 	}
 
 	/*
-	 * Should be no more arguments except an optional database name, and
-	 * that's only in the secure case.
+	 * Optional database name should be there only if *dbname is NULL.
 	 */
-	if (!errs && secure && argc - optind >= 1)
-		dbname = strdup(argv[optind++]);
-	else
-		dbname = NULL;
+	if (!errs && dbname && *dbname == NULL && argc - optind >= 1)
+		*dbname = strdup(argv[optind++]);
 
 	if (errs || argc != optind)
 	{
@@ -3482,8 +3507,6 @@ process_postgres_switches(int argc, char *argv[], GucContext ctx)
 #ifdef HAVE_INT_OPTRESET
 	optreset = 1;				/* some systems need this too */
 #endif
-
-	return dbname;
 }
 
 
@@ -3493,14 +3516,16 @@ process_postgres_switches(int argc, char *argv[], GucContext ctx)
  *
  * argc/argv are the command line arguments to be used.  (When being forked
  * by the postmaster, these are not the original argv array of the process.)
- * username is the (possibly authenticated) PostgreSQL user name to be used
- * for the session.
+ * dbname is the name of the database to connect to, or NULL if the database
+ * name should be extracted from the command line arguments or defaulted.
+ * username is the PostgreSQL user name to be used for the session.
  * ----------------------------------------------------------------
  */
-int
-PostgresMain(int argc, char *argv[], const char *username)
+void
+PostgresMain(int argc, char *argv[],
+			 const char *dbname,
+			 const char *username)
 {
-	const char *dbname;
 	int			firstchar;
 	StringInfoData input_message;
 	sigjmp_buf	local_sigjmp_buf;
@@ -3547,7 +3572,7 @@ PostgresMain(int argc, char *argv[], const char *username)
 	/*
 	 * Parse command-line options.
 	 */
-	dbname = process_postgres_switches(argc, argv, PGC_POSTMASTER);
+	process_postgres_switches(argc, argv, PGC_POSTMASTER, &dbname);
 
 	/* Must have gotten a database name, or have a default (the username) */
 	if (dbname == NULL)
@@ -3604,7 +3629,7 @@ PostgresMain(int argc, char *argv[], const char *username)
 			pqsignal(SIGQUIT, quickdie);		/* hard crash time */
 		else
 			pqsignal(SIGQUIT, die);		/* cancel current query and exit */
-		pqsignal(SIGALRM, handle_sig_alarm);	/* timeout conditions */
+		InitializeTimeouts();	/* establishes SIGALRM handler */
 
 		/*
 		 * Ignore failure to write to frontend. Note: if frontend closes
@@ -3651,6 +3676,9 @@ PostgresMain(int argc, char *argv[], const char *username)
 		 * Create lockfile for data directory.
 		 */
 		CreateDataDirLockFile(false);
+
+		/* Initialize MaxBackends (if under postmaster, was done already) */
+		InitializeMaxBackends();
 	}
 
 	/* Early initialization */
@@ -3709,9 +3737,9 @@ PostgresMain(int argc, char *argv[], const char *username)
 	if (IsUnderPostmaster && Log_disconnections)
 		on_proc_exit(log_disconnections, 0);
 
-	/* If this is a WAL sender process, we're done with initialization. */
+	/* Perform initialization specific to a WAL sender process. */
 	if (am_walsender)
-		proc_exit(WalSenderMain());
+		InitWalSender();
 
 	/*
 	 * process any libraries that should be preloaded at backend start (this
@@ -3769,6 +3797,13 @@ PostgresMain(int argc, char *argv[], const char *username)
 	 * always active, we have at least some chance of recovering from an error
 	 * during error recovery.  (If we get into an infinite loop thereby, it
 	 * will soon be stopped by overflow of elog.c's internal state stack.)
+	 *
+	 * Note that we use sigsetjmp(..., 1), so that this function's signal mask
+	 * (to wit, UnBlockSig) will be restored when longjmp'ing to here.  This
+	 * is essential in case we longjmp'd out of a signal handler on a platform
+	 * where that leaves the signal blocked.  It's not redundant with the
+	 * unblock in AbortTransaction() because the latter is only called if we
+	 * were inside a transaction.
 	 */
 
 	if (sigsetjmp(local_sigjmp_buf, 1) != 0)
@@ -3789,11 +3824,17 @@ PostgresMain(int argc, char *argv[], const char *username)
 
 		/*
 		 * Forget any pending QueryCancel request, since we're returning to
-		 * the idle loop anyway, and cancel the statement timer if running.
+		 * the idle loop anyway, and cancel any active timeout requests.  (In
+		 * future we might want to allow some timeout requests to survive, but
+		 * at minimum it'd be necessary to do reschedule_timeouts(), in case
+		 * we got here because of a query cancel interrupting the SIGALRM
+		 * interrupt handler.)	Note in particular that we must clear the
+		 * statement and lock timeout indicators, to prevent any future plain
+		 * query cancels from being misreported as timeouts in case we're
+		 * forgetting a timeout cancel.
 		 */
-		QueryCancelPending = false;
-		disable_sig_alarm(true);
-		QueryCancelPending = false;		/* again in case timeout occurred */
+		disable_all_timeouts(false);
+		QueryCancelPending = false;		/* second to avoid race condition */
 
 		/*
 		 * Turn off these interrupts too.  This is only needed here and not in
@@ -3820,6 +3861,9 @@ PostgresMain(int argc, char *argv[], const char *username)
 		 * Abort the current transaction in order to recover.
 		 */
 		AbortCurrentTransaction();
+
+		if (am_walsender)
+			WalSndErrorCleanup();
 
 		/*
 		 * Now return to normal top-level context and clear ErrorContext for
@@ -3955,7 +3999,10 @@ PostgresMain(int argc, char *argv[], const char *username)
 					query_string = pq_getmsgstring(&input_message);
 					pq_getmsgend(&input_message);
 
-					exec_simple_query(query_string);
+					if (am_walsender)
+						exec_replication_command(query_string);
+					else
+						exec_simple_query(query_string);
 
 					send_ready_for_query = true;
 				}
@@ -3967,6 +4014,8 @@ PostgresMain(int argc, char *argv[], const char *username)
 					const char *query_string;
 					int			numParams;
 					Oid		   *paramTypes = NULL;
+
+					forbidden_in_wal_sender(firstchar);
 
 					/* Set statement_timestamp() */
 					SetCurrentStatementStartTimestamp();
@@ -3990,6 +4039,8 @@ PostgresMain(int argc, char *argv[], const char *username)
 				break;
 
 			case 'B':			/* bind */
+				forbidden_in_wal_sender(firstchar);
+
 				/* Set statement_timestamp() */
 				SetCurrentStatementStartTimestamp();
 
@@ -4005,6 +4056,8 @@ PostgresMain(int argc, char *argv[], const char *username)
 					const char *portal_name;
 					int			max_rows;
 
+					forbidden_in_wal_sender(firstchar);
+
 					/* Set statement_timestamp() */
 					SetCurrentStatementStartTimestamp();
 
@@ -4017,6 +4070,8 @@ PostgresMain(int argc, char *argv[], const char *username)
 				break;
 
 			case 'F':			/* fastpath function call */
+				forbidden_in_wal_sender(firstchar);
+
 				/* Set statement_timestamp() */
 				SetCurrentStatementStartTimestamp();
 
@@ -4064,6 +4119,8 @@ PostgresMain(int argc, char *argv[], const char *username)
 					int			close_type;
 					const char *close_target;
 
+					forbidden_in_wal_sender(firstchar);
+
 					close_type = pq_getmsgbyte(&input_message);
 					close_target = pq_getmsgstring(&input_message);
 					pq_getmsgend(&input_message);
@@ -4105,6 +4162,8 @@ PostgresMain(int argc, char *argv[], const char *username)
 				{
 					int			describe_type;
 					const char *describe_target;
+
+					forbidden_in_wal_sender(firstchar);
 
 					/* Set statement_timestamp() (needed for xact) */
 					SetCurrentStatementStartTimestamp();
@@ -4185,11 +4244,29 @@ PostgresMain(int argc, char *argv[], const char *username)
 								firstchar)));
 		}
 	}							/* end of input-reading loop */
+}
 
-	/* can't get here because the above loop never exits */
-	Assert(false);
-
-	return 1;					/* keep compiler quiet */
+/*
+ * Throw an error if we're a WAL sender process.
+ *
+ * This is used to forbid anything else than simple query protocol messages
+ * in a WAL sender process.  'firstchar' specifies what kind of a forbidden
+ * message was received, and is used to construct the error message.
+ */
+static void
+forbidden_in_wal_sender(char firstchar)
+{
+	if (am_walsender)
+	{
+		if (firstchar == 'F')
+			ereport(ERROR,
+					(errcode(ERRCODE_PROTOCOL_VIOLATION),
+					 errmsg("fastpath function calls not supported in a replication connection")));
+		else
+			ereport(ERROR,
+					(errcode(ERRCODE_PROTOCOL_VIOLATION),
+					 errmsg("extended query protocol not supported in a replication connection")));
+	}
 }
 
 

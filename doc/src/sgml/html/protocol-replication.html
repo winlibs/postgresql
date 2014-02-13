@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Frontend/Backend Protocol"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 46. Frontend/Backend Protocol</TD
+>Chapter 48. Frontend/Backend Protocol</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PROTOCOL-REPLICATION"
->46.3. Streaming Replication Protocol</A
+>48.3. Streaming Replication Protocol</A
 ></H1
 ><P
 >To initiate streaming replication, the frontend sends the
@@ -156,15 +156,58 @@ CLASS="VARIABLELIST"
      </P
 ></DD
 ><DT
+>TIMELINE_HISTORY <TT
+CLASS="REPLACEABLE"
+><I
+>tli</I
+></TT
+></DT
+><DD
+><P
+>      Requests the server to send over the timeline history file for timeline
+      <TT
+CLASS="REPLACEABLE"
+><I
+>tli</I
+></TT
+>.  Server replies with a
+      result set of a single row, containing two fields:
+     </P
+><P
+>      <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>filename</DT
+><DD
+><P
+>       Filename of the timeline history file, e.g 00000002.history.
+      </P
+></DD
+><DT
+>content</DT
+><DD
+><P
+>       Contents of the timeline history file.
+      </P
+></DD
+></DL
+></DIV
+><P>
+     </P
+></DD
+><DT
 >START_REPLICATION <TT
 CLASS="REPLACEABLE"
 ><I
->XXX</I
+>XXX/XXX</I
 ></TT
->/<TT
+> TIMELINE <TT
 CLASS="REPLACEABLE"
 ><I
->XXX</I
+>tli</I
 ></TT
 ></DT
 ><DD
@@ -173,25 +216,46 @@ CLASS="REPLACEABLE"
       WAL position <TT
 CLASS="REPLACEABLE"
 ><I
->XXX</I
+>XXX/XXX</I
 ></TT
->/<TT
+> on timeline
+      <TT
 CLASS="REPLACEABLE"
 ><I
->XXX</I
+>tli</I
 ></TT
 >.
       The server can reply with an error, e.g. if the requested section of WAL
       has already been recycled. On success, server responds with a
       CopyBothResponse message, and then starts to stream WAL to the frontend.
-      WAL will continue to be streamed until the connection is broken;
-      no further commands will be accepted.
+     </P
+><P
+>      If the client requests a timeline that's not the latest, but is part of
+      the history of the server, the server will stream all the WAL on that
+      timeline starting from the requested startpoint, up to the point where
+      the server switched to another timeline. If the client requests
+      streaming at exactly the end of an old timeline, the server responds
+      immediately with CommandComplete without entering COPY mode.
+     </P
+><P
+>      After streaming all the WAL on a timeline that is not the latest one,
+      the server will end streaming by exiting the COPY mode. When the client
+      acknowledges this by also exiting COPY mode, the server sends a result
+      set with one row and two columns, indicating the next timeline in this
+      server's history. The first column is the next timeline's ID, and the
+      second column is the XLOG position where the switch happened. Usually,
+      the switch position is the end of the WAL that was streamed, but there
+      are corner cases where the server can send some WAL from the old
+      timeline that it has not itself replayed before promoting. Finally, the
+      server sends CommandComplete message, and is ready to accept a new
+      command.
      </P
 ><P
 >      WAL data is sent as a series of CopyData messages.  (This allows
       other information to be intermixed; in particular the server can send
       an ErrorResponse message if it encounters a failure after beginning
-      to stream.)  The payload in each CopyData message follows this format:
+      to stream.)  The payload of each CopyData message from server to the
+      client contains a message of one of the following formats:
      </P
 ><P
 >      <P
@@ -216,27 +280,25 @@ CLASS="VARIABLELIST"
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The starting point of the WAL data in this message, given in
-          XLogRecPtr format.
+>          The starting point of the WAL data in this message.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The current end of WAL on the server, given in
-          XLogRecPtr format.
+>          The current end of WAL on the server.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The server's system clock at the time of transmission,
-          given in TimestampTz format.
+>          The server's system clock at the time of transmission, as
+          microseconds since midnight on 2000-01-01.
       </P
 ></DD
 ><DT
@@ -250,49 +312,19 @@ CLASS="REPLACEABLE"
 ><P
 >          A section of the WAL data stream.
       </P
+><P
+>          A single WAL record is never split across two XLogData messages.
+          When a WAL record crosses a WAL page boundary, and is therefore
+          already split using continuation records, it can be split at the page
+          boundary. In other words, the first main WAL record and its
+          continuation records can be sent in different XLogData messages.
+      </P
 ></DD
 ></DL
 ></DIV
 ><P>
       </P
 ></DD
-></DL
-></DIV
-><P>
-     </P
-><P
->       A single WAL record is never split across two CopyData messages.
-       When a WAL record crosses a WAL page boundary, and is therefore
-       already split using continuation records, it can be split at the page
-       boundary. In other words, the first main WAL record and its
-       continuation records can be sent in different CopyData messages.
-     </P
-><P
->       Note that all fields within the WAL data and the above-described header
-       will be in the sending server's native format.  Endianness, and the
-       format for the timestamp, are unpredictable unless the receiver has
-       verified that the sender's system identifier matches its own
-       <TT
-CLASS="FILENAME"
->pg_control</TT
-> contents.
-     </P
-><P
->       If the WAL sender process is terminated normally (during postmaster
-       shutdown), it will send a CommandComplete message before exiting.
-       This might not happen during an abnormal shutdown, of course.
-     </P
-><P
->       The receiving process can send replies back to the sender at any time,
-       using one of the following message formats (also in the payload of a
-       CopyData message):
-     </P
-><P
->      <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
 ><DT
 >Primary keepalive message (B)</DT
 ><DD
@@ -310,19 +342,26 @@ CLASS="VARIABLELIST"
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The current end of WAL on the server, given in
-          XLogRecPtr format.
+>          The current end of WAL on the server.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The server's system clock at the time of transmission,
-          given in TimestampTz format.
+>          The server's system clock at the time of transmission, as
+          microseconds since midnight on 2000-01-01.
+      </P
+></DD
+><DT
+>Byte1</DT
+><DD
+><P
+>          1 means that the client should reply to this message as soon as
+          possible, to avoid a timeout disconnect. 0 otherwise.
       </P
 ></DD
 ></DL
@@ -333,6 +372,11 @@ CLASS="VARIABLELIST"
 ></DL
 ></DIV
 ><P>
+     </P
+><P
+>       The receiving process can send replies back to the sender at any time,
+       using one of the following message formats (also in the payload of a
+       CopyData message):
      </P
 ><P
 >      <P
@@ -357,35 +401,43 @@ CLASS="VARIABLELIST"
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
 >          The location of the last WAL byte + 1 received and written to disk
-          in the standby, in XLogRecPtr format.
+          in the standby.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
 >          The location of the last WAL byte + 1 flushed to disk in
-          the standby, in XLogRecPtr format.
+          the standby.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The location of the last WAL byte + 1 applied in the standby, in
-          XLogRecPtr format.
+>          The location of the last WAL byte + 1 applied in the standby.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The server's system clock at the time of transmission,
-          given in TimestampTz format.
+>          The client's system clock at the time of transmission, as
+          microseconds since midnight on 2000-01-01.
+      </P
+></DD
+><DT
+>Byte1</DT
+><DD
+><P
+>          If 1, the client requests the server to reply to this message
+          immediately. This can be used to ping the server, to test if
+          the connection is still healthy.
       </P
 ></DD
 ></DL
@@ -420,22 +472,25 @@ CLASS="VARIABLELIST"
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The server's system clock at the time of transmission,
-          given in TimestampTz format.
+>          The client's system clock at the time of transmission, as
+          microseconds since midnight on 2000-01-01.
       </P
 ></DD
 ><DT
->Byte4</DT
+>Int32</DT
 ><DD
 ><P
->          The standby's current xmin.
+>          The standby's current xmin. This may be 0, if the standby is
+          sending notification that Hot Standby feedback will no longer
+          be sent on this connection. Later non-zero messages may
+          reinitiate the feedback mechanism.
       </P
 ></DD
 ><DT
->Byte4</DT
+>Int32</DT
 ><DD
 ><P
 >          The standby's current epoch.
@@ -580,7 +635,9 @@ CLASS="LITERAL"
      </P
 ><P
 >      The first ordinary result set contains the starting position of the
-      backup, given in XLogRecPtr format as a single column in a single row.
+      backup, in a single row with two columns. The first column contains
+      the start position given in XLogRecPtr format, and the second column
+      contains the corresponding timeline ID.
      </P
 ><P
 >      The second ordinary result set has one row for each tablespace.
@@ -644,7 +701,9 @@ CLASS="QUOTE"
 > specified in the POSIX 1003.1-2008
       standard) dump of the tablespace contents, except that the two trailing
       blocks of zeroes specified in the standard are omitted.
-      After the tar data is complete, a final ordinary result set will be sent.
+      After the tar data is complete, a final ordinary result set will be sent,
+      containing the WAL end position of the backup, in the same format as
+      the start position.
      </P
 ><P
 >      The tar archive for the data directory and each tablespace will contain

@@ -5,11 +5,14 @@
  *	This file is copied from the 'files' format file, but dumps data into
  *	one temp file then sends it to the output TAR archive.
  *
+ *	The tar format also includes a 'restore.sql' script which is there for
+ *	the benefit of humans. This script is never used by pg_restore.
+ *
  *	NOTE: If you untar the created 'tar' file, the resulting files are
  *	compatible with the 'directory' format. Please keep the two formats in
  *	sync.
  *
- *	See the headers to pg_backup_files & pg_restore for more details.
+ *	See the headers to pg_backup_directory & pg_restore for more details.
  *
  * Copyright (c) 2000, Philip Warner
  *		Rights are granted to use this software in any way so long
@@ -28,8 +31,9 @@
 #include "pg_backup.h"
 #include "pg_backup_archiver.h"
 #include "pg_backup_tar.h"
-#include "dumpmem.h"
-#include "dumputils.h"
+#include "pg_backup_utils.h"
+#include "parallel.h"
+#include "pgtar.h"
 
 #include <sys/stat.h>
 #include <ctype.h>
@@ -115,7 +119,6 @@ static char *tarGets(char *buf, size_t len, TAR_MEMBER *th);
 static int	tarPrintf(ArchiveHandle *AH, TAR_MEMBER *th, const char *fmt,...) __attribute__((format(PG_PRINTF_ATTRIBUTE, 3, 4)));
 
 static void _tarAddFile(ArchiveHandle *AH, TAR_MEMBER *th);
-static int	_tarChecksum(char *th);
 static TAR_MEMBER *_tarPositionTo(ArchiveHandle *AH, const char *filename);
 static size_t tarRead(void *buf, size_t len, TAR_MEMBER *th);
 static size_t tarWrite(const void *buf, size_t len, TAR_MEMBER *th);
@@ -156,10 +159,16 @@ InitArchiveFmt_Tar(ArchiveHandle *AH)
 	AH->ClonePtr = NULL;
 	AH->DeClonePtr = NULL;
 
+	AH->MasterStartParallelItemPtr = NULL;
+	AH->MasterEndParallelItemPtr = NULL;
+
+	AH->WorkerJobDumpPtr = NULL;
+	AH->WorkerJobRestorePtr = NULL;
+
 	/*
 	 * Set up some special context used in compressing data.
 	 */
-	ctx = (lclContext *) pg_calloc(1, sizeof(lclContext));
+	ctx = (lclContext *) pg_malloc0(sizeof(lclContext));
 	AH->formatData = (void *) ctx;
 	ctx->filePos = 0;
 	ctx->isSpecialScript = 0;
@@ -266,7 +275,7 @@ _ArchiveEntry(ArchiveHandle *AH, TocEntry *te)
 	lclTocEntry *ctx;
 	char		fn[K_STD_BUF_SIZE];
 
-	ctx = (lclTocEntry *) pg_calloc(1, sizeof(lclTocEntry));
+	ctx = (lclTocEntry *) pg_malloc0(sizeof(lclTocEntry));
 	if (te->dataDumper != NULL)
 	{
 #ifdef HAVE_LIBZ
@@ -305,7 +314,7 @@ _ReadExtraToc(ArchiveHandle *AH, TocEntry *te)
 
 	if (ctx == NULL)
 	{
-		ctx = (lclTocEntry *) pg_calloc(1, sizeof(lclTocEntry));
+		ctx = (lclTocEntry *) pg_malloc0(sizeof(lclTocEntry));
 		te->formatData = (void *) ctx;
 	}
 
@@ -378,7 +387,7 @@ tarOpen(ArchiveHandle *AH, const char *filename, char mode)
 	}
 	else
 	{
-		tm = pg_calloc(1, sizeof(TAR_MEMBER));
+		tm = pg_malloc0(sizeof(TAR_MEMBER));
 
 #ifndef WIN32
 		tm->tmpFH = tmpfile();
@@ -826,7 +835,7 @@ _CloseArchive(ArchiveHandle *AH)
 		/*
 		 * Now send the data (tables & blobs)
 		 */
-		WriteDataChunks(AH);
+		WriteDataChunks(AH, NULL);
 
 		/*
 		 * Now this format wants to append a script which does a full restore
@@ -1016,29 +1025,11 @@ tarPrintf(ArchiveHandle *AH, TAR_MEMBER *th, const char *fmt,...)
 	return cnt;
 }
 
-static int
-_tarChecksum(char *header)
-{
-	int			i,
-				sum;
-
-	/*
-	 * Per POSIX, the checksum is the simple sum of all bytes in the header,
-	 * treating the bytes as unsigned, and treating the checksum field (at
-	 * offset 148) as though it contained 8 spaces.
-	 */
-	sum = 8 * ' ';				/* presumed value for checksum field */
-	for (i = 0; i < 512; i++)
-		if (i < 148 || i >= 156)
-			sum += 0xFF & header[i];
-	return sum;
-}
-
 bool
 isValidTarHeader(char *header)
 {
 	int			sum;
-	int			chk = _tarChecksum(header);
+	int			chk = tarChecksum(header);
 
 	sscanf(&header[148], "%8o", &sum);
 
@@ -1128,7 +1119,7 @@ static TAR_MEMBER *
 _tarPositionTo(ArchiveHandle *AH, const char *filename)
 {
 	lclContext *ctx = (lclContext *) AH->formatData;
-	TAR_MEMBER *th = pg_calloc(1, sizeof(TAR_MEMBER));
+	TAR_MEMBER *th = pg_malloc0(sizeof(TAR_MEMBER));
 	char		c;
 	char		header[512];
 	size_t		i,
@@ -1251,7 +1242,7 @@ _tarGetHeader(ArchiveHandle *AH, TAR_MEMBER *th)
 						  (unsigned long) len);
 
 		/* Calc checksum */
-		chk = _tarChecksum(h);
+		chk = tarChecksum(h);
 		sscanf(&h[148], "%8o", &sum);
 
 		/*
@@ -1305,86 +1296,14 @@ _tarGetHeader(ArchiveHandle *AH, TAR_MEMBER *th)
 }
 
 
-/*
- * Utility routine to print possibly larger than 32 bit integers in a
- * portable fashion.  Filled with zeros.
- */
-static void
-print_val(char *s, uint64 val, unsigned int base, size_t len)
-{
-	int			i;
-
-	for (i = len; i > 0; i--)
-	{
-		int			digit = val % base;
-
-		s[i - 1] = '0' + digit;
-		val = val / base;
-	}
-}
-
-
 static void
 _tarWriteHeader(TAR_MEMBER *th)
 {
 	char		h[512];
-	int			lastSum = 0;
-	int			sum;
 
-	memset(h, 0, sizeof(h));
+	tarCreateHeader(h, th->targetFile, NULL, th->fileLen, 0600, 04000, 02000, time(NULL));
 
-	/* Name 100 */
-	sprintf(&h[0], "%.99s", th->targetFile);
-
-	/* Mode 8 */
-	sprintf(&h[100], "100600 ");
-
-	/* User ID 8 */
-	sprintf(&h[108], "004000 ");
-
-	/* Group 8 */
-	sprintf(&h[116], "002000 ");
-
-	/* File size 12 - 11 digits, 1 space, no NUL */
-	print_val(&h[124], th->fileLen, 8, 11);
-	sprintf(&h[135], " ");
-
-	/* Mod Time 12 */
-	sprintf(&h[136], "%011o ", (int) time(NULL));
-
-	/* Checksum 8 */
-	sprintf(&h[148], "%06o ", lastSum);
-
-	/* Type - regular file */
-	sprintf(&h[156], "0");
-
-	/* Link tag 100 (NULL) */
-
-	/* Magic 6 + Version 2 */
-	sprintf(&h[257], "ustar00");
-
-#if 0
-	/* User 32 */
-	sprintf(&h[265], "%.31s", "");		/* How do I get username reliably? Do
-										 * I need to? */
-
-	/* Group 32 */
-	sprintf(&h[297], "%.31s", "");		/* How do I get group reliably? Do I
-										 * need to? */
-
-	/* Maj Dev 8 */
-	sprintf(&h[329], "%6o ", 0);
-
-	/* Min Dev 8 */
-	sprintf(&h[337], "%6o ", 0);
-#endif
-
-	while ((sum = _tarChecksum(h)) != lastSum)
-	{
-		sprintf(&h[148], "%06o ", sum);
-		lastSum = sum;
-	}
-
+	/* Now write the completed header. */
 	if (fwrite(h, 1, 512, th->tarFH) != 512)
 		exit_horribly(modulename, "could not write to output file: %s\n", strerror(errno));
 }

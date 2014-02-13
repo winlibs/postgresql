@@ -3,7 +3,7 @@
  * clauses.c
  *	  routines to manipulate qualification clauses
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -19,6 +19,7 @@
 
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "catalog/pg_aggregate.h"
 #include "catalog/pg_language.h"
 #include "catalog/pg_operator.h"
@@ -109,7 +110,7 @@ static Node *simplify_boolean_equality(Oid opno, List *args);
 static Expr *simplify_function(Oid funcid,
 				  Oid result_type, int32 result_typmod,
 				  Oid result_collid, Oid input_collid, List **args_p,
-				  bool process_args, bool allow_non_const,
+				  bool funcvariadic, bool process_args, bool allow_non_const,
 				  eval_const_expressions_context *context);
 static List *expand_function_arguments(List *args, Oid result_type,
 						  HeapTuple func_tuple);
@@ -120,10 +121,12 @@ static void recheck_cast_function_args(List *args, Oid result_type,
 						   HeapTuple func_tuple);
 static Expr *evaluate_function(Oid funcid, Oid result_type, int32 result_typmod,
 				  Oid result_collid, Oid input_collid, List *args,
+				  bool funcvariadic,
 				  HeapTuple func_tuple,
 				  eval_const_expressions_context *context);
 static Expr *inline_function(Oid funcid, Oid result_type, Oid result_collid,
 				Oid input_collid, List *args,
+				bool funcvariadic,
 				HeapTuple func_tuple,
 				eval_const_expressions_context *context);
 static Node *substitute_actual_parameters(Node *expr, int nargs, List *args,
@@ -595,7 +598,7 @@ count_agg_clauses_walker(Node *node, count_agg_clauses_context *context)
 bool
 contain_window_function(Node *clause)
 {
-	return checkExprHasWindowFuncs(clause);
+	return contain_windowfuncs(clause);
 }
 
 /*
@@ -819,8 +822,8 @@ contain_subplans_walker(Node *node, void *context)
  * mistakenly think that something like "WHERE random() < 0.5" can be treated
  * as a constant qualification.
  *
- * XXX we do not examine sub-selects to see if they contain uses of
- * mutable functions.  It's not real clear if that is correct or not...
+ * We will recursively look into Query nodes (i.e., SubLink sub-selects)
+ * but not into SubPlans.  See comments for contain_volatile_functions().
  */
 bool
 contain_mutable_functions(Node *clause)
@@ -917,6 +920,13 @@ contain_mutable_functions_walker(Node *node, void *context)
 		}
 		/* else fall through to check args */
 	}
+	else if (IsA(node, Query))
+	{
+		/* Recurse into subselects */
+		return query_tree_walker((Query *) node,
+								 contain_mutable_functions_walker,
+								 context, 0);
+	}
 	return expression_tree_walker(node, contain_mutable_functions_walker,
 								  context);
 }
@@ -931,11 +941,18 @@ contain_mutable_functions_walker(Node *node, void *context)
  *	  Recursively search for volatile functions within a clause.
  *
  * Returns true if any volatile function (or operator implemented by a
- * volatile function) is found. This test prevents invalid conversions
- * of volatile expressions into indexscan quals.
+ * volatile function) is found. This test prevents, for example,
+ * invalid conversions of volatile expressions into indexscan quals.
  *
- * XXX we do not examine sub-selects to see if they contain uses of
- * volatile functions.	It's not real clear if that is correct or not...
+ * We will recursively look into Query nodes (i.e., SubLink sub-selects)
+ * but not into SubPlans.  This is a bit odd, but intentional.	If we are
+ * looking at a SubLink, we are probably deciding whether a query tree
+ * transformation is safe, and a contained sub-select should affect that;
+ * for example, duplicating a sub-select containing a volatile function
+ * would be bad.  However, once we've got to the stage of having SubPlans,
+ * subsequent planning need not consider volatility within those, since
+ * the executor won't change its evaluation rules for a SubPlan based on
+ * volatility.
  */
 bool
 contain_volatile_functions(Node *clause)
@@ -1032,6 +1049,13 @@ contain_volatile_functions_walker(Node *node, void *context)
 				return true;
 		}
 		/* else fall through to check args */
+	}
+	else if (IsA(node, Query))
+	{
+		/* Recurse into subselects */
+		return query_tree_walker((Query *) node,
+								 contain_volatile_functions_walker,
+								 context, 0);
 	}
 	return expression_tree_walker(node, contain_volatile_functions_walker,
 								  context);
@@ -2293,6 +2317,50 @@ eval_const_expressions_mutator(Node *node,
 				 */
 				return (Node *) copyObject(param);
 			}
+		case T_WindowFunc:
+			{
+				WindowFunc *expr = (WindowFunc *) node;
+				Oid			funcid = expr->winfnoid;
+				List	   *args;
+				HeapTuple	func_tuple;
+				WindowFunc *newexpr;
+
+				/*
+				 * We can't really simplify a WindowFunc node, but we mustn't
+				 * just fall through to the default processing, because we
+				 * have to apply expand_function_arguments to its argument
+				 * list.  That takes care of inserting default arguments and
+				 * expanding named-argument notation.
+				 */
+				func_tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(funcid));
+				if (!HeapTupleIsValid(func_tuple))
+					elog(ERROR, "cache lookup failed for function %u", funcid);
+
+				args = expand_function_arguments(expr->args, expr->wintype,
+												 func_tuple);
+
+				ReleaseSysCache(func_tuple);
+
+				/* Now, recursively simplify the args (which are a List) */
+				args = (List *)
+					expression_tree_mutator((Node *) args,
+											eval_const_expressions_mutator,
+											(void *) context);
+
+				/* And build the replacement WindowFunc node */
+				newexpr = makeNode(WindowFunc);
+				newexpr->winfnoid = expr->winfnoid;
+				newexpr->wintype = expr->wintype;
+				newexpr->wincollid = expr->wincollid;
+				newexpr->inputcollid = expr->inputcollid;
+				newexpr->args = args;
+				newexpr->winref = expr->winref;
+				newexpr->winstar = expr->winstar;
+				newexpr->winagg = expr->winagg;
+				newexpr->location = expr->location;
+
+				return (Node *) newexpr;
+			}
 		case T_FuncExpr:
 			{
 				FuncExpr   *expr = (FuncExpr *) node;
@@ -2313,6 +2381,7 @@ eval_const_expressions_mutator(Node *node,
 										   expr->funccollid,
 										   expr->inputcollid,
 										   &args,
+										   expr->funcvariadic,
 										   true,
 										   true,
 										   context);
@@ -2329,6 +2398,7 @@ eval_const_expressions_mutator(Node *node,
 				newexpr->funcid = expr->funcid;
 				newexpr->funcresulttype = expr->funcresulttype;
 				newexpr->funcretset = expr->funcretset;
+				newexpr->funcvariadic = expr->funcvariadic;
 				newexpr->funcformat = expr->funcformat;
 				newexpr->funccollid = expr->funccollid;
 				newexpr->inputcollid = expr->inputcollid;
@@ -2358,6 +2428,7 @@ eval_const_expressions_mutator(Node *node,
 										   expr->opcollid,
 										   expr->inputcollid,
 										   &args,
+										   false,
 										   true,
 										   true,
 										   context);
@@ -2461,6 +2532,7 @@ eval_const_expressions_mutator(Node *node,
 											   expr->opcollid,
 											   expr->inputcollid,
 											   &args,
+											   false,
 											   false,
 											   false,
 											   context);
@@ -2664,6 +2736,7 @@ eval_const_expressions_mutator(Node *node,
 										   InvalidOid,
 										   InvalidOid,
 										   &args,
+										   false,
 										   true,
 										   true,
 										   context);
@@ -2695,6 +2768,7 @@ eval_const_expressions_mutator(Node *node,
 											   expr->resultcollid,
 											   InvalidOid,
 											   &args,
+											   false,
 											   false,
 											   true,
 											   context);
@@ -2788,7 +2862,7 @@ eval_const_expressions_mutator(Node *node,
 					relabel->resulttype = exprType(arg);
 					relabel->resulttypmod = exprTypmod(arg);
 					relabel->resultcollid = collate->collOid;
-					relabel->relabelformat = COERCE_DONTCARE;
+					relabel->relabelformat = COERCE_IMPLICIT_CAST;
 					relabel->location = collate->location;
 
 					/* Don't create stacked RelabelTypes */
@@ -3564,7 +3638,7 @@ simplify_boolean_equality(Oid opno, List *args)
 static Expr *
 simplify_function(Oid funcid, Oid result_type, int32 result_typmod,
 				  Oid result_collid, Oid input_collid, List **args_p,
-				  bool process_args, bool allow_non_const,
+				  bool funcvariadic, bool process_args, bool allow_non_const,
 				  eval_const_expressions_context *context)
 {
 	List	   *args = *args_p;
@@ -3608,7 +3682,8 @@ simplify_function(Oid funcid, Oid result_type, int32 result_typmod,
 	/* Now attempt simplification of the function call proper. */
 
 	newexpr = evaluate_function(funcid, result_type, result_typmod,
-								result_collid, input_collid, args,
+								result_collid, input_collid,
+								args, funcvariadic,
 								func_tuple, context);
 
 	if (!newexpr && allow_non_const && OidIsValid(func_form->protransform))
@@ -3624,7 +3699,8 @@ simplify_function(Oid funcid, Oid result_type, int32 result_typmod,
 		fexpr.funcid = funcid;
 		fexpr.funcresulttype = result_type;
 		fexpr.funcretset = func_form->proretset;
-		fexpr.funcformat = COERCE_DONTCARE;
+		fexpr.funcvariadic = funcvariadic;
+		fexpr.funcformat = COERCE_EXPLICIT_CALL;
 		fexpr.funccollid = result_collid;
 		fexpr.inputcollid = input_collid;
 		fexpr.args = args;
@@ -3637,7 +3713,7 @@ simplify_function(Oid funcid, Oid result_type, int32 result_typmod,
 
 	if (!newexpr && allow_non_const)
 		newexpr = inline_function(funcid, result_type, result_collid,
-								  input_collid, args,
+								  input_collid, args, funcvariadic,
 								  func_tuple, context);
 
 	ReleaseSysCache(func_tuple);
@@ -3877,6 +3953,7 @@ recheck_cast_function_args(List *args, Oid result_type, HeapTuple func_tuple)
 static Expr *
 evaluate_function(Oid funcid, Oid result_type, int32 result_typmod,
 				  Oid result_collid, Oid input_collid, List *args,
+				  bool funcvariadic,
 				  HeapTuple func_tuple,
 				  eval_const_expressions_context *context)
 {
@@ -3958,7 +4035,8 @@ evaluate_function(Oid funcid, Oid result_type, int32 result_typmod,
 	newexpr->funcid = funcid;
 	newexpr->funcresulttype = result_type;
 	newexpr->funcretset = false;
-	newexpr->funcformat = COERCE_DONTCARE;		/* doesn't matter */
+	newexpr->funcvariadic = funcvariadic;
+	newexpr->funcformat = COERCE_EXPLICIT_CALL; /* doesn't matter */
 	newexpr->funccollid = result_collid;		/* doesn't matter */
 	newexpr->inputcollid = input_collid;
 	newexpr->args = args;
@@ -4000,6 +4078,7 @@ evaluate_function(Oid funcid, Oid result_type, int32 result_typmod,
 static Expr *
 inline_function(Oid funcid, Oid result_type, Oid result_collid,
 				Oid input_collid, List *args,
+				bool funcvariadic,
 				HeapTuple func_tuple,
 				eval_const_expressions_context *context)
 {
@@ -4088,7 +4167,8 @@ inline_function(Oid funcid, Oid result_type, Oid result_collid,
 	fexpr->funcid = funcid;
 	fexpr->funcresulttype = result_type;
 	fexpr->funcretset = false;
-	fexpr->funcformat = COERCE_DONTCARE;		/* doesn't matter */
+	fexpr->funcvariadic = funcvariadic;
+	fexpr->funcformat = COERCE_EXPLICIT_CALL;	/* doesn't matter */
 	fexpr->funccollid = result_collid;	/* doesn't matter */
 	fexpr->inputcollid = input_collid;
 	fexpr->args = args;

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_receivexlog
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "PG_RECEIVEXLOG" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PG_RECEIVEXLOG" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -92,6 +92,19 @@ Enables verbose mode\&.
 .PP
 The following command\-line options control the database connection parameters\&.
 .PP
+\fB\-d \fR\fB\fIconnstr\fR\fR, \fB\-\-dbname=\fR\fB\fIconnstr\fR\fR
+.RS 4
+Specifies parameters used to connect to the server, as a connection string\&. See
+Section 31.1.1, \(lqConnection Strings\(rq, in the documentation
+for more information\&.
+.sp
+The option is called
+\-\-dbname
+for consistency with other client applications, but because
+pg_receivexlog
+doesn\*(Aqt connect to any particular database in the cluster, database name in the connection string will be ignored\&.
+.RE
+.PP
 \fB\-h \fR\fB\fIhost\fR\fR, \fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
 Specifies the host name of the machine on which the server is running\&. If the value begins with a slash, it is used as the directory for the Unix domain socket\&. The default is taken from the
@@ -108,7 +121,7 @@ environment variable, if set, or a compiled\-in default\&.
 .PP
 \fB\-s \fR\fB\fIinterval\fR\fR, \fB\-\-status\-interval=\fR\fB\fIinterval\fR\fR
 .RS 4
-Specifies the number of seconds between status packets sent back to the server\&. This is required if replication timeout is configured on the server, and allows for easier monitoring\&. A value of zero disables the status updates completely\&. The default value is 10 seconds\&.
+Specifies the number of seconds between status packets sent back to the server\&. This allows for easier monitoring of the progress from server\&. A value of zero disables the periodic status updates completely, although an update will still be sent when requested by the server, to avoid timeout disconnect\&. The default value is 10 seconds\&.
 .RE
 .PP
 \fB\-U \fR\fB\fIusername\fR\fR, \fB\-\-username=\fR\fB\fIusername\fR\fR

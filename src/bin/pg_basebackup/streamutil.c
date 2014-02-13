@@ -4,69 +4,27 @@
  *
  * Author: Magnus Hagander <magnus@hagander.net>
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *		  src/bin/pg_basebackup/streamutil.c
  *-------------------------------------------------------------------------
  */
 
-/*
- * We have to use postgres.h not postgres_fe.h here, because there's so much
- * backend-only stuff in the XLOG include files we need.  But we need a
- * frontend-ish environment otherwise.	Hence this ugly hack.
- */
-#define FRONTEND 1
-#include "postgres.h"
+#include "postgres_fe.h"
 #include "streamutil.h"
 
 #include <stdio.h>
 #include <string.h>
 
 const char *progname;
+char	   *connection_string = NULL;
 char	   *dbhost = NULL;
 char	   *dbuser = NULL;
 char	   *dbport = NULL;
 int			dbgetpassword = 0;	/* 0=auto, -1=never, 1=always */
 static char *dbpassword = NULL;
 PGconn	   *conn = NULL;
-
-/*
- * strdup() and malloc() replacements that prints an error and exits
- * if something goes wrong. Can never return NULL.
- */
-char *
-xstrdup(const char *s)
-{
-	char	   *result;
-
-	result = strdup(s);
-	if (!result)
-	{
-		fprintf(stderr, _("%s: out of memory\n"), progname);
-		exit(1);
-	}
-	return result;
-}
-
-void *
-xmalloc0(int size)
-{
-	void	   *result;
-
-	/* Avoid unportable behavior of malloc(0) */
-	if (size == 0)
-		size = 1;
-	result = malloc(size);
-	if (!result)
-	{
-		fprintf(stderr, _("%s: out of memory\n"), progname);
-		exit(1);
-	}
-	MemSet(result, 0, size);
-	return result;
-}
-
 
 /*
  * Connect to the server. Returns a valid PGconn pointer if connected,
@@ -77,31 +35,66 @@ PGconn *
 GetConnection(void)
 {
 	PGconn	   *tmpconn;
-	int			argcount = 4;	/* dbname, replication, fallback_app_name,
-								 * password */
+	int			argcount = 7;	/* dbname, replication, fallback_app_name,
+								 * host, user, port, password */
 	int			i;
 	const char **keywords;
 	const char **values;
 	char	   *password = NULL;
 	const char *tmpparam;
+	PQconninfoOption *conn_opts = NULL;
+	PQconninfoOption *conn_opt;
+	char	   *err_msg = NULL;
 
-	if (dbhost)
-		argcount++;
-	if (dbuser)
-		argcount++;
-	if (dbport)
-		argcount++;
+	/*
+	 * Merge the connection info inputs given in form of connection string,
+	 * options and default values (dbname=replication, replication=true, etc.)
+	 */
+	i = 0;
+	if (connection_string)
+	{
+		conn_opts = PQconninfoParse(connection_string, &err_msg);
+		if (conn_opts == NULL)
+		{
+			fprintf(stderr, "%s: %s", progname, err_msg);
+			exit(1);
+		}
 
-	keywords = xmalloc0((argcount + 1) * sizeof(*keywords));
-	values = xmalloc0((argcount + 1) * sizeof(*values));
+		for (conn_opt = conn_opts; conn_opt->keyword != NULL; conn_opt++)
+		{
+			if (conn_opt->val != NULL && conn_opt->val[0] != '\0')
+				argcount++;
+		}
 
-	keywords[0] = "dbname";
-	values[0] = "replication";
-	keywords[1] = "replication";
-	values[1] = "true";
-	keywords[2] = "fallback_application_name";
-	values[2] = progname;
-	i = 3;
+		keywords = pg_malloc0((argcount + 1) * sizeof(*keywords));
+		values = pg_malloc0((argcount + 1) * sizeof(*values));
+
+		for (conn_opt = conn_opts; conn_opt->keyword != NULL; conn_opt++)
+		{
+			if (conn_opt->val != NULL && conn_opt->val[0] != '\0')
+			{
+				keywords[i] = conn_opt->keyword;
+				values[i] = conn_opt->val;
+				i++;
+			}
+		}
+	}
+	else
+	{
+		keywords = pg_malloc0((argcount + 1) * sizeof(*keywords));
+		values = pg_malloc0((argcount + 1) * sizeof(*values));
+	}
+
+	keywords[i] = "dbname";
+	values[i] = "replication";
+	i++;
+	keywords[i] = "replication";
+	values[i] = "true";
+	i++;
+	keywords[i] = "fallback_application_name";
+	values[i] = progname;
+	i++;
+
 	if (dbhost)
 	{
 		keywords[i] = "host";
@@ -133,15 +126,15 @@ GetConnection(void)
 			 * meaning this is the call for a second session to the same
 			 * database, so just forcibly reuse that password.
 			 */
-			keywords[argcount - 1] = "password";
-			values[argcount - 1] = dbpassword;
+			keywords[i] = "password";
+			values[i] = dbpassword;
 			dbgetpassword = -1; /* Don't try again if this fails */
 		}
 		else if (dbgetpassword == 1)
 		{
 			password = simple_prompt(_("Password: "), 100, false);
-			keywords[argcount - 1] = "password";
-			values[argcount - 1] = password;
+			keywords[i] = "password";
+			values[i] = password;
 		}
 
 		tmpconn = PQconnectdbParams(keywords, values, true);
@@ -173,12 +166,16 @@ GetConnection(void)
 			PQfinish(tmpconn);
 			free(values);
 			free(keywords);
+			if (conn_opts)
+				PQconninfoFree(conn_opts);
 			return NULL;
 		}
 
 		/* Connection ok! */
 		free(values);
 		free(keywords);
+		if (conn_opts)
+			PQconninfoFree(conn_opts);
 
 		/*
 		 * Ensure we have the same value of integer timestamps as the server

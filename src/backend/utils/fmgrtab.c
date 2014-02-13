@@ -3,7 +3,7 @@
  * fmgrtab.c
  *    The function manager's table of internal functions.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * NOTES
@@ -1873,6 +1873,20 @@ extern Datum pg_collation_for (PG_FUNCTION_ARGS);
 extern Datum pg_trigger_depth (PG_FUNCTION_ARGS);
 extern Datum pg_xlog_location_diff (PG_FUNCTION_ARGS);
 extern Datum pg_size_pretty_numeric (PG_FUNCTION_ARGS);
+extern Datum array_remove (PG_FUNCTION_ARGS);
+extern Datum array_replace (PG_FUNCTION_ARGS);
+extern Datum rangesel (PG_FUNCTION_ARGS);
+extern Datum lo_lseek64 (PG_FUNCTION_ARGS);
+extern Datum lo_tell64 (PG_FUNCTION_ARGS);
+extern Datum lo_truncate64 (PG_FUNCTION_ARGS);
+extern Datum json_agg_transfn (PG_FUNCTION_ARGS);
+extern Datum json_agg_finalfn (PG_FUNCTION_ARGS);
+extern Datum to_json (PG_FUNCTION_ARGS);
+extern Datum spg_range_quad_config (PG_FUNCTION_ARGS);
+extern Datum spg_range_quad_choose (PG_FUNCTION_ARGS);
+extern Datum spg_range_quad_picksplit (PG_FUNCTION_ARGS);
+extern Datum spg_range_quad_inner_consistent (PG_FUNCTION_ARGS);
+extern Datum spg_range_quad_leaf_consistent (PG_FUNCTION_ARGS);
 extern Datum anyenum_in (PG_FUNCTION_ARGS);
 extern Datum anyenum_out (PG_FUNCTION_ARGS);
 extern Datum enum_in (PG_FUNCTION_ARGS);
@@ -1900,6 +1914,9 @@ extern Datum text_format (PG_FUNCTION_ARGS);
 extern Datum text_format_nv (PG_FUNCTION_ARGS);
 extern Datum bytea_string_agg_transfn (PG_FUNCTION_ARGS);
 extern Datum bytea_string_agg_finalfn (PG_FUNCTION_ARGS);
+extern Datum pg_event_trigger_dropped_objects (PG_FUNCTION_ARGS);
+extern Datum event_trigger_in (PG_FUNCTION_ARGS);
+extern Datum event_trigger_out (PG_FUNCTION_ARGS);
 extern Datum tsvectorin (PG_FUNCTION_ARGS);
 extern Datum tsvectorout (PG_FUNCTION_ARGS);
 extern Datum tsqueryin (PG_FUNCTION_ARGS);
@@ -2023,10 +2040,13 @@ extern Datum pg_export_snapshot (PG_FUNCTION_ARGS);
 extern Datum pg_is_in_recovery (PG_FUNCTION_ARGS);
 extern Datum int4_cash (PG_FUNCTION_ARGS);
 extern Datum int8_cash (PG_FUNCTION_ARGS);
+extern Datum pg_is_in_backup (PG_FUNCTION_ARGS);
+extern Datum pg_backup_start_time (PG_FUNCTION_ARGS);
 extern Datum pg_collation_is_visible (PG_FUNCTION_ARGS);
 extern Datum array_typanalyze (PG_FUNCTION_ARGS);
 extern Datum arraycontsel (PG_FUNCTION_ARGS);
 extern Datum arraycontjoinsel (PG_FUNCTION_ARGS);
+extern Datum pg_get_multixact_members (PG_FUNCTION_ARGS);
 extern Datum pg_last_xlog_receive_location (PG_FUNCTION_ARGS);
 extern Datum pg_last_xlog_replay_location (PG_FUNCTION_ARGS);
 extern Datum cash_div_cash (PG_FUNCTION_ARGS);
@@ -2043,8 +2063,11 @@ extern Datum range_in (PG_FUNCTION_ARGS);
 extern Datum range_out (PG_FUNCTION_ARGS);
 extern Datum range_recv (PG_FUNCTION_ARGS);
 extern Datum range_send (PG_FUNCTION_ARGS);
+extern Datum pg_identify_object (PG_FUNCTION_ARGS);
 extern Datum range_constructor2 (PG_FUNCTION_ARGS);
 extern Datum range_constructor3 (PG_FUNCTION_ARGS);
+extern Datum pg_relation_is_updatable (PG_FUNCTION_ARGS);
+extern Datum pg_column_is_updatable (PG_FUNCTION_ARGS);
 extern Datum range_lower (PG_FUNCTION_ARGS);
 extern Datum range_upper (PG_FUNCTION_ARGS);
 extern Datum range_empty (PG_FUNCTION_ARGS);
@@ -2094,6 +2117,19 @@ extern Datum tsrange_subdiff (PG_FUNCTION_ARGS);
 extern Datum tstzrange_subdiff (PG_FUNCTION_ARGS);
 extern Datum acldefault_sql (PG_FUNCTION_ARGS);
 extern Datum time_transform (PG_FUNCTION_ARGS);
+extern Datum json_object_field (PG_FUNCTION_ARGS);
+extern Datum json_object_field_text (PG_FUNCTION_ARGS);
+extern Datum json_array_element (PG_FUNCTION_ARGS);
+extern Datum json_array_element_text (PG_FUNCTION_ARGS);
+extern Datum json_extract_path (PG_FUNCTION_ARGS);
+extern Datum json_extract_path_text (PG_FUNCTION_ARGS);
+extern Datum json_array_elements (PG_FUNCTION_ARGS);
+extern Datum json_array_length (PG_FUNCTION_ARGS);
+extern Datum json_object_keys (PG_FUNCTION_ARGS);
+extern Datum json_each (PG_FUNCTION_ARGS);
+extern Datum json_each_text (PG_FUNCTION_ARGS);
+extern Datum json_populate_record (PG_FUNCTION_ARGS);
+extern Datum json_populate_recordset (PG_FUNCTION_ARGS);
 extern Datum spggettuple (PG_FUNCTION_ARGS);
 extern Datum spggetbitmap (PG_FUNCTION_ARGS);
 extern Datum spginsert (PG_FUNCTION_ARGS);
@@ -4196,6 +4232,21 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3163, "pg_trigger_depth", 0, true, false, pg_trigger_depth },
   { 3165, "pg_xlog_location_diff", 2, true, false, pg_xlog_location_diff },
   { 3166, "pg_size_pretty_numeric", 1, true, false, pg_size_pretty_numeric },
+  { 3167, "array_remove", 2, false, false, array_remove },
+  { 3168, "array_replace", 3, false, false, array_replace },
+  { 3169, "rangesel", 4, true, false, rangesel },
+  { 3170, "lo_lseek64", 3, true, false, lo_lseek64 },
+  { 3171, "lo_tell64", 1, true, false, lo_tell64 },
+  { 3172, "lo_truncate64", 2, true, false, lo_truncate64 },
+  { 3173, "json_agg_transfn", 2, false, false, json_agg_transfn },
+  { 3174, "json_agg_finalfn", 1, false, false, json_agg_finalfn },
+  { 3175, "aggregate_dummy", 1, false, false, aggregate_dummy },
+  { 3176, "to_json", 1, true, false, to_json },
+  { 3469, "spg_range_quad_config", 2, true, false, spg_range_quad_config },
+  { 3470, "spg_range_quad_choose", 2, true, false, spg_range_quad_choose },
+  { 3471, "spg_range_quad_picksplit", 2, true, false, spg_range_quad_picksplit },
+  { 3472, "spg_range_quad_inner_consistent", 2, true, false, spg_range_quad_inner_consistent },
+  { 3473, "spg_range_quad_leaf_consistent", 2, true, false, spg_range_quad_leaf_consistent },
   { 3504, "anyenum_in", 1, true, false, anyenum_in },
   { 3505, "anyenum_out", 1, true, false, anyenum_out },
   { 3506, "enum_in", 2, true, false, enum_in },
@@ -4227,6 +4278,9 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3543, "bytea_string_agg_transfn", 3, false, false, bytea_string_agg_transfn },
   { 3544, "bytea_string_agg_finalfn", 1, false, false, bytea_string_agg_finalfn },
   { 3545, "aggregate_dummy", 2, false, false, aggregate_dummy },
+  { 3566, "pg_event_trigger_dropped_objects", 0, true, true, pg_event_trigger_dropped_objects },
+  { 3594, "event_trigger_in", 1, false, false, event_trigger_in },
+  { 3595, "event_trigger_out", 1, true, false, event_trigger_out },
   { 3610, "tsvectorin", 1, true, false, tsvectorin },
   { 3611, "tsvectorout", 1, true, false, tsvectorout },
   { 3612, "tsqueryin", 1, true, false, tsqueryin },
@@ -4350,10 +4404,13 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3810, "pg_is_in_recovery", 0, true, false, pg_is_in_recovery },
   { 3811, "int4_cash", 1, true, false, int4_cash },
   { 3812, "int8_cash", 1, true, false, int8_cash },
+  { 3813, "pg_is_in_backup", 0, true, false, pg_is_in_backup },
+  { 3814, "pg_backup_start_time", 0, true, false, pg_backup_start_time },
   { 3815, "pg_collation_is_visible", 1, true, false, pg_collation_is_visible },
   { 3816, "array_typanalyze", 1, true, false, array_typanalyze },
   { 3817, "arraycontsel", 4, true, false, arraycontsel },
   { 3818, "arraycontjoinsel", 5, true, false, arraycontjoinsel },
+  { 3819, "pg_get_multixact_members", 1, true, true, pg_get_multixact_members },
   { 3820, "pg_last_xlog_receive_location", 0, true, false, pg_last_xlog_receive_location },
   { 3821, "pg_last_xlog_replay_location", 0, true, false, pg_last_xlog_replay_location },
   { 3822, "cash_div_cash", 2, true, false, cash_div_cash },
@@ -4370,8 +4427,11 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3835, "range_out", 1, true, false, range_out },
   { 3836, "range_recv", 3, true, false, range_recv },
   { 3837, "range_send", 1, true, false, range_send },
+  { 3839, "pg_identify_object", 3, true, false, pg_identify_object },
   { 3840, "range_constructor2", 2, false, false, range_constructor2 },
   { 3841, "range_constructor3", 3, false, false, range_constructor3 },
+  { 3842, "pg_relation_is_updatable", 2, true, false, pg_relation_is_updatable },
+  { 3843, "pg_column_is_updatable", 3, true, false, pg_column_is_updatable },
   { 3844, "range_constructor2", 2, false, false, range_constructor2 },
   { 3845, "range_constructor3", 3, false, false, range_constructor3 },
   { 3848, "range_lower", 1, true, false, range_lower },
@@ -4431,6 +4491,21 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3944, "time_transform", 1, true, false, time_transform },
   { 3945, "range_constructor2", 2, false, false, range_constructor2 },
   { 3946, "range_constructor3", 3, false, false, range_constructor3 },
+  { 3947, "json_object_field", 2, true, false, json_object_field },
+  { 3948, "json_object_field_text", 2, true, false, json_object_field_text },
+  { 3949, "json_array_element", 2, true, false, json_array_element },
+  { 3950, "json_array_element_text", 2, true, false, json_array_element_text },
+  { 3951, "json_extract_path", 2, true, false, json_extract_path },
+  { 3952, "json_extract_path", 2, true, false, json_extract_path },
+  { 3953, "json_extract_path_text", 2, true, false, json_extract_path_text },
+  { 3954, "json_extract_path_text", 2, true, false, json_extract_path_text },
+  { 3955, "json_array_elements", 1, true, true, json_array_elements },
+  { 3956, "json_array_length", 1, true, false, json_array_length },
+  { 3957, "json_object_keys", 1, true, true, json_object_keys },
+  { 3958, "json_each", 1, true, true, json_each },
+  { 3959, "json_each_text", 1, true, true, json_each_text },
+  { 3960, "json_populate_record", 3, false, false, json_populate_record },
+  { 3961, "json_populate_recordset", 3, false, true, json_populate_recordset },
   { 4001, "spggettuple", 2, true, false, spggettuple },
   { 4002, "spggetbitmap", 2, true, false, spggetbitmap },
   { 4003, "spginsert", 6, true, false, spginsert },

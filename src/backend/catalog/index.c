@@ -3,7 +3,7 @@
  * index.c
  *	  code to create and destroy POSTGRES index relations
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -23,6 +23,7 @@
 
 #include <unistd.h>
 
+#include "access/multixact.h"
 #include "access/relscan.h"
 #include "access/sysattr.h"
 #include "access/transam.h"
@@ -33,6 +34,7 @@
 #include "catalog/dependency.h"
 #include "catalog/heap.h"
 #include "catalog/index.h"
+#include "catalog/objectaccess.h"
 #include "catalog/pg_collation.h"
 #include "catalog/pg_constraint.h"
 #include "catalog/pg_operator.h"
@@ -611,6 +613,7 @@ UpdateIndexRelation(Oid indexoid,
 	values[Anum_pg_index_indcheckxmin - 1] = BoolGetDatum(false);
 	/* we set isvalid and isready the same way */
 	values[Anum_pg_index_indisready - 1] = BoolGetDatum(isvalid);
+	values[Anum_pg_index_indislive - 1] = BoolGetDatum(true);
 	values[Anum_pg_index_indkey - 1] = PointerGetDatum(indkey);
 	values[Anum_pg_index_indcollation - 1] = PointerGetDatum(indcollation);
 	values[Anum_pg_index_indclass - 1] = PointerGetDatum(indclass);
@@ -668,6 +671,7 @@ UpdateIndexRelation(Oid indexoid,
  * concurrent: if true, do not lock the table against writers.	The index
  *		will be marked "invalid" and the caller must take additional steps
  *		to fix it up.
+ * is_internal: if true, post creation hook for new index
  *
  * Returns the OID of the created index.
  */
@@ -690,7 +694,8 @@ index_create(Relation heapRelation,
 			 bool initdeferred,
 			 bool allow_system_table_mods,
 			 bool skip_build,
-			 bool concurrent)
+			 bool concurrent,
+			 bool is_internal)
 {
 	Oid			heapRelationId = RelationGetRelid(heapRelation);
 	Relation	pg_class;
@@ -840,7 +845,6 @@ index_create(Relation heapRelation,
 	 */
 	indexRelation->rd_rel->relowner = heapRelation->rd_rel->relowner;
 	indexRelation->rd_rel->relam = accessMethodObjectId;
-	indexRelation->rd_rel->relkind = RELKIND_INDEX;
 	indexRelation->rd_rel->relhasoids = false;
 
 	/*
@@ -930,7 +934,8 @@ index_create(Relation heapRelation,
 									false,		/* already marked primary */
 									false,		/* pg_index entry is OK */
 									false,		/* no old dependencies */
-									allow_system_table_mods);
+									allow_system_table_mods,
+									is_internal);
 		}
 		else
 		{
@@ -1024,6 +1029,10 @@ index_create(Relation heapRelation,
 		Assert(!initdeferred);
 	}
 
+	/* Post creation hook for new index */
+	InvokeObjectPostCreateHookArg(RelationRelationId,
+								  indexRelationId, 0, is_internal);
+
 	/*
 	 * Advance the command counter so that we can see the newly-entered
 	 * catalog tuples for the index.
@@ -1100,6 +1109,7 @@ index_create(Relation heapRelation,
  * remove_old_dependencies: if true, remove existing dependencies of index
  *		on table's columns
  * allow_system_table_mods: allow table to be a system catalog
+ * is_internal: index is constructed due to internal process
  */
 void
 index_constraint_create(Relation heapRelation,
@@ -1112,7 +1122,8 @@ index_constraint_create(Relation heapRelation,
 						bool mark_as_primary,
 						bool update_pgindex,
 						bool remove_old_dependencies,
-						bool allow_system_table_mods)
+						bool allow_system_table_mods,
+						bool is_internal)
 {
 	Oid			namespaceId = RelationGetNamespace(heapRelation);
 	ObjectAddress myself,
@@ -1177,7 +1188,8 @@ index_constraint_create(Relation heapRelation,
 								   NULL,
 								   true,		/* islocal */
 								   0,	/* inhcount */
-								   true);		/* noinherit */
+								   true,		/* noinherit */
+								   is_internal);
 
 	/*
 	 * Register the index as internally dependent on the constraint.
@@ -1286,6 +1298,9 @@ index_constraint_create(Relation heapRelation,
 		{
 			simple_heap_update(pg_index, &indexTuple->t_self, indexTuple);
 			CatalogUpdateIndexes(pg_index, indexTuple);
+
+			InvokeObjectPostAlterHookArg(IndexRelationId, indexRelationId, 0,
+										 InvalidOid, is_internal);
 		}
 
 		heap_freetuple(indexTuple);
@@ -1355,13 +1370,13 @@ index_drop(Oid indexId, bool concurrent)
 	 * see those new tuples in the index.
 	 *
 	 * After all transactions that could possibly have used the index for
-	 * queries end, we can unset indisready and set indisvalid, then wait till
-	 * nobody could be touching it anymore.  (Note: we use this illogical
-	 * combination because this state must be distinct from the initial state
-	 * during CREATE INDEX CONCURRENTLY, which has indisready and indisvalid
-	 * both false.  That's because in that state, transactions must examine
-	 * the index for HOT-safety decisions, while in this state we don't want
-	 * them to open it at all.)
+	 * queries end, we can unset indisready and indislive, then wait till
+	 * nobody could be touching it anymore.  (Note: we need indislive because
+	 * this state must be distinct from the initial state during CREATE INDEX
+	 * CONCURRENTLY, which has indislive true while indisready and indisvalid
+	 * are false.  That's because in that state, transactions must examine the
+	 * index for HOT-safety decisions, while in this state we don't want them
+	 * to open it at all.)
 	 *
 	 * Since all predicate locks on the index are about to be made invalid, we
 	 * must promote them to predicate locks on the heap.  In the
@@ -1472,7 +1487,7 @@ index_drop(Oid indexId, bool concurrent)
 		/*
 		 * Now we are sure that nobody uses the index for queries; they just
 		 * might have it open for updating it.	So now we can unset indisready
-		 * and set indisvalid, then wait till nobody could be using it at all
+		 * and indislive, then wait till nobody could be using it at all
 		 * anymore.
 		 */
 		index_set_state_flags(indexId, INDEX_DROP_SET_DEAD);
@@ -2340,8 +2355,7 @@ IndexBuildHeapScan(Relation heapRelation,
 					 * As with INSERT_IN_PROGRESS case, this is unexpected
 					 * unless it's our own deletion or a system catalog.
 					 */
-					Assert(!(heapTuple->t_data->t_infomask & HEAP_XMAX_IS_MULTI));
-					xwait = HeapTupleHeaderGetXmax(heapTuple->t_data);
+					xwait = HeapTupleHeaderGetUpdateXid(heapTuple->t_data);
 					if (!TransactionIdIsCurrentTransactionId(xwait))
 					{
 						if (!is_system_catalog)
@@ -3028,12 +3042,14 @@ index_set_state_flags(Oid indexId, IndexStateFlagsAction action)
 	{
 		case INDEX_CREATE_SET_READY:
 			/* Set indisready during a CREATE INDEX CONCURRENTLY sequence */
+			Assert(indexForm->indislive);
 			Assert(!indexForm->indisready);
 			Assert(!indexForm->indisvalid);
 			indexForm->indisready = true;
 			break;
 		case INDEX_CREATE_SET_VALID:
 			/* Set indisvalid during a CREATE INDEX CONCURRENTLY sequence */
+			Assert(indexForm->indislive);
 			Assert(indexForm->indisready);
 			Assert(!indexForm->indisvalid);
 			indexForm->indisvalid = true;
@@ -3058,15 +3074,15 @@ index_set_state_flags(Oid indexId, IndexStateFlagsAction action)
 		case INDEX_DROP_SET_DEAD:
 
 			/*
-			 * Clear indisready during DROP INDEX CONCURRENTLY
+			 * Clear indisready/indislive during DROP INDEX CONCURRENTLY
 			 *
-			 * We clear indisready and set indisvalid, because we not only
+			 * We clear both indisready and indislive, because we not only
 			 * want to stop updates, we want to prevent sessions from touching
-			 * the index at all.  See README.HOT.
+			 * the index at all.
 			 */
 			Assert(!indexForm->indisvalid);
 			indexForm->indisready = false;
-			indexForm->indisvalid = true;
+			indexForm->indislive = false;
 			break;
 	}
 
@@ -3169,7 +3185,8 @@ reindex_index(Oid indexId, bool skip_constraint_checks)
 		}
 
 		/* We'll build a new physical relation for the index */
-		RelationSetNewRelfilenode(iRel, InvalidTransactionId);
+		RelationSetNewRelfilenode(iRel, InvalidTransactionId,
+								  InvalidMultiXactId);
 
 		/* Initialize the index and rebuild */
 		/* Note: we do not need to re-establish pkey setting */
@@ -3236,7 +3253,8 @@ reindex_index(Oid indexId, bool skip_constraint_checks)
 		indexForm = (Form_pg_index) GETSTRUCT(indexTuple);
 
 		index_bad = (!indexForm->indisvalid ||
-					 !indexForm->indisready);
+					 !indexForm->indisready ||
+					 !indexForm->indislive);
 		if (index_bad ||
 			(indexForm->indcheckxmin && !indexInfo->ii_BrokenHotChain))
 		{
@@ -3246,6 +3264,7 @@ reindex_index(Oid indexId, bool skip_constraint_checks)
 				indexForm->indcheckxmin = true;
 			indexForm->indisvalid = true;
 			indexForm->indisready = true;
+			indexForm->indislive = true;
 			simple_heap_update(pg_index, &indexTuple->t_self, indexTuple);
 			CatalogUpdateIndexes(pg_index, indexTuple);
 
@@ -3347,7 +3366,7 @@ reindex_relation(Oid relid, int flags)
 
 	/* Ensure rd_indexattr is valid; see comments for RelationSetIndexList */
 	if (is_pg_class)
-		(void) RelationGetIndexAttrBitmap(rel);
+		(void) RelationGetIndexAttrBitmap(rel, false);
 
 	PG_TRY();
 	{

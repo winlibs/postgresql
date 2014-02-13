@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE EXTENSION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "CREATE EXTENSION" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE EXTENSION" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -73,6 +73,8 @@ SHAREDIR/extension/\fIextension_name\fR\&.control\&.
 \fIschema_name\fR
 .RS 4
 The name of the schema in which to install the extension\*(Aqs objects, given that the extension allows its contents to be relocated\&. The named schema must already exist\&. If not specified, and the extension\*(Aqs control file does not specify a schema either, the current default object creation schema is used\&.
+.sp
+Remember that the extension itself is not considered to be within any schema: extensions have unqualified names that must be unique database\-wide\&. But objects belonging to the extension can be within schemas\&.
 .RE
 .PP
 \fIversion\fR

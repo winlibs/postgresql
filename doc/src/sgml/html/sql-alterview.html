@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERVIEW"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN65602"
+NAME="AEN67851"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN65602"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN65607"
+NAME="AEN67856"
 ></A
 ><H2
 >Synopsis</H2
@@ -200,7 +200,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65625"
+NAME="AEN67874"
 ></A
 ><H2
 >Description</H2
@@ -238,7 +238,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65634"
+NAME="AEN67883"
 ></A
 ><H2
 >Parameters</H2
@@ -281,19 +281,17 @@ CLASS="LITERAL"
 ><DD
 ><P
 >      These forms set or remove the default value for a column.
-      A default value associated with a view column is
-      inserted into <TT
+      A view column's default value is substituted into any
+      <TT
 CLASS="COMMAND"
 >INSERT</TT
-> statements on the view before
-      the view's <TT
-CLASS="LITERAL"
->ON INSERT</TT
-> rule is applied, if
-      the <TT
+> or <TT
 CLASS="COMMAND"
->INSERT</TT
-> does not specify a value for the column.
+>UPDATE</TT
+> command whose target is the
+      view, before applying any rules or triggers for the view.  The view's
+      default will therefore take precedence over any default values from
+      underlying relations.
      </P
 ></DD
 ><DT
@@ -348,7 +346,7 @@ CLASS="REPLACEABLE"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->view_option_name</I
+>view_option_value</I
 ></TT
 ></DT
 ><DD
@@ -362,7 +360,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65681"
+NAME="AEN67929"
 ></A
 ><H2
 >Notes</H2
@@ -381,7 +379,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65686"
+NAME="AEN67934"
 ></A
 ><H2
 >Examples</H2
@@ -397,12 +395,23 @@ CLASS="LITERAL"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >ALTER VIEW foo RENAME TO bar;</PRE
+><P>
+  </P
+><P
+>   To attach a default column value to an updatable view:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE base_table (id int, ts timestamptz);
+CREATE VIEW a_view AS SELECT * FROM base_table;
+ALTER VIEW a_view ALTER COLUMN ts SET DEFAULT now();
+INSERT INTO base_table(id) VALUES(1);  -- ts will receive a NULL
+INSERT INTO a_view(id) VALUES(2);  -- ts will receive the current time</PRE
 ><P></P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65692"
+NAME="AEN67942"
 ></A
 ><H2
 >Compatibility</H2
@@ -420,7 +429,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65697"
+NAME="AEN67947"
 ></A
 ><H2
 >See Also</H2

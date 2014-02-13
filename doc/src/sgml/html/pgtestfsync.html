@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN145468"
+NAME="AEN153265"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN145474"
+NAME="AEN153271"
 ></A
 ><H2
 >Synopsis</H2
@@ -127,7 +127,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145479"
+NAME="AEN153276"
 ></A
 ><H2
 >Description</H2
@@ -141,20 +141,32 @@ HREF="runtime-config-wal.html#GUC-WAL-SYNC-METHOD"
 >wal_sync_method</A
 > is on your
   specific system,
-  as well as supplying diagnostic information in the event of an
-  identified I/O problem.  However, differences shown by <SPAN
+  as well as supplying diagnostic information in the event of an identified I/O
+  problem.  However, differences shown by
+  <SPAN
 CLASS="APPLICATION"
 >pg_test_fsync</SPAN
->
-  might not make any difference in real database throughput, especially
-  since many database servers are not speed-limited by their transaction
-  logs.
+> might not make any significant
+  difference in real database throughput, especially since many database servers
+  are not speed-limited by their transaction logs.
+  <SPAN
+CLASS="APPLICATION"
+>pg_test_fsync</SPAN
+> reports average file sync operation
+  time in microseconds for each <TT
+CLASS="LITERAL"
+>wal_sync_method</TT
+>, which can also be used to
+  inform efforts to optimize the value of <A
+HREF="runtime-config-wal.html#GUC-COMMIT-DELAY"
+>commit_delay</A
+>.
  </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145485"
+NAME="AEN153285"
 ></A
 ><H2
 >Options</H2
@@ -212,8 +224,8 @@ CLASS="OPTION"
 ><P
 >        Specifies the number of seconds for each test.  The more time
         per test, the greater the test's accuracy, but the longer it takes
-        to run.  The default is 2 seconds, which allows the program to
-        complete in about 30 seconds.
+        to run.  The default is 5 seconds, which allows the program to
+        complete in under 2 minutes.
        </P
 ></DD
 ><DT
@@ -257,7 +269,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145524"
+NAME="AEN153324"
 ></A
 ><H2
 >Author</H2
@@ -274,7 +286,7 @@ HREF="mailto:bruce@momjian.us"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145528"
+NAME="AEN153328"
 ></A
 ><H2
 >See Also</H2

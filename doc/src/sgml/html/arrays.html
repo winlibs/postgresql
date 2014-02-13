@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -914,7 +914,30 @@ CLASS="PROGRAMLISTING"
 
   This function is described in <A
 HREF="functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS"
->Table 9-49</A
+>Table 9-50</A
+>.
+ </P
+><P
+>  You can also search an array using the <TT
+CLASS="LITERAL"
+>&amp;&amp;</TT
+> operator,
+  which checks whether the left operand overlaps with the right operand.
+  For instance:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM sal_emp WHERE pay_by_quarter &#38;&#38; ARRAY[10000];</PRE
+><P>
+
+  This and other array operators are further described in
+  <A
+HREF="functions-array.html"
+>Section 9.18</A
+>.  It can be accelerated by an appropriate
+  index, as described in <A
+HREF="indexes-types.html"
+>Section 11.2</A
 >.
  </P
 ><DIV

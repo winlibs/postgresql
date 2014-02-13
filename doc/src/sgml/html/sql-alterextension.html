@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
 REL="PREVIOUS"
-TITLE="ALTER DOMAIN"
-HREF="sql-alterdomain.html"><LINK
+TITLE="ALTER EVENT TRIGGER"
+HREF="sql-altereventtrigger.html"><LINK
 REL="NEXT"
 TITLE="ALTER FOREIGN DATA WRAPPER"
 HREF="sql-alterforeigndatawrapper.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="ALTER DOMAIN"
-HREF="sql-alterdomain.html"
+TITLE="ALTER EVENT TRIGGER"
+HREF="sql-altereventtrigger.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-ALTEREXTENSION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN62488"
+NAME="AEN64552"
 ></A
 ><H2
 >Name</H2
@@ -104,7 +104,7 @@ NAME="AEN62488"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN62493"
+NAME="AEN64557"
 ></A
 ><H2
 >Synopsis</H2
@@ -208,6 +208,12 @@ CLASS="REPLACEABLE"
 >object_name</I
 ></TT
 > |
+  EVENT TRIGGER <TT
+CLASS="REPLACEABLE"
+><I
+>object_name</I
+></TT
+> |
   FOREIGN DATA WRAPPER <TT
 CLASS="REPLACEABLE"
 ><I
@@ -241,6 +247,12 @@ CLASS="REPLACEABLE"
 >argtype</I
 ></TT
 > [, ...] ] ) |
+  MATERIALIZED VIEW <TT
+CLASS="REPLACEABLE"
+><I
+>object_name</I
+></TT
+> |
   OPERATOR <TT
 CLASS="REPLACEABLE"
 ><I
@@ -349,7 +361,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN62536"
+NAME="AEN64602"
 ></A
 ><H2
 >Description</H2
@@ -455,7 +467,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN62569"
+NAME="AEN64635"
 ></A
 ><H2
 >Parameters</H2
@@ -699,7 +711,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN62655"
+NAME="AEN64721"
 ></A
 ><H2
 >Examples</H2
@@ -740,7 +752,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN62667"
+NAME="AEN64733"
 ></A
 ><H2
 >Compatibility</H2
@@ -785,7 +797,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="sql-alterdomain.html"
+HREF="sql-altereventtrigger.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -813,7 +825,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->ALTER DOMAIN</TD
+>ALTER EVENT TRIGGER</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

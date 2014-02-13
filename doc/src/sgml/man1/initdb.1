@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: initdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "INITDB" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "INITDB" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -149,6 +149,11 @@ server are described in
 Section 22.3.1, \(lqSupported Character Sets\(rq, in the documentation\&.
 .RE
 .PP
+\fB\-k\fR, \fB\-\-data\-checksums\fR
+.RS 4
+Use checksums on data pages to help detect corruption by the I/O system that would otherwise be silent\&. Enabling checksums may incur a noticeable performance penalty\&. This option can only be set during initialization, and cannot be changed later\&. If set, checksums are calculated for all objects, in all databases\&.
+.RE
+.PP
 \fB\-\-locale=\fR\fB\fIlocale\fR\fR
 .RS 4
 Sets the default locale for the database cluster\&. If this option is not specified, the locale is inherited from the environment that
@@ -169,11 +174,27 @@ Equivalent to
 \fB\-\-locale=C\fR\&.
 .RE
 .PP
+\fB\-N\fR, \fB\-\-nosync\fR
+.RS 4
+By default,
+\fBinitdb\fR
+will wait for all files to be written safely to disk\&. This option causes
+\fBinitdb\fR
+to return without waiting, which is faster, but means that a subsequent operating system crash can leave the data directory corrupt\&. Generally, this option is useful for testing, but should not be used when creating a production installation\&.
+.RE
+.PP
 \fB\-\-pwfile=\fR\fB\fIfilename\fR\fR
 .RS 4
 Makes
 \fBinitdb\fR
 read the database superuser\*(Aqs password from a file\&. The first line of the file is taken as the password\&.
+.RE
+.PP
+\fB\-S\fR, \fB\-\-sync\-only\fR
+.RS 4
+Safely write all database files to disk and exit\&. This does not perform any of the normal
+initdb
+operations\&.
 .RE
 .PP
 \fB\-T \fR\fB\fICFG\fR\fR, \fB\-\-text\-search\-config=\fR\fB\fICFG\fR\fR

@@ -3,7 +3,14 @@
  * md.c
  *	  This code manages relations that reside on magnetic disk.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Or at least, that was what the Berkeley folk had in mind when they named
+ * this file.  In reality, what this code provides is an interface from
+ * the smgr API to Unix-like filesystem APIs, so it will work with any type
+ * of device for which the operating system provides filesystem support.
+ * It doesn't matter whether the bits are on spinning rust or some other
+ * storage technology.
+ *
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -21,6 +28,7 @@
 #include "miscadmin.h"
 #include "access/xlog.h"
 #include "catalog/catalog.h"
+#include "common/relpath.h"
 #include "portability/instr_time.h"
 #include "postmaster/bgwriter.h"
 #include "storage/fd.h"
@@ -401,14 +409,14 @@ mdunlinkfork(RelFileNodeBackend rnode, ForkNumber forkNum, bool isRedo)
 		/* truncate(2) would be easier here, but Windows hasn't got it */
 		int			fd;
 
-		fd = BasicOpenFile(path, O_RDWR | PG_BINARY, 0);
+		fd = OpenTransientFile(path, O_RDWR | PG_BINARY, 0);
 		if (fd >= 0)
 		{
 			int			save_errno;
 
 			ret = ftruncate(fd, 0);
 			save_errno = errno;
-			close(fd);
+			CloseTransientFile(fd);
 			errno = save_errno;
 		}
 		else

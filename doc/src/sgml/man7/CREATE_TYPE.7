@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TYPE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "CREATE TYPE" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE TYPE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -117,7 +117,7 @@ Section 8.17, \(lqRange Types\(rq, in the documentation\&.
 .PP
 The range type\*(Aqs
 \fIsubtype\fR
-can be any type with an associated b\-tree operator class (to determine the ordering of values for the range type)\&. Normally the subtype\*(Aqs default b\-tree operator class is used to determine ordering; to use a non\-default opclass, specify its name with
+can be any type with an associated b\-tree operator class (to determine the ordering of values for the range type)\&. Normally the subtype\*(Aqs default b\-tree operator class is used to determine ordering; to use a non\-default operator class, specify its name with
 \fIsubtype_opclass\fR\&. If the subtype is collatable, and you want to use a non\-default collation in the range\*(Aqs ordering, specify the desired collation with the
 \fIcollation\fR
 option\&.
@@ -468,7 +468,7 @@ The category code (a single ASCII character) for this type\&. The default is
 \*(AqU\*(Aq
 for
 \(lquser\-defined type\(rq\&. Other standard category codes can be found in
-Table\ \&45.51, \(lqtypcategory Codes\(rq\&. You may also choose other ASCII characters in order to create custom categories\&.
+Table\ \&47.52, \(lqtypcategory Codes\(rq\&. You may also choose other ASCII characters in order to create custom categories\&.
 .RE
 .PP
 \fIpreferred\fR

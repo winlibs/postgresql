@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: reindexdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "REINDEXDB" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "REINDEXDB" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ reindexdb \- reindex a PostgreSQL database
 .\" reindexdb
 .SH "SYNOPSIS"
 .HP \w'\fBreindexdb\fR\ 'u
-\fBreindexdb\fR [\fIconnection\-option\fR...] [\fB\-\-table\fR | \fB\-t\fR \fItable\fR] [\fB\-\-index\fR | \fB\-i\fR \fIindex\fR] [\fIdbname\fR]
+\fBreindexdb\fR [\fIconnection\-option\fR...] [\ \fB\-\-table\fR\ |\ \fB\-t\fR\ \fItable\fR\ ]...  [\ \fB\-\-index\fR\ |\ \fB\-i\fR\ \fIindex\fR\ ]...  [\fIdbname\fR]
 .HP \w'\fBreindexdb\fR\ 'u
 \fBreindexdb\fR [\fIconnection\-option\fR...] \fB\-\-all\fR | \fB\-a\fR 
 .HP \w'\fBreindexdb\fR\ 'u
@@ -80,7 +80,9 @@ generates and sends to the server\&.
 .RS 4
 Recreate
 \fIindex\fR
-only\&.
+only\&. Multiple indexes can be recreated by writing multiple
+\fB\-i\fR
+switches\&.
 .RE
 .PP
 \fB\-q\fR, \fB\-\-quiet\fR
@@ -97,7 +99,9 @@ Reindex database\*(Aqs system catalogs\&.
 .RS 4
 Reindex
 \fItable\fR
-only\&.
+only\&. Multiple tables can be reindexed by writing multiple
+\fB\-t\fR
+switches\&.
 .RE
 .PP
 \fB\-V\fR, \fB\-\-version\fR

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN86305"
+NAME="AEN89513"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN86311"
+NAME="AEN89519"
 ></A
 ><H2
 >Synopsis</H2
@@ -599,7 +599,12 @@ CLASS="OPTION"
 CLASS="COMMAND"
 >postgres</TT
 >
-   command-line options.
+   command-line options.  <TT
+CLASS="OPTION"
+>restart</TT
+> might fail if
+   relative paths specified were specified on the command-line during
+   server start.
   </P
 ><P
 >   <TT
@@ -750,7 +755,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Specifies the file system location of the database files.  If
+>        Specifies the file system location of the database configuration files.  If
         this is omitted, the environment variable
         <TT
 CLASS="ENVAR"
@@ -989,6 +994,10 @@ CLASS="COMMAND"
 CLASS="ACRONYM"
 >PID</ACRONYM
 > file.
+        This option allows the entry of an <ACRONYM
+CLASS="ACRONYM"
+>SSL</ACRONYM
+> passphrase on startup.
         <TT
 CLASS="COMMAND"
 >pg_ctl</TT
@@ -1122,7 +1131,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86681"
+NAME="AEN89891"
 ></A
 ><H2
 >Environment</H2
@@ -1172,7 +1181,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86695"
+NAME="AEN89905"
 ></A
 ><H2
 >Files</H2
@@ -1420,7 +1429,7 @@ CLASS="COMPUTEROUTPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86766"
+NAME="AEN89976"
 ></A
 ><H2
 >See Also</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Queries"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1065,10 +1065,10 @@ CLASS="EMPHASIS"
 >must</I
 ></SPAN
 > be assigned a table
-     alias name.  (See <A
+     alias name (as in <A
 HREF="queries-table-expressions.html#QUERIES-TABLE-ALIASES"
 >Section 7.2.1.2</A
->.)  For
+>).  For
      example:
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -1201,7 +1201,7 @@ HREF="contrib-dblink-function.html"
      (part of the <A
 HREF="dblink.html"
 >dblink</A
-> module&#62;) executes
+> module) executes
      a remote query.  It is declared to return
      <TT
 CLASS="TYPE"
@@ -1213,6 +1213,176 @@ CLASS="LITERAL"
 >*</TT
 > should
      expand to.
+    </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="QUERIES-LATERAL"
+>7.2.1.5. <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> Subqueries</A
+></H3
+><P
+>     Subqueries appearing in <TT
+CLASS="LITERAL"
+>FROM</TT
+> can be
+     preceded by the key word <TT
+CLASS="LITERAL"
+>LATERAL</TT
+>.  This allows them to
+     reference columns provided by preceding <TT
+CLASS="LITERAL"
+>FROM</TT
+> items.
+     (Without <TT
+CLASS="LITERAL"
+>LATERAL</TT
+>, each subquery is
+     evaluated independently and so cannot cross-reference any other
+     <TT
+CLASS="LITERAL"
+>FROM</TT
+> item.)
+    </P
+><P
+>     Table functions appearing in <TT
+CLASS="LITERAL"
+>FROM</TT
+> can also be
+     preceded by the key word <TT
+CLASS="LITERAL"
+>LATERAL</TT
+>, but for functions the
+     key word is optional; the function's arguments can contain references
+     to columns provided by preceding <TT
+CLASS="LITERAL"
+>FROM</TT
+> items in any case.
+    </P
+><P
+>     A <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> item can appear at top level in the
+     <TT
+CLASS="LITERAL"
+>FROM</TT
+> list, or within a <TT
+CLASS="LITERAL"
+>JOIN</TT
+> tree.  In the latter
+     case it can also refer to any items that are on the left-hand side of a
+     <TT
+CLASS="LITERAL"
+>JOIN</TT
+> that it is on the right-hand side of.
+    </P
+><P
+>     When a <TT
+CLASS="LITERAL"
+>FROM</TT
+> item contains <TT
+CLASS="LITERAL"
+>LATERAL</TT
+>
+     cross-references, evaluation proceeds as follows: for each row of the
+     <TT
+CLASS="LITERAL"
+>FROM</TT
+> item providing the cross-referenced column(s), or
+     set of rows of multiple <TT
+CLASS="LITERAL"
+>FROM</TT
+> items providing the
+     columns, the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> item is evaluated using that
+     row or row set's values of the columns.  The resulting row(s) are
+     joined as usual with the rows they were computed from.  This is
+     repeated for each row or set of rows from the column source table(s).
+    </P
+><P
+>     A trivial example of <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> is
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM foo, LATERAL (SELECT * FROM bar WHERE bar.id = foo.bar_id) ss;</PRE
+><P>
+     This is not especially useful since it has exactly the same result as
+     the more conventional
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM foo, bar WHERE bar.id = foo.bar_id;</PRE
+><P>
+     <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> is primarily useful when the cross-referenced
+     column is necessary for computing the row(s) to be joined.  A common
+     application is providing an argument value for a set-returning function.
+     For example, supposing that <CODE
+CLASS="FUNCTION"
+>vertices(polygon)</CODE
+> returns the
+     set of vertices of a polygon, we could identify close-together vertices
+     of polygons stored in a table with:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT p1.id, p2.id, v1, v2
+FROM polygons p1, polygons p2,
+     LATERAL vertices(p1.poly) v1,
+     LATERAL vertices(p2.poly) v2
+WHERE (v1 &lt;-&gt; v2) &lt; 10 AND p1.id != p2.id;</PRE
+><P>
+     This query could also be written
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT p1.id, p2.id, v1, v2
+FROM polygons p1 CROSS JOIN LATERAL vertices(p1.poly) v1,
+     polygons p2 CROSS JOIN LATERAL vertices(p2.poly) v2
+WHERE (v1 &lt;-&gt; v2) &lt; 10 AND p1.id != p2.id;</PRE
+><P>
+     or in several other equivalent formulations.  (As already mentioned,
+     the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> key word is unnecessary in this example, but
+     we use it for clarity.)
+    </P
+><P
+>     It is often particularly handy to <TT
+CLASS="LITERAL"
+>LEFT JOIN</TT
+> to a
+     <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> subquery, so that source rows will appear in
+     the result even if the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> subquery produces no
+     rows for them.  For example, if <CODE
+CLASS="FUNCTION"
+>get_product_names()</CODE
+> returns
+     the names of products made by a manufacturer, but some manufacturers in
+     our table currently produce no products, we could find out which ones
+     those are like this:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT m.name
+FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
+WHERE pname IS NULL;</PRE
+><P>
     </P
 ></DIV
 ></DIV

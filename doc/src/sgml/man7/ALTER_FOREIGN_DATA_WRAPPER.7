@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER FOREIGN DATA WRAPPER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "ALTER FOREIGN DATA WRAPPER" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "ALTER FOREIGN DATA WRAPPER" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -70,7 +70,11 @@ VALIDATOR \fIvalidator_function\fR
 .RS 4
 Specifies a new validator function for the foreign\-data wrapper\&.
 .sp
-Note that it is possible that after changing the validator the options to the foreign\-data wrapper, servers, and user mappings have become invalid\&. It is up to the user to make sure that these options are correct before using the foreign\-data wrapper\&.
+Note that it is possible that pre\-existing options of the foreign\-data wrapper, or of dependent servers, user mappings, or foreign tables, are invalid according to the new validator\&.
+PostgreSQL
+does not check for this\&. It is up to the user to make sure that these options are correct before using the modified foreign\-data wrapper\&. However, any options specified in this
+\fBALTER FOREIGN DATA WRAPPER\fR
+command will be checked using the new validator\&.
 .RE
 .PP
 NO VALIDATOR

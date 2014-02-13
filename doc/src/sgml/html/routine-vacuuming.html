@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Routine Database Maintenance Tasks"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -975,7 +975,12 @@ CLASS="STRUCTFIELD"
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->SELECT relname, age(relfrozenxid) FROM pg_class WHERE relkind = 'r';
+>SELECT c.oid::regclass as table_name,
+       greatest(age(c.relfrozenxid),age(t.relfrozenxid)) as age
+FROM pg_class c
+LEFT JOIN pg_class t ON c.reltoastrelid = t.oid
+WHERE c.relkind IN ('r', 'm');
+
 SELECT datname, age(datfrozenxid) FROM pg_database;</PRE
 ><P>
 
@@ -1186,6 +1191,11 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >ANALYZE</TT
 > as needed.
+    <TT
+CLASS="VARNAME"
+>log_autovacuum_min_duration</TT
+> can be used to monitor
+    autovacuum activity.
    </P
 ><P
 >    If several large tables all become eligible for vacuuming in a short

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_dump
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "PG_DUMP" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PG_DUMP" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -59,9 +59,13 @@ provides a flexible archival and transfer mechanism\&.
 pg_dump
 can be used to backup an entire database, then
 pg_restore
-can be used to examine the archive and/or select which parts of the database are to be restored\&. The most flexible output file format is the
+can be used to examine the archive and/or select which parts of the database are to be restored\&. The most flexible output file formats are the
 \(lqcustom\(rq
-format (\fB\-Fc\fR)\&. It allows for selection and reordering of all archived items, and is compressed by default\&.
+format (\fB\-Fc\fR) and the
+\(lqdirectory\(rq
+format(\fB\-Fd\fR)\&. They allow for selection and reordering of all archived items, support parallel restoration, and are compressed by default\&. The
+\(lqdirectory\(rq
+format is the only format that supports parallel dumps\&.
 .PP
 While running
 pg_dump, one should examine the output for any warnings (printed on standard error), especially in light of the limitations listed below\&.
@@ -153,7 +157,7 @@ pg_restore\&. This will create a directory with one file for each table and blob
 pg_restore
 can read\&. A directory format archive can be manipulated with standard Unix tools; for example, files in an uncompressed archive can be compressed with the
 gzip
-tool\&. This format is compressed by default\&.
+tool\&. This format is compressed by default and also supports parallel dumps\&.
 .RE
 .PP
 t, tar
@@ -167,6 +171,44 @@ pg_restore\&. The tar\-format is compatible with the directory\-format; extracti
 \fB\-i\fR, \fB\-\-ignore\-version\fR
 .RS 4
 A deprecated option that is now ignored\&.
+.RE
+.PP
+\fB\-j \fR\fB\fInjobs\fR\fR, \fB\-\-jobs=\fR\fB\fInjobs\fR\fR
+.RS 4
+Run the dump in parallel by dumping
+\fInjobs\fR
+tables simultaneously\&. This option reduces the time of the dump but it also increases the load on the database server\&. You can only use this option with the directory output format because this is the only output format where multiple processes can write their data at the same time\&.
+.sp
+pg_dump
+will open
+\fInjobs\fR
++ 1 connections to the database, so make sure your
+max_connections
+setting is high enough to accommodate all connections\&.
+.sp
+Requesting exclusive locks on database objects while running a parallel dump could cause the dump to fail\&. The reason is that the
+pg_dump
+master process requests shared locks on the objects that the worker processes are going to dump later in order to make sure that nobody deletes them and makes them go away while the dump is running\&. If another client then requests an exclusive lock on a table, that lock will not be granted but will be queued waiting for the shared lock of the master process to be released\&.\&. Consequently any other access to the table will not be granted either and will queue after the exclusive lock request\&. This includes the worker process trying to dump the table\&. Without any precautions this would be a classic deadlock situation\&. To detect this conflict, the
+pg_dump
+worker process requests another shared lock using the
+NOWAIT
+option\&. If the worker process is not granted this shared lock, somebody else must have requested an exclusive lock in the meantime and there is no way to continue with the dump, so
+pg_dump
+has no choice but to abort the dump\&.
+.sp
+For a consistent backup, the database server needs to support synchronized snapshots, a feature that was introduced in
+PostgreSQL
+9\&.2\&. With this feature, database clients can ensure they see the same data set even though they use different connections\&.
+\fBpg_dump \-j\fR
+uses multiple database connections; it connects to the database once with the master process and once again for each worker job\&. Without the synchronized snapshot feature, the different worker jobs wouldn\*(Aqt be guaranteed to see the same data in each connection, which could lead to an inconsistent backup\&.
+.sp
+If you want to run a parallel dump of a pre\-9\&.2 server, you need to make sure that the database content doesn\*(Aqt change from between the time the master connects to the database until the last worker job has connected to the database\&. The easiest way to do this is to halt any data modifying processes (DDL and DML) accessing the database before starting the backup\&. You also need to specify the
+\fB\-\-no\-synchronized\-snapshots\fR
+parameter when running
+\fBpg_dump \-j\fR
+against a pre\-9\&.2
+PostgreSQL
+server\&.
 .RE
 .PP
 \fB\-n \fR\fB\fIschema\fR\fR, \fB\-\-schema=\fR\fB\fIschema\fR\fR
@@ -294,7 +336,7 @@ To exclude table data for only a subset of tables in the database, see
 .PP
 \fB\-S \fR\fB\fIusername\fR\fR, \fB\-\-superuser=\fR\fB\fIusername\fR\fR
 .RS 4
-Specify the superuser user name to use when disabling triggers\&. This is only relevant if
+Specify the superuser user name to use when disabling triggers\&. This is relevant only if
 \fB\-\-disable\-triggers\fR
 is used\&. (Usually, it\*(Aqs better to leave this out, and instead start the resulting script as superuser\&.)
 .RE
@@ -439,7 +481,7 @@ This option disables the use of dollar quoting for function bodies, and forces t
 .PP
 \fB\-\-disable\-triggers\fR
 .RS 4
-This option is only relevant when creating a data\-only dump\&. It instructs
+This option is relevant only when creating a data\-only dump\&. It instructs
 pg_dump
 to include commands to temporarily disable triggers on the target tables while the data is reloaded\&. Use this if you have referential integrity checks or other triggers on the tables that you do not want to invoke during data reload\&.
 .sp
@@ -488,6 +530,15 @@ Do not wait forever to acquire shared table locks at the beginning of the dump\&
 Do not dump security labels\&.
 .RE
 .PP
+\fB\-\-no\-synchronized\-snapshots\fR
+.RS 4
+This option allows running
+\fBpg_dump \-j\fR
+against a pre\-9\&.2 server, see the documentation of the
+\fB\-j\fR
+parameter for more details\&.
+.RE
+.PP
 \fB\-\-no\-tablespaces\fR
 .RS 4
 Do not output commands to select tablespaces\&. With this option, all objects will be created in whichever tablespace is the default during restore\&.
@@ -498,7 +549,7 @@ This option is only meaningful for the plain\-text format\&. For the archive for
 .PP
 \fB\-\-no\-unlogged\-table\-data\fR
 .RS 4
-Do not dump the contents of unlogged tables\&. This option has no effect on whether or not the table definitions (schema) are dumped; it only suppresses dumping the table data\&.
+Do not dump the contents of unlogged tables\&. This option has no effect on whether or not the table definitions (schema) are dumped; it only suppresses dumping the table data\&. Data in unlogged tables is always excluded when dumping from a standby server\&.
 .RE
 .PP
 \fB\-\-quote\-all\-identifiers\fR
@@ -551,6 +602,25 @@ command line arguments, and exit\&.
 .RE
 .PP
 The following command\-line options control the database connection parameters\&.
+.PP
+\fB\-d \fR\fB\fIdbname\fR\fR, \fB\-\-dbname=\fR\fB\fIdbname\fR\fR
+.RS 4
+Specifies the name of the database to connect to\&. This is equivalent to specifying
+\fIdbname\fR
+as the first non\-option argument on the command line\&.
+.sp
+If this parameter contains an
+=
+sign or starts with a valid
+URI
+prefix (postgresql://
+or
+postgres://), it is treated as a
+\fIconninfo\fR
+string\&. See
+Section 31.1, \(lqDatabase Connection Control Functions\(rq, in the documentation
+for more information\&.
+.RE
 .PP
 \fB\-h \fR\fB\fIhost\fR\fR, \fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
@@ -751,6 +821,18 @@ $ \fBpg_dump \-Fd mydb \-f dumpdir\fR
 .RE
 .\}
 .PP
+To dump a database into a directory\-format archive in parallel with 5 worker jobs:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ \fBpg_dump \-Fd mydb \-j 5 \-f dumpdir\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
 To reload an archive file into a (freshly created) database named
 newdb:
 .sp
@@ -846,7 +928,7 @@ Patterns)\&. But double quotes are special to the shell, so in turn they must be
 .RS 4
 .\}
 .nf
-$ \fBpg_dump \-t \*(Aq"MixedCaseName"\*(Aq mydb > mytab\&.sql\fR
+$ \fBpg_dump \-t "\e"MixedCaseName\e"" mydb > mytab\&.sql\fR
 .fi
 .if n \{\
 .RE

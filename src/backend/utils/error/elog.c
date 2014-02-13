@@ -43,7 +43,7 @@
  * overflow.)
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -87,6 +87,7 @@ err_gettext(const char *str)
 /* This extension allows gcc to check the format string for consistency with
    the supplied arguments. */
 __attribute__((format_arg(1)));
+static void set_errdata_field(char **ptr, const char *str);
 
 /* Global variables */
 ErrorContextCallback *error_context_stack = NULL;
@@ -108,6 +109,7 @@ emit_log_hook_type emit_log_hook = NULL;
 int			Log_error_verbosity = PGERROR_VERBOSE;
 char	   *Log_line_prefix = NULL;		/* format for extra log line info */
 int			Log_destination = LOG_DESTINATION_STDERR;
+char	   *Log_destination_string = NULL;
 
 #ifdef HAVE_SYSLOG
 
@@ -170,6 +172,7 @@ static void send_message_to_server_log(ErrorData *edata);
 static void send_message_to_frontend(ErrorData *edata);
 static char *expand_fmt_string(const char *fmt, ErrorData *edata);
 static const char *useful_strerror(int errnum);
+static const char *get_errno_symbol(int errnum);
 static const char *error_severity(int elevel);
 static void append_with_tabs(StringInfo buf, const char *str);
 static bool is_log_level_output(int elevel, int log_min_level);
@@ -284,11 +287,7 @@ errstart(int elevel, const char *filename, int lineno,
 	 */
 
 	/* Determine whether message is enabled for server log output */
-	if (IsPostmasterEnvironment)
-		output_to_server = is_log_level_output(elevel, log_min_messages);
-	else
-		/* In bootstrap/standalone case, do not sort LOG out-of-order */
-		output_to_server = (elevel >= log_min_messages);
+	output_to_server = is_log_level_output(elevel, log_min_messages);
 
 	/* Determine whether message is enabled for client output */
 	if (whereToSendOutput == DestRemote && elevel != COMMERROR)
@@ -475,6 +474,16 @@ errfinish(int dummy,...)
 		pfree(edata->hint);
 	if (edata->context)
 		pfree(edata->context);
+	if (edata->schema_name)
+		pfree(edata->schema_name);
+	if (edata->table_name)
+		pfree(edata->table_name);
+	if (edata->column_name)
+		pfree(edata->column_name);
+	if (edata->datatype_name)
+		pfree(edata->datatype_name);
+	if (edata->constraint_name)
+		pfree(edata->constraint_name);
 	if (edata->internalquery)
 		pfree(edata->internalquery);
 
@@ -683,13 +692,13 @@ errcode_for_socket_access(void)
  * to the edata field because the buffer might be considerably larger than
  * really necessary.
  */
-#define EVALUATE_MESSAGE(targetfield, appendval, translateit)  \
+#define EVALUATE_MESSAGE(domain, targetfield, appendval, translateit)	\
 	{ \
 		char		   *fmtbuf; \
 		StringInfoData	buf; \
 		/* Internationalize the error format string */ \
 		if (translateit && !in_error_recursion_trouble()) \
-			fmt = dgettext(edata->domain, fmt); \
+			fmt = dgettext((domain), fmt);				  \
 		/* Expand %m in format string */ \
 		fmtbuf = expand_fmt_string(fmt, edata); \
 		initStringInfo(&buf); \
@@ -723,14 +732,14 @@ errcode_for_socket_access(void)
  * must be declared like "const char *fmt_singular, const char *fmt_plural,
  * unsigned long n, ...".  Translation is assumed always wanted.
  */
-#define EVALUATE_MESSAGE_PLURAL(targetfield, appendval)  \
+#define EVALUATE_MESSAGE_PLURAL(domain, targetfield, appendval)  \
 	{ \
 		const char	   *fmt; \
 		char		   *fmtbuf; \
 		StringInfoData	buf; \
 		/* Internationalize the error format string */ \
 		if (!in_error_recursion_trouble()) \
-			fmt = dngettext(edata->domain, fmt_singular, fmt_plural, n); \
+			fmt = dngettext((domain), fmt_singular, fmt_plural, n); \
 		else \
 			fmt = (n == 1 ? fmt_singular : fmt_plural); \
 		/* Expand %m in format string */ \
@@ -781,7 +790,7 @@ errmsg(const char *fmt,...)
 	CHECK_STACK_DEPTH();
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE(message, false, true);
+	EVALUATE_MESSAGE(edata->domain, message, false, true);
 
 	MemoryContextSwitchTo(oldcontext);
 	recursion_depth--;
@@ -810,7 +819,7 @@ errmsg_internal(const char *fmt,...)
 	CHECK_STACK_DEPTH();
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE(message, false, false);
+	EVALUATE_MESSAGE(edata->domain, message, false, false);
 
 	MemoryContextSwitchTo(oldcontext);
 	recursion_depth--;
@@ -833,7 +842,7 @@ errmsg_plural(const char *fmt_singular, const char *fmt_plural,
 	CHECK_STACK_DEPTH();
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE_PLURAL(message, false);
+	EVALUATE_MESSAGE_PLURAL(edata->domain, message, false);
 
 	MemoryContextSwitchTo(oldcontext);
 	recursion_depth--;
@@ -854,7 +863,7 @@ errdetail(const char *fmt,...)
 	CHECK_STACK_DEPTH();
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE(detail, false, true);
+	EVALUATE_MESSAGE(edata->domain, detail, false, true);
 
 	MemoryContextSwitchTo(oldcontext);
 	recursion_depth--;
@@ -881,7 +890,7 @@ errdetail_internal(const char *fmt,...)
 	CHECK_STACK_DEPTH();
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE(detail, false, false);
+	EVALUATE_MESSAGE(edata->domain, detail, false, false);
 
 	MemoryContextSwitchTo(oldcontext);
 	recursion_depth--;
@@ -902,7 +911,7 @@ errdetail_log(const char *fmt,...)
 	CHECK_STACK_DEPTH();
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE(detail_log, false, true);
+	EVALUATE_MESSAGE(edata->domain, detail_log, false, true);
 
 	MemoryContextSwitchTo(oldcontext);
 	recursion_depth--;
@@ -925,7 +934,7 @@ errdetail_plural(const char *fmt_singular, const char *fmt_plural,
 	CHECK_STACK_DEPTH();
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE_PLURAL(detail, false);
+	EVALUATE_MESSAGE_PLURAL(edata->domain, detail, false);
 
 	MemoryContextSwitchTo(oldcontext);
 	recursion_depth--;
@@ -946,7 +955,7 @@ errhint(const char *fmt,...)
 	CHECK_STACK_DEPTH();
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE(hint, false, true);
+	EVALUATE_MESSAGE(edata->domain, hint, false, true);
 
 	MemoryContextSwitchTo(oldcontext);
 	recursion_depth--;
@@ -955,14 +964,14 @@ errhint(const char *fmt,...)
 
 
 /*
- * errcontext --- add a context error message text to the current error
+ * errcontext_msg --- add a context error message text to the current error
  *
  * Unlike other cases, multiple calls are allowed to build up a stack of
  * context information.  We assume earlier calls represent more-closely-nested
  * states.
  */
 int
-errcontext(const char *fmt,...)
+errcontext_msg(const char *fmt,...)
 {
 	ErrorData  *edata = &errordata[errordata_stack_depth];
 	MemoryContext oldcontext;
@@ -971,10 +980,32 @@ errcontext(const char *fmt,...)
 	CHECK_STACK_DEPTH();
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE(context, true, true);
+	EVALUATE_MESSAGE(edata->context_domain, context, true, true);
 
 	MemoryContextSwitchTo(oldcontext);
 	recursion_depth--;
+	return 0;					/* return value does not matter */
+}
+
+/*
+ * set_errcontext_domain --- set message domain to be used by errcontext()
+ *
+ * errcontext_msg() can be called from a different module than the original
+ * ereport(), so we cannot use the message domain passed in errstart() to
+ * translate it.  Instead, each errcontext_msg() call should be preceded by
+ * a set_errcontext_domain() call to specify the domain.  This is usually
+ * done transparently by the errcontext() macro.
+ */
+int
+set_errcontext_domain(const char *domain)
+{
+	ErrorData  *edata = &errordata[errordata_stack_depth];
+
+	/* we don't bother incrementing recursion_depth */
+	CHECK_STACK_DEPTH();
+
+	edata->context_domain = domain;
+
 	return 0;					/* return value does not matter */
 }
 
@@ -1079,6 +1110,59 @@ internalerrquery(const char *query)
 }
 
 /*
+ * err_generic_string -- used to set individual ErrorData string fields
+ * identified by PG_DIAG_xxx codes.
+ *
+ * This intentionally only supports fields that don't use localized strings,
+ * so that there are no translation considerations.
+ *
+ * Most potential callers should not use this directly, but instead prefer
+ * higher-level abstractions, such as errtablecol() (see relcache.c).
+ */
+int
+err_generic_string(int field, const char *str)
+{
+	ErrorData  *edata = &errordata[errordata_stack_depth];
+
+	/* we don't bother incrementing recursion_depth */
+	CHECK_STACK_DEPTH();
+
+	switch (field)
+	{
+		case PG_DIAG_SCHEMA_NAME:
+			set_errdata_field(&edata->schema_name, str);
+			break;
+		case PG_DIAG_TABLE_NAME:
+			set_errdata_field(&edata->table_name, str);
+			break;
+		case PG_DIAG_COLUMN_NAME:
+			set_errdata_field(&edata->column_name, str);
+			break;
+		case PG_DIAG_DATATYPE_NAME:
+			set_errdata_field(&edata->datatype_name, str);
+			break;
+		case PG_DIAG_CONSTRAINT_NAME:
+			set_errdata_field(&edata->constraint_name, str);
+			break;
+		default:
+			elog(ERROR, "unsupported ErrorData field id: %d", field);
+			break;
+	}
+
+	return 0;					/* return value does not matter */
+}
+
+/*
+ * set_errdata_field --- set an ErrorData string field
+ */
+static void
+set_errdata_field(char **ptr, const char *str)
+{
+	Assert(*ptr == NULL);
+	*ptr = MemoryContextStrdup(ErrorContext, str);
+}
+
+/*
  * geterrcode --- return the currently set SQLSTATE error code
  *
  * This is only intended for use in error callback subroutines, since there
@@ -1134,12 +1218,13 @@ getinternalerrposition(void)
  * elog_start --- startup for old-style API
  *
  * All that we do here is stash the hidden filename/lineno/funcname
- * arguments into a stack entry.
+ * arguments into a stack entry, along with the current value of errno.
  *
  * We need this to be separate from elog_finish because there's no other
- * portable way to deal with inserting extra arguments into the elog call.
- * (If macros with variable numbers of arguments were portable, it'd be
- * easy, but they aren't.)
+ * C89-compliant way to deal with inserting extra arguments into the elog
+ * call.  (When using C99's __VA_ARGS__, we could possibly merge this with
+ * elog_finish, but there doesn't seem to be a good way to save errno before
+ * evaluating the format arguments if we do that.)
  */
 void
 elog_start(const char *filename, int lineno, const char *funcname)
@@ -1201,7 +1286,7 @@ elog_finish(int elevel, const char *fmt,...)
 	recursion_depth++;
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE(message, false, false);
+	EVALUATE_MESSAGE(edata->domain, message, false, false);
 
 	MemoryContextSwitchTo(oldcontext);
 	recursion_depth--;
@@ -1260,7 +1345,7 @@ format_elog_string(const char *fmt,...)
 
 	oldcontext = MemoryContextSwitchTo(ErrorContext);
 
-	EVALUATE_MESSAGE(message, false, true);
+	EVALUATE_MESSAGE(edata->domain, message, false, true);
 
 	MemoryContextSwitchTo(oldcontext);
 
@@ -1350,6 +1435,16 @@ CopyErrorData(void)
 		newedata->hint = pstrdup(newedata->hint);
 	if (newedata->context)
 		newedata->context = pstrdup(newedata->context);
+	if (newedata->schema_name)
+		newedata->schema_name = pstrdup(newedata->schema_name);
+	if (newedata->table_name)
+		newedata->table_name = pstrdup(newedata->table_name);
+	if (newedata->column_name)
+		newedata->column_name = pstrdup(newedata->column_name);
+	if (newedata->datatype_name)
+		newedata->datatype_name = pstrdup(newedata->datatype_name);
+	if (newedata->constraint_name)
+		newedata->constraint_name = pstrdup(newedata->constraint_name);
 	if (newedata->internalquery)
 		newedata->internalquery = pstrdup(newedata->internalquery);
 
@@ -1375,6 +1470,16 @@ FreeErrorData(ErrorData *edata)
 		pfree(edata->hint);
 	if (edata->context)
 		pfree(edata->context);
+	if (edata->schema_name)
+		pfree(edata->schema_name);
+	if (edata->table_name)
+		pfree(edata->table_name);
+	if (edata->column_name)
+		pfree(edata->column_name);
+	if (edata->datatype_name)
+		pfree(edata->datatype_name);
+	if (edata->constraint_name)
+		pfree(edata->constraint_name);
 	if (edata->internalquery)
 		pfree(edata->internalquery);
 	pfree(edata);
@@ -1447,6 +1552,16 @@ ReThrowError(ErrorData *edata)
 		newedata->hint = pstrdup(newedata->hint);
 	if (newedata->context)
 		newedata->context = pstrdup(newedata->context);
+	if (newedata->schema_name)
+		newedata->schema_name = pstrdup(newedata->schema_name);
+	if (newedata->table_name)
+		newedata->table_name = pstrdup(newedata->table_name);
+	if (newedata->column_name)
+		newedata->column_name = pstrdup(newedata->column_name);
+	if (newedata->datatype_name)
+		newedata->datatype_name = pstrdup(newedata->datatype_name);
+	if (newedata->constraint_name)
+		newedata->constraint_name = pstrdup(newedata->constraint_name);
 	if (newedata->internalquery)
 		newedata->internalquery = pstrdup(newedata->internalquery);
 
@@ -2634,6 +2749,36 @@ send_message_to_frontend(ErrorData *edata)
 			err_sendstring(&msgbuf, edata->context);
 		}
 
+		if (edata->schema_name)
+		{
+			pq_sendbyte(&msgbuf, PG_DIAG_SCHEMA_NAME);
+			err_sendstring(&msgbuf, edata->schema_name);
+		}
+
+		if (edata->table_name)
+		{
+			pq_sendbyte(&msgbuf, PG_DIAG_TABLE_NAME);
+			err_sendstring(&msgbuf, edata->table_name);
+		}
+
+		if (edata->column_name)
+		{
+			pq_sendbyte(&msgbuf, PG_DIAG_COLUMN_NAME);
+			err_sendstring(&msgbuf, edata->column_name);
+		}
+
+		if (edata->datatype_name)
+		{
+			pq_sendbyte(&msgbuf, PG_DIAG_DATATYPE_NAME);
+			err_sendstring(&msgbuf, edata->datatype_name);
+		}
+
+		if (edata->constraint_name)
+		{
+			pq_sendbyte(&msgbuf, PG_DIAG_CONSTRAINT_NAME);
+			err_sendstring(&msgbuf, edata->constraint_name);
+		}
+
 		if (edata->cursorpos > 0)
 		{
 			snprintf(tbuf, sizeof(tbuf), "%d", edata->cursorpos);
@@ -2784,7 +2929,7 @@ expand_fmt_string(const char *fmt, ErrorData *edata)
 static const char *
 useful_strerror(int errnum)
 {
-	/* this buffer is only used if errno has a bogus value */
+	/* this buffer is only used if strerror() and get_errno_symbol() fail */
 	static char errorstr_buf[48];
 	const char *str;
 
@@ -2796,10 +2941,16 @@ useful_strerror(int errnum)
 	str = strerror(errnum);
 
 	/*
-	 * Some strerror()s return an empty string for out-of-range errno. This is
-	 * ANSI C spec compliant, but not exactly useful.
+	 * Some strerror()s return an empty string for out-of-range errno.	This
+	 * is ANSI C spec compliant, but not exactly useful.  Also, we may get
+	 * back strings of question marks if libc cannot transcode the message to
+	 * the codeset specified by LC_CTYPE.  If we get nothing useful, first try
+	 * get_errno_symbol(), and if that fails, print the numeric errno.
 	 */
-	if (str == NULL || *str == '\0')
+	if (str == NULL || *str == '\0' || *str == '?')
+		str = get_errno_symbol(errnum);
+
+	if (str == NULL)
 	{
 		snprintf(errorstr_buf, sizeof(errorstr_buf),
 		/*------
@@ -2810,6 +2961,178 @@ useful_strerror(int errnum)
 	}
 
 	return str;
+}
+
+/*
+ * Returns a symbol (e.g. "ENOENT") for an errno code.
+ * Returns NULL if the code is unrecognized.
+ */
+static const char *
+get_errno_symbol(int errnum)
+{
+	switch (errnum)
+	{
+		case E2BIG:
+			return "E2BIG";
+		case EACCES:
+			return "EACCES";
+#ifdef EADDRINUSE
+		case EADDRINUSE:
+			return "EADDRINUSE";
+#endif
+#ifdef EADDRNOTAVAIL
+		case EADDRNOTAVAIL:
+			return "EADDRNOTAVAIL";
+#endif
+		case EAFNOSUPPORT:
+			return "EAFNOSUPPORT";
+#ifdef EAGAIN
+		case EAGAIN:
+			return "EAGAIN";
+#endif
+#ifdef EALREADY
+		case EALREADY:
+			return "EALREADY";
+#endif
+		case EBADF:
+			return "EBADF";
+#ifdef EBADMSG
+		case EBADMSG:
+			return "EBADMSG";
+#endif
+		case EBUSY:
+			return "EBUSY";
+		case ECHILD:
+			return "ECHILD";
+#ifdef ECONNABORTED
+		case ECONNABORTED:
+			return "ECONNABORTED";
+#endif
+		case ECONNREFUSED:
+			return "ECONNREFUSED";
+#ifdef ECONNRESET
+		case ECONNRESET:
+			return "ECONNRESET";
+#endif
+		case EDEADLK:
+			return "EDEADLK";
+		case EDOM:
+			return "EDOM";
+		case EEXIST:
+			return "EEXIST";
+		case EFAULT:
+			return "EFAULT";
+		case EFBIG:
+			return "EFBIG";
+#ifdef EHOSTUNREACH
+		case EHOSTUNREACH:
+			return "EHOSTUNREACH";
+#endif
+		case EIDRM:
+			return "EIDRM";
+		case EINPROGRESS:
+			return "EINPROGRESS";
+		case EINTR:
+			return "EINTR";
+		case EINVAL:
+			return "EINVAL";
+		case EIO:
+			return "EIO";
+#ifdef EISCONN
+		case EISCONN:
+			return "EISCONN";
+#endif
+		case EISDIR:
+			return "EISDIR";
+#ifdef ELOOP
+		case ELOOP:
+			return "ELOOP";
+#endif
+		case EMFILE:
+			return "EMFILE";
+		case EMLINK:
+			return "EMLINK";
+		case EMSGSIZE:
+			return "EMSGSIZE";
+		case ENAMETOOLONG:
+			return "ENAMETOOLONG";
+		case ENFILE:
+			return "ENFILE";
+		case ENOBUFS:
+			return "ENOBUFS";
+		case ENODEV:
+			return "ENODEV";
+		case ENOENT:
+			return "ENOENT";
+		case ENOEXEC:
+			return "ENOEXEC";
+		case ENOMEM:
+			return "ENOMEM";
+		case ENOSPC:
+			return "ENOSPC";
+		case ENOSYS:
+			return "ENOSYS";
+#ifdef ENOTCONN
+		case ENOTCONN:
+			return "ENOTCONN";
+#endif
+		case ENOTDIR:
+			return "ENOTDIR";
+#if defined(ENOTEMPTY) && (ENOTEMPTY != EEXIST) /* same code on AIX */
+		case ENOTEMPTY:
+			return "ENOTEMPTY";
+#endif
+#ifdef ENOTSOCK
+		case ENOTSOCK:
+			return "ENOTSOCK";
+#endif
+#ifdef ENOTSUP
+		case ENOTSUP:
+			return "ENOTSUP";
+#endif
+		case ENOTTY:
+			return "ENOTTY";
+		case ENXIO:
+			return "ENXIO";
+#if defined(EOPNOTSUPP) && (!defined(ENOTSUP) || (EOPNOTSUPP != ENOTSUP))
+		case EOPNOTSUPP:
+			return "EOPNOTSUPP";
+#endif
+#ifdef EOVERFLOW
+		case EOVERFLOW:
+			return "EOVERFLOW";
+#endif
+		case EPERM:
+			return "EPERM";
+		case EPIPE:
+			return "EPIPE";
+		case EPROTONOSUPPORT:
+			return "EPROTONOSUPPORT";
+		case ERANGE:
+			return "ERANGE";
+#ifdef EROFS
+		case EROFS:
+			return "EROFS";
+#endif
+		case ESRCH:
+			return "ESRCH";
+#ifdef ETIMEDOUT
+		case ETIMEDOUT:
+			return "ETIMEDOUT";
+#endif
+#ifdef ETXTBSY
+		case ETXTBSY:
+			return "ETXTBSY";
+#endif
+#if defined(EWOULDBLOCK) && (!defined(EAGAIN) || (EWOULDBLOCK != EAGAIN))
+		case EWOULDBLOCK:
+			return "EWOULDBLOCK";
+#endif
+		case EXDEV:
+			return "EXDEV";
+	}
+
+	return NULL;
 }
 
 

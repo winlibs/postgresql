@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -191,6 +191,29 @@ CLASS="COMPUTEROUTPUT"
 ><P>
      </P
 ><P
+>      If you
+      have <TT
+CLASS="COMMAND"
+>pkg-config</TT
+> installed, you can run instead:
+</P><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>$</SAMP
+> pkg-config --cflags libpq
+<SAMP
+CLASS="COMPUTEROUTPUT"
+>-I/usr/local/include</SAMP
+></PRE
+><P>
+      Note that this will already include the <TT
+CLASS="OPTION"
+>-I</TT
+> in front of
+      the path.
+     </P
+><P
 >      Failure to specify the correct option to the compiler will
       result in an error message such as:
 </P><PRE
@@ -255,6 +278,24 @@ CLASS="COMPUTEROUTPUT"
 >/usr/local/pgsql/lib</SAMP
 ></PRE
 ><P>
+     </P
+><P
+>      Or again use <TT
+CLASS="COMMAND"
+>pkg-config</TT
+>:
+</P><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>$</SAMP
+> pkg-config --libs libpq
+<SAMP
+CLASS="COMPUTEROUTPUT"
+>-L/usr/local/pgsql/lib -lpq</SAMP
+></PRE
+><P>
+      Note again that this prints the full options, not only the path.
      </P
 ><P
 >      Error messages that point to problems in this area could look like

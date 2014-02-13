@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -107,7 +107,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142562"
+NAME="AEN149987"
 >F.29.1. Functions</A
 ></H2
 ><P
@@ -344,7 +344,7 @@ CLASS="FUNCTION"
      </P
 ></DD
 ><DT
-><CODE
+>&#13;     <CODE
 CLASS="FUNCTION"
 >pgstatindex(text) returns record</CODE
 ></DT
@@ -379,7 +379,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN142658"
+NAME="AEN150087"
 ></A
 ><TABLE
 BORDER="1"
@@ -555,7 +555,102 @@ CLASS="FUNCTION"
     </P
 ></DD
 ><DT
-><CODE
+>&#13;     <CODE
+CLASS="FUNCTION"
+>pgstatginindex(regclass) returns record</CODE
+></DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>pgstatginindex</CODE
+> returns a record showing information
+      about a GIN index.  For example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>test=&#62; SELECT * FROM pgstatginindex('test_gin_index');
+-[ RECORD 1 ]--+--
+version        | 1
+pending_pages  | 0
+pending_tuples | 0</PRE
+><P>
+     </P
+><P
+>     The output columns are:
+
+    <DIV
+CLASS="INFORMALTABLE"
+><P
+></P
+><A
+NAME="AEN150168"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Column</TH
+><TH
+>Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>version</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>GIN version number</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>pending_pages</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>Number of pages in the pending list</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>pending_tuples</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of tuples in the pending list</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+>
+    </P
+></DD
+><DT
+>&#13;     <CODE
 CLASS="FUNCTION"
 >pg_relpages(text) returns bigint</CODE
 ></DT
@@ -576,7 +671,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142735"
+NAME="AEN150202"
 >F.29.2. Authors</A
 ></H2
 ><P

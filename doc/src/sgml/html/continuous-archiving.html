@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Backup and Restore"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -546,7 +546,7 @@ CLASS="FUNCTION"
     just-finished transaction is archived as soon as possible.  Other utility
     functions related to WAL management are listed in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-59</A
+>Table 9-60</A
 >.
    </P
 ><P
@@ -730,7 +730,8 @@ CLASS="FILENAME"
 >backup_label</TT
 >, in the cluster directory with
      information about your backup, including the start time and label
-     string.
+     string.  The file is critical to the integrity of the backup, should
+     you need to restore from it.
     </P
 ><P
 >     It does not matter which database within the cluster you connect to to
@@ -942,9 +943,11 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >pg_start_backup</CODE
 > was run, and the name of the starting WAL
-    file.  In case of confusion it is
-    therefore possible to look inside a backup dump file and determine
-    exactly which backup session the dump file came from.
+    file.  In case of confusion it is therefore possible to look inside a
+    backup dump file and determine exactly which backup session the dump file
+    came from.  However, this file is not merely for your information; its
+    presence and contents are critical to the proper operation of the system's
+    recovery process.
    </P
 ><P
 >    It is also possible to make a backup dump while the server is

@@ -6,7 +6,7 @@
  * See src/backend/optimizer/README for discussion of EquivalenceClasses.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -285,11 +285,19 @@ process_equivalence(PlannerInfo *root, RestrictInfo *restrictinfo,
 		}
 
 		/*
-		 * Case 2: need to merge ec1 and ec2.  We add ec2's items to ec1, then
-		 * set ec2's ec_merged link to point to ec1 and remove ec2 from the
-		 * eq_classes list.  We cannot simply delete ec2 because that could
-		 * leave dangling pointers in existing PathKeys.  We leave it behind
-		 * with a link so that the merged EC can be found.
+		 * Case 2: need to merge ec1 and ec2.  This should never happen after
+		 * we've built any canonical pathkeys; if it did, those pathkeys might
+		 * be rendered non-canonical by the merge.
+		 */
+		if (root->canon_pathkeys != NIL)
+			elog(ERROR, "too late to merge equivalence classes");
+
+		/*
+		 * We add ec2's items to ec1, then set ec2's ec_merged link to point
+		 * to ec1 and remove ec2 from the eq_classes list.	We cannot simply
+		 * delete ec2 because that could leave dangling pointers in existing
+		 * PathKeys.  We leave it behind with a link so that the merged EC can
+		 * be found.
 		 */
 		ec1->ec_members = list_concat(ec1->ec_members, ec2->ec_members);
 		ec1->ec_sources = list_concat(ec1->ec_sources, ec2->ec_sources);
@@ -443,13 +451,13 @@ canonicalize_ec_expression(Expr *expr, Oid req_type, Oid req_collation)
 											req_type,
 											-1,
 											req_collation,
-											COERCE_DONTCARE);
+											COERCE_IMPLICIT_CAST);
 		else if (exprCollation((Node *) expr) != req_collation)
 			expr = (Expr *) makeRelabelType(expr,
 											req_type,
 											exprTypmod((Node *) expr),
 											req_collation,
-											COERCE_DONTCARE);
+											COERCE_IMPLICIT_CAST);
 	}
 
 	return expr;
@@ -502,6 +510,13 @@ add_eq_member(EquivalenceClass *ec, Expr *expr, Relids relids,
  *	  equivalence class it is a member of; if none, optionally build a new
  *	  single-member EquivalenceClass for it.
  *
+ * expr is the expression, and nullable_relids is the set of base relids
+ * that are potentially nullable below it.	We actually only care about
+ * the set of such relids that are used in the expression; but for caller
+ * convenience, we perform that intersection step here.  The caller need
+ * only be sure that nullable_relids doesn't omit any nullable rels that
+ * might appear in the expr.
+ *
  * sortref is the SortGroupRef of the originating SortGroupClause, if any,
  * or zero if not.	(It should never be zero if the expression is volatile!)
  *
@@ -512,7 +527,7 @@ add_eq_member(EquivalenceClass *ec, Expr *expr, Relids relids,
  * be more than one EC that matches the expression; if so it's order-dependent
  * which one you get.  This is annoying but it only happens in corner cases,
  * so for now we live with just reporting the first match.	See also
- * generate_implied_equalities_for_indexcol and match_pathkeys_to_index.)
+ * generate_implied_equalities_for_column and match_pathkeys_to_index.)
  *
  * If create_it is TRUE, we'll build a new EquivalenceClass when there is no
  * match.  If create_it is FALSE, we just return NULL when no match.
@@ -530,6 +545,7 @@ add_eq_member(EquivalenceClass *ec, Expr *expr, Relids relids,
 EquivalenceClass *
 get_eclass_for_sort_expr(PlannerInfo *root,
 						 Expr *expr,
+						 Relids nullable_relids,
 						 List *opfamilies,
 						 Oid opcintype,
 						 Oid collation,
@@ -537,6 +553,7 @@ get_eclass_for_sort_expr(PlannerInfo *root,
 						 Relids rel,
 						 bool create_it)
 {
+	Relids		expr_relids;
 	EquivalenceClass *newec;
 	EquivalenceMember *newem;
 	ListCell   *lc1;
@@ -546,6 +563,12 @@ get_eclass_for_sort_expr(PlannerInfo *root,
 	 * Ensure the expression exposes the correct type and collation.
 	 */
 	expr = canonicalize_ec_expression(expr, opcintype, collation);
+
+	/*
+	 * Get the precise set of nullable relids appearing in the expression.
+	 */
+	expr_relids = pull_varnos((Node *) expr);
+	nullable_relids = bms_intersect(nullable_relids, expr_relids);
 
 	/*
 	 * Scan through the existing EquivalenceClasses for a match
@@ -621,8 +644,8 @@ get_eclass_for_sort_expr(PlannerInfo *root,
 	if (newec->ec_has_volatile && sortref == 0) /* should not happen */
 		elog(ERROR, "volatile EquivalenceClass has no sortref");
 
-	newem = add_eq_member(newec, copyObject(expr), pull_varnos((Node *) expr),
-						  NULL, false, opcintype);
+	newem = add_eq_member(newec, copyObject(expr), expr_relids,
+						  nullable_relids, false, opcintype);
 
 	/*
 	 * add_eq_member doesn't check for volatile functions, set-returning
@@ -2013,26 +2036,36 @@ mutate_eclass_expressions(PlannerInfo *root,
 
 
 /*
- * generate_implied_equalities_for_indexcol
- *	  Create EC-derived joinclauses usable with a specific index column.
+ * generate_implied_equalities_for_column
+ *	  Create EC-derived joinclauses usable with a specific column.
  *
- * We assume that any given index column could appear in only one EC.
+ * This is used by indxpath.c to extract potentially indexable joinclauses
+ * from ECs, and can be used by foreign data wrappers for similar purposes.
+ * We assume that only expressions in Vars of a single table are of interest,
+ * but the caller provides a callback function to identify exactly which
+ * such expressions it would like to know about.
+ *
+ * We assume that any given table/index column could appear in only one EC.
  * (This should be true in all but the most pathological cases, and if it
  * isn't, we stop on the first match anyway.)  Therefore, what we return
- * is a redundant list of clauses equating the index column to each of
+ * is a redundant list of clauses equating the table/index column to each of
  * the other-relation values it is known to be equal to.  Any one of
- * these clauses can be used to create a parameterized indexscan, and there
+ * these clauses can be used to create a parameterized path, and there
  * is no value in using more than one.	(But it *is* worthwhile to create
  * a separate parameterized path for each one, since that leads to different
  * join orders.)
+ *
+ * The caller can pass a Relids set of rels we aren't interested in joining
+ * to, so as to save the work of creating useless clauses.
  */
 List *
-generate_implied_equalities_for_indexcol(PlannerInfo *root,
-										 IndexOptInfo *index,
-										 int indexcol)
+generate_implied_equalities_for_column(PlannerInfo *root,
+									   RelOptInfo *rel,
+									   ec_matches_callback_type callback,
+									   void *callback_arg,
+									   Relids prohibited_rels)
 {
 	List	   *result = NIL;
-	RelOptInfo *rel = index->rel;
 	bool		is_child_rel = (rel->reloptkind == RELOPT_OTHER_MEMBER_REL);
 	Index		parent_relid;
 	ListCell   *lc1;
@@ -2065,11 +2098,11 @@ generate_implied_equalities_for_indexcol(PlannerInfo *root,
 			continue;
 
 		/*
-		 * Scan members, looking for a match to the indexable column.  Note
-		 * that child EC members are considered, but only when they belong to
-		 * the target relation.  (Unlike regular members, the same expression
+		 * Scan members, looking for a match to the target column.	Note that
+		 * child EC members are considered, but only when they belong to the
+		 * target relation.  (Unlike regular members, the same expression
 		 * could be a child member of more than one EC.  Therefore, it's
-		 * potentially order-dependent which EC a child relation's index
+		 * potentially order-dependent which EC a child relation's target
 		 * column gets matched to.	This is annoying but it only happens in
 		 * corner cases, so for now we live with just reporting the first
 		 * match.  See also get_eclass_for_sort_expr.)
@@ -2079,8 +2112,7 @@ generate_implied_equalities_for_indexcol(PlannerInfo *root,
 		{
 			cur_em = (EquivalenceMember *) lfirst(lc2);
 			if (bms_equal(cur_em->em_relids, rel->relids) &&
-				eclass_member_matches_indexcol(cur_ec, cur_em,
-											   index, indexcol))
+				callback(root, rel, cur_ec, cur_em, callback_arg))
 				break;
 			cur_em = NULL;
 		}
@@ -2104,6 +2136,10 @@ generate_implied_equalities_for_indexcol(PlannerInfo *root,
 			/* Make sure it'll be a join to a different rel */
 			if (other_em == cur_em ||
 				bms_overlap(other_em->em_relids, rel->relids))
+				continue;
+
+			/* Forget it if caller doesn't want joins to this rel */
+			if (bms_overlap(other_em->em_relids, prohibited_rels))
 				continue;
 
 			/*

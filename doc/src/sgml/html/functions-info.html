@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ NAME="FUNCTIONS-INFO"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-SESSION-TABLE"
->Table 9-50</A
+>Table 9-51</A
 > shows several
    functions that extract session and system information.
   </P
@@ -118,7 +118,7 @@ NAME="FUNCTIONS-INFO-SESSION-TABLE"
 ></A
 ><P
 ><B
->Table 9-50. Session Information Functions</B
+>Table 9-51. Session Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -702,7 +702,7 @@ CLASS="PRODUCTNAME"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE"
->Table 9-51</A
+>Table 9-52</A
 > lists functions that
    allow the user to query object access privileges programmatically.
    See <A
@@ -718,7 +718,7 @@ NAME="FUNCTIONS-INFO-ACCESS-TABLE"
 ></A
 ><P
 ><B
->Table 9-51. Access Privilege Inquiry Functions</B
+>Table 9-52. Access Privilege Inquiry Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1764,7 +1764,7 @@ CLASS="COMMAND"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE"
->Table 9-52</A
+>Table 9-53</A
 > shows functions that
    determine whether a certain object is <I
 CLASS="FIRSTTERM"
@@ -1788,7 +1788,7 @@ NAME="FUNCTIONS-INFO-SCHEMA-TABLE"
 ></A
 ><P
 ><B
->Table 9-52. Schema Visibility Inquiry Functions</B
+>Table 9-53. Schema Visibility Inquiry Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2115,7 +2115,7 @@ CLASS="PROGRAMLISTING"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE"
->Table 9-53</A
+>Table 9-54</A
 > lists functions that
    extract information from the system catalogs.
   </P
@@ -2126,7 +2126,7 @@ NAME="FUNCTIONS-INFO-CATALOG-TABLE"
 ></A
 ><P
 ><B
->Table 9-53. System Catalog Information Functions</B
+>Table 9-54. System Catalog Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2190,6 +2190,62 @@ CLASS="TYPE"
 ></TD
 ><TD
 >get description of a database object</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_identify_object(<TT
+CLASS="PARAMETER"
+>catalog_id</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>object_id</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>object_sub_id</TT
+> <TT
+CLASS="TYPE"
+>integer</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="PARAMETER"
+>type</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>schema</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>name</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>identity</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>get identity of a database object</TD
 ></TR
 ><TR
 ><TD
@@ -2608,7 +2664,7 @@ CLASS="TYPE"
 >get underlying <TT
 CLASS="COMMAND"
 >SELECT</TT
-> command for view (<SPAN
+> command for view or materialized view (<SPAN
 CLASS="emphasis"
 ><I
 CLASS="EMPHASIS"
@@ -2640,11 +2696,7 @@ CLASS="TYPE"
 >get underlying <TT
 CLASS="COMMAND"
 >SELECT</TT
-> command for view,
-              lines with fields are wrapped to 80 columns if <TT
-CLASS="PARAMETER"
->pretty_bool</TT
-> is true (<SPAN
+> command for view or materialized view (<SPAN
 CLASS="emphasis"
 ><I
 CLASS="EMPHASIS"
@@ -2673,7 +2725,7 @@ CLASS="TYPE"
 >get underlying <TT
 CLASS="COMMAND"
 >SELECT</TT
-> command for view</TD
+> command for view or materialized view</TD
 ></TR
 ><TR
 ><TD
@@ -2699,11 +2751,7 @@ CLASS="TYPE"
 >get underlying <TT
 CLASS="COMMAND"
 >SELECT</TT
-> command for view,
-              lines with fields are wrapped to 80 columns if <TT
-CLASS="PARAMETER"
->pretty_bool</TT
-> is true</TD
+> command for view or materialized view</TD
 ></TR
 ><TR
 ><TD
@@ -2716,7 +2764,7 @@ CLASS="PARAMETER"
 >view_oid</TT
 >, <TT
 CLASS="PARAMETER"
->wrap_int</TT
+>wrap_column_int</TT
 >)</CODE
 ></TT
 ></TD
@@ -2729,8 +2777,9 @@ CLASS="TYPE"
 >get underlying <TT
 CLASS="COMMAND"
 >SELECT</TT
-> command for view,
-              wrapping lines with fields as specified, pretty printing is implied</TD
+> command for view or
+              materialized view; lines with fields are wrapped to specified
+              number of columns, pretty-printing is implied</TD
 ></TR
 ><TR
 ><TD
@@ -3054,13 +3103,51 @@ CLASS="STRUCTNAME"
 >   <CODE
 CLASS="FUNCTION"
 >pg_describe_object</CODE
-> returns a description of a database
+> returns a textual description of a database
    object specified by catalog OID, object OID and a (possibly zero) sub-object ID.
+   This description is intended to be human-readable, and might be translated,
+   depending on server configuration.
    This is useful to determine the identity of an object as stored in the
    <TT
 CLASS="STRUCTNAME"
 >pg_depend</TT
 > catalog.
+  </P
+><P
+>   <CODE
+CLASS="FUNCTION"
+>pg_identify_object</CODE
+> returns a row containing enough information
+   to uniquely identify the database object specified by catalog OID, object OID and a
+   (possibly zero) sub-object ID.  This information is intended to be machine-readable,
+   and is never translated.
+   <TT
+CLASS="PARAMETER"
+>type</TT
+> identifies the type of database object;
+   <TT
+CLASS="PARAMETER"
+>schema</TT
+> is the schema name that the object belongs in, or
+   <TT
+CLASS="LITERAL"
+>NULL</TT
+> for object types that do not belong to schemas;
+   <TT
+CLASS="PARAMETER"
+>name</TT
+> is the name of the object, quoted if necessary, only
+   present if it can be used (alongside schema name, if pertinent) as an unique
+   identifier of the object, otherwise <TT
+CLASS="LITERAL"
+>NULL</TT
+>;
+   <TT
+CLASS="PARAMETER"
+>identity</TT
+> is the complete object identity, with the precise format
+   depending on object type, and each part within the format being
+   schema-qualified and quoted as necessary.
   </P
 ><P
 >   <CODE
@@ -3121,7 +3208,7 @@ SELECT collation for ('foo' COLLATE "de_DE");
 ><P
 >    The functions shown in <A
 HREF="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE"
->Table 9-54</A
+>Table 9-55</A
 >
     extract comments previously stored with the <A
 HREF="sql-comment.html"
@@ -3137,7 +3224,7 @@ NAME="FUNCTIONS-INFO-COMMENT-TABLE"
 ></A
 ><P
 ><B
->Table 9-54. Comment Information Functions</B
+>Table 9-55. Comment Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3299,7 +3386,7 @@ CLASS="FUNCTION"
 ><P
 >    The functions shown in <A
 HREF="functions-info.html#FUNCTIONS-TXID-SNAPSHOT"
->Table 9-55</A
+>Table 9-56</A
 >
     provide server transaction information in an exportable form.  The main
     use of these functions is to determine which transactions were committed
@@ -3312,7 +3399,7 @@ NAME="FUNCTIONS-TXID-SNAPSHOT"
 ></A
 ><P
 ><B
->Table 9-55. Transaction IDs and Snapshots</B
+>Table 9-56. Transaction IDs and Snapshots</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3473,7 +3560,7 @@ CLASS="TYPE"
     visibility at a particular moment in time.  Its components are
     described in <A
 HREF="functions-info.html#FUNCTIONS-TXID-SNAPSHOT-PARTS"
->Table 9-56</A
+>Table 9-57</A
 >.
    </P
 ><DIV
@@ -3483,7 +3570,7 @@ NAME="FUNCTIONS-TXID-SNAPSHOT-PARTS"
 ></A
 ><P
 ><B
->Table 9-56. Snapshot Components</B
+>Table 9-57. Snapshot Components</B
 ></P
 ><TABLE
 BORDER="1"

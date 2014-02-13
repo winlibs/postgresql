@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="APP-PGDUMP"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN81594"
+NAME="AEN84472"
 ></A
 ><H2
 >Name</H2
@@ -107,7 +107,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN81600"
+NAME="AEN84478"
 ></A
 ><H2
 >Synopsis</H2
@@ -205,16 +205,27 @@ CLASS="APPLICATION"
 >pg_restore</SPAN
 >
    can be used to examine the archive and/or select which parts of the
-   database are to be restored. The most flexible output file format is
+   database are to be restored. The most flexible output file formats are
    the <SPAN
 CLASS="QUOTE"
 >"custom"</SPAN
 > format (<TT
 CLASS="OPTION"
 >-Fc</TT
->). It allows
-   for selection and reordering of all archived items, and is compressed
-   by default.
+>) and the
+   <SPAN
+CLASS="QUOTE"
+>"directory"</SPAN
+> format(<TT
+CLASS="OPTION"
+>-Fd</TT
+>). They allow
+   for selection and reordering of all archived items, support parallel
+   restoration, and are compressed by default. The <SPAN
+CLASS="QUOTE"
+>"directory"</SPAN
+>
+   format is the only format that supports parallel dumps.
   </P
 ><P
 >   While running <SPAN
@@ -518,7 +529,8 @@ CLASS="APPLICATION"
 CLASS="APPLICATION"
 >gzip</SPAN
 > tool.
-           This format is compressed by default.
+           This format is compressed by default and also supports parallel
+           dumps.
           </P
 ></DD
 ><DT
@@ -561,6 +573,118 @@ CLASS="OPTION"
 ><DD
 ><P
 >        A deprecated option that is now ignored.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-j <TT
+CLASS="REPLACEABLE"
+><I
+>njobs</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--jobs=<TT
+CLASS="REPLACEABLE"
+><I
+>njobs</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        Run the dump in parallel by dumping <TT
+CLASS="REPLACEABLE"
+><I
+>njobs</I
+></TT
+>
+        tables simultaneously. This option reduces the time of the dump but it also
+        increases the load on the database server. You can only use this option with the
+        directory output format because this is the only output format where multiple processes
+        can write their data at the same time.
+       </P
+><P
+><SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> will open <TT
+CLASS="REPLACEABLE"
+><I
+>njobs</I
+></TT
+>
+        + 1 connections to the database, so make sure your <A
+HREF="runtime-config-connection.html#GUC-MAX-CONNECTIONS"
+>max_connections</A
+>
+        setting is high enough to accommodate all connections.
+       </P
+><P
+>        Requesting exclusive locks on database objects while running a parallel dump could
+        cause the dump to fail. The reason is that the <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> master process
+        requests shared locks on the objects that the worker processes are going to dump later
+        in order to
+        make sure that nobody deletes them and makes them go away while the dump is running.
+        If another client then requests an exclusive lock on a table, that lock will not be
+        granted but will be queued waiting for the shared lock of the master process to be
+        released.. Consequently any other access to the table will not be granted either and
+        will queue after the exclusive lock request. This includes the worker process trying
+        to dump the table. Without any precautions this would be a classic deadlock situation.
+        To detect this conflict, the <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> worker process requests another
+        shared lock using the <TT
+CLASS="LITERAL"
+>NOWAIT</TT
+> option. If the worker process is not granted
+        this shared lock, somebody else must have requested an exclusive lock in the meantime
+        and there is no way to continue with the dump, so <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> has no choice
+        but to abort the dump.
+       </P
+><P
+>        For a consistent backup, the database server needs to support synchronized snapshots,
+        a feature that was introduced in <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.2. With this
+        feature, database clients can ensure they see the same data set even though they use
+        different connections. <TT
+CLASS="COMMAND"
+>pg_dump -j</TT
+> uses multiple database
+        connections; it connects to the database once with the master process and
+        once again for each worker job. Without the synchronized snapshot feature, the
+        different worker jobs wouldn't be guaranteed to see the same data in each connection,
+        which could lead to an inconsistent backup.
+       </P
+><P
+>        If you want to run a parallel dump of a pre-9.2 server, you need to make sure that the
+        database content doesn't change from between the time the master connects to the
+        database until the last worker job has connected to the database. The easiest way to
+        do this is to halt any data modifying processes (DDL and DML) accessing the database
+        before starting the backup. You also need to specify the
+        <TT
+CLASS="OPTION"
+>--no-synchronized-snapshots</TT
+> parameter when running
+        <TT
+CLASS="COMMAND"
+>pg_dump -j</TT
+> against a pre-9.2 <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        server.
        </P
 ></DD
 ><DT
@@ -874,7 +998,7 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        Specify the superuser user name to use when disabling triggers.
-        This is only relevant if <TT
+        This is relevant only if <TT
 CLASS="OPTION"
 >--disable-triggers</TT
 > is used.
@@ -1242,7 +1366,7 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->        This option is only relevant when creating a data-only dump.
+>        This option is relevant only when creating a data-only dump.
         It instructs <SPAN
 CLASS="APPLICATION"
 >pg_dump</SPAN
@@ -1385,6 +1509,24 @@ CLASS="OPTION"
 ><DT
 ><TT
 CLASS="OPTION"
+>--no-synchronized-snapshots</TT
+></DT
+><DD
+><P
+>        This option allows running <TT
+CLASS="COMMAND"
+>pg_dump -j</TT
+> against a pre-9.2
+        server, see the documentation of the <TT
+CLASS="OPTION"
+>-j</TT
+> parameter
+        for more details.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >--no-tablespaces</TT
 ></DT
 ><DD
@@ -1411,7 +1553,8 @@ CLASS="OPTION"
 ><P
 >        Do not dump the contents of unlogged tables.  This option has no
         effect on whether or not the table definitions (schema) are dumped;
-        it only suppresses dumping the table data.
+        it only suppresses dumping the table data. Data in unlogged tables
+        is always excluded when dumping from a standby server.
        </P
 ></DD
 ><DT
@@ -1560,6 +1703,61 @@ CLASS="APPLICATION"
 ></P><DIV
 CLASS="VARIABLELIST"
 ><DL
+><DT
+><TT
+CLASS="OPTION"
+>-d <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--dbname=<TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></TT
+></DT
+><DD
+><P
+>       Specifies the name of the database to connect to. This is
+       equivalent to specifying <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+> as the first non-option
+       argument on the command line.
+      </P
+><P
+>       If this parameter contains an <TT
+CLASS="SYMBOL"
+>=</TT
+> sign or starts
+       with a valid <ACRONYM
+CLASS="ACRONYM"
+>URI</ACRONYM
+> prefix
+       (<TT
+CLASS="LITERAL"
+>postgresql://</TT
+>
+       or <TT
+CLASS="LITERAL"
+>postgres://</TT
+>), it is treated as a
+       <TT
+CLASS="PARAMETER"
+>conninfo</TT
+> string. See <A
+HREF="libpq-connect.html"
+>Section 31.1</A
+> for more information.
+      </P
+></DD
 ><DT
 ><TT
 CLASS="OPTION"
@@ -1746,7 +1944,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82120"
+NAME="AEN85051"
 ></A
 ><H2
 >Environment</H2
@@ -2051,6 +2249,21 @@ CLASS="USERINPUT"
 ><P>
   </P
 ><P
+>   To dump a database into a directory-format archive in parallel with
+   5 worker jobs:
+
+</P><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>$</SAMP
+> <KBD
+CLASS="USERINPUT"
+>pg_dump -Fd mydb -j 5 -f dumpdir</KBD
+></PRE
+><P>
+  </P
+><P
 >   To reload an archive file into a (freshly created) database named
    <TT
 CLASS="LITERAL"
@@ -2193,14 +2406,14 @@ CLASS="PROMPT"
 >$</SAMP
 > <KBD
 CLASS="USERINPUT"
->pg_dump -t '"MixedCaseName"' mydb &gt; mytab.sql</KBD
+>pg_dump -t "\"MixedCaseName\"" mydb &gt; mytab.sql</KBD
 ></PRE
 ><P></P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82243"
+NAME="AEN85178"
 ></A
 ><H2
 >See Also</H2

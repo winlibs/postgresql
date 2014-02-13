@@ -30,6 +30,7 @@ extern void sql_help_ALTER_CONVERSION(PQExpBuffer buf);
 extern void sql_help_ALTER_DATABASE(PQExpBuffer buf);
 extern void sql_help_ALTER_DEFAULT_PRIVILEGES(PQExpBuffer buf);
 extern void sql_help_ALTER_DOMAIN(PQExpBuffer buf);
+extern void sql_help_ALTER_EVENT_TRIGGER(PQExpBuffer buf);
 extern void sql_help_ALTER_EXTENSION(PQExpBuffer buf);
 extern void sql_help_ALTER_FOREIGN_DATA_WRAPPER(PQExpBuffer buf);
 extern void sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf);
@@ -38,10 +39,12 @@ extern void sql_help_ALTER_GROUP(PQExpBuffer buf);
 extern void sql_help_ALTER_INDEX(PQExpBuffer buf);
 extern void sql_help_ALTER_LANGUAGE(PQExpBuffer buf);
 extern void sql_help_ALTER_LARGE_OBJECT(PQExpBuffer buf);
+extern void sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf);
 extern void sql_help_ALTER_OPERATOR(PQExpBuffer buf);
 extern void sql_help_ALTER_OPERATOR_CLASS(PQExpBuffer buf);
 extern void sql_help_ALTER_OPERATOR_FAMILY(PQExpBuffer buf);
 extern void sql_help_ALTER_ROLE(PQExpBuffer buf);
+extern void sql_help_ALTER_RULE(PQExpBuffer buf);
 extern void sql_help_ALTER_SCHEMA(PQExpBuffer buf);
 extern void sql_help_ALTER_SEQUENCE(PQExpBuffer buf);
 extern void sql_help_ALTER_SERVER(PQExpBuffer buf);
@@ -71,6 +74,7 @@ extern void sql_help_CREATE_COLLATION(PQExpBuffer buf);
 extern void sql_help_CREATE_CONVERSION(PQExpBuffer buf);
 extern void sql_help_CREATE_DATABASE(PQExpBuffer buf);
 extern void sql_help_CREATE_DOMAIN(PQExpBuffer buf);
+extern void sql_help_CREATE_EVENT_TRIGGER(PQExpBuffer buf);
 extern void sql_help_CREATE_EXTENSION(PQExpBuffer buf);
 extern void sql_help_CREATE_FOREIGN_DATA_WRAPPER(PQExpBuffer buf);
 extern void sql_help_CREATE_FOREIGN_TABLE(PQExpBuffer buf);
@@ -78,6 +82,7 @@ extern void sql_help_CREATE_FUNCTION(PQExpBuffer buf);
 extern void sql_help_CREATE_GROUP(PQExpBuffer buf);
 extern void sql_help_CREATE_INDEX(PQExpBuffer buf);
 extern void sql_help_CREATE_LANGUAGE(PQExpBuffer buf);
+extern void sql_help_CREATE_MATERIALIZED_VIEW(PQExpBuffer buf);
 extern void sql_help_CREATE_OPERATOR(PQExpBuffer buf);
 extern void sql_help_CREATE_OPERATOR_CLASS(PQExpBuffer buf);
 extern void sql_help_CREATE_OPERATOR_FAMILY(PQExpBuffer buf);
@@ -109,6 +114,7 @@ extern void sql_help_DROP_COLLATION(PQExpBuffer buf);
 extern void sql_help_DROP_CONVERSION(PQExpBuffer buf);
 extern void sql_help_DROP_DATABASE(PQExpBuffer buf);
 extern void sql_help_DROP_DOMAIN(PQExpBuffer buf);
+extern void sql_help_DROP_EVENT_TRIGGER(PQExpBuffer buf);
 extern void sql_help_DROP_EXTENSION(PQExpBuffer buf);
 extern void sql_help_DROP_FOREIGN_DATA_WRAPPER(PQExpBuffer buf);
 extern void sql_help_DROP_FOREIGN_TABLE(PQExpBuffer buf);
@@ -116,6 +122,7 @@ extern void sql_help_DROP_FUNCTION(PQExpBuffer buf);
 extern void sql_help_DROP_GROUP(PQExpBuffer buf);
 extern void sql_help_DROP_INDEX(PQExpBuffer buf);
 extern void sql_help_DROP_LANGUAGE(PQExpBuffer buf);
+extern void sql_help_DROP_MATERIALIZED_VIEW(PQExpBuffer buf);
 extern void sql_help_DROP_OPERATOR(PQExpBuffer buf);
 extern void sql_help_DROP_OPERATOR_CLASS(PQExpBuffer buf);
 extern void sql_help_DROP_OPERATOR_FAMILY(PQExpBuffer buf);
@@ -150,6 +157,7 @@ extern void sql_help_NOTIFY(PQExpBuffer buf);
 extern void sql_help_PREPARE(PQExpBuffer buf);
 extern void sql_help_PREPARE_TRANSACTION(PQExpBuffer buf);
 extern void sql_help_REASSIGN_OWNED(PQExpBuffer buf);
+extern void sql_help_REFRESH_MATERIALIZED_VIEW(PQExpBuffer buf);
 extern void sql_help_REINDEX(PQExpBuffer buf);
 extern void sql_help_RELEASE_SAVEPOINT(PQExpBuffer buf);
 extern void sql_help_RESET(PQExpBuffer buf);
@@ -213,10 +221,15 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_ALTER_DOMAIN,
       17 },
 
+    { "ALTER EVENT TRIGGER",
+      N_("change the definition of an event trigger"),
+      sql_help_ALTER_EVENT_TRIGGER,
+      3 },
+
     { "ALTER EXTENSION",
       N_("change the definition of an extension"),
       sql_help_ALTER_EXTENSION,
-      28 },
+      30 },
 
     { "ALTER FOREIGN DATA WRAPPER",
       N_("change the definition of a foreign-data wrapper"),
@@ -226,7 +239,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER FOREIGN TABLE",
       N_("change the definition of a foreign table"),
       sql_help_ALTER_FOREIGN_TABLE,
-      20 },
+      22 },
 
     { "ALTER FUNCTION",
       N_("change the definition of a function"),
@@ -253,6 +266,11 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_ALTER_LARGE_OBJECT,
       0 },
 
+    { "ALTER MATERIALIZED VIEW",
+      N_("change the definition of a materialized view"),
+      sql_help_ALTER_MATERIALIZED_VIEW,
+      20 },
+
     { "ALTER OPERATOR",
       N_("change the definition of an operator"),
       sql_help_ALTER_OPERATOR,
@@ -272,6 +290,11 @@ static const struct _helpStruct QL_HELP[] = {
       N_("change a database role"),
       sql_help_ALTER_ROLE,
       20 },
+
+    { "ALTER RULE",
+      N_("change the definition of a rule"),
+      sql_help_ALTER_RULE,
+      0 },
 
     { "ALTER SCHEMA",
       N_("change the definition of a schema"),
@@ -371,7 +394,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "COMMENT",
       N_("define or change the comment of an object"),
       sql_help_COMMENT,
-      34 },
+      36 },
 
     { "COMMIT",
       N_("commit the current transaction"),
@@ -386,7 +409,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "COPY",
       N_("copy data between a file and a table"),
       sql_help_COPY,
-      19 },
+      20 },
 
     { "CREATE AGGREGATE",
       N_("define a new aggregate function"),
@@ -418,6 +441,11 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_CREATE_DOMAIN,
       8 },
 
+    { "CREATE EVENT TRIGGER",
+      N_("define a new event trigger"),
+      sql_help_CREATE_EVENT_TRIGGER,
+      3 },
+
     { "CREATE EXTENSION",
       N_("install an extension"),
       sql_help_CREATE_EXTENSION,
@@ -431,7 +459,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE FOREIGN TABLE",
       N_("define a new foreign table"),
       sql_help_CREATE_FOREIGN_TABLE,
-      5 },
+      12 },
 
     { "CREATE FUNCTION",
       N_("define a new function"),
@@ -452,6 +480,11 @@ static const struct _helpStruct QL_HELP[] = {
       N_("define a new procedural language"),
       sql_help_CREATE_LANGUAGE,
       2 },
+
+    { "CREATE MATERIALIZED VIEW",
+      N_("define a new materialized view"),
+      sql_help_CREATE_MATERIALIZED_VIEW,
+      5 },
 
     { "CREATE OPERATOR",
       N_("define a new operator"),
@@ -481,7 +514,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE SCHEMA",
       N_("define a new schema"),
       sql_help_CREATE_SCHEMA,
-      1 },
+      3 },
 
     { "CREATE SEQUENCE",
       N_("define a new sequence generator"),
@@ -608,6 +641,11 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_DROP_DOMAIN,
       0 },
 
+    { "DROP EVENT TRIGGER",
+      N_("remove an event trigger"),
+      sql_help_DROP_EVENT_TRIGGER,
+      0 },
+
     { "DROP EXTENSION",
       N_("remove an extension"),
       sql_help_DROP_EXTENSION,
@@ -641,6 +679,11 @@ static const struct _helpStruct QL_HELP[] = {
     { "DROP LANGUAGE",
       N_("remove a procedural language"),
       sql_help_DROP_LANGUAGE,
+      0 },
+
+    { "DROP MATERIALIZED VIEW",
+      N_("remove a materialized view"),
+      sql_help_DROP_MATERIALIZED_VIEW,
       0 },
 
     { "DROP OPERATOR",
@@ -813,6 +856,11 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_REASSIGN_OWNED,
       0 },
 
+    { "REFRESH MATERIALIZED VIEW",
+      N_("replace the contents of a materialized view"),
+      sql_help_REFRESH_MATERIALIZED_VIEW,
+      1 },
+
     { "REINDEX",
       N_("rebuild indexes"),
       sql_help_REINDEX,
@@ -856,7 +904,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "SECURITY LABEL",
       N_("define or change a security label applied to an object"),
       sql_help_SECURITY_LABEL,
-      17 },
+      19 },
 
     { "SELECT",
       N_("retrieve rows from a table or view"),
@@ -943,7 +991,7 @@ static const struct _helpStruct QL_HELP[] = {
 };
 
 
-#define QL_HELP_COUNT	152		/* number of help items */
+#define QL_HELP_COUNT	160		/* number of help items */
 #define QL_MAX_CMD_LEN	32		/* largest strlen(cmd) */
 
 

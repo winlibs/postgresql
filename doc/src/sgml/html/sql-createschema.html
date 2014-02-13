@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATESCHEMA"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN69593"
+NAME="AEN72082"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN69593"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN69598"
+NAME="AEN72087"
 ></A
 ><H2
 >Synopsis</H2
@@ -135,12 +135,29 @@ CLASS="REPLACEABLE"
 ><I
 >schema_element</I
 ></TT
-> [ ... ] ]</PRE
+> [ ... ] ]
+CREATE SCHEMA IF NOT EXISTS <TT
+CLASS="REPLACEABLE"
+><I
+>schema_name</I
+></TT
+> [ AUTHORIZATION <TT
+CLASS="REPLACEABLE"
+><I
+>user_name</I
+></TT
+> ]
+CREATE SCHEMA IF NOT EXISTS AUTHORIZATION <TT
+CLASS="REPLACEABLE"
+><I
+>user_name</I
+></TT
+></PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69605"
+NAME="AEN72097"
 ></A
 ><H2
 >Description</H2
@@ -190,7 +207,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69616"
+NAME="AEN72108"
 ></A
 ><H2
 >Parameters</H2
@@ -277,13 +294,30 @@ CLASS="COMMAND"
         be created in separate commands after the schema is created.
        </P
 ></DD
+><DT
+><TT
+CLASS="LITERAL"
+>IF NOT EXISTS</TT
+></DT
+><DD
+><P
+>        Do nothing (except issuing a notice) if a schema with the same name
+        already exists.  <TT
+CLASS="REPLACEABLE"
+><I
+>schema_element</I
+></TT
+>
+        subcommands cannot be included when this option is used.
+       </P
+></DD
 ></DL
 ></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69643"
+NAME="AEN72141"
 ></A
 ><H2
 >Notes</H2
@@ -299,7 +333,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69647"
+NAME="AEN72145"
 ></A
 ><H2
 >Examples</H2
@@ -322,6 +356,27 @@ CLASS="LITERAL"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >CREATE SCHEMA AUTHORIZATION joe;</PRE
+><P>
+  </P
+><P
+>   Create a schema named <TT
+CLASS="LITERAL"
+>test</TT
+> that will be owned by user
+   <TT
+CLASS="LITERAL"
+>joe</TT
+>, unless there already is a schema named <TT
+CLASS="LITERAL"
+>test</TT
+>.
+   (It does not matter whether <TT
+CLASS="LITERAL"
+>joe</TT
+> owns the pre-existing schema.)
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION joe;</PRE
 ><P>
   </P
 ><P
@@ -348,7 +403,7 @@ CREATE VIEW hollywood.winners AS
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69659"
+NAME="AEN72163"
 ></A
 ><H2
 >Compatibility</H2
@@ -395,11 +450,21 @@ CLASS="LITERAL"
 > privilege on his schema to someone else, or a
    superuser chooses to create objects in it.
   </P
+><P
+>   The <TT
+CLASS="LITERAL"
+>IF NOT EXISTS</TT
+> option is a
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> extension.
+  </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69671"
+NAME="AEN72178"
 ></A
 ><H2
 >See Also</H2

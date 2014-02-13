@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 39. <SPAN
+>Chapter 40. <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > - <ACRONYM
@@ -99,7 +99,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPGSQL-ERRORS-AND-MESSAGES"
->39.8. Errors and Messages</A
+>40.8. Errors and Messages</A
 ></H1
 ><P
 >    Use the <TT
@@ -349,62 +349,98 @@ CLASS="REPLACEABLE"
 ><I
 >expression</I
 ></TT
-> items.  The allowed
+> items.  Each
     <TT
-CLASS="REPLACEABLE"
-><I
->option</I
-></TT
-> keywords are
-    <TT
-CLASS="LITERAL"
->MESSAGE</TT
->, <TT
-CLASS="LITERAL"
->DETAIL</TT
->, <TT
-CLASS="LITERAL"
->HINT</TT
->, and
-    <TT
-CLASS="LITERAL"
->ERRCODE</TT
->, while each <TT
 CLASS="REPLACEABLE"
 ><I
 >expression</I
 ></TT
-> can be any string-valued
-    expression.
-    <TT
+> can be any
+    string-valued expression.  The allowed <TT
+CLASS="REPLACEABLE"
+><I
+>option</I
+></TT
+> key words are:
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
 CLASS="LITERAL"
 >MESSAGE</TT
-> sets the error message text (this option can't
-    be used in the form of <TT
+></DT
+><DD
+><P
+>Sets the error message text.  This option can't be used in the
+        form of <TT
 CLASS="COMMAND"
 >RAISE</TT
-> that includes a format
-    string before <TT
+> that includes a format string
+        before <TT
 CLASS="LITERAL"
 >USING</TT
->).
-    <TT
+>.</P
+></DD
+><DT
+><TT
 CLASS="LITERAL"
 >DETAIL</TT
-> supplies an error detail message, while
-    <TT
+></DT
+><DD
+><P
+>Supplies an error detail message.</P
+></DD
+><DT
+><TT
 CLASS="LITERAL"
 >HINT</TT
-> supplies a hint message.
-    <TT
+></DT
+><DD
+><P
+>Supplies a hint message.</P
+></DD
+><DT
+><TT
 CLASS="LITERAL"
 >ERRCODE</TT
-> specifies the error code (SQLSTATE) to report,
-    either by condition name as shown in <A
+></DT
+><DD
+><P
+>Specifies the error code (SQLSTATE) to report, either by condition
+        name, as shown in <A
 HREF="errcodes-appendix.html"
 >Appendix A</A
->,
-    or directly as a five-character SQLSTATE code.
+>, or directly as a
+        five-character SQLSTATE code.</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>COLUMN</TT
+><BR><TT
+CLASS="LITERAL"
+>CONSTRAINT</TT
+><BR><TT
+CLASS="LITERAL"
+>DATATYPE</TT
+><BR><TT
+CLASS="LITERAL"
+>TABLE</TT
+><BR><TT
+CLASS="LITERAL"
+>SCHEMA</TT
+></DT
+><DD
+><P
+>Supplies the name of a related object.</P
+></DD
+></DL
+></DIV
+><P>
    </P
 ><P
 >    This example will abort the transaction with the given error message

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -108,7 +108,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN141296"
+NAME="AEN148648"
 >F.22.1. Functions</A
 ></H2
 ><P
@@ -194,9 +194,9 @@ CLASS="FUNCTION"
 </P><PRE
 CLASS="SCREEN"
 >test=# SELECT * FROM page_header(get_raw_page('pg_class', 0));
-    lsn    | tli | flags | lower | upper | special | pagesize | version | prune_xid
------------+-----+-------+-------+-------+---------+----------+---------+-----------
- 0/24A1B50 |   1 |     1 |   232 |   368 |    8192 |     8192 |       4 |         0</PRE
+    lsn    | checksum | flags  | lower | upper | special | pagesize | version | prune_xid
+-----------+----------+--------+-------+-------+---------+----------+---------+-----------
+ 0/24A1B50 |        1 |      1 |   232 |   368 |    8192 |     8192 |       4 |         0</PRE
 ><P>
       The returned columns correspond to the fields in the
       <TT
@@ -240,7 +240,7 @@ CLASS="FILENAME"
 > and
       <TT
 CLASS="FILENAME"
->src/include/access/htup.h</TT
+>src/include/access/htup_details.h</TT
 > for explanations of the fields
       returned.
      </P

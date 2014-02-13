@@ -59,7 +59,7 @@ test: create_index create_view
 # ----------
 # Another group of parallel tests
 # ----------
-test: create_aggregate create_function_3 create_cast constraints triggers inherit create_table_like typed_table vacuum drop_if_exists
+test: create_aggregate create_function_3 create_cast constraints triggers inherit create_table_like typed_table vacuum drop_if_exists updatable_views
 
 # ----------
 # sanity_check does a vacuum, affecting the sort order of SELECT *
@@ -83,11 +83,17 @@ test: select_into select_distinct select_distinct_on select_implicit select_havi
 # ----------
 # Another group of parallel tests
 # ----------
-test: privileges security_label collate
+test: privileges security_label collate matview
 
-test: misc
+# ----------
+# Another group of parallel tests
+# ----------
+test: alter_generic misc psql
+
 # rules cannot run concurrently with any test that creates a view
 test: rules
+# event triggers cannot run concurrently with any test that runs DDL
+test: event_trigger
 
 # ----------
 # Another group of parallel tests

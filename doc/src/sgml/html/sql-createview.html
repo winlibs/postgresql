@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEVIEW"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN72083"
+NAME="AEN74599"
 ></A
 ><H2
 >Name</H2
@@ -103,13 +103,13 @@ NAME="AEN72083"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN72088"
+NAME="AEN74604"
 ></A
 ><H2
 >Synopsis</H2
 ><PRE
 CLASS="SYNOPSIS"
->CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] VIEW <TT
+>CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] [ RECURSIVE ] VIEW <TT
 CLASS="REPLACEABLE"
 ><I
 >name</I
@@ -141,7 +141,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72095"
+NAME="AEN74611"
 ></A
 ><H2
 >Description</H2
@@ -180,7 +180,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72103"
+NAME="AEN74619"
 ></A
 ><H2
 >Parameters</H2
@@ -213,6 +213,71 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >TEMPORARY</TT
 > is specified or not).
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>RECURSIVE</TT
+></DT
+><DD
+><P
+>      Creates a recursive view.  The syntax
+</P><PRE
+CLASS="SYNOPSIS"
+>CREATE RECURSIVE VIEW <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> (<TT
+CLASS="REPLACEABLE"
+><I
+>columns</I
+></TT
+>) AS SELECT <TT
+CLASS="REPLACEABLE"
+><I
+>...</I
+></TT
+>;</PRE
+><P>
+      is equivalent to
+</P><PRE
+CLASS="SYNOPSIS"
+>CREATE VIEW <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> AS WITH RECURSIVE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> (<TT
+CLASS="REPLACEABLE"
+><I
+>columns</I
+></TT
+>) AS (SELECT <TT
+CLASS="REPLACEABLE"
+><I
+>...</I
+></TT
+>) SELECT <TT
+CLASS="REPLACEABLE"
+><I
+>columns</I
+></TT
+> FROM <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>;</PRE
+><P>
+      A view column list must be specified for a recursive view.
      </P
 ></DD
 ><DT
@@ -265,7 +330,7 @@ CLASS="LITERAL"
       which should be enabled when a view is intended to provide row-level
       security.  See <A
 HREF="rules-privileges.html"
->Section 37.4</A
+>Section 38.5</A
 > for full details.
      </P
 ></DD
@@ -295,29 +360,10 @@ HREF="sql-values.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72140"
+NAME="AEN74672"
 ></A
 ><H2
 >Notes</H2
-><P
->    Currently, views are read only: the system will not allow an insert,
-    update, or delete on a view.  You can get the effect of an updatable
-    view by creating <TT
-CLASS="LITERAL"
->INSTEAD</TT
-> triggers on the view, which
-    must convert attempted inserts, etc. on the view into
-    appropriate actions on other tables.  For more information see
-    <A
-HREF="sql-createtrigger.html"
->CREATE TRIGGER</A
->.  Another possibility is to create
-    rules (see <A
-HREF="sql-createrule.html"
->CREATE RULE</A
->), but in practice triggers
-    are easier to understand and use correctly.
-   </P
 ><P
 >    Use the <A
 HREF="sql-dropview.html"
@@ -352,7 +398,7 @@ CLASS="PROGRAMLISTING"
     restricted access to the underlying tables.  However, not all views are
     secure against tampering; see <A
 HREF="rules-privileges.html"
->Section 37.4</A
+>Section 38.5</A
 > for
     details.  Functions called in the view are treated the same as if they had
     been called directly from the query using the view.  Therefore the user of
@@ -368,11 +414,187 @@ CLASS="COMMAND"
     rules, remain unchanged.  You must own the view
     to replace it (this includes being a member of the owning role).
    </P
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="SQL-CREATEVIEW-UPDATABLE-VIEWS"
+></A
+><H3
+>Updatable Views</H3
+><P
+>    Simple views are automatically updatable: the system will allow
+    <TT
+CLASS="COMMAND"
+>INSERT</TT
+>, <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> and <TT
+CLASS="COMMAND"
+>DELETE</TT
+> statements
+    to be used on the view in the same way as on a regular table.  A view is
+    automatically updatable if it satisfies all of the following conditions:
+
+    <P
+></P
+></P><UL
+><LI
+><P
+>       The view must have exactly one entry in its <TT
+CLASS="LITERAL"
+>FROM</TT
+> list,
+       which must be a table or another updatable view.
+      </P
+></LI
+><LI
+><P
+>       The view definition must not contain <TT
+CLASS="LITERAL"
+>WITH</TT
+>,
+       <TT
+CLASS="LITERAL"
+>DISTINCT</TT
+>, <TT
+CLASS="LITERAL"
+>GROUP BY</TT
+>, <TT
+CLASS="LITERAL"
+>HAVING</TT
+>,
+       <TT
+CLASS="LITERAL"
+>LIMIT</TT
+>, or <TT
+CLASS="LITERAL"
+>OFFSET</TT
+> clauses at the top level.
+      </P
+></LI
+><LI
+><P
+>       The view definition must not contain set operations (<TT
+CLASS="LITERAL"
+>UNION</TT
+>,
+       <TT
+CLASS="LITERAL"
+>INTERSECT</TT
+> or <TT
+CLASS="LITERAL"
+>EXCEPT</TT
+>) at the top level.
+      </P
+></LI
+><LI
+><P
+>       All columns in the view's select list must be simple references to
+       columns of the underlying relation.  They cannot be expressions,
+       literals or functions.  System columns cannot be referenced, either.
+      </P
+></LI
+><LI
+><P
+>       No column of the underlying relation can appear more than once in
+       the view's select list.
+      </P
+></LI
+><LI
+><P
+>       The view must not have the <TT
+CLASS="LITERAL"
+>security_barrier</TT
+> property.
+      </P
+></LI
+></UL
+><P>
+   </P
+><P
+>    If the view is automatically updatable the system will convert any
+    <TT
+CLASS="COMMAND"
+>INSERT</TT
+>, <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> or <TT
+CLASS="COMMAND"
+>DELETE</TT
+> statement
+    on the view into the corresponding statement on the underlying base
+    relation.
+   </P
+><P
+>    If an automatically updatable view contains a <TT
+CLASS="LITERAL"
+>WHERE</TT
+>
+    condition, the condition restricts which rows of the base relation are
+    available to be modified by <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> and <TT
+CLASS="COMMAND"
+>DELETE</TT
+>
+    statements on the view.  However, an <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> is allowed to
+    change a row so that it no longer satisfies the <TT
+CLASS="LITERAL"
+>WHERE</TT
+>
+    condition, and thus is no longer visible through the view.  Similarly,
+    an <TT
+CLASS="COMMAND"
+>INSERT</TT
+> command can potentially insert base-relation rows
+    that do not satisfy the <TT
+CLASS="LITERAL"
+>WHERE</TT
+> condition and thus are not
+    visible through the view.
+   </P
+><P
+>    A more complex view that does not satisfy all these conditions is
+    read-only by default: the system will not allow an insert, update, or
+    delete on the view.  You can get the effect of an updatable view by
+    creating <TT
+CLASS="LITERAL"
+>INSTEAD OF</TT
+> triggers on the view, which must
+    convert attempted inserts, etc. on the view into appropriate actions
+    on other tables.  For more information see <A
+HREF="sql-createtrigger.html"
+>CREATE TRIGGER</A
+>.  Another possibility is to create rules
+    (see <A
+HREF="sql-createrule.html"
+>CREATE RULE</A
+>), but in practice triggers are
+    easier to understand and use correctly.
+   </P
+><P
+>    Note that the user performing the insert, update or delete on the view
+    must have the corresponding insert, update or delete privilege on the
+    view.  In addition the view's owner must have the relevant privileges on
+    the underlying base relations, but the user performing the update does
+    not need any permissions on the underlying base relations (see
+    <A
+HREF="rules-privileges.html"
+>Section 38.5</A
+>).
+   </P
+></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72157"
+NAME="AEN74735"
 ></A
 ><H2
 >Examples</H2
@@ -397,11 +619,20 @@ CLASS="LITERAL"
 > was used to create the view, columns added later to
    the table will not be part of the view.
   </P
+><P
+>   Create a recursive view consisting of the numbers from 1 to 100:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE RECURSIVE VIEW nums_1_100 (n) AS
+    VALUES (1)
+UNION ALL
+    SELECT n+1 FROM nums_1_100 WHERE n &#60; 100;</PRE
+><P></P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72163"
+NAME="AEN74743"
 ></A
 ><H2
 >Compatibility</H2
@@ -448,17 +679,33 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        This option has to do with updatable views.  All
-        <TT
+>        This option controls the behavior of automatically updatable views.
+        When given, <TT
 CLASS="COMMAND"
 >INSERT</TT
 > and <TT
 CLASS="COMMAND"
 >UPDATE</TT
-> commands on the view
-        will be checked to ensure data satisfy the view-defining
-        condition (that is, the new data would be visible through the
-        view). If they do not, the update will be rejected.
+> commands on
+        the view will be checked to ensure new rows satisfy the
+        view-defining condition (that is, the new rows would be visible
+        through the view). If they do not, the update will be rejected.
+        Without <TT
+CLASS="LITERAL"
+>CHECK OPTION</TT
+>, <TT
+CLASS="COMMAND"
+>INSERT</TT
+> and
+        <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> commands on the view are allowed to create rows
+        that are not visible through the view.  (The latter behavior is the
+        only one currently provided by <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>.)
        </P
 ></DD
 ><DT
@@ -506,12 +753,16 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > language extension.
    So is the concept of a temporary view.
+   The <TT
+CLASS="LITERAL"
+>WITH</TT
+> clause is an extension as well.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72196"
+NAME="AEN74781"
 ></A
 ><H2
 >See Also</H2
@@ -521,6 +772,9 @@ HREF="sql-alterview.html"
 >, <A
 HREF="sql-dropview.html"
 >DROP VIEW</A
+>, <A
+HREF="sql-creatematerializedview.html"
+>CREATE MATERIALIZED VIEW</A
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

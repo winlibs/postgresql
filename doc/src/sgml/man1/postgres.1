@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: postgres
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "POSTGRES" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "POSTGRES" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -138,7 +138,7 @@ process from being propagated to this session\&.
 .PP
 \fB\-D \fR\fB\fIdatadir\fR\fR
 .RS 4
-Specifies the file system location of the data directory or configuration file(s)\&. See
+Specifies the file system location of the database configuration files\&. See
 Section 18.2, \(lqFile Locations\(rq, in the documentation
 for details\&.
 .RE
@@ -195,8 +195,10 @@ directly\&.
 .RS 4
 Specifies the directory of the Unix\-domain socket on which
 \fBpostgres\fR
-is to listen for connections from client applications\&. The default is normally
-/tmp, but can be changed at build time\&.
+is to listen for connections from client applications\&. The value can also be a comma\-separated list of directories\&. An empty value specifies not listening on any Unix\-domain sockets, in which case only TCP/IP sockets can be used to connect to the server\&. The default value is normally
+/tmp, but that can be changed at build time\&. Specifying this option is equivalent to setting the
+unix_socket_directories
+configuration parameter\&.
 .RE
 .PP
 \fB\-l\fR
@@ -496,15 +498,21 @@ to an individual server process, but that is usually not sensible\&.
 .PP
 To cancel a running query, send the
 SIGINT
-signal to the process running that command\&.
+signal to the process running that command\&. To terminate a backend process cleanly, send
+SIGTERM
+to that process\&. See also
+\fBpg_cancel_backend\fR
+and
+\fBpg_terminate_backend\fR
+in
+Section 9.26.2, \(lqServer Signaling Functions\(rq, in the documentation
+for the SQL\-callable equivalents of these two actions\&.
 .PP
 The
 \fBpostgres\fR
 server uses
-SIGTERM
-to tell subordinate server processes to quit normally and
 SIGQUIT
-to terminate without the normal cleanup\&. These signals
+to tell subordinate server processes to terminate without normal cleanup\&. This signal
 \fIshould not\fR
 be used by users\&. It is also unwise to send
 SIGKILL

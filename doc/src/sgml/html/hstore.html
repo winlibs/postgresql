@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -113,7 +113,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN139666"
+NAME="AEN146915"
 >F.16.1. <TT
 CLASS="TYPE"
 >hstore</TT
@@ -254,7 +254,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN139697"
+NAME="AEN146946"
 >F.16.2. <TT
 CLASS="TYPE"
 >hstore</TT
@@ -1008,6 +1008,66 @@ CLASS="LITERAL"
 ><TD
 ><CODE
 CLASS="FUNCTION"
+>hstore_to_json(hstore)</CODE
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>json</TT
+></TD
+><TD
+>get <TT
+CLASS="TYPE"
+>hstore</TT
+> as a <TT
+CLASS="TYPE"
+>json</TT
+> value</TD
+><TD
+><TT
+CLASS="LITERAL"
+>hstore_to_json('"a key"=&gt;1, b=&gt;t, c=&gt;null, d=&gt;12345, e=&gt;012345, f=&gt;1.234, g=&gt;2.345e+4')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>{"a key": "1", "b": "t", "c": null, "d": "12345", "e": "012345", "f": "1.234", "g": "2.345e+4"}</TT
+></TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="FUNCTION"
+>hstore_to_json_loose(hstore)</CODE
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>json</TT
+></TD
+><TD
+>get <TT
+CLASS="TYPE"
+>hstore</TT
+> as a <TT
+CLASS="TYPE"
+>json</TT
+> value, but attempting to distinguish numerical and Boolean values so they are unquoted in the JSON</TD
+><TD
+><TT
+CLASS="LITERAL"
+>hstore_to_json_loose('"a key"=&gt;1, b=&gt;t, c=&gt;null, d=&gt;12345, e=&gt;012345, f=&gt;1.234, g=&gt;2.345e+4')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>{"a key": 1, "b": true, "c": null, "d": 12345, "e": "012345", "f": 1.234, "g": 2.345e+4}</TT
+></TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="FUNCTION"
 >slice(hstore, text[])</CODE
 ></TD
 ><TD
@@ -1224,6 +1284,27 @@ CLASS="NOTE"
 ><P
 ><B
 >Note: </B
+>     The function <CODE
+CLASS="FUNCTION"
+>hstore_to_json</CODE
+> is used when an <TT
+CLASS="TYPE"
+>hstore</TT
+>
+     value is cast to <TT
+CLASS="TYPE"
+>json</TT
+>.
+   </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
 >    The function <CODE
 CLASS="FUNCTION"
 >populate_record</CODE
@@ -1245,7 +1326,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN140079"
+NAME="AEN147387"
 >F.16.3. Indexes</A
 ></H2
 ><P
@@ -1325,7 +1406,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN140101"
+NAME="AEN147409"
 >F.16.4. Examples</A
 ></H2
 ><P
@@ -1405,7 +1486,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN140118"
+NAME="AEN147426"
 >F.16.5. Statistics</A
 ></H2
 ><P
@@ -1459,7 +1540,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN140128"
+NAME="AEN147436"
 >F.16.6. Compatibility</A
 ></H2
 ><P
@@ -1503,7 +1584,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN140138"
+NAME="AEN147446"
 >F.16.7. Authors</A
 ></H2
 ><P

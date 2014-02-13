@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER FOREIGN TABLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "ALTER FOREIGN TABLE" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "ALTER FOREIGN TABLE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -44,9 +44,11 @@ ALTER FOREIGN TABLE [ IF EXISTS ] \fIname\fR
 
 where \fIaction\fR is one of:
 
-    ADD [ COLUMN ] \fIcolumn_name\fR \fIdata_type\fR [ NULL | NOT NULL ]
+    ADD [ COLUMN ] \fIcolumn_name\fR \fIdata_type\fR [ COLLATE \fIcollation\fR ] [ \fIcolumn_constraint\fR [ \&.\&.\&. ] ]
     DROP [ COLUMN ] [ IF EXISTS ] \fIcolumn_name\fR [ RESTRICT | CASCADE ]
     ALTER [ COLUMN ] \fIcolumn_name\fR [ SET DATA ] TYPE \fIdata_type\fR
+    ALTER [ COLUMN ] \fIcolumn_name\fR SET DEFAULT \fIexpression\fR
+    ALTER [ COLUMN ] \fIcolumn_name\fR DROP DEFAULT
     ALTER [ COLUMN ] \fIcolumn_name\fR { SET | DROP } NOT NULL
     ALTER [ COLUMN ] \fIcolumn_name\fR SET STATISTICS \fIinteger\fR
     ALTER [ COLUMN ] \fIcolumn_name\fR SET ( \fIattribute_option\fR = \fIvalue\fR [, \&.\&.\&. ] )
@@ -64,7 +66,7 @@ changes the definition of an existing foreign table\&. There are several subform
 ADD COLUMN
 .RS 4
 This form adds a new column to the foreign table, using the same syntax as
-CREATE FOREIGN TABLE (\fBCREATE_FOREIGN_TABLE\fR(7))\&.
+CREATE FOREIGN TABLE (\fBCREATE_FOREIGN_TABLE\fR(7))\&. Unlike the case when adding a column to a regular table, nothing happens to the underlying storage: this action simply declares that some new column is now accessible through the foreign table\&.
 .RE
 .PP
 DROP COLUMN [ IF EXISTS ]
@@ -84,6 +86,15 @@ Do not throw an error if the foreign table does not exist\&. A notice is issued 
 SET DATA TYPE
 .RS 4
 This form changes the type of a column of a foreign table\&.
+.RE
+.PP
+SET/DROP DEFAULT
+.RS 4
+These forms set or remove the default value for a column\&. Default values only apply in subsequent
+\fBINSERT\fR
+or
+\fBUPDATE\fR
+commands; they do not cause rows already in the table to change\&.
 .RE
 .PP
 SET/DROP NOT NULL

@@ -2,11 +2,11 @@
 # Copyright (C) 2009 PostgreSQL Global Development Group
 # This file is distributed under the same license as the PostgreSQL package.
 # Fernando Ike de Oliveira <fike@midstorm.org>, 2009.
-# Euler Taveira de Oliveira <euler@timbira.com>, 2010-2012.
+# Euler Taveira de Oliveira <euler@timbira.com>, 2010-2013.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PostgreSQL 9.2\n"
+"Project-Id-Version: PostgreSQL 9.3\n"
 "Report-Msgid-Bugs-To: pgsql-bugs@postgresql.org\n"
 "POT-Creation-Date: 2012-08-18 17:37-0300\n"
 "PO-Revision-Date: 2009-02-09 12:59-0200\n"
@@ -344,189 +344,180 @@ msgstr "inicializador não é permitido na definição do tipo"
 msgid "type name \"string\" is reserved in Informix mode"
 msgstr "nome de tipo \"string\" é reservado no modo Informix"
 
-#: preproc.y:529 preproc.y:13277
+#: preproc.y:529 preproc.y:13560
 #, c-format
 msgid "type \"%s\" is already defined"
 msgstr "tipo \"%s\" já está definido"
 
-#: preproc.y:553 preproc.y:13930 preproc.y:14251 variable.c:610
+#: preproc.y:553 preproc.y:14213 preproc.y:14534 variable.c:614
 #, c-format
 msgid "multidimensional arrays for simple data types are not supported"
 msgstr "matrizes multidimensionais para tipo de dados simples não são suportadas"
 
-#: preproc.y:1526
+#: preproc.y:1540
 #, c-format
 msgid "AT option not allowed in CLOSE DATABASE statement"
 msgstr "opção AT não é permitida no comando CLOSE DATABASE"
 
-#: preproc.y:1723
+#: preproc.y:1743
 #, c-format
 msgid "AT option not allowed in CONNECT statement"
 msgstr "opção AT não é permitida no comando CONNECT"
 
-#: preproc.y:1757
+#: preproc.y:1777
 #, c-format
 msgid "AT option not allowed in DISCONNECT statement"
 msgstr "opção AT não é permitida no comando DISCONNECT"
 
-#: preproc.y:1812
+#: preproc.y:1832
 #, c-format
 msgid "AT option not allowed in SET CONNECTION statement"
 msgstr "opção AT não é permitida no comando SET CONNECTION"
 
-#: preproc.y:1834
+#: preproc.y:1854
 #, c-format
 msgid "AT option not allowed in TYPE statement"
 msgstr "opção AT não é permitida no comando TYPE"
 
-#: preproc.y:1843
+#: preproc.y:1863
 #, c-format
 msgid "AT option not allowed in VAR statement"
 msgstr "opção AT não é permitida no comando VAR"
 
-#: preproc.y:1850
+#: preproc.y:1870
 #, c-format
 msgid "AT option not allowed in WHENEVER statement"
 msgstr "opção AT não é permitida no comando WHENEVER"
 
-#: preproc.y:2204 preproc.y:3489 preproc.y:4658 preproc.y:4667 preproc.y:4952
-#: preproc.y:7343 preproc.y:7348 preproc.y:7353 preproc.y:9695 preproc.y:10242
+#: preproc.y:2118 preproc.y:2123 preproc.y:2238 preproc.y:3540 preproc.y:4792
+#: preproc.y:4801 preproc.y:5097 preproc.y:7556 preproc.y:7561 preproc.y:7566
+#: preproc.y:9954 preproc.y:10505
 #, c-format
 msgid "unsupported feature will be passed to server"
 msgstr "funcionalidade não suportada será enviada ao servidor"
 
-#: preproc.y:2446
+#: preproc.y:2480
 #, c-format
 msgid "SHOW ALL is not implemented"
 msgstr "SHOW ALL não está implementado"
 
-#: preproc.y:2889 preproc.y:2900
-#, c-format
-msgid "COPY TO STDIN is not possible"
-msgstr "COPY TO STDIN não é possível"
-
-#: preproc.y:2891
-#, c-format
-msgid "COPY FROM STDOUT is not possible"
-msgstr "COPY FROM STDOUT não é possível"
-
-#: preproc.y:2893
+#: preproc.y:2932
 #, c-format
 msgid "COPY FROM STDIN is not implemented"
 msgstr "COPY FROM STDIN não está implementado"
 
-#: preproc.y:8157 preproc.y:12866
+#: preproc.y:8378 preproc.y:13149
 #, c-format
 msgid "using variable \"%s\" in different declare statements is not supported"
 msgstr "utilizar variável \"%s\" em comandos de declaração diferentes não é suportado"
 
-#: preproc.y:8159 preproc.y:12868
+#: preproc.y:8380 preproc.y:13151
 #, c-format
 msgid "cursor \"%s\" is already defined"
 msgstr "cursor \"%s\" já está definido"
 
-#: preproc.y:8577
+#: preproc.y:8798
 #, c-format
 msgid "no longer supported LIMIT #,# syntax passed to server"
 msgstr "sintaxe LIMIT #,# que não é suportada foi enviada ao servidor"
 
-#: preproc.y:8812
+#: preproc.y:9034 preproc.y:9041
 #, c-format
 msgid "subquery in FROM must have an alias"
 msgstr "subconsulta no FROM deve ter um aliás"
 
-#: preproc.y:12596
+#: preproc.y:12879
 #, c-format
 msgid "CREATE TABLE AS cannot specify INTO"
 msgstr "CREATE TABLE AS não pode especificar INTO"
 
-#: preproc.y:12632
+#: preproc.y:12915
 #, c-format
 msgid "expected \"@\", found \"%s\""
 msgstr "esperado \"@\", encontrado \"%s\""
 
-#: preproc.y:12644
+#: preproc.y:12927
 #, c-format
 msgid "only protocols \"tcp\" and \"unix\" and database type \"postgresql\" are supported"
 msgstr "somente os protocolos \"tcp\" e \"unix\" e tipo banco de dados \"postgressql\" sãosuportados"
 
-#: preproc.y:12647
+#: preproc.y:12930
 #, c-format
 msgid "expected \"://\", found \"%s\""
 msgstr "esperado \"://\", encontrado \"%s\""
 
-#: preproc.y:12652
+#: preproc.y:12935
 #, c-format
 msgid "Unix-domain sockets only work on \"localhost\" but not on \"%s\""
 msgstr "Soquetes de domínio Unix trabalham somente com \"localhost\" e não com \"%s\""
 
-#: preproc.y:12678
+#: preproc.y:12961
 #, c-format
 msgid "expected \"postgresql\", found \"%s\""
 msgstr "esperado \"postgresql\", encontrado \"%s\""
 
-#: preproc.y:12681
+#: preproc.y:12964
 #, c-format
 msgid "invalid connection type: %s"
 msgstr "tipo de conexão inválido: %s"
 
-#: preproc.y:12690
+#: preproc.y:12973
 #, c-format
 msgid "expected \"@\" or \"://\", found \"%s\""
 msgstr "esperado \"@\" ou \"://\", encontrado \"%s\""
 
-#: preproc.y:12765 preproc.y:12783
+#: preproc.y:13048 preproc.y:13066
 #, c-format
 msgid "invalid data type"
 msgstr "tipo de dado inválido"
 
-#: preproc.y:12794 preproc.y:12811
+#: preproc.y:13077 preproc.y:13094
 #, c-format
 msgid "incomplete statement"
 msgstr "comando incompleto"
 
-#: preproc.y:12797 preproc.y:12814
+#: preproc.y:13080 preproc.y:13097
 #, c-format
 msgid "unrecognized token \"%s\""
 msgstr "informação desconhecida \"%s\""
 
-#: preproc.y:13088
+#: preproc.y:13371
 #, c-format
 msgid "only data types numeric and decimal have precision/scale argument"
 msgstr "somente os tipos de dados numeric e decimal possuem argumento de precisão/escala"
 
-#: preproc.y:13100
+#: preproc.y:13383
 #, c-format
 msgid "interval specification not allowed here"
 msgstr "especificação de intervalo não é permitida aqui"
 
-#: preproc.y:13252 preproc.y:13304
+#: preproc.y:13535 preproc.y:13587
 #, c-format
 msgid "too many levels in nested structure/union definition"
 msgstr "muitos níveis em definição aninhada de estrutura/união"
 
-#: preproc.y:13438
+#: preproc.y:13721
 #, c-format
 msgid "pointers to varchar are not implemented"
 msgstr "ponteiros para varchar não estão implentados"
 
-#: preproc.y:13625 preproc.y:13650
+#: preproc.y:13908 preproc.y:13933
 #, c-format
 msgid "using unsupported DESCRIBE statement"
 msgstr "utilizando comando DESCRIBE que não é suportado"
 
-#: preproc.y:13897
+#: preproc.y:14180
 #, c-format
 msgid "initializer not allowed in EXEC SQL VAR command"
 msgstr "inicilização não é permitido no comando EXEC SQL VAR"
 
-#: preproc.y:14209
+#: preproc.y:14492
 #, c-format
 msgid "arrays of indicators are not allowed on input"
 msgstr "matrizes do indicadores não são permitidas na entrada"
 
 #. translator: %s is typically the translation of "syntax error"
-#: preproc.y:14463
+#: preproc.y:14746
 #, c-format
 msgid "%s at or near \"%s\""
 msgstr "%s em ou próximo a \"%s\""
@@ -536,7 +527,7 @@ msgstr "%s em ou próximo a \"%s\""
 msgid "out of memory"
 msgstr "sem memória"
 
-#: type.c:212 type.c:590
+#: type.c:212 type.c:593
 #, c-format
 msgid "unrecognized variable type code %d"
 msgstr "tipo de código de variável %d é desconhecido"
@@ -581,69 +572,69 @@ msgstr "indicador para struct tem que ser struct"
 msgid "indicator for simple data type has to be simple"
 msgstr "indicador para tipo de dados simples tem que ser simples"
 
-#: type.c:649
+#: type.c:652
 #, c-format
 msgid "unrecognized descriptor item code %d"
 msgstr "código do item do descritor %d é desconhecido"
 
-#: variable.c:89 variable.c:112
+#: variable.c:89 variable.c:116
 #, c-format
 msgid "incorrectly formed variable \"%s\""
 msgstr "variável \"%s\" possui formato incorreto"
 
-#: variable.c:135
+#: variable.c:139
 #, c-format
 msgid "variable \"%s\" is not a pointer"
 msgstr "variável \"%s\" não é um ponteiro"
 
-#: variable.c:138 variable.c:163
+#: variable.c:142 variable.c:167
 #, c-format
 msgid "variable \"%s\" is not a pointer to a structure or a union"
 msgstr "variável \"%s\" não é um ponteiro para uma estrutura ou uma união"
 
-#: variable.c:150
+#: variable.c:154
 #, c-format
 msgid "variable \"%s\" is neither a structure nor a union"
 msgstr "variável \"%s\" não é nem uma estrutura nem uma união"
 
-#: variable.c:160
+#: variable.c:164
 #, c-format
 msgid "variable \"%s\" is not an array"
 msgstr "variável \"%s\" não é uma matriz"
 
-#: variable.c:229 variable.c:251
+#: variable.c:233 variable.c:255
 #, c-format
 msgid "variable \"%s\" is not declared"
 msgstr "variável \"%s\" não foi declarada"
 
-#: variable.c:484
+#: variable.c:488
 #, c-format
 msgid "indicator variable must have an integer type"
 msgstr "variável de indicador deve ter um tipo inteiro"
 
-#: variable.c:496
+#: variable.c:500
 #, c-format
 msgid "unrecognized data type name \"%s\""
 msgstr "nome do tipo dados \"%s\" é desconhecido"
 
-#: variable.c:507 variable.c:515 variable.c:532 variable.c:535
+#: variable.c:511 variable.c:519 variable.c:536 variable.c:539
 #, c-format
 msgid "multidimensional arrays are not supported"
 msgstr "matrizes multidimensionais não são suportadas"
 
-#: variable.c:524
+#: variable.c:528
 #, c-format
 msgid "multilevel pointers (more than 2 levels) are not supported; found %d level"
 msgid_plural "multilevel pointers (more than 2 levels) are not supported; found %d levels"
 msgstr[0] "ponteiros com múltiplos níveis (mais do que 2 níveis) não são suportados; %d nível encontrado"
 msgstr[1] "ponteiros com múltiplos níveis (mais do que 2 níveis) não são suportados; %d níveis encontrados"
 
-#: variable.c:529
+#: variable.c:533
 #, c-format
 msgid "pointer to pointer is not supported for this data type"
 msgstr "ponteiro para ponteiro não é suportado para esse tipo de dado"
 
-#: variable.c:549
+#: variable.c:553
 #, c-format
 msgid "multidimensional arrays for structures are not supported"
 msgstr "matrizes multidimensionais para estruturas não são suportadas"

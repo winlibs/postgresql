@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SP-GiST Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 54. SP-GiST Indexes</TD
+>Chapter 56. SP-GiST Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="SPGIST-EXTENSIBILITY"
->54.2. Extensibility</A
+>56.2. Extensibility</A
 ></H1
 ><P
 >  <ACRONYM
@@ -133,12 +133,12 @@ CLASS="FIRSTTERM"
 CLASS="FIRSTTERM"
 >label</I
 > that describes it; for example,
-  in a suffix tree the node label could be the next character of the string
+  in a radix tree the node label could be the next character of the string
   value.  Optionally, an inner tuple can have a <I
 CLASS="FIRSTTERM"
 >prefix</I
 > value
-  that describes all its members.  In a suffix tree this could be the common
+  that describes all its members.  In a radix tree this could be the common
   prefix of the represented strings.  The prefix value is not necessarily
   really a prefix, but can be any data needed by the operator class;
   for example, in a quad-tree it can store the central point that the four
@@ -303,7 +303,7 @@ CLASS="STRUCTFIELD"
       class is capable of segmenting long values by repeated suffixing
       (see <A
 HREF="spgist-implementation.html#SPGIST-LIMITS"
->Section 54.3.1</A
+>Section 56.3.1</A
 >).
      </P
 ></DD
@@ -427,7 +427,7 @@ CLASS="STRUCTFIELD"
        marked as containing multiple equivalent nodes
        (see <A
 HREF="spgist-implementation.html#SPGIST-ALL-THE-SAME"
->Section 54.3.3</A
+>Section 56.3.3</A
 >).
        <TT
 CLASS="STRUCTFIELD"
@@ -673,7 +673,7 @@ CLASS="STRUCTFIELD"
 >
        to NULL; see <A
 HREF="spgist-implementation.html#SPGIST-NULL-LABELS"
->Section 54.3.2</A
+>Section 56.3.2</A
 > for details.)
        Set <TT
 CLASS="STRUCTFIELD"
@@ -737,7 +737,7 @@ CLASS="FUNCTION"
        must take suitable care with such inner tuples.
        See <A
 HREF="spgist-implementation.html#SPGIST-ALL-THE-SAME"
->Section 54.3.3</A
+>Section 56.3.3</A
 > for more information.
       </P
 ><P
@@ -758,7 +758,7 @@ CLASS="STRUCTFIELD"
        The call will be repeated until a leaf datum short enough to fit on
        a page has been produced.  See <A
 HREF="spgist-implementation.html#SPGIST-LIMITS"
->Section 54.3.1</A
+>Section 56.3.1</A
 > for
        more information.
       </P
@@ -893,7 +893,7 @@ CLASS="QUOTE"
        same label (if any) and so either all or none of them match the query
        (see <A
 HREF="spgist-implementation.html#SPGIST-ALL-THE-SAME"
->Section 54.3.3</A
+>Section 56.3.3</A
 >).
        <TT
 CLASS="STRUCTFIELD"

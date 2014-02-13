@@ -4,7 +4,7 @@
  *	  build algorithm for GiST indexes implementation.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -158,16 +158,6 @@ gistbuild(PG_FUNCTION_ARGS)
 		elog(ERROR, "index \"%s\" already contains data",
 			 RelationGetRelationName(index));
 
-	/*
-	 * We can't yet handle unlogged GiST indexes, because we depend on LSNs.
-	 * This is duplicative of an error in gistbuildempty, but we want to check
-	 * here so as to throw error before doing all the index-build work.
-	 */
-	if (heap->rd_rel->relpersistence == RELPERSISTENCE_UNLOGGED)
-		ereport(ERROR,
-				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("unlogged GiST indexes are not supported")));
-
 	/* no locking is needed */
 	buildstate.giststate = initGISTstate(index);
 
@@ -201,10 +191,9 @@ gistbuild(PG_FUNCTION_ARGS)
 
 		recptr = XLogInsert(RM_GIST_ID, XLOG_GIST_CREATE_INDEX, &rdata);
 		PageSetLSN(page, recptr);
-		PageSetTLI(page, ThisTimeLineID);
 	}
 	else
-		PageSetLSN(page, GetXLogRecPtrForTemp());
+		PageSetLSN(page, gistGetFakeLSN(heap));
 
 	UnlockReleaseBuffer(buffer);
 
@@ -621,9 +610,14 @@ gistProcessItup(GISTBuildState *buildstate, IndexTuple itup,
 		newtup = gistgetadjusted(indexrel, idxtuple, itup, giststate);
 		if (newtup)
 		{
-			blkno  = gistbufferinginserttuples(buildstate, buffer, level,
-											   &newtup, 1, childoffnum,
-									  InvalidBlockNumber, InvalidOffsetNumber);
+			blkno = gistbufferinginserttuples(buildstate,
+											  buffer,
+											  level,
+											  &newtup,
+											  1,
+											  childoffnum,
+											  InvalidBlockNumber,
+											  InvalidOffsetNumber);
 			/* gistbufferinginserttuples() released the buffer */
 		}
 		else
@@ -691,7 +685,7 @@ gistbufferinginserttuples(GISTBuildState *buildstate, Buffer buffer, int level,
 	GISTBuildBuffers *gfbb = buildstate->gfbb;
 	List	   *splitinfo;
 	bool		is_split;
-	BlockNumber	placed_to_blk = InvalidBlockNumber;
+	BlockNumber placed_to_blk = InvalidBlockNumber;
 
 	is_split = gistplacetopage(buildstate->indexrel,
 							   buildstate->freespace,

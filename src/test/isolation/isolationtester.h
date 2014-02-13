@@ -3,7 +3,7 @@
  * isolationtester.h
  *	  include file for isolation tests
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -43,7 +43,7 @@ typedef struct
 typedef struct
 {
 	char	  **setupsqls;
-	int         nsetupsqls;
+	int			nsetupsqls;
 	char	   *teardownsql;
 	Session   **sessions;
 	int			nsessions;

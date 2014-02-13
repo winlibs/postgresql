@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Regression Tests"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -116,7 +116,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37511"
+NAME="AEN38234"
 >30.1.1. Running the Tests Against a Temporary Installation</A
 ></H2
 ><P
@@ -257,7 +257,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37542"
+NAME="AEN38265"
 >30.1.2. Running the Tests Against an Existing Installation</A
 ></H2
 ><P
@@ -339,12 +339,12 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37561"
+NAME="AEN38284"
 >30.1.3. Testing Hot Standby</A
 ></H2
 ><P
 >   The source distribution also contains regression tests of the static
-   behaviour of Hot Standby. These tests require a running primary server
+   behavior of Hot Standby. These tests require a running primary server
    and a running standby server that is accepting new WAL changes from the
    primary using either file-based log shipping or streaming replication.
    Those servers are not automatically created for you, nor is the setup
@@ -380,12 +380,12 @@ gmake standbycheck</PRE
 ><P>
   </P
 ><P
->   Some extreme behaviours can also be generated on the primary using the
+>   Some extreme behaviors can also be generated on the primary using the
    script: <TT
 CLASS="FILENAME"
 >src/test/regress/sql/hs_primary_extremes.sql</TT
 >
-   to allow the behaviour of the standby to be tested.
+   to allow the behavior of the standby to be tested.
   </P
 ><P
 >   Additional automated testing may be available in later releases.
@@ -396,7 +396,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37573"
+NAME="AEN38296"
 >30.1.4. Locale and Encoding</A
 ></H2
 ><P
@@ -450,7 +450,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37584"
+NAME="AEN38307"
 >30.1.5. Extra Tests</A
 ></H2
 ><P

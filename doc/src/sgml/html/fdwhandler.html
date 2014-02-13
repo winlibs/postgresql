@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Internals"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="CHAPTER"
 ><A
 NAME="FDWHANDLER"
 ></A
->Chapter 50. Writing A Foreign Data Wrapper</H1
+>Chapter 52. Writing A Foreign Data Wrapper</H1
 ><DIV
 CLASS="TOC"
 ><DL
@@ -102,22 +102,52 @@ CLASS="TOC"
 >Table of Contents</B
 ></DT
 ><DT
->50.1. <A
+>52.1. <A
 HREF="fdw-functions.html"
 >Foreign Data Wrapper Functions</A
 ></DT
 ><DT
->50.2. <A
+>52.2. <A
 HREF="fdw-callbacks.html"
 >Foreign Data Wrapper Callback Routines</A
 ></DT
+><DD
+><DL
 ><DT
->50.3. <A
+>52.2.1. <A
+HREF="fdw-callbacks.html#FDW-CALLBACKS-SCAN"
+>FDW Routines For Scanning Foreign Tables</A
+></DT
+><DT
+>52.2.2. <A
+HREF="fdw-callbacks.html#FDW-CALLBACKS-UPDATE"
+>FDW Routines For Updating Foreign Tables</A
+></DT
+><DT
+>52.2.3. <A
+HREF="fdw-callbacks.html#FDW-CALLBACKS-EXPLAIN"
+>FDW Routines for <TT
+CLASS="COMMAND"
+>EXPLAIN</TT
+></A
+></DT
+><DT
+>52.2.4. <A
+HREF="fdw-callbacks.html#FDW-CALLBACKS-ANALYZE"
+>FDW Routines for <TT
+CLASS="COMMAND"
+>ANALYZE</TT
+></A
+></DT
+></DL
+></DD
+><DT
+>52.3. <A
 HREF="fdw-helpers.html"
 >Foreign Data Wrapper Helper Functions</A
 ></DT
 ><DT
->50.4. <A
+>52.4. <A
 HREF="fdw-planning.html"
 >Foreign Data Wrapper Query Planning</A
 ></DT
@@ -131,15 +161,16 @@ HREF="fdw-planning.html"
     <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> executor. This chapter outlines how
-    to write a new foreign data wrapper.
+> executor.  If updating foreign
+    tables is to be supported, the wrapper must handle that, too.
+    This chapter outlines how to write a new foreign data wrapper.
    </P
 ><P
 >    The foreign data wrappers included in the standard distribution are good
     references when trying to write your own.  Look into the
     <TT
 CLASS="FILENAME"
->contrib/file_fdw</TT
+>contrib</TT
 > subdirectory of the source tree.
     The <A
 HREF="sql-createforeigndatawrapper.html"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="pg_indexes"
 HREF="view-pg-indexes.html"><LINK
 REL="NEXT"
-TITLE="pg_prepared_statements"
-HREF="view-pg-prepared-statements.html"><LINK
+TITLE="pg_matviews"
+HREF="view-pg-matviews.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,14 +71,14 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 45. System Catalogs</TD
+>Chapter 47. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="pg_prepared_statements"
-HREF="view-pg-prepared-statements.html"
+TITLE="pg_matviews"
+HREF="view-pg-matviews.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="VIEW-PG-LOCKS"
->45.58. <TT
+>47.59. <TT
 CLASS="STRUCTNAME"
 >pg_locks</TT
 ></A
@@ -145,11 +145,11 @@ CLASS="QUOTE"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN93693"
+NAME="AEN97246"
 ></A
 ><P
 ><B
->Table 45-59. <TT
+>Table 47-60. <TT
 CLASS="STRUCTNAME"
 >pg_locks</TT
 > Columns</B
@@ -567,7 +567,16 @@ CLASS="STRUCTFIELD"
 CLASS="STRUCTFIELD"
 >objsubid</TT
 > equal
-   to 1.  Integer keys are displayed with the first key in the
+   to 1. The original <TT
+CLASS="TYPE"
+>bigint</TT
+> value can be reassembled with the
+   expression <TT
+CLASS="LITERAL"
+>(classid::bigint &lt;&lt; 32) |
+   objid::bigint</TT
+>. Integer keys are displayed with the
+   first key in the
    <TT
 CLASS="STRUCTFIELD"
 >classid</TT
@@ -716,7 +725,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="view-pg-prepared-statements.html"
+HREF="view-pg-matviews.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -745,7 +754,7 @@ ALIGN="right"
 VALIGN="top"
 ><TT
 CLASS="STRUCTNAME"
->pg_prepared_statements</TT
+>pg_matviews</TT
 ></TD
 ></TR
 ></TABLE

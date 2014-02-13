@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: NOTIFY
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "NOTIFY" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "NOTIFY" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -43,7 +43,7 @@ command sends a notification event together with an optional
 \(lqpayload\(rq
 string to each client application that has previously executed
 \fBLISTEN \fR\fB\fIchannel\fR\fR
-for the specified channel name in the current database\&.
+for the specified channel name in the current database\&. Notifications are visible to all users\&.
 .PP
 
 \fBNOTIFY\fR

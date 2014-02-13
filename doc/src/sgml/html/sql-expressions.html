@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Syntax"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1063,12 +1063,12 @@ CLASS="REPLACEABLE"
 ></TT
 > ... </SPAN
 >]</SPAN
->]) OVER ( <TT
+>]) OVER <TT
 CLASS="REPLACEABLE"
 ><I
->window_definition</I
+>window_name</I
 ></TT
-> )
+>
 <TT
 CLASS="REPLACEABLE"
 ><I
@@ -1090,18 +1090,7 @@ CLASS="REPLACEABLE"
 ></TT
 > ... </SPAN
 >]</SPAN
->]) OVER <TT
-CLASS="REPLACEABLE"
-><I
->window_name</I
-></TT
->
-<TT
-CLASS="REPLACEABLE"
-><I
->function_name</I
-></TT
-> ( * ) OVER ( <TT
+>]) OVER ( <TT
 CLASS="REPLACEABLE"
 ><I
 >window_definition</I
@@ -1117,7 +1106,18 @@ CLASS="REPLACEABLE"
 ><I
 >window_name</I
 ></TT
-></PRE
+>
+<TT
+CLASS="REPLACEABLE"
+><I
+>function_name</I
+></TT
+> ( * ) OVER ( <TT
+CLASS="REPLACEABLE"
+><I
+>window_definition</I
+></TT
+> )</PRE
 ><P>
     where <TT
 CLASS="REPLACEABLE"
@@ -1224,24 +1224,9 @@ CLASS="REPLACEABLE"
 ></TT
 > represents any value
     expression that does not itself contain window function calls.
-    The <TT
-CLASS="LITERAL"
->PARTITION BY</TT
-> and <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> lists have
-    essentially the same syntax and semantics as <TT
-CLASS="LITERAL"
->GROUP BY</TT
->
-    and <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clauses of the whole query, except that their
-    expressions are always just expressions and cannot be output-column
-    names or numbers.
-    <TT
+   </P
+><P
+>    <TT
 CLASS="REPLACEABLE"
 ><I
 >window_name</I
@@ -1251,29 +1236,69 @@ CLASS="REPLACEABLE"
 CLASS="LITERAL"
 >WINDOW</TT
 > clause.
-    Named window specifications are usually referenced with just
-    <TT
-CLASS="LITERAL"
->OVER</TT
-> <TT
+    Alternatively, a full <TT
 CLASS="REPLACEABLE"
 ><I
->window_name</I
+>window_definition</I
 ></TT
->, but it is
-    also possible to write a window name inside the parentheses and then
-    optionally supply an ordering clause and/or frame clause (the referenced
-    window must lack these clauses, if they are supplied here).
-    This latter syntax follows the same rules as modifying an existing
-    window name within the <TT
+> can
+    be given within parentheses, using the same syntax as for defining a
+    named window in the <TT
 CLASS="LITERAL"
 >WINDOW</TT
 > clause; see the
     <A
 HREF="sql-select.html"
 >SELECT</A
-> reference
-    page for details.
+> reference page for details.  It's worth
+    pointing out that <TT
+CLASS="LITERAL"
+>OVER wname</TT
+> is not exactly equivalent to
+    <TT
+CLASS="LITERAL"
+>OVER (wname)</TT
+>; the latter implies copying and modifying the
+    window definition, and will be rejected if the referenced window
+    specification includes a frame clause.
+   </P
+><P
+>    The <TT
+CLASS="LITERAL"
+>PARTITION BY</TT
+> option groups the rows of the query into
+    <I
+CLASS="FIRSTTERM"
+>partitions</I
+>, which are processed separately by the window
+    function.  <TT
+CLASS="LITERAL"
+>PARTITION BY</TT
+> works similarly to a query-level
+    <TT
+CLASS="LITERAL"
+>GROUP BY</TT
+> clause, except that its expressions are always just
+    expressions and cannot be output-column names or numbers.
+    Without <TT
+CLASS="LITERAL"
+>PARTITION BY</TT
+>, all rows produced by the query are
+    treated as a single partition.
+    The <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> option determines the order in which the rows
+    of a partition are processed by the window function.  It works similarly
+    to a query-level <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> clause, but likewise cannot use
+    output-column names or numbers.  Without <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>, rows are
+    processed in an unspecified order.
    </P
 ><P
 >    The <TT
@@ -1285,18 +1310,157 @@ CLASS="REPLACEABLE"
     the set of rows constituting the <I
 CLASS="FIRSTTERM"
 >window frame</I
->, for those
-    window functions that act on the frame instead of the whole partition.
-    If <TT
+>, which is a
+    subset of the current partition, for those window functions that act on
+    the frame instead of the whole partition.  The frame can be specified in
+    either <TT
+CLASS="LITERAL"
+>RANGE</TT
+> or <TT
+CLASS="LITERAL"
+>ROWS</TT
+> mode; in either case, it
+    runs from the <TT
+CLASS="REPLACEABLE"
+><I
+>frame_start</I
+></TT
+> to the
+    <TT
 CLASS="REPLACEABLE"
 ><I
 >frame_end</I
 ></TT
-> is omitted it defaults to <TT
+>.  If <TT
+CLASS="REPLACEABLE"
+><I
+>frame_end</I
+></TT
+> is omitted,
+    it defaults to <TT
 CLASS="LITERAL"
->CURRENT
-    ROW</TT
->.  Restrictions are that
+>CURRENT ROW</TT
+>.
+   </P
+><P
+>    A <TT
+CLASS="REPLACEABLE"
+><I
+>frame_start</I
+></TT
+> of <TT
+CLASS="LITERAL"
+>UNBOUNDED PRECEDING</TT
+> means
+    that the frame starts with the first row of the partition, and similarly
+    a <TT
+CLASS="REPLACEABLE"
+><I
+>frame_end</I
+></TT
+> of <TT
+CLASS="LITERAL"
+>UNBOUNDED FOLLOWING</TT
+> means
+    that the frame ends with the last row of the partition.
+   </P
+><P
+>    In <TT
+CLASS="LITERAL"
+>RANGE</TT
+> mode, a <TT
+CLASS="REPLACEABLE"
+><I
+>frame_start</I
+></TT
+> of
+    <TT
+CLASS="LITERAL"
+>CURRENT ROW</TT
+> means the frame starts with the current row's
+    first <I
+CLASS="FIRSTTERM"
+>peer</I
+> row (a row that <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> considers
+    equivalent to the current row), while a <TT
+CLASS="REPLACEABLE"
+><I
+>frame_end</I
+></TT
+> of
+    <TT
+CLASS="LITERAL"
+>CURRENT ROW</TT
+> means the frame ends with the last equivalent
+    peer.  In <TT
+CLASS="LITERAL"
+>ROWS</TT
+> mode, <TT
+CLASS="LITERAL"
+>CURRENT ROW</TT
+> simply means
+    the current row.
+   </P
+><P
+>    The <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> <TT
+CLASS="LITERAL"
+>PRECEDING</TT
+> and
+    <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> <TT
+CLASS="LITERAL"
+>FOLLOWING</TT
+> cases are currently only
+    allowed in <TT
+CLASS="LITERAL"
+>ROWS</TT
+> mode.  They indicate that the frame starts
+    or ends the specified number of rows before or after the current row.
+    <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> must be an integer expression not
+    containing any variables, aggregate functions, or window functions.
+    The value must not be null or negative; but it can be zero, which
+    just selects the current row.
+   </P
+><P
+>    The default framing option is <TT
+CLASS="LITERAL"
+>RANGE UNBOUNDED PRECEDING</TT
+>,
+    which is the same as <TT
+CLASS="LITERAL"
+>RANGE BETWEEN UNBOUNDED PRECEDING AND
+    CURRENT ROW</TT
+>.  With <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>, this sets the frame to be
+    all rows from the partition start up through the current row's last
+    peer.  Without <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>, all rows of the partition are
+    included in the window frame, since all rows become peers of the current
+    row.
+   </P
+><P
+>    Restrictions are that
     <TT
 CLASS="REPLACEABLE"
 ><I
@@ -1337,92 +1501,11 @@ CLASS="REPLACEABLE"
 >
     PRECEDING</TT
 > is not allowed.
-    The default framing option is <TT
-CLASS="LITERAL"
->RANGE UNBOUNDED PRECEDING</TT
->,
-    which is the same as <TT
-CLASS="LITERAL"
->RANGE BETWEEN UNBOUNDED PRECEDING AND
-    CURRENT ROW</TT
->; it sets the frame to be all rows from the partition start
-    up through the current row's last peer in the <TT
-CLASS="LITERAL"
->ORDER BY</TT
->
-    ordering (which means all rows if there is no <TT
-CLASS="LITERAL"
->ORDER BY</TT
->).
-    In general, <TT
-CLASS="LITERAL"
->UNBOUNDED PRECEDING</TT
-> means that the frame
-    starts with the first row of the partition, and similarly
-    <TT
-CLASS="LITERAL"
->UNBOUNDED FOLLOWING</TT
-> means that the frame ends with the last
-    row of the partition (regardless of <TT
-CLASS="LITERAL"
->RANGE</TT
-> or <TT
-CLASS="LITERAL"
->ROWS</TT
->
-    mode).  In <TT
-CLASS="LITERAL"
->ROWS</TT
-> mode, <TT
-CLASS="LITERAL"
->CURRENT ROW</TT
->
-    means that the frame starts or ends with the current row; but in
-    <TT
-CLASS="LITERAL"
->RANGE</TT
-> mode it means that the frame starts or ends with
-    the current row's first or last peer in the <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> ordering.
-    The <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-> <TT
-CLASS="LITERAL"
->PRECEDING</TT
-> and
-    <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-> <TT
-CLASS="LITERAL"
->FOLLOWING</TT
-> cases are currently only
-    allowed in <TT
-CLASS="LITERAL"
->ROWS</TT
-> mode.  They indicate that the frame starts
-    or ends with the row that many rows before or after the current row.
-    <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-> must be an integer expression not
-    containing any variables, aggregate functions, or window functions.
-    The value must not be null or negative; but it can be zero, which
-    selects the current row itself.
    </P
 ><P
 >    The built-in window functions are described in <A
 HREF="functions-window.html#FUNCTIONS-WINDOW-TABLE"
->Table 9-47</A
+>Table 9-48</A
 >.  Other window functions can be added by
     the user.  Also, any built-in or user-defined aggregate function can be
     used as a window function.

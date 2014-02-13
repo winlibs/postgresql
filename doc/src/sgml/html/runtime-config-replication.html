@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -229,11 +229,11 @@ CLASS="FILENAME"
 ></DD
 ><DT
 ><A
-NAME="GUC-REPLICATION-TIMEOUT"
+NAME="GUC-WAL-SENDER-TIMEOUT"
 ></A
 ><TT
 CLASS="VARNAME"
->replication_timeout</TT
+>wal_sender_timeout</TT
 > (<TT
 CLASS="TYPE"
 >integer</TT
@@ -250,18 +250,6 @@ CLASS="FILENAME"
 >postgresql.conf</TT
 > file or on the server command line.
         The default value is 60 seconds.
-       </P
-><P
->        To prevent connections from being terminated prematurely,
-        <A
-HREF="runtime-config-replication.html#GUC-WAL-RECEIVER-STATUS-INTERVAL"
->wal_receiver_status_interval</A
->
-        must be enabled on the standby, and its value must be less than the
-        value of <TT
-CLASS="VARNAME"
->replication_timeout</TT
->.
        </P
 ></DD
 ></DL
@@ -618,20 +606,6 @@ CLASS="FILENAME"
 > file or on the server command line.
        The default value is 10 seconds.
       </P
-><P
->       When <A
-HREF="runtime-config-replication.html#GUC-REPLICATION-TIMEOUT"
->replication_timeout</A
-> is enabled on a sending server,
-       <TT
-CLASS="VARNAME"
->wal_receiver_status_interval</TT
-> must be enabled, and its value
-       must be less than the value of <TT
-CLASS="VARNAME"
->replication_timeout</TT
->.
-      </P
 ></DD
 ><DT
 ><A
@@ -669,6 +643,32 @@ CLASS="FILENAME"
 >        If cascaded replication is in use the feedback is passed upstream
         until it eventually reaches the primary.  Standbys make no other use
         of feedback they receive other than to pass upstream.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-WAL-RECEIVER-TIMEOUT"
+></A
+><TT
+CLASS="VARNAME"
+>wal_receiver_timeout</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</DT
+><DD
+><P
+>        Terminate replication connections that are inactive longer
+        than the specified number of milliseconds. This is useful for
+        the receiving standby server to detect a primary node crash or network
+        outage.
+        A value of zero disables the timeout mechanism.  This parameter
+        can only be set in
+        the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file or on the server command line.
+        The default value is 60 seconds.
        </P
 ></DD
 ></DL

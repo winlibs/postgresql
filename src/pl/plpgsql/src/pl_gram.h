@@ -1,10 +1,8 @@
+/* A Bison parser, made by GNU Bison 2.5.  */
 
-/* A Bison parser, made by GNU Bison 2.4.1.  */
-
-/* Skeleton interface for Bison's Yacc-like parsers in C
+/* Bison interface for Yacc-like parsers in C
    
-      Copyright (C) 1984, 1989, 1990, 2000, 2001, 2002, 2003, 2004, 2005, 2006
-   Free Software Foundation, Inc.
+      Copyright (C) 1984, 1989-1990, 2000-2011 Free Software Foundation, Inc.
    
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -65,81 +63,91 @@
      K_CASE = 281,
      K_CLOSE = 282,
      K_COLLATE = 283,
-     K_CONSTANT = 284,
-     K_CONTINUE = 285,
-     K_CURRENT = 286,
-     K_CURSOR = 287,
-     K_DEBUG = 288,
-     K_DECLARE = 289,
-     K_DEFAULT = 290,
-     K_DETAIL = 291,
-     K_DIAGNOSTICS = 292,
-     K_DUMP = 293,
-     K_ELSE = 294,
-     K_ELSIF = 295,
-     K_END = 296,
-     K_ERRCODE = 297,
-     K_ERROR = 298,
-     K_EXCEPTION = 299,
-     K_EXECUTE = 300,
-     K_EXIT = 301,
-     K_FETCH = 302,
-     K_FIRST = 303,
-     K_FOR = 304,
-     K_FOREACH = 305,
-     K_FORWARD = 306,
-     K_FROM = 307,
-     K_GET = 308,
-     K_HINT = 309,
-     K_IF = 310,
-     K_IN = 311,
-     K_INFO = 312,
-     K_INSERT = 313,
-     K_INTO = 314,
-     K_IS = 315,
-     K_LAST = 316,
-     K_LOG = 317,
-     K_LOOP = 318,
-     K_MESSAGE = 319,
-     K_MESSAGE_TEXT = 320,
-     K_MOVE = 321,
-     K_NEXT = 322,
-     K_NO = 323,
-     K_NOT = 324,
-     K_NOTICE = 325,
-     K_NULL = 326,
-     K_OPEN = 327,
-     K_OPTION = 328,
-     K_OR = 329,
-     K_PERFORM = 330,
-     K_PG_EXCEPTION_CONTEXT = 331,
-     K_PG_EXCEPTION_DETAIL = 332,
-     K_PG_EXCEPTION_HINT = 333,
-     K_PRIOR = 334,
-     K_QUERY = 335,
-     K_RAISE = 336,
-     K_RELATIVE = 337,
-     K_RESULT_OID = 338,
-     K_RETURN = 339,
-     K_RETURNED_SQLSTATE = 340,
-     K_REVERSE = 341,
-     K_ROWTYPE = 342,
-     K_ROW_COUNT = 343,
-     K_SCROLL = 344,
-     K_SLICE = 345,
-     K_SQLSTATE = 346,
-     K_STACKED = 347,
-     K_STRICT = 348,
-     K_THEN = 349,
-     K_TO = 350,
-     K_TYPE = 351,
-     K_USE_COLUMN = 352,
-     K_USE_VARIABLE = 353,
-     K_USING = 354,
-     K_VARIABLE_CONFLICT = 355,
-     K_WARNING = 356,
-     K_WHEN = 357,
-     K_WHILE = 358
+     K_COLUMN = 284,
+     K_COLUMN_NAME = 285,
+     K_CONSTANT = 286,
+     K_CONSTRAINT = 287,
+     K_CONSTRAINT_NAME = 288,
+     K_CONTINUE = 289,
+     K_CURRENT = 290,
+     K_CURSOR = 291,
+     K_DATATYPE = 292,
+     K_DEBUG = 293,
+     K_DECLARE = 294,
+     K_DEFAULT = 295,
+     K_DETAIL = 296,
+     K_DIAGNOSTICS = 297,
+     K_DUMP = 298,
+     K_ELSE = 299,
+     K_ELSIF = 300,
+     K_END = 301,
+     K_ERRCODE = 302,
+     K_ERROR = 303,
+     K_EXCEPTION = 304,
+     K_EXECUTE = 305,
+     K_EXIT = 306,
+     K_FETCH = 307,
+     K_FIRST = 308,
+     K_FOR = 309,
+     K_FOREACH = 310,
+     K_FORWARD = 311,
+     K_FROM = 312,
+     K_GET = 313,
+     K_HINT = 314,
+     K_IF = 315,
+     K_IN = 316,
+     K_INFO = 317,
+     K_INSERT = 318,
+     K_INTO = 319,
+     K_IS = 320,
+     K_LAST = 321,
+     K_LOG = 322,
+     K_LOOP = 323,
+     K_MESSAGE = 324,
+     K_MESSAGE_TEXT = 325,
+     K_MOVE = 326,
+     K_NEXT = 327,
+     K_NO = 328,
+     K_NOT = 329,
+     K_NOTICE = 330,
+     K_NULL = 331,
+     K_OPEN = 332,
+     K_OPTION = 333,
+     K_OR = 334,
+     K_PERFORM = 335,
+     K_PG_DATATYPE_NAME = 336,
+     K_PG_EXCEPTION_CONTEXT = 337,
+     K_PG_EXCEPTION_DETAIL = 338,
+     K_PG_EXCEPTION_HINT = 339,
+     K_PRIOR = 340,
+     K_QUERY = 341,
+     K_RAISE = 342,
+     K_RELATIVE = 343,
+     K_RESULT_OID = 344,
+     K_RETURN = 345,
+     K_RETURNED_SQLSTATE = 346,
+     K_REVERSE = 347,
+     K_ROWTYPE = 348,
+     K_ROW_COUNT = 349,
+     K_SCHEMA = 350,
+     K_SCHEMA_NAME = 351,
+     K_SCROLL = 352,
+     K_SLICE = 353,
+     K_SQLSTATE = 354,
+     K_STACKED = 355,
+     K_STRICT = 356,
+     K_TABLE = 357,
+     K_TABLE_NAME = 358,
+     K_THEN = 359,
+     K_TO = 360,
+     K_TYPE = 361,
+     K_USE_COLUMN = 362,
+     K_USE_VARIABLE = 363,
+     K_USING = 364,
+     K_VARIABLE_CONFLICT = 365,
+     K_WARNING = 366,
+     K_WHEN = 367,
+     K_WHILE = 368
    };
 #endif
 
@@ -149,8 +157,8 @@
 typedef union YYSTYPE
 {
 
-/* Line 1676 of yacc.c  */
-#line 116 "gram.y"
+/* Line 2068 of yacc.c  */
+#line 116 "pl_gram.y"
 
 		core_YYSTYPE			core_yystype;
 		/* these fields must match core_YYSTYPE: */
@@ -204,8 +212,8 @@ typedef union YYSTYPE
 
 
 
-/* Line 1676 of yacc.c  */
-#line 209 "pl_gram.h"
+/* Line 2068 of yacc.c  */
+#line 217 "pl_gram.h"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */

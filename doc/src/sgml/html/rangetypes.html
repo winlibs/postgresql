@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -249,11 +249,11 @@ SELECT isempty(numrange(1, 5));</PRE
 
    See <A
 HREF="functions-range.html#RANGE-OPERATORS-TABLE"
->Table 9-43</A
+>Table 9-44</A
 >
    and <A
 HREF="functions-range.html#RANGE-FUNCTIONS-TABLE"
->Table 9-44</A
+>Table 9-45</A
 > for complete lists of
    operators and functions on range types.
   </P
@@ -769,12 +769,12 @@ CLASS="TYPE"
    ordering that determines which values fall into a given range.
   </P
 ><P
->   In addition, any range type that is meant to be used with GiST indexes
+>   In addition, any range type that is meant to be used with GiST or SP-GiST indexes
    should define a subtype difference, or <TT
 CLASS="LITERAL"
 >subtype_diff</TT
 >, function.
-   (A GiST index will still work without <TT
+   (the index will still work without <TT
 CLASS="LITERAL"
 >subtype_diff</TT
 >, but it is
@@ -823,17 +823,17 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="RANGETYPES-GIST"
+NAME="RANGETYPES-INDEXING"
 >8.17.9. Indexing</A
 ></H2
 ><P
->   GiST indexes can be created for table columns of range types.
-   For instance:
+>   GiST and SP-GiST indexes can be created for table columns of range types.
+   For instance, to create a GiST index:
 </P><PRE
 CLASS="PROGRAMLISTING"
 >CREATE INDEX reservation_idx ON reservation USING gist (during);</PRE
 ><P>
-   A GiST index can accelerate queries involving these range operators:
+   A GiST or SP-GiST index can accelerate queries involving these range operators:
    <TT
 CLASS="LITERAL"
 >=</TT
@@ -872,7 +872,7 @@ CLASS="LITERAL"
 >
    (see <A
 HREF="functions-range.html#RANGE-OPERATORS-TABLE"
->Table 9-43</A
+>Table 9-44</A
 > for more information).
   </P
 ><P
@@ -920,7 +920,10 @@ CLASS="QUOTE"
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->ALTER TABLE reservation ADD EXCLUDE USING gist (during WITH &amp;&amp;);</PRE
+>CREATE TABLE reservation (
+    during tsrange,
+    EXCLUDE USING gist (during WITH &amp;&amp;)
+);</PRE
 ><P>
 
    That constraint will prevent any overlapping values from existing
@@ -929,14 +932,14 @@ CLASS="PROGRAMLISTING"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >INSERT INTO reservation VALUES
-    (1108, '[2010-01-01 11:30, 2010-01-01 13:00)');
+    ('[2010-01-01 11:30, 2010-01-01 15:00)');
 INSERT 0 1
 
 INSERT INTO reservation VALUES
-    (1108, '[2010-01-01 14:45, 2010-01-01 15:45)');
+    ('[2010-01-01 14:45, 2010-01-01 15:45)');
 ERROR:  conflicting key value violates exclusion constraint "reservation_during_excl"
-DETAIL:  Key (during)=([ 2010-01-01 14:45:00, 2010-01-01 15:45:00 )) conflicts
-with existing key (during)=([ 2010-01-01 14:30:00, 2010-01-01 15:30:00 )).</PRE
+DETAIL:  Key (during)=(["2010-01-01 14:45:00","2010-01-01 15:45:00")) conflicts
+with existing key (during)=(["2010-01-01 11:30:00","2010-01-01 15:00:00")).</PRE
 ><P>
   </P
 ><P
@@ -958,7 +961,8 @@ CLASS="LITERAL"
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE TABLE room_reservation (
+>CREATE EXTENSION btree_gist;
+CREATE TABLE room_reservation (
     room text,
     during tsrange,
     EXCLUDE USING gist (room WITH =, during WITH &amp;&amp;)
@@ -971,8 +975,8 @@ INSERT 0 1
 INSERT INTO room_reservation VALUES
     ('123A', '[2010-01-01 14:30, 2010-01-01 15:30)');
 ERROR:  conflicting key value violates exclusion constraint "room_reservation_room_during_excl"
-DETAIL:  Key (room, during)=(123A, [ 2010-01-01 14:30:00, 2010-01-01 15:30:00 )) conflicts with
-existing key (room, during)=(123A, [ 2010-01-01 14:00:00, 2010-01-01 15:00:00 )).
+DETAIL:  Key (room, during)=(123A, ["2010-01-01 14:30:00","2010-01-01 15:30:00")) conflicts
+with existing key (room, during)=(123A, ["2010-01-01 14:00:00","2010-01-01 15:00:00")).
 
 INSERT INTO room_reservation VALUES
     ('123B', '[2010-01-01 14:30, 2010-01-01 15:30)');

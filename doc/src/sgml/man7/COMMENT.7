@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: COMMENT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "COMMENT" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "COMMENT" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -44,11 +44,13 @@ COMMENT ON
   DATABASE \fIobject_name\fR |
   DOMAIN \fIobject_name\fR |
   EXTENSION \fIobject_name\fR |
+  EVENT TRIGGER \fIobject_name\fR |
   FOREIGN DATA WRAPPER \fIobject_name\fR |
   FOREIGN TABLE \fIobject_name\fR |
   FUNCTION \fIfunction_name\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) |
   INDEX \fIobject_name\fR |
   LARGE OBJECT \fIlarge_object_oid\fR |
+  MATERIALIZED VIEW \fIobject_name\fR |
   OPERATOR \fIoperator_name\fR (\fIleft_type\fR, \fIright_type\fR) |
   OPERATOR CLASS \fIobject_name\fR USING \fIindex_method\fR |
   OPERATOR FAMILY \fIobject_name\fR USING \fIindex_method\fR |
@@ -97,7 +99,7 @@ uses, namely
 \fBcol_description\fR, and
 \fBshobj_description\fR
 (see
-Table\ \&9.54, \(lqComment Information Functions\(rq)\&.
+Table\ \&9.55, \(lqComment Information Functions\(rq)\&.
 .SH "PARAMETERS"
 .PP
 \fIobject_name\fR, \fIrelation_name\fR\&.\fIcolumn_name\fR, \fIagg_name\fR, \fIconstraint_name\fR, \fIfunction_name\fR, \fIoperator_name\fR, \fIrule_name\fR, \fItrigger_name\fR
@@ -228,6 +230,7 @@ COMMENT ON FUNCTION my_function (timestamp) IS \*(AqReturns Roman Numeral\*(Aq;
 COMMENT ON INDEX my_index IS \*(AqEnforces uniqueness on employee ID\*(Aq;
 COMMENT ON LANGUAGE plpython IS \*(AqPython support for stored procedures\*(Aq;
 COMMENT ON LARGE OBJECT 346344 IS \*(AqPlanning document\*(Aq;
+COMMENT ON MATERIALIZED VIEW my_matview IS \*(AqSummary of order history\*(Aq;
 COMMENT ON OPERATOR ^ (text, text) IS \*(AqPerforms intersection of two texts\*(Aq;
 COMMENT ON OPERATOR \- (NONE, integer) IS \*(AqUnary minus\*(Aq;
 COMMENT ON OPERATOR CLASS int4ops USING btree IS \*(Aq4 byte integer operators for btrees\*(Aq;

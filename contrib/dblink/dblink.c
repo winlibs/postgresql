@@ -9,7 +9,7 @@
  * Shridhar Daithankar <shridhar_daithankar@persistent.co.in>
  *
  * contrib/dblink/dblink.c
- * Copyright (c) 2001-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2001-2013, PostgreSQL Global Development Group
  * ALL RIGHTS RESERVED;
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -35,18 +35,25 @@
 #include <limits.h>
 
 #include "libpq-fe.h"
-#include "funcapi.h"
+
+#include "access/htup_details.h"
+#include "access/reloptions.h"
 #include "catalog/indexing.h"
 #include "catalog/namespace.h"
+#include "catalog/pg_foreign_server.h"
 #include "catalog/pg_type.h"
+#include "catalog/pg_user_mapping.h"
 #include "executor/spi.h"
 #include "foreign/foreign.h"
+#include "funcapi.h"
+#include "lib/stringinfo.h"
 #include "mb/pg_wchar.h"
 #include "miscadmin.h"
 #include "parser/scansup.h"
 #include "utils/acl.h"
 #include "utils/builtins.h"
 #include "utils/fmgroids.h"
+#include "utils/guc.h"
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "utils/rel.h"
@@ -80,7 +87,8 @@ typedef struct storeInfo
  */
 static Datum dblink_record_internal(FunctionCallInfo fcinfo, bool is_async);
 static void prepTuplestoreResult(FunctionCallInfo fcinfo);
-static void materializeResult(FunctionCallInfo fcinfo, PGresult *res);
+static void materializeResult(FunctionCallInfo fcinfo, PGconn *conn,
+				  PGresult *res);
 static void materializeQueryResult(FunctionCallInfo fcinfo,
 					   PGconn *conn,
 					   const char *conname,
@@ -110,6 +118,10 @@ static char *escape_param_str(const char *from);
 static void validate_pkattnums(Relation rel,
 				   int2vector *pkattnums_arg, int32 pknumatts_arg,
 				   int **pkattnums, int *pknumatts);
+static bool is_valid_dblink_option(const PQconninfoOption *options,
+					   const char *option, Oid context);
+static int	applyRemoteGucs(PGconn *conn);
+static void restoreLocalGucs(int nestlevel);
 
 /* Global */
 static remoteConn *pconn = NULL;
@@ -597,7 +609,7 @@ dblink_fetch(PG_FUNCTION_ARGS)
 				 errmsg("cursor \"%s\" does not exist", curname)));
 	}
 
-	materializeResult(fcinfo, res);
+	materializeResult(fcinfo, conn, res);
 	return (Datum) 0;
 }
 
@@ -742,7 +754,7 @@ dblink_record_internal(FunctionCallInfo fcinfo, bool is_async)
 				}
 				else
 				{
-					materializeResult(fcinfo, res);
+					materializeResult(fcinfo, conn, res);
 				}
 			}
 		}
@@ -798,7 +810,7 @@ prepTuplestoreResult(FunctionCallInfo fcinfo)
  * The PGresult will be released in this function.
  */
 static void
-materializeResult(FunctionCallInfo fcinfo, PGresult *res)
+materializeResult(FunctionCallInfo fcinfo, PGconn *conn, PGresult *res)
 {
 	ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
 
@@ -808,7 +820,7 @@ materializeResult(FunctionCallInfo fcinfo, PGresult *res)
 	PG_TRY();
 	{
 		TupleDesc	tupdesc;
-		bool		is_sql_cmd = false;
+		bool		is_sql_cmd;
 		int			ntuples;
 		int			nfields;
 
@@ -869,12 +881,17 @@ materializeResult(FunctionCallInfo fcinfo, PGresult *res)
 		if (ntuples > 0)
 		{
 			AttInMetadata *attinmeta;
+			int			nestlevel = -1;
 			Tuplestorestate *tupstore;
 			MemoryContext oldcontext;
 			int			row;
 			char	  **values;
 
 			attinmeta = TupleDescGetAttInMetadata(tupdesc);
+
+			/* Set GUCs to ensure we read GUC-sensitive data types correctly */
+			if (!is_sql_cmd)
+				nestlevel = applyRemoteGucs(conn);
 
 			oldcontext = MemoryContextSwitchTo(
 									rsinfo->econtext->ecxt_per_query_memory);
@@ -911,6 +928,9 @@ materializeResult(FunctionCallInfo fcinfo, PGresult *res)
 				tuple = BuildTupleFromCStrings(attinmeta, values);
 				tuplestore_puttuple(tupstore, tuple);
 			}
+
+			/* clean up GUC settings, if we changed any */
+			restoreLocalGucs(nestlevel);
 
 			/* clean up and return the tuplestore */
 			tuplestore_donestoring(tupstore);
@@ -1045,6 +1065,7 @@ static PGresult *
 storeQueryResult(storeInfo *sinfo, PGconn *conn, const char *sql)
 {
 	bool		first = true;
+	int			nestlevel = -1;
 	PGresult   *res;
 
 	if (!PQsendQuery(conn, sql))
@@ -1064,6 +1085,15 @@ storeQueryResult(storeInfo *sinfo, PGconn *conn, const char *sql)
 		if (PQresultStatus(sinfo->cur_res) == PGRES_SINGLE_TUPLE)
 		{
 			/* got one row from possibly-bigger resultset */
+
+			/*
+			 * Set GUCs to ensure we read GUC-sensitive data types correctly.
+			 * We shouldn't do this until we have a row in hand, to ensure
+			 * libpq has seen any earlier ParameterStatus protocol messages.
+			 */
+			if (first && nestlevel < 0)
+				nestlevel = applyRemoteGucs(conn);
+
 			storeRow(sinfo, sinfo->cur_res, first);
 
 			PQclear(sinfo->cur_res);
@@ -1083,6 +1113,9 @@ storeQueryResult(storeInfo *sinfo, PGconn *conn, const char *sql)
 			first = true;
 		}
 	}
+
+	/* clean up GUC settings, if we changed any */
+	restoreLocalGucs(nestlevel);
 
 	/* return last_res */
 	res = sinfo->last_res;
@@ -1908,6 +1941,75 @@ dblink_get_notify(PG_FUNCTION_ARGS)
 
 	return (Datum) 0;
 }
+
+/*
+ * Validate the options given to a dblink foreign server or user mapping.
+ * Raise an error if any option is invalid.
+ *
+ * We just check the names of options here, so semantic errors in options,
+ * such as invalid numeric format, will be detected at the attempt to connect.
+ */
+PG_FUNCTION_INFO_V1(dblink_fdw_validator);
+Datum
+dblink_fdw_validator(PG_FUNCTION_ARGS)
+{
+	List	   *options_list = untransformRelOptions(PG_GETARG_DATUM(0));
+	Oid			context = PG_GETARG_OID(1);
+	ListCell   *cell;
+
+	static const PQconninfoOption *options = NULL;
+
+	/*
+	 * Get list of valid libpq options.
+	 *
+	 * To avoid unnecessary work, we get the list once and use it throughout
+	 * the lifetime of this backend process.  We don't need to care about
+	 * memory context issues, because PQconndefaults allocates with malloc.
+	 */
+	if (!options)
+	{
+		options = PQconndefaults();
+		if (!options)			/* assume reason for failure is OOM */
+			ereport(ERROR,
+					(errcode(ERRCODE_FDW_OUT_OF_MEMORY),
+					 errmsg("out of memory"),
+			 errdetail("could not get libpq's default connection options")));
+	}
+
+	/* Validate each supplied option. */
+	foreach(cell, options_list)
+	{
+		DefElem    *def = (DefElem *) lfirst(cell);
+
+		if (!is_valid_dblink_option(options, def->defname, context))
+		{
+			/*
+			 * Unknown option, or invalid option for the context specified, so
+			 * complain about it.  Provide a hint with list of valid options
+			 * for the context.
+			 */
+			StringInfoData buf;
+			const PQconninfoOption *opt;
+
+			initStringInfo(&buf);
+			for (opt = options; opt->keyword; opt++)
+			{
+				if (is_valid_dblink_option(options, opt->keyword, context))
+					appendStringInfo(&buf, "%s%s",
+									 (buf.len > 0) ? ", " : "",
+									 opt->keyword);
+			}
+			ereport(ERROR,
+					(errcode(ERRCODE_FDW_OPTION_NAME_NOT_FOUND),
+					 errmsg("invalid option \"%s\"", def->defname),
+					 errhint("Valid options in this context are: %s",
+							 buf.data)));
+		}
+	}
+
+	PG_RETURN_VOID();
+}
+
 
 /*************************************************************
  * internal functions
@@ -2764,4 +2866,130 @@ validate_pkattnums(Relation rel,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 					 errmsg("invalid attribute number %d", pkattnum)));
 	}
+}
+
+/*
+ * Check if the specified connection option is valid.
+ *
+ * We basically allow whatever libpq thinks is an option, with these
+ * restrictions:
+ *		debug options: disallowed
+ *		"client_encoding": disallowed
+ *		"user": valid only in USER MAPPING options
+ *		secure options (eg password): valid only in USER MAPPING options
+ *		others: valid only in FOREIGN SERVER options
+ *
+ * We disallow client_encoding because it would be overridden anyway via
+ * PQclientEncoding; allowing it to be specified would merely promote
+ * confusion.
+ */
+static bool
+is_valid_dblink_option(const PQconninfoOption *options, const char *option,
+					   Oid context)
+{
+	const PQconninfoOption *opt;
+
+	/* Look up the option in libpq result */
+	for (opt = options; opt->keyword; opt++)
+	{
+		if (strcmp(opt->keyword, option) == 0)
+			break;
+	}
+	if (opt->keyword == NULL)
+		return false;
+
+	/* Disallow debug options (particularly "replication") */
+	if (strchr(opt->dispchar, 'D'))
+		return false;
+
+	/* Disallow "client_encoding" */
+	if (strcmp(opt->keyword, "client_encoding") == 0)
+		return false;
+
+	/*
+	 * If the option is "user" or marked secure, it should be specified only
+	 * in USER MAPPING.  Others should be specified only in SERVER.
+	 */
+	if (strcmp(opt->keyword, "user") == 0 || strchr(opt->dispchar, '*'))
+	{
+		if (context != UserMappingRelationId)
+			return false;
+	}
+	else
+	{
+		if (context != ForeignServerRelationId)
+			return false;
+	}
+
+	return true;
+}
+
+/*
+ * Copy the remote session's values of GUCs that affect datatype I/O
+ * and apply them locally in a new GUC nesting level.  Returns the new
+ * nestlevel (which is needed by restoreLocalGucs to undo the settings),
+ * or -1 if no new nestlevel was needed.
+ *
+ * We use the equivalent of a function SET option to allow the settings to
+ * persist only until the caller calls restoreLocalGucs.  If an error is
+ * thrown in between, guc.c will take care of undoing the settings.
+ */
+static int
+applyRemoteGucs(PGconn *conn)
+{
+	static const char *const GUCsAffectingIO[] = {
+		"DateStyle",
+		"IntervalStyle"
+	};
+
+	int			nestlevel = -1;
+	int			i;
+
+	for (i = 0; i < lengthof(GUCsAffectingIO); i++)
+	{
+		const char *gucName = GUCsAffectingIO[i];
+		const char *remoteVal = PQparameterStatus(conn, gucName);
+		const char *localVal;
+
+		/*
+		 * If the remote server is pre-8.4, it won't have IntervalStyle, but
+		 * that's okay because its output format won't be ambiguous.  So just
+		 * skip the GUC if we don't get a value for it.  (We might eventually
+		 * need more complicated logic with remote-version checks here.)
+		 */
+		if (remoteVal == NULL)
+			continue;
+
+		/*
+		 * Avoid GUC-setting overhead if the remote and local GUCs already
+		 * have the same value.
+		 */
+		localVal = GetConfigOption(gucName, false, false);
+		Assert(localVal != NULL);
+
+		if (strcmp(remoteVal, localVal) == 0)
+			continue;
+
+		/* Create new GUC nest level if we didn't already */
+		if (nestlevel < 0)
+			nestlevel = NewGUCNestLevel();
+
+		/* Apply the option (this will throw error on failure) */
+		(void) set_config_option(gucName, remoteVal,
+								 PGC_USERSET, PGC_S_SESSION,
+								 GUC_ACTION_SAVE, true, 0);
+	}
+
+	return nestlevel;
+}
+
+/*
+ * Restore local GUCs after they have been overlaid with remote settings.
+ */
+static void
+restoreLocalGucs(int nestlevel)
+{
+	/* Do nothing if no new nestlevel was created */
+	if (nestlevel > 0)
+		AtEOXact_GUC(true, nestlevel);
 }

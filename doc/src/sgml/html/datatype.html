@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="The SQL Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -149,7 +149,7 @@ HREF="datatype-binary.html"
 ><DL
 ><DT
 >8.4.1. <A
-HREF="datatype-binary.html#AEN5246"
+HREF="datatype-binary.html#AEN5318"
 ><TT
 CLASS="TYPE"
 >bytea</TT
@@ -157,7 +157,7 @@ CLASS="TYPE"
 ></DT
 ><DT
 >8.4.2. <A
-HREF="datatype-binary.html#AEN5255"
+HREF="datatype-binary.html#AEN5327"
 ><TT
 CLASS="TYPE"
 >bytea</TT
@@ -213,22 +213,22 @@ HREF="datatype-enum.html"
 ><DL
 ><DT
 >8.7.1. <A
-HREF="datatype-enum.html#AEN6381"
+HREF="datatype-enum.html#AEN6453"
 >Declaration of Enumerated Types</A
 ></DT
 ><DT
 >8.7.2. <A
-HREF="datatype-enum.html#AEN6387"
+HREF="datatype-enum.html#AEN6459"
 >Ordering</A
 ></DT
 ><DT
 >8.7.3. <A
-HREF="datatype-enum.html#AEN6391"
+HREF="datatype-enum.html#AEN6463"
 >Type Safety</A
 ></DT
 ><DT
 >8.7.4. <A
-HREF="datatype-enum.html#AEN6397"
+HREF="datatype-enum.html#AEN6469"
 >Implementation Details</A
 ></DT
 ></DL
@@ -242,32 +242,32 @@ HREF="datatype-geometric.html"
 ><DL
 ><DT
 >8.8.1. <A
-HREF="datatype-geometric.html#AEN6473"
+HREF="datatype-geometric.html#AEN6545"
 >Points</A
 ></DT
 ><DT
 >8.8.2. <A
-HREF="datatype-geometric.html#AEN6487"
+HREF="datatype-geometric.html#AEN6559"
 >Line Segments</A
 ></DT
 ><DT
 >8.8.3. <A
-HREF="datatype-geometric.html#AEN6520"
+HREF="datatype-geometric.html#AEN6592"
 >Boxes</A
 ></DT
 ><DT
 >8.8.4. <A
-HREF="datatype-geometric.html#AEN6549"
+HREF="datatype-geometric.html#AEN6621"
 >Paths</A
 ></DT
 ><DT
 >8.8.5. <A
-HREF="datatype-geometric.html#AEN6582"
+HREF="datatype-geometric.html#AEN6654"
 >Polygons</A
 ></DT
 ><DT
 >8.8.6. <A
-HREF="datatype-geometric.html#AEN6607"
+HREF="datatype-geometric.html#AEN6679"
 >Circles</A
 ></DT
 ></DL
@@ -366,17 +366,17 @@ CLASS="ACRONYM"
 ><DL
 ><DT
 >8.13.1. <A
-HREF="datatype-xml.html#AEN6971"
+HREF="datatype-xml.html#AEN7043"
 >Creating XML Values</A
 ></DT
 ><DT
 >8.13.2. <A
-HREF="datatype-xml.html#AEN7015"
+HREF="datatype-xml.html#AEN7087"
 >Encoding Handling</A
 ></DT
 ><DT
 >8.13.3. <A
-HREF="datatype-xml.html#AEN7027"
+HREF="datatype-xml.html#AEN7099"
 >Accessing XML Values</A
 ></DT
 ></DL
@@ -437,22 +437,22 @@ HREF="rowtypes.html"
 ><DL
 ><DT
 >8.16.1. <A
-HREF="rowtypes.html#AEN7268"
+HREF="rowtypes.html#AEN7345"
 >Declaration of Composite Types</A
 ></DT
 ><DT
 >8.16.2. <A
-HREF="rowtypes.html#AEN7283"
+HREF="rowtypes.html#AEN7360"
 >Composite Value Input</A
 ></DT
 ><DT
 >8.16.3. <A
-HREF="rowtypes.html#AEN7304"
+HREF="rowtypes.html#AEN7381"
 >Accessing Composite Types</A
 ></DT
 ><DT
 >8.16.4. <A
-HREF="rowtypes.html#AEN7316"
+HREF="rowtypes.html#AEN7393"
 >Modifying Composite Types</A
 ></DT
 ><DT
@@ -511,7 +511,7 @@ HREF="rangetypes.html#RANGETYPES-DEFINING"
 ></DT
 ><DT
 >8.17.9. <A
-HREF="rangetypes.html#RANGETYPES-GIST"
+HREF="rangetypes.html#RANGETYPES-INDEXING"
 >Indexing</A
 ></DT
 ><DT
@@ -693,30 +693,6 @@ CLASS="QUOTE"
 ><TD
 ><TT
 CLASS="TYPE"
->character varying [ (<TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
->) ]</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->varchar [ (<TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
->) ]</TT
-></TD
-><TD
->variable-length character string</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="TYPE"
 >character [ (<TT
 CLASS="REPLACEABLE"
 ><I
@@ -736,6 +712,30 @@ CLASS="REPLACEABLE"
 ></TD
 ><TD
 >fixed-length character string</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>character varying [ (<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>) ]</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>varchar [ (<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>) ]</TT
+></TD
+><TD
+>variable-length character string</TD
 ></TR
 ><TR
 ><TD
@@ -832,6 +832,17 @@ CLASS="REPLACEABLE"
 >&nbsp;</TD
 ><TD
 >time span</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>json</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>JSON data</TD
 ></TR
 ><TR
 ><TD
@@ -1137,17 +1148,6 @@ CLASS="TYPE"
 >&nbsp;</TD
 ><TD
 >XML data</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="TYPE"
->json</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->JSON data</TD
 ></TR
 ></TBODY
 ></TABLE

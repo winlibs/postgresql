@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-EXPLAIN"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN74784"
+NAME="AEN77489"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN74784"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN74795"
+NAME="AEN77500"
 ></A
 ><H2
 >Synopsis</H2
@@ -175,7 +175,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74807"
+NAME="AEN77512"
 ></A
 ><H2
 >Description</H2
@@ -216,7 +216,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >ANALYZE</TT
 > option causes the statement to be actually
-   executed, not only planned.  Then actual runtime statistics are added to
+   executed, not only planned.  Then actual run time statistics are added to
    the display, including the total elapsed time expended within each plan
    node (in milliseconds) and the total number of rows it actually returned.
    This is useful for seeing whether the planner's estimates
@@ -295,7 +295,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74832"
+NAME="AEN77537"
 ></A
 ><H2
 >Parameters</H2
@@ -411,14 +411,16 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->      Include the actual startup time and time spent in the node in the output.
+>      Include actual startup time and time spent in each node in the output.
       The overhead of repeatedly reading the system clock can slow down the
       query significantly on some systems, so it may be useful to set this
       parameter to <TT
 CLASS="LITERAL"
 >FALSE</TT
-> when only actual row counts, and not
-      exact times, are needed.
+> when only actual row counts, and
+      not exact times, are needed.  Run time of the entire statement is
+      always measured, even when node-level timing is turned off with this
+      option.
       This parameter may only be used when <TT
 CLASS="LITERAL"
 >ANALYZE</TT
@@ -533,7 +535,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74903"
+NAME="AEN77608"
 ></A
 ><H2
 >Outputs</H2
@@ -555,7 +557,7 @@ HREF="using-explain.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74908"
+NAME="AEN77613"
 ></A
 ><H2
 >Notes</H2
@@ -607,7 +609,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74919"
+NAME="AEN77624"
 ></A
 ><H2
 >Examples</H2
@@ -774,7 +776,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74943"
+NAME="AEN77648"
 ></A
 ><H2
 >Compatibility</H2
@@ -788,7 +790,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74947"
+NAME="AEN77652"
 ></A
 ><H2
 >See Also</H2

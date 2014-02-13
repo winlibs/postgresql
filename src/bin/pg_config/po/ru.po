@@ -1,7 +1,7 @@
-# ru.po
 # PG_CONFIG Translated Messages into the Russian Language (UTF-8)
 #
 # Copyright (c) 2004-2005 Serguei A. Mokhov, mokhov@cs.concordia.ca
+# Copyright (c) 2012-2013 Alexander Lakhin <exclusion@gmail.com>
 # Distributed under the same licensing terms as PostgreSQL itself.
 #
 # pgtranslation Id: pg_config.po,v 1.4 2010/12/07 21:22:21 petere Exp $
@@ -11,6 +11,7 @@
 # http://wiki.postgresql.org/wiki/NLS/ru/dict
 #
 # ChangeLog:
+#   - March 14, 2013: Updates for 9.3. Alexander Lakhin <exclusion@gmail.com>.
 #   - June 27, 2012: Updates for 9.2. Alexander Lakhin <exclusion@gmail.com>.
 #   - April 2, 2012: Bug fixes. Alexander Lakhin <exclusion@gmail.com>.
 #   - February 17, 2012: Minor fixes. Alexander Lakhin <exclusion@gmail.com>.
@@ -21,10 +22,10 @@
 #   - October 13 - November 24, 2004: Initial Translation, Serguei A. Mokhov <mokhov@cs.concordia.ca>.
 msgid ""
 msgstr ""
-"Project-Id-Version: PostgreSQL 9.2\n"
+"Project-Id-Version: PostgreSQL 9 current\n"
 "Report-Msgid-Bugs-To: pgsql-bugs@postgresql.org\n"
-"POT-Creation-Date: 2012-07-11 03:46+0000\n"
-"PO-Revision-Date: 2012-06-23 06:58+0400\n"
+"POT-Creation-Date: 2013-03-12 23:16+0000\n"
+"PO-Revision-Date: 2013-03-13 17:15+0400\n"
 "Last-Translator: Alexander Lakhin <exclusion@gmail.com>\n"
 "Language-Team: Russian <pgtranslation-translators@pgfoundry.org>\n"
 "Language: ru\n"
@@ -36,62 +37,42 @@ msgstr ""
 "X-Poedit-SourceCharset: utf-8\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Lokalize 1.4\n"
+"X-Generator: Lokalize 1.5\n"
 
-#: ../../port/exec.c:125 ../../port/exec.c:239 ../../port/exec.c:282
+#: ../../port/exec.c:127 ../../port/exec.c:241 ../../port/exec.c:284
 #, c-format
 msgid "could not identify current directory: %s"
 msgstr "не удалось определить текущий каталог: %s"
 
-#: ../../port/exec.c:144
+#: ../../port/exec.c:146
 #, c-format
 msgid "invalid binary \"%s\""
 msgstr "неверный исполняемый файл \"%s\""
 
-#: ../../port/exec.c:193
+#: ../../port/exec.c:195
 #, c-format
 msgid "could not read binary \"%s\""
 msgstr "не удалось прочитать исполняемый файл \"%s\""
 
-#: ../../port/exec.c:200
+#: ../../port/exec.c:202
 #, c-format
 msgid "could not find a \"%s\" to execute"
 msgstr "не удалось найти запускаемый файл \"%s\""
 
-#: ../../port/exec.c:255 ../../port/exec.c:291
+#: ../../port/exec.c:257 ../../port/exec.c:293
 #, c-format
-msgid "could not change directory to \"%s\""
-msgstr "не удалось перейти в каталог \"%s\""
+msgid "could not change directory to \"%s\": %s"
+msgstr "не удалось перейти в каталог \"%s\": %s"
 
-#: ../../port/exec.c:270
+#: ../../port/exec.c:272
 #, c-format
 msgid "could not read symbolic link \"%s\""
 msgstr "не удалось прочитать символическую ссылку \"%s\""
 
-#: ../../port/exec.c:518
+#: ../../port/exec.c:523
 #, c-format
-msgid "child process exited with exit code %d"
-msgstr "дочерний процесс завершился с кодом возврата %d"
-
-#: ../../port/exec.c:522
-#, c-format
-msgid "child process was terminated by exception 0x%X"
-msgstr "дочерний процесс прерван исключением 0x%X"
-
-#: ../../port/exec.c:531
-#, c-format
-msgid "child process was terminated by signal %s"
-msgstr "дочерний процесс завершён по сигналу %s"
-
-#: ../../port/exec.c:534
-#, c-format
-msgid "child process was terminated by signal %d"
-msgstr "дочерний процесс завершён по сигналу %d"
-
-#: ../../port/exec.c:538
-#, c-format
-msgid "child process exited with unrecognized status %d"
-msgstr "дочерний процесс завершился с нераспознанным состоянием %d"
+msgid "pclose failed: %s"
+msgstr "ошибка pclose: %s"
 
 #: pg_config.c:243 pg_config.c:259 pg_config.c:275 pg_config.c:291
 #: pg_config.c:307 pg_config.c:323 pg_config.c:339 pg_config.c:355
@@ -328,3 +309,18 @@ msgstr "%s: не удалось найти свой исполняемый фа�
 #, c-format
 msgid "%s: invalid argument: %s\n"
 msgstr "%s: неверный аргумент: %s\n"
+
+#~ msgid "child process exited with exit code %d"
+#~ msgstr "дочерний процесс завершился с кодом возврата %d"
+
+#~ msgid "child process was terminated by exception 0x%X"
+#~ msgstr "дочерний процесс прерван исключением 0x%X"
+
+#~ msgid "child process was terminated by signal %s"
+#~ msgstr "дочерний процесс завершён по сигналу %s"
+
+#~ msgid "child process was terminated by signal %d"
+#~ msgstr "дочерний процесс завершён по сигналу %d"
+
+#~ msgid "child process exited with unrecognized status %d"
+#~ msgstr "дочерний процесс завершился с нераспознанным состоянием %d"

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: PREPARE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "PREPARE" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PREPARE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -100,6 +100,16 @@ PostgreSQL
 for that purpose, see the
 \fBANALYZE\fR(7)
 documentation\&.
+.PP
+Although the main point of a prepared statement is to avoid repeated parse analysis and planning of the statement,
+PostgreSQL
+will force re\-analysis and re\-planning of the statement before using it whenever database objects used in the statement have undergone definitional (DDL) changes since the previous use of the prepared statement\&. Also, if the value of
+search_path
+changes from one use to the next, the statement will be re\-parsed using the new
+\fIsearch_path\fR\&. (This latter behavior is new as of
+PostgreSQL
+9\&.3\&.) These rules make use of a prepared statement semantically almost equivalent to re\-submitting the same query text over and over, but with a performance benefit if no object definitions are changed, especially if the best plan remains the same across uses\&. An example of a case where the semantic equivalence is not perfect is that if the statement refers to a table by an unqualified name, and then a new table of the same name is created in a schema appearing earlier in the
+\fIsearch_path\fR, no automatic re\-parse will occur since no object used in the statement changed\&. However, if some other change forces a re\-parse, the new table will be referenced in subsequent uses\&.
 .PP
 You can see all prepared statements available in the session by querying the
 pg_prepared_statements

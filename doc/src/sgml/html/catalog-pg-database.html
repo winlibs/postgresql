@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 45. System Catalogs</TD
+>Chapter 47. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOG-PG-DATABASE"
->45.15. <TT
+>47.16. <TT
 CLASS="STRUCTNAME"
 >pg_database</TT
 ></A
@@ -128,11 +128,11 @@ CLASS="STRUCTNAME"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN89692"
+NAME="AEN93069"
 ></A
 ><P
 ><B
->Table 45-15. <TT
+>Table 47-16. <TT
 CLASS="STRUCTNAME"
 >pg_database</TT
 > Columns</B
@@ -153,6 +153,22 @@ CLASS="CALSTABLE"
 ></TR
 ></THEAD
 ><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>oid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>Row identifier (hidden attribute; must be explicitly selected)</TD
+></TR
 ><TR
 ><TD
 ><TT
@@ -364,6 +380,37 @@ CLASS="STRUCTNAME"
 >.<TT
 CLASS="STRUCTFIELD"
 >relfrozenxid</TT
+> values.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>datminmxid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>       All multitransaction IDs before this one have been replaced with a
+       transaction ID in this database.  This is used to
+       track whether the database needs to be vacuumed in order to prevent
+       transaction ID wraparound or to allow <TT
+CLASS="LITERAL"
+>pg_clog</TT
+> to be shrunk.
+       It is the minimum of the per-table
+       <TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>relminmxid</TT
 > values.
       </TD
 ></TR

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Reliability and the Write-Ahead Log"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -116,18 +116,19 @@ CLASS="FIRSTTERM"
 >Checkpoints</I
 >
    are points in the sequence of transactions at which it is guaranteed
-   that the heap and index data files have been updated with all information written before
-   the checkpoint.  At checkpoint time, all dirty data pages are flushed to
-   disk and a special checkpoint record is written to the log file.
-   (The changes were previously flushed to the <ACRONYM
+   that the heap and index data files have been updated with all
+   information written before that checkpoint.  At checkpoint time, all
+   dirty data pages are flushed to disk and a special checkpoint record is
+   written to the log file.  (The change records were previously flushed
+   to the <ACRONYM
 CLASS="ACRONYM"
 >WAL</ACRONYM
 > files.)
    In the event of a crash, the crash recovery procedure looks at the latest
    checkpoint record to determine the point in the log (known as the redo
    record) from which it should start the REDO operation.  Any changes made to
-   data files before that point are guaranteed to be already on disk.  Hence, after
-   a checkpoint, log segments preceding the one containing
+   data files before that point are guaranteed to be already on disk.
+   Hence, after a checkpoint, log segments preceding the one containing
    the redo record are no longer needed and can be recycled or removed. (When
    <ACRONYM
 CLASS="ACRONYM"
@@ -138,13 +139,13 @@ CLASS="ACRONYM"
 ><P
 >   The checkpoint requirement of flushing all dirty data pages to disk
    can cause a significant I/O load.  For this reason, checkpoint
-   activity is throttled so I/O begins at checkpoint start and completes
-   before the next checkpoint starts;  this minimizes performance
+   activity is throttled so that I/O begins at checkpoint start and completes
+   before the next checkpoint is due to start; this minimizes performance
    degradation during checkpoints.
   </P
 ><P
 >   The server's checkpointer process automatically performs
-   a checkpoint every so often.  A checkpoint is created every <A
+   a checkpoint every so often.  A checkpoint is begun every <A
 HREF="runtime-config-wal.html#GUC-CHECKPOINT-SEGMENTS"
 >checkpoint_segments</A
 > log segments, or every <A
@@ -152,12 +153,19 @@ HREF="runtime-config-wal.html#GUC-CHECKPOINT-TIMEOUT"
 >checkpoint_timeout</A
 > seconds, whichever comes first.
    The default settings are 3 segments and 300 seconds (5 minutes), respectively.
-   In cases where no WAL has been written since the previous checkpoint, new 
-   checkpoints will be skipped even if checkpoint_timeout has passed.  
-   If WAL archiving is being used and you want to put a lower limit on
-   how often files are archived in order to bound potential data
-   loss, you should adjust archive_timeout parameter rather than the checkpoint
-   parameters.  It is also possible to force a checkpoint by using the SQL
+   If no WAL has been written since the previous checkpoint, new checkpoints
+   will be skipped even if <TT
+CLASS="VARNAME"
+>checkpoint_timeout</TT
+> has passed.
+   (If WAL archiving is being used and you want to put a lower limit on how
+   often files are archived in order to bound potential data loss, you should
+   adjust the <A
+HREF="runtime-config-wal.html#GUC-ARCHIVE-TIMEOUT"
+>archive_timeout</A
+> parameter rather than the
+   checkpoint parameters.)
+   It is also possible to force a checkpoint by using the SQL
    command <TT
 CLASS="COMMAND"
 >CHECKPOINT</TT
@@ -172,8 +180,8 @@ CLASS="VARNAME"
 CLASS="VARNAME"
 >checkpoint_timeout</TT
 > causes checkpoints to occur
-   more often. This allows faster after-crash recovery (since less work
-   will need to be redone). However, one must balance this against the
+   more often. This allows faster after-crash recovery, since less work
+   will need to be redone. However, one must balance this against the
    increased cost of flushing dirty data pages more often. If
    <A
 HREF="runtime-config-wal.html#GUC-FULL-PAGE-WRITES"
@@ -190,7 +198,7 @@ HREF="runtime-config-wal.html#GUC-FULL-PAGE-WRITES"
 >   Checkpoints are fairly expensive, first because they require writing
    out all currently dirty buffers, and second because they result in
    extra subsequent WAL traffic as discussed above.  It is therefore
-   wise to set the checkpointing parameters high enough that checkpoints
+   wise to set the checkpointing parameters high enough so that checkpoints
    don't happen too often.  As a simple sanity check on your checkpointing
    parameters, you can set the <A
 HREF="runtime-config-wal.html#GUC-CHECKPOINT-WARNING"
@@ -284,7 +292,7 @@ CLASS="ACRONYM"
 >WAL</ACRONYM
 >.
    Ordinarily, when old log segment files are no longer needed, they
-   are recycled (renamed to become the next segments in the numbered
+   are recycled (that is, renamed to become future segments in the numbered
    sequence). If, due to a short-term peak of log output rate, there
    are more than 3 * <TT
 CLASS="VARNAME"
@@ -298,30 +306,31 @@ CLASS="VARNAME"
    <I
 CLASS="FIRSTTERM"
 >restartpoints</I
->
+>,
    which are similar to checkpoints in normal operation: the server forces
    all its state to disk, updates the <TT
 CLASS="FILENAME"
 >pg_control</TT
 > file to
    indicate that the already-processed WAL data need not be scanned again,
-   and then recycles any old log segment files in <TT
+   and then recycles any old log segment files in the <TT
 CLASS="FILENAME"
 >pg_xlog</TT
 >
-   directory. A restartpoint is triggered if at least one checkpoint record
-   has been replayed and <TT
-CLASS="VARNAME"
->checkpoint_timeout</TT
-> seconds have passed
-   since last restartpoint. In standby mode, a restartpoint is also triggered
-   if <TT
-CLASS="VARNAME"
->checkpoint_segments</TT
-> log segments have been replayed since
-   last restartpoint and at least one checkpoint record has been replayed.
+   directory.
    Restartpoints can't be performed more frequently than checkpoints in the
    master because restartpoints can only be performed at checkpoint records.
+   A restartpoint is triggered when a checkpoint record is reached if at
+   least <TT
+CLASS="VARNAME"
+>checkpoint_timeout</TT
+> seconds have passed since the last
+   restartpoint. In standby mode, a restartpoint is also triggered if at
+   least <TT
+CLASS="VARNAME"
+>checkpoint_segments</TT
+> log segments have been replayed
+   since the last restartpoint.
   </P
 ><P
 >   There are two commonly used internal <ACRONYM
@@ -330,14 +339,14 @@ CLASS="ACRONYM"
 > functions:
    <CODE
 CLASS="FUNCTION"
->LogInsert</CODE
+>XLogInsert</CODE
 > and <CODE
 CLASS="FUNCTION"
->LogFlush</CODE
+>XLogFlush</CODE
 >.
    <CODE
 CLASS="FUNCTION"
->LogInsert</CODE
+>XLogInsert</CODE
 > is used to place a new record into
    the <ACRONYM
 CLASS="ACRONYM"
@@ -345,7 +354,7 @@ CLASS="ACRONYM"
 > buffers in shared memory. If there is no
    space for the new record, <CODE
 CLASS="FUNCTION"
->LogInsert</CODE
+>XLogInsert</CODE
 > will have
    to write (move to kernel cache) a few filled <ACRONYM
 CLASS="ACRONYM"
@@ -353,7 +362,7 @@ CLASS="ACRONYM"
 >
    buffers. This is undesirable because <CODE
 CLASS="FUNCTION"
->LogInsert</CODE
+>XLogInsert</CODE
 >
    is used on every database low level modification (for example, row
    insertion) at a time when an exclusive lock is held on affected
@@ -367,70 +376,153 @@ CLASS="ACRONYM"
 CLASS="ACRONYM"
 >WAL</ACRONYM
 > buffers should be written
-   and flushed by a <CODE
+   and flushed by an <CODE
 CLASS="FUNCTION"
->LogFlush</CODE
+>XLogFlush</CODE
 > request, which is
    made, for the most part, at transaction commit time to ensure that
    transaction records are flushed to permanent storage. On systems
    with high log output, <CODE
 CLASS="FUNCTION"
->LogFlush</CODE
+>XLogFlush</CODE
 > requests might
    not occur often enough to prevent <CODE
 CLASS="FUNCTION"
->LogInsert</CODE
+>XLogInsert</CODE
 >
    from having to do writes.  On such systems
    one should increase the number of <ACRONYM
 CLASS="ACRONYM"
 >WAL</ACRONYM
 > buffers by
-   modifying the configuration parameter <A
+   modifying the <A
 HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 >wal_buffers</A
->.  When
+> parameter.  When
    <A
 HREF="runtime-config-wal.html#GUC-FULL-PAGE-WRITES"
 >full_page_writes</A
 > is set and the system is very busy,
-   setting this value higher will help smooth response times during the
-   period immediately following each checkpoint.
+   setting <TT
+CLASS="VARNAME"
+>wal_buffers</TT
+> higher will help smooth response times
+   during the period immediately following each checkpoint.
   </P
 ><P
 >   The <A
 HREF="runtime-config-wal.html#GUC-COMMIT-DELAY"
 >commit_delay</A
 > parameter defines for how many
-   microseconds the server process will sleep after writing a commit
-   record to the log with <CODE
+   microseconds a group commit leader process will sleep after acquiring a
+   lock within <CODE
 CLASS="FUNCTION"
->LogInsert</CODE
-> but before
-   performing a <CODE
-CLASS="FUNCTION"
->LogFlush</CODE
->. This delay allows other
-   server processes to add their commit records to the log so as to have all
-   of them flushed with a single log sync. No sleep will occur if
-   <A
+>XLogFlush</CODE
+>, while group commit
+   followers queue up behind the leader.  This delay allows other server
+   processes to add their commit records to the WAL buffers so that all of
+   them will be flushed by the leader's eventual sync operation.  No sleep
+   will occur if <A
 HREF="runtime-config-wal.html#GUC-FSYNC"
 >fsync</A
->
-   is not enabled, or if fewer than <A
+> is not enabled, or if fewer
+   than <A
 HREF="runtime-config-wal.html#GUC-COMMIT-SIBLINGS"
 >commit_siblings</A
->
-   other sessions are currently in active transactions; this avoids
-   sleeping when it's unlikely that any other session will commit soon.
-   Note that on most platforms, the resolution of a sleep request is
-   ten milliseconds, so that any nonzero <TT
+> other sessions are currently
+   in active transactions; this avoids sleeping when it's unlikely that
+   any other session will commit soon.  Note that on some platforms, the
+   resolution of a sleep request is ten milliseconds, so that any nonzero
+   <TT
 CLASS="VARNAME"
 >commit_delay</TT
->
-   setting between 1 and 10000 microseconds would have the same effect.
-   Good values for these parameters are not yet clear; experimentation
-   is encouraged.
+> setting between 1 and 10000
+   microseconds would have the same effect.  Note also that on some
+   platforms, sleep operations may take slightly longer than requested by
+   the parameter.
+  </P
+><P
+>   Since the purpose of <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> is to allow the
+   cost of each flush operation to be amortized across concurrently
+   committing transactions (potentially at the expense of transaction
+   latency), it is necessary to quantify that cost before the setting can
+   be chosen intelligently.  The higher that cost is, the more effective
+   <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> is expected to be in increasing
+   transaction throughput, up to a point.  The <A
+HREF="pgtestfsync.html"
+><SPAN
+CLASS="APPLICATION"
+>pg_test_fsync</SPAN
+></A
+> program can be used to measure the average time
+   in microseconds that a single WAL flush operation takes.  A value of
+   half of the average time the program reports it takes to flush after a
+   single 8kB write operation is often the most effective setting for
+   <TT
+CLASS="VARNAME"
+>commit_delay</TT
+>, so this value is recommended as the
+   starting point to use when optimizing for a particular workload.  While
+   tuning <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> is particularly useful when the
+   WAL log is stored on high-latency rotating disks, benefits can be
+   significant even on storage media with very fast sync times, such as
+   solid-state drives or RAID arrays with a battery-backed write cache;
+   but this should definitely be tested against a representative workload.
+   Higher values of <TT
+CLASS="VARNAME"
+>commit_siblings</TT
+> should be used in
+   such cases, whereas smaller <TT
+CLASS="VARNAME"
+>commit_siblings</TT
+> values
+   are often helpful on higher latency media.  Note that it is quite
+   possible that a setting of <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> that is too
+   high can increase transaction latency by so much that total transaction
+   throughput suffers.
+  </P
+><P
+>   When <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> is set to zero (the default), it
+   is still possible for a form of group commit to occur, but each group
+   will consist only of sessions that reach the point where they need to
+   flush their commit records during the window in which the previous
+   flush operation (if any) is occurring.  At higher client counts a
+   <SPAN
+CLASS="QUOTE"
+>"gangway effect"</SPAN
+> tends to occur, so that the effects of group
+   commit become significant even when <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> is
+   zero, and thus explicitly setting <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> tends
+   to help less.  Setting <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> can only help
+   when (1) there are some concurrently committing transactions, and (2)
+   throughput is limited to some degree by commit rate; but with high
+   rotational latency this setting can be effective in increasing
+   transaction throughput with as few as two clients (that is, a single
+   committing client with one sibling transaction).
   </P
 ><P
 >   The <A
@@ -451,14 +543,14 @@ CLASS="LITERAL"
 >fsync_writethrough</TT
 >, which can sometimes
    force a flush of the disk cache even when other options do not do so.
-   However, it's quite platform-specific which one will be the fastest;
-   you can test option speeds using the <A
+   However, it's quite platform-specific which one will be the fastest.
+   You can test the speeds of different options using the <A
 HREF="pgtestfsync.html"
 ><SPAN
 CLASS="APPLICATION"
 >pg_test_fsync</SPAN
 ></A
-> module.
+> program.
    Note that this parameter is irrelevant if <TT
 CLASS="VARNAME"
 >fsync</TT
@@ -477,10 +569,10 @@ CLASS="PRODUCTNAME"
    compiled with support for it) will result in each
    <CODE
 CLASS="FUNCTION"
->LogInsert</CODE
+>XLogInsert</CODE
 > and <CODE
 CLASS="FUNCTION"
->LogFlush</CODE
+>XLogFlush</CODE
 >
    <ACRONYM
 CLASS="ACRONYM"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Backup and Restore"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -789,6 +789,57 @@ CLASS="COMMAND"
 >
     with one of the other two approaches.
    </P
+><DIV
+CLASS="FORMALPARA"
+><P
+><B
+>Use <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+>'s parallel dump feature. </B
+>     To speed up the dump of a large database, you can use
+     <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+>'s parallel mode. This will dump
+     multiple tables at the same time. You can control the degree of
+     parallelism with the <TT
+CLASS="COMMAND"
+>-j</TT
+> parameter. Parallel dumps
+     are only supported for the "directory" archive format.
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>pg_dump -j <TT
+CLASS="REPLACEABLE"
+><I
+>num</I
+></TT
+> -F d -f <TT
+CLASS="REPLACEABLE"
+><I
+>out.dir</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>dbname</I
+></TT
+></PRE
+><P>
+
+     You can use <TT
+CLASS="COMMAND"
+>pg_restore -j</TT
+> to restore a dump in parallel.
+     This will work for any archive of either the "custom" or the "directory"
+     archive mode, whether or not it has been created with <TT
+CLASS="COMMAND"
+>pg_dump -j</TT
+>.
+    </P
+></DIV
 ></DIV
 ></DIV
 ><DIV

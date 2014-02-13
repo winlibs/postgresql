@@ -4,7 +4,7 @@
  *	  Sort the items of a dump into a safe order for dumping
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -14,8 +14,8 @@
  *-------------------------------------------------------------------------
  */
 #include "pg_backup_archiver.h"
-#include "dumputils.h"
-#include "dumpmem.h"
+#include "pg_backup_utils.h"
+#include "parallel.h"
 
 /* translator: this is a module name */
 static const char *modulename = gettext_noop("sorter");
@@ -25,8 +25,9 @@ static const char *modulename = gettext_noop("sorter");
  * Objects are sorted by priority levels, and within an equal priority level
  * by OID.	(This is a relatively crude hack to provide semi-reasonable
  * behavior for old databases without full dependency info.)  Note: collations,
- * extensions, text search, foreign-data, and default ACL objects can't really
- * happen here, so the rather bogus priorities for them don't matter.
+ * extensions, text search, foreign-data, materialized view, event trigger,
+ * and default ACL objects can't really happen here, so the rather bogus
+ * priorities for them don't matter.
  *
  * NOTE: object-type priorities must match the section assignments made in
  * pg_dump.c; that is, PRE_DATA objects must sort before DO_PRE_DATA_BOUNDARY,
@@ -67,7 +68,9 @@ static const int oldObjectTypePriority[] =
 	9,							/* DO_BLOB */
 	12,							/* DO_BLOB_DATA */
 	10,							/* DO_PRE_DATA_BOUNDARY */
-	13							/* DO_POST_DATA_BOUNDARY */
+	13,							/* DO_POST_DATA_BOUNDARY */
+	20,							/* DO_EVENT_TRIGGER */
+	15							/* DO_REFRESH_MATVIEW */
 };
 
 /*
@@ -113,7 +116,9 @@ static const int newObjectTypePriority[] =
 	21,							/* DO_BLOB */
 	24,							/* DO_BLOB_DATA */
 	22,							/* DO_PRE_DATA_BOUNDARY */
-	25							/* DO_POST_DATA_BOUNDARY */
+	25,							/* DO_POST_DATA_BOUNDARY */
+	32,							/* DO_EVENT_TRIGGER */
+	33							/* DO_REFRESH_MATVIEW */
 };
 
 static DumpId preDataBoundId;
@@ -139,6 +144,96 @@ static void repairDependencyLoop(DumpableObject **loop,
 static void describeDumpableObject(DumpableObject *obj,
 					   char *buf, int bufsize);
 
+static int	DOSizeCompare(const void *p1, const void *p2);
+
+static int
+findFirstEqualType(DumpableObjectType type, DumpableObject **objs, int numObjs)
+{
+	int			i;
+
+	for (i = 0; i < numObjs; i++)
+		if (objs[i]->objType == type)
+			return i;
+	return -1;
+}
+
+static int
+findFirstDifferentType(DumpableObjectType type, DumpableObject **objs, int numObjs, int start)
+{
+	int			i;
+
+	for (i = start; i < numObjs; i++)
+		if (objs[i]->objType != type)
+			return i;
+	return numObjs - 1;
+}
+
+/*
+ * When we do a parallel dump, we want to start with the largest items first.
+ *
+ * Say we have the objects in this order:
+ * ....DDDDD....III....
+ *
+ * with D = Table data, I = Index, . = other object
+ *
+ * This sorting function now takes each of the D or I blocks and sorts them
+ * according to their size.
+ */
+void
+sortDataAndIndexObjectsBySize(DumpableObject **objs, int numObjs)
+{
+	int			startIdx,
+				endIdx;
+	void	   *startPtr;
+
+	if (numObjs <= 1)
+		return;
+
+	startIdx = findFirstEqualType(DO_TABLE_DATA, objs, numObjs);
+	if (startIdx >= 0)
+	{
+		endIdx = findFirstDifferentType(DO_TABLE_DATA, objs, numObjs, startIdx);
+		startPtr = objs + startIdx;
+		qsort(startPtr, endIdx - startIdx, sizeof(DumpableObject *),
+			  DOSizeCompare);
+	}
+
+	startIdx = findFirstEqualType(DO_INDEX, objs, numObjs);
+	if (startIdx >= 0)
+	{
+		endIdx = findFirstDifferentType(DO_INDEX, objs, numObjs, startIdx);
+		startPtr = objs + startIdx;
+		qsort(startPtr, endIdx - startIdx, sizeof(DumpableObject *),
+			  DOSizeCompare);
+	}
+}
+
+static int
+DOSizeCompare(const void *p1, const void *p2)
+{
+	DumpableObject *obj1 = *(DumpableObject **) p1;
+	DumpableObject *obj2 = *(DumpableObject **) p2;
+	int			obj1_size = 0;
+	int			obj2_size = 0;
+
+	if (obj1->objType == DO_TABLE_DATA)
+		obj1_size = ((TableDataInfo *) obj1)->tdtable->relpages;
+	if (obj1->objType == DO_INDEX)
+		obj1_size = ((IndxInfo *) obj1)->relpages;
+
+	if (obj2->objType == DO_TABLE_DATA)
+		obj2_size = ((TableDataInfo *) obj2)->tdtable->relpages;
+	if (obj2->objType == DO_INDEX)
+		obj2_size = ((IndxInfo *) obj2)->relpages;
+
+	/* we want to see the biggest item go first */
+	if (obj1_size > obj2_size)
+		return -1;
+	if (obj2_size > obj1_size)
+		return 1;
+
+	return 0;
+}
 
 /*
  * Sort the given objects into a type/name-based ordering
@@ -193,6 +288,9 @@ DOTypeNameCompare(const void *p1, const void *p2)
 		FuncInfo   *fobj2 = *(FuncInfo *const *) p2;
 
 		cmpval = fobj1->nargs - fobj2->nargs;
+		if (cmpval != 0)
+			return cmpval;
+		cmpval = strcmp(fobj1->proiargs, fobj2->proiargs);
 		if (cmpval != 0)
 			return cmpval;
 	}
@@ -549,7 +647,7 @@ findDependencyLoops(DumpableObject **objs, int nObjs, int totObjs)
 	bool		fixedloop;
 	int			i;
 
-	processed = (bool *) pg_calloc(getMaxDumpId() + 1, sizeof(bool));
+	processed = (bool *) pg_malloc0((getMaxDumpId() + 1) * sizeof(bool));
 	workspace = (DumpableObject **) pg_malloc(totObjs * sizeof(DumpableObject *));
 	fixedloop = false;
 
@@ -728,7 +826,7 @@ repairViewRuleMultiLoop(DumpableObject *viewobj,
 	/* remove view's dependency on rule */
 	removeObjectDependency(viewobj, ruleobj->dumpId);
 	/* pretend view is a plain table and dump it that way */
-	viewinfo->relkind = 'r';		/* RELKIND_RELATION */
+	viewinfo->relkind = 'r';	/* RELKIND_RELATION */
 	/* mark rule as needing its own dump */
 	ruleinfo->separate = true;
 	/* move any reloptions from view to rule */
@@ -1147,6 +1245,11 @@ describeDumpableObject(DumpableObject *obj, char *buf, int bufsize)
 					 "INDEX %s  (ID %d OID %u)",
 					 obj->name, obj->dumpId, obj->catId.oid);
 			return;
+		case DO_REFRESH_MATVIEW:
+			snprintf(buf, bufsize,
+					 "REFRESH MATERIALIZED VIEW %s  (ID %d OID %u)",
+					 obj->name, obj->dumpId, obj->catId.oid);
+			return;
 		case DO_RULE:
 			snprintf(buf, bufsize,
 					 "RULE %s  (ID %d OID %u)",
@@ -1155,6 +1258,11 @@ describeDumpableObject(DumpableObject *obj, char *buf, int bufsize)
 		case DO_TRIGGER:
 			snprintf(buf, bufsize,
 					 "TRIGGER %s  (ID %d OID %u)",
+					 obj->name, obj->dumpId, obj->catId.oid);
+			return;
+		case DO_EVENT_TRIGGER:
+			snprintf(buf, bufsize,
+					 "EVENT TRIGGER %s (ID %d OID %u)",
 					 obj->name, obj->dumpId, obj->catId.oid);
 			return;
 		case DO_CONSTRAINT:

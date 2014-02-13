@@ -4,7 +4,7 @@
  *	  interface routines for the postgres GiST index access method.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -16,6 +16,7 @@
 
 #include "access/genam.h"
 #include "access/gist_private.h"
+#include "access/heapam_xlog.h"
 #include "catalog/index.h"
 #include "catalog/pg_collation.h"
 #include "miscadmin.h"
@@ -71,9 +72,22 @@ createTempGistContext(void)
 Datum
 gistbuildempty(PG_FUNCTION_ARGS)
 {
-	ereport(ERROR,
-			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			 errmsg("unlogged GiST indexes are not supported")));
+	Relation	index = (Relation) PG_GETARG_POINTER(0);
+	Buffer		buffer;
+
+	/* Initialize the root page */
+	buffer = ReadBufferExtended(index, INIT_FORKNUM, P_NEW, RBM_NORMAL, NULL);
+	LockBuffer(buffer, BUFFER_LOCK_EXCLUSIVE);
+
+	/* Initialize and xlog buffer */
+	START_CRIT_SECTION();
+	GISTInitBuffer(buffer, F_LEAF);
+	MarkBufferDirty(buffer);
+	log_newpage_buffer(buffer);
+	END_CRIT_SECTION();
+
+	/* Unlock and release the buffer */
+	UnlockReleaseBuffer(buffer);
 
 	PG_RETURN_VOID();
 }
@@ -203,7 +217,7 @@ gistplacetopage(Relation rel, Size freespace, GISTSTATE *giststate,
 		SplitedPageLayout *dist = NULL,
 				   *ptr;
 		BlockNumber oldrlink = InvalidBlockNumber;
-		GistNSN		oldnsn = {0, 0};
+		GistNSN		oldnsn = 0;
 		SplitedPageLayout rootpg;
 		bool		is_rootsplit;
 
@@ -240,7 +254,7 @@ gistplacetopage(Relation rel, Size freespace, GISTSTATE *giststate,
 		{
 			/* save old rightlink and NSN */
 			oldrlink = GistPageGetOpaque(page)->rightlink;
-			oldnsn = GistPageGetOpaque(page)->nsn;
+			oldnsn = GistPageGetNSN(page);
 
 			dist->buffer = buffer;
 			dist->block.blkno = BufferGetBlockNumber(buffer);
@@ -364,7 +378,7 @@ gistplacetopage(Relation rel, Size freespace, GISTSTATE *giststate,
 			 * F_FOLLOW_RIGHT flags ensure that scans will follow the
 			 * rightlinks until the downlinks are inserted.
 			 */
-			GistPageGetOpaque(ptr->page)->nsn = oldnsn;
+			GistPageSetNSN(ptr->page, oldnsn);
 		}
 
 		START_CRIT_SECTION();
@@ -391,12 +405,11 @@ gistplacetopage(Relation rel, Size freespace, GISTSTATE *giststate,
 								   dist, oldrlink, oldnsn, leftchildbuf,
 								   markfollowright);
 		else
-			recptr = GetXLogRecPtrForTemp();
+			recptr = gistGetFakeLSN(rel);
 
 		for (ptr = dist; ptr; ptr = ptr->next)
 		{
 			PageSetLSN(ptr->page, recptr);
-			PageSetTLI(ptr->page, ThisTimeLineID);
 		}
 
 		/*
@@ -444,11 +457,10 @@ gistplacetopage(Relation rel, Size freespace, GISTSTATE *giststate,
 									leftchildbuf);
 
 			PageSetLSN(page, recptr);
-			PageSetTLI(page, ThisTimeLineID);
 		}
 		else
 		{
-			recptr = GetXLogRecPtrForTemp();
+			recptr = gistGetFakeLSN(rel);
 			PageSetLSN(page, recptr);
 		}
 
@@ -473,11 +485,10 @@ gistplacetopage(Relation rel, Size freespace, GISTSTATE *giststate,
 	{
 		Page		leftpg = BufferGetPage(leftchildbuf);
 
-		GistPageGetOpaque(leftpg)->nsn = recptr;
+		GistPageSetNSN(leftpg, recptr);
 		GistClearFollowRight(leftpg);
 
 		PageSetLSN(leftpg, recptr);
-		PageSetTLI(leftpg, ThisTimeLineID);
 	}
 
 	END_CRIT_SECTION();
@@ -506,7 +517,7 @@ gistdoinsert(Relation r, IndexTuple itup, Size freespace, GISTSTATE *giststate)
 
 	/* Start from the root */
 	firststack.blkno = GIST_ROOT_BLKNO;
-	firststack.lsn.xrecoff = 0;
+	firststack.lsn = 0;
 	firststack.parent = NULL;
 	firststack.downlinkoffnum = InvalidOffsetNumber;
 	state.stack = stack = &firststack;
@@ -561,8 +572,7 @@ gistdoinsert(Relation r, IndexTuple itup, Size freespace, GISTSTATE *giststate)
 		}
 
 		if (stack->blkno != GIST_ROOT_BLKNO &&
-			XLByteLT(stack->parent->lsn,
-					 GistPageGetOpaque(stack->page)->nsn))
+			stack->parent->lsn < GistPageGetNSN(stack->page))
 		{
 			/*
 			 * Concurrent split detected. There's no guarantee that the
@@ -620,7 +630,7 @@ gistdoinsert(Relation r, IndexTuple itup, Size freespace, GISTSTATE *giststate)
 					xlocked = true;
 					stack->page = (Page) BufferGetPage(stack->buffer);
 
-					if (!XLByteEQ(PageGetLSN(stack->page), stack->lsn))
+					if (PageGetLSN(stack->page) != stack->lsn)
 					{
 						/* the page was changed while we unlocked it, retry */
 						continue;
@@ -708,8 +718,7 @@ gistdoinsert(Relation r, IndexTuple itup, Size freespace, GISTSTATE *giststate)
 					 */
 				}
 				else if (GistFollowRight(stack->page) ||
-						 XLByteLT(stack->parent->lsn,
-								  GistPageGetOpaque(stack->page)->nsn))
+						 stack->parent->lsn < GistPageGetNSN(stack->page))
 				{
 					/*
 					 * The page was split while we momentarily unlocked the
@@ -794,7 +803,7 @@ gistFindPath(Relation r, BlockNumber child, OffsetNumber *downlinkoffnum)
 		if (GistFollowRight(page))
 			elog(ERROR, "concurrent GiST page split was incomplete");
 
-		if (top->parent && XLByteLT(top->parent->lsn, GistPageGetOpaque(page)->nsn) &&
+		if (top->parent && top->parent->lsn < GistPageGetNSN(page) &&
 			GistPageGetOpaque(page)->rightlink != InvalidBlockNumber /* sanity check */ )
 		{
 			/*
@@ -864,7 +873,8 @@ gistFindCorrectParent(Relation r, GISTInsertStack *child)
 	parent->page = (Page) BufferGetPage(parent->buffer);
 
 	/* here we don't need to distinguish between split and page update */
-	if (child->downlinkoffnum == InvalidOffsetNumber || !XLByteEQ(parent->lsn, PageGetLSN(parent->page)))
+	if (child->downlinkoffnum == InvalidOffsetNumber ||
+		parent->lsn != PageGetLSN(parent->page))
 	{
 		/* parent is changed, look child in right links until found */
 		OffsetNumber i,
@@ -1238,18 +1248,12 @@ gistSplit(Relation r,
 	IndexTuple *lvectup,
 			   *rvectup;
 	GistSplitVector v;
-	GistEntryVector *entryvec;
 	int			i;
 	SplitedPageLayout *res = NULL;
 
-	/* generate the item array */
-	entryvec = palloc(GEVHDRSZ + (len + 1) * sizeof(GISTENTRY));
-	entryvec->n = len + 1;
-
 	memset(v.spl_lisnull, TRUE, sizeof(bool) * giststate->tupdesc->natts);
 	memset(v.spl_risnull, TRUE, sizeof(bool) * giststate->tupdesc->natts);
-	gistSplitByKey(r, page, itup, len, giststate,
-				   &v, entryvec, 0);
+	gistSplitByKey(r, page, itup, len, giststate, &v, 0);
 
 	/* form left and right vector */
 	lvectup = (IndexTuple *) palloc(sizeof(IndexTuple) * (len + 1));

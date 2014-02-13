@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -96,11 +96,11 @@ NAME="RUNTIME-CONFIG-WAL"
 >18.5. Write Ahead Log</A
 ></H1
 ><P
->    See also <A
+>    For additional information on tuning these settings,
+    see <A
 HREF="wal-configuration.html"
 >Section 29.4</A
-> for details on WAL
-    and checkpoint tuning.
+>.
    </P
 ><DIV
 CLASS="SECT2"
@@ -307,6 +307,23 @@ CLASS="VARNAME"
 CLASS="VARNAME"
 >fsync</TT
 >.
+       </P
+><P
+>        For reliable recovery when changing <TT
+CLASS="VARNAME"
+>fsync</TT
+>
+        off to on, it is necessary to force all modified buffers in the
+        kernel to durable storage.  This can be done while the cluster
+        is shutdown or while fsync is on by running <TT
+CLASS="COMMAND"
+>initdb
+        --sync-only</TT
+>, running <TT
+CLASS="COMMAND"
+>sync</TT
+>, unmounting the
+        file system, or rebooting the server.
        </P
 ><P
 >        In many situations, turning off <A
@@ -699,22 +716,6 @@ CLASS="LITERAL"
         selected by the default setting of -1 should give reasonable
         results in most cases.
        </P
-><P
->        Increasing this parameter might cause <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
-        to request more <SPAN
-CLASS="SYSTEMITEM"
->System V</SPAN
-> shared
-        memory than your operating system's default configuration
-        allows. See <A
-HREF="kernel-resources.html#SYSVIPC"
->Section 17.4.1</A
-> for information on how to
-        adjust those parameters, if necessary.
-       </P
 ></DD
 ><DT
 ><A
@@ -765,32 +766,54 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->        When the commit data for a transaction is flushed to disk, any
-        additional commits ready at that time are also flushed out.
+>        <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> adds a time delay, measured in
+        microseconds, before a WAL flush is initiated.  This can improve
+        group commit throughput by allowing a larger number of transactions
+        to commit via a single WAL flush, if system load is high enough
+        that additional transactions become ready to commit within the
+        given interval.  However, it also increases latency by up to
         <TT
 CLASS="VARNAME"
 >commit_delay</TT
-> adds a time delay, set in
-        microseconds, before a transaction attempts to
-        flush the WAL buffer out to disk.  A nonzero delay can allow more
-        transactions to be committed with only one flush operation, if
-        system load is high enough that additional transactions become
-        ready to commit within the given interval. But the delay is
-        just wasted if no other transactions become ready to
-        commit. Therefore, the delay is only performed if at least
+> microseconds for each WAL
+        flush.  Because the delay is just wasted if no other transactions
+        become ready to commit, a delay is only performed if at least
         <TT
 CLASS="VARNAME"
 >commit_siblings</TT
-> other transactions are
-        active at the instant that a server process has written its
-        commit record.
+> other transactions are active
+        when a flush is about to be initiated.  Also, no delays are
+        performed if <TT
+CLASS="VARNAME"
+>fsync</TT
+> is disabled.
         The default <TT
 CLASS="VARNAME"
 >commit_delay</TT
 > is zero (no delay).
-        Since all pending commit data will be written at every flush
-        regardless of this setting, it is rare that adding delay
-        by increasing this parameter will actually improve performance.
+        Only superusers can change this setting.
+       </P
+><P
+>        In <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> releases prior to 9.3,
+        <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> behaved differently and was much
+        less effective: it affected only commits, rather than all WAL flushes,
+        and waited for the entire configured delay even if the WAL flush
+        was completed sooner.  Beginning in <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.3,
+        the first process that becomes ready to flush waits for the configured
+        interval, while subsequent processes wait only until the leader
+        completes the flush operation.
        </P
 ></DD
 ><DT
@@ -930,6 +953,14 @@ CLASS="VARNAME"
 CLASS="LITERAL"
 >30s</TT
 >).  Zero disables the warning.
+        No warnings will be generated if <TT
+CLASS="VARNAME"
+>checkpoint_timeout</TT
+>
+        is less than <TT
+CLASS="VARNAME"
+>checkpoint_warning</TT
+>.
         This parameter can only be set in the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT

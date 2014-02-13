@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Managing Databases"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -287,9 +287,13 @@ HREF="sql-droptablespace.html"
   </P
 ><P
 >   To determine the set of existing tablespaces, examine the
-   <TT
+   <A
+HREF="catalog-pg-tablespace.html"
+><TT
 CLASS="STRUCTNAME"
 >pg_tablespace</TT
+>
+   </A
 > system catalog, for example
 </P><PRE
 CLASS="SYNOPSIS"
@@ -329,17 +333,17 @@ CLASS="FILENAME"
 > contains symbolic links that
    point to each of the non-built-in tablespaces defined in the cluster.
    Although not recommended, it is possible to adjust the tablespace
-   layout by hand by redefining these links.  Two warnings: do not do so
-   while the server is running; and after you restart the server,
-   update the <TT
+   layout by hand by redefining these links. Under no circumstances perform
+   this operation while the server is running. Note that in PostgreSQL 9.1
+   and earlier you will also need to update the <TT
 CLASS="STRUCTNAME"
 >pg_tablespace</TT
-> catalog with the new
-   locations.  (If you do not, <TT
+>
+   catalog with the new locations. (If you do not, <TT
 CLASS="LITERAL"
 >pg_dump</TT
-> will continue to output
-   the old tablespace locations.)
+> will
+   continue to output the old tablespace locations.)
   </P
 ></DIV
 ><DIV

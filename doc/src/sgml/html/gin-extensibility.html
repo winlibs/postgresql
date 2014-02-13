@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="GIN Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 55. GIN Indexes</TD
+>Chapter 57. GIN Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="GIN-EXTENSIBILITY"
->55.2. Extensibility</A
+>57.2. Extensibility</A
 ></H1
 ><P
 >   The <ACRONYM
@@ -162,7 +162,10 @@ CLASS="LITERAL"
        <TT
 CLASS="LITERAL"
 >*nkeys</TT
-> booleans, store its address at
+> <TT
+CLASS="TYPE"
+>bool</TT
+> fields, store its address at
        <TT
 CLASS="LITERAL"
 >*nullFlags</TT
@@ -224,7 +227,10 @@ CLASS="LITERAL"
        <TT
 CLASS="LITERAL"
 >*nkeys</TT
-> booleans, store its address at
+> <TT
+CLASS="TYPE"
+>bool</TT
+> fields, store its address at
        <TT
 CLASS="LITERAL"
 >*nullFlags</TT
@@ -232,9 +238,15 @@ CLASS="LITERAL"
        <TT
 CLASS="LITERAL"
 >*nullFlags</TT
-> can be left NULL (its initial value)
+> can be left <TT
+CLASS="SYMBOL"
+>NULL</TT
+> (its initial value)
        if all keys are non-null.
-       The return value can be NULL if the <TT
+       The return value can be <TT
+CLASS="SYMBOL"
+>NULL</TT
+> if the <TT
 CLASS="LITERAL"
 >query</TT
 > contains no keys.
@@ -311,8 +323,14 @@ CLASS="LITERAL"
        If <TT
 CLASS="LITERAL"
 >*pmatch</TT
-> is set to NULL then GIN assumes partial match
-       is not required.  The variable is initialized to NULL before call,
+> is set to <TT
+CLASS="SYMBOL"
+>NULL</TT
+> then GIN assumes partial match
+       is not required.  The variable is initialized to <TT
+CLASS="SYMBOL"
+>NULL</TT
+> before call,
        so this argument can simply be ignored by operator classes that do
        not support partial match.
       </P
@@ -344,7 +362,10 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >*extra_data</TT
 >, then store whatever it wants to into the
-       individual pointers.  The variable is initialized to NULL before
+       individual pointers.  The variable is initialized to <TT
+CLASS="SYMBOL"
+>NULL</TT
+> before
        call, so this argument can simply be ignored by operator classes that
        do not require extra data.  If <TT
 CLASS="LITERAL"
@@ -432,7 +453,10 @@ CLASS="LITERAL"
        <CODE
 CLASS="FUNCTION"
 >extractQuery</CODE
->, or NULL if none.
+>, or <TT
+CLASS="SYMBOL"
+>NULL</TT
+> if none.
       </P
 ><P
 >       When <CODE
@@ -526,7 +550,10 @@ CLASS="LITERAL"
        array made by <CODE
 CLASS="FUNCTION"
 >extractQuery</CODE
->, or NULL if none.
+>, or <TT
+CLASS="SYMBOL"
+>NULL</TT
+> if none.
        Null keys are never passed to this function.
       </P
 ></DD
@@ -553,7 +580,7 @@ CLASS="LITERAL"
   parameter when a partial-match query is encountered.  See
   <A
 HREF="gin-implementation.html#GIN-PARTIAL-MATCH"
->Section 55.3.2</A
+>Section 57.3.2</A
 > for details.
  </P
 ><P

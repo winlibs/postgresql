@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -183,25 +183,9 @@ CLASS="EMPHASIS"
 > the number of
         rows that can be locked; that value is unlimited.  The default,
         64, has historically proven sufficient, but you might need to
-        raise this value if you have clients that touch many different
-        tables in a single transaction. This parameter can only be set at
-        server start.
-       </P
-><P
->        Increasing this parameter might cause <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
-        to request more <SPAN
-CLASS="SYSTEMITEM"
->System V</SPAN
-> shared
-        memory than your operating system's default configuration
-        allows. See <A
-HREF="kernel-resources.html#SYSVIPC"
->Section 17.4.1</A
-> for information on how to
-        adjust those parameters, if necessary.
+        raise this value if you have queries that touch many different
+        tables in a single transaction, e.g. query of a parent table with
+        many children.  This parameter can only be set at server start.
        </P
 ><P
 >        When running a standby server, you must set this parameter to the
@@ -249,22 +233,6 @@ CLASS="EMPHASIS"
         raise this value if you have clients that touch many different
         tables in a single serializable transaction. This parameter can
         only be set at server start.
-       </P
-><P
->        Increasing this parameter might cause <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
-        to request more <SPAN
-CLASS="SYSTEMITEM"
->System V</SPAN
-> shared
-        memory than your operating system's default configuration
-        allows. See <A
-HREF="kernel-resources.html#SYSVIPC"
->Section 17.4.1</A
-> for information on how to
-        adjust those parameters, if necessary.
        </P
 ></DD
 ></DL

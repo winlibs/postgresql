@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="APP-INITDB"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN85995"
+NAME="AEN89179"
 ></A
 ><H2
 >Name</H2
@@ -106,7 +106,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN86001"
+NAME="AEN89185"
 ></A
 ><H2
 >Synopsis</H2
@@ -297,7 +297,7 @@ HREF="multibyte.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86053"
+NAME="AEN89237"
 ></A
 ><H2
 >Options</H2
@@ -471,6 +471,26 @@ HREF="multibyte.html#MULTIBYTE-CHARSET-SUPPORTED"
        </P
 ></DD
 ><DT
+><A
+NAME="APP-INITDB-DATA-CHECKSUMS"
+></A
+><TT
+CLASS="OPTION"
+>-k</TT
+><BR><TT
+CLASS="OPTION"
+>--data-checksums</TT
+></DT
+><DD
+><P
+>        Use checksums on data pages to help detect corruption by the
+        I/O system that would otherwise be silent. Enabling checksums
+        may incur a noticeable performance penalty. This option can only
+        be set during initialization, and cannot be changed later. If
+        set, checksums are calculated for all objects, in all databases.
+       </P
+></DD
+><DT
 ><TT
 CLASS="OPTION"
 >--locale=<TT
@@ -569,6 +589,30 @@ CLASS="OPTION"
 ><DT
 ><TT
 CLASS="OPTION"
+>-N</TT
+><BR><TT
+CLASS="OPTION"
+>--nosync</TT
+></DT
+><DD
+><P
+>        By default, <TT
+CLASS="COMMAND"
+>initdb</TT
+> will wait for all files to be
+        written safely to disk.  This option causes <TT
+CLASS="COMMAND"
+>initdb</TT
+>
+        to return without waiting, which is faster, but means that a
+        subsequent operating system crash can leave the data directory
+        corrupt.  Generally, this option is useful for testing, but should not
+        be used when creating a production installation.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >--pwfile=<TT
 CLASS="REPLACEABLE"
 ><I
@@ -583,6 +627,23 @@ CLASS="COMMAND"
 >initdb</TT
 > read the database superuser's password
         from a file.  The first line of the file is taken as the password.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-S</TT
+><BR><TT
+CLASS="OPTION"
+>--sync-only</TT
+></DT
+><DD
+><P
+>        Safely write all database files to disk and exit.  This does not
+        perform any of the normal <SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+> operations.
        </P
 ></DD
 ><DT
@@ -816,7 +877,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86235"
+NAME="AEN89443"
 ></A
 ><H2
 >Environment</H2
@@ -859,7 +920,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86248"
+NAME="AEN89456"
 ></A
 ><H2
 >Notes</H2
@@ -877,7 +938,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86253"
+NAME="AEN89461"
 ></A
 ><H2
 >See Also</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -110,7 +110,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN141510"
+NAME="AEN148879"
 >F.25.1. General Hashing Functions</A
 ></H2
 ><DIV
@@ -118,7 +118,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141512"
+NAME="AEN148881"
 >F.25.1.1. <CODE
 CLASS="FUNCTION"
 >digest()</CODE
@@ -187,7 +187,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141530"
+NAME="AEN148901"
 >F.25.1.2. <CODE
 CLASS="FUNCTION"
 >hmac()</CODE
@@ -232,7 +232,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN141542"
+NAME="AEN148915"
 >F.25.2. Password Hashing Functions</A
 ></H2
 ><P
@@ -257,8 +257,8 @@ CLASS="FUNCTION"
 >   The algorithms in <CODE
 CLASS="FUNCTION"
 >crypt()</CODE
-> differ from usual hashing algorithms
-   like MD5 or SHA1 in the following respects:
+> differ from the usual 
+   MD5 or SHA1 hashing algorithms in the following respects:
   </P
 ><P
 ></P
@@ -319,7 +319,7 @@ CLASS="FUNCTION"
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><COL><COL><COL><THEAD
+><COL><COL><COL><COL><COL><COL><THEAD
 ><TR
 ><TH
 >Algorithm</TH
@@ -329,6 +329,8 @@ CLASS="CALSTABLE"
 >Adaptive?</TH
 ><TH
 >Salt Bits</TH
+><TH
+>Output Length</TH
 ><TH
 >Description</TH
 ></TR
@@ -347,6 +349,8 @@ CLASS="LITERAL"
 ><TD
 >128</TD
 ><TD
+>60</TD
+><TD
 >Blowfish-based, variant 2a</TD
 ></TR
 ><TR
@@ -361,6 +365,8 @@ CLASS="LITERAL"
 >no</TD
 ><TD
 >48</TD
+><TD
+>34</TD
 ><TD
 >MD5-based crypt</TD
 ></TR
@@ -377,6 +383,8 @@ CLASS="LITERAL"
 ><TD
 >24</TD
 ><TD
+>20</TD
+><TD
 >Extended DES</TD
 ></TR
 ><TR
@@ -392,6 +400,8 @@ CLASS="LITERAL"
 ><TD
 >12</TD
 ><TD
+>13</TD
+><TD
 >Original UNIX crypt</TD
 ></TR
 ></TBODY
@@ -402,7 +412,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141604"
+NAME="AEN148982"
 >F.25.2.1. <CODE
 CLASS="FUNCTION"
 >crypt()</CODE
@@ -441,7 +451,7 @@ CLASS="PROGRAMLISTING"
 >    Example of authentication:
 </P><PRE
 CLASS="PROGRAMLISTING"
->SELECT pswhash = crypt('entered password', pswhash) FROM ... ;</PRE
+>SELECT (pswhash = crypt('entered password', pswhash)) AS pswmatch FROM ... ;</PRE
 ><P>
     This returns <TT
 CLASS="LITERAL"
@@ -454,7 +464,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141618"
+NAME="AEN148998"
 >F.25.2.2. <CODE
 CLASS="FUNCTION"
 >gen_salt()</CODE
@@ -736,7 +746,7 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->md5</TT
+>md5 hash</TT
 ></TD
 ><TD
 >2345086</TD
@@ -778,7 +788,7 @@ CLASS="LITERAL"
 ><P
 >      <TT
 CLASS="LITERAL"
->md5</TT
+>md5 hash</TT
 > numbers are from mdcrack 1.2.
      </P
 ></LI
@@ -836,7 +846,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN141751"
+NAME="AEN149133"
 >F.25.3. PGP Encryption Functions</A
 ></H2
 ><P
@@ -950,7 +960,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141786"
+NAME="AEN149168"
 >F.25.3.1. <CODE
 CLASS="FUNCTION"
 >pgp_sym_encrypt()</CODE
@@ -980,7 +990,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141794"
+NAME="AEN149180"
 >F.25.3.2. <CODE
 CLASS="FUNCTION"
 >pgp_sym_decrypt()</CODE
@@ -1020,7 +1030,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141805"
+NAME="AEN149195"
 >F.25.3.3. <CODE
 CLASS="FUNCTION"
 >pgp_pub_encrypt()</CODE
@@ -1053,7 +1063,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141814"
+NAME="AEN149208"
 >F.25.3.4. <CODE
 CLASS="FUNCTION"
 >pgp_pub_decrypt()</CODE
@@ -1103,7 +1113,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141827"
+NAME="AEN149225"
 >F.25.3.5. <CODE
 CLASS="FUNCTION"
 >pgp_key_id()</CODE
@@ -1169,7 +1179,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141846"
+NAME="AEN149246"
 >F.25.3.6. <CODE
 CLASS="FUNCTION"
 >armor()</CODE
@@ -1192,7 +1202,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141852"
+NAME="AEN149256"
 >F.25.3.7. Options for PGP Functions</A
 ></H3
 ><P
@@ -1228,7 +1238,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN141861"
+NAME="AEN149265"
 >F.25.3.7.1. cipher-algo</A
 ></H4
 ><P
@@ -1251,7 +1261,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN141867"
+NAME="AEN149271"
 >F.25.3.7.2. compress-algo</A
 ></H4
 ><P
@@ -1275,7 +1285,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN141872"
+NAME="AEN149276"
 >F.25.3.7.3. compress-level</A
 ></H4
 ><P
@@ -1293,7 +1303,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN141876"
+NAME="AEN149280"
 >F.25.3.7.4. convert-crlf</A
 ></H4
 ><P
@@ -1329,7 +1339,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN141885"
+NAME="AEN149289"
 >F.25.3.7.5. disable-mdc</A
 ></H4
 ><P
@@ -1349,7 +1359,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN141889"
+NAME="AEN149293"
 >F.25.3.7.6. enable-session-key</A
 ></H4
 ><P
@@ -1368,7 +1378,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN141893"
+NAME="AEN149297"
 >F.25.3.7.7. s2k-mode</A
 ></H4
 ><P
@@ -1388,7 +1398,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN141897"
+NAME="AEN149301"
 >F.25.3.7.8. s2k-digest-algo</A
 ></H4
 ><P
@@ -1405,7 +1415,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN141901"
+NAME="AEN149305"
 >F.25.3.7.9. s2k-cipher-algo</A
 ></H4
 ><P
@@ -1422,7 +1432,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN141905"
+NAME="AEN149309"
 >F.25.3.7.10. unicode-mode</A
 ></H4
 ><P
@@ -1443,7 +1453,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141909"
+NAME="AEN149313"
 >F.25.3.8. Generating PGP Keys with GnuPG</A
 ></H3
 ><P
@@ -1522,7 +1532,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN141930"
+NAME="AEN149334"
 >F.25.3.9. Limitations of PGP Code</A
 ></H3
 ><P
@@ -1559,7 +1569,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN141940"
+NAME="AEN149344"
 >F.25.4. Raw Encryption Functions</A
 ></H2
 ><P
@@ -1758,7 +1768,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN141995"
+NAME="AEN149407"
 >F.25.5. Random-Data Functions</A
 ></H2
 ><PRE
@@ -1778,7 +1788,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142000"
+NAME="AEN149414"
 >F.25.6. Notes</A
 ></H2
 ><DIV
@@ -1786,7 +1796,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN142002"
+NAME="AEN149416"
 >F.25.6.1. Configuration</A
 ></H3
 ><P
@@ -1961,7 +1971,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN142070"
+NAME="AEN149484"
 >F.25.6.2. NULL Handling</A
 ></H3
 ><P
@@ -1974,7 +1984,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN142073"
+NAME="AEN149487"
 >F.25.6.3. Security Limitations</A
 ></H3
 ><P
@@ -2011,7 +2021,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN142084"
+NAME="AEN149498"
 >F.25.6.4. Useful Reading</A
 ></H3
 ><P
@@ -2076,7 +2086,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN142107"
+NAME="AEN149521"
 >F.25.6.5. Technical References</A
 ></H3
 ><P
@@ -2175,7 +2185,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142143"
+NAME="AEN149557"
 >F.25.7. Author</A
 ></H2
 ><P
@@ -2198,7 +2208,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN142149"
+NAME="AEN149563"
 ></A
 ><TABLE
 BORDER="1"
@@ -2256,7 +2266,7 @@ CLASS="CALSTABLE"
 ></TR
 ><TR
 ><TD
->MD5 and SHA1</TD
+>MD5 hash and SHA1</TD
 ><TD
 >WIDE Project</TD
 ><TD

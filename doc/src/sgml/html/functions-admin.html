@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -113,7 +113,7 @@ NAME="FUNCTIONS-ADMIN-SET"
 ><P
 >    <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-SET-TABLE"
->Table 9-57</A
+>Table 9-58</A
 > shows the functions
     available to query and alter run-time configuration parameters.
    </P
@@ -124,7 +124,7 @@ NAME="FUNCTIONS-ADMIN-SET-TABLE"
 ></A
 ><P
 ><B
->Table 9-57. Configuration Settings Functions</B
+>Table 9-58. Configuration Settings Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -269,12 +269,12 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="FUNCTIONS-ADMIN-SIGNAL"
->9.26.2. Server Signalling Functions</A
+>9.26.2. Server Signaling Functions</A
 ></H2
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE"
->Table 9-58</A
+>Table 9-59</A
 > send control signals to
     other server processes.  Use of these functions is usually restricted
     to superusers, with noted exceptions.
@@ -286,7 +286,7 @@ NAME="FUNCTIONS-ADMIN-SIGNAL-TABLE"
 ></A
 ><P
 ><B
->Table 9-58. Server Signalling Functions</B
+>Table 9-59. Server Signaling Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -488,10 +488,17 @@ NAME="FUNCTIONS-ADMIN-BACKUP"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-59</A
+>Table 9-60</A
 > assist in making on-line backups.
     These functions cannot be executed during recovery (except
     <CODE
+CLASS="FUNCTION"
+>pg_is_in_backup</CODE
+>, <CODE
+CLASS="FUNCTION"
+>pg_backup_start_time</CODE
+>
+    and <CODE
 CLASS="FUNCTION"
 >pg_xlog_location_diff</CODE
 >).
@@ -503,7 +510,7 @@ NAME="FUNCTIONS-ADMIN-BACKUP-TABLE"
 ></A
 ><P
 ><B
->Table 9-59. Backup Control Functions</B
+>Table 9-60. Backup Control Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -629,6 +636,42 @@ CLASS="TYPE"
 ></TD
 ><TD
 >Finish performing on-line backup (restricted to superusers or replication roles)</TD
+></TR
+><TR
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_is_in_backup()</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>bool</TT
+></TD
+><TD
+>True if an on-line exclusive backup is still in progress.</TD
+></TR
+><TR
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_backup_start_time()</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>Get start time of an on-line exclusive backup in progress.</TD
 ></TR
 ><TR
 ><TD
@@ -879,7 +922,7 @@ CLASS="STRUCTNAME"
 > or some functions shown in
     <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-59</A
+>Table 9-60</A
 > to get the replication lag.
    </P
 ><P
@@ -901,7 +944,7 @@ NAME="FUNCTIONS-RECOVERY-CONTROL"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-INFO-TABLE"
->Table 9-60</A
+>Table 9-61</A
 > provide information
     about the current status of the standby.
     These functions may be executed both during recovery and in normal running.
@@ -913,7 +956,7 @@ NAME="FUNCTIONS-RECOVERY-INFO-TABLE"
 ></A
 ><P
 ><B
->Table 9-60. Recovery Information Functions</B
+>Table 9-61. Recovery Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1030,7 +1073,7 @@ CLASS="TYPE"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL-TABLE"
->Table 9-61</A
+>Table 9-62</A
 > control the progress of recovery.
     These functions may be executed only during recovery.
    </P
@@ -1041,7 +1084,7 @@ NAME="FUNCTIONS-RECOVERY-CONTROL-TABLE"
 ></A
 ><P
 ><B
->Table 9-61. Recovery Control Functions</B
+>Table 9-62. Recovery Control Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1186,7 +1229,7 @@ CLASS="FUNCTION"
 > function,
     shown in <A
 HREF="functions-admin.html#FUNCTIONS-SNAPSHOT-SYNCHRONIZATION-TABLE"
->Table 9-62</A
+>Table 9-63</A
 >, and
     imported with the <A
 HREF="sql-set-transaction.html"
@@ -1200,7 +1243,7 @@ NAME="FUNCTIONS-SNAPSHOT-SYNCHRONIZATION-TABLE"
 ></A
 ><P
 ><B
->Table 9-62. Snapshot Synchronization Functions</B
+>Table 9-63. Snapshot Synchronization Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1283,7 +1326,7 @@ NAME="FUNCTIONS-ADMIN-DBOBJECT"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-DBSIZE"
->Table 9-63</A
+>Table 9-64</A
 > calculate
     the disk space usage of database objects.
    </P
@@ -1294,7 +1337,7 @@ NAME="FUNCTIONS-ADMIN-DBSIZE"
 ></A
 ><P
 ><B
->Table 9-63. Database Object Size Functions</B
+>Table 9-64. Database Object Size Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1674,7 +1717,7 @@ CLASS="LITERAL"
 > returns the size of the
     Free Space Map (see <A
 HREF="storage-fsm.html"
->Section 56.3</A
+>Section 58.3</A
 >) associated with the
     relation. Specifying <TT
 CLASS="LITERAL"
@@ -1682,7 +1725,7 @@ CLASS="LITERAL"
 > returns the size of the
     Visibility Map (see <A
 HREF="storage-vm.html"
->Section 56.4</A
+>Section 58.4</A
 >) associated with the
     relation.  Note that this function shows the size of only one fork;
     for most purposes it is more convenient to use the higher-level
@@ -1733,7 +1776,7 @@ CLASS="ACRONYM"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-DBLOCATION"
->Table 9-64</A
+>Table 9-65</A
 > assist
     in identifying the specific disk files associated with database objects.
    </P
@@ -1744,7 +1787,7 @@ NAME="FUNCTIONS-ADMIN-DBLOCATION"
 ></A
 ><P
 ><B
->Table 9-64. Database Object Location Functions</B
+>Table 9-65. Database Object Location Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1825,7 +1868,7 @@ CLASS="QUOTE"
     currently assigned to it.  The filenode is the base component of the file
     name(s) used for the relation (see <A
 HREF="storage-file-layout.html"
->Section 56.1</A
+>Section 58.1</A
 >
     for more information).  For most tables the result is the same as
     <TT
@@ -1869,7 +1912,7 @@ NAME="FUNCTIONS-ADMIN-GENFILE"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-GENFILE-TABLE"
->Table 9-65</A
+>Table 9-66</A
 > provide native access to
     files on the machine hosting the server. Only files within the
     database cluster directory and the <TT
@@ -1890,7 +1933,7 @@ NAME="FUNCTIONS-ADMIN-GENFILE-TABLE"
 ></A
 ><P
 ><B
->Table 9-65. Generic File Access Functions</B
+>Table 9-66. Generic File Access Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2130,7 +2173,7 @@ NAME="FUNCTIONS-ADVISORY-LOCKS"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADVISORY-LOCKS-TABLE"
->Table 9-66</A
+>Table 9-67</A
 >
     manage advisory locks.  For details about proper use of these functions,
     see <A
@@ -2145,7 +2188,7 @@ NAME="FUNCTIONS-ADVISORY-LOCKS-TABLE"
 ></A
 ><P
 ><B
->Table 9-66. Advisory Lock Functions</B
+>Table 9-67. Advisory Lock Functions</B
 ></P
 ><TABLE
 BORDER="1"

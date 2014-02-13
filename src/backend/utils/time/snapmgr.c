@@ -27,7 +27,7 @@
  * for too long.)
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -48,6 +48,7 @@
 #include "storage/procarray.h"
 #include "utils/builtins.h"
 #include "utils/memutils.h"
+#include "utils/resowner_private.h"
 #include "utils/snapmgr.h"
 #include "utils/tqual.h"
 
@@ -1182,4 +1183,13 @@ DeleteAllExportedSnapshotFiles(void)
 	}
 
 	FreeDir(s_dir);
+}
+
+bool
+ThereAreNoPriorRegisteredSnapshots(void)
+{
+	if (RegisteredSnapshots <= 1)
+		return true;
+
+	return false;
 }

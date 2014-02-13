@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Applications"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="pg_test_timing"
 HREF="pgtesttiming.html"><LINK
 REL="NEXT"
-TITLE="External Projects"
-HREF="external-projects.html"><LINK
+TITLE="pg_xlogdump"
+HREF="pgxlogdump.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="External Projects"
-HREF="external-projects.html"
+TITLE="pg_xlogdump"
+HREF="pgxlogdump.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN145634"
+NAME="AEN153434"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN145640"
+NAME="AEN153440"
 ></A
 ><H2
 >Synopsis</H2
@@ -159,7 +159,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145661"
+NAME="AEN153461"
 ></A
 ><H2
 >Description</H2
@@ -228,7 +228,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145677"
+NAME="AEN153477"
 ></A
 ><H2
 >Options</H2
@@ -263,7 +263,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->the old cluster executable directory;
+>the old PostgreSQL executable directory;
       environment variable <TT
 CLASS="ENVAR"
 >PGBINOLD</TT
@@ -289,7 +289,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->the new cluster executable directory;
+>the new PostgreSQL executable directory;
       environment variable <TT
 CLASS="ENVAR"
 >PGBINNEW</TT
@@ -362,6 +362,19 @@ CLASS="ENVAR"
 ><DT
 ><TT
 CLASS="OPTION"
+>-j</TT
+><BR><TT
+CLASS="OPTION"
+>--jobs</TT
+></DT
+><DD
+><P
+>number of simultaneous processes or threads to use
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-k</TT
 ><BR><TT
 CLASS="OPTION"
@@ -369,7 +382,8 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->use hard links instead of copying files to the new cluster</P
+>use hard links instead of copying files to the new
+      cluster (use junction points on Windows)</P
 ></DD
 ><DT
 ><TT
@@ -561,7 +575,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145816"
+NAME="AEN153623"
 ></A
 ><H2
 >Usage</H2
@@ -588,7 +602,7 @@ CLASS="STEP"
 CLASS="FILENAME"
 >/opt/PostgreSQL/9.1</TT
 >, you do not need to move the old cluster. The
-     one-click installers all use version-specific installation directories.
+     graphical installers all use version-specific installation directories.
     </P
 ><P
 >     If your installation directory is not version-specific, e.g.
@@ -673,7 +687,8 @@ CLASS="APPLICATION"
      <SPAN
 CLASS="APPLICATION"
 >pg_upgrade_support</SPAN
-> library in the new PostgreSQL cluster.
+> library in the new PostgreSQL
+     installation.
     </P
 ></LI
 ><LI
@@ -733,22 +748,25 @@ CLASS="COMMAND"
      so you might want to set authentication to <TT
 CLASS="LITERAL"
 >trust</TT
-> in
-     <TT
+>
+     or <TT
+CLASS="LITERAL"
+>peer</TT
+> in <TT
 CLASS="FILENAME"
 >pg_hba.conf</TT
->, or if using <TT
+>, or if using
+     <TT
 CLASS="LITERAL"
 >md5</TT
-> authentication,
-     use a <TT
+> authentication, use a <TT
 CLASS="FILENAME"
 >~/.pgpass</TT
-> file (see <A
+> file
+     (see <A
 HREF="libpq-pgpass.html"
 >Section 31.15</A
->)
-     to avoid being prompted repeatedly for a password.
+>).
     </P
 ></LI
 ><LI
@@ -811,17 +829,31 @@ CLASS="FILENAME"
     </P
 ><P
 >     If you use link mode, the upgrade will be much faster (no file
-     copying), but you will not be able to access your old cluster
+     copying) and use less disk space, but you will not be able to access
+     your old cluster
      once you start the new cluster after the upgrade.  Link mode also
      requires that the old and new cluster data directories be in the
-     same file system.  See <TT
+     same file system.  (Tablespaces and <TT
+CLASS="FILENAME"
+>pg_xlog</TT
+> can be on
+     different file systems.)  See <TT
 CLASS="LITERAL"
 >pg_upgrade --help</TT
 > for a full
      list of options.
-   </P
+    </P
 ><P
->   </P
+>     The <TT
+CLASS="OPTION"
+>--jobs</TT
+> option allows multiple CPU cores to be used
+     for copying/linking of files and to dump and reload database schemas
+     in parallel;  a good place to start is the maximum of the number of
+     CPU cores and tablespaces.  This option can dramatically reduce the
+     time to upgrade a multi-database server running on a multiprocessor
+     machine.
+    </P
 ><P
 >     For Windows users, you must be logged into an administrative account, and
      then start a shell as the <TT
@@ -862,7 +894,15 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >pg_upgrade --check</TT
 > will also outline any
-     manual adjustments you will need to make after the upgrade.
+     manual adjustments you will need to make after the upgrade.  If you
+     are going to be using link mode, you should use the <TT
+CLASS="OPTION"
+>--link</TT
+>
+     option with <TT
+CLASS="OPTION"
+>--check</TT
+> to enable link-mode-specific checks.
      <TT
 CLASS="COMMAND"
 >pg_upgrade</TT
@@ -916,7 +956,12 @@ CLASS="FILENAME"
 CLASS="LITERAL"
 >trust</TT
 >,
-     restore its original authentication settings.
+     restore its original authentication settings.  It might also be
+     necessary to adjust other configurations files in the new cluster to
+     match the old cluster, e.g. <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>.
     </P
 ></LI
 ><LI
@@ -981,7 +1026,8 @@ CLASS="COMMAND"
 >pg_upgrade</TT
 >, you will
      be instructed to run a command to regenerate that information at the end
-     of the upgrade.
+     of the upgrade.  You might need to set connection parameters to
+     match your new cluster.
     </P
 ></LI
 ><LI
@@ -1100,7 +1146,7 @@ CLASS="FILENAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145944"
+NAME="AEN153757"
 ></A
 ><H2
 >Notes</H2
@@ -1145,7 +1191,11 @@ CLASS="APPLICATION"
 >pg_upgrade</SPAN
 > if they affect your installation;
    post-upgrade scripts to rebuild tables and indexes will be
-   generated automatically.
+   generated automatically.  If you are trying to automate the upgrade
+   of many clusters, you should find that clusters with identical database
+   schemas require the same post-upgrade steps for all cluster upgrades;
+   this is because the post-upgrade steps are based on the database
+   schemas, and not user data.
   </P
 ><P
 >   For deployment testing, create a schema-only copy of the old cluster,
@@ -1221,7 +1271,7 @@ HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN145975"
+NAME="AEN153788"
 ></A
 ><H3
 >Limitations in Upgrading from PostgreSQL 8.3</H3
@@ -1319,17 +1369,17 @@ CLASS="OPTION"
   </P
 ><P
 >   For Windows users, note that due to different integer datetimes settings
-   used by the one-click installer and the MSI installer, it is only
-   possible to upgrade from version 8.3 of the one-click distribution to
-   version 8.4 or later of the one-click distribution. It is not
-   possible to upgrade from the MSI installer to the one-click installer.
+   used by the graphical installer and the MSI installer, it is only
+   possible to upgrade from version 8.3 of the installer distribution to
+   version 8.4 or later of the installer distribution. It is not
+   possible to upgrade from the MSI installer to the new graphical installer.
   </P
 ></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN146005"
+NAME="AEN153818"
 ></A
 ><H2
 >See Also</H2
@@ -1386,7 +1436,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="external-projects.html"
+HREF="pgxlogdump.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -1413,7 +1463,10 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->External Projects</TD
+><SPAN
+CLASS="APPLICATION"
+>pg_xlogdump</SPAN
+></TD
 ></TR
 ></TABLE
 ></DIV

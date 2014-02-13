@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-DROP-OWNED"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN73702"
+NAME="AEN76404"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN73702"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN73707"
+NAME="AEN76409"
 ></A
 ><H2
 >Synopsis</H2
@@ -119,7 +119,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73710"
+NAME="AEN76412"
 ></A
 ><H2
 >Description</H2
@@ -127,16 +127,17 @@ NAME="AEN73710"
 >   <TT
 CLASS="COMMAND"
 >DROP OWNED</TT
-> drops all the objects in the current
+> drops all the objects within the current
    database that are owned by one of the specified roles. Any
    privileges granted to the given roles on objects in the current
-   database will also be revoked.
+   database and on shared objects (databases, tablespaces) will also be
+   revoked.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73714"
+NAME="AEN76416"
 ></A
 ><H2
 >Parameters</H2
@@ -185,7 +186,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73732"
+NAME="AEN76434"
 ></A
 ><H2
 >Notes</H2
@@ -218,13 +219,13 @@ HREF="sql-reassign-owned.html"
    more roles.
   </P
 ><P
->   Databases owned by the role(s) will not be removed.
+>   Databases and tablespaces owned by the role(s) will not be removed.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73742"
+NAME="AEN76444"
 ></A
 ><H2
 >Compatibility</H2
@@ -242,7 +243,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73747"
+NAME="AEN76449"
 ></A
 ><H2
 >See Also</H2

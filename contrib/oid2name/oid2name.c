@@ -44,14 +44,12 @@ struct options
 	char	   *hostname;
 	char	   *port;
 	char	   *username;
+	const char *progname;
 };
 
 /* function prototypes */
 static void help(const char *progname);
 void		get_opts(int, char **, struct options *);
-void	   *pg_malloc(size_t size);
-void	   *pg_realloc(void *ptr, size_t size);
-char	   *pg_strdup(const char *str);
 void		add_one_elt(char *eltname, eary *eary);
 char	   *get_comma_elts(eary *eary);
 PGconn	   *sql_conn(struct options *);
@@ -81,6 +79,7 @@ get_opts(int argc, char **argv, struct options * my_opts)
 	my_opts->hostname = NULL;
 	my_opts->port = NULL;
 	my_opts->username = NULL;
+	my_opts->progname = progname;
 
 	if (argc > 1)
 	{
@@ -199,53 +198,6 @@ help(const char *progname)
 		   progname, progname);
 }
 
-void *
-pg_malloc(size_t size)
-{
-	void	   *ptr;
-
-	/* Avoid unportable behavior of malloc(0) */
-	if (size == 0)
-		size = 1;
-	ptr = malloc(size);
-	if (!ptr)
-	{
-		fprintf(stderr, "out of memory\n");
-		exit(1);
-	}
-	return ptr;
-}
-
-void *
-pg_realloc(void *ptr, size_t size)
-{
-	void	   *result;
-
-	/* Avoid unportable behavior of realloc(NULL, 0) */
-	if (ptr == NULL && size == 0)
-		size = 1;
-	result = realloc(ptr, size);
-	if (!result)
-	{
-		fprintf(stderr, "out of memory\n");
-		exit(1);
-	}
-	return result;
-}
-
-char *
-pg_strdup(const char *str)
-{
-	char	   *result = strdup(str);
-
-	if (!result)
-	{
-		fprintf(stderr, "out of memory\n");
-		exit(1);
-	}
-	return result;
-}
-
 /*
  * add_one_elt
  *
@@ -263,7 +215,7 @@ add_one_elt(char *eltname, eary *eary)
 	{
 		eary	  ->alloc *= 2;
 		eary	  ->array = (char **) pg_realloc(eary->array,
-												 eary->alloc * sizeof(char *));
+											   eary->alloc * sizeof(char *));
 	}
 
 	eary	  ->array[eary->num] = pg_strdup(eltname);
@@ -324,14 +276,29 @@ sql_conn(struct options * my_opts)
 	 */
 	do
 	{
+#define PARAMS_ARRAY_SIZE	7
+
+		const char *keywords[PARAMS_ARRAY_SIZE];
+		const char *values[PARAMS_ARRAY_SIZE];
+
+		keywords[0] = "host";
+		values[0] = my_opts->hostname;
+		keywords[1] = "port";
+		values[1] = my_opts->port;
+		keywords[2] = "user";
+		values[2] = my_opts->username;
+		keywords[3] = "password";
+		values[3] = password;
+		keywords[4] = "dbname";
+		values[4] = my_opts->dbname;
+		keywords[5] = "fallback_application_name";
+		values[5] = my_opts->progname;
+		keywords[6] = NULL;
+		values[6] = NULL;
+
 		new_pass = false;
-		conn = PQsetdbLogin(my_opts->hostname,
-							my_opts->port,
-							NULL,		/* options */
-							NULL,		/* tty */
-							my_opts->dbname,
-							my_opts->username,
-							password);
+		conn = PQconnectdbParams(keywords, values, true);
+
 		if (!conn)
 		{
 			fprintf(stderr, "%s: could not connect to database %s\n",
@@ -477,7 +444,7 @@ sql_exec_dumpalltables(PGconn *conn, struct options * opts)
 		   "	LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace "
 			 "	LEFT JOIN pg_catalog.pg_database d ON d.datname = pg_catalog.current_database(),"
 			 "	pg_catalog.pg_tablespace t "
-			 "WHERE relkind IN ('r'%s%s) AND "
+			 "WHERE relkind IN ('r', 'm'%s%s) AND "
 			 "	%s"
 			 "		t.oid = CASE"
 			 "			WHEN reltablespace <> 0 THEN reltablespace"
@@ -548,7 +515,7 @@ sql_exec_searchtables(PGconn *conn, struct options * opts)
 		 "	LEFT JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace \n"
 			 "	LEFT JOIN pg_catalog.pg_database d ON d.datname = pg_catalog.current_database(),\n"
 			 "	pg_catalog.pg_tablespace t \n"
-			 "WHERE relkind IN ('r', 'i', 'S', 't') AND \n"
+			 "WHERE relkind IN ('r', 'm', 'i', 'S', 't') AND \n"
 			 "		t.oid = CASE\n"
 			 "			WHEN reltablespace <> 0 THEN reltablespace\n"
 			 "			ELSE dattablespace\n"

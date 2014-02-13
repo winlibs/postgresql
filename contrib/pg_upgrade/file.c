@@ -3,11 +3,11 @@
  *
  *	file system operations
  *
- *	Copyright (c) 2010-2012, PostgreSQL Global Development Group
+ *	Copyright (c) 2010-2013, PostgreSQL Global Development Group
  *	contrib/pg_upgrade/file.c
  */
 
-#include "postgres.h"
+#include "postgres_fe.h"
 
 #include "pg_upgrade.h"
 
@@ -127,39 +127,35 @@ linkAndUpdateFile(pageCnvCtx *pageConverter,
 static int
 copy_file(const char *srcfile, const char *dstfile, bool force)
 {
-
 #define COPY_BUF_SIZE (50 * BLCKSZ)
 
 	int			src_fd;
 	int			dest_fd;
 	char	   *buffer;
+	int			ret = 0;
+	int			save_errno = 0;
 
 	if ((srcfile == NULL) || (dstfile == NULL))
+	{
+		errno = EINVAL;
 		return -1;
+	}
 
 	if ((src_fd = open(srcfile, O_RDONLY, 0)) < 0)
 		return -1;
 
 	if ((dest_fd = open(dstfile, O_RDWR | O_CREAT | (force ? 0 : O_EXCL), S_IRUSR | S_IWUSR)) < 0)
 	{
+		save_errno = errno;
+
 		if (src_fd != 0)
 			close(src_fd);
 
+		errno = save_errno;
 		return -1;
 	}
 
-	buffer = (char *) malloc(COPY_BUF_SIZE);
-
-	if (buffer == NULL)
-	{
-		if (src_fd != 0)
-			close(src_fd);
-
-		if (dest_fd != 0)
-			close(dest_fd);
-
-		return -1;
-	}
+	buffer = (char *) pg_malloc(COPY_BUF_SIZE);
 
 	/* perform data copying i.e read src source, write to destination */
 	while (true)
@@ -168,19 +164,9 @@ copy_file(const char *srcfile, const char *dstfile, bool force)
 
 		if (nbytes < 0)
 		{
-			int			save_errno = errno;
-
-			if (buffer != NULL)
-				free(buffer);
-
-			if (src_fd != 0)
-				close(src_fd);
-
-			if (dest_fd != 0)
-				close(dest_fd);
-
-			errno = save_errno;
-			return -1;
+			save_errno = errno;
+			ret = -1;
+			break;
 		}
 
 		if (nbytes == 0)
@@ -191,24 +177,15 @@ copy_file(const char *srcfile, const char *dstfile, bool force)
 		if (write(dest_fd, buffer, nbytes) != nbytes)
 		{
 			/* if write didn't set errno, assume problem is no disk space */
-			int			save_errno = errno ? errno : ENOSPC;
-
-			if (buffer != NULL)
-				free(buffer);
-
-			if (src_fd != 0)
-				close(src_fd);
-
-			if (dest_fd != 0)
-				close(dest_fd);
-
-			errno = save_errno;
-			return -1;
+			if (errno == 0)
+				errno = ENOSPC;
+			save_errno = errno;
+			ret = -1;
+			break;
 		}
 	}
 
-	if (buffer != NULL)
-		free(buffer);
+	pg_free(buffer);
 
 	if (src_fd != 0)
 		close(src_fd);
@@ -216,64 +193,12 @@ copy_file(const char *srcfile, const char *dstfile, bool force)
 	if (dest_fd != 0)
 		close(dest_fd);
 
-	return 1;
+	if (save_errno != 0)
+		errno = save_errno;
+
+	return ret;
 }
 #endif
-
-
-/*
- * load_directory()
- *
- * Read all the file names in the specified directory, and return them as
- * an array of "char *" pointers.  The array address is returned in
- * *namelist, and the function result is the count of file names.
- *
- * To free the result data, free each (char *) array member, then free the
- * namelist array itself.
- */
-int
-load_directory(const char *dirname, char ***namelist)
-{
-	DIR		   *dirdesc;
-	struct dirent *direntry;
-	int			count = 0;
-	int			allocsize = 64;		/* initial array size */
-
-	*namelist = (char **) pg_malloc(allocsize * sizeof(char *));
-
-	if ((dirdesc = opendir(dirname)) == NULL)
-		pg_log(PG_FATAL, "could not open directory \"%s\": %s\n",
-			   dirname, getErrorText(errno));
-
-	while (errno = 0, (direntry = readdir(dirdesc)) != NULL)
-	{
-		if (count >= allocsize)
-		{
-			allocsize *= 2;
-			*namelist = (char **)
-						pg_realloc(*namelist, allocsize * sizeof(char *));
-		}
-
-		(*namelist)[count++] = pg_strdup(direntry->d_name);
-	}
-
-#ifdef WIN32
-	/*
-	 * This fix is in mingw cvs (runtime/mingwex/dirent.c rev 1.4), but not in
-	 * released version
-	 */
-	if (GetLastError() == ERROR_NO_MORE_FILES)
-		errno = 0;
-#endif
-
-	if (errno)
-		pg_log(PG_FATAL, "could not read directory \"%s\": %s\n",
-			   dirname, getErrorText(errno));
-
-	closedir(dirdesc);
-
-	return count;
-}
 
 
 void

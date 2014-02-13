@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SELECT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "SELECT" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "SELECT" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -48,15 +48,15 @@ SELECT [ ALL | DISTINCT [ ON ( \fIexpression\fR [, \&.\&.\&.] ) ] ]
     [ LIMIT { \fIcount\fR | ALL } ]
     [ OFFSET \fIstart\fR [ ROW | ROWS ] ]
     [ FETCH { FIRST | NEXT } [ \fIcount\fR ] { ROW | ROWS } ONLY ]
-    [ FOR { UPDATE | SHARE } [ OF \fItable_name\fR [, \&.\&.\&.] ] [ NOWAIT ] [\&.\&.\&.] ]
+    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF \fItable_name\fR [, \&.\&.\&.] ] [ NOWAIT ] [\&.\&.\&.] ]
 
 where \fIfrom_item\fR can be one of:
 
     [ ONLY ] \fItable_name\fR [ * ] [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
-    ( \fIselect\fR ) [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ]
+    [ LATERAL ] ( \fIselect\fR ) [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ]
     \fIwith_query_name\fR [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
-    \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] ) [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] | \fIcolumn_definition\fR [, \&.\&.\&.] ) ]
-    \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] ) AS ( \fIcolumn_definition\fR [, \&.\&.\&.] )
+    [ LATERAL ] \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] ) [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] | \fIcolumn_definition\fR [, \&.\&.\&.] ) ]
+    [ LATERAL ] \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] ) AS ( \fIcolumn_definition\fR [, \&.\&.\&.] )
     \fIfrom_item\fR [ NATURAL ] \fIjoin_type\fR \fIfrom_item\fR [ ON \fIjoin_condition\fR | USING ( \fIjoin_column\fR [, \&.\&.\&.] ) ]
 
 and \fIwith_query\fR is:
@@ -262,13 +262,15 @@ below\&.)
 .IP "10." 4.2
 .\}
 If
-FOR UPDATE
-or
+FOR UPDATE,
+FOR NO KEY UPDATE,
 FOR SHARE
+or
+FOR KEY SHARE
 is specified, the
 \fBSELECT\fR
 statement locks the selected rows against concurrent updates\&. (See
-FOR UPDATE/FOR SHARE Clause
+The Locking Clause
 below\&.)
 .RE
 .PP
@@ -277,9 +279,11 @@ SELECT
 privilege on each column used in a
 \fBSELECT\fR
 command\&. The use of
-FOR UPDATE
-or
+FOR NO KEY UPDATE,
+FOR UPDATE,
 FOR SHARE
+or
+FOR KEY SHARE
 requires
 UPDATE
 privilege as well (for at least one column of each table so selected)\&.
@@ -369,7 +373,8 @@ for additional information\&.
 The
 FROM
 clause specifies one or more source tables for the
-\fBSELECT\fR\&. If multiple sources are specified, the result is the Cartesian product (cross join) of all the sources\&. But usually qualification conditions are added to restrict the returned rows to a small subset of the Cartesian product\&.
+\fBSELECT\fR\&. If multiple sources are specified, the result is the Cartesian product (cross join) of all the sources\&. But usually qualification conditions are added (via
+WHERE) to restrict the returned rows to a small subset of the Cartesian product\&.
 .PP
 The
 FROM
@@ -512,17 +517,19 @@ A
 JOIN
 clause combines two
 FROM
-items\&. Use parentheses if necessary to determine the order of nesting\&. In the absence of parentheses,
+items, which for convenience we will refer to as
+\(lqtables\(rq, though in reality they can be any type of
+FROM
+item\&. Use parentheses if necessary to determine the order of nesting\&. In the absence of parentheses,
 JOINs nest left\-to\-right\&. In any case
 JOIN
 binds more tightly than the commas separating
-FROM
-items\&.
+FROM\-list items\&.
 .sp
 CROSS JOIN
 and
 INNER JOIN
-produce a simple Cartesian product, the same result as you get from listing the two items at the top level of
+produce a simple Cartesian product, the same result as you get from listing the two tables at the top level of
 FROM, but restricted by the join condition (if any)\&.
 CROSS JOIN
 is equivalent to
@@ -540,7 +547,7 @@ Conversely,
 RIGHT OUTER JOIN
 returns all the joined rows, plus one row for each unmatched right\-hand row (extended with nulls on the left)\&. This is just a notational convenience, since you could convert it to a
 LEFT OUTER JOIN
-by switching the left and right inputs\&.
+by switching the left and right tables\&.
 .sp
 FULL OUTER JOIN
 returns all the joined rows, plus one row for each unmatched left\-hand row (extended with nulls on the right), plus one row for each unmatched right\-hand row (extended with nulls on the left)\&.
@@ -572,6 +579,68 @@ NATURAL
 is shorthand for a
 USING
 list that mentions all columns in the two tables that have the same names\&.
+.RE
+.PP
+LATERAL
+.RS 4
+The
+LATERAL
+key word can precede a sub\-\fBSELECT\fR
+FROM
+item\&. This allows the sub\-\fBSELECT\fR
+to refer to columns of
+FROM
+items that appear before it in the
+FROM
+list\&. (Without
+LATERAL, each sub\-\fBSELECT\fR
+is evaluated independently and so cannot cross\-reference any other
+FROM
+item\&.)
+.sp
+LATERAL
+can also precede a function\-call
+FROM
+item, but in this case it is a noise word, because the function expression can refer to earlier
+FROM
+items in any case\&.
+.sp
+A
+LATERAL
+item can appear at top level in the
+FROM
+list, or within a
+JOIN
+tree\&. In the latter case it can also refer to any items that are on the left\-hand side of a
+JOIN
+that it is on the right\-hand side of\&.
+.sp
+When a
+FROM
+item contains
+LATERAL
+cross\-references, evaluation proceeds as follows: for each row of the
+FROM
+item providing the cross\-referenced column(s), or set of rows of multiple
+FROM
+items providing the columns, the
+LATERAL
+item is evaluated using that row or row set\*(Aqs values of the columns\&. The resulting row(s) are joined as usual with the rows they were computed from\&. This is repeated for each row or set of rows from the column source table(s)\&.
+.sp
+The column source table(s) must be
+INNER
+or
+LEFT
+joined to the
+LATERAL
+item, else there would not be a well\-defined set of rows from which to compute each set of rows for the
+LATERAL
+item\&. Thus, although a construct such as
+\fIX\fR RIGHT JOIN LATERAL \fIY\fR
+is syntactically valid, it is not actually allowed for
+\fIY\fR
+to reference
+\fIX\fR\&.
 .RE
 .SS "WHERE Clause"
 .PP
@@ -695,9 +764,9 @@ WINDOW \fIwindow_name\fR AS ( \fIwindow_definition\fR ) [, \&.\&.\&.]
 
 where
 \fIwindow_name\fR
-is a name that can be referenced from subsequent window definitions or
+is a name that can be referenced from
 OVER
-clauses, and
+clauses or subsequent window definitions, and
 \fIwindow_definition\fR
 is
 .sp
@@ -978,8 +1047,10 @@ is any
 statement without an
 ORDER BY,
 LIMIT,
-FOR UPDATE, or
-FOR SHARE
+FOR NO KEY UPDATE,
+FOR UPDATE,
+FOR SHARE, or
+FOR KEY SHARE
 clause\&. (ORDER BY
 and
 LIMIT
@@ -1018,9 +1089,11 @@ operators in the same
 statement are evaluated left to right, unless otherwise indicated by parentheses\&.
 .PP
 Currently,
-FOR UPDATE
-and
+FOR NO KEY UPDATE,
+FOR UPDATE,
 FOR SHARE
+and
+FOR KEY SHARE
 cannot be specified either for a
 UNION
 result or for any input of a
@@ -1047,8 +1120,10 @@ is any
 statement without an
 ORDER BY,
 LIMIT,
-FOR UPDATE, or
-FOR SHARE
+FOR NO KEY UPDATE,
+FOR UPDATE,
+FOR SHARE, or
+FOR KEY SHARE
 clause\&.
 .PP
 The
@@ -1083,9 +1158,11 @@ will be read as
 A UNION (B INTERSECT C)\&.
 .PP
 Currently,
-FOR UPDATE
-and
+FOR NO KEY UPDATE,
+FOR UPDATE,
 FOR SHARE
+and
+FOR KEY SHARE
 cannot be specified either for an
 INTERSECT
 result or for any input of an
@@ -1112,8 +1189,10 @@ is any
 statement without an
 ORDER BY,
 LIMIT,
-FOR UPDATE, or
-FOR SHARE
+FOR NO KEY UPDATE,
+FOR UPDATE,
+FOR SHARE, or
+FOR KEY SHARE
 clause\&.
 .PP
 The
@@ -1145,9 +1224,11 @@ binds at the same level as
 UNION\&.
 .PP
 Currently,
-FOR UPDATE
-and
+FOR NO KEY UPDATE,
+FOR UPDATE,
 FOR SHARE
+and
+FOR KEY SHARE
 cannot be specified either for an
 EXCEPT
 result or for any input of an
@@ -1361,31 +1442,44 @@ LIMIT
 query to return different subsets of the rows of a table, if there is not an
 ORDER BY
 to enforce selection of a deterministic subset\&. Again, this is not a bug; determinism of the results is simply not guaranteed in such a case\&.
-.SS "FOR UPDATE/FOR SHARE Clause"
+.SS "The Locking Clause"
 .PP
-The
-FOR UPDATE
-clause has this form:
+
+FOR UPDATE,
+FOR NO KEY UPDATE,
+FOR SHARE
+and
+FOR KEY SHARE
+are
+locking clauses; they affect how
+SELECT
+locks rows as they are obtained from the table\&.
+.PP
+The locking clause has the general form
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-FOR UPDATE [ OF \fItable_name\fR [, \&.\&.\&.] ] [ NOWAIT ]
+FOR \fIlock_strength\fR [ OF \fItable_name\fR [, \&.\&.\&.] ] [ NOWAIT ]
 .fi
 .if n \{\
 .RE
 .\}
-.PP
-The closely related
-FOR SHARE
-clause has this form:
+.sp
+
+where
+\fIlock_strength\fR
+can be one of
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-FOR SHARE [ OF \fItable_name\fR [, \&.\&.\&.] ] [ NOWAIT ]
+UPDATE
+NO KEY UPDATE
+SHARE
+KEY SHARE
 .fi
 .if n \{\
 .RE
@@ -1397,9 +1491,21 @@ causes the rows retrieved by the
 \fBSELECT\fR
 statement to be locked as though for update\&. This prevents them from being modified or deleted by other transactions until the current transaction ends\&. That is, other transactions that attempt
 \fBUPDATE\fR,
-\fBDELETE\fR, or
-\fBSELECT FOR UPDATE\fR
-of these rows will be blocked until the current transaction ends\&. Also, if an
+\fBDELETE\fR,
+\fBSELECT FOR UPDATE\fR,
+\fBSELECT FOR NO KEY UPDATE\fR,
+\fBSELECT FOR SHARE\fR
+or
+\fBSELECT FOR KEY SHARE\fR
+of these rows will be blocked until the current transaction ends\&. The
+FOR UPDATE
+lock mode is also acquired by any
+\fBDELETE\fR
+on a row, and also by an
+\fBUPDATE\fR
+that modifies the values on certain columns\&. Currently, the set of columns considered for the
+\fBUPDATE\fR
+case are those that have an unique index on them that can be used in a foreign key (so partial indexes and expressional indexes are not considered), but this may change in the future\&. Also, if an
 \fBUPDATE\fR,
 \fBDELETE\fR, or
 \fBSELECT FOR UPDATE\fR
@@ -1413,13 +1519,43 @@ transaction, however, an error will be thrown if a row to be locked has changed 
 Chapter 13, Concurrency Control, in the documentation\&.
 .PP
 
+FOR NO KEY UPDATE
+behaves similarly, except that the lock acquired is weaker: this lock will not block
+SELECT FOR KEY SHARE
+commands that attempt to acquire a lock on the same rows\&. This lock mode is also acquired by any
+\fBUPDATE\fR
+that does not acquire a
+FOR UPDATE
+lock\&.
+.PP
+
 FOR SHARE
 behaves similarly, except that it acquires a shared rather than exclusive lock on each retrieved row\&. A shared lock blocks other transactions from performing
 \fBUPDATE\fR,
-\fBDELETE\fR, or
+\fBDELETE\fR,
 \fBSELECT FOR UPDATE\fR
+or
+\fBSELECT FOR NO KEY UPDATE\fR
 on these rows, but it does not prevent them from performing
-\fBSELECT FOR SHARE\fR\&.
+\fBSELECT FOR SHARE\fR
+or
+\fBSELECT FOR KEY SHARE\fR\&.
+.PP
+
+FOR KEY SHARE
+behaves similarly to
+FOR SHARE, except that the lock is weaker:
+SELECT FOR UPDATE
+is blocked, but not
+SELECT FOR NO KEY UPDATE\&. A key\-shared lock blocks other transactions from performing
+\fBDELETE\fR
+or any
+\fBUPDATE\fR
+that changes the key values, but not other
+\fBUPDATE\fR, and neither does it prevent
+\fBSELECT FOR NO KEY UPDATE\fR,
+\fBSELECT FOR SHARE\fR, or
+\fBSELECT FOR KEY SHARE\fR\&.
 .PP
 To prevent the operation from waiting for other transactions to commit, use the
 NOWAIT
@@ -1435,73 +1571,31 @@ with the
 NOWAIT
 option first, if you need to acquire the table\-level lock without waiting\&.
 .PP
-If specific tables are named in
-FOR UPDATE
-or
-FOR SHARE, then only rows coming from those tables are locked; any other tables used in the
+If specific tables are named in a locking clause, then only rows coming from those tables are locked; any other tables used in the
 \fBSELECT\fR
-are simply read as usual\&. A
-FOR UPDATE
-or
-FOR SHARE
-clause without a table list affects all tables used in the statement\&. If
-FOR UPDATE
-or
-FOR SHARE
-is applied to a view or sub\-query, it affects all tables used in the view or sub\-query\&. However,
-FOR UPDATE/FOR SHARE
-do not apply to
+are simply read as usual\&. A locking clause without a table list affects all tables used in the statement\&. If a locking clause is applied to a view or sub\-query, it affects all tables used in the view or sub\-query\&. However, these clauses do not apply to
 WITH
 queries referenced by the primary query\&. If you want row locking to occur within a
 WITH
-query, specify
-FOR UPDATE
-or
-FOR SHARE
-within the
+query, specify a locking clause within the
 WITH
 query\&.
 .PP
-Multiple
-FOR UPDATE
-and
-FOR SHARE
-clauses can be written if it is necessary to specify different locking behavior for different tables\&. If the same table is mentioned (or implicitly affected) by both
-FOR UPDATE
-and
-FOR SHARE
-clauses, then it is processed as
-FOR UPDATE\&. Similarly, a table is processed as
+Multiple locking clauses can be written if it is necessary to specify different locking behavior for different tables\&. If the same table is mentioned (or implicitly affected) by more than one locking clause, then it is processed as if it was only specified by the strongest one\&. Similarly, a table is processed as
 NOWAIT
 if that is specified in any of the clauses affecting it\&.
 .PP
-
-FOR UPDATE
-and
-FOR SHARE
-cannot be used in contexts where returned rows cannot be clearly identified with individual table rows; for example they cannot be used with aggregation\&.
+The locking clauses cannot be used in contexts where returned rows cannot be clearly identified with individual table rows; for example they cannot be used with aggregation\&.
 .PP
-When
-FOR UPDATE
-or
-FOR SHARE
-appears at the top level of a
+When a locking clause appears at the top level of a
 \fBSELECT\fR
 query, the rows that are locked are exactly those that are returned by the query; in the case of a join query, the rows locked are those that contribute to returned join rows\&. In addition, rows that satisfied the query conditions as of the query snapshot will be locked, although they will not be returned if they were updated after the snapshot and no longer satisfy the query conditions\&. If a
 LIMIT
 is used, locking stops once enough rows have been returned to satisfy the limit (but note that rows skipped over by
 OFFSET
-will get locked)\&. Similarly, if
-FOR UPDATE
-or
-FOR SHARE
-is used in a cursor\*(Aqs query, only rows actually fetched or stepped past by the cursor will be locked\&.
+will get locked)\&. Similarly, if a locking clause is used in a cursor\*(Aqs query, only rows actually fetched or stepped past by the cursor will be locked\&.
 .PP
-When
-FOR UPDATE
-or
-FOR SHARE
-appears in a sub\-\fBSELECT\fR, the rows locked are those returned to the outer query by the sub\-query\&. This might involve fewer rows than inspection of the sub\-query alone would suggest, since conditions from the outer query might be used to optimize execution of the sub\-query\&. For example,
+When a locking clause appears in a sub\-\fBSELECT\fR, the rows locked are those returned to the outer query by the sub\-query\&. This might involve fewer rows than inspection of the sub\-query alone would suggest, since conditions from the outer query might be used to optimize execution of the sub\-query\&. For example,
 .sp
 .if n \{\
 .RS 4
@@ -1515,22 +1609,8 @@ SELECT * FROM (SELECT * FROM mytable FOR UPDATE) ss WHERE col1 = 5;
 .sp
 will lock only rows having
 col1 = 5, even though that condition is not textually within the sub\-query\&.
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBCaution\fR
-.ps -1
-.br
 .PP
-Avoid locking a row and then modifying it within a later savepoint or
-PL/pgSQL
-exception block\&. A subsequent rollback would cause the lock to be lost\&. For example:
+Previous releases failed to preserve a lock which is upgraded by a later savepoint\&. For example, this code:
 .sp
 .if n \{\
 .RS 4
@@ -1546,11 +1626,10 @@ ROLLBACK TO s;
 .RE
 .\}
 .sp
-After the
-\fBROLLBACK\fR, the row is effectively unlocked, rather than returned to its pre\-savepoint state of being locked but not modified\&. This hazard occurs if a row locked in the current transaction is updated or deleted, or if a shared lock is upgraded to exclusive: in all these cases, the former lock state is forgotten\&. If the transaction is then rolled back to a state between the original locking command and the subsequent change, the row will appear not to be locked at all\&. This is an implementation deficiency which will be addressed in a future release of
-PostgreSQL\&.
-.sp .5v
-.RE
+would fail to preserve the
+FOR UPDATE
+lock after the
+\fBROLLBACK TO\fR\&. This has been fixed in release 9\&.3\&.
 .if n \{\
 .sp
 .\}
@@ -1570,9 +1649,7 @@ command running at the
 READ COMMITTED
 transaction isolation level and using
 ORDER BY
-and
-FOR UPDATE/SHARE
-to return rows out of order\&. This is because
+and a locking clause to return rows out of order\&. This is because
 ORDER BY
 is applied first\&. The command sorts the result, but might then block trying to obtain a lock on one or more of the rows\&. Once the
 SELECT
@@ -1866,6 +1943,38 @@ Notice the typical form of recursive queries: an initial condition, followed by
 UNION, followed by the recursive part of the query\&. Be sure that the recursive part of the query will eventually return no tuples, or else the query will loop indefinitely\&. (See
 Section 7.8, \(lqWITH Queries (Common Table Expressions)\(rq, in the documentation
 for more examples\&.)
+.PP
+This example uses
+LATERAL
+to apply a set\-returning function
+\fBget_product_names()\fR
+for each row of the
+manufacturers
+table:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+SELECT m\&.name AS mname, pname
+FROM manufacturers m, LATERAL get_product_names(m\&.id) pname;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Manufacturers not currently having any products would not appear in the result, since it is an inner join\&. If we wished to include the names of such manufacturers in the result, we could do:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+SELECT m\&.name AS mname, pname
+FROM manufacturers m LEFT JOIN LATERAL get_product_names(m\&.id) pname ON true;
+.fi
+.if n \{\
+.RE
+.\}
 .SH "COMPATIBILITY"
 .PP
 Of course, the
@@ -1953,6 +2062,27 @@ behavior of including child tables\&. The standard does not allow this\&.
 (These points apply equally to all SQL commands supporting the
 ONLY
 option\&.)
+.SS "Function Calls in FROM"
+.PP
+
+PostgreSQL
+allows a function call to be written directly as a member of the
+FROM
+list\&. In the SQL standard it would be necessary to wrap such a function call in a sub\-\fBSELECT\fR; that is, the syntax
+FROM \fIfunc\fR(\&.\&.\&.) \fIalias\fR
+is approximately equivalent to
+FROM LATERAL (SELECT \fIfunc\fR(\&.\&.\&.)) \fIalias\fR\&. Note that
+LATERAL
+is considered to be implicit; this is because the standard requires
+LATERAL
+semantics for an
+UNNEST()
+item in
+FROM\&.
+PostgreSQL
+treats
+UNNEST()
+the same as other set\-returning functions\&.
 .SS "Namespace Available to GROUP BY and ORDER BY"
 .PP
 In the SQL\-92 standard, an
@@ -2003,7 +2133,7 @@ Oracle
 frequently use a workaround involving the automatically generated
 rownum
 column, which is not available in PostgreSQL, to implement the effects of these clauses\&.)
-.SS "FOR UPDATE and FOR SHARE"
+.SS "FOR NO KEY UPDATE, FOR UPDATE, FOR SHARE, FOR KEY SHARE"
 .PP
 Although
 FOR UPDATE
@@ -2013,8 +2143,11 @@ PostgreSQL
 allows it in any
 \fBSELECT\fR
 query as well as in sub\-\fBSELECT\fRs, but this is an extension\&. The
+FOR NO KEY UPDATE,
 FOR SHARE
-variant, and the
+and
+FOR KEY SHARE
+variants, as well as the
 NOWAIT
 option, do not appear in the standard\&.
 .SS "Data\-Modifying Statements in WITH"

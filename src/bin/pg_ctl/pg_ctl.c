@@ -2,7 +2,7 @@
  *
  * pg_ctl --- start/stops/restarts the PostgreSQL server
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  *
  * src/bin/pg_ctl/pg_ctl.c
  *
@@ -18,7 +18,9 @@
 #endif
 
 #include "postgres_fe.h"
+
 #include "libpq-fe.h"
+#include "pqexpbuffer.h"
 
 #include <fcntl.h>
 #include <locale.h>
@@ -33,7 +35,6 @@
 #include <sys/resource.h>
 #endif
 
-#include "libpq/pqsignal.h"
 #include "getopt_long.h"
 #include "miscadmin.h"
 
@@ -118,8 +119,6 @@ write_stderr(const char *fmt,...)
 /* This extension allows gcc to check the format string for consistency with
    the supplied arguments. */
 __attribute__((format(PG_PRINTF_ATTRIBUTE, 1, 2)));
-static void *pg_malloc(size_t size);
-static char *xstrdup(const char *s);
 static void do_advice(void);
 static void do_help(void);
 static void set_mode(char *modeopt);
@@ -226,42 +225,6 @@ write_stderr(const char *fmt,...)
 }
 
 /*
- * routines to check memory allocations and fail noisily.
- */
-
-static void *
-pg_malloc(size_t size)
-{
-	void	   *result;
-
-	/* Avoid unportable behavior of malloc(0) */
-	if (size == 0)
-		size = 1;
-	result = malloc(size);
-	if (!result)
-	{
-		write_stderr(_("%s: out of memory\n"), progname);
-		exit(1);
-	}
-	return result;
-}
-
-
-static char *
-xstrdup(const char *s)
-{
-	char	   *result;
-
-	result = strdup(s);
-	if (!result)
-	{
-		write_stderr(_("%s: out of memory\n"), progname);
-		exit(1);
-	}
-	return result;
-}
-
-/*
  * Given an already-localized string, print it to stdout unless the
  * user has specified that no messages should be printed.
  */
@@ -296,8 +259,13 @@ get_pgpid(void)
 	}
 	if (fscanf(pidf, "%ld", &pid) != 1)
 	{
-		write_stderr(_("%s: invalid data in PID file \"%s\"\n"),
-					 progname, pid_file);
+		/* Is the file empty? */
+		if (ftell(pidf) == 0 && feof(pidf))
+			write_stderr(_("%s: the PID file \"%s\" is empty\n"),
+						 progname, pid_file);
+		else
+			write_stderr(_("%s: invalid data in PID file \"%s\"\n"),
+						 progname, pid_file);
 		exit(1);
 	}
 	fclose(pidf);
@@ -319,7 +287,7 @@ readfile(const char *path)
 	int			i;
 	int			n;
 	int			len;
-	struct stat	statbuf;
+	struct stat statbuf;
 
 	/*
 	 * Slurp the file into memory.
@@ -378,8 +346,9 @@ readfile(const char *path)
 	{
 		if (buffer[i] == '\n')
 		{
-			int		slen = &buffer[i] - linebegin + 1;
-			char   *linebuf = pg_malloc(slen + 1);
+			int			slen = &buffer[i] - linebegin + 1;
+			char	   *linebuf = pg_malloc(slen + 1);
+
 			memcpy(linebuf, linebegin, slen);
 			linebuf[slen] = '\0';
 			result[n++] = linebuf;
@@ -559,7 +528,7 @@ test_postmaster_connection(bool do_checkpoint)
 						hostaddr = optlines[LOCK_FILE_LINE_LISTEN_ADDR - 1];
 
 						/*
-						 * While unix_socket_directory can accept relative
+						 * While unix_socket_directories can accept relative
 						 * directories, libpq's host parameter must have a
 						 * leading slash to indicate a socket directory.  So,
 						 * ignore sockdir if it's relative, and try to use TCP
@@ -1131,6 +1100,13 @@ do_promote(void)
 		exit(1);
 	}
 
+	/*
+	 * For 9.3 onwards, "fast" promotion is performed. Promotion
+	 * with a full checkpoint is still possible by writing a file called
+	 * "fallback_promote" instead of "promote"
+	 */
+	snprintf(promote_file, MAXPGPATH, "%s/promote", pg_data);
+
 	if ((prmfile = fopen(promote_file, "w")) == NULL)
 	{
 		write_stderr(_("%s: could not create promote signal file \"%s\": %s\n"),
@@ -1265,16 +1241,13 @@ pgwin32_IsInstalled(SC_HANDLE hSCM)
 static char *
 pgwin32_CommandLine(bool registration)
 {
-	static char cmdLine[MAXPGPATH];
+	PQExpBuffer cmdLine = createPQExpBuffer();
+	char		cmdPath[MAXPGPATH];
 	int			ret;
-
-#ifdef __CYGWIN__
-	char		buf[MAXPGPATH];
-#endif
 
 	if (registration)
 	{
-		ret = find_my_exec(argv0, cmdLine);
+		ret = find_my_exec(argv0, cmdPath);
 		if (ret != 0)
 		{
 			write_stderr(_("%s: could not find own program executable\n"), progname);
@@ -1284,7 +1257,7 @@ pgwin32_CommandLine(bool registration)
 	else
 	{
 		ret = find_other_exec(argv0, "postgres", PG_BACKEND_VERSIONSTR,
-							  cmdLine);
+							  cmdPath);
 		if (ret != 0)
 		{
 			write_stderr(_("%s: could not find postgres program executable\n"), progname);
@@ -1294,54 +1267,57 @@ pgwin32_CommandLine(bool registration)
 
 #ifdef __CYGWIN__
 	/* need to convert to windows path */
+	{
+		char		buf[MAXPGPATH];
+
 #if CYGWIN_VERSION_DLL_MAJOR >= 1007
-	cygwin_conv_path(CCP_POSIX_TO_WIN_A, cmdLine, buf, sizeof(buf));
+		cygwin_conv_path(CCP_POSIX_TO_WIN_A, cmdPath, buf, sizeof(buf));
 #else
-	cygwin_conv_to_full_win32_path(cmdLine, buf);
+		cygwin_conv_to_full_win32_path(cmdPath, buf);
 #endif
-	strcpy(cmdLine, buf);
+		strcpy(cmdPath, buf);
+	}
 #endif
+
+	/* if path does not end in .exe, append it */
+	if (strlen(cmdPath) < 4 ||
+		pg_strcasecmp(cmdPath + strlen(cmdPath) - 4, ".exe") != 0)
+		snprintf(cmdPath + strlen(cmdPath), sizeof(cmdPath) - strlen(cmdPath),
+				 ".exe");
+
+	/* use backslashes in path to avoid problems with some third-party tools */
+	make_native_path(cmdPath);
+
+	/* be sure to double-quote the executable's name in the command */
+	appendPQExpBuffer(cmdLine, "\"%s\"", cmdPath);
+
+	/* append assorted switches to the command line, as needed */
 
 	if (registration)
-	{
-		if (pg_strcasecmp(cmdLine + strlen(cmdLine) - 4, ".exe") != 0)
-		{
-			/* If commandline does not end in .exe, append it */
-			strcat(cmdLine, ".exe");
-		}
-		strcat(cmdLine, " runservice -N \"");
-		strcat(cmdLine, register_servicename);
-		strcat(cmdLine, "\"");
-	}
+		appendPQExpBuffer(cmdLine, " runservice -N \"%s\"",
+						  register_servicename);
 
 	if (pg_config)
-	{
-		strcat(cmdLine, " -D \"");
-		strcat(cmdLine, pg_config);
-		strcat(cmdLine, "\"");
-	}
+		appendPQExpBuffer(cmdLine, " -D \"%s\"", pg_config);
 
 	if (registration && do_wait)
-		strcat(cmdLine, " -w");
+		appendPQExpBuffer(cmdLine, " -w");
 
 	if (registration && wait_seconds != DEFAULT_WAIT)
-		/* concatenate */
-		sprintf(cmdLine + strlen(cmdLine), " -t %d", wait_seconds);
+		appendPQExpBuffer(cmdLine, " -t %d", wait_seconds);
 
 	if (registration && silent_mode)
-		strcat(cmdLine, " -s");
+		appendPQExpBuffer(cmdLine, " -s");
 
 	if (post_opts)
 	{
-		strcat(cmdLine, " ");
 		if (registration)
-			strcat(cmdLine, " -o \"");
-		strcat(cmdLine, post_opts);
-		if (registration)
-			strcat(cmdLine, "\"");
+			appendPQExpBuffer(cmdLine, " -o \"%s\"", post_opts);
+		else
+			appendPQExpBuffer(cmdLine, " %s", post_opts);
 	}
 
-	return cmdLine;
+	return cmdLine->data;
 }
 
 static void
@@ -1772,7 +1748,7 @@ CreateRestrictedProcess(char *cmd, PROCESS_INFORMATION *processInfo, bool as_ser
 	 */
 	return r;
 }
-#endif
+#endif   /* defined(WIN32) || defined(__CYGWIN__) */
 
 static void
 do_advice(void)
@@ -1823,7 +1799,7 @@ do_help(void)
 	printf(_("  -o OPTIONS             command line options to pass to postgres\n"
 	 "                         (PostgreSQL server executable) or initdb\n"));
 	printf(_("  -p PATH-TO-POSTGRES    normally not necessary\n"));
-	printf(_("\nOptions for stop or restart:\n"));
+	printf(_("\nOptions for stop, restart, or promote:\n"));
 	printf(_("  -m, --mode=MODE        MODE can be \"smart\", \"fast\", or \"immediate\"\n"));
 
 	printf(_("\nShutdown modes are:\n"));
@@ -1964,7 +1940,7 @@ adjust_data_dir(void)
 	if (exec_path == NULL)
 		my_exec_path = find_other_exec_or_die(argv0, "postgres", PG_BACKEND_VERSIONSTR);
 	else
-		my_exec_path = xstrdup(exec_path);
+		my_exec_path = pg_strdup(exec_path);
 
 	snprintf(cmd, MAXPGPATH, SYSTEMQUOTE "\"%s\" %s%s -C data_directory" SYSTEMQUOTE,
 			 my_exec_path, pgdata_opt ? pgdata_opt : "", post_opts ?
@@ -1984,7 +1960,7 @@ adjust_data_dir(void)
 		*strchr(filename, '\n') = '\0';
 
 	free(pg_data);
-	pg_data = xstrdup(filename);
+	pg_data = pg_strdup(filename);
 	canonicalize_path(pg_data);
 }
 
@@ -2075,7 +2051,7 @@ main(int argc, char **argv)
 						char	   *pgdata_D;
 						char	   *env_var = pg_malloc(strlen(optarg) + 8);
 
-						pgdata_D = xstrdup(optarg);
+						pgdata_D = pg_strdup(optarg);
 						canonicalize_path(pgdata_D);
 						snprintf(env_var, strlen(optarg) + 8, "PGDATA=%s",
 								 pgdata_D);
@@ -2093,22 +2069,22 @@ main(int argc, char **argv)
 						break;
 					}
 				case 'l':
-					log_file = xstrdup(optarg);
+					log_file = pg_strdup(optarg);
 					break;
 				case 'm':
 					set_mode(optarg);
 					break;
 				case 'N':
-					register_servicename = xstrdup(optarg);
+					register_servicename = pg_strdup(optarg);
 					break;
 				case 'o':
-					post_opts = xstrdup(optarg);
+					post_opts = pg_strdup(optarg);
 					break;
 				case 'p':
-					exec_path = xstrdup(optarg);
+					exec_path = pg_strdup(optarg);
 					break;
 				case 'P':
-					register_password = xstrdup(optarg);
+					register_password = pg_strdup(optarg);
 					break;
 				case 's':
 					silent_mode = true;
@@ -2127,16 +2103,11 @@ main(int argc, char **argv)
 					break;
 				case 'U':
 					if (strchr(optarg, '\\'))
-						register_username = xstrdup(optarg);
+						register_username = pg_strdup(optarg);
 					else
 						/* Prepend .\ for local accounts */
 					{
-						register_username = malloc(strlen(optarg) + 3);
-						if (!register_username)
-						{
-							write_stderr(_("%s: out of memory\n"), progname);
-							exit(1);
-						}
+						register_username = pg_malloc(strlen(optarg) + 3);
 						strcpy(register_username, ".\\");
 						strcat(register_username, optarg);
 					}
@@ -2225,9 +2196,9 @@ main(int argc, char **argv)
 	pg_config = getenv("PGDATA");
 	if (pg_config)
 	{
-		pg_config = xstrdup(pg_config);
+		pg_config = pg_strdup(pg_config);
 		canonicalize_path(pg_config);
-		pg_data = xstrdup(pg_config);
+		pg_data = pg_strdup(pg_config);
 	}
 
 	/* -D might point at config-only directory; if so find the real PGDATA */
@@ -2271,7 +2242,6 @@ main(int argc, char **argv)
 		snprintf(pid_file, MAXPGPATH, "%s/postmaster.pid", pg_data);
 		snprintf(backup_file, MAXPGPATH, "%s/backup_label", pg_data);
 		snprintf(recovery_file, MAXPGPATH, "%s/recovery.conf", pg_data);
-		snprintf(promote_file, MAXPGPATH, "%s/promote", pg_data);
 	}
 
 	switch (ctl_command)

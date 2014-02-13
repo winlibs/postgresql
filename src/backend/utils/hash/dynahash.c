@@ -26,7 +26,7 @@
  * in local memory, we typically use palloc() which will throw error on
  * failure.  The code in this file has to cope with both cases.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -67,6 +67,8 @@
  */
 
 #include "postgres.h"
+
+#include <limits.h>
 
 #include "access/xact.h"
 #include "storage/shmem.h"
@@ -182,6 +184,12 @@ struct HTAB
 #define ELEMENTKEY(helem)  (((char *)(helem)) + MAXALIGN(sizeof(HASHELEMENT)))
 
 /*
+ * Obtain element pointer given pointer to key
+ */
+#define ELEMENT_FROM_KEY(key)  \
+	((HASHELEMENT *) (((char *) (key)) - MAXALIGN(sizeof(HASHELEMENT))))
+
+/*
  * Fast MOD arithmetic, assuming that y is a power of 2 !
  */
 #define MOD(x,y)			   ((x) & ((y)-1))
@@ -205,6 +213,8 @@ static void hdefault(HTAB *hashp);
 static int	choose_nelem_alloc(Size entrysize);
 static bool init_htab(HTAB *hashp, long nelem);
 static void hash_corrupted(HTAB *hashp);
+static long next_pow2_long(long num);
+static int	next_pow2_int(long num);
 static void register_seq_scan(HTAB *hashp);
 static void deregister_seq_scan(HTAB *hashp);
 static bool has_seq_scans(HTAB *hashp);
@@ -379,8 +389,13 @@ hash_create(const char *tabname, long nelem, HASHCTL *info, int flags)
 	{
 		/* Doesn't make sense to partition a local hash table */
 		Assert(flags & HASH_SHARED_MEM);
-		/* # of partitions had better be a power of 2 */
-		Assert(info->num_partitions == (1L << my_log2(info->num_partitions)));
+
+		/*
+		 * The number of partitions had better be a power of 2. Also, it must
+		 * be less than INT_MAX (see init_htab()), so call the int version of
+		 * next_pow2.
+		 */
+		Assert(info->num_partitions == next_pow2_int(info->num_partitions));
 
 		hctl->num_partitions = info->num_partitions;
 	}
@@ -523,7 +538,6 @@ init_htab(HTAB *hashp, long nelem)
 {
 	HASHHDR    *hctl = hashp->hctl;
 	HASHSEGMENT *segp;
-	long		lnbuckets;
 	int			nbuckets;
 	int			nsegs;
 
@@ -538,9 +552,7 @@ init_htab(HTAB *hashp, long nelem)
 	 * number of buckets.  Allocate space for the next greater power of two
 	 * number of buckets
 	 */
-	lnbuckets = (nelem - 1) / hctl->ffactor + 1;
-
-	nbuckets = 1 << my_log2(lnbuckets);
+	nbuckets = next_pow2_int((nelem - 1) / hctl->ffactor + 1);
 
 	/*
 	 * In a partitioned table, nbuckets must be at least equal to
@@ -558,7 +570,7 @@ init_htab(HTAB *hashp, long nelem)
 	 * Figure number of directory segments needed, round up to a power of 2
 	 */
 	nsegs = (nbuckets - 1) / hctl->ssize + 1;
-	nsegs = 1 << my_log2(nsegs);
+	nsegs = next_pow2_int(nsegs);
 
 	/*
 	 * Make sure directory is big enough. If pre-allocated directory is too
@@ -628,9 +640,9 @@ hash_estimate_size(long num_entries, Size entrysize)
 				elementAllocCnt;
 
 	/* estimate number of buckets wanted */
-	nBuckets = 1L << my_log2((num_entries - 1) / DEF_FFACTOR + 1);
+	nBuckets = next_pow2_long((num_entries - 1) / DEF_FFACTOR + 1);
 	/* # of segments needed for nBuckets */
-	nSegments = 1L << my_log2((nBuckets - 1) / DEF_SEGSIZE + 1);
+	nSegments = next_pow2_long((nBuckets - 1) / DEF_SEGSIZE + 1);
 	/* directory entries */
 	nDirEntries = DEF_DIRSIZE;
 	while (nDirEntries < nSegments)
@@ -671,9 +683,9 @@ hash_select_dirsize(long num_entries)
 				nDirEntries;
 
 	/* estimate number of buckets wanted */
-	nBuckets = 1L << my_log2((num_entries - 1) / DEF_FFACTOR + 1);
+	nBuckets = next_pow2_long((num_entries - 1) / DEF_FFACTOR + 1);
 	/* # of segments needed for nBuckets */
-	nSegments = 1L << my_log2((nBuckets - 1) / DEF_SEGSIZE + 1);
+	nSegments = next_pow2_long((nBuckets - 1) / DEF_SEGSIZE + 1);
 	/* directory entries */
 	nDirEntries = DEF_DIRSIZE;
 	while (nDirEntries < nSegments)
@@ -979,6 +991,155 @@ hash_search_with_hash_value(HTAB *hashp,
 	elog(ERROR, "unrecognized hash action code: %d", (int) action);
 
 	return NULL;				/* keep compiler quiet */
+}
+
+/*
+ * hash_update_hash_key -- change the hash key of an existing table entry
+ *
+ * This is equivalent to removing the entry, making a new entry, and copying
+ * over its data, except that the entry never goes to the table's freelist.
+ * Therefore this cannot suffer an out-of-memory failure, even if there are
+ * other processes operating in other partitions of the hashtable.
+ *
+ * Returns TRUE if successful, FALSE if the requested new hash key is already
+ * present.  Throws error if the specified entry pointer isn't actually a
+ * table member.
+ *
+ * NB: currently, there is no special case for old and new hash keys being
+ * identical, which means we'll report FALSE for that situation.  This is
+ * preferable for existing uses.
+ *
+ * NB: for a partitioned hashtable, caller must hold lock on both relevant
+ * partitions, if the new hash key would belong to a different partition.
+ */
+bool
+hash_update_hash_key(HTAB *hashp,
+					 void *existingEntry,
+					 const void *newKeyPtr)
+{
+	HASHELEMENT *existingElement = ELEMENT_FROM_KEY(existingEntry);
+	HASHHDR    *hctl = hashp->hctl;
+	uint32		newhashvalue;
+	Size		keysize;
+	uint32		bucket;
+	uint32		newbucket;
+	long		segment_num;
+	long		segment_ndx;
+	HASHSEGMENT segp;
+	HASHBUCKET	currBucket;
+	HASHBUCKET *prevBucketPtr;
+	HASHBUCKET *oldPrevPtr;
+	HashCompareFunc match;
+
+#if HASH_STATISTICS
+	hash_accesses++;
+	hctl->accesses++;
+#endif
+
+	/* disallow updates if frozen */
+	if (hashp->frozen)
+		elog(ERROR, "cannot update in frozen hashtable \"%s\"",
+			 hashp->tabname);
+
+	/*
+	 * Lookup the existing element using its saved hash value.	We need to do
+	 * this to be able to unlink it from its hash chain, but as a side benefit
+	 * we can verify the validity of the passed existingEntry pointer.
+	 */
+	bucket = calc_bucket(hctl, existingElement->hashvalue);
+
+	segment_num = bucket >> hashp->sshift;
+	segment_ndx = MOD(bucket, hashp->ssize);
+
+	segp = hashp->dir[segment_num];
+
+	if (segp == NULL)
+		hash_corrupted(hashp);
+
+	prevBucketPtr = &segp[segment_ndx];
+	currBucket = *prevBucketPtr;
+
+	while (currBucket != NULL)
+	{
+		if (currBucket == existingElement)
+			break;
+		prevBucketPtr = &(currBucket->link);
+		currBucket = *prevBucketPtr;
+	}
+
+	if (currBucket == NULL)
+		elog(ERROR, "hash_update_hash_key argument is not in hashtable \"%s\"",
+			 hashp->tabname);
+
+	oldPrevPtr = prevBucketPtr;
+
+	/*
+	 * Now perform the equivalent of a HASH_ENTER operation to locate the hash
+	 * chain we want to put the entry into.
+	 */
+	newhashvalue = hashp->hash(newKeyPtr, hashp->keysize);
+
+	newbucket = calc_bucket(hctl, newhashvalue);
+
+	segment_num = newbucket >> hashp->sshift;
+	segment_ndx = MOD(newbucket, hashp->ssize);
+
+	segp = hashp->dir[segment_num];
+
+	if (segp == NULL)
+		hash_corrupted(hashp);
+
+	prevBucketPtr = &segp[segment_ndx];
+	currBucket = *prevBucketPtr;
+
+	/*
+	 * Follow collision chain looking for matching key
+	 */
+	match = hashp->match;		/* save one fetch in inner loop */
+	keysize = hashp->keysize;	/* ditto */
+
+	while (currBucket != NULL)
+	{
+		if (currBucket->hashvalue == newhashvalue &&
+			match(ELEMENTKEY(currBucket), newKeyPtr, keysize) == 0)
+			break;
+		prevBucketPtr = &(currBucket->link);
+		currBucket = *prevBucketPtr;
+#if HASH_STATISTICS
+		hash_collisions++;
+		hctl->collisions++;
+#endif
+	}
+
+	if (currBucket != NULL)
+		return false;			/* collision with an existing entry */
+
+	currBucket = existingElement;
+
+	/*
+	 * If old and new hash values belong to the same bucket, we need not
+	 * change any chain links, and indeed should not since this simplistic
+	 * update will corrupt the list if currBucket is the last element.	(We
+	 * cannot fall out earlier, however, since we need to scan the bucket to
+	 * check for duplicate keys.)
+	 */
+	if (bucket != newbucket)
+	{
+		/* OK to remove record from old hash bucket's chain. */
+		*oldPrevPtr = currBucket->link;
+
+		/* link into new hashbucket chain */
+		*prevBucketPtr = currBucket;
+		currBucket->link = NULL;
+	}
+
+	/* copy new key into record */
+	currBucket->hashvalue = newhashvalue;
+	hashp->keycopy(ELEMENTKEY(currBucket), newKeyPtr, keysize);
+
+	/* rest of record is untouched */
+
+	return true;
 }
 
 /*
@@ -1408,9 +1569,30 @@ my_log2(long num)
 	int			i;
 	long		limit;
 
+	/* guard against too-large input, which would put us into infinite loop */
+	if (num > LONG_MAX / 2)
+		num = LONG_MAX / 2;
+
 	for (i = 0, limit = 1; limit < num; i++, limit <<= 1)
 		;
 	return i;
+}
+
+/* calculate first power of 2 >= num, bounded to what will fit in a long */
+static long
+next_pow2_long(long num)
+{
+	/* my_log2's internal range check is sufficient */
+	return 1L << my_log2(num);
+}
+
+/* calculate first power of 2 >= num, bounded to what will fit in an int */
+static int
+next_pow2_int(long num)
+{
+	if (num > INT_MAX / 2)
+		num = INT_MAX / 2;
+	return 1 << my_log2(num);
 }
 
 

@@ -1,16 +1,16 @@
 # German message translation file for plpython
-# Copyright (C) 2009 - 2012 PostgreSQL Global Development Group
+# Copyright (C) 2009 - 2013 PostgreSQL Global Development Group
 # This file is distributed under the same license as the PostgreSQL package.
-# Peter Eisentraut <peter_e@gmx.net>, 2009 - 2012.
+# Peter Eisentraut <peter_e@gmx.net>, 2009 - 2013.
 #
-# Use these quotes: »%s«
+# Use these quotes: „%s“
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PostgreSQL 9.2\n"
+"Project-Id-Version: PostgreSQL 9.3\n"
 "Report-Msgid-Bugs-To: pgsql-bugs@postgresql.org\n"
 "POT-Creation-Date: 2012-08-22 22:09+0000\n"
-"PO-Revision-Date: 2012-08-23 00:30-0400\n"
+"PO-Revision-Date: 2013-03-04 21:46-0500\n"
 "Last-Translator: Peter Eisentraut <peter_e@gmx.net>\n"
 "Language-Team: German <peter_e@gmx.net>\n"
 "Language: de\n"
@@ -94,7 +94,7 @@ msgstr "Fehler beim Auslesen des nächsten Elements vom Iterator"
 #: plpy_exec.c:164
 #, c-format
 msgid "PL/Python function with return type \"void\" did not return None"
-msgstr "PL/Python-Funktion mit Rückgabetyp »void« hat nicht None zurückgegeben"
+msgstr "PL/Python-Funktion mit Rückgabetyp „void“ hat nicht None zurückgegeben"
 
 #: plpy_exec.c:288 plpy_exec.c:314
 #, c-format
@@ -159,7 +159,7 @@ msgstr "Dictionary-Schlüssel auf Position %d in TD[\"new\"] ist keine Zeichenke
 #: plpy_exec.c:697
 #, c-format
 msgid "key \"%s\" found in TD[\"new\"] does not exist as a column in the triggering row"
-msgstr "in TD[\"new\"] gefundener Schlüssel »%s« existiert nicht als Spalte in der den Trigger auslösenden Zeile"
+msgstr "in TD[\"new\"] gefundener Schlüssel „%s“ existiert nicht als Spalte in der den Trigger auslösenden Zeile"
 
 #: plpy_exec.c:778
 #, c-format
@@ -194,7 +194,7 @@ msgstr "nicht abgefangener Fehler bei der Initialisierung"
 #: plpy_main.c:141
 #, c-format
 msgid "could not import \"__main__\" module"
-msgstr "konnte Modul »__main__« nicht importieren"
+msgstr "konnte Modul „__main__“ nicht importieren"
 
 #: plpy_main.c:146
 #, c-format
@@ -209,7 +209,7 @@ msgstr "konnte globale Objekte nicht initialisieren"
 #: plpy_main.c:347
 #, c-format
 msgid "PL/Python function \"%s\""
-msgstr "PL/Python-Funktion »%s«"
+msgstr "PL/Python-Funktion „%s“"
 
 #: plpy_main.c:354
 #, c-format
@@ -224,12 +224,12 @@ msgstr "plan.status nimmt keine Argumente"
 #: plpy_plpymodule.c:178 plpy_plpymodule.c:181
 #, c-format
 msgid "could not import \"plpy\" module"
-msgstr "konnte Modul »plpy« nicht importieren"
+msgstr "konnte Modul „plpy“ nicht importieren"
 
 #: plpy_plpymodule.c:196
 #, c-format
 msgid "could not add the spiexceptions module"
-msgstr "konnte das Modul »spiexceptions« nicht hinzufügen"
+msgstr "konnte das Modul „spiexceptions“ nicht hinzufügen"
 
 #: plpy_plpymodule.c:217
 #, c-format
@@ -268,7 +268,7 @@ msgstr "PL/Python-Funktionen können Typ %s nicht annehmen"
 #: plpy_procedure.c:377
 #, c-format
 msgid "could not compile PL/Python function \"%s\""
-msgstr "konnte PL/Python-Funktion »%s« nicht kompilieren"
+msgstr "konnte PL/Python-Funktion „%s“ nicht kompilieren"
 
 #: plpy_procedure.c:380
 #, c-format
@@ -388,7 +388,7 @@ msgstr "Rückgabewert von Funktion mit Array-Rückgabetyp ist keine Python-Seque
 #: plpy_typeio.c:886
 #, c-format
 msgid "key \"%s\" not found in mapping"
-msgstr "Schlüssel »%s« nicht in Mapping gefunden"
+msgstr "Schlüssel „%s“ nicht in Mapping gefunden"
 
 #: plpy_typeio.c:887
 #, c-format
@@ -403,7 +403,7 @@ msgstr "Länge der zurückgegebenen Sequenz hat nicht mit der Anzahl der Spalten
 #: plpy_typeio.c:1043
 #, c-format
 msgid "attribute \"%s\" does not exist in Python object"
-msgstr "Attribut »%s« existiert nicht in Python-Objekt"
+msgstr "Attribut „%s“ existiert nicht in Python-Objekt"
 
 #: plpy_typeio.c:1044
 #, c-format

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_restore
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "PG_RESTORE" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PG_RESTORE" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -165,7 +165,7 @@ Each job is one process or one thread, depending on the operating system, and us
 .sp
 The optimal value for this option depends on the hardware setup of the server, of the client, and of the network\&. Factors include the number of CPU cores and the disk setup\&. A good place to start is the number of CPU cores on the server, but values larger than that can also lead to faster restore times in many cases\&. Of course, values that are too high will lead to decreased performance because of thrashing\&.
 .sp
-Only the custom archive format is supported with this option\&. The input file must be a regular file (not, for example, a pipe)\&. This option is ignored when emitting a script rather than connecting directly to a database server\&. Also, multiple jobs cannot be used together with the option
+Only the custom and directory archive formats are supported with this option\&. The input must be a regular file or directory (not, for example, a pipe)\&. This option is ignored when emitting a script rather than connecting directly to a database server\&. Also, multiple jobs cannot be used together with the option
 \fB\-\-single\-transaction\fR\&.
 .RE
 .PP
@@ -243,14 +243,16 @@ in a different meaning\&.)
 .PP
 \fB\-S \fR\fB\fIusername\fR\fR, \fB\-\-superuser=\fR\fB\fIusername\fR\fR
 .RS 4
-Specify the superuser user name to use when disabling triggers\&. This is only relevant if
+Specify the superuser user name to use when disabling triggers\&. This is relevant only if
 \fB\-\-disable\-triggers\fR
 is used\&.
 .RE
 .PP
 \fB\-t \fR\fB\fItable\fR\fR, \fB\-\-table=\fR\fB\fItable\fR\fR
 .RS 4
-Restore definition and/or data of named table only\&. This can be combined with the
+Restore definition and/or data of named table only\&. Multiple tables may be specified with multiple
+\fB\-t\fR
+switches\&. This can be combined with the
 \fB\-n\fR
 option to specify a schema\&.
 .RE
@@ -286,14 +288,15 @@ Execute the restore as a single transaction (that is, wrap the emitted commands 
 .PP
 \fB\-\-disable\-triggers\fR
 .RS 4
-This option is only relevant when performing a data\-only restore\&. It instructs
+This option is relevant only when performing a data\-only restore\&. It instructs
 pg_restore
 to execute commands to temporarily disable triggers on the target tables while the data is reloaded\&. Use this if you have referential integrity checks or other triggers on the tables that you do not want to invoke during data reload\&.
 .sp
 Presently, the commands emitted for
 \fB\-\-disable\-triggers\fR
-must be done as superuser\&. So, you should also specify a superuser name with
-\fB\-S\fR, or preferably run
+must be done as superuser\&. So you should also specify a superuser name with
+\fB\-S\fR
+or, preferably, run
 pg_restore
 as a
 PostgreSQL
@@ -415,7 +418,9 @@ PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section 31.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section 31.14, \(lqEnvironment Variables\(rq, in the documentation)\&. However, it does not read
+\fBPGDATABASE\fR
+when a database name is not supplied\&.
 .SH "DIAGNOSTICS"
 .PP
 When a direct database connection is specified using the

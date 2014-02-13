@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: EXPLAIN
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "EXPLAIN" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "EXPLAIN" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -60,7 +60,7 @@ clause, the planner makes an appropriate interpolation between the endpoint cost
 .PP
 The
 ANALYZE
-option causes the statement to be actually executed, not only planned\&. Then actual runtime statistics are added to the display, including the total elapsed time expended within each plan node (in milliseconds) and the total number of rows it actually returned\&. This is useful for seeing whether the planner\*(Aqs estimates are close to reality\&.
+option causes the statement to be actually executed, not only planned\&. Then actual run time statistics are added to the display, including the total elapsed time expended within each plan node (in milliseconds) and the total number of rows it actually returned\&. This is useful for seeing whether the planner\*(Aqs estimates are close to reality\&.
 .if n \{\
 .sp
 .\}
@@ -147,9 +147,9 @@ FALSE\&.
 .PP
 TIMING
 .RS 4
-Include the actual startup time and time spent in the node in the output\&. The overhead of repeatedly reading the system clock can slow down the query significantly on some systems, so it may be useful to set this parameter to
+Include actual startup time and time spent in each node in the output\&. The overhead of repeatedly reading the system clock can slow down the query significantly on some systems, so it may be useful to set this parameter to
 FALSE
-when only actual row counts, and not exact times, are needed\&. This parameter may only be used when
+when only actual row counts, and not exact times, are needed\&. Run time of the entire statement is always measured, even when node\-level timing is turned off with this option\&. This parameter may only be used when
 ANALYZE
 is also enabled\&. It defaults to
 TRUE\&.

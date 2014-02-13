@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -527,9 +527,9 @@ CLASS="PARAMETER"
 CLASS="TYPE"
 >text</TT
 >,
-              <TT
+       <TT
 CLASS="PARAMETER"
->type</TT
+>format</TT
 > <TT
 CLASS="TYPE"
 >text</TT
@@ -543,14 +543,14 @@ CLASS="TYPE"
 >bytea</TT
 ></TD
 ><TD
->       Decode binary string from <TT
+>       Decode binary data from textual representation in <TT
 CLASS="PARAMETER"
 >string</TT
-> previously
-       encoded with <CODE
-CLASS="FUNCTION"
->encode</CODE
->.  Parameter type is same as in <CODE
+>.
+       Options for <TT
+CLASS="PARAMETER"
+>format</TT
+> are same as in <CODE
 CLASS="FUNCTION"
 >encode</CODE
 >.
@@ -575,14 +575,14 @@ CLASS="LITERAL"
 CLASS="FUNCTION"
 >encode(<TT
 CLASS="PARAMETER"
->string</TT
+>data</TT
 > <TT
 CLASS="TYPE"
 >bytea</TT
 >,
-              <TT
+       <TT
 CLASS="PARAMETER"
->type</TT
+>format</TT
 > <TT
 CLASS="TYPE"
 >text</TT
@@ -596,11 +596,8 @@ CLASS="TYPE"
 >text</TT
 ></TD
 ><TD
->       Encode binary string to <ACRONYM
-CLASS="ACRONYM"
->ASCII</ACRONYM
->-only representation.  Supported
-       types are: <TT
+>       Encode binary data into a textual representation.  Supported
+       formats are: <TT
 CLASS="LITERAL"
 >base64</TT
 >, <TT
@@ -610,6 +607,20 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >escape</TT
 >.
+       <TT
+CLASS="LITERAL"
+>escape</TT
+> converts zero bytes and high-bit-set bytes to
+       octal sequences (<TT
+CLASS="LITERAL"
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>nnn</I
+></TT
+>) and
+       doubles backslashes.
       </TD
 ><TD
 ><TT

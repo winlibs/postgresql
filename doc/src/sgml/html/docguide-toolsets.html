@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Documentation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -286,7 +286,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146304"
+NAME="AEN154255"
 >J.2.1. <SPAN
 CLASS="PRODUCTNAME"
 >Linux</SPAN
@@ -319,11 +319,17 @@ CLASS="FILENAME"
     (or <TT
 CLASS="FILENAME"
 >jade</TT
->).  Possibly
-    <TT
+>).  You may also need <TT
 CLASS="FILENAME"
 >sgml-tools</TT
-> will be needed as well.  If your
+>
+    and either <TT
+CLASS="FILENAME"
+>xsltproc</TT
+> or <TT
+CLASS="FILENAME"
+>libxslt</TT
+>.  If your
     distributor does not provide these then you should be able to make
     use of the packages from some other, reasonably compatible vendor.
    </P
@@ -333,7 +339,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146316"
+NAME="AEN154269"
 >J.2.2. FreeBSD Installation</A
 ></H2
 ><P
@@ -405,8 +411,9 @@ CLASS="FILENAME"
     in <TT
 CLASS="FILENAME"
 >/usr/local/share/sgml/catalog.ports</TT
-> or order
-    isn't proper .  Be sure to have the following lines in beginning of file:
+> or that the
+    order isn't proper.  Be sure to have the following lines in the beginning
+    of the file:
 </P><PRE
 CLASS="PROGRAMLISTING"
 >CATALOG "openjade/catalog"
@@ -435,7 +442,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146346"
+NAME="AEN154299"
 >J.2.3. Debian Packages</A
 ></H2
 ><P
@@ -456,8 +463,24 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146351"
->J.2.4. Manual Installation from Source</A
+NAME="AEN154304"
+>J.2.4. Mac OS X</A
+></H2
+><P
+>    If you use MacPorts, the following will get you set up:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>sudo port install docbook-dsssl docbook-sgml-4.2 docbook-xml-4.2 docbook-xsl libxslt openjade opensp</PRE
+><P>
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN154308"
+>J.2.5. Manual Installation from Source</A
 ></H2
 ><P
 >    The manual installation process of the DocBook tools is somewhat
@@ -478,8 +501,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN146356"
->J.2.4.1. Installing OpenJade</A
+NAME="AEN154313"
+>J.2.5.1. Installing OpenJade</A
 ></H3
 ><DIV
 CLASS="PROCEDURE"
@@ -604,8 +627,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN146383"
->J.2.4.2. Installing the <SPAN
+NAME="AEN154340"
+>J.2.5.2. Installing the <SPAN
 CLASS="PRODUCTNAME"
 >DocBook</SPAN
 > <ACRONYM
@@ -738,8 +761,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN146419"
->J.2.4.3. Installing the DocBook <ACRONYM
+NAME="AEN154376"
+>J.2.5.3. Installing the DocBook <ACRONYM
 CLASS="ACRONYM"
 >DSSSL</ACRONYM
 > Style Sheets</A
@@ -804,7 +827,7 @@ CLASS="PRODUCTNAME"
 > doesn't use this catalog
      entry.  See <A
 HREF="docguide-toolsets.html#DOCGUIDE-TOOLSETS-CONFIGURE"
->Section J.2.5</A
+>Section J.2.6</A
 > for
      information about how to select the stylesheets instead.
     </P
@@ -814,8 +837,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN146437"
->J.2.4.4. Installing <SPAN
+NAME="AEN154394"
+>J.2.5.4. Installing <SPAN
 CLASS="PRODUCTNAME"
 >JadeTeX</SPAN
 ></A
@@ -1000,7 +1023,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="DOCGUIDE-TOOLSETS-CONFIGURE"
->J.2.5. Detection by <TT
+>J.2.6. Detection by <TT
 CLASS="COMMAND"
 >configure</TT
 ></A

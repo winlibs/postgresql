@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETRIGGER"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN71218"
+NAME="AEN73728"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN71218"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN71223"
+NAME="AEN73733"
 ></A
 ><H2
 >Synopsis</H2
@@ -178,7 +178,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN71235"
+NAME="AEN73745"
 ></A
 ><H2
 >Description</H2
@@ -526,7 +526,7 @@ HREF="triggers.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN71334"
+NAME="AEN73844"
 ></A
 ><H2
 >Parameters</H2
@@ -1099,7 +1099,8 @@ CLASS="PRODUCTNAME"
    <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
-> standard. The following functionality is currently missing:
+> standard. The following functionalities are currently
+   missing:
 
    <P
 ></P
@@ -1126,6 +1127,27 @@ CLASS="PRODUCTNAME"
       allows trigger procedures to be written in any number of
       user-defined languages, access to the data is handled in a
       language-specific way.
+     </P
+></LI
+><LI
+><P
+>      <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> does not allow the old and new
+      tables to be referenced in statement-level triggers, i.e., the tables
+      that contain all the old and/or new rows, which are referred to by the
+      <TT
+CLASS="LITERAL"
+>OLD TABLE</TT
+> and <TT
+CLASS="LITERAL"
+>NEW TABLE</TT
+> clauses in
+      the <ACRONYM
+CLASS="ACRONYM"
+>SQL</ACRONYM
+> standard.
      </P
 ></LI
 ><LI
@@ -1227,19 +1249,19 @@ CLASS="ACRONYM"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN71527"
+NAME="AEN74043"
 ></A
 ><H2
 >See Also</H2
 ><A
-HREF="sql-createfunction.html"
->CREATE FUNCTION</A
->, <A
 HREF="sql-altertrigger.html"
 >ALTER TRIGGER</A
 >, <A
 HREF="sql-droptrigger.html"
 >DROP TRIGGER</A
+>, <A
+HREF="sql-createfunction.html"
+>CREATE FUNCTION</A
 >, <A
 HREF="sql-set-constraints.html"
 >SET CONSTRAINTS</A

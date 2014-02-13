@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-PREPARE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN76032"
+NAME="AEN78737"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN76032"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN76040"
+NAME="AEN78745"
 ></A
 ><H2
 >Synopsis</H2
@@ -129,7 +129,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76045"
+NAME="AEN78750"
 ></A
 ><H2
 >Description</H2
@@ -206,7 +206,7 @@ HREF="sql-deallocate.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76060"
+NAME="AEN78765"
 ></A
 ><H2
 >Parameters</H2
@@ -290,7 +290,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76086"
+NAME="AEN78791"
 ></A
 ><H2
 >Notes</H2
@@ -336,6 +336,42 @@ HREF="sql-analyze.html"
 >ANALYZE</A
 >
    documentation.
+  </P
+><P
+>   Although the main point of a prepared statement is to avoid repeated parse
+   analysis and planning of the statement, <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> will
+   force re-analysis and re-planning of the statement before using it
+   whenever database objects used in the statement have undergone
+   definitional (DDL) changes since the previous use of the prepared
+   statement.  Also, if the value of <A
+HREF="runtime-config-client.html#GUC-SEARCH-PATH"
+>search_path</A
+> changes
+   from one use to the next, the statement will be re-parsed using the new
+   <TT
+CLASS="VARNAME"
+>search_path</TT
+>.  (This latter behavior is new as of
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.3.)  These rules make use of a
+   prepared statement semantically almost equivalent to re-submitting the
+   same query text over and over, but with a performance benefit if no object
+   definitions are changed, especially if the best plan remains the same
+   across uses.  An example of a case where the semantic equivalence is not
+   perfect is that if the statement refers to a table by an unqualified name,
+   and then a new table of the same name is created in a schema appearing
+   earlier in the <TT
+CLASS="VARNAME"
+>search_path</TT
+>, no automatic re-parse will occur
+   since no object used in the statement changed.  However, if some other
+   change forces a re-parse, the new table will be referenced in subsequent
+   uses.
   </P
 ><P
 >   You can see all prepared statements available in the session by querying the
@@ -393,7 +429,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76109"
+NAME="AEN78820"
 ></A
 ><H2
 >Compatibility</H2
@@ -413,7 +449,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76114"
+NAME="AEN78825"
 ></A
 ><H2
 >See Also</H2

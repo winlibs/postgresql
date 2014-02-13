@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Embedded SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="ECPG-SQL-VAR"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN45271"
+NAME="AEN46126"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN45271"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN45274"
+NAME="AEN46129"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN45278"
+NAME="AEN46133"
 ></A
 ><H2
 >Description</H2
@@ -132,15 +132,15 @@ NAME="AEN45278"
 >     The <TT
 CLASS="COMMAND"
 >VAR</TT
-> command defines a host variable.  It
-     is equivalent to an ordinary C variable definition inside a
-     declare section.
+> command assigns a new C data type
+     to a host variable.  The host variable must be previously
+     declared in a declare section.
     </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN45282"
+NAME="AEN46137"
 ></A
 ><H2
 >Parameters</H2
@@ -179,19 +179,21 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN45295"
+NAME="AEN46150"
 ></A
 ><H2
 >Examples</H2
 ><PRE
 CLASS="PROGRAMLISTING"
->EXEC SQL VAR vc IS VARCHAR[10];
-EXEC SQL VAR boolvar IS bool;</PRE
+>Exec sql begin declare section;
+short a;
+exec sql end declare section;
+EXEC SQL VAR a IS int;</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN45298"
+NAME="AEN46153"
 ></A
 ><H2
 >Compatibility</H2

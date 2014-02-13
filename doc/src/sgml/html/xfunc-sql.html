@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -118,8 +118,8 @@ CLASS="LITERAL"
     to return no rows at all, the null value will be returned.
    </P
 ><P
->    Alternatively, an SQL function can be declared to return a set,
-    by specifying the function's return type as <TT
+>    Alternatively, an SQL function can be declared to return a set (that is,
+    multiple rows) by specifying the function's return type as <TT
 CLASS="LITERAL"
 >SETOF
     <TT
@@ -1292,21 +1292,23 @@ CLASS="TYPE"
 >.
     </P
 ><P
->     Currently, functions returning sets can also be called in the select list
-     of a query.  For each row that the query
-     generates by itself, the function returning set is invoked, and an output
-     row is generated for each element of the function's result set. Note,
-     however, that this capability is deprecated and might be removed in future
-     releases. The following is an example function returning a set from the
-     select list:
+>     It is frequently useful to construct a query's result by invoking a
+     set-returning function multiple times, with the parameters for each
+     invocation coming from successive rows of a table or subquery.  The
+     preferred way to do this is to use the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> key word,
+     which is described in <A
+HREF="queries-table-expressions.html#QUERIES-LATERAL"
+>Section 7.2.1.5</A
+>.
+     Here is an example using a set-returning function to enumerate
+     elements of a tree structure:
 
 </P><PRE
 CLASS="SCREEN"
->CREATE FUNCTION listchildren(text) RETURNS SETOF text AS $$
-    SELECT name FROM nodes WHERE parent = $1
-$$ LANGUAGE SQL;
-
-SELECT * FROM nodes;
+>SELECT * FROM nodes;
    name    | parent
 -----------+--------
  Top       |
@@ -1317,7 +1319,45 @@ SELECT * FROM nodes;
  SubChild2 | Child1
 (6 rows)
 
-SELECT listchildren('Top');
+CREATE FUNCTION listchildren(text) RETURNS SETOF text AS $$
+    SELECT name FROM nodes WHERE parent = $1
+$$ LANGUAGE SQL STABLE;
+
+SELECT * FROM listchildren('Top');
+ listchildren
+--------------
+ Child1
+ Child2
+ Child3
+(3 rows)
+
+SELECT name, child FROM nodes, LATERAL listchildren(name) AS child;
+  name  |   child
+--------+-----------
+ Top    | Child1
+ Top    | Child2
+ Top    | Child3
+ Child1 | SubChild1
+ Child1 | SubChild2
+(5 rows)</PRE
+><P>
+
+     This example does not do anything that we couldn't have done with a
+     simple join, but in more complex calculations the option to put
+     some of the work into a function can be quite convenient.
+    </P
+><P
+>     Currently, functions returning sets can also be called in the select list
+     of a query.  For each row that the query
+     generates by itself, the function returning set is invoked, and an output
+     row is generated for each element of the function's result set. Note,
+     however, that this capability is deprecated and might be removed in future
+     releases. The previous example could also be done with queries like
+     these:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT listchildren('Top');
  listchildren
 --------------
  Child1
@@ -1351,7 +1391,12 @@ CLASS="LITERAL"
 CLASS="FUNCTION"
 >listchildren</CODE
 > returns an empty set
-     for those arguments, so no result rows are generated.
+     for those arguments, so no result rows are generated.  This is the same
+     behavior as we got from an inner join to the function result when using
+     the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> syntax.
     </P
 ><DIV
 CLASS="NOTE"
@@ -1385,6 +1430,30 @@ CLASS="LITERAL"
 >
       clause are silently dropped, but the commanded table modifications
       still happen (and are all completed before returning from the function).
+     </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>      The key problem with using set-returning functions in the select list,
+      rather than the <TT
+CLASS="LITERAL"
+>FROM</TT
+> clause, is that putting more than one
+      set-returning function in the same select list does not behave very
+      sensibly.  (What you actually get if you do so is a number of output
+      rows equal to the least common multiple of the numbers of rows produced
+      by each set-returning function.)  The <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> syntax
+      produces less surprising results when calling multiple set-returning
+      functions, and should usually be used instead.
      </P
 ></BLOCKQUOTE
 ></DIV
@@ -1467,7 +1536,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN52052"
+NAME="AEN52916"
 >35.4.10. Polymorphic <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
@@ -1621,7 +1690,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN52078"
+NAME="AEN52942"
 >35.4.11. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM

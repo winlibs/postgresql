@@ -215,6 +215,22 @@ sql_help_ALTER_DOMAIN(PQExpBuffer buf)
 }
 
 void
+sql_help_ALTER_EVENT_TRIGGER(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "ALTER EVENT TRIGGER %s DISABLE\n"
+					  "ALTER EVENT TRIGGER %s ENABLE [ REPLICA | ALWAYS ]\n"
+					  "ALTER EVENT TRIGGER %s OWNER TO %s\n"
+					  "ALTER EVENT TRIGGER %s RENAME TO %s",
+					  _("name"),
+					  _("name"),
+					  _("name"),
+					  _("new_owner"),
+					  _("name"),
+					  _("new_name"));
+}
+
+void
 sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
@@ -230,9 +246,11 @@ sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 					  "  COLLATION %s |\n"
 					  "  CONVERSION %s |\n"
 					  "  DOMAIN %s |\n"
+					  "  EVENT TRIGGER %s |\n"
 					  "  FOREIGN DATA WRAPPER %s |\n"
 					  "  FOREIGN TABLE %s |\n"
 					  "  FUNCTION %s ( [ [ %s ] [ %s ] %s [, ...] ] ) |\n"
+					  "  MATERIALIZED VIEW %s |\n"
 					  "  OPERATOR %s (%s, %s) |\n"
 					  "  OPERATOR CLASS %s USING %s |\n"
 					  "  OPERATOR FAMILY %s USING %s |\n"
@@ -265,10 +283,12 @@ sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
+					  _("object_name"),
 					  _("function_name"),
 					  _("argmode"),
 					  _("argname"),
 					  _("argtype"),
+					  _("object_name"),
 					  _("operator_name"),
 					  _("left_type"),
 					  _("right_type"),
@@ -325,9 +345,11 @@ sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "    ADD [ COLUMN ] %s %s [ NULL | NOT NULL ]\n"
+					  "    ADD [ COLUMN ] %s %s [ COLLATE %s ] [ %s [ ... ] ]\n"
 					  "    DROP [ COLUMN ] [ IF EXISTS ] %s [ RESTRICT | CASCADE ]\n"
 					  "    ALTER [ COLUMN ] %s [ SET DATA ] TYPE %s\n"
+					  "    ALTER [ COLUMN ] %s SET DEFAULT %s\n"
+					  "    ALTER [ COLUMN ] %s DROP DEFAULT\n"
 					  "    ALTER [ COLUMN ] %s { SET | DROP } NOT NULL\n"
 					  "    ALTER [ COLUMN ] %s SET STATISTICS %s\n"
 					  "    ALTER [ COLUMN ] %s SET ( %s = %s [, ... ] )\n"
@@ -347,9 +369,14 @@ sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf)
 					  _("where action is one of:"),
 					  _("column_name"),
 					  _("data_type"),
+					  _("collation"),
+					  _("column_constraint"),
 					  _("column_name"),
 					  _("column_name"),
 					  _("data_type"),
+					  _("column_name"),
+					  _("expression"),
+					  _("column_name"),
 					  _("column_name"),
 					  _("column_name"),
 					  _("integer"),
@@ -476,6 +503,57 @@ sql_help_ALTER_LARGE_OBJECT(PQExpBuffer buf)
 }
 
 void
+sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "ALTER MATERIALIZED VIEW [ IF EXISTS ] %s\n"
+					  "    %s [, ... ]\n"
+					  "ALTER MATERIALIZED VIEW [ IF EXISTS ] %s\n"
+					  "    RENAME [ COLUMN ] %s TO %s\n"
+					  "ALTER MATERIALIZED VIEW [ IF EXISTS ] %s\n"
+					  "    RENAME TO %s\n"
+					  "ALTER MATERIALIZED VIEW [ IF EXISTS ] %s\n"
+					  "    SET SCHEMA %s\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    ALTER [ COLUMN ] %s SET STATISTICS %s\n"
+					  "    ALTER [ COLUMN ] %s SET ( %s = %s [, ... ] )\n"
+					  "    ALTER [ COLUMN ] %s RESET ( %s [, ... ] )\n"
+					  "    ALTER [ COLUMN ] %s SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }\n"
+					  "    CLUSTER ON %s\n"
+					  "    SET WITHOUT CLUSTER\n"
+					  "    SET ( %s = %s [, ... ] )\n"
+					  "    RESET ( %s [, ... ] )\n"
+					  "    OWNER TO %s\n"
+					  "    SET TABLESPACE %s",
+					  _("name"),
+					  _("action"),
+					  _("name"),
+					  _("column_name"),
+					  _("new_column_name"),
+					  _("name"),
+					  _("new_name"),
+					  _("name"),
+					  _("new_schema"),
+					  _("where action is one of:"),
+					  _("column_name"),
+					  _("integer"),
+					  _("column_name"),
+					  _("attribute_option"),
+					  _("value"),
+					  _("column_name"),
+					  _("attribute_option"),
+					  _("column_name"),
+					  _("index_name"),
+					  _("storage_parameter"),
+					  _("value"),
+					  _("storage_parameter"),
+					  _("new_owner"),
+					  _("new_tablespace"));
+}
+
+void
 sql_help_ALTER_OPERATOR(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
@@ -577,9 +655,9 @@ sql_help_ALTER_ROLE(PQExpBuffer buf)
 					  "ALTER ROLE %s RENAME TO %s\n"
 					  "\n"
 					  "ALTER ROLE %s [ IN DATABASE %s ] SET %s { TO | = } { %s | DEFAULT }\n"
-					  "ALTER ROLE %s [ IN DATABASE %s ] SET %s FROM CURRENT\n"
-					  "ALTER ROLE %s [ IN DATABASE %s ] RESET %s\n"
-					  "ALTER ROLE %s [ IN DATABASE %s ] RESET ALL",
+					  "ALTER ROLE { %s | ALL } [ IN DATABASE %s ] SET %s FROM CURRENT\n"
+					  "ALTER ROLE { %s | ALL } [ IN DATABASE %s ] RESET %s\n"
+					  "ALTER ROLE { %s | ALL } [ IN DATABASE %s ] RESET ALL",
 					  _("name"),
 					  _("option"),
 					  _("where option can be:"),
@@ -600,6 +678,16 @@ sql_help_ALTER_ROLE(PQExpBuffer buf)
 					  _("configuration_parameter"),
 					  _("name"),
 					  _("database_name"));
+}
+
+void
+sql_help_ALTER_RULE(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "ALTER RULE %s ON %s RENAME TO %s",
+					  _("name"),
+					  _("table_name"),
+					  _("new_name"));
 }
 
 void
@@ -899,10 +987,10 @@ sql_help_ALTER_TYPE(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "ALTER TYPE %s %s [, ... ]\n"
 					  "ALTER TYPE %s OWNER TO %s\n"
-					  "ALTER TYPE %s RENAME ATTRIBUTE %s TO %s\n"
-					  "ALTER TYPE %s RENAME TO %s [ CASCADE | RESTRICT ]\n"
+					  "ALTER TYPE %s RENAME ATTRIBUTE %s TO %s [ CASCADE | RESTRICT ]\n"
+					  "ALTER TYPE %s RENAME TO %s\n"
 					  "ALTER TYPE %s SET SCHEMA %s\n"
-					  "ALTER TYPE %s ADD VALUE %s [ { BEFORE | AFTER } %s ]\n"
+					  "ALTER TYPE %s ADD VALUE [ IF NOT EXISTS ] %s [ { BEFORE | AFTER } %s ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -1082,11 +1170,13 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  "  DATABASE %s |\n"
 					  "  DOMAIN %s |\n"
 					  "  EXTENSION %s |\n"
+					  "  EVENT TRIGGER %s |\n"
 					  "  FOREIGN DATA WRAPPER %s |\n"
 					  "  FOREIGN TABLE %s |\n"
 					  "  FUNCTION %s ( [ [ %s ] [ %s ] %s [, ...] ] ) |\n"
 					  "  INDEX %s |\n"
 					  "  LARGE OBJECT %s |\n"
+					  "  MATERIALIZED VIEW %s |\n"
 					  "  OPERATOR %s (%s, %s) |\n"
 					  "  OPERATOR CLASS %s USING %s |\n"
 					  "  OPERATOR FAMILY %s USING %s |\n"
@@ -1121,12 +1211,14 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
+					  _("object_name"),
 					  _("function_name"),
 					  _("argmode"),
 					  _("argname"),
 					  _("argtype"),
 					  _("object_name"),
 					  _("large_object_oid"),
+					  _("object_name"),
 					  _("operator_name"),
 					  _("left_type"),
 					  _("right_type"),
@@ -1174,36 +1266,40 @@ sql_help_COPY(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "COPY %s [ ( %s [, ...] ) ]\n"
-					  "    FROM { '%s' | STDIN }\n"
+					  "    FROM { '%s' | PROGRAM '%s' | STDIN }\n"
 					  "    [ [ WITH ] ( %s [, ...] ) ]\n"
 					  "\n"
 					  "COPY { %s [ ( %s [, ...] ) ] | ( %s ) }\n"
-					  "    TO { '%s' | STDOUT }\n"
+					  "    TO { '%s' | PROGRAM '%s' | STDOUT }\n"
 					  "    [ [ WITH ] ( %s [, ...] ) ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
 					  "    FORMAT %s\n"
 					  "    OIDS [ %s ]\n"
+					  "    FREEZE [ %s ]\n"
 					  "    DELIMITER '%s'\n"
 					  "    NULL '%s'\n"
 					  "    HEADER [ %s ]\n"
 					  "    QUOTE '%s'\n"
 					  "    ESCAPE '%s'\n"
 					  "    FORCE_QUOTE { ( %s [, ...] ) | * }\n"
-					  "    FORCE_NOT_NULL ( %s [, ...] ) |\n"
+					  "    FORCE_NOT_NULL ( %s [, ...] )\n"
 					  "    ENCODING '%s'",
 					  _("table_name"),
 					  _("column_name"),
 					  _("filename"),
+					  _("command"),
 					  _("option"),
 					  _("table_name"),
 					  _("column_name"),
 					  _("query"),
 					  _("filename"),
+					  _("command"),
 					  _("option"),
 					  _("where option can be one of:"),
 					  _("format_name"),
+					  _("boolean"),
 					  _("boolean"),
 					  _("delimiter_character"),
 					  _("null_string"),
@@ -1355,6 +1451,20 @@ sql_help_CREATE_DOMAIN(PQExpBuffer buf)
 }
 
 void
+sql_help_CREATE_EVENT_TRIGGER(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "CREATE EVENT TRIGGER %s\n"
+					  "  ON %s\n"
+					  "  [ WHEN %s IN (filter_value [, ... ]) [ AND ... ] ]\n"
+					  "  EXECUTE PROCEDURE %s()",
+					  _("name"),
+					  _("event"),
+					  _("filter_variable"),
+					  _("function_name"));
+}
+
+void
 sql_help_CREATE_EXTENSION(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
@@ -1388,19 +1498,31 @@ sql_help_CREATE_FOREIGN_TABLE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE FOREIGN TABLE [ IF NOT EXISTS ] %s ( [\n"
-					  "  { %s %s [ OPTIONS ( %s '%s' [, ... ] ) ] [ NULL | NOT NULL ] }\n"
+					  "    %s %s [ OPTIONS ( %s '%s' [, ... ] ) ] [ COLLATE %s ] [ %s [ ... ] ]\n"
 					  "    [, ... ]\n"
 					  "] )\n"
 					  "  SERVER %s\n"
-					  "[ OPTIONS ( %s '%s' [, ... ] ) ]",
+					  "[ OPTIONS ( %s '%s' [, ... ] ) ]\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "[ CONSTRAINT %s ]\n"
+					  "{ NOT NULL |\n"
+					  "  NULL |\n"
+					  "  DEFAULT %s }",
 					  _("table_name"),
 					  _("column_name"),
 					  _("data_type"),
 					  _("option"),
 					  _("value"),
+					  _("collation"),
+					  _("column_constraint"),
 					  _("server_name"),
 					  _("option"),
-					  _("value"));
+					  _("value"),
+					  _("where column_constraint is:"),
+					  _("constraint_name"),
+					  _("default_expr"));
 }
 
 void
@@ -1512,6 +1634,24 @@ sql_help_CREATE_LANGUAGE(PQExpBuffer buf)
 					  _("call_handler"),
 					  _("inline_handler"),
 					  _("valfunction"));
+}
+
+void
+sql_help_CREATE_MATERIALIZED_VIEW(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "CREATE MATERIALIZED VIEW %s\n"
+					  "    [ (%s [, ...] ) ]\n"
+					  "    [ WITH ( %s [= %s] [, ... ] ) ]\n"
+					  "    [ TABLESPACE %s ]\n"
+					  "    AS %s\n"
+					  "    [ WITH [ NO ] DATA ]",
+					  _("table_name"),
+					  _("column_name"),
+					  _("storage_parameter"),
+					  _("value"),
+					  _("tablespace_name"),
+					  _("query"));
 }
 
 void
@@ -1630,12 +1770,17 @@ sql_help_CREATE_SCHEMA(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE SCHEMA %s [ AUTHORIZATION %s ] [ %s [ ... ] ]\n"
-					  "CREATE SCHEMA AUTHORIZATION %s [ %s [ ... ] ]",
+					  "CREATE SCHEMA AUTHORIZATION %s [ %s [ ... ] ]\n"
+					  "CREATE SCHEMA IF NOT EXISTS %s [ AUTHORIZATION %s ]\n"
+					  "CREATE SCHEMA IF NOT EXISTS AUTHORIZATION %s",
 					  _("schema_name"),
 					  _("user_name"),
 					  _("schema_element"),
 					  _("user_name"),
-					  _("schema_element"));
+					  _("schema_element"),
+					  _("schema_name"),
+					  _("user_name"),
+					  _("user_name"));
 }
 
 void
@@ -2035,7 +2180,7 @@ void
 sql_help_CREATE_VIEW(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] VIEW %s [ ( %s [, ...] ) ]\n"
+					  "CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] [ RECURSIVE ] VIEW %s [ ( %s [, ...] ) ]\n"
 					  "    [ WITH ( %s [= %s] [, ... ] ) ]\n"
 					  "    AS %s",
 					  _("name"),
@@ -2149,6 +2294,14 @@ sql_help_DROP_DOMAIN(PQExpBuffer buf)
 }
 
 void
+sql_help_DROP_EVENT_TRIGGER(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "DROP EVENT TRIGGER [ IF EXISTS ] %s [ CASCADE | RESTRICT ]",
+					  _("name"));
+}
+
+void
 sql_help_DROP_EXTENSION(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
@@ -2205,6 +2358,14 @@ sql_help_DROP_LANGUAGE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "DROP [ PROCEDURAL ] LANGUAGE [ IF EXISTS ] %s [ CASCADE | RESTRICT ]",
+					  _("name"));
+}
+
+void
+sql_help_DROP_MATERIALIZED_VIEW(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "DROP MATERIALIZED VIEW [ IF EXISTS ] %s [, ...] [ CASCADE | RESTRICT ]",
 					  _("name"));
 }
 
@@ -2667,6 +2828,15 @@ sql_help_REASSIGN_OWNED(PQExpBuffer buf)
 }
 
 void
+sql_help_REFRESH_MATERIALIZED_VIEW(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "REFRESH MATERIALIZED VIEW %s\n"
+					  "    [ WITH [ NO ] DATA ]",
+					  _("name"));
+}
+
+void
 sql_help_REINDEX(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
@@ -2862,9 +3032,11 @@ sql_help_SECURITY_LABEL(PQExpBuffer buf)
 					  "  AGGREGATE %s (%s [, ...] ) |\n"
 					  "  DATABASE %s |\n"
 					  "  DOMAIN %s |\n"
+					  "  EVENT TRIGGER %s |\n"
 					  "  FOREIGN TABLE %s\n"
 					  "  FUNCTION %s ( [ [ %s ] [ %s ] %s [, ...] ] ) |\n"
 					  "  LARGE OBJECT %s |\n"
+					  "  MATERIALIZED VIEW %s |\n"
 					  "  [ PROCEDURAL ] LANGUAGE %s |\n"
 					  "  ROLE %s |\n"
 					  "  SCHEMA %s |\n"
@@ -2882,11 +3054,13 @@ sql_help_SECURITY_LABEL(PQExpBuffer buf)
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
+					  _("object_name"),
 					  _("function_name"),
 					  _("argmode"),
 					  _("argname"),
 					  _("argtype"),
 					  _("large_object_oid"),
+					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
@@ -2914,15 +3088,15 @@ sql_help_SELECT(PQExpBuffer buf)
 					  "    [ LIMIT { %s | ALL } ]\n"
 					  "    [ OFFSET %s [ ROW | ROWS ] ]\n"
 					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } ONLY ]\n"
-					  "    [ FOR { UPDATE | SHARE } [ OF %s [, ...] ] [ NOWAIT ] [...] ]\n"
+					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT ] [...] ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
 					  "    [ ONLY ] %s [ * ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
+					  "    [ LATERAL ] ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
 					  "    %s [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    %s ( [ %s [, ...] ] ) [ AS ] %s [ ( %s [, ...] | %s [, ...] ) ]\n"
-					  "    %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) [ AS ] %s [ ( %s [, ...] | %s [, ...] ) ]\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
 					  "    %s [ NATURAL ] %s %s [ ON %s | USING ( %s [, ...] ) ]\n"
 					  "\n"
 					  "%s\n"
@@ -3120,15 +3294,15 @@ sql_help_TABLE(PQExpBuffer buf)
 					  "    [ LIMIT { %s | ALL } ]\n"
 					  "    [ OFFSET %s [ ROW | ROWS ] ]\n"
 					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } ONLY ]\n"
-					  "    [ FOR { UPDATE | SHARE } [ OF %s [, ...] ] [ NOWAIT ] [...] ]\n"
+					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT ] [...] ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
 					  "    [ ONLY ] %s [ * ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
+					  "    [ LATERAL ] ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
 					  "    %s [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    %s ( [ %s [, ...] ] ) [ AS ] %s [ ( %s [, ...] | %s [, ...] ) ]\n"
-					  "    %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) [ AS ] %s [ ( %s [, ...] | %s [, ...] ) ]\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
 					  "    %s [ NATURAL ] %s %s [ ON %s | USING ( %s [, ...] ) ]\n"
 					  "\n"
 					  "%s\n"
@@ -3277,15 +3451,15 @@ sql_help_WITH(PQExpBuffer buf)
 					  "    [ LIMIT { %s | ALL } ]\n"
 					  "    [ OFFSET %s [ ROW | ROWS ] ]\n"
 					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } ONLY ]\n"
-					  "    [ FOR { UPDATE | SHARE } [ OF %s [, ...] ] [ NOWAIT ] [...] ]\n"
+					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT ] [...] ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
 					  "    [ ONLY ] %s [ * ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
+					  "    [ LATERAL ] ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
 					  "    %s [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    %s ( [ %s [, ...] ] ) [ AS ] %s [ ( %s [, ...] | %s [, ...] ) ]\n"
-					  "    %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) [ AS ] %s [ ( %s [, ...] | %s [, ...] ) ]\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
 					  "    %s [ NATURAL ] %s %s [ ON %s | USING ( %s [, ...] ) ]\n"
 					  "\n"
 					  "%s\n"

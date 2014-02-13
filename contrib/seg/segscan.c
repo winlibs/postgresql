@@ -506,7 +506,13 @@ char *seg_yytext;
 
 /* Avoid exit() on fatal scanner errors (a bit ugly -- see yy_fatal_error) */
 #undef fprintf
-#define fprintf(file, fmt, msg)  ereport(ERROR, (errmsg_internal("%s", msg)))
+#define fprintf(file, fmt, msg)  fprintf_to_ereport(fmt, msg)
+
+static void
+fprintf_to_ereport(const char *fmt, const char *msg)
+{
+	ereport(ERROR, (errmsg_internal("%s", msg)));
+}
 
 /* Handles to the buffer that the lexer uses internally */
 static YY_BUFFER_STATE scanbufhandle;
@@ -519,7 +525,7 @@ int seg_yylex(void);
 void seg_scanner_init(const char *str);
 void seg_scanner_finish(void);
 #define YY_NO_INPUT 1
-#line 523 "segscan.c"
+#line 529 "segscan.c"
 
 #define INITIAL 0
 
@@ -704,10 +710,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 43 "segscan.l"
+#line 49 "segscan.l"
 
 
-#line 711 "segscan.c"
+#line 717 "segscan.c"
 
 	if ( !(yy_init) )
 		{
@@ -788,51 +794,51 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 45 "segscan.l"
+#line 51 "segscan.l"
 yylval.text = seg_yytext; return RANGE;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 46 "segscan.l"
+#line 52 "segscan.l"
 yylval.text = seg_yytext; return PLUMIN;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 47 "segscan.l"
+#line 53 "segscan.l"
 yylval.text = seg_yytext; return SEGFLOAT;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 48 "segscan.l"
+#line 54 "segscan.l"
 yylval.text = "<"; return EXTENSION;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 49 "segscan.l"
+#line 55 "segscan.l"
 yylval.text = ">"; return EXTENSION;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 50 "segscan.l"
+#line 56 "segscan.l"
 yylval.text = "~"; return EXTENSION;
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 51 "segscan.l"
+#line 57 "segscan.l"
 /* discard spaces */
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 52 "segscan.l"
+#line 58 "segscan.l"
 return seg_yytext[0]; /* alert parser of the garbage */
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 54 "segscan.l"
+#line 60 "segscan.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 836 "segscan.c"
+#line 842 "segscan.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1790,12 +1796,12 @@ void seg_yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 54 "segscan.l"
+#line 60 "segscan.l"
 
 
 
-void
-yyerror(const char *message)
+void __attribute__((noreturn))
+yyerror(SEG *result, const char *message)
 {
 	if (*seg_yytext == YY_END_OF_BUFFER_CHAR)
 	{

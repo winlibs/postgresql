@@ -4,7 +4,7 @@
 #    Perl module that extracts info from catalog headers into Perl
 #    data structures
 #
-# Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+# Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
 # Portions Copyright (c) 1994, Regents of the University of California
 #
 # src/backend/catalog/Catalog.pm
@@ -31,6 +31,8 @@ sub Catalogs
 	# There are a few types which are given one name in the C source, but a
 	# different name at the SQL level.  These are enumerated here.
 	my %RENAME_ATTTYPE = (
+		'int16'         => 'int2',
+		'int32'         => 'int4',
 		'Oid'           => 'oid',
 		'NameData'      => 'name',
 		'TransactionId' => 'xid');

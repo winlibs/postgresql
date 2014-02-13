@@ -3,7 +3,7 @@
  * rangetypes_gist.c
  *	  GiST support for range types.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -20,19 +20,6 @@
 #include "utils/datum.h"
 #include "utils/rangetypes.h"
 
-
-/* Operator strategy numbers used in the GiST range opclass */
-/* Numbers are chosen to match up operator names with existing usages */
-#define RANGESTRAT_BEFORE				1
-#define RANGESTRAT_OVERLEFT				2
-#define RANGESTRAT_OVERLAPS				3
-#define RANGESTRAT_OVERRIGHT			4
-#define RANGESTRAT_AFTER				5
-#define RANGESTRAT_ADJACENT				6
-#define RANGESTRAT_CONTAINS				7
-#define RANGESTRAT_CONTAINED_BY			8
-#define RANGESTRAT_CONTAINS_ELEM		16
-#define RANGESTRAT_EQ					18
 
 /*
  * Range class properties used to segregate different classes of ranges in
@@ -690,6 +677,7 @@ range_gist_same(PG_FUNCTION_ARGS)
 	else
 	{
 		TypeCacheEntry *typcache;
+
 		typcache = range_get_typcache(fcinfo, RangeTypeGetOid(r1));
 
 		*result = range_eq_internal(typcache, r1, r2);
@@ -794,36 +782,36 @@ range_gist_consistent_int(TypeCacheEntry *typcache, StrategyNumber strategy,
 			if (RangeIsEmpty(key) || RangeIsEmpty(DatumGetRangeType(query)))
 				return false;
 			return (!range_overright_internal(typcache, key,
-													DatumGetRangeType(query)));
+											  DatumGetRangeType(query)));
 		case RANGESTRAT_OVERLEFT:
 			if (RangeIsEmpty(key) || RangeIsEmpty(DatumGetRangeType(query)))
 				return false;
 			return (!range_after_internal(typcache, key,
-													DatumGetRangeType(query)));
+										  DatumGetRangeType(query)));
 		case RANGESTRAT_OVERLAPS:
 			return range_overlaps_internal(typcache, key,
-													DatumGetRangeType(query));
+										   DatumGetRangeType(query));
 		case RANGESTRAT_OVERRIGHT:
 			if (RangeIsEmpty(key) || RangeIsEmpty(DatumGetRangeType(query)))
 				return false;
 			return (!range_before_internal(typcache, key,
-													DatumGetRangeType(query)));
+										   DatumGetRangeType(query)));
 		case RANGESTRAT_AFTER:
 			if (RangeIsEmpty(key) || RangeIsEmpty(DatumGetRangeType(query)))
 				return false;
 			return (!range_overleft_internal(typcache, key,
-													DatumGetRangeType(query)));
+											 DatumGetRangeType(query)));
 		case RANGESTRAT_ADJACENT:
 			if (RangeIsEmpty(key) || RangeIsEmpty(DatumGetRangeType(query)))
 				return false;
 			if (range_adjacent_internal(typcache, key,
-													DatumGetRangeType(query)))
+										DatumGetRangeType(query)))
 				return true;
 			return range_overlaps_internal(typcache, key,
-													DatumGetRangeType(query));
+										   DatumGetRangeType(query));
 		case RANGESTRAT_CONTAINS:
 			return range_contains_internal(typcache, key,
-													DatumGetRangeType(query));
+										   DatumGetRangeType(query));
 		case RANGESTRAT_CONTAINED_BY:
 
 			/*
@@ -834,7 +822,7 @@ range_gist_consistent_int(TypeCacheEntry *typcache, StrategyNumber strategy,
 			if (RangeIsOrContainsEmpty(key))
 				return true;
 			return range_overlaps_internal(typcache, key,
-													DatumGetRangeType(query));
+										   DatumGetRangeType(query));
 		case RANGESTRAT_CONTAINS_ELEM:
 			return range_contains_elem_internal(typcache, key, query);
 		case RANGESTRAT_EQ:
@@ -846,10 +834,10 @@ range_gist_consistent_int(TypeCacheEntry *typcache, StrategyNumber strategy,
 			if (RangeIsEmpty(DatumGetRangeType(query)))
 				return RangeIsOrContainsEmpty(key);
 			return range_contains_internal(typcache, key,
-													DatumGetRangeType(query));
+										   DatumGetRangeType(query));
 		default:
 			elog(ERROR, "unrecognized range strategy: %d", strategy);
-			return false;			/* keep compiler quiet */
+			return false;		/* keep compiler quiet */
 	}
 }
 
@@ -864,35 +852,35 @@ range_gist_consistent_leaf(TypeCacheEntry *typcache, StrategyNumber strategy,
 	{
 		case RANGESTRAT_BEFORE:
 			return range_before_internal(typcache, key,
-													DatumGetRangeType(query));
+										 DatumGetRangeType(query));
 		case RANGESTRAT_OVERLEFT:
 			return range_overleft_internal(typcache, key,
-													DatumGetRangeType(query));
+										   DatumGetRangeType(query));
 		case RANGESTRAT_OVERLAPS:
 			return range_overlaps_internal(typcache, key,
-													DatumGetRangeType(query));
+										   DatumGetRangeType(query));
 		case RANGESTRAT_OVERRIGHT:
 			return range_overright_internal(typcache, key,
-													DatumGetRangeType(query));
+											DatumGetRangeType(query));
 		case RANGESTRAT_AFTER:
 			return range_after_internal(typcache, key,
-													DatumGetRangeType(query));
+										DatumGetRangeType(query));
 		case RANGESTRAT_ADJACENT:
 			return range_adjacent_internal(typcache, key,
-													DatumGetRangeType(query));
+										   DatumGetRangeType(query));
 		case RANGESTRAT_CONTAINS:
 			return range_contains_internal(typcache, key,
-													DatumGetRangeType(query));
+										   DatumGetRangeType(query));
 		case RANGESTRAT_CONTAINED_BY:
 			return range_contained_by_internal(typcache, key,
-													DatumGetRangeType(query));
+											   DatumGetRangeType(query));
 		case RANGESTRAT_CONTAINS_ELEM:
 			return range_contains_elem_internal(typcache, key, query);
 		case RANGESTRAT_EQ:
 			return range_eq_internal(typcache, key, DatumGetRangeType(query));
 		default:
 			elog(ERROR, "unrecognized range strategy: %d", strategy);
-			return false;			/* keep compiler quiet */
+			return false;		/* keep compiler quiet */
 	}
 }
 

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="High Availability, Load Balancing, and Replication"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -479,16 +479,20 @@ NAME="STREAMING-REPLICATION"
     generated, without waiting for the WAL file to be filled.
    </P
 ><P
->    Streaming replication is asynchronous, so there is still a small delay
-    between committing a transaction in the primary and for the changes to
-    become visible in the standby. The delay is however much smaller than with
-    file-based log shipping, typically under one second assuming the standby
-    is powerful enough to keep up with the load. With streaming replication,
-    <TT
+>    Streaming replication is asynchronous by default
+    (see <A
+HREF="warm-standby.html#SYNCHRONOUS-REPLICATION"
+>Section 25.2.7</A
+>), in which case there is
+    a small delay between committing a transaction in the primary and the
+    changes becoming visible in the standby. This delay is however much
+    smaller than with file-based log shipping, typically under one second
+    assuming the standby is powerful enough to keep up with the load. With
+    streaming replication, <TT
 CLASS="VARNAME"
 >archive_timeout</TT
-> is not required to reduce the data loss
-    window.
+> is not required to
+    reduce the data loss window.
    </P
 ><P
 >    If you use streaming replication without file-based continuous
@@ -715,11 +719,11 @@ CLASS="FUNCTION"
 > on the standby,
      respectively (see <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-59</A
+>Table 9-60</A
 > and
      <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-INFO-TABLE"
->Table 9-60</A
+>Table 9-61</A
 > for details).
      The last WAL receive location in the standby is also displayed in the
      process status of the WAL receiver process, displayed using the
@@ -801,10 +805,15 @@ HREF="warm-standby.html#SYNCHRONOUS-REPLICATION"
 >    Hot Standby feedback propagates upstream, whatever the cascaded arrangement.
    </P
 ><P
->    Promoting a cascading standby terminates the immediate downstream replication
-    connections which it serves. This is because the timeline becomes different
-    between standbys, and they can no longer continue replication.  The
-    affected standby(s) may reconnect to reestablish streaming replication.
+>    If an upstream standby server is promoted to become new master, downstream
+    servers will continue to stream from the new master if
+    <TT
+CLASS="VARNAME"
+>recovery_target_timeline</TT
+> is set to <TT
+CLASS="LITERAL"
+>'latest'</TT
+>.
    </P
 ><P
 >    To use cascading replication, set up the cascading standby so that it can

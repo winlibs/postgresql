@@ -31,7 +31,8 @@ if (-e "src/tools/msvc/buildenv.pl")
 
 my $what = shift || "";
 if ($what =~
-	/^(check|installcheck|plcheck|contribcheck|ecpgcheck|isolationcheck|upgradecheck)$/i)
+/^(check|installcheck|plcheck|contribcheck|ecpgcheck|isolationcheck|upgradecheck)$/i
+  )
 {
 	$what = uc $what;
 }
@@ -76,7 +77,7 @@ my %command = (
 	ECPGCHECK      => \&ecpgcheck,
 	CONTRIBCHECK   => \&contribcheck,
 	ISOLATIONCHECK => \&isolationcheck,
-    UPGRADECHECK   => \&upgradecheck,);
+	UPGRADECHECK   => \&upgradecheck,);
 
 my $proc = $command{$what};
 
@@ -251,13 +252,14 @@ sub upgradecheck
 	my $tmp_install = "$tmp_root/install";
 	print "Setting up temp install\n\n";
 	Install($tmp_install, $config);
+
 	# Install does a chdir, so change back after that
 	chdir $cwd;
-	my ($bindir,$libdir,$oldsrc,$newsrc) = 
+	my ($bindir, $libdir, $oldsrc, $newsrc) =
 	  ("$tmp_install/bin", "$tmp_install/lib", $topdir, $topdir);
 	$ENV{PATH} = "$bindir;$ENV{PATH}";
 	my $data = "$tmp_root/data";
-	$ENV{PGDATA} = $data;
+	$ENV{PGDATA} = "$data.old";
 	my $logdir = "$topdir/contrib/pg_upgrade/log";
 	(mkdir $logdir || die $!) unless -d $logdir;
 	print "\nRunning initdb on old cluster\n\n";
@@ -266,20 +268,18 @@ sub upgradecheck
 	system("pg_ctl start -l $logdir/postmaster1.log -w") == 0 or exit 1;
 	print "\nSetting up data for upgrading\n\n";
 	installcheck();
+
 	# now we can chdir into the source dir
 	chdir "$topdir/contrib/pg_upgrade";
-	print "\nDuming old cluster\n\n";
+	print "\nDumping old cluster\n\n";
 	system("pg_dumpall -f $tmp_root/dump1.sql") == 0 or exit 1;
 	print "\nStopping old cluster\n\n";
 	system("pg_ctl -m fast stop") == 0 or exit 1;
-	rename $data, "$data.old";
-	# take a breather in case Windows hasn't quite got
-	# the message about the directory moving
-	sleep(5);
+	$ENV{PGDATA} = "$data";
 	print "\nSetting up new cluster\n\n";
 	system("initdb") == 0 or exit 1;
 	print "\nRunning pg_upgrade\n\n";
-	system("pg_upgrade -d $data.old -D $data -b $bindir -B $bindir") == 0 
+	system("pg_upgrade -d $data.old -D $data -b $bindir -B $bindir") == 0
 	  or exit 1;
 	print "\nStarting new cluster\n\n";
 	system("pg_ctl -l $logdir/postmaster2.log -w start") == 0 or exit 1;

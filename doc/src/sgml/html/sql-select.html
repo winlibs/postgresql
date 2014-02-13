@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-SELECT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN77009"
+NAME="AEN79774"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN77009"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN77021"
+NAME="AEN79786"
 ></A
 ><H2
 >Synopsis</H2
@@ -202,7 +202,7 @@ CLASS="REPLACEABLE"
 >count</I
 ></TT
 > ] { ROW | ROWS } ONLY ]
-    [ FOR { UPDATE | SHARE } [ OF <TT
+    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF <TT
 CLASS="REPLACEABLE"
 ><I
 >table_name</I
@@ -238,7 +238,7 @@ CLASS="REPLACEABLE"
 >column_alias</I
 ></TT
 > [, ...] ) ] ]
-    ( <TT
+    [ LATERAL ] ( <TT
 CLASS="REPLACEABLE"
 ><I
 >select</I
@@ -270,7 +270,7 @@ CLASS="REPLACEABLE"
 >column_alias</I
 ></TT
 > [, ...] ) ] ]
-    <TT
+    [ LATERAL ] <TT
 CLASS="REPLACEABLE"
 ><I
 >function_name</I
@@ -296,7 +296,7 @@ CLASS="REPLACEABLE"
 >column_definition</I
 ></TT
 > [, ...] ) ]
-    <TT
+    [ LATERAL ] <TT
 CLASS="REPLACEABLE"
 ><I
 >function_name</I
@@ -399,7 +399,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77074"
+NAME="AEN79839"
 ></A
 ><H2
 >Description</H2
@@ -693,9 +693,16 @@ HREF="sql-select.html#SQL-LIMIT"
 >      If <TT
 CLASS="LITERAL"
 >FOR UPDATE</TT
-> or <TT
+>, <TT
+CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
 CLASS="LITERAL"
 >FOR SHARE</TT
+>
+      or <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
 >
       is specified, the
       <TT
@@ -705,11 +712,7 @@ CLASS="COMMAND"
       against concurrent updates.  (See <A
 HREF="sql-select.html#SQL-FOR-UPDATE-SHARE"
 ><I
-><I
->FOR UPDATE</I
->/<I
->FOR SHARE</I
-> Clause</I
+>The Locking Clause</I
 ></A
 > below.)
      </P
@@ -727,11 +730,18 @@ CLASS="COMMAND"
 >SELECT</TT
 > command.  The use of <TT
 CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>,
+   <TT
+CLASS="LITERAL"
 >FOR UPDATE</TT
->
-   or <TT
+>,
+   <TT
 CLASS="LITERAL"
 >FOR SHARE</TT
+> or <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
 > requires
    <TT
 CLASS="LITERAL"
@@ -743,7 +753,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77154"
+NAME="AEN79923"
 ></A
 ><H2
 >Parameters</H2
@@ -951,8 +961,11 @@ CLASS="COMMAND"
 >SELECT</TT
 >.  If multiple sources are
     specified, the result is the Cartesian product (cross join) of all
-    the sources.  But usually qualification conditions
-    are added to restrict the returned rows to a small subset of the
+    the sources.  But usually qualification conditions are added (via
+    <TT
+CLASS="LITERAL"
+>WHERE</TT
+>) to restrict the returned rows to a small subset of the
     Cartesian product.
    </P
 ><P
@@ -1240,24 +1253,31 @@ CLASS="LITERAL"
 >        A <TT
 CLASS="LITERAL"
 >JOIN</TT
-> clause combines two
-        <TT
+> clause combines two <TT
 CLASS="LITERAL"
 >FROM</TT
-> items.  Use parentheses if necessary to
-        determine the order of nesting.  In the absence of parentheses,
-        <TT
-CLASS="LITERAL"
->JOIN</TT
->s nest left-to-right.  In any case
-        <TT
-CLASS="LITERAL"
->JOIN</TT
-> binds more tightly than the commas
-        separating <TT
+>
+        items, which for convenience we will refer to as <SPAN
+CLASS="QUOTE"
+>"tables"</SPAN
+>,
+        though in reality they can be any type of <TT
 CLASS="LITERAL"
 >FROM</TT
-> items.
+> item.
+        Use parentheses if necessary to determine the order of nesting.
+        In the absence of parentheses, <TT
+CLASS="LITERAL"
+>JOIN</TT
+>s nest
+        left-to-right.  In any case <TT
+CLASS="LITERAL"
+>JOIN</TT
+> binds more
+        tightly than the commas separating <TT
+CLASS="LITERAL"
+>FROM</TT
+>-list items.
        </P
 ><P
 ><TT
@@ -1268,7 +1288,7 @@ CLASS="LITERAL"
 >INNER JOIN</TT
 >
         produce a simple Cartesian product, the same result as you get from
-        listing the two items at the top level of <TT
+        listing the two tables at the top level of <TT
 CLASS="LITERAL"
 >FROM</TT
 >,
@@ -1319,7 +1339,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >LEFT
         OUTER JOIN</TT
-> by switching the left and right inputs.
+> by switching the left and right tables.
        </P
 ><P
 ><TT
@@ -1406,6 +1426,152 @@ CLASS="LITERAL"
 >USING</TT
 > list that mentions all columns in the two
         tables that have the same names.
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>LATERAL</TT
+></DT
+><DD
+><P
+>        The <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> key word can precede a
+        sub-<TT
+CLASS="COMMAND"
+>SELECT</TT
+> <TT
+CLASS="LITERAL"
+>FROM</TT
+> item.  This allows the
+        sub-<TT
+CLASS="COMMAND"
+>SELECT</TT
+> to refer to columns of <TT
+CLASS="LITERAL"
+>FROM</TT
+>
+        items that appear before it in the <TT
+CLASS="LITERAL"
+>FROM</TT
+> list.  (Without
+        <TT
+CLASS="LITERAL"
+>LATERAL</TT
+>, each sub-<TT
+CLASS="COMMAND"
+>SELECT</TT
+> is
+        evaluated independently and so cannot cross-reference any other
+        <TT
+CLASS="LITERAL"
+>FROM</TT
+> item.)
+       </P
+><P
+><TT
+CLASS="LITERAL"
+>LATERAL</TT
+> can also precede a function-call
+        <TT
+CLASS="LITERAL"
+>FROM</TT
+> item, but in this case it is a noise word, because
+        the function expression can refer to earlier <TT
+CLASS="LITERAL"
+>FROM</TT
+> items
+        in any case.
+       </P
+><P
+>        A <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> item can appear at top level in the
+        <TT
+CLASS="LITERAL"
+>FROM</TT
+> list, or within a <TT
+CLASS="LITERAL"
+>JOIN</TT
+> tree.  In the
+        latter case it can also refer to any items that are on the left-hand
+        side of a <TT
+CLASS="LITERAL"
+>JOIN</TT
+> that it is on the right-hand side of.
+       </P
+><P
+>        When a <TT
+CLASS="LITERAL"
+>FROM</TT
+> item contains <TT
+CLASS="LITERAL"
+>LATERAL</TT
+>
+        cross-references, evaluation proceeds as follows: for each row of the
+        <TT
+CLASS="LITERAL"
+>FROM</TT
+> item providing the cross-referenced column(s), or
+        set of rows of multiple <TT
+CLASS="LITERAL"
+>FROM</TT
+> items providing the
+        columns, the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> item is evaluated using that
+        row or row set's values of the columns.  The resulting row(s) are
+        joined as usual with the rows they were computed from.  This is
+        repeated for each row or set of rows from the column source table(s).
+       </P
+><P
+>        The column source table(s) must be <TT
+CLASS="LITERAL"
+>INNER</TT
+> or
+        <TT
+CLASS="LITERAL"
+>LEFT</TT
+> joined to the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> item, else
+        there would not be a well-defined set of rows from which to compute
+        each set of rows for the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> item.  Thus,
+        although a construct such as <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>X</I
+></TT
+> RIGHT JOIN
+        LATERAL <TT
+CLASS="REPLACEABLE"
+><I
+>Y</I
+></TT
+></TT
+> is syntactically valid, it is
+        not actually allowed for <TT
+CLASS="REPLACEABLE"
+><I
+>Y</I
+></TT
+> to reference
+        <TT
+CLASS="REPLACEABLE"
+><I
+>X</I
+></TT
+>.
        </P
 ></DD
 ></DL
@@ -1662,11 +1828,11 @@ CLASS="REPLACEABLE"
 >window_name</I
 ></TT
 > is
-    a name that can be referenced from subsequent window definitions or
-    <TT
+    a name that can be referenced from <TT
 CLASS="LITERAL"
 >OVER</TT
-> clauses, and
+> clauses or
+    subsequent window definitions, and
     <TT
 CLASS="REPLACEABLE"
 ><I
@@ -2327,11 +2493,17 @@ CLASS="LITERAL"
 >LIMIT</TT
 >, <TT
 CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
 >FOR UPDATE</TT
->, or
+>,
     <TT
 CLASS="LITERAL"
 >FOR SHARE</TT
+>, or <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
 > clause.
     (<TT
 CLASS="LITERAL"
@@ -2414,10 +2586,17 @@ CLASS="COMMAND"
 ><P
 >    Currently, <TT
 CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
 >FOR UPDATE</TT
-> and <TT
+>, <TT
 CLASS="LITERAL"
 >FOR SHARE</TT
+> and
+    <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
 > cannot be
     specified either for a <TT
 CLASS="LITERAL"
@@ -2475,11 +2654,17 @@ CLASS="LITERAL"
 >LIMIT</TT
 >, <TT
 CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
 >FOR UPDATE</TT
->, or
+>,
     <TT
 CLASS="LITERAL"
 >FOR SHARE</TT
+>, or <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
 > clause.
    </P
 ><P
@@ -2565,10 +2750,17 @@ CLASS="LITERAL"
 ><P
 >    Currently, <TT
 CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
 >FOR UPDATE</TT
-> and <TT
+>, <TT
 CLASS="LITERAL"
 >FOR SHARE</TT
+> and
+    <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
 > cannot be
     specified either for an <TT
 CLASS="LITERAL"
@@ -2626,11 +2818,17 @@ CLASS="LITERAL"
 >LIMIT</TT
 >, <TT
 CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
 >FOR UPDATE</TT
->, or
+>,
     <TT
 CLASS="LITERAL"
 >FOR SHARE</TT
+>, or <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
 > clause.
    </P
 ><P
@@ -2706,10 +2904,17 @@ CLASS="LITERAL"
 ><P
 >    Currently, <TT
 CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
 >FOR UPDATE</TT
-> and <TT
+>, <TT
 CLASS="LITERAL"
 >FOR SHARE</TT
+> and
+    <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
 > cannot be
     specified either for an <TT
 CLASS="LITERAL"
@@ -3173,41 +3378,62 @@ CLASS="REFSECT2"
 NAME="SQL-FOR-UPDATE-SHARE"
 ></A
 ><H3
-><TT
+>The Locking Clause</H3
+><P
+>    <TT
 CLASS="LITERAL"
 >FOR UPDATE</TT
->/<TT
+>, <TT
+CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
 CLASS="LITERAL"
 >FOR SHARE</TT
-> Clause</H3
-><P
->    The <TT
+>
+    and <TT
 CLASS="LITERAL"
->FOR UPDATE</TT
-> clause has this form:
+>FOR KEY SHARE</TT
+>
+    are <I
+CLASS="FIRSTTERM"
+>locking clauses</I
+>; they affect how <TT
+CLASS="LITERAL"
+>SELECT</TT
+>
+    locks rows as they are obtained from the table.
+   </P
+><P
+>    The locking clause has the general form
+
 </P><PRE
 CLASS="SYNOPSIS"
->FOR UPDATE [ OF <TT
+>FOR <TT
+CLASS="REPLACEABLE"
+><I
+>lock_strength</I
+></TT
+> [ OF <TT
 CLASS="REPLACEABLE"
 ><I
 >table_name</I
 ></TT
 > [, ...] ] [ NOWAIT ]</PRE
 ><P>
-   </P
-><P
->    The closely related <TT
-CLASS="LITERAL"
->FOR SHARE</TT
-> clause has this form:
-</P><PRE
-CLASS="SYNOPSIS"
->FOR SHARE [ OF <TT
+
+    where <TT
 CLASS="REPLACEABLE"
 ><I
->table_name</I
+>lock_strength</I
 ></TT
-> [, ...] ] [ NOWAIT ]</PRE
+> can be one of
+
+</P><PRE
+CLASS="SYNOPSIS"
+>UPDATE
+NO KEY UPDATE
+SHARE
+KEY SHARE</PRE
 ><P>
    </P
 ><P
@@ -3228,11 +3454,43 @@ CLASS="COMMAND"
     <TT
 CLASS="COMMAND"
 >DELETE</TT
->, or <TT
+>,
+    <TT
 CLASS="COMMAND"
 >SELECT FOR UPDATE</TT
+>,
+    <TT
+CLASS="COMMAND"
+>SELECT FOR NO KEY UPDATE</TT
+>,
+    <TT
+CLASS="COMMAND"
+>SELECT FOR SHARE</TT
+> or
+    <TT
+CLASS="COMMAND"
+>SELECT FOR KEY SHARE</TT
 >
     of these rows will be blocked until the current transaction ends.
+    The <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+> lock mode
+    is also acquired by any <TT
+CLASS="COMMAND"
+>DELETE</TT
+> on a row, and also by an
+    <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> that modifies the values on certain columns.  Currently,
+    the set of columns considered for the <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> case are those that
+    have an unique index on them that can be used in a foreign key (so partial
+    indexes and expressional indexes are not considered), but this may change
+    in the future.
     Also, if an <TT
 CLASS="COMMAND"
 >UPDATE</TT
@@ -3266,6 +3524,25 @@ HREF="mvcc.html"
 ><P
 >    <TT
 CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+> behaves similarly, except that the lock
+    acquired is weaker: this lock will not block
+    <TT
+CLASS="LITERAL"
+>SELECT FOR KEY SHARE</TT
+> commands that attempt to acquire
+    a lock on the same rows. This lock mode is also acquired by any
+    <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> that does not acquire a <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+> lock.
+   </P
+><P
+>    <TT
+CLASS="LITERAL"
 >FOR SHARE</TT
 > behaves similarly, except that it
     acquires a shared rather than exclusive lock on each retrieved
@@ -3276,14 +3553,63 @@ CLASS="COMMAND"
 >, <TT
 CLASS="COMMAND"
 >DELETE</TT
->, or <TT
+>, <TT
 CLASS="COMMAND"
 >SELECT
     FOR UPDATE</TT
-> on these rows, but it does not prevent them
+> or <TT
+CLASS="COMMAND"
+>SELECT FOR NO KEY UPDATE</TT
+>
+    on these rows, but it does not prevent them
     from performing <TT
 CLASS="COMMAND"
 >SELECT FOR SHARE</TT
+> or
+    <TT
+CLASS="COMMAND"
+>SELECT FOR KEY SHARE</TT
+>.
+   </P
+><P
+>    <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
+> behaves similarly to <TT
+CLASS="LITERAL"
+>FOR SHARE</TT
+>,
+    except that the lock
+    is weaker: <TT
+CLASS="LITERAL"
+>SELECT FOR UPDATE</TT
+> is blocked, but
+    not <TT
+CLASS="LITERAL"
+>SELECT FOR NO KEY UPDATE</TT
+>.  A key-shared
+    lock blocks other transactions from performing <TT
+CLASS="COMMAND"
+>DELETE</TT
+>
+    or any <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> that changes the key values, but not
+    other <TT
+CLASS="COMMAND"
+>UPDATE</TT
+>, and neither does it prevent
+    <TT
+CLASS="COMMAND"
+>SELECT FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="COMMAND"
+>SELECT FOR SHARE</TT
+>, or
+    <TT
+CLASS="COMMAND"
+>SELECT FOR KEY SHARE</TT
 >.
    </P
 ><P
@@ -3320,43 +3646,18 @@ CLASS="LITERAL"
     if you need to acquire the table-level lock without waiting.
    </P
 ><P
->    If specific tables are named in <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
->
-    or <TT
-CLASS="LITERAL"
->FOR SHARE</TT
->,
+>    If specific tables are named in a locking clause,
     then only rows coming from those tables are locked; any other
     tables used in the <TT
 CLASS="COMMAND"
 >SELECT</TT
 > are simply read as
-    usual.  A <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> or <TT
-CLASS="LITERAL"
->FOR SHARE</TT
->
+    usual.  A locking
     clause without a table list affects all tables used in the statement.
-    If <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> or <TT
-CLASS="LITERAL"
->FOR SHARE</TT
-> is
+    If a locking clause is
     applied to a view or sub-query, it affects all tables used in
     the view or sub-query.
-    However, <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
->/<TT
-CLASS="LITERAL"
->FOR SHARE</TT
->
+    However, these clauses
     do not apply to <TT
 CLASS="LITERAL"
 >WITH</TT
@@ -3365,40 +3666,18 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >WITH</TT
 > query, specify
-    <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> or <TT
-CLASS="LITERAL"
->FOR SHARE</TT
-> within the
-    <TT
+    a locking clause within the <TT
 CLASS="LITERAL"
 >WITH</TT
 > query.
    </P
 ><P
->    Multiple <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> and <TT
-CLASS="LITERAL"
->FOR SHARE</TT
->
+>    Multiple locking
     clauses can be written if it is necessary to specify different locking
     behavior for different tables.  If the same table is mentioned (or
-    implicitly affected) by both <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> and
-    <TT
-CLASS="LITERAL"
->FOR SHARE</TT
-> clauses, then it is processed as
-    <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
->.  Similarly, a table is processed
+    implicitly affected) by more than one locking clause,
+    then it is processed as if it was only specified by the strongest one.
+    Similarly, a table is processed
     as <TT
 CLASS="LITERAL"
 >NOWAIT</TT
@@ -3406,24 +3685,12 @@ CLASS="LITERAL"
     affecting it.
    </P
 ><P
->    <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> and <TT
-CLASS="LITERAL"
->FOR SHARE</TT
-> cannot be
+>    The locking clauses cannot be
     used in contexts where returned rows cannot be clearly identified with
     individual table rows; for example they cannot be used with aggregation.
    </P
 ><P
->    When <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> or <TT
-CLASS="LITERAL"
->FOR SHARE</TT
->
+>    When a locking clause
     appears at the top level of a <TT
 CLASS="COMMAND"
 >SELECT</TT
@@ -3443,24 +3710,12 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >OFFSET</TT
 > will get locked).  Similarly,
-    if <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> or <TT
-CLASS="LITERAL"
->FOR SHARE</TT
->
+    if a locking clause
     is used in a cursor's query, only rows actually fetched or stepped past
     by the cursor will be locked.
    </P
 ><P
->    When <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> or <TT
-CLASS="LITERAL"
->FOR SHARE</TT
->
+>    When a locking clause
     appears in a sub-<TT
 CLASS="COMMAND"
 >SELECT</TT
@@ -3479,31 +3734,9 @@ CLASS="LITERAL"
 >, even though that
     condition is not textually within the sub-query.
    </P
-><DIV
-CLASS="CAUTION"
 ><P
-></P
-><TABLE
-CLASS="CAUTION"
-BORDER="1"
-WIDTH="100%"
-><TR
-><TD
-ALIGN="CENTER"
-><B
->Caution</B
-></TD
-></TR
-><TR
-><TD
-ALIGN="LEFT"
-><P
->    Avoid locking a row and then modifying it within a later savepoint or
-    <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> exception block.  A subsequent
-    rollback would cause the lock to be lost.  For example:
+>   Previous releases failed to preserve a lock which is upgraded by a later
+   savepoint.  For example, this code:
 </P><PRE
 CLASS="PROGRAMLISTING"
 >BEGIN;
@@ -3512,26 +3745,15 @@ SAVEPOINT s;
 UPDATE mytable SET ... WHERE key = 1;
 ROLLBACK TO s;</PRE
 ><P>
-    After the <TT
+   would fail to preserve the <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+> lock after the
+   <TT
 CLASS="COMMAND"
->ROLLBACK</TT
->, the row is effectively unlocked, rather
-    than returned to its pre-savepoint state of being locked but not modified.
-    This hazard occurs if a row locked in the current transaction is updated
-    or deleted, or if a shared lock is upgraded to exclusive: in all these
-    cases, the former lock state is forgotten.  If the transaction is then
-    rolled back to a state between the original locking command and the
-    subsequent change, the row will appear not to be locked at all.  This is
-    an implementation deficiency which will be addressed in a future release
-    of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.
-   </P
-></TD
-></TR
-></TABLE
-></DIV
+>ROLLBACK TO</TT
+>.  This has been fixed in release 9.3.
+  </P
 ><DIV
 CLASS="CAUTION"
 ><P
@@ -3562,10 +3784,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >ORDER
     BY</TT
-> and <TT
-CLASS="LITERAL"
->FOR UPDATE/SHARE</TT
-> to return rows out of
+> and a locking clause to return rows out of
     order.  This is because <TT
 CLASS="LITERAL"
 >ORDER BY</TT
@@ -3669,7 +3888,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77853"
+NAME="AEN80678"
 ></A
 ><H2
 >Examples</H2
@@ -3912,11 +4131,40 @@ HREF="queries-with.html"
 >
    for more examples.)
   </P
+><P
+>   This example uses <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> to apply a set-returning function
+   <CODE
+CLASS="FUNCTION"
+>get_product_names()</CODE
+> for each row of the
+   <TT
+CLASS="STRUCTNAME"
+>manufacturers</TT
+> table:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT m.name AS mname, pname
+FROM manufacturers m, LATERAL get_product_names(m.id) pname;</PRE
+><P>
+
+    Manufacturers not currently having any products would not appear in the
+    result, since it is an inner join.  If we wished to include the names of
+    such manufacturers in the result, we could do:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT m.name AS mname, pname
+FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;</PRE
+><P></P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77887"
+NAME="AEN80718"
 ></A
 ><H2
 >Compatibility</H2
@@ -3931,7 +4179,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77891"
+NAME="AEN80722"
 ></A
 ><H3
 >Omitted <TT
@@ -3991,7 +4239,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77905"
+NAME="AEN80736"
 ></A
 ><H3
 >Omitting the <TT
@@ -4040,7 +4288,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77917"
+NAME="AEN80748"
 ></A
 ><H3
 ><TT
@@ -4087,7 +4335,85 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77930"
+NAME="AEN80761"
+></A
+><H3
+>Function Calls in <TT
+CLASS="LITERAL"
+>FROM</TT
+></H3
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> allows a function call to be
+    written directly as a member of the <TT
+CLASS="LITERAL"
+>FROM</TT
+> list.  In the SQL
+    standard it would be necessary to wrap such a function call in a
+    sub-<TT
+CLASS="COMMAND"
+>SELECT</TT
+>; that is, the syntax
+    <TT
+CLASS="LITERAL"
+>FROM <TT
+CLASS="REPLACEABLE"
+><I
+>func</I
+></TT
+>(...) <TT
+CLASS="REPLACEABLE"
+><I
+>alias</I
+></TT
+></TT
+>
+    is approximately equivalent to
+    <TT
+CLASS="LITERAL"
+>FROM LATERAL (SELECT <TT
+CLASS="REPLACEABLE"
+><I
+>func</I
+></TT
+>(...)) <TT
+CLASS="REPLACEABLE"
+><I
+>alias</I
+></TT
+></TT
+>.
+    Note that <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> is considered to be implicit; this is
+    because the standard requires <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> semantics for an
+    <TT
+CLASS="LITERAL"
+>UNNEST()</TT
+> item in <TT
+CLASS="LITERAL"
+>FROM</TT
+>.
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> treats <TT
+CLASS="LITERAL"
+>UNNEST()</TT
+> the
+    same as other set-returning functions.
+   </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN80780"
 ></A
 ><H3
 >Namespace Available to <TT
@@ -4141,7 +4467,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77943"
+NAME="AEN80793"
 ></A
 ><H3
 >Functional Dependencies</H3
@@ -4165,7 +4491,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77949"
+NAME="AEN80799"
 ></A
 ><H3
 ><TT
@@ -4190,7 +4516,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77955"
+NAME="AEN80805"
 ></A
 ><H3
 ><TT
@@ -4248,15 +4574,21 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77969"
+NAME="AEN80819"
 ></A
 ><H3
 ><TT
 CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
 >FOR UPDATE</TT
-> and <TT
+>, <TT
 CLASS="LITERAL"
 >FOR SHARE</TT
+>, <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
 ></H3
 ><P
 >    Although <TT
@@ -4280,8 +4612,16 @@ CLASS="COMMAND"
 >s, but this is an extension.
     The <TT
 CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
 >FOR SHARE</TT
-> variant, and the <TT
+> and
+    <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
+> variants,
+    as well as the <TT
 CLASS="LITERAL"
 >NOWAIT</TT
 > option,
@@ -4291,7 +4631,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77981"
+NAME="AEN80835"
 ></A
 ><H3
 >Data-Modifying Statements in <TT
@@ -4322,7 +4662,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77990"
+NAME="AEN80844"
 ></A
 ><H3
 >Nonstandard Clauses</H3

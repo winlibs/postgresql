@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -234,59 +234,20 @@ CLASS="LITERAL"
     </P
 ><P
 >     
-     In addition to parameter settings, the <TT
-CLASS="FILENAME"
->postgresql.conf</TT
->
-     file can contain <I
-CLASS="FIRSTTERM"
->include directives</I
->, which specify
-     another file to read and process as if it were inserted into the
-     configuration file at this point.  This feature allows a configuration
-     file to be divided into physically separate parts.
-     Include directives simply look like:
-</P><PRE
-CLASS="PROGRAMLISTING"
->include 'filename'</PRE
-><P>
-     If the file name is not an absolute path, it is taken as relative to
-     the directory containing the referencing configuration file.
-     Inclusions can be nested.
-    </P
-><P
->     
-     There is also an <TT
-CLASS="LITERAL"
->include_if_exists</TT
-> directive, which acts
-     the same as the <TT
-CLASS="LITERAL"
->include</TT
-> directive, except for the behavior
-     when the referenced file does not exist or cannot be read.  A regular
-     <TT
-CLASS="LITERAL"
->include</TT
-> will consider this an error condition, but
-     <TT
-CLASS="LITERAL"
->include_if_exists</TT
-> merely logs a message and continues
-     processing the referencing configuration file.
-    </P
-><P
->     
      The configuration file is reread whenever the main server process
-     receives a
-     <SPAN
+     receives a <SPAN
 CLASS="SYSTEMITEM"
 >SIGHUP</SPAN
-> signal (which is most easily sent by means
-     of <TT
+> signal;  this is most easily done by
+     running <TT
 CLASS="LITERAL"
 >pg_ctl reload</TT
->). The main server process
+> from the command-line or by calling
+     the SQL function <CODE
+CLASS="FUNCTION"
+>pg_reload_conf()</CODE
+>. The main
+     server process
      also propagates this signal to all currently running server
      processes so that existing sessions also get the new
      value. Alternatively, you can send the signal to a single server
@@ -438,7 +399,7 @@ CLASS="STRUCTNAME"
 > also allows
      displaying and updating session run-time parameters;  see <A
 HREF="view-pg-settings.html"
->Section 45.64</A
+>Section 47.66</A
 > for details and a description of the
      different variable types and when they can be changed.
      <TT
@@ -459,6 +420,183 @@ CLASS="COMMAND"
 >SHOW</TT
 >.
     </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="CONFIG-INCLUDES"
+>18.1.5. Configuration File Includes</A
+></H2
+><P
+>      
+         In addition to parameter settings, the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>
+         file can contain <I
+CLASS="FIRSTTERM"
+>include directives</I
+>, which specify
+         another file to read and process as if it were inserted into the
+         configuration file at this point.  This feature allows a configuration
+         file to be divided into physically separate parts.
+         Include directives simply look like:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>include 'filename'</PRE
+><P>
+         If the file name is not an absolute path, it is taken as relative to
+         the directory containing the referencing configuration file.
+         Inclusions can be nested.
+     </P
+><P
+>      
+         There is also an <TT
+CLASS="LITERAL"
+>include_if_exists</TT
+> directive, which acts
+         the same as the <TT
+CLASS="LITERAL"
+>include</TT
+> directive, except for the behavior
+         when the referenced file does not exist or cannot be read.  A regular
+         <TT
+CLASS="LITERAL"
+>include</TT
+> will consider this an error condition, but
+         <TT
+CLASS="LITERAL"
+>include_if_exists</TT
+> merely logs a message and continues
+         processing the referencing configuration file.
+     </P
+><P
+>      
+        The <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file can also contain
+        <TT
+CLASS="LITERAL"
+>include_dir</TT
+> directives, which specify an entire directory
+        of configuration files to include.  It is used similarly:
+ </P><PRE
+CLASS="PROGRAMLISTING"
+> include_dir 'directory'
+ </PRE
+><P>
+        Non-absolute directory names follow the same rules as single file include
+        directives:  they are relative to the directory containing the referencing
+        configuration file.  Within that directory, only non-directory files whose
+        names end with the suffix <TT
+CLASS="LITERAL"
+>.conf</TT
+> will be included.  File
+        names that start with the <TT
+CLASS="LITERAL"
+>.</TT
+> character are also excluded,
+        to prevent mistakes as they are hidden on some platforms.  Multiple files
+        within an include directory are processed in file name order. The file names
+        are ordered by C locale rules, ie. numbers before letters, and uppercase
+        letters before lowercase ones.
+     </P
+><P
+>       Include files or directories can be used to logically separate portions
+       of the database configuration, rather than having a single large
+       <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file.  Consider a company that has two
+       database servers, each with a different amount of memory.  There are likely
+       elements of the configuration both will share, for things such as logging.
+       But memory-related parameters on the server will vary between the two.  And
+       there might be server specific customizations, too.  One way to manage this
+       situation is to break the custom configuration changes for your site into
+       three files.  You could add this to the end of your
+       <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file to include them:
+ </P><PRE
+CLASS="PROGRAMLISTING"
+> include 'shared.conf'
+ include 'memory.conf'
+ include 'server.conf'
+ </PRE
+><P>
+       All systems would have the same <TT
+CLASS="FILENAME"
+>shared.conf</TT
+>.  Each server
+       with a particular amount of memory could share the same
+       <TT
+CLASS="FILENAME"
+>memory.conf</TT
+>; you might have one for all servers with 8GB of RAM,
+       another for those having 16GB.  And finally <TT
+CLASS="FILENAME"
+>server.conf</TT
+> could
+       have truly server-specific configuration information in it.
+     </P
+><P
+>       Another possibility is to create a configuration file directory and
+       put this information into files there. For example, a <TT
+CLASS="FILENAME"
+>conf.d</TT
+>
+       directory could be referenced at the end of<TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>:
+ </P><PRE
+CLASS="SCREEN"
+> include_dir 'conf.d'
+ </PRE
+><P>
+       Then you could name the files in the <TT
+CLASS="FILENAME"
+>conf.d</TT
+> directory like this:
+ </P><PRE
+CLASS="SCREEN"
+> 00shared.conf
+ 01memory.conf
+ 02server.conf
+ </PRE
+><P>
+       This shows a clear order in which these files will be loaded.  This is
+       important because only the last setting encountered when the server is
+       reading its configuration will be used.  Something set in
+       <TT
+CLASS="FILENAME"
+>conf.d/02server.conf</TT
+> in this example would override a value
+       set in <TT
+CLASS="FILENAME"
+>conf.d/01memory.conf</TT
+>.
+     </P
+><P
+>       You might instead use this configuration directory approach while naming
+       these files more descriptively:
+ </P><PRE
+CLASS="SCREEN"
+> 00shared.conf
+ 01memory-8GB.conf
+ 02server-foo.conf
+ </PRE
+><P>
+       This sort of arrangement gives a unique name for each configuration file
+       variation.  This can help eliminate ambiguity when several servers have
+       their configurations all stored in one place, such as in a version
+       control repository.  (Storing database configuration files under version
+       control is another good practice to consider).
+     </P
 ></DIV
 ></DIV
 ><DIV

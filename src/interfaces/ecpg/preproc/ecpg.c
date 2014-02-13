@@ -1,7 +1,7 @@
 /* src/interfaces/ecpg/preproc/ecpg.c */
 
 /* Main for ecpg, the PostgreSQL embedded SQL precompiler. */
-/* Copyright (c) 1996-2012, PostgreSQL Global Development Group */
+/* Copyright (c) 1996-2013, PostgreSQL Global Development Group */
 
 #include "postgres_fe.h"
 
@@ -171,7 +171,7 @@ main(int argc, char *const argv[])
 				regression_mode = true;
 				break;
 			case 'o':
-				output_filename = optarg;
+				output_filename = strdup(optarg);
 				if (strcmp(output_filename, "-") == 0)
 					yyout = stdout;
 				else

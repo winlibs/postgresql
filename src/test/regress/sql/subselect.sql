@@ -8,6 +8,21 @@ SELECT 1 AS zero WHERE 1 NOT IN (SELECT 1);
 
 SELECT 1 AS zero WHERE 1 IN (SELECT 2);
 
+-- Check grammar's handling of extra parens in assorted contexts
+
+SELECT * FROM (SELECT 1 AS x) ss;
+SELECT * FROM ((SELECT 1 AS x)) ss;
+
+(SELECT 2) UNION SELECT 2;
+((SELECT 2)) UNION SELECT 2;
+
+SELECT ((SELECT 2) UNION SELECT 2);
+SELECT (((SELECT 2)) UNION SELECT 2);
+
+SELECT (SELECT ARRAY[1,2,3])[1];
+SELECT ((SELECT ARRAY[1,2,3]))[2];
+SELECT (((SELECT ARRAY[1,2,3])))[3];
+
 -- Set up some simple test tables
 
 CREATE TABLE SUBSELECT_TBL (
@@ -374,3 +389,19 @@ where a.thousand = b.thousand
   and exists ( select 1 from tenk1 c where b.hundred = c.hundred
                    and not exists ( select 1 from tenk1 d
                                     where a.thousand = d.thousand ) );
+
+--
+-- Check that nested sub-selects are not pulled up if they contain volatiles
+--
+explain (verbose, costs off)
+  select x, x from
+    (select (select now()) as x from (values(1),(2)) v(y)) ss;
+explain (verbose, costs off)
+  select x, x from
+    (select (select random()) as x from (values(1),(2)) v(y)) ss;
+explain (verbose, costs off)
+  select x, x from
+    (select (select now() where y=y) as x from (values(1),(2)) v(y)) ss;
+explain (verbose, costs off)
+  select x, x from
+    (select (select random() where y=y) as x from (values(1),(2)) v(y)) ss;

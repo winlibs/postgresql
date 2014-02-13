@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_basebackup
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2013
+.\"    Manual: PostgreSQL 9.3.2 Documentation
+.\"    Source: PostgreSQL 9.3.2
 .\"  Language: English
 .\"
-.TH "PG_BASEBACKUP" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PG_BASEBACKUP" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -120,7 +120,7 @@ If the standby is promoted to the master during online backup, the backup fails\
 .\}
 All WAL records required for the backup must contain sufficient full\-page writes, which requires you to enable
 \fIfull_page_writes\fR
-on the master and not to use the tool like
+on the master and not to use a tool like
 pg_compresslog
 as
 \fIarchive_command\fR
@@ -168,6 +168,13 @@ If the value
 (dash) is specified as target directory, the tar contents will be written to standard output, suitable for piping to for example
 gzip\&. This is only possible if the cluster has no additional tablespaces\&.
 .RE
+.RE
+.PP
+\fB\-R\fR, \fB\-\-write\-recovery\-conf\fR
+.RS 4
+Write a minimal
+recovery\&.conf
+in the output directory (or into the base archive file when using tar format) to ease setting up a standby server\&.
 .RE
 .PP
 \fB\-x\fR, \fB\-\-xlog\fR
@@ -239,6 +246,19 @@ Enables verbose mode\&. Will output some extra steps during startup and shutdown
 .PP
 The following command\-line options control the database connection parameters\&.
 .PP
+\fB\-d \fR\fB\fIconnstr\fR\fR, \fB\-\-dbname=\fR\fB\fIconnstr\fR\fR
+.RS 4
+Specifies parameters used to connect to the server, as a connection string\&. See
+Section 31.1.1, \(lqConnection Strings\(rq, in the documentation
+for more information\&.
+.sp
+The option is called
+\-\-dbname
+for consistency with other client applications, but because
+pg_basebackup
+doesn\*(Aqt connect to any particular database in the cluster, database name in the connection string will be ignored\&.
+.RE
+.PP
 \fB\-h \fR\fB\fIhost\fR\fR, \fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
 Specifies the host name of the machine on which the server is running\&. If the value begins with a slash, it is used as the directory for the Unix domain socket\&. The default is taken from the
@@ -255,8 +275,7 @@ environment variable, if set, or a compiled\-in default\&.
 .PP
 \fB\-s \fR\fB\fIinterval\fR\fR, \fB\-\-status\-interval=\fR\fB\fIinterval\fR\fR
 .RS 4
-Specifies the number of seconds between status packets sent back to the server\&. This is required when streaming the transaction log (using
-\-\-xlog=stream) if replication timeout is configured on the server, and allows for easier monitoring\&. A value of zero disables the status updates completely\&. The default value is 10 seconds\&.
+Specifies the number of seconds between status packets sent back to the server\&. This allows for easier monitoring of the progress from server\&. A value of zero disables the periodic status updates completely, although an update will still be sent when requested by the server, to avoid timeout disconnect\&. The default value is 10 seconds\&.
 .RE
 .PP
 \fB\-U \fR\fB\fIusername\fR\fR, \fB\-\-username=\fR\fB\fIusername\fR\fR
@@ -316,6 +335,10 @@ The backup will include all files in the data directory and tablespaces, includi
 The way
 PostgreSQL
 manages tablespaces, the path for all additional tablespaces must be identical whenever a backup is restored\&. The main data directory, however, is relocatable to any location\&.
+.PP
+
+pg_basebackup
+works with servers of the same or an older major version, down to 9\&.1\&. However, WAL streaming mode (\-X stream) only works with server version 9\&.3\&.
 .SH "EXAMPLES"
 .PP
 To create a base backup of the server at

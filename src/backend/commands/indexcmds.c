@@ -3,7 +3,7 @@
  * indexcmds.c
  *	  POSTGRES define and remove index code.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -15,6 +15,7 @@
 
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "access/reloptions.h"
 #include "access/xact.h"
 #include "catalog/catalog.h"
@@ -319,6 +320,7 @@ DefineIndex(IndexStmt *stmt,
 	int16	   *coloptions;
 	IndexInfo  *indexInfo;
 	int			numberOfAttributes;
+	TransactionId limitXmin;
 	VirtualTransactionId *old_lockholders;
 	VirtualTransactionId *old_snapshots;
 	int			n_old_snapshots;
@@ -349,14 +351,13 @@ DefineIndex(IndexStmt *stmt,
 	 * (but not VACUUM).
 	 */
 	rel = heap_openrv(stmt->relation,
-					  (stmt->concurrent ? ShareUpdateExclusiveLock : ShareLock));
+				  (stmt->concurrent ? ShareUpdateExclusiveLock : ShareLock));
 
 	relationId = RelationGetRelid(rel);
 	namespaceId = RelationGetNamespace(rel);
 
-	/* Note: during bootstrap may see uncataloged relation */
 	if (rel->rd_rel->relkind != RELKIND_RELATION &&
-		rel->rd_rel->relkind != RELKIND_UNCATALOGED)
+		rel->rd_rel->relkind != RELKIND_MATVIEW)
 	{
 		if (rel->rd_rel->relkind == RELKIND_FOREIGN_TABLE)
 
@@ -371,7 +372,7 @@ DefineIndex(IndexStmt *stmt,
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
-					 errmsg("\"%s\" is not a table",
+					 errmsg("\"%s\" is not a table or materialized view",
 							RelationGetRelationName(rel))));
 	}
 
@@ -574,7 +575,7 @@ DefineIndex(IndexStmt *stmt,
 			constraint_type = NULL;		/* keep compiler quiet */
 		}
 
-		ereport(NOTICE,
+		ereport(DEBUG1,
 		  (errmsg("%s %s will create implicit index \"%s\" for table \"%s\"",
 				  is_alter_table ? "ALTER TABLE / ADD" : "CREATE TABLE /",
 				  constraint_type,
@@ -600,7 +601,7 @@ DefineIndex(IndexStmt *stmt,
 					 stmt->isconstraint, stmt->deferrable, stmt->initdeferred,
 					 allowSystemTableMods,
 					 skip_build || stmt->concurrent,
-					 stmt->concurrent);
+					 stmt->concurrent, !check_rights);
 
 	/* Add any requested comment */
 	if (stmt->idxcomment != NULL)
@@ -770,6 +771,18 @@ DefineIndex(IndexStmt *stmt,
 	validate_index(relationId, indexRelationId, snapshot);
 
 	/*
+	 * Drop the reference snapshot.  We must do this before waiting out other
+	 * snapshot holders, else we will deadlock against other processes also
+	 * doing CREATE INDEX CONCURRENTLY, which would see our snapshot as one
+	 * they must wait for.	But first, save the snapshot's xmin to use as
+	 * limitXmin for GetCurrentVirtualXIDs().
+	 */
+	limitXmin = snapshot->xmin;
+
+	PopActiveSnapshot();
+	UnregisterSnapshot(snapshot);
+
+	/*
 	 * The index is now valid in the sense that it contains all currently
 	 * interesting tuples.	But since it might not contain tuples deleted just
 	 * before the reference snap was taken, we have to wait out any
@@ -801,7 +814,7 @@ DefineIndex(IndexStmt *stmt,
 	 * GetCurrentVirtualXIDs.  If, during any iteration, a particular vxid
 	 * doesn't show up in the output, we know we can forget about it.
 	 */
-	old_snapshots = GetCurrentVirtualXIDs(snapshot->xmin, true, false,
+	old_snapshots = GetCurrentVirtualXIDs(limitXmin, true, false,
 										  PROC_IS_AUTOVACUUM | PROC_IN_VACUUM,
 										  &n_old_snapshots);
 
@@ -818,7 +831,7 @@ DefineIndex(IndexStmt *stmt,
 			int			j;
 			int			k;
 
-			newer_snapshots = GetCurrentVirtualXIDs(snapshot->xmin,
+			newer_snapshots = GetCurrentVirtualXIDs(limitXmin,
 													true, false,
 										 PROC_IS_AUTOVACUUM | PROC_IN_VACUUM,
 													&n_newer_snapshots);
@@ -856,12 +869,6 @@ DefineIndex(IndexStmt *stmt,
 	 * to replan; so relcache flush on the index itself was sufficient.)
 	 */
 	CacheInvalidateRelcacheByRelid(heaprelid.relId);
-
-	/* we can now do away with our active snapshot */
-	PopActiveSnapshot();
-
-	/* And we can remove the validating snapshot too */
-	UnregisterSnapshot(snapshot);
 
 	/*
 	 * Last thing to do is release the session-level lock on the parent table.
@@ -914,17 +921,9 @@ static void
 CheckPredicate(Expr *predicate)
 {
 	/*
-	 * We don't currently support generation of an actual query plan for a
-	 * predicate, only simple scalar expressions; hence these restrictions.
+	 * transformExpr() should have already rejected subqueries, aggregates,
+	 * and window functions, based on the EXPR_KIND_ for a predicate.
 	 */
-	if (contain_subplans((Node *) predicate))
-		ereport(ERROR,
-				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("cannot use subquery in index predicate")));
-	if (contain_agg_clause((Node *) predicate))
-		ereport(ERROR,
-				(errcode(ERRCODE_GROUPING_ERROR),
-				 errmsg("cannot use aggregate in index predicate")));
 
 	/*
 	 * A predicate using mutable functions is probably wrong, for the same
@@ -1045,18 +1044,10 @@ ComputeIndexAttrs(IndexInfo *indexInfo,
 													expr);
 
 				/*
-				 * We don't currently support generation of an actual query
-				 * plan for an index expression, only simple scalar
-				 * expressions; hence these restrictions.
+				 * transformExpr() should have already rejected subqueries,
+				 * aggregates, and window functions, based on the EXPR_KIND_
+				 * for an index expression.
 				 */
-				if (contain_subplans(expr))
-					ereport(ERROR,
-							(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-						 errmsg("cannot use subquery in index expression")));
-				if (contain_agg_clause(expr))
-					ereport(ERROR,
-							(errcode(ERRCODE_GROUPING_ERROR),
-							 errmsg("cannot use aggregate function in index expression")));
 
 				/*
 				 * A expression using mutable functions is probably wrong,
@@ -1281,7 +1272,7 @@ GetIndexOpClass(List *opclass, Oid attrType,
 		/* Look in specific schema only */
 		Oid			namespaceId;
 
-		namespaceId = LookupExplicitNamespace(schemaname);
+		namespaceId = LookupExplicitNamespace(schemaname, false);
 		tuple = SearchSysCache3(CLAAMNAMENSP,
 								ObjectIdGetDatum(accessMethodId),
 								PointerGetDatum(opcname),
@@ -1688,7 +1679,7 @@ ChooseIndexColumnNames(List *indexElems)
  * ReindexIndex
  *		Recreate a specific index.
  */
-void
+Oid
 ReindexIndex(RangeVar *indexRelation)
 {
 	Oid			indOid;
@@ -1701,6 +1692,8 @@ ReindexIndex(RangeVar *indexRelation)
 									  (void *) &heapOid);
 
 	reindex_index(indOid, false);
+
+	return indOid;
 }
 
 /*
@@ -1766,7 +1759,7 @@ RangeVarCallbackForReindexIndex(const RangeVar *relation,
  * ReindexTable
  *		Recreate all indexes of a table (and of its toast table, if any)
  */
-void
+Oid
 ReindexTable(RangeVar *relation)
 {
 	Oid			heapOid;
@@ -1775,10 +1768,14 @@ ReindexTable(RangeVar *relation)
 	heapOid = RangeVarGetRelidExtended(relation, ShareLock, false, false,
 									   RangeVarCallbackOwnsTable, NULL);
 
-	if (!reindex_relation(heapOid, REINDEX_REL_PROCESS_TOAST))
+	if (!reindex_relation(heapOid,
+						  REINDEX_REL_PROCESS_TOAST |
+						  REINDEX_REL_CHECK_CONSTRAINTS))
 		ereport(NOTICE,
 				(errmsg("table \"%s\" has no indexes",
 						relation->relname)));
+
+	return heapOid;
 }
 
 /*
@@ -1789,7 +1786,7 @@ ReindexTable(RangeVar *relation)
  * separate transaction, so we can release the lock on it right away.
  * That means this must not be called within a user transaction block!
  */
-void
+Oid
 ReindexDatabase(const char *databaseName, bool do_system, bool do_user)
 {
 	Relation	relationRelation;
@@ -1839,8 +1836,8 @@ ReindexDatabase(const char *databaseName, bool do_system, bool do_user)
 	/*
 	 * Scan pg_class to build a list of the relations we need to reindex.
 	 *
-	 * We only consider plain relations here (toast rels will be processed
-	 * indirectly by reindex_relation).
+	 * We only consider plain relations and materialized views here (toast
+	 * rels will be processed indirectly by reindex_relation).
 	 */
 	relationRelation = heap_open(RelationRelationId, AccessShareLock);
 	scan = heap_beginscan(relationRelation, SnapshotNow, 0, NULL);
@@ -1848,7 +1845,8 @@ ReindexDatabase(const char *databaseName, bool do_system, bool do_user)
 	{
 		Form_pg_class classtuple = (Form_pg_class) GETSTRUCT(tuple);
 
-		if (classtuple->relkind != RELKIND_RELATION)
+		if (classtuple->relkind != RELKIND_RELATION &&
+			classtuple->relkind != RELKIND_MATVIEW)
 			continue;
 
 		/* Skip temp tables of other backends; we can't reindex them at all */
@@ -1888,7 +1886,9 @@ ReindexDatabase(const char *databaseName, bool do_system, bool do_user)
 		StartTransactionCommand();
 		/* functions in indexes may want a snapshot set */
 		PushActiveSnapshot(GetTransactionSnapshot());
-		if (reindex_relation(relid, REINDEX_REL_PROCESS_TOAST))
+		if (reindex_relation(relid,
+							 REINDEX_REL_PROCESS_TOAST |
+							 REINDEX_REL_CHECK_CONSTRAINTS))
 			ereport(NOTICE,
 					(errmsg("table \"%s.%s\" was reindexed",
 							get_namespace_name(get_rel_namespace(relid)),
@@ -1899,4 +1899,6 @@ ReindexDatabase(const char *databaseName, bool do_system, bool do_user)
 	StartTransactionCommand();
 
 	MemoryContextDelete(private_context);
+
+	return MyDatabaseId;
 }

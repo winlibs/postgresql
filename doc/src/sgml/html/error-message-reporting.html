@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.3.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Coding Conventions"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2013-12-02T21:10:18"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.3.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 47. PostgreSQL Coding Conventions</TD
+>Chapter 49. PostgreSQL Coding Conventions</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="ERROR-MESSAGE-REPORTING"
->47.2. Reporting Errors Within the Server</A
+>49.2. Reporting Errors Within the Server</A
 ></H1
 ><P
 >    Error, warning, and log messages generated within the server code
@@ -259,8 +259,8 @@ CLASS="LITERAL"
 >errno</TT
 >.
      <A
-NAME="AEN96909"
-HREF="#FTN.AEN96909"
+NAME="AEN100596"
+HREF="#FTN.AEN100596"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN
@@ -332,7 +332,7 @@ CLASS="REPLACEABLE"
      to the selected format string.  For more information see
      <A
 HREF="nls-programmer.html#NLS-GUIDELINES"
->Section 48.2.2</A
+>Section 50.2.2</A
 >.
     </P
 ></LI
@@ -383,7 +383,7 @@ CLASS="FUNCTION"
      support for various plural forms of the message.
      For more information see <A
 HREF="nls-programmer.html#NLS-GUIDELINES"
->Section 48.2.2</A
+>Section 50.2.2</A
 >.
     </P
 ></LI
@@ -473,6 +473,66 @@ CLASS="FUNCTION"
 ><P
 >     <CODE
 CLASS="FUNCTION"
+>errtable(Relation rel)</CODE
+> specifies a relation whose
+     name and schema name should be included as auxiliary fields in the error
+     report.
+    </P
+></LI
+><LI
+><P
+>     <CODE
+CLASS="FUNCTION"
+>errtablecol(Relation rel, int attnum)</CODE
+> specifies
+     a column whose name, table name, and schema name should be included as
+     auxiliary fields in the error report.
+    </P
+></LI
+><LI
+><P
+>     <CODE
+CLASS="FUNCTION"
+>errtableconstraint(Relation rel, const char *conname)</CODE
+>
+     specifies a table constraint whose name, table name, and schema name
+     should be included as auxiliary fields in the error report.  Indexes
+     should be considered to be constraints for this purpose, whether or
+     not they have an associated <TT
+CLASS="STRUCTNAME"
+>pg_constraint</TT
+> entry.  Be
+     careful to pass the underlying heap relation, not the index itself, as
+     <TT
+CLASS="LITERAL"
+>rel</TT
+>.
+    </P
+></LI
+><LI
+><P
+>     <CODE
+CLASS="FUNCTION"
+>errdatatype(Oid datatypeOid)</CODE
+> specifies a data
+     type whose name and schema name should be included as auxiliary fields
+     in the error report.
+    </P
+></LI
+><LI
+><P
+>     <CODE
+CLASS="FUNCTION"
+>errdomainconstraint(Oid datatypeOid, const char *conname)</CODE
+>
+     specifies a domain constraint whose name, domain name, and schema name
+     should be included as auxiliary fields in the error report.
+    </P
+></LI
+><LI
+><P
+>     <CODE
+CLASS="FUNCTION"
 >errcode_for_file_access()</CODE
 > is a convenience function that
      selects an appropriate SQLSTATE error identifier for a failure in a
@@ -515,6 +575,49 @@ CLASS="LITERAL"
 ></UL
 ><P>
    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>     At most one of the functions <CODE
+CLASS="FUNCTION"
+>errtable</CODE
+>,
+     <CODE
+CLASS="FUNCTION"
+>errtablecol</CODE
+>, <CODE
+CLASS="FUNCTION"
+>errtableconstraint</CODE
+>,
+     <CODE
+CLASS="FUNCTION"
+>errdatatype</CODE
+>, or <CODE
+CLASS="FUNCTION"
+>errdomainconstraint</CODE
+> should
+     be used in an <CODE
+CLASS="FUNCTION"
+>ereport</CODE
+> call.  These functions exist to
+     allow applications to extract the name of a database object associated
+     with the error condition without having to examine the
+     potentially-localized error message text.
+     These functions should be used in error reports for which it's likely
+     that applications would wish to have automatic error handling.  As of
+     <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.3, complete coverage exists only for
+     errors in SQLSTATE class 23 (integrity constraint violation), but this
+     is likely to be expanded in future.
+    </P
+></BLOCKQUOTE
+></DIV
 ><P
 >    There is an older function <CODE
 CLASS="FUNCTION"
@@ -558,7 +661,7 @@ CLASS="FUNCTION"
 >    Advice about writing good error messages can be found in
     <A
 HREF="error-style-guide.html"
->Section 47.3</A
+>Section 49.3</A
 >.
    </P
 ></DIV
@@ -575,8 +678,8 @@ ALIGN="LEFT"
 VALIGN="TOP"
 WIDTH="5%"
 ><A
-NAME="FTN.AEN96909"
-HREF="error-message-reporting.html#AEN96909"
+NAME="FTN.AEN100596"
+HREF="error-message-reporting.html#AEN100596"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="pgcrypto"
 HREF="pgcrypto.html"><LINK
 REL="NEXT"
-TITLE="pgrowlocks"
-HREF="pgrowlocks.html"><LINK
+TITLE="pg_prewarm"
+HREF="pgprewarm.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="pgrowlocks"
-HREF="pgrowlocks.html"
+TITLE="pg_prewarm"
+HREF="pgprewarm.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -117,7 +117,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142197"
+NAME="AEN159565"
 >F.26.1. Functions</A
 ></H2
 ><P
@@ -129,7 +129,8 @@ CLASS="VARIABLELIST"
 ><CODE
 CLASS="FUNCTION"
 >pg_freespace(rel regclass IN, blkno bigint IN) returns int2</CODE
-></DT
+>
+     </DT
 ><DD
 ><P
 >      Returns the amount of free space on the page of the relation, specified
@@ -172,17 +173,25 @@ CLASS="SYMBOL"
    space within pages.  Therefore, the values are not meaningful, just
    whether a page is full or empty.
   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
 ><P
->   NOTE: The interface was changed in version 8.4, to reflect the new FSM
-   implementation introduced in the same version.
-  </P
+><B
+>Note: </B
+>    The interface was changed in version 8.4, to reflect the new FSM
+    implementation introduced in the same version.
+   </P
+></BLOCKQUOTE
+></DIV
 ></DIV
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142217"
+NAME="AEN159588"
 >F.26.2. Sample Output</A
 ></H2
 ><PRE
@@ -223,7 +232,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142220"
+NAME="AEN159591"
 >F.26.3. Author</A
 ></H2
 ><P
@@ -279,7 +288,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="pgrowlocks.html"
+HREF="pgprewarm.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -303,7 +312,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->pgrowlocks</TD
+>pg_prewarm</TD
 ></TR
 ></TABLE
 ></DIV

@@ -3,7 +3,7 @@
 # GNUmakefile--
 #    Makefile for src/test/regress (the regression tests)
 #
-# Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+# Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
 # Portions Copyright (c) 1994, Regents of the University of California
 #
 # src/test/regress/GNUmakefile
@@ -111,14 +111,19 @@ autoinc$(DLSUFFIX): $(top_builddir)/contrib/spi/autoinc$(DLSUFFIX)
 dummy_seclabel$(DLSUFFIX): $(top_builddir)/contrib/dummy_seclabel/dummy_seclabel$(DLSUFFIX)
 	cp $< $@
 
-$(top_builddir)/contrib/spi/refint$(DLSUFFIX): $(top_srcdir)/contrib/spi/refint.c
-	$(MAKE) -C $(top_builddir)/contrib/spi refint$(DLSUFFIX)
+$(top_builddir)/contrib/spi/refint$(DLSUFFIX): | submake-contrib-spi ;
 
-$(top_builddir)/contrib/spi/autoinc$(DLSUFFIX): $(top_srcdir)/contrib/spi/autoinc.c
-	$(MAKE) -C $(top_builddir)/contrib/spi autoinc$(DLSUFFIX)
+$(top_builddir)/contrib/spi/autoinc$(DLSUFFIX): | submake-contrib-spi ;
 
-$(top_builddir)/contrib/dummy_seclabel/dummy_seclabel$(DLSUFFIX): $(top_builddir)/contrib/dummy_seclabel/dummy_seclabel.c
-	$(MAKE) -C $(top_builddir)/contrib/dummy_seclabel dummy_seclabel$(DLSUFFIX)
+$(top_builddir)/contrib/dummy_seclabel/dummy_seclabel$(DLSUFFIX): | submake-contrib-dummy_seclabel ;
+
+submake-contrib-spi:
+	$(MAKE) -C $(top_builddir)/contrib/spi
+
+submake-contrib-dummy_seclabel:
+	$(MAKE) -C $(top_builddir)/contrib/dummy_seclabel
+
+.PHONY: submake-contrib-spi submake-contrib-dummy_seclabel
 
 # Tablespace setup
 
@@ -137,11 +142,17 @@ REGRESS_OPTS = --dlpath=. $(EXTRA_REGRESS_OPTS)
 check: all tablespace-setup
 	$(pg_regress_check) $(REGRESS_OPTS) --schedule=$(srcdir)/parallel_schedule $(MAXCONNOPT) $(TEMP_CONF) $(EXTRA_TESTS)
 
+check-tests: all tablespace-setup
+	$(pg_regress_check) $(REGRESS_OPTS) $(MAXCONNOPT) $(TEMP_CONF) $(TESTS) $(EXTRA_TESTS)
+
 installcheck: all tablespace-setup
 	$(pg_regress_installcheck) $(REGRESS_OPTS) --schedule=$(srcdir)/serial_schedule $(EXTRA_TESTS)
 
 installcheck-parallel: all tablespace-setup
 	$(pg_regress_installcheck) $(REGRESS_OPTS) --schedule=$(srcdir)/parallel_schedule $(MAXCONNOPT) $(EXTRA_TESTS)
+
+installcheck-tests: all tablespace-setup
+	$(pg_regress_installcheck) $(REGRESS_OPTS) $(TESTS) $(EXTRA_TESTS)
 
 standbycheck: all
 	$(pg_regress_installcheck) $(REGRESS_OPTS) --schedule=$(srcdir)/standby_schedule --use-existing

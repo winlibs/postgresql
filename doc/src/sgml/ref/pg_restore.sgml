@@ -1,6 +1,10 @@
 <!-- doc/src/sgml/ref/pg_restore.sgml -->
 
 <refentry id="APP-PGRESTORE">
+ <indexterm zone="app-pgrestore">
+  <primary>pg_restore</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle>pg_restore</refentrytitle>
   <manvolnum>1</manvolnum>
@@ -15,10 +19,6 @@
    archive file created by <application>pg_dump</application>
   </refpurpose>
  </refnamediv>
-
- <indexterm zone="app-pgrestore">
-  <primary>pg_restore</primary>
- </indexterm>
 
  <refsynopsisdiv>
   <cmdsynopsis>
@@ -109,7 +109,8 @@
       <listitem>
        <para>
         Clean (drop) database objects before recreating them.
-        (This might generate some harmless error messages, if any objects
+        (Unless <option>--if-exists</> is used,
+        this might generate some harmless error messages, if any objects
         were not present in the destination database.)
        </para>
       </listitem>
@@ -230,7 +231,8 @@
       <term><option>--index=<replaceable class="parameter">index</replaceable></option></term>
       <listitem>
        <para>
-        Restore definition of named index only.
+        Restore definition of named index only.  Multiple indexes
+        may be specified with multiple <option>-I</> switches.
        </para>
       </listitem>
      </varlistentry>
@@ -265,8 +267,9 @@
        </para>
 
        <para>
-        Only the custom archive format is supported with this option.
-        The input file must be a regular file (not, for example, a
+        Only the custom and directory archive formats are supported
+        with this option.
+        The input must be a regular file or directory (not, for example, a
         pipe).  This option is ignored when emitting a script rather
         than connecting directly to a database server.  Also, multiple
         jobs cannot be used together with the
@@ -313,7 +316,8 @@
       <term><option>--schema=<replaceable class="parameter">schema</replaceable></option></term>
       <listitem>
        <para>
-        Restore only objects that are in the named schema.  This can be
+        Restore only objects that are in the named schema.  Multiple schemas
+        may be specified with multiple <option>-n</> switches.  This can be
         combined with the <option>-t</option> option to restore just a
         specific table.
        </para>
@@ -347,7 +351,8 @@
        <para>
         Restore the named function only.  Be careful to spell the function
         name and arguments exactly as they appear in the dump file's table
-        of contents.
+        of contents.  Multiple functions may be specified with multiple
+        <option>-P</> switches.
        </para>
       </listitem>
      </varlistentry>
@@ -390,7 +395,7 @@
       <listitem>
        <para>
         Specify the superuser user name to use when disabling triggers.
-        This is only relevant if <option>--disable-triggers</> is used.
+        This is relevant only if <option>--disable-triggers</> is used.
        </para>
       </listitem>
      </varlistentry>
@@ -400,7 +405,8 @@
       <term><option>--table=<replaceable class="parameter">table</replaceable></option></term>
       <listitem>
        <para>
-        Restore definition and/or data of named table only.  This can be
+        Restore definition and/or data of named table only. Multiple tables
+        may be specified with multiple <option>-t</> switches. This can be
         combined with the <option>-n</option> option to specify a schema.
        </para>
       </listitem>
@@ -411,7 +417,8 @@
       <term><option>--trigger=<replaceable class="parameter">trigger</replaceable></option></term>
       <listitem>
        <para>
-        Restore named trigger only.
+        Restore named trigger only.  Multiple triggers may be specified with
+        multiple <option>-T</> switches.
        </para>
       </listitem>
      </varlistentry>
@@ -465,7 +472,7 @@
       <term><option>--disable-triggers</></term>
       <listitem>
        <para>
-        This option is only relevant when performing a data-only restore.
+        This option is relevant only when performing a data-only restore.
         It instructs <application>pg_restore</application> to execute commands
         to temporarily disable triggers on the target tables while
         the data is reloaded.  Use this if you have referential
@@ -475,10 +482,21 @@
 
        <para>
         Presently, the commands emitted for
-        <option>--disable-triggers</> must be done as superuser.  So, you
-        should also specify a superuser name with <option>-S</>, or
-        preferably run <application>pg_restore</application> as a
+        <option>--disable-triggers</> must be done as superuser.  So you
+        should also specify a superuser name with <option>-S</> or,
+        preferably, run <application>pg_restore</application> as a
         <productname>PostgreSQL</> superuser.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><option>--if-exists</option></term>
+      <listitem>
+       <para>
+        Use conditional commands (i.e. add an <literal>IF EXISTS</literal>
+        clause) when cleaning database objects.  This option is not valid
+        unless <option>--clean</> is also specified.
        </para>
       </listitem>
      </varlistentry>
@@ -693,7 +711,8 @@
   <para>
    This utility, like most other <productname>PostgreSQL</> utilities,
    also uses the environment variables supported by <application>libpq</>
-   (see <xref linkend="libpq-envars">).
+   (see <xref linkend="libpq-envars">).  However, it does not read
+   <envar>PGDATABASE</envar> when a database name is not supplied.
   </para>
 
  </refsect1>

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -122,13 +122,13 @@ CLASS="TYPE"
 > have a large set of
     native support functions and operators, shown in <A
 HREF="functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE"
->Table 9-30</A
+>Table 9-31</A
 >, <A
 HREF="functions-geometry.html#FUNCTIONS-GEOMETRY-FUNC-TABLE"
->Table 9-31</A
+>Table 9-32</A
 >, and <A
 HREF="functions-geometry.html#FUNCTIONS-GEOMETRY-CONV-TABLE"
->Table 9-32</A
+>Table 9-33</A
 >.
    </P
 ><DIV
@@ -202,7 +202,7 @@ NAME="FUNCTIONS-GEOMETRY-OP-TABLE"
 ></A
 ><P
 ><B
->Table 9-30. Geometric Operators</B
+>Table 9-31. Geometric Operators</B
 ></P
 ><TABLE
 BORDER="1"
@@ -691,7 +691,7 @@ NAME="FUNCTIONS-GEOMETRY-FUNC-TABLE"
 ></A
 ><P
 ><B
->Table 9-31. Geometric Functions</B
+>Table 9-32. Geometric Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1050,7 +1050,7 @@ NAME="FUNCTIONS-GEOMETRY-CONV-TABLE"
 ></A
 ><P
 ><B
->Table 9-32. Geometric Type Conversion Functions</B
+>Table 9-33. Geometric Type Conversion Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1226,6 +1226,34 @@ CLASS="TYPE"
 ><TT
 CLASS="LITERAL"
 >circle(polygon '((0,0),(1,1),(2,0))')</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>line(<TT
+CLASS="TYPE"
+>point</TT
+>, <TT
+CLASS="TYPE"
+>point</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>line</TT
+></TD
+><TD
+>points to line</TD
+><TD
+><TT
+CLASS="LITERAL"
+>line(point '(-1,0)', point '(1,0)')</TT
 ></TD
 ></TR
 ><TR

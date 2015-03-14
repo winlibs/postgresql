@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Interface Functions"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SPI-SPI-CURSOR-OPEN-WITH-ARGS"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN60539"
+NAME="AEN64968"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN60539"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN60544"
+NAME="AEN64971"
 ></A
 ><H2
 >Synopsis</H2
@@ -142,7 +142,7 @@ CLASS="PARAMETER"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN60554"
+NAME="AEN64981"
 ></A
 ><H2
 >Description</H2
@@ -184,7 +184,7 @@ CLASS="FUNCTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN60564"
+NAME="AEN64991"
 ></A
 ><H2
 >Arguments</H2
@@ -252,11 +252,14 @@ CLASS="PARAMETER"
 ></DT
 ><DD
 ><P
->      an array containing the <ACRONYM
+>      an array of length <TT
+CLASS="PARAMETER"
+>nargs</TT
+>, containing the
+      <ACRONYM
 CLASS="ACRONYM"
 >OID</ACRONYM
->s of
-      the data types of the parameters
+>s of the data types of the parameters
      </P
 ></DD
 ><DT
@@ -269,7 +272,11 @@ CLASS="PARAMETER"
 ></DT
 ><DD
 ><P
->      an array of actual parameter values
+>      an array of length <TT
+CLASS="PARAMETER"
+>nargs</TT
+>, containing the actual
+      parameter values
      </P
 ></DD
 ><DT
@@ -282,7 +289,11 @@ CLASS="PARAMETER"
 ></DT
 ><DD
 ><P
->      an array describing which parameters are null
+>      an array of length <TT
+CLASS="PARAMETER"
+>nargs</TT
+>, describing which
+      parameters are null
      </P
 ><P
 >      If <TT
@@ -295,8 +306,32 @@ CLASS="SYMBOL"
       <CODE
 CLASS="FUNCTION"
 >SPI_cursor_open_with_args</CODE
-> assumes that no
-      parameters are null.
+> assumes that no parameters
+      are null.  Otherwise, each entry of the <TT
+CLASS="PARAMETER"
+>nulls</TT
+>
+      array should be <TT
+CLASS="LITERAL"
+>'&nbsp;'</TT
+> if the corresponding parameter
+      value is non-null, or <TT
+CLASS="LITERAL"
+>'n'</TT
+> if the corresponding parameter
+      value is null.  (In the latter case, the actual value in the
+      corresponding <TT
+CLASS="PARAMETER"
+>values</TT
+> entry doesn't matter.)  Note
+      that <TT
+CLASS="PARAMETER"
+>nulls</TT
+> is not a text string, just an array:
+      it does not need a <TT
+CLASS="LITERAL"
+>'\0'</TT
+> terminator.
      </P
 ></DD
 ><DT
@@ -333,7 +368,7 @@ CLASS="PARAMETER"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN60624"
+NAME="AEN65060"
 ></A
 ><H2
 >Return Value</H2

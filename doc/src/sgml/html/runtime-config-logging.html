@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -118,7 +118,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        <SPAN
@@ -262,7 +263,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >         This parameter enables the <I
@@ -345,7 +347,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When <TT
@@ -360,6 +363,10 @@ CLASS="FILENAME"
 >postgresql.conf</TT
 >
         file or on the server command line.
+        The default is <TT
+CLASS="LITERAL"
+>pg_log</TT
+>.
        </P
 ></DD
 ><DT
@@ -372,7 +379,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When <TT
@@ -380,9 +388,9 @@ CLASS="VARNAME"
 >logging_collector</TT
 > is enabled,
         this parameter sets the file names of the created log files.  The value
-        is treated as a <SPAN
-CLASS="SYSTEMITEM"
->strftime</SPAN
+        is treated as a <CODE
+CLASS="FUNCTION"
+>strftime</CODE
 > pattern,
         so <TT
 CLASS="LITERAL"
@@ -413,6 +421,10 @@ CLASS="SYSTEMITEM"
 >strftime</SPAN
 > is not used
         directly, so platform-specific (nonstandard) extensions do not work.
+        The default is <TT
+CLASS="LITERAL"
+>postgresql-%Y-%m-%d_%H%M%S.log</TT
+>.
        </P
 ><P
 >        If you specify a file name without escapes, you should plan to
@@ -447,11 +459,6 @@ CLASS="LITERAL"
 >.log</TT
 >, the suffix is
         replaced instead.)
-        In the case of the example above, the CSV
-        file name will be <TT
-CLASS="LITERAL"
->server_log.1093827753.csv</TT
->.
        </P
 ><P
 >        This parameter can only be set in the <TT
@@ -471,7 +478,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        On Unix systems this parameter sets the permissions for log files
@@ -532,7 +540,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When <TT
@@ -560,7 +569,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When <TT
@@ -588,7 +598,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When <TT
@@ -703,7 +714,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When logging to <SPAN
@@ -771,7 +783,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >         When logging to <SPAN
@@ -808,7 +821,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When logging to <SPAN
@@ -857,7 +871,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls which message levels are sent to the client.
@@ -924,7 +939,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls which message levels are written to the server log.
@@ -995,7 +1011,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls which SQL statements that cause an error
@@ -1068,7 +1085,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >         Causes the duration of each completed statement to be logged
@@ -1365,7 +1383,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        The <TT
@@ -1404,19 +1423,22 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)<BR><TT
+>)
+      <BR><TT
 CLASS="VARNAME"
 >debug_print_rewritten</TT
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)<BR><TT
+>)
+      <BR><TT
 CLASS="VARNAME"
 >debug_print_plan</TT
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        These parameters enable various debugging output to be emitted.
@@ -1446,7 +1468,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When set, <TT
@@ -1482,7 +1505,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Causes checkpoints and restartpoints to be logged in the server log.
@@ -1505,7 +1529,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Causes each attempted connection to the server to be logged,
@@ -1544,7 +1569,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        This outputs a line in the server log similar to
@@ -1567,7 +1593,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Causes the duration of every completed statement to be logged.
@@ -1626,7 +1653,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls the amount of detail written in the server log for each
@@ -1684,7 +1712,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        By default, connection log messages only show the IP address of the
@@ -1708,7 +1737,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >         This is a <CODE
@@ -1726,8 +1756,14 @@ CLASS="QUOTE"
          that are replaced with status information as outlined below.
          Unrecognized escapes are ignored. Other
          characters are copied straight to the log line. Some escapes are
-         only recognized by session processes, and are ignored by
-         background processes such as the main server process.
+         only recognized by session processes, and will be treated as empty by
+         background processes such as the main server process. Status
+         information may be aligned either left or right by specifying a
+         numeric literal after the % and before the option. A negative
+         value will cause the status information to be padded on the
+         right with spaces to give it a minimum width, whereas a positive
+         value will pad on the left. Padding can be useful to aid human
+         readability in log files.
          This parameter can only be set in the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
@@ -1739,7 +1775,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN29253"
+NAME="AEN31771"
 ></A
 ><TABLE
 BORDER="1"
@@ -2024,7 +2060,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls whether a log message is produced when a session waits
@@ -2049,7 +2086,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls which SQL statements are logged. Valid values are
@@ -2170,7 +2208,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls logging of temporary file names and sizes.
@@ -2194,7 +2233,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the time zone used for timestamps written in the server log.

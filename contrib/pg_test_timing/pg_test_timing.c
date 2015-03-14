@@ -14,16 +14,24 @@ static const char *progname;
 static int32 test_duration = 3;
 
 static void handle_args(int argc, char *argv[]);
-static void test_timing(int32);
+static uint64 test_timing(int32);
+static void output(uint64 loop_count);
+
+/* record duration in powers of 2 microseconds */
+int64		histogram[32];
 
 int
 main(int argc, char *argv[])
 {
+	uint64		loop_count;
+
 	progname = get_progname(argv[0]);
 
 	handle_args(argc, argv);
 
-	test_timing(test_duration);
+	loop_count = test_timing(test_duration);
+
+	output(loop_count);
 
 	return 0;
 }
@@ -35,13 +43,13 @@ handle_args(int argc, char *argv[])
 		{"duration", required_argument, NULL, 'd'},
 		{NULL, 0, NULL, 0}
 	};
+
 	int			option;			/* Command line option */
 	int			optindex = 0;	/* used by getopt_long */
 
 	if (argc > 1)
 	{
-		if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ||
-			strcmp(argv[1], "-?") == 0)
+		if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-?") == 0)
 		{
 			printf("Usage: %s [-d DURATION]\n", progname);
 			exit(0);
@@ -95,7 +103,7 @@ handle_args(int argc, char *argv[])
 	}
 }
 
-static void
+static uint64
 test_timing(int32 duration)
 {
 	uint64		total_time;
@@ -103,30 +111,26 @@ test_timing(int32 duration)
 	uint64		loop_count = 0;
 	uint64		prev,
 				cur;
-	int32		diff,
-				i,
-				bits,
-				found;
-
 	instr_time	start_time,
 				end_time,
 				temp;
 
-	static int64 histogram[32];
-	char		buf[100];
-
-	total_time = duration > 0 ? duration * 1000000 : 0;
+	total_time = duration > 0 ? duration * INT64CONST(1000000) : 0;
 
 	INSTR_TIME_SET_CURRENT(start_time);
 	cur = INSTR_TIME_GET_MICROSEC(start_time);
 
 	while (time_elapsed < total_time)
 	{
+		int32		diff,
+					bits = 0;
+
 		prev = cur;
 		INSTR_TIME_SET_CURRENT(temp);
 		cur = INSTR_TIME_GET_MICROSEC(temp);
 		diff = cur - prev;
 
+		/* Did time go backwards? */
 		if (diff < 0)
 		{
 			printf("Detected clock going backwards in time.\n");
@@ -134,12 +138,14 @@ test_timing(int32 duration)
 			exit(1);
 		}
 
-		bits = 0;
+		/* What is the highest bit in the time diff? */
 		while (diff)
 		{
 			diff >>= 1;
 			bits++;
 		}
+
+		/* Update appropriate duration bucket */
 		histogram[bits]++;
 
 		loop_count++;
@@ -153,19 +159,30 @@ test_timing(int32 duration)
 
 	printf("Per loop time including overhead: %0.2f nsec\n",
 		   INSTR_TIME_GET_DOUBLE(end_time) * 1e9 / loop_count);
-	printf("Histogram of timing durations:\n");
-	printf("%9s: %10s %9s\n", "< usec", "count", "percent");
 
-	found = 0;
-	for (i = 31; i >= 0; i--)
+	return loop_count;
+}
+
+static void
+output(uint64 loop_count)
+{
+	int64		max_bit = 31,
+				i;
+
+	/* find highest bit value */
+	while (max_bit > 0 && histogram[max_bit] == 0)
+		max_bit--;
+
+	printf("Histogram of timing durations:\n");
+	printf("%6s   %10s %10s\n", "< usec", "% of total", "count");
+
+	for (i = 0; i <= max_bit; i++)
 	{
-		if (found || histogram[i])
-		{
-			found = 1;
-			/* lame hack to work around INT64_FORMAT deficiencies */
-			snprintf(buf, sizeof(buf), INT64_FORMAT, histogram[i]);
-			printf("%9ld: %10s %8.5f%%\n", 1l << i, buf,
-				   (double) histogram[i] * 100 / loop_count);
-		}
+		char		buf[100];
+
+		/* lame hack to work around INT64_FORMAT deficiencies */
+		snprintf(buf, sizeof(buf), INT64_FORMAT, histogram[i]);
+		printf("%6ld    %9.5f %10s\n", 1l << i,
+			   (double) histogram[i] * 100 / loop_count, buf);
 	}
 }

@@ -7,6 +7,7 @@
 
 #include <ctype.h>
 
+#include "access/htup_details.h"
 #include "catalog/pg_statistic.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
@@ -36,25 +37,6 @@ PG_FUNCTION_INFO_V1(lca);
 PG_FUNCTION_INFO_V1(ltree2text);
 PG_FUNCTION_INFO_V1(text2ltree);
 PG_FUNCTION_INFO_V1(ltreeparentsel);
-
-Datum		ltree_cmp(PG_FUNCTION_ARGS);
-Datum		ltree_lt(PG_FUNCTION_ARGS);
-Datum		ltree_le(PG_FUNCTION_ARGS);
-Datum		ltree_eq(PG_FUNCTION_ARGS);
-Datum		ltree_ne(PG_FUNCTION_ARGS);
-Datum		ltree_ge(PG_FUNCTION_ARGS);
-Datum		ltree_gt(PG_FUNCTION_ARGS);
-Datum		nlevel(PG_FUNCTION_ARGS);
-Datum		subltree(PG_FUNCTION_ARGS);
-Datum		subpath(PG_FUNCTION_ARGS);
-Datum		ltree_index(PG_FUNCTION_ARGS);
-Datum		ltree_addltree(PG_FUNCTION_ARGS);
-Datum		ltree_addtext(PG_FUNCTION_ARGS);
-Datum		ltree_textadd(PG_FUNCTION_ARGS);
-Datum		lca(PG_FUNCTION_ARGS);
-Datum		ltree2text(PG_FUNCTION_ARGS);
-Datum		text2ltree(PG_FUNCTION_ARGS);
-Datum		ltreeparentsel(PG_FUNCTION_ARGS);
 
 int
 ltree_compare(const ltree *a, const ltree *b)
@@ -200,7 +182,7 @@ ltree_risparent(PG_FUNCTION_ARGS)
 
 
 static ltree *
-inner_subltree(ltree *t, int4 startpos, int4 endpos)
+inner_subltree(ltree *t, int32 startpos, int32 endpos)
 {
 	char	   *start = NULL,
 			   *end = NULL;
@@ -252,9 +234,9 @@ Datum
 subpath(PG_FUNCTION_ARGS)
 {
 	ltree	   *t = PG_GETARG_LTREE(0);
-	int4		start = PG_GETARG_INT32(1);
-	int4		len = (fcinfo->nargs == 3) ? PG_GETARG_INT32(2) : 0;
-	int4		end;
+	int32		start = PG_GETARG_INT32(1);
+	int32		len = (fcinfo->nargs == 3) ? PG_GETARG_INT32(2) : 0;
+	int32		end;
 	ltree	   *res;
 
 	end = start + len;
@@ -611,7 +593,7 @@ ltreeparentsel(PG_FUNCTION_ARGS)
 		/*
 		 * If the histogram is large enough, see what fraction of it the
 		 * constant is "<@" to, and assume that's representative of the
-		 * non-MCV population.	Otherwise use the default selectivity for the
+		 * non-MCV population.  Otherwise use the default selectivity for the
 		 * non-MCV population.
 		 */
 		selec = histogram_selectivity(&vardata, &contproc,

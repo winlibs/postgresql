@@ -8,12 +8,21 @@
  </indexterm>
 
  <para>
-  <filename>dblink</> is a module which supports connections to
+  <filename>dblink</> is a module that supports connections to
   other <productname>PostgreSQL</> databases from within a database
   session.
  </para>
 
+ <para>
+  See also <xref linkend="postgres-fdw">, which provides roughly the same
+  functionality using a more modern and standards-compliant infrastructure.
+ </para>
+
  <refentry id="CONTRIB-DBLINK-CONNECT">
+  <indexterm>
+   <primary>dblink_connect</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_connect</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -46,15 +55,11 @@ dblink_connect(text connname, text connstr) returns text
 
    <para>
     The connection string may also be the name of an existing foreign
-    server.  It is recommended to use
-    the <function>postgresql_fdw_validator</function> when defining
-    the corresponding foreign-data wrapper.  See the example below, as
-    well as the following:
-    <simplelist type="inline">
-     <member><xref linkend="sql-createforeigndatawrapper"></member>
-     <member><xref linkend="sql-createserver"></member>
-     <member><xref linkend="sql-createusermapping"></member>
-    </simplelist>
+    server.  It is recommended to use the foreign-data wrapper
+    <literal>dblink_fdw</literal> when defining the foreign
+    server.  See the example below, as well as
+    <xref linkend="sql-createserver"> and
+    <xref linkend="sql-createusermapping">.
    </para>
 
   </refsect1>
@@ -79,8 +84,8 @@ dblink_connect(text connname, text connstr) returns text
       <para><application>libpq</>-style connection info string, for example
        <literal>hostaddr=127.0.0.1 port=5432 dbname=mydb user=postgres
        password=mypasswd</>.
-       For details see <function>PQconnectdb</> in
-       <xref linkend="libpq-connect">.
+       For details see <xref linkend="libpq-connstring">.
+       Alternatively, the name of a foreign server.
       </para>
      </listitem>
     </varlistentry>
@@ -135,10 +140,10 @@ SELECT dblink_connect('myconn', 'dbname=postgres');
 --       ERROR:  password is required
 --       DETAIL:  Non-superuser cannot connect if the server does not request a password.
 --       HINT:  Target server's authentication method must be changed.
-CREATE USER dblink_regression_test WITH PASSWORD 'secret';
-CREATE FOREIGN DATA WRAPPER postgresql VALIDATOR postgresql_fdw_validator;
-CREATE SERVER fdtest FOREIGN DATA WRAPPER postgresql OPTIONS (hostaddr '127.0.0.1', dbname 'contrib_regression');
 
+CREATE SERVER fdtest FOREIGN DATA WRAPPER dblink_fdw OPTIONS (hostaddr '127.0.0.1', dbname 'contrib_regression');
+
+CREATE USER dblink_regression_test WITH PASSWORD 'secret';
 CREATE USER MAPPING FOR dblink_regression_test SERVER fdtest OPTIONS (user 'dblink_regression_test', password 'secret');
 GRANT USAGE ON FOREIGN SERVER fdtest TO dblink_regression_test;
 GRANT SELECT ON TABLE foo TO dblink_regression_test;
@@ -169,16 +174,19 @@ SELECT * FROM dblink('myconn','SELECT * FROM foo') AS t(a int, b text, c text[])
 
 \c - :ORIGINAL_USER
 REVOKE USAGE ON FOREIGN SERVER fdtest FROM dblink_regression_test;
-REVOKE SELECT ON TABLE foo FROM  dblink_regression_test;
+REVOKE SELECT ON TABLE foo FROM dblink_regression_test;
 DROP USER MAPPING FOR dblink_regression_test SERVER fdtest;
 DROP USER dblink_regression_test;
 DROP SERVER fdtest;
-DROP FOREIGN DATA WRAPPER postgresql;
 </screen>
   </refsect1>
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-CONNECT-U">
+  <indexterm>
+   <primary>dblink_connect_u</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_connect_u</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -232,6 +240,10 @@ dblink_connect_u(text connname, text connstr) returns text
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-DISCONNECT">
+  <indexterm>
+   <primary>dblink_disconnect</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_disconnect</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -303,6 +315,10 @@ SELECT dblink_disconnect('myconn');
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-FUNCTION">
+  <indexterm>
+   <primary>dblink</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -517,6 +533,10 @@ SELECT * FROM dblink('myconn', 'select proname, prosrc from pg_proc')
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-EXEC">
+  <indexterm>
+   <primary>dblink_exec</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_exec</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -650,6 +670,10 @@ DETAIL:  ERROR:  null value in column "relnamespace" violates not-null constrain
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-OPEN">
+  <indexterm>
+   <primary>dblink_open</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_open</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -770,6 +794,10 @@ SELECT dblink_open('foo', 'select proname, prosrc from pg_proc');
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-FETCH">
+  <indexterm>
+   <primary>dblink_fetch</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_fetch</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -919,6 +947,10 @@ SELECT * FROM dblink_fetch('foo', 5) AS (funcname name, source text);
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-CLOSE">
+  <indexterm>
+   <primary>dblink_close</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_close</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1026,6 +1058,10 @@ SELECT dblink_close('foo');
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-GET-CONNECTIONS">
+  <indexterm>
+   <primary>dblink_get_connections</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_get_connections</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1067,6 +1103,10 @@ SELECT dblink_get_connections();
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-ERROR-MESSAGE">
+  <indexterm>
+   <primary>dblink_error_message</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_error_message</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1126,6 +1166,10 @@ SELECT dblink_error_message('dtest1');
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-SEND-QUERY">
+  <indexterm>
+   <primary>dblink_send_query</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_send_query</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1204,6 +1248,10 @@ SELECT dblink_send_query('dtest1', 'SELECT * FROM foo WHERE f1 &lt; 3');
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-IS-BUSY">
+  <indexterm>
+   <primary>dblink_is_busy</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_is_busy</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1263,6 +1311,10 @@ SELECT dblink_is_busy('dtest1');
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-GET-NOTIFY">
+  <indexterm>
+   <primary>dblink_get_notify</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_get_notify</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1341,6 +1393,10 @@ SELECT * FROM dblink_get_notify();
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-GET-RESULT">
+  <indexterm>
+   <primary>dblink_get_result</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_get_result</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1501,6 +1557,10 @@ contrib_regression=# SELECT * FROM dblink_get_result('dtest1') AS t1(f1 int, f2 
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-CANCEL-QUERY">
+  <indexterm>
+   <primary>dblink_cancel_query</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_cancel_query</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1565,6 +1625,10 @@ SELECT dblink_cancel_query('dtest1');
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-GET-PKEY">
+  <indexterm>
+   <primary>dblink_get_pkey</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_get_pkey</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1653,6 +1717,10 @@ SELECT * FROM dblink_get_pkey('foobar');
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-BUILD-SQL-INSERT">
+  <indexterm>
+   <primary>dblink_build_sql_insert</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_build_sql_insert</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1784,6 +1852,10 @@ SELECT dblink_build_sql_insert('foo', '1 2', 2, '{"1", "a"}', '{"1", "b''a"}');
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-BUILD-SQL-DELETE">
+  <indexterm>
+   <primary>dblink_build_sql_delete</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_build_sql_delete</refentrytitle>
    <manvolnum>3</manvolnum>
@@ -1898,6 +1970,10 @@ SELECT dblink_build_sql_delete('"MyFoo"', '1 2', 2, '{"1", "b"}');
  </refentry>
 
  <refentry id="CONTRIB-DBLINK-BUILD-SQL-UPDATE">
+  <indexterm>
+   <primary>dblink_build_sql_update</primary>
+  </indexterm>
+
   <refmeta>
    <refentrytitle>dblink_build_sql_update</refentrytitle>
    <manvolnum>3</manvolnum>

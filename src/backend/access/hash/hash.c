@@ -3,7 +3,7 @@
  * hash.c
  *	  Implementation of Margo Seltzer's Hashing package for postgres.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -78,7 +78,7 @@ hashbuild(PG_FUNCTION_ARGS)
 	 * (assuming their hash codes are pretty random) there will be no locality
 	 * of access to the index, and if the index is bigger than available RAM
 	 * then we'll thrash horribly.  To prevent that scenario, we can sort the
-	 * tuples by (expected) bucket number.	However, such a sort is useless
+	 * tuples by (expected) bucket number.  However, such a sort is useless
 	 * overhead when the index does fit in RAM.  We choose to sort if the
 	 * initial index size exceeds NBuffers.
 	 *
@@ -86,7 +86,7 @@ hashbuild(PG_FUNCTION_ARGS)
 	 * one page.
 	 */
 	if (num_buckets >= (uint32) NBuffers)
-		buildstate.spool = _h_spoolinit(index, num_buckets);
+		buildstate.spool = _h_spoolinit(heap, index, num_buckets);
 	else
 		buildstate.spool = NULL;
 
@@ -248,7 +248,7 @@ hashgettuple(PG_FUNCTION_ARGS)
 		/*
 		 * An insertion into the current index page could have happened while
 		 * we didn't have read lock on it.  Re-find our position by looking
-		 * for the TID we previously returned.	(Because we hold share lock on
+		 * for the TID we previously returned.  (Because we hold share lock on
 		 * the bucket, no deletions or splits could have occurred; therefore
 		 * we can expect that the TID still exists in the current index page,
 		 * at an offset >= where we were.)
@@ -285,11 +285,9 @@ hashgettuple(PG_FUNCTION_ARGS)
 			ItemIdMarkDead(PageGetItemId(page, offnum));
 
 			/*
-			 * Since this can be redone later if needed, it's treated the same
-			 * as a commit-hint-bit status update for heap tuples: we mark the
-			 * buffer dirty but don't make a WAL log entry.
+			 * Since this can be redone later if needed, mark as a hint.
 			 */
-			SetBufferCommitInfoNeedsSave(buf);
+			MarkBufferDirtyHint(buf, true);
 		}
 
 		/*
@@ -526,7 +524,7 @@ hashbulkdelete(PG_FUNCTION_ARGS)
 	/*
 	 * Read the metapage to fetch original bucket and tuple counts.  Also, we
 	 * keep a copy of the last-seen metapage so that we can use its
-	 * hashm_spares[] values to compute bucket page addresses.	This is a bit
+	 * hashm_spares[] values to compute bucket page addresses.  This is a bit
 	 * hokey but perfectly safe, since the interesting entries in the spares
 	 * array cannot change under us; and it beats rereading the metapage for
 	 * each bucket.
@@ -657,7 +655,7 @@ loop_top:
 	{
 		/*
 		 * Otherwise, our count is untrustworthy since we may have
-		 * double-scanned tuples in split buckets.	Proceed by dead-reckoning.
+		 * double-scanned tuples in split buckets.  Proceed by dead-reckoning.
 		 * (Note: we still return estimated_count = false, because using this
 		 * count is better than not updating reltuples at all.)
 		 */
@@ -711,9 +709,4 @@ void
 hash_redo(XLogRecPtr lsn, XLogRecord *record)
 {
 	elog(PANIC, "hash_redo: unimplemented");
-}
-
-void
-hash_desc(StringInfo buf, uint8 xl_info, char *rec)
-{
 }

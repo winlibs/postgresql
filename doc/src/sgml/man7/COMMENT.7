@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: COMMENT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "COMMENT" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "COMMENT" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,13 +29,12 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 COMMENT \- define or change the comment of an object
-.\" COMMENT
 .SH "SYNOPSIS"
 .sp
 .nf
 COMMENT ON
 {
-  AGGREGATE \fIagg_name\fR (\fIagg_type\fR [, \&.\&.\&.] ) |
+  AGGREGATE \fIaggregate_name\fR ( \fIaggregate_signature\fR ) |
   CAST (\fIsource_type\fR AS \fItarget_type\fR) |
   COLLATION \fIobject_name\fR |
   COLUMN \fIrelation_name\fR\&.\fIcolumn_name\fR |
@@ -44,11 +43,13 @@ COMMENT ON
   DATABASE \fIobject_name\fR |
   DOMAIN \fIobject_name\fR |
   EXTENSION \fIobject_name\fR |
+  EVENT TRIGGER \fIobject_name\fR |
   FOREIGN DATA WRAPPER \fIobject_name\fR |
   FOREIGN TABLE \fIobject_name\fR |
   FUNCTION \fIfunction_name\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) |
   INDEX \fIobject_name\fR |
   LARGE OBJECT \fIlarge_object_oid\fR |
+  MATERIALIZED VIEW \fIobject_name\fR |
   OPERATOR \fIoperator_name\fR (\fIleft_type\fR, \fIright_type\fR) |
   OPERATOR CLASS \fIobject_name\fR USING \fIindex_method\fR |
   OPERATOR FAMILY \fIobject_name\fR USING \fIindex_method\fR |
@@ -68,6 +69,12 @@ COMMENT ON
   TYPE \fIobject_name\fR |
   VIEW \fIobject_name\fR
 } IS \*(Aq\fItext\fR\*(Aq
+
+where \fIaggregate_signature\fR is:
+
+* |
+[ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [ , \&.\&.\&. ] |
+[ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [ , \&.\&.\&. ] ] ORDER BY [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [ , \&.\&.\&. ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -97,21 +104,28 @@ uses, namely
 \fBcol_description\fR, and
 \fBshobj_description\fR
 (see
-Table\ \&9.54, \(lqComment Information Functions\(rq)\&.
+Table\ \&9.60, \(lqComment Information Functions\(rq)\&.
 .SH "PARAMETERS"
 .PP
-\fIobject_name\fR, \fIrelation_name\fR\&.\fIcolumn_name\fR, \fIagg_name\fR, \fIconstraint_name\fR, \fIfunction_name\fR, \fIoperator_name\fR, \fIrule_name\fR, \fItrigger_name\fR
+\fIobject_name\fR
+.br
+\fIrelation_name\fR\&.\fIcolumn_name\fR
+.br
+\fIaggregate_name\fR
+.br
+\fIconstraint_name\fR
+.br
+\fIfunction_name\fR
+.br
+\fIoperator_name\fR
+.br
+\fIrule_name\fR
+.br
+\fItrigger_name\fR
 .RS 4
 The name of the object to be commented\&. Names of tables, aggregates, collations, conversions, domains, foreign tables, functions, indexes, operators, operator classes, operator families, sequences, text search objects, types, and views can be schema\-qualified\&. When commenting on a column,
 \fIrelation_name\fR
 must refer to a table, view, composite type, or foreign table\&.
-.RE
-.PP
-\fIagg_type\fR
-.RS 4
-An input data type on which the aggregate function operates\&. To reference a zero\-argument aggregate function, write
-*
-in place of the list of input data types\&.
 .RE
 .PP
 \fIsource_type\fR
@@ -126,13 +140,13 @@ The name of the target data type of the cast\&.
 .PP
 \fIargmode\fR
 .RS 4
-The mode of a function argument:
+The mode of a function or aggregate argument:
 IN,
 OUT,
 INOUT, or
 VARIADIC\&. If omitted, the default is
 IN\&. Note that
-\fBCOMMENT ON FUNCTION\fR
+\fBCOMMENT\fR
 does not actually pay any attention to
 OUT
 arguments, since only the input arguments are needed to determine the function\*(Aqs identity\&. So it is sufficient to list the
@@ -144,14 +158,14 @@ arguments\&.
 .PP
 \fIargname\fR
 .RS 4
-The name of a function argument\&. Note that
-\fBCOMMENT ON FUNCTION\fR
+The name of a function or aggregate argument\&. Note that
+\fBCOMMENT\fR
 does not actually pay any attention to argument names, since only the argument data types are needed to determine the function\*(Aqs identity\&.
 .RE
 .PP
 \fIargtype\fR
 .RS 4
-The data type(s) of the function\*(Aqs arguments (optionally schema\-qualified), if any\&.
+The data type of a function or aggregate argument\&.
 .RE
 .PP
 \fIlarge_object_oid\fR
@@ -159,7 +173,9 @@ The data type(s) of the function\*(Aqs arguments (optionally schema\-qualified),
 The OID of the large object\&.
 .RE
 .PP
-\fIleft_type\fR, \fIright_type\fR
+\fIleft_type\fR
+.br
+\fIright_type\fR
 .RS 4
 The data type(s) of the operator\*(Aqs arguments (optionally schema\-qualified)\&. Write
 NONE
@@ -228,6 +244,7 @@ COMMENT ON FUNCTION my_function (timestamp) IS \*(AqReturns Roman Numeral\*(Aq;
 COMMENT ON INDEX my_index IS \*(AqEnforces uniqueness on employee ID\*(Aq;
 COMMENT ON LANGUAGE plpython IS \*(AqPython support for stored procedures\*(Aq;
 COMMENT ON LARGE OBJECT 346344 IS \*(AqPlanning document\*(Aq;
+COMMENT ON MATERIALIZED VIEW my_matview IS \*(AqSummary of order history\*(Aq;
 COMMENT ON OPERATOR ^ (text, text) IS \*(AqPerforms intersection of two texts\*(Aq;
 COMMENT ON OPERATOR \- (NONE, integer) IS \*(AqUnary minus\*(Aq;
 COMMENT ON OPERATOR CLASS int4ops USING btree IS \*(Aq4 byte integer operators for btrees\*(Aq;
@@ -240,7 +257,7 @@ COMMENT ON SERVER myserver IS \*(Aqmy foreign server\*(Aq;
 COMMENT ON TABLE my_schema\&.my_table IS \*(AqEmployee Information\*(Aq;
 COMMENT ON TABLESPACE my_tablespace IS \*(AqTablespace for indexes\*(Aq;
 COMMENT ON TEXT SEARCH CONFIGURATION my_config IS \*(AqSpecial word filtering\*(Aq;
-COMMENT ON TEXT SEARCH DICTIONARY swedish IS \*(AqSnowball stemmer for swedish language\*(Aq;
+COMMENT ON TEXT SEARCH DICTIONARY swedish IS \*(AqSnowball stemmer for Swedish language\*(Aq;
 COMMENT ON TEXT SEARCH PARSER my_parser IS \*(AqSplits text into words\*(Aq;
 COMMENT ON TEXT SEARCH TEMPLATE snowball IS \*(AqSnowball stemmer\*(Aq;
 COMMENT ON TRIGGER my_trigger ON my_table IS \*(AqUsed for RI\*(Aq;

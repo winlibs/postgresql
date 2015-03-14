@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="pgstattuple"
 HREF="pgstattuple.html"><LINK
 REL="NEXT"
-TITLE="seg"
-HREF="seg.html"><LINK
+TITLE="postgres_fdw"
+HREF="postgres-fdw.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="seg"
-HREF="seg.html"
+TITLE="postgres_fdw"
+HREF="postgres-fdw.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -93,17 +93,14 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PGTRGM"
->F.30. pg_trgm</A
+>F.31. pg_trgm</A
 ></H1
 ><P
 >  The <TT
 CLASS="FILENAME"
 >pg_trgm</TT
 > module provides functions and operators
-  for determining the similarity of <ACRONYM
-CLASS="ACRONYM"
->ASCII</ACRONYM
->
+  for determining the similarity of
   alphanumeric text based on trigram matching, as
   well as index operator classes that support fast searching for similar
   strings.
@@ -113,8 +110,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142745"
->F.30.1. Trigram (or Trigraph) Concepts</A
+NAME="AEN160241"
+>F.31.1. Trigram (or Trigraph) Concepts</A
 ></H2
 ><P
 >   A trigram is a group of three consecutive characters taken
@@ -130,7 +127,12 @@ CLASS="NOTE"
 ><P
 ><B
 >Note: </B
->    A string is considered to have two spaces
+>    <TT
+CLASS="FILENAME"
+>pg_trgm</TT
+> ignores non-word characters
+    (non-alphanumerics) when extracting trigrams from a string.
+    Each word is considered to have two spaces
     prefixed and one space suffixed when determining the set
     of trigrams contained in the string.
     For example, the set of trigrams in the string
@@ -169,6 +171,70 @@ CLASS="LITERAL"
 >at </TT
 >"</SPAN
 >.
+    The set of trigrams in the string
+    <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>foo|bar</TT
+>"</SPAN
+> is
+    <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>  f</TT
+>"</SPAN
+>,
+    <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+> fo</TT
+>"</SPAN
+>,
+    <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>foo</TT
+>"</SPAN
+>,
+    <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>oo </TT
+>"</SPAN
+>,
+    <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>  b</TT
+>"</SPAN
+>,
+    <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+> ba</TT
+>"</SPAN
+>,
+    <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>bar</TT
+>"</SPAN
+>, and
+    <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>ar </TT
+>"</SPAN
+>.
    </P
 ></BLOCKQUOTE
 ></DIV
@@ -178,8 +244,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142760"
->F.30.2. Functions and Operators</A
+NAME="AEN160275"
+>F.31.2. Functions and Operators</A
 ></H2
 ><P
 >   The functions provided by the <TT
@@ -391,8 +457,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142832"
->F.30.3. Index Support</A
+NAME="AEN160355"
+>F.31.3. Index Support</A
 ></H2
 ><P
 >   The <TT
@@ -405,12 +471,19 @@ CLASS="FILENAME"
    trigram-based index searches for <TT
 CLASS="LITERAL"
 >LIKE</TT
-> and <TT
+>, <TT
 CLASS="LITERAL"
 >ILIKE</TT
->
-   queries.  (These indexes do not support equality nor simple comparison
-   operators, so you may need a regular B-tree index too.)
+>,
+   <TT
+CLASS="LITERAL"
+>~</TT
+> and <TT
+CLASS="LITERAL"
+>~*</TT
+> queries.  (These indexes do not
+   support equality nor simple comparison operators, so you may need a
+   regular B-tree index too.)
   </P
 ><P
 >   Example:
@@ -498,6 +571,37 @@ CLASS="PROGRAMLISTING"
    searches, the search string need not be left-anchored.
   </P
 ><P
+>   Beginning in <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.3, these index types also support
+   index searches for regular-expression matches
+   (<TT
+CLASS="LITERAL"
+>~</TT
+> and <TT
+CLASS="LITERAL"
+>~*</TT
+> operators), for example
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM test_trgm WHERE t ~ '(foo|bar)';</PRE
+><P>
+   The index search works by extracting trigrams from the regular expression
+   and then looking these up in the index.  The more trigrams that can be
+   extracted from the regular expression, the more effective the index search
+   is.  Unlike B-tree based searches, the search string need not be
+   left-anchored.
+  </P
+><P
+>   For both <TT
+CLASS="LITERAL"
+>LIKE</TT
+> and regular-expression searches, keep in mind
+   that a pattern with no extractable trigrams will degenerate to a full-index
+   scan.
+  </P
+><P
 >   The choice between GiST and GIN indexing depends on the relative
    performance characteristics of GiST and GIN, which are discussed elsewhere.
    As a rule of thumb, a GIN index is faster to search than a GiST index, but
@@ -510,8 +614,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142856"
->F.30.4. Text Search Integration</A
+NAME="AEN160388"
+>F.31.4. Text Search Integration</A
 ></H2
 ><P
 >   Trigram matching is a very useful tool when used in conjunction
@@ -586,8 +690,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142871"
->F.30.5. References</A
+NAME="AEN160403"
+>F.31.5. References</A
 ></H2
 ><P
 >   GiST Development Site
@@ -611,8 +715,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142877"
->F.30.6. Authors</A
+NAME="AEN160409"
+>F.31.6. Authors</A
 ></H2
 ><P
 >   Oleg Bartunov <CODE
@@ -674,7 +778,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="seg.html"
+HREF="postgres-fdw.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -698,7 +802,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->seg</TD
+>postgres_fdw</TD
 ></TR
 ></TABLE
 ></DIV

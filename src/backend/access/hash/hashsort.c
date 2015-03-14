@@ -8,13 +8,13 @@
  * thrashing.  We use tuplesort.c to sort the given index tuples into order.
  *
  * Note: if the number of rows in the table has been underestimated,
- * bucket splits may occur during the index build.	In that case we'd
+ * bucket splits may occur during the index build.  In that case we'd
  * be inserting into two or more buckets for each possible masked-off
  * hash code value.  That's no big problem though, since we'll still have
  * plenty of locality of access.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -44,7 +44,7 @@ struct HSpool
  * create and initialize a spool structure
  */
 HSpool *
-_h_spoolinit(Relation index, uint32 num_buckets)
+_h_spoolinit(Relation heap, Relation index, uint32 num_buckets)
 {
 	HSpool	   *hspool = (HSpool *) palloc0(sizeof(HSpool));
 	uint32		hash_mask;
@@ -52,7 +52,7 @@ _h_spoolinit(Relation index, uint32 num_buckets)
 	hspool->index = index;
 
 	/*
-	 * Determine the bitmask for hash code values.	Since there are currently
+	 * Determine the bitmask for hash code values.  Since there are currently
 	 * num_buckets buckets in the index, the appropriate mask can be computed
 	 * as follows.
 	 *
@@ -67,7 +67,8 @@ _h_spoolinit(Relation index, uint32 num_buckets)
 	 * speed index creation.  This should be OK since a single backend can't
 	 * run multiple index creations in parallel.
 	 */
-	hspool->sortstate = tuplesort_begin_index_hash(index,
+	hspool->sortstate = tuplesort_begin_index_hash(heap,
+												   index,
 												   hash_mask,
 												   maintenance_work_mem,
 												   false);

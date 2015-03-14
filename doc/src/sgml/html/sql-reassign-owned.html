@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="PREPARE TRANSACTION"
 HREF="sql-prepare-transaction.html"><LINK
 REL="NEXT"
-TITLE="REINDEX"
-HREF="sql-reindex.html"><LINK
+TITLE="REFRESH MATERIALIZED VIEW"
+HREF="sql-refreshmaterializedview.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="REINDEX"
-HREF="sql-reindex.html"
+TITLE="REFRESH MATERIALIZED VIEW"
+HREF="sql-refreshmaterializedview.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-REASSIGN-OWNED"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN76209"
+NAME="AEN82245"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN76209"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN76214"
+NAME="AEN82248"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76218"
+NAME="AEN82252"
 ></A
 ><H2
 >Description</H2
@@ -133,14 +133,14 @@ NAME="AEN76218"
 CLASS="COMMAND"
 >REASSIGN OWNED</TT
 > instructs the system to change
-   the ownership of the database objects owned by one of the
+   the ownership of database objects owned by one of the
    old_roles, to new_role.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76222"
+NAME="AEN82256"
 ></A
 ><H2
 >Parameters</H2
@@ -158,8 +158,9 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      The name of a role. The ownership of all the objects in the
-      current database owned by this role will be reassigned to
+>      The name of a role. The ownership of all the objects within the
+      current database, and of all shared objects (databases, tablespaces),
+      owned by this role will be reassigned to
       <TT
 CLASS="REPLACEABLE"
 ><I
@@ -187,7 +188,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76236"
+NAME="AEN82270"
 ></A
 ><H2
 >Notes</H2
@@ -200,7 +201,7 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >REASSIGN
    OWNED</TT
-> only affects the objects in the current database,
+> does not affect objects within other databases,
    it is usually necessary to execute this command in each database
    that contains objects owned by a role that is to be removed.
   </P
@@ -235,22 +236,11 @@ CLASS="COMMAND"
 > to revoke those
    privileges.
   </P
-><P
->   The <TT
-CLASS="COMMAND"
->REASSIGN OWNED</TT
-> command does not affect the
-   ownership of any databases owned by the role.  Use
-   <A
-HREF="sql-alterdatabase.html"
->ALTER DATABASE</A
-> to reassign that ownership.
-  </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76252"
+NAME="AEN82283"
 ></A
 ><H2
 >Compatibility</H2
@@ -268,7 +258,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76257"
+NAME="AEN82288"
 ></A
 ><H2
 >See Also</H2
@@ -316,7 +306,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="sql-reindex.html"
+HREF="sql-refreshmaterializedview.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -340,7 +330,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->REINDEX</TD
+>REFRESH MATERIALIZED VIEW</TD
 ></TR
 ></TABLE
 ></DIV

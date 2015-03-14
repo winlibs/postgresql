@@ -95,6 +95,11 @@ select ROW('ABC','DEF') ~<=~ ROW('DEF','ABC') as true;
 select ROW('ABC','DEF') ~>=~ ROW('DEF','ABC') as false;
 select ROW('ABC','DEF') ~~ ROW('DEF','ABC') as fail;
 
+-- Comparisons of ROW() expressions can cope with some type mismatches
+select ROW(1,2) = ROW(1,2::int8);
+select ROW(1,2) in (ROW(3,4), ROW(1,2));
+select ROW(1,2) in (ROW(3,4), ROW(1,2::int8));
+
 -- Check row comparison with a subselect
 select unique1, unique2 from tenk1
 where (unique1, unique2) < any (select ten, ten from tenk1 where hundred < 3)
@@ -102,9 +107,24 @@ where (unique1, unique2) < any (select ten, ten from tenk1 where hundred < 3)
 order by 1;
 
 -- Also check row comparison with an indexable condition
+explain (costs off)
 select thousand, tenthous from tenk1
 where (thousand, tenthous) >= (997, 5000)
 order by thousand, tenthous;
+
+select thousand, tenthous from tenk1
+where (thousand, tenthous) >= (997, 5000)
+order by thousand, tenthous;
+
+-- Check row comparisons with IN
+select * from int8_tbl i8 where i8 in (row(123,456));  -- fail, type mismatch
+
+explain (costs off)
+select * from int8_tbl i8
+where i8 in (row(123,456)::int8_tbl, '(4567890123456789,123)');
+
+select * from int8_tbl i8
+where i8 in (row(123,456)::int8_tbl, '(4567890123456789,123)');
 
 -- Check some corner cases involving empty rowtypes
 select ROW();
@@ -166,6 +186,34 @@ select * from price;
 rollback;
 
 --
+-- Test case derived from bug #9085: check * qualification of composite
+-- parameters for SQL functions
+--
+
+create temp table compos (f1 int, f2 text);
+
+create function fcompos1(v compos) returns void as $$
+insert into compos values (v);  -- fail
+$$ language sql;
+
+create function fcompos1(v compos) returns void as $$
+insert into compos values (v.*);
+$$ language sql;
+
+create function fcompos2(v compos) returns void as $$
+select fcompos1(v);
+$$ language sql;
+
+create function fcompos3(v compos) returns void as $$
+select fcompos1(fcompos3.v.*);
+$$ language sql;
+
+select fcompos1(row(1,'one'));
+select fcompos2(row(2,'two'));
+select fcompos3(row(3,'three'));
+select * from compos;
+
+--
 -- We allow I/O conversion casts from composite types to strings to be
 -- invoked via cast syntax, but not functional syntax.  This is because
 -- the latter is too prone to be invoked unintentionally.
@@ -179,3 +227,47 @@ select cast (row('Jim', 'Beam') as text);
 select (row('Jim', 'Beam'))::text;
 select text(row('Jim', 'Beam'));  -- error
 select (row('Jim', 'Beam')).text;  -- error
+
+--
+-- Test that composite values are seen to have the correct column names
+-- (bug #11210 and other reports)
+--
+
+select row_to_json(i) from int8_tbl i;
+select row_to_json(i) from int8_tbl i(x,y);
+
+create temp view vv1 as select * from int8_tbl;
+select row_to_json(i) from vv1 i;
+select row_to_json(i) from vv1 i(x,y);
+
+select row_to_json(ss) from
+  (select q1, q2 from int8_tbl) as ss;
+select row_to_json(ss) from
+  (select q1, q2 from int8_tbl offset 0) as ss;
+select row_to_json(ss) from
+  (select q1 as a, q2 as b from int8_tbl) as ss;
+select row_to_json(ss) from
+  (select q1 as a, q2 as b from int8_tbl offset 0) as ss;
+select row_to_json(ss) from
+  (select q1 as a, q2 as b from int8_tbl) as ss(x,y);
+select row_to_json(ss) from
+  (select q1 as a, q2 as b from int8_tbl offset 0) as ss(x,y);
+
+explain (costs off)
+select row_to_json(q) from
+  (select thousand, tenthous from tenk1
+   where thousand = 42 and tenthous < 2000 offset 0) q;
+select row_to_json(q) from
+  (select thousand, tenthous from tenk1
+   where thousand = 42 and tenthous < 2000 offset 0) q;
+select row_to_json(q) from
+  (select thousand as x, tenthous as y from tenk1
+   where thousand = 42 and tenthous < 2000 offset 0) q;
+select row_to_json(q) from
+  (select thousand as x, tenthous as y from tenk1
+   where thousand = 42 and tenthous < 2000 offset 0) q(a,b);
+
+create temp table tt1 as select * from int8_tbl limit 2;
+create temp table tt2 () inherits(tt1);
+insert into tt2 values(0,0);
+select row_to_json(r) from (select q2,q1 from tt1 offset 0) r;

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="SEPGSQL"
->F.32. sepgsql</A
+>F.34. sepgsql</A
 ></H1
 ><P
 >  <TT
@@ -129,7 +129,7 @@ ALIGN="LEFT"
      enforce mandatory access control for all actions.  See
      <A
 HREF="sepgsql.html#SEPGSQL-LIMITATIONS"
->Section F.32.7</A
+>Section F.34.7</A
 >.
    </P
 ></TD
@@ -142,7 +142,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-OVERVIEW"
->F.32.1. Overview</A
+>F.34.1. Overview</A
 ></H2
 ><P
 >   This module integrates with <SPAN
@@ -203,7 +203,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-INSTALLATION"
->F.32.2. Installation</A
+>F.34.2. Installation</A
 ></H2
 ><P
 >    <TT
@@ -221,7 +221,7 @@ CLASS="PRODUCTNAME"
     <SPAN
 CLASS="PRODUCTNAME"
 >libselinux</SPAN
-> 2.0.99 or higher and
+> 2.1.10 or higher and
     <SPAN
 CLASS="PRODUCTNAME"
 >selinux-policy</SPAN
@@ -274,7 +274,7 @@ CLASS="LITERAL"
 >sepgsql</TT
 >
    in the <A
-HREF="runtime-config-resource.html#GUC-SHARED-PRELOAD-LIBRARIES"
+HREF="runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES"
 >shared_preload_libraries</A
 > parameter in
    <TT
@@ -342,7 +342,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-REGRESSION"
->F.32.3. Regression Tests</A
+>F.34.3. Regression Tests</A
 ></H2
 ><P
 >   Due to the nature of <SPAN
@@ -385,7 +385,7 @@ CLASS="FILENAME"
 > in a working database
    according to the instructions in <A
 HREF="sepgsql.html#SEPGSQL-INSTALLATION"
->Section F.32.2</A
+>Section F.34.2</A
 >.
    Note that the current operating system user must be able to connect to the
    database as superuser without password authentication.
@@ -432,7 +432,7 @@ CLASS="SCREEN"
 $ make -f /usr/share/selinux/devel/Makefile
 $ sudo semodule -u sepgsql-regtest.pp
 $ sudo semodule -l | grep sepgsql
-sepgsql-regtest 1.04</PRE
+sepgsql-regtest 1.07</PRE
 ><P
 >   Third, turn on <TT
 CLASS="LITERAL"
@@ -472,7 +472,7 @@ unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023</PRE
 ><P
 >   See <A
 HREF="sepgsql.html#SEPGSQL-RESOURCES"
->Section F.32.8</A
+>Section F.34.8</A
 > for details on adjusting your
    working domain, if necessary.
   </P
@@ -517,7 +517,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-PARAMETERS"
->F.32.4. GUC Parameters</A
+>F.34.4. GUC Parameters</A
 ></H2
 ><P
 ></P
@@ -534,7 +534,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+     </DT
 ><DD
 ><P
 >      This parameter enables <TT
@@ -568,7 +569,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+     </DT
 ><DD
 ><P
 >      This parameter enables the printing of audit messages regardless of
@@ -599,15 +601,15 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-FEATURES"
->F.32.5. Features</A
+>F.34.5. Features</A
 ></H2
 ><DIV
 CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN143238"
->F.32.5.1. Controlled Object Classes</A
+NAME="AEN160968"
+>F.34.5.1. Controlled Object Classes</A
 ></H3
 ><P
 >    The security model of <SPAN
@@ -617,7 +619,7 @@ CLASS="PRODUCTNAME"
     control rules as relationships between a subject entity (typically,
     a client of the database) and an object entity (such as a database
     object), each of which is
-    identified by a security label.  If access to an unlabelled object is
+    identified by a security label.  If access to an unlabeled object is
     attempted, the object is treated as if it were assigned the label
     <TT
 CLASS="LITERAL"
@@ -636,8 +638,9 @@ CLASS="FILENAME"
 > is in use, security labels are
     automatically assigned to supported database objects at creation time.
     This label is called a default security label, and is decided according
-    to the system security policy, which takes as input the creator's label
-    and the label assigned to the new object's parent object.
+    to the system security policy, which takes as input the creator's label,
+    the label assigned to the new object's parent object and optionally name
+    of the constructed object.
    </P
 ><P
 >    A new database object basically inherits the security label of the parent
@@ -653,8 +656,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN143247"
->F.32.5.2. DML Permissions</A
+NAME="AEN160977"
+>F.34.5.2. DML Permissions</A
 ></H3
 ><P
 >    For tables, <TT
@@ -779,8 +782,29 @@ CLASS="LITERAL"
 >    For functions, <TT
 CLASS="LITERAL"
 >db_procedure:{execute}</TT
-> is defined, but is not
-    checked in this version.
+> will be checked when
+    user tries to execute a function as a part of query, or using fast-path
+    invocation. If this function is a trusted procedure, it also checks
+    <TT
+CLASS="LITERAL"
+>db_procedure:{entrypoint}</TT
+> permission to check whether it
+    can perform as entry point of trusted procedure.
+   </P
+><P
+>    In order to access any schema object, <TT
+CLASS="LITERAL"
+>db_schema:search</TT
+>
+    permission is required on the containing schema.  When an object is
+    referenced without schema qualification, schemas on which this
+    permission is not present will not be searched (just as if the user did
+    not have <TT
+CLASS="LITERAL"
+>USAGE</TT
+> privilege on the schema).  If an explicit schema
+    qualification is present, an error will occur if the user does not have
+    the requisite permission on the named schema.
    </P
 ><P
 >    The client must be allowed to access all referenced tables and
@@ -803,8 +827,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN143285"
->F.32.5.3. DDL Permissions</A
+NAME="AEN161019"
+>F.34.5.3. DDL Permissions</A
 ></H3
 ><P
 >    <SPAN
@@ -817,51 +841,65 @@ CLASS="PRODUCTNAME"
     addition or deletion of name entries within a particular schema.
    </P
 ><P
->    When a <TT
-CLASS="LITERAL"
->CREATE</TT
-> command is executed, <TT
+>    Creating a new database object requires <TT
 CLASS="LITERAL"
 >create</TT
-> will
-    be checked on the object being constructed for each object types.
-    A default security label will be assigned to the new database object,
-    and the <TT
-CLASS="LITERAL"
->create</TT
-> permission will be checked on the pair
-    of security label of the client and the new object itself.
-    We consider <A
-HREF="sql-createtable.html"
->CREATE TABLE</A
-> to construct a table and
-    underlying columns at the same time, so it requires the users to have
-    permission to create both the table and its columns.
+> permission.
+    <SPAN
+CLASS="PRODUCTNAME"
+>SELinux</SPAN
+> will grant or deny this permission based on the
+    client's security label and the proposed security label for the new
+    object.  In some cases, additional privileges are required:
    </P
 ><P
->    A few additional checks are applied depending on object types.
-    On <A
+></P
+><UL
+><LI
+><P
+>      <A
 HREF="sql-createdatabase.html"
 >CREATE DATABASE</A
->, <TT
+> additionally requires
+      <TT
 CLASS="LITERAL"
 >getattr</TT
-> permission
-    will be checked on the source or template database of the new database,
-    not only <TT
-CLASS="LITERAL"
->create</TT
-> on the new database.
-    On creation of objects within a particular schema (tables, views,
-    sequences and procedures), <TT
+> permission for the source or template database.
+     </P
+></LI
+><LI
+><P
+>      Creating a schema object additionally requires <TT
 CLASS="LITERAL"
 >add_name</TT
-> will be also checked
-    on the schema, not only <TT
+>
+      permission on the parent schema.
+     </P
+></LI
+><LI
+><P
+>      Creating a table additionally requires permission to create each
+      individual table column, just as if each table column were a
+      separate top-level object.
+     </P
+></LI
+><LI
+><P
+>      Creating a function marked as <TT
 CLASS="LITERAL"
->create</TT
-> on the new object itself.
-   </P
+>LEAKPROOF</TT
+> additionally
+      requires <TT
+CLASS="LITERAL"
+>install</TT
+> permission.  (This permission is also
+      checked when <TT
+CLASS="LITERAL"
+>LEAKPROOF</TT
+> is set for an existing function.)
+     </P
+></LI
+></UL
 ><P
 >    When <TT
 CLASS="LITERAL"
@@ -870,56 +908,94 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >drop</TT
 > will be
-    checked on the object being removed for each object types.  Permissions
-    will not be checked for objects dropped indirectly via <TT
+    checked on the object being removed.  Permissions will be also checked for
+    objects dropped indirectly via <TT
 CLASS="LITERAL"
 >CASCADE</TT
->.
-    Deletion of objects contained within a particular schema (tables, views,
-    sequences and procedures) additionally requires
-    <TT
+>.  Deletion of objects
+    contained within a particular schema (tables, views, sequences and
+    procedures) additionally requires <TT
 CLASS="LITERAL"
 >remove_name</TT
 > on the schema.
    </P
 ><P
->    When <A
-HREF="sql-security-label.html"
->SECURITY LABEL</A
-> is executed, <TT
+>    When <TT
+CLASS="LITERAL"
+>ALTER</TT
+> command is executed, <TT
 CLASS="LITERAL"
 >setattr</TT
->
-    and <TT
-CLASS="LITERAL"
->relabelfrom</TT
-> will be checked on the object being relabeled
-    with its old security label, then <TT
-CLASS="LITERAL"
->relabelto</TT
-> with the supplied
-    new security label.
+> will be
+    checked on the object being modified for each object types, except for
+    subsidiary objects such as the indexes or triggers of a table, where
+    permissions are instead checked on the parent object.  In some cases,
+    additional permissions are required:
    </P
 ><P
->    In the case where multiple label providers are installed and the user tries
-    to set a security label, but it is not managed by <SPAN
+></P
+><UL
+><LI
+><P
+>      Moving an object to a new schema additionally requires
+      <TT
+CLASS="LITERAL"
+>remove_name</TT
+> permission on the old schema and
+      <TT
+CLASS="LITERAL"
+>add_name</TT
+> permission on the new one.
+     </P
+></LI
+><LI
+><P
+>      Setting the <TT
+CLASS="LITERAL"
+>LEAKPROOF</TT
+> attribute on a function requires
+      <TT
+CLASS="LITERAL"
+>install</TT
+> permission.
+     </P
+></LI
+><LI
+><P
+>      Using <A
+HREF="sql-security-label.html"
+>SECURITY LABEL</A
+> on an object additionally
+      requires <TT
+CLASS="LITERAL"
+>relabelfrom</TT
+> permission for the object in
+      conjunction with its old security label and <TT
+CLASS="LITERAL"
+>relabelto</TT
+>
+      permission for the object in conjunction with its new security label.
+      (In cases where multiple label providers are installed and the user
+      tries to set a security label, but it is not managed by
+      <SPAN
 CLASS="PRODUCTNAME"
 >SELinux</SPAN
->,
-    only <TT
+>, only <TT
 CLASS="LITERAL"
 >setattr</TT
 > should be checked here.
-    This is currently not done due to implementation restrictions.
-   </P
+      This is currently not done due to implementation restrictions.)
+     </P
+></LI
+></UL
 ></DIV
 ><DIV
 CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN143313"
->F.32.5.4. Trusted Procedures</A
+NAME="AEN161065"
+>F.34.5.4. Trusted Procedures</A
 ></H3
 ><P
 >    Trusted procedures are similar to security definer functions or setuid
@@ -984,8 +1060,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN143323"
->F.32.5.5. Dynamic Domain Transitions</A
+NAME="AEN161075"
+>F.34.5.5. Dynamic Domain Transitions</A
 ></H3
 ><P
 >    It is possible to use SELinux's dynamic domain transition feature
@@ -1075,8 +1151,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN143338"
->F.32.5.6. Miscellaneous</A
+NAME="AEN161090"
+>F.34.5.6. Miscellaneous</A
 ></H3
 ><P
 >    We reject the <A
@@ -1093,7 +1169,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-FUNCTIONS"
->F.32.6. Sepgsql Functions</A
+>F.34.6. Sepgsql Functions</A
 ></H2
 ><P
 >   <A
@@ -1184,7 +1260,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-LIMITATIONS"
->F.32.7. Limitations</A
+>F.34.7. Limitations</A
 ></H2
 ><P
 ></P
@@ -1246,7 +1322,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-RESOURCES"
->F.32.8. External Resources</A
+>F.34.8. External Resources</A
 ></H2
 ><P
 ></P
@@ -1306,7 +1382,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-AUTHOR"
->F.32.9. Author</A
+>F.34.9. Author</A
 ></H2
 ><P
 >   KaiGai Kohei <CODE

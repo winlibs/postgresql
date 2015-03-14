@@ -13,7 +13,7 @@
  *
  * Author: Andreas Pflug <pgadmin@pse-consulting.de>
  *
- * Copyright (c) 2004-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2004-2014, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -39,23 +39,13 @@
 #include "postmaster/fork_process.h"
 #include "postmaster/postmaster.h"
 #include "postmaster/syslogger.h"
+#include "storage/dsm.h"
 #include "storage/ipc.h"
 #include "storage/latch.h"
 #include "storage/pg_shmem.h"
 #include "utils/guc.h"
 #include "utils/ps_status.h"
 #include "utils/timestamp.h"
-
-/*
- * We really want line-buffered mode for logfile output, but Windows does
- * not have it, and interprets _IOLBF as _IOFBF (bozos).  So use _IONBF
- * instead on Windows.
- */
-#ifdef WIN32
-#define LBF_MODE	_IONBF
-#else
-#define LBF_MODE	_IOLBF
-#endif
 
 /*
  * We read() into a temp buffer twice as big as a chunk, so that any fragment
@@ -66,7 +56,7 @@
 
 
 /*
- * GUC parameters.	Logging_collector cannot be changed after postmaster
+ * GUC parameters.  Logging_collector cannot be changed after postmaster
  * start, but the rest can change at SIGHUP.
  */
 bool		Logging_collector = false;
@@ -141,6 +131,7 @@ static volatile sig_atomic_t rotation_requested = false;
 static pid_t syslogger_forkexec(void);
 static void syslogger_parseArgs(int argc, char *argv[]);
 #endif
+NON_EXEC_STATIC void SysLoggerMain(int argc, char *argv[]) __attribute__((noreturn));
 static void process_pipe_input(char *logbuffer, int *bytes_in_logbuffer);
 static void flush_pipe_input(char *logbuffer, int *bytes_in_logbuffer);
 static void open_csvlogfile(void);
@@ -191,7 +182,7 @@ SysLoggerMain(int argc, char *argv[])
 	/*
 	 * If we restarted, our stderr is already redirected into our own input
 	 * pipe.  This is of course pretty useless, not to mention that it
-	 * interferes with detecting pipe EOF.	Point stderr to /dev/null. This
+	 * interferes with detecting pipe EOF.  Point stderr to /dev/null. This
 	 * assumes that all interesting messages generated in the syslogger will
 	 * come through elog.c and will be sent to write_syslogger_file.
 	 */
@@ -201,16 +192,21 @@ SysLoggerMain(int argc, char *argv[])
 
 		/*
 		 * The closes might look redundant, but they are not: we want to be
-		 * darn sure the pipe gets closed even if the open failed.	We can
+		 * darn sure the pipe gets closed even if the open failed.  We can
 		 * survive running with stderr pointing nowhere, but we can't afford
 		 * to have extra pipe input descriptors hanging around.
+		 *
+		 * As we're just trying to reset these to go to DEVNULL, there's not
+		 * much point in checking for failure from the close/dup2 calls here,
+		 * if they fail then presumably the file descriptors are closed and
+		 * any writes will go into the bitbucket anyway.
 		 */
 		close(fileno(stdout));
 		close(fileno(stderr));
 		if (fd != -1)
 		{
-			dup2(fd, fileno(stdout));
-			dup2(fd, fileno(stderr));
+			(void) dup2(fd, fileno(stdout));
+			(void) dup2(fd, fileno(stderr));
 			close(fd);
 		}
 	}
@@ -242,7 +238,7 @@ SysLoggerMain(int argc, char *argv[])
 
 	/*
 	 * If possible, make this process a group leader, so that the postmaster
-	 * can signal any child processes too.	(syslogger probably never has any
+	 * can signal any child processes too.  (syslogger probably never has any
 	 * child processes, but for consistency we make all postmaster child
 	 * processes do this.)
 	 */
@@ -251,7 +247,7 @@ SysLoggerMain(int argc, char *argv[])
 		elog(FATAL, "setsid() failed: %m");
 #endif
 
-	InitializeLatchSupport();		/* needed for latch waits */
+	InitializeLatchSupport();	/* needed for latch waits */
 
 	/* Initialize private latch for use by signal handlers */
 	InitLatch(&sysLoggerLatch);
@@ -412,7 +408,7 @@ SysLoggerMain(int argc, char *argv[])
 
 		/*
 		 * Calculate time till next time-based rotation, so that we don't
-		 * sleep longer than that.	We assume the value of "now" obtained
+		 * sleep longer than that.  We assume the value of "now" obtained
 		 * above is still close enough.  Note we can't make this calculation
 		 * until after calling logfile_rotate(), since it will advance
 		 * next_rotation_time.
@@ -516,7 +512,7 @@ SysLoggerMain(int argc, char *argv[])
 					(errmsg("logger shutting down")));
 
 			/*
-			 * Normal exit from the syslogger is here.	Note that we
+			 * Normal exit from the syslogger is here.  Note that we
 			 * deliberately do not close syslogFile before exiting; this is to
 			 * allow for the possibility of elog messages being generated
 			 * inside proc_exit.  Regular exit() will take care of flushing
@@ -582,8 +578,8 @@ SysLogger_Start(void)
 
 	/*
 	 * The initial logfile is created right in the postmaster, to verify that
-	 * the Log_directory is writable.  We save the reference time so that
-	 * the syslogger child process can recompute this file name.
+	 * the Log_directory is writable.  We save the reference time so that the
+	 * syslogger child process can recompute this file name.
 	 *
 	 * It might look a bit strange to re-do this during a syslogger restart,
 	 * but we must do so since the postmaster closed syslogFile after the
@@ -620,6 +616,7 @@ SysLogger_Start(void)
 			on_exit_reset();
 
 			/* Drop our connection to postmaster's shared memory, as well */
+			dsm_detach_all();
 			PGSharedMemoryDetach();
 
 			/* do the work */
@@ -633,6 +630,20 @@ SysLogger_Start(void)
 			/* now we redirect stderr, if not done already */
 			if (!redirection_done)
 			{
+#ifdef WIN32
+				int			fd;
+#endif
+
+				/*
+				 * Leave a breadcrumb trail when redirecting, in case the user
+				 * forgets that redirection is active and looks only at the
+				 * original stderr target file.
+				 */
+				ereport(LOG,
+						(errmsg("redirecting log output to logging collector process"),
+				errhint("Future log output will appear in directory \"%s\".",
+						Log_directory)));
+
 #ifndef WIN32
 				fflush(stdout);
 				if (dup2(syslogPipe[1], fileno(stdout)) < 0)
@@ -648,7 +659,6 @@ SysLogger_Start(void)
 				close(syslogPipe[1]);
 				syslogPipe[1] = -1;
 #else
-				int			fd;
 
 				/*
 				 * open the pipe in binary mode and make sure stderr is binary
@@ -744,7 +754,7 @@ syslogger_parseArgs(int argc, char *argv[])
 	if (fd != -1)
 	{
 		syslogFile = fdopen(fd, "a");
-		setvbuf(syslogFile, NULL, LBF_MODE, 0);
+		setvbuf(syslogFile, NULL, PG_IOLBF, 0);
 	}
 #else							/* WIN32 */
 	fd = atoi(*argv++);
@@ -754,7 +764,7 @@ syslogger_parseArgs(int argc, char *argv[])
 		if (fd > 0)
 		{
 			syslogFile = fdopen(fd, "a");
-			setvbuf(syslogFile, NULL, LBF_MODE, 0);
+			setvbuf(syslogFile, NULL, PG_IOLBF, 0);
 		}
 	}
 #endif   /* WIN32 */
@@ -1058,6 +1068,17 @@ pipeThread(void *arg)
 			bytes_in_logbuffer += bytesRead;
 			process_pipe_input(logbuffer, &bytes_in_logbuffer);
 		}
+
+		/*
+		 * If we've filled the current logfile, nudge the main thread to do a
+		 * log rotation.
+		 */
+		if (Log_RotationSize > 0)
+		{
+			if (ftell(syslogFile) >= Log_RotationSize * 1024L ||
+				(csvlogFile != NULL && ftell(csvlogFile) >= Log_RotationSize * 1024L))
+				SetLatch(&sysLoggerLatch);
+		}
 		LeaveCriticalSection(&sysloggerSection);
 	}
 
@@ -1122,7 +1143,7 @@ logfile_open(const char *filename, const char *mode, bool allow_errors)
 
 	if (fh)
 	{
-		setvbuf(fh, NULL, LBF_MODE, 0);
+		setvbuf(fh, NULL, PG_IOLBF, 0);
 
 #ifdef WIN32
 		/* use CRLF line endings on Windows */
@@ -1323,7 +1344,7 @@ set_next_rotation_time(void)
 	/*
 	 * The requirements here are to choose the next time > now that is a
 	 * "multiple" of the log rotation interval.  "Multiple" can be interpreted
-	 * fairly loosely.	In this version we align to log_timezone rather than
+	 * fairly loosely.  In this version we align to log_timezone rather than
 	 * GMT.
 	 */
 	rotinterval = Log_RotationAge * SECS_PER_MINUTE;	/* convert to seconds */

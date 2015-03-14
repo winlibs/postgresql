@@ -4,7 +4,7 @@
  *	  routines to manage scans of inverted index relations
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -163,6 +163,12 @@ ginFillScanKey(GinScanOpaque so, OffsetNumber attnum,
 	key->curItemMatches = false;
 	key->recheckCurItem = false;
 	key->isFinished = false;
+	key->nrequired = 0;
+	key->nadditional = 0;
+	key->requiredEntries = NULL;
+	key->additionalEntries = NULL;
+
+	ginInitConsistentFunction(ginstate, key);
 
 	for (i = 0; i < nQueryValues; i++)
 	{
@@ -221,8 +227,8 @@ ginFillScanKey(GinScanOpaque so, OffsetNumber attnum,
 	}
 }
 
-static void
-freeScanKeys(GinScanOpaque so)
+void
+ginFreeScanKeys(GinScanOpaque so)
 {
 	uint32		i;
 
@@ -235,6 +241,10 @@ freeScanKeys(GinScanOpaque so)
 
 		pfree(key->scanEntry);
 		pfree(key->entryRes);
+		if (key->requiredEntries)
+			pfree(key->requiredEntries);
+		if (key->additionalEntries)
+			pfree(key->additionalEntries);
 	}
 
 	pfree(so->keys);
@@ -387,7 +397,7 @@ ginNewScanKey(IndexScanDesc scan)
 	/*
 	 * If the index is version 0, it may be missing null and placeholder
 	 * entries, which would render searches for nulls and full-index scans
-	 * unreliable.	Throw an error if so.
+	 * unreliable.  Throw an error if so.
 	 */
 	if (hasNullQuery && !so->isVoidRes)
 	{
@@ -414,7 +424,7 @@ ginrescan(PG_FUNCTION_ARGS)
 	/* remaining arguments are ignored */
 	GinScanOpaque so = (GinScanOpaque) scan->opaque;
 
-	freeScanKeys(so);
+	ginFreeScanKeys(so);
 
 	if (scankey && scan->numberOfKeys > 0)
 	{
@@ -432,7 +442,7 @@ ginendscan(PG_FUNCTION_ARGS)
 	IndexScanDesc scan = (IndexScanDesc) PG_GETARG_POINTER(0);
 	GinScanOpaque so = (GinScanOpaque) scan->opaque;
 
-	freeScanKeys(so);
+	ginFreeScanKeys(so);
 
 	MemoryContextDelete(so->tempCtx);
 

@@ -1,7 +1,7 @@
 /*
  * PostgreSQL System Views
  *
- * Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Copyright (c) 1996-2014, PostgreSQL Global Development Group
  *
  * src/backend/catalog/system_views.sql
  */
@@ -94,6 +94,19 @@ CREATE VIEW pg_tables AS
          LEFT JOIN pg_tablespace T ON (T.oid = C.reltablespace)
     WHERE C.relkind = 'r';
 
+CREATE VIEW pg_matviews AS
+    SELECT
+        N.nspname AS schemaname,
+        C.relname AS matviewname,
+        pg_get_userbyid(C.relowner) AS matviewowner,
+        T.spcname AS tablespace,
+        C.relhasindex AS hasindexes,
+        C.relispopulated AS ispopulated,
+        pg_get_viewdef(C.oid) AS definition
+    FROM pg_class C LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
+         LEFT JOIN pg_tablespace T ON (T.oid = C.reltablespace)
+    WHERE C.relkind = 'm';
+
 CREATE VIEW pg_indexes AS
     SELECT
         N.nspname AS schemaname,
@@ -105,7 +118,7 @@ CREATE VIEW pg_indexes AS
          JOIN pg_class I ON (I.oid = X.indexrelid)
          LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
          LEFT JOIN pg_tablespace T ON (T.oid = I.reltablespace)
-    WHERE C.relkind = 'r' AND I.relkind = 'i';
+    WHERE C.relkind IN ('r', 'm') AND I.relkind = 'i';
 
 CREATE VIEW pg_stats AS
     SELECT
@@ -206,6 +219,7 @@ SELECT
 	l.objoid, l.classoid, l.objsubid,
 	CASE WHEN rel.relkind = 'r' THEN 'table'::text
 		 WHEN rel.relkind = 'v' THEN 'view'::text
+		 WHEN rel.relkind = 'm' THEN 'materialized view'::text
 		 WHEN rel.relkind = 'S' THEN 'sequence'::text
 		 WHEN rel.relkind = 'f' THEN 'foreign table'::text END AS objtype,
 	rel.relnamespace AS objnamespace,
@@ -311,6 +325,19 @@ WHERE
 	l.objsubid = 0
 UNION ALL
 SELECT
+	l.objoid, l.classoid, l.objsubid,
+	'event trigger'::text AS objtype,
+	NULL::oid AS objnamespace,
+	quote_ident(evt.evtname) AS objname,
+	l.provider, l.label
+FROM
+	pg_seclabel l
+	JOIN pg_event_trigger evt ON l.classoid = evt.tableoid
+		AND l.objoid = evt.oid
+WHERE
+	l.objsubid = 0
+UNION ALL
+SELECT
 	l.objoid, l.classoid, 0::int4 AS objsubid,
 	'database'::text AS objtype,
 	NULL::oid AS objnamespace,
@@ -378,6 +405,7 @@ CREATE VIEW pg_stat_all_tables AS
             pg_stat_get_tuples_hot_updated(C.oid) AS n_tup_hot_upd,
             pg_stat_get_live_tuples(C.oid) AS n_live_tup,
             pg_stat_get_dead_tuples(C.oid) AS n_dead_tup,
+            pg_stat_get_mod_since_analyze(C.oid) AS n_mod_since_analyze,
             pg_stat_get_last_vacuum_time(C.oid) as last_vacuum,
             pg_stat_get_last_autovacuum_time(C.oid) as last_autovacuum,
             pg_stat_get_last_analyze_time(C.oid) as last_analyze,
@@ -389,7 +417,7 @@ CREATE VIEW pg_stat_all_tables AS
     FROM pg_class C LEFT JOIN
          pg_index I ON C.oid = I.indrelid
          LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
-    WHERE C.relkind IN ('r', 't')
+    WHERE C.relkind IN ('r', 't', 'm')
     GROUP BY C.oid, N.nspname, C.relname;
 
 CREATE VIEW pg_stat_xact_all_tables AS
@@ -409,7 +437,7 @@ CREATE VIEW pg_stat_xact_all_tables AS
     FROM pg_class C LEFT JOIN
          pg_index I ON C.oid = I.indrelid
          LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
-    WHERE C.relkind IN ('r', 't')
+    WHERE C.relkind IN ('r', 't', 'm')
     GROUP BY C.oid, N.nspname, C.relname;
 
 CREATE VIEW pg_stat_sys_tables AS
@@ -446,16 +474,16 @@ CREATE VIEW pg_statio_all_tables AS
             pg_stat_get_blocks_fetched(T.oid) -
                     pg_stat_get_blocks_hit(T.oid) AS toast_blks_read,
             pg_stat_get_blocks_hit(T.oid) AS toast_blks_hit,
-            pg_stat_get_blocks_fetched(X.oid) -
-                    pg_stat_get_blocks_hit(X.oid) AS tidx_blks_read,
-            pg_stat_get_blocks_hit(X.oid) AS tidx_blks_hit
+            sum(pg_stat_get_blocks_fetched(X.indexrelid) -
+                    pg_stat_get_blocks_hit(X.indexrelid))::bigint AS tidx_blks_read,
+            sum(pg_stat_get_blocks_hit(X.indexrelid))::bigint AS tidx_blks_hit
     FROM pg_class C LEFT JOIN
             pg_index I ON C.oid = I.indrelid LEFT JOIN
             pg_class T ON C.reltoastrelid = T.oid LEFT JOIN
-            pg_class X ON T.reltoastidxid = X.oid
+            pg_index X ON T.oid = X.indrelid
             LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
-    WHERE C.relkind IN ('r', 't')
-    GROUP BY C.oid, N.nspname, C.relname, T.oid, X.oid;
+    WHERE C.relkind IN ('r', 't', 'm')
+    GROUP BY C.oid, N.nspname, C.relname, T.oid, X.indrelid;
 
 CREATE VIEW pg_statio_sys_tables AS
     SELECT * FROM pg_statio_all_tables
@@ -481,7 +509,7 @@ CREATE VIEW pg_stat_all_indexes AS
             pg_index X ON C.oid = X.indrelid JOIN
             pg_class I ON I.oid = X.indexrelid
             LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
-    WHERE C.relkind IN ('r', 't');
+    WHERE C.relkind IN ('r', 't', 'm');
 
 CREATE VIEW pg_stat_sys_indexes AS
     SELECT * FROM pg_stat_all_indexes
@@ -507,7 +535,7 @@ CREATE VIEW pg_statio_all_indexes AS
             pg_index X ON C.oid = X.indrelid JOIN
             pg_class I ON I.oid = X.indexrelid
             LEFT JOIN pg_namespace N ON (N.oid = C.relnamespace)
-    WHERE C.relkind IN ('r', 't');
+    WHERE C.relkind IN ('r', 't', 'm');
 
 CREATE VIEW pg_statio_sys_indexes AS
     SELECT * FROM pg_statio_all_indexes
@@ -558,6 +586,8 @@ CREATE VIEW pg_stat_activity AS
             S.state_change,
             S.waiting,
             S.state,
+            S.backend_xid,
+            s.backend_xmin,
             S.query
     FROM pg_database D, pg_stat_get_activity(NULL) AS S, pg_authid U
     WHERE S.datid = D.oid AND
@@ -573,6 +603,7 @@ CREATE VIEW pg_stat_replication AS
             S.client_hostname,
             S.client_port,
             S.backend_start,
+            S.backend_xmin,
             W.state,
             W.sent_location,
             W.write_location,
@@ -584,6 +615,20 @@ CREATE VIEW pg_stat_replication AS
             pg_stat_get_wal_senders() AS W
     WHERE S.usesysid = U.oid AND
             S.pid = W.pid;
+
+CREATE VIEW pg_replication_slots AS
+    SELECT
+            L.slot_name,
+            L.plugin,
+            L.slot_type,
+            L.datoid,
+            D.datname AS database,
+            L.active,
+            L.xmin,
+            L.catalog_xmin,
+            L.restart_lsn
+    FROM pg_get_replication_slots() AS L
+            LEFT JOIN pg_database D ON (L.datoid = D.oid);
 
 CREATE VIEW pg_stat_database AS
     SELECT
@@ -643,6 +688,17 @@ CREATE VIEW pg_stat_xact_user_functions AS
     FROM pg_proc P LEFT JOIN pg_namespace N ON (N.oid = P.pronamespace)
     WHERE P.prolang != 12  -- fast check to eliminate built-in functions
           AND pg_stat_get_xact_function_calls(P.oid) IS NOT NULL;
+
+CREATE VIEW pg_stat_archiver AS
+    SELECT
+        s.archived_count,
+        s.last_archived_wal,
+        s.last_archived_time,
+        s.failed_count,
+        s.last_failed_wal,
+        s.last_failed_time,
+        s.stats_reset
+    FROM pg_stat_get_archiver() s;
 
 CREATE VIEW pg_stat_bgwriter AS
     SELECT
@@ -759,4 +815,55 @@ COMMENT ON FUNCTION ts_debug(text) IS
 
 CREATE OR REPLACE FUNCTION
   pg_start_backup(label text, fast boolean DEFAULT false)
-  RETURNS text STRICT VOLATILE LANGUAGE internal AS 'pg_start_backup';
+  RETURNS pg_lsn STRICT VOLATILE LANGUAGE internal AS 'pg_start_backup';
+
+-- legacy definition for compatibility with 9.3
+CREATE OR REPLACE FUNCTION
+  json_populate_record(base anyelement, from_json json, use_json_as_text boolean DEFAULT false)
+  RETURNS anyelement LANGUAGE internal STABLE AS 'json_populate_record';
+
+-- legacy definition for compatibility with 9.3
+CREATE OR REPLACE FUNCTION
+  json_populate_recordset(base anyelement, from_json json, use_json_as_text boolean DEFAULT false)
+  RETURNS SETOF anyelement LANGUAGE internal STABLE ROWS 100  AS 'json_populate_recordset';
+
+CREATE OR REPLACE FUNCTION pg_logical_slot_get_changes(
+    IN slot_name name, IN upto_lsn pg_lsn, IN upto_nchanges int, VARIADIC options text[] DEFAULT '{}',
+    OUT location pg_lsn, OUT xid xid, OUT data text)
+RETURNS SETOF RECORD
+LANGUAGE INTERNAL
+VOLATILE ROWS 1000 COST 1000
+AS 'pg_logical_slot_get_changes';
+
+CREATE OR REPLACE FUNCTION pg_logical_slot_peek_changes(
+    IN slot_name name, IN upto_lsn pg_lsn, IN upto_nchanges int, VARIADIC options text[] DEFAULT '{}',
+    OUT location pg_lsn, OUT xid xid, OUT data text)
+RETURNS SETOF RECORD
+LANGUAGE INTERNAL
+VOLATILE ROWS 1000 COST 1000
+AS 'pg_logical_slot_peek_changes';
+
+CREATE OR REPLACE FUNCTION pg_logical_slot_get_binary_changes(
+    IN slot_name name, IN upto_lsn pg_lsn, IN upto_nchanges int, VARIADIC options text[] DEFAULT '{}',
+    OUT location pg_lsn, OUT xid xid, OUT data bytea)
+RETURNS SETOF RECORD
+LANGUAGE INTERNAL
+VOLATILE ROWS 1000 COST 1000
+AS 'pg_logical_slot_get_binary_changes';
+
+CREATE OR REPLACE FUNCTION pg_logical_slot_peek_binary_changes(
+    IN slot_name name, IN upto_lsn pg_lsn, IN upto_nchanges int, VARIADIC options text[] DEFAULT '{}',
+    OUT location pg_lsn, OUT xid xid, OUT data bytea)
+RETURNS SETOF RECORD
+LANGUAGE INTERNAL
+VOLATILE ROWS 1000 COST 1000
+AS 'pg_logical_slot_peek_binary_changes';
+
+CREATE OR REPLACE FUNCTION
+  make_interval(years int4 DEFAULT 0, months int4 DEFAULT 0, weeks int4 DEFAULT 0,
+                days int4 DEFAULT 0, hours int4 DEFAULT 0, mins int4 DEFAULT 0,
+                secs double precision DEFAULT 0.0)
+RETURNS interval
+LANGUAGE INTERNAL
+STRICT IMMUTABLE
+AS 'make_interval';

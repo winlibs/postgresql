@@ -2,7 +2,7 @@
  * re_*comp and friends - compile REs
  * This file #includes several others (see the bottom).
  *
- * Copyright (c) 1998, 1999 Henry Spencer.	All rights reserved.
+ * Copyright (c) 1998, 1999 Henry Spencer.  All rights reserved.
  *
  * Development of this software was funded, in part, by Cray Research Inc.,
  * UUNET Communications Services Inc., Sun Microsystems Inc., and Scriptics
@@ -33,6 +33,8 @@
  */
 
 #include "regex/regguts.h"
+
+#include "miscadmin.h"			/* needed by rcancelrequested() */
 
 /*
  * forward declarations, up here so forward datatypes etc. are defined early
@@ -67,6 +69,7 @@ static long nfanode(struct vars *, struct subre *, FILE *);
 static int	newlacon(struct vars *, struct state *, struct state *, int);
 static void freelacons(struct subre *, int);
 static void rfree(regex_t *);
+static int	rcancelrequested(void);
 
 #ifdef REG_DEBUG
 static void dump(regex_t *, FILE *);
@@ -122,12 +125,15 @@ static void destroystate(struct nfa *, struct state *);
 static void newarc(struct nfa *, int, pcolor, struct state *, struct state *);
 static struct arc *allocarc(struct nfa *, struct state *);
 static void freearc(struct nfa *, struct arc *);
+static int	hasnonemptyout(struct state *);
+static int	nonemptyouts(struct state *);
+static int	nonemptyins(struct state *);
 static struct arc *findarc(struct state *, int, pcolor);
 static void cparc(struct nfa *, struct arc *, struct state *, struct state *);
 static void moveins(struct nfa *, struct state *, struct state *);
-static void copyins(struct nfa *, struct state *, struct state *);
+static void copyins(struct nfa *, struct state *, struct state *, int);
 static void moveouts(struct nfa *, struct state *, struct state *);
-static void copyouts(struct nfa *, struct state *, struct state *);
+static void copyouts(struct nfa *, struct state *, struct state *, int);
 static void cloneouts(struct nfa *, struct state *, struct state *, struct state *, int);
 static void delsub(struct nfa *, struct state *, struct state *);
 static void deltraverse(struct nfa *, struct state *, struct state *);
@@ -146,7 +152,8 @@ static int	push(struct nfa *, struct arc *);
 #define COMPATIBLE	3			/* compatible but not satisfied yet */
 static int	combine(struct arc *, struct arc *);
 static void fixempties(struct nfa *, FILE *);
-static int	unempty(struct nfa *, struct arc *);
+static struct state *emptyreachable(struct state *, struct state *);
+static void replaceempty(struct nfa *, struct state *, struct state *);
 static void cleanup(struct nfa *);
 static void markreachable(struct nfa *, struct state *, struct state *, struct state *);
 static void markcanreach(struct nfa *, struct state *, struct state *, struct state *);
@@ -270,8 +277,9 @@ struct vars
 
 
 /* static function list */
-static struct fns functions = {
+static const struct fns functions = {
 	rfree,						/* regfree insides */
+	rcancelrequested			/* check for cancel request */
 };
 
 
@@ -556,7 +564,7 @@ makesearch(struct vars * v,
 	 * constraints, often knowing when you were in the pre state tells you
 	 * little; it's the next state(s) that are informative.  But some of them
 	 * may have other inarcs, i.e. it may be possible to make actual progress
-	 * and then return to one of them.	We must de-optimize such cases,
+	 * and then return to one of them.  We must de-optimize such cases,
 	 * splitting each such state into progress and no-progress states.
 	 */
 
@@ -583,7 +591,7 @@ makesearch(struct vars * v,
 	for (s = slist; s != NULL; s = s2)
 	{
 		s2 = newstate(nfa);
-		copyouts(nfa, s, s2);
+		copyouts(nfa, s, s2, 1);
 		for (a = s->ins; a != NULL; a = b)
 		{
 			b = a->inchain;
@@ -602,7 +610,7 @@ makesearch(struct vars * v,
  * parse - parse an RE
  *
  * This is actually just the top level, which parses a bunch of branches
- * tied together with '|'.	They appear in the tree as the left children
+ * tied together with '|'.  They appear in the tree as the left children
  * of a chain of '|' subres.
  */
 static struct subre *
@@ -712,6 +720,7 @@ parsebranch(struct vars * v,
 
 		/* NB, recursion in parseqatom() may swallow rest of branch */
 		parseqatom(v, stopper, type, lp, right, t);
+		NOERRN();
 	}
 
 	if (!seencontent)
@@ -1169,6 +1178,7 @@ parseqatom(struct vars * v,
 		EMPTYARC(s2, rp);
 		t->right = subre(v, '=', 0, s2, rp);
 	}
+	NOERR();
 	assert(SEE('|') || SEE(stopper) || SEE(EOS));
 	t->flags |= COMBINE(t->flags, t->right->flags);
 	top->flags |= COMBINE(top->flags, t->flags);
@@ -1342,7 +1352,7 @@ bracket(struct vars * v,
 /*
  * cbracket - handle complemented bracket expression
  * We do it by calling bracket() with dummy endpoints, and then complementing
- * the result.	The alternative would be to invoke rainbow(), and then delete
+ * the result.  The alternative would be to invoke rainbow(), and then delete
  * arcs as the b.e. is seen... but that gets messy.
  */
 static void
@@ -1670,8 +1680,9 @@ freesrnode(struct vars * v,		/* might be NULL */
 		freecnfa(&sr->cnfa);
 	sr->flags = 0;
 
-	if (v != NULL)
+	if (v != NULL && v->treechain != NULL)
 	{
+		/* we're still parsing, maybe we can reuse the subre */
 		sr->left = v->treefree;
 		v->treefree = sr;
 	}
@@ -1717,6 +1728,20 @@ numst(struct subre * t,
 
 /*
  * markst - mark tree nodes as INUSE
+ *
+ * Note: this is a great deal more subtle than it looks.  During initial
+ * parsing of a regex, all subres are linked into the treechain list;
+ * discarded ones are also linked into the treefree list for possible reuse.
+ * After we are done creating all subres required for a regex, we run markst()
+ * then cleanst(), which results in discarding all subres not reachable from
+ * v->tree.  We then clear v->treechain, indicating that subres must be found
+ * by descending from v->tree.  This changes the behavior of freesubre(): it
+ * will henceforth FREE() unwanted subres rather than sticking them into the
+ * treefree list.  (Doing that any earlier would result in dangling links in
+ * the treechain list.)  This all means that freev() will clean up correctly
+ * if invoked before or after markst()+cleanst(); but it would not work if
+ * called partway through this state conversion, so we mustn't error out
+ * in or between these two functions.
  */
 static void
 markst(struct subre * t)
@@ -1814,25 +1839,27 @@ newlacon(struct vars * v,
 		 int pos)
 {
 	int			n;
+	struct subre *newlacons;
 	struct subre *sub;
 
 	if (v->nlacons == 0)
 	{
-		v->lacons = (struct subre *) MALLOC(2 * sizeof(struct subre));
 		n = 1;					/* skip 0th */
-		v->nlacons = 2;
+		newlacons = (struct subre *) MALLOC(2 * sizeof(struct subre));
 	}
 	else
 	{
-		v->lacons = (struct subre *) REALLOC(v->lacons,
-									(v->nlacons + 1) * sizeof(struct subre));
-		n = v->nlacons++;
+		n = v->nlacons;
+		newlacons = (struct subre *) REALLOC(v->lacons,
+											 (n + 1) * sizeof(struct subre));
 	}
-	if (v->lacons == NULL)
+	if (newlacons == NULL)
 	{
 		ERR(REG_ESPACE);
 		return 0;
 	}
+	v->lacons = newlacons;
+	v->nlacons = n + 1;
 	sub = &v->lacons[n];
 	sub->begin = begin;
 	sub->end = end;
@@ -1885,6 +1912,22 @@ rfree(regex_t *re)
 			freecnfa(&g->search);
 		FREE(g);
 	}
+}
+
+/*
+ * rcancelrequested - check for external request to cancel regex operation
+ *
+ * Return nonzero to fail the operation with error code REG_CANCEL,
+ * zero to keep going
+ *
+ * The current implementation is Postgres-specific.  If we ever get around
+ * to splitting the regex code out as a standalone library, there will need
+ * to be some API to let applications define a callback function for this.
+ */
+static int
+rcancelrequested(void)
+{
+	return InterruptPending && (QueryCancelPending || ProcDiePending);
 }
 
 #ifdef REG_DEBUG

@@ -3,7 +3,7 @@
  * view.c
  *	  use rewrite rules to construct views
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -27,6 +27,7 @@
 #include "parser/parse_relation.h"
 #include "rewrite/rewriteDefine.h"
 #include "rewrite/rewriteManip.h"
+#include "rewrite/rewriteHandler.h"
 #include "rewrite/rewriteSupport.h"
 #include "utils/acl.h"
 #include "utils/builtins.h"
@@ -36,56 +37,23 @@
 
 
 static void checkViewTupleDesc(TupleDesc newdesc, TupleDesc olddesc);
-static bool isViewOnTempTable_walker(Node *node, void *context);
 
 /*---------------------------------------------------------------------
- * isViewOnTempTable
- *
- * Returns true iff any of the relations underlying this view are
- * temporary tables.
- *---------------------------------------------------------------------
+ * Validator for "check_option" reloption on views. The allowed values
+ * are "local" and "cascaded".
  */
-static bool
-isViewOnTempTable(Query *viewParse)
+void
+validateWithCheckOption(char *value)
 {
-	return isViewOnTempTable_walker((Node *) viewParse, NULL);
-}
-
-static bool
-isViewOnTempTable_walker(Node *node, void *context)
-{
-	if (node == NULL)
-		return false;
-
-	if (IsA(node, Query))
+	if (value == NULL ||
+		(pg_strcasecmp(value, "local") != 0 &&
+		 pg_strcasecmp(value, "cascaded") != 0))
 	{
-		Query	   *query = (Query *) node;
-		ListCell   *rtable;
-
-		foreach(rtable, query->rtable)
-		{
-			RangeTblEntry *rte = lfirst(rtable);
-
-			if (rte->rtekind == RTE_RELATION)
-			{
-				Relation	rel = heap_open(rte->relid, AccessShareLock);
-				char		relpersistence = rel->rd_rel->relpersistence;
-
-				heap_close(rel, AccessShareLock);
-				if (relpersistence == RELPERSISTENCE_TEMP)
-					return true;
-			}
-		}
-
-		return query_tree_walker(query,
-								 isViewOnTempTable_walker,
-								 context,
-								 QTW_IGNORE_JOINALIASES);
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("invalid value for \"check_option\" option"),
+				 errdetail("Valid values are \"local\" and \"cascaded\".")));
 	}
-
-	return expression_tree_walker(node,
-								  isViewOnTempTable_walker,
-								  context);
 }
 
 /*---------------------------------------------------------------------
@@ -132,6 +100,7 @@ DefineVirtualRelation(RangeVar *relation, List *tlist, bool replace,
 			def->cooked_default = NULL;
 			def->collClause = NULL;
 			def->collOid = exprCollation((Node *) tle->expr);
+			def->location = -1;
 
 			/*
 			 * It's possible that the column is of a collatable type but the
@@ -259,7 +228,6 @@ DefineVirtualRelation(RangeVar *relation, List *tlist, bool replace,
 		createStmt->inhRelations = NIL;
 		createStmt->constraints = NIL;
 		createStmt->options = options;
-		createStmt->options = lappend(options, defWithOids(false));
 		createStmt->oncommit = ONCOMMIT_NOOP;
 		createStmt->tablespacename = NULL;
 		createStmt->if_not_exists = false;
@@ -376,11 +344,11 @@ UpdateRangeTableOfViewParse(Oid viewOid, Query *viewParse)
 			   *rt_entry2;
 
 	/*
-	 * Make a copy of the given parsetree.	It's not so much that we don't
+	 * Make a copy of the given parsetree.  It's not so much that we don't
 	 * want to scribble on our input, it's that the parser has a bad habit of
 	 * outputting multiple links to the same subtree for constructs like
 	 * BETWEEN, and we mustn't have OffsetVarNodes increment the varno of a
-	 * Var node twice.	copyObject will expand any multiply-referenced subtree
+	 * Var node twice.  copyObject will expand any multiply-referenced subtree
 	 * into multiple copies.
 	 */
 	viewParse = (Query *) copyObject(viewParse);
@@ -420,12 +388,14 @@ UpdateRangeTableOfViewParse(Oid viewOid, Query *viewParse)
  * DefineView
  *		Execute a CREATE VIEW command.
  */
-void
+Oid
 DefineView(ViewStmt *stmt, const char *queryString)
 {
 	Query	   *viewParse;
 	Oid			viewOid;
 	RangeVar   *view;
+	ListCell   *cell;
+	bool		check_option;
 
 	/*
 	 * Run parse analysis to convert the raw parse tree to a Query.  Note this
@@ -461,6 +431,49 @@ DefineView(ViewStmt *stmt, const char *queryString)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 		errmsg("views must not contain data-modifying statements in WITH")));
+
+	/*
+	 * If the user specified the WITH CHECK OPTION, add it to the list of
+	 * reloptions.
+	 */
+	if (stmt->withCheckOption == LOCAL_CHECK_OPTION)
+		stmt->options = lappend(stmt->options,
+								makeDefElem("check_option",
+											(Node *) makeString("local")));
+	else if (stmt->withCheckOption == CASCADED_CHECK_OPTION)
+		stmt->options = lappend(stmt->options,
+								makeDefElem("check_option",
+											(Node *) makeString("cascaded")));
+
+	/*
+	 * Check that the view is auto-updatable if WITH CHECK OPTION was
+	 * specified.
+	 */
+	check_option = false;
+
+	foreach(cell, stmt->options)
+	{
+		DefElem    *defel = (DefElem *) lfirst(cell);
+
+		if (pg_strcasecmp(defel->defname, "check_option") == 0)
+			check_option = true;
+	}
+
+	/*
+	 * If the check option is specified, look to see if the view is actually
+	 * auto-updatable or not.
+	 */
+	if (check_option)
+	{
+		const char *view_updatable_error =
+		view_query_is_auto_updatable(viewParse, true);
+
+		if (view_updatable_error)
+			ereport(ERROR,
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					 errmsg("WITH CHECK OPTION is supported only on automatically updatable views"),
+					 errhint("%s", view_updatable_error)));
+	}
 
 	/*
 	 * If a list of column names was given, run through and insert these into
@@ -500,13 +513,13 @@ DefineView(ViewStmt *stmt, const char *queryString)
 
 	/*
 	 * If the user didn't explicitly ask for a temporary view, check whether
-	 * we need one implicitly.	We allow TEMP to be inserted automatically as
+	 * we need one implicitly.  We allow TEMP to be inserted automatically as
 	 * long as the CREATE command is consistent with that --- no explicit
 	 * schema name.
 	 */
 	view = copyObject(stmt->view);		/* don't corrupt original command */
 	if (view->relpersistence == RELPERSISTENCE_PERMANENT
-		&& isViewOnTempTable(viewParse))
+		&& isQueryUsingTempRelation(viewParse))
 	{
 		view->relpersistence = RELPERSISTENCE_TEMP;
 		ereport(NOTICE,
@@ -530,6 +543,17 @@ DefineView(ViewStmt *stmt, const char *queryString)
 	 */
 	CommandCounterIncrement();
 
+	StoreViewQuery(viewOid, viewParse, stmt->replace);
+
+	return viewOid;
+}
+
+/*
+ * Use the rules system to store the query for the view.
+ */
+void
+StoreViewQuery(Oid viewOid, Query *viewParse, bool replace)
+{
 	/*
 	 * The range table of 'viewParse' does not contain entries for the "OLD"
 	 * and "NEW" relations. So... add them!
@@ -539,5 +563,5 @@ DefineView(ViewStmt *stmt, const char *queryString)
 	/*
 	 * Now create the rules associated with the view.
 	 */
-	DefineViewRules(viewOid, viewParse, stmt->replace);
+	DefineViewRules(viewOid, viewParse, replace);
 }

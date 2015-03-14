@@ -4,7 +4,7 @@
  *	  Extract a common prefix, if any, from a compiled regex.
  *
  *
- * Portions Copyright (c) 2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2012-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1998, 1999 Henry Spencer
  *
  * IDENTIFICATION
@@ -20,7 +20,7 @@
  * forward declarations
  */
 static int findprefix(struct cnfa * cnfa, struct colormap * cm,
-					  chr *string, size_t *slength);
+		   chr *string, size_t *slength);
 
 
 /*
@@ -79,8 +79,8 @@ pg_regprefix(regex_t *re,
 
 	/*
 	 * Since a correct NFA should never contain any exit-free loops, it should
-	 * not be possible for our traversal to return to a previously visited
-	 * NFA state.  Hence we need at most nstates chrs in the output string.
+	 * not be possible for our traversal to return to a previously visited NFA
+	 * state.  Hence we need at most nstates chrs in the output string.
 	 */
 	*string = (chr *) MALLOC(cnfa->nstates * sizeof(chr));
 	if (*string == NULL)
@@ -122,8 +122,8 @@ findprefix(struct cnfa * cnfa,
 
 	/*
 	 * The "pre" state must have only BOS/BOL outarcs, else pattern isn't
-	 * anchored left.  If we have both BOS and BOL, they must go to the
-	 * same next state.
+	 * anchored left.  If we have both BOS and BOL, they must go to the same
+	 * next state.
 	 */
 	st = cnfa->pre;
 	nextst = -1;

@@ -27,7 +27,7 @@
  * the backend's "backend/libpq" is quite separate from "interfaces/libpq".
  * All that remains is similarities of names to trap the unwary...
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *	src/backend/libpq/pqcomm.c
@@ -42,7 +42,7 @@
  *		StreamServerPort	- Open postmaster's server port
  *		StreamConnection	- Create new connection with client
  *		StreamClose			- Close a client/backend connection
- *		TouchSocketFile		- Protect socket file against /tmp cleaners
+ *		TouchSocketFiles	- Protect socket files against /tmp cleaners
  *		pq_init			- initialize libpq at backend startup
  *		pq_comm_reset	- reset libpq during error recovery
  *		pq_close		- shutdown libpq at backend exit
@@ -103,8 +103,8 @@ int			Unix_socket_permissions;
 char	   *Unix_socket_group;
 
 
-/* Where the Unix socket file is */
-static char sock_path[MAXPGPATH];
+/* Where the Unix socket files are (list of palloc'd strings) */
+static List *sock_paths = NIL;
 
 
 /*
@@ -129,8 +129,9 @@ static int	PqRecvLength;		/* End of data available in PqRecvBuffer */
 /*
  * Message status
  */
-static bool PqCommBusy;
-static bool DoingCopyOut;
+static bool PqCommBusy;			/* busy sending data to the client */
+static bool PqCommReadingMsg;	/* in the middle of reading a message */
+static bool DoingCopyOut;		/* in old-protocol COPY OUT processing */
 
 
 /* Internal functions */
@@ -140,8 +141,8 @@ static int	internal_flush(void);
 static void pq_set_nonblocking(bool nonblocking);
 
 #ifdef HAVE_UNIX_SOCKETS
-static int	Lock_AF_UNIX(unsigned short portNumber, char *unixSocketName);
-static int	Setup_AF_UNIX(void);
+static int	Lock_AF_UNIX(char *unixSocketDir, char *unixSocketPath);
+static int	Setup_AF_UNIX(char *sock_path);
 #endif   /* HAVE_UNIX_SOCKETS */
 
 
@@ -156,6 +157,7 @@ pq_init(void)
 	PqSendBuffer = MemoryContextAlloc(TopMemoryContext, PqSendBufferSize);
 	PqSendPointer = PqSendStart = PqRecvPointer = PqRecvLength = 0;
 	PqCommBusy = false;
+	PqCommReadingMsg = false;
 	DoingCopyOut = false;
 	on_proc_exit(pq_close, 0);
 }
@@ -234,29 +236,43 @@ pq_close(int code, Datum arg)
 
 /* StreamDoUnlink()
  * Shutdown routine for backend connection
- * If a Unix socket is used for communication, explicitly close it.
+ * If any Unix sockets are used for communication, explicitly close them.
  */
 #ifdef HAVE_UNIX_SOCKETS
 static void
 StreamDoUnlink(int code, Datum arg)
 {
-	Assert(sock_path[0]);
-	unlink(sock_path);
+	ListCell   *l;
+
+	/* Loop through all created sockets... */
+	foreach(l, sock_paths)
+	{
+		char	   *sock_path = (char *) lfirst(l);
+
+		unlink(sock_path);
+	}
+	/* Since we're about to exit, no need to reclaim storage */
+	sock_paths = NIL;
 }
 #endif   /* HAVE_UNIX_SOCKETS */
 
 /*
  * StreamServerPort -- open a "listening" port to accept connections.
  *
- * Successfully opened sockets are added to the ListenSocket[] array,
- * at the first position that isn't PGINVALID_SOCKET.
+ * family should be AF_UNIX or AF_UNSPEC; portNumber is the port number.
+ * For AF_UNIX ports, hostName should be NULL and unixSocketDir must be
+ * specified.  For TCP ports, hostName is either NULL for all interfaces or
+ * the interface to listen on, and unixSocketDir is ignored (can be NULL).
+ *
+ * Successfully opened sockets are added to the ListenSocket[] array (of
+ * length MaxListen), at the first position that isn't PGINVALID_SOCKET.
  *
  * RETURNS: STATUS_OK or STATUS_ERROR
  */
 
 int
 StreamServerPort(int family, char *hostName, unsigned short portNumber,
-				 char *unixSocketName,
+				 char *unixSocketDir,
 				 pgsocket ListenSocket[], int MaxListen)
 {
 	pgsocket	fd;
@@ -273,6 +289,9 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 	int			listen_index = 0;
 	int			added = 0;
 
+#ifdef HAVE_UNIX_SOCKETS
+	char		unixSocketPath[MAXPGPATH];
+#endif
 #if !defined(WIN32) || defined(IPV6_V6ONLY)
 	int			one = 1;
 #endif
@@ -286,10 +305,22 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 #ifdef HAVE_UNIX_SOCKETS
 	if (family == AF_UNIX)
 	{
-		/* Lock_AF_UNIX will also fill in sock_path. */
-		if (Lock_AF_UNIX(portNumber, unixSocketName) != STATUS_OK)
+		/*
+		 * Create unixSocketPath from portNumber and unixSocketDir and lock
+		 * that file path
+		 */
+		UNIXSOCK_PATH(unixSocketPath, portNumber, unixSocketDir);
+		if (strlen(unixSocketPath) >= UNIXSOCK_PATH_BUFLEN)
+		{
+			ereport(LOG,
+					(errmsg("Unix-domain socket path \"%s\" is too long (maximum %d bytes)",
+							unixSocketPath,
+							(int) (UNIXSOCK_PATH_BUFLEN - 1))));
 			return STATUS_ERROR;
-		service = sock_path;
+		}
+		if (Lock_AF_UNIX(unixSocketDir, unixSocketPath) != STATUS_OK)
+			return STATUS_ERROR;
+		service = unixSocketPath;
 	}
 	else
 #endif   /* HAVE_UNIX_SOCKETS */
@@ -363,7 +394,7 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 				break;
 		}
 
-		if ((fd = socket(addr->ai_family, SOCK_STREAM, 0)) < 0)
+		if ((fd = socket(addr->ai_family, SOCK_STREAM, 0)) == PGINVALID_SOCKET)
 		{
 			ereport(LOG,
 					(errcode_for_socket_access(),
@@ -418,7 +449,7 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 		/*
 		 * Note: This might fail on some OS's, like Linux older than
 		 * 2.4.21-pre3, that don't have the IPV6_V6ONLY socket option, and map
-		 * ipv4 addresses to ipv6.	It will show ::ffff:ipv4 for all ipv4
+		 * ipv4 addresses to ipv6.  It will show ::ffff:ipv4 for all ipv4
 		 * connections.
 		 */
 		err = bind(fd, addr->ai_addr, addr->ai_addrlen);
@@ -432,7 +463,7 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 					 (IS_AF_UNIX(addr->ai_family)) ?
 				  errhint("Is another postmaster already running on port %d?"
 						  " If not, remove socket file \"%s\" and retry.",
-						  (int) portNumber, sock_path) :
+						  (int) portNumber, service) :
 				  errhint("Is another postmaster already running on port %d?"
 						  " If not, wait a few seconds and retry.",
 						  (int) portNumber)));
@@ -443,7 +474,7 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
 #ifdef HAVE_UNIX_SOCKETS
 		if (addr->ai_family == AF_UNIX)
 		{
-			if (Setup_AF_UNIX() != STATUS_OK)
+			if (Setup_AF_UNIX(service) != STATUS_OK)
 			{
 				closesocket(fd);
 				break;
@@ -490,18 +521,8 @@ StreamServerPort(int family, char *hostName, unsigned short portNumber,
  * Lock_AF_UNIX -- configure unix socket file path
  */
 static int
-Lock_AF_UNIX(unsigned short portNumber, char *unixSocketName)
+Lock_AF_UNIX(char *unixSocketDir, char *unixSocketPath)
 {
-	UNIXSOCK_PATH(sock_path, portNumber, unixSocketName);
-	if (strlen(sock_path) >= UNIXSOCK_PATH_BUFLEN)
-	{
-		ereport(LOG,
-				(errmsg("Unix-domain socket path \"%s\" is too long (maximum %d bytes)",
-						sock_path,
-						(int) (UNIXSOCK_PATH_BUFLEN - 1))));
-		return STATUS_ERROR;
-	}
-
 	/*
 	 * Grab an interlock file associated with the socket file.
 	 *
@@ -510,13 +531,23 @@ Lock_AF_UNIX(unsigned short portNumber, char *unixSocketName)
 	 * more portable, and second, it lets us remove any pre-existing socket
 	 * file without race conditions.
 	 */
-	CreateSocketLockFile(sock_path, true);
+	CreateSocketLockFile(unixSocketPath, true, unixSocketDir);
 
 	/*
 	 * Once we have the interlock, we can safely delete any pre-existing
 	 * socket file to avoid failure at bind() time.
 	 */
-	unlink(sock_path);
+	unlink(unixSocketPath);
+
+	/*
+	 * Arrange to unlink the socket file(s) at proc_exit.  If this is the
+	 * first one, set up the on_proc_exit function to do it; then add this
+	 * socket file to the list of files to unlink.
+	 */
+	if (sock_paths == NIL)
+		on_proc_exit(StreamDoUnlink, 0);
+
+	sock_paths = lappend(sock_paths, pstrdup(unixSocketPath));
 
 	return STATUS_OK;
 }
@@ -526,11 +557,8 @@ Lock_AF_UNIX(unsigned short portNumber, char *unixSocketName)
  * Setup_AF_UNIX -- configure unix socket permissions
  */
 static int
-Setup_AF_UNIX(void)
+Setup_AF_UNIX(char *sock_path)
 {
-	/* Arrange to unlink the socket file at exit */
-	on_proc_exit(StreamDoUnlink, 0);
-
 	/*
 	 * Fix socket ownership/permission if requested.  Note we must do this
 	 * before we listen() to avoid a window where unwanted connections could
@@ -606,7 +634,7 @@ StreamConnection(pgsocket server_fd, Port *port)
 	port->raddr.salen = sizeof(port->raddr.addr);
 	if ((port->sock = accept(server_fd,
 							 (struct sockaddr *) & port->raddr.addr,
-							 &port->raddr.salen)) < 0)
+							 &port->raddr.salen)) == PGINVALID_SOCKET)
 	{
 		ereport(LOG,
 				(errcode_for_socket_access(),
@@ -712,20 +740,24 @@ StreamClose(pgsocket sock)
 }
 
 /*
- * TouchSocketFile -- mark socket file as recently accessed
+ * TouchSocketFiles -- mark socket files as recently accessed
  *
  * This routine should be called every so often to ensure that the socket
- * file has a recent mod date (ordinary operations on sockets usually won't
- * change the mod date).  That saves it from being removed by
+ * files have a recent mod date (ordinary operations on sockets usually won't
+ * change the mod date).  That saves them from being removed by
  * overenthusiastic /tmp-directory-cleaner daemons.  (Another reason we should
  * never have put the socket file in /tmp...)
  */
 void
-TouchSocketFile(void)
+TouchSocketFiles(void)
 {
-	/* Do nothing if we did not create a socket... */
-	if (sock_path[0] != '\0')
+	ListCell   *l;
+
+	/* Loop through all created sockets... */
+	foreach(l, sock_paths)
 	{
+		char	   *sock_path = (char *) lfirst(l);
+
 		/*
 		 * utime() is POSIX standard, utimes() is a common alternative. If we
 		 * have neither, there's no way to affect the mod or access time of
@@ -778,7 +810,7 @@ pq_set_nonblocking(bool nonblocking)
 	{
 		if (!pg_set_noblock(MyProcPort->sock))
 			ereport(COMMERROR,
-				  (errmsg("could not set socket to non-blocking mode: %m")));
+					(errmsg("could not set socket to nonblocking mode: %m")));
 	}
 	else
 	{
@@ -860,6 +892,8 @@ pq_recvbuf(void)
 int
 pq_getbyte(void)
 {
+	Assert(PqCommReadingMsg);
+
 	while (PqRecvPointer >= PqRecvLength)
 	{
 		if (pq_recvbuf())		/* If nothing in buffer, then recv some */
@@ -897,6 +931,8 @@ int
 pq_getbyte_if_available(unsigned char *c)
 {
 	int			r;
+
+	Assert(PqCommReadingMsg);
 
 	if (PqRecvPointer < PqRecvLength)
 	{
@@ -950,6 +986,8 @@ pq_getbytes(char *s, size_t len)
 {
 	size_t		amount;
 
+	Assert(PqCommReadingMsg);
+
 	while (len > 0)
 	{
 		while (PqRecvPointer >= PqRecvLength)
@@ -981,6 +1019,8 @@ static int
 pq_discardbytes(size_t len)
 {
 	size_t		amount;
+
+	Assert(PqCommReadingMsg);
 
 	while (len > 0)
 	{
@@ -1018,6 +1058,8 @@ pq_getstring(StringInfo s)
 {
 	int			i;
 
+	Assert(PqCommReadingMsg);
+
 	resetStringInfo(s);
 
 	/* Read until we get the terminating '\0' */
@@ -1050,6 +1092,58 @@ pq_getstring(StringInfo s)
 
 
 /* --------------------------------
+ *		pq_startmsgread	- begin reading a message from the client.
+ *
+ *		This must be called before any of the pq_get* functions.
+ * --------------------------------
+ */
+void
+pq_startmsgread(void)
+{
+	/*
+	 * There shouldn't be a read active already, but let's check just to be
+	 * sure.
+	 */
+	if (PqCommReadingMsg)
+		ereport(FATAL,
+				(errcode(ERRCODE_PROTOCOL_VIOLATION),
+				 errmsg("terminating connection because protocol sync was lost")));
+
+	PqCommReadingMsg = true;
+}
+
+
+/* --------------------------------
+ *		pq_endmsgread	- finish reading message.
+ *
+ *		This must be called after reading a V2 protocol message with
+ *		pq_getstring() and friends, to indicate that we have read the whole
+ *		message. In V3 protocol, pq_getmessage() does this implicitly.
+ * --------------------------------
+ */
+void
+pq_endmsgread(void)
+{
+	Assert(PqCommReadingMsg);
+
+	PqCommReadingMsg = false;
+}
+
+/* --------------------------------
+ *		pq_is_reading_msg - are we currently reading a message?
+ *
+ * This is used in error recovery at the outer idle loop to detect if we have
+ * lost protocol sync, and need to terminate the connection. pq_startmsgread()
+ * will check for that too, but it's nicer to detect it earlier.
+ * --------------------------------
+ */
+bool
+pq_is_reading_msg(void)
+{
+	return PqCommReadingMsg;
+}
+
+/* --------------------------------
  *		pq_getmessage	- get a message with length word from connection
  *
  *		The return value is placed in an expansible StringInfo, which has
@@ -1069,6 +1163,8 @@ int
 pq_getmessage(StringInfo s, int maxlen)
 {
 	int32		len;
+
+	Assert(PqCommReadingMsg);
 
 	resetStringInfo(s);
 
@@ -1097,7 +1193,7 @@ pq_getmessage(StringInfo s, int maxlen)
 	if (len > 0)
 	{
 		/*
-		 * Allocate space for message.	If we run out of room (ridiculously
+		 * Allocate space for message.  If we run out of room (ridiculously
 		 * large message), we will elog(ERROR), but we want to discard the
 		 * message body so as not to lose communication sync.
 		 */
@@ -1111,6 +1207,9 @@ pq_getmessage(StringInfo s, int maxlen)
 				ereport(COMMERROR,
 						(errcode(ERRCODE_PROTOCOL_VIOLATION),
 						 errmsg("incomplete message from client")));
+
+			/* we discarded the rest of the message so we're back in sync. */
+			PqCommReadingMsg = false;
 			PG_RE_THROW();
 		}
 		PG_END_TRY();
@@ -1127,6 +1226,9 @@ pq_getmessage(StringInfo s, int maxlen)
 		/* Place a trailing null per StringInfo convention */
 		s->data[len] = '\0';
 	}
+
+	/* finished reading the message. */
+	PqCommReadingMsg = false;
 
 	return 0;
 }

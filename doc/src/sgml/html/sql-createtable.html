@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN69960"
+NAME="AEN75645"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN69960"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN69965"
+NAME="AEN75648"
 ></A
 ><H2
 >Synopsis</H2
@@ -555,7 +555,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70045"
+NAME="AEN75728"
 ></A
 ><H2
 >Parameters</H2
@@ -565,6 +565,9 @@ NAME="AEN70045"
 CLASS="VARIABLELIST"
 ><DL
 ><DT
+><A
+NAME="SQL-CREATETABLE-TEMPORARY"
+></A
 ><TT
 CLASS="LITERAL"
 >TEMPORARY</TT
@@ -629,6 +632,9 @@ HREF="sql-createtable.html#SQL-CREATETABLE-COMPATIBILITY"
      </P
 ></DD
 ><DT
+><A
+NAME="SQL-CREATETABLE-UNLOGGED"
+></A
 ><TT
 CLASS="LITERAL"
 >UNLOGGED</TT
@@ -644,11 +650,7 @@ HREF="wal.html"
       automatically truncated after a crash or unclean shutdown.  The contents
       of an unlogged table are also not replicated to standby servers.
       Any indexes created on an unlogged table are automatically unlogged as
-      well; however, unlogged <A
-HREF="gist.html"
->GiST indexes</A
-> are
-      currently not supported and cannot be created on an unlogged table.
+      well.
      </P
 ></DD
 ><DT
@@ -879,7 +881,13 @@ CLASS="LITERAL"
       copied if <TT
 CLASS="LITERAL"
 >INCLUDING DEFAULTS</TT
-> is specified.  The
+> is specified.
+      Defaults that call database-modification functions, like
+      <CODE
+CLASS="FUNCTION"
+>nextval</CODE
+>, create a linkage between the original and
+      new tables.  The
       default behavior is to exclude default expressions, resulting in the
       copied columns in the new table having null defaults.
      </P
@@ -888,22 +896,25 @@ CLASS="LITERAL"
       <TT
 CLASS="LITERAL"
 >CHECK</TT
-> constraints will only be copied if
+> constraints will be copied only if
       <TT
 CLASS="LITERAL"
 >INCLUDING CONSTRAINTS</TT
-> is specified; other types of
-      constraints will never be copied. Also, no distinction is made between
-      column constraints and table constraints &mdash; when constraints are
-      requested, all check constraints are copied.
-     </P
-><P
->      Any indexes on the original table will not be created on the new
-      table, unless the <TT
+> is specified.
+      Indexes, <TT
+CLASS="LITERAL"
+>PRIMARY KEY</TT
+>, and <TT
+CLASS="LITERAL"
+>UNIQUE</TT
+> constraints
+      on the original table will be created on the new table only if the
+      <TT
 CLASS="LITERAL"
 >INCLUDING INDEXES</TT
-> clause is
-      specified.
+> clause is specified.
+      No distinction is made between column constraints and table
+      constraints.
      </P
 ><P
 ><TT
@@ -925,7 +936,7 @@ CLASS="LITERAL"
 > settings, see
       <A
 HREF="storage-toast.html"
->Section 56.2</A
+>Section 59.2</A
 >.
      </P
 ><P
@@ -961,7 +972,7 @@ CLASS="LITERAL"
       <TT
 CLASS="LITERAL"
 >LIKE</TT
-> clause, an error is signalled.
+> clause, an error is signaled.
      </P
 ><P
 >      The <TT
@@ -1054,7 +1065,11 @@ CLASS="LITERAL"
 >CHECK</TT
 > expressions cannot contain
       subqueries nor refer to variables other than columns of the
-      current row.
+      current row.  The system column <TT
+CLASS="LITERAL"
+>tableoid</TT
+>
+      may be referenced, but not any other system column.
      </P
 ><P
 >      A constraint marked with <TT
@@ -1269,7 +1284,7 @@ CLASS="LITERAL"
 >amgettuple</TT
 > (see <A
 HREF="indexam.html"
->Chapter 52</A
+>Chapter 55</A
 >); at present this means <ACRONYM
 CLASS="ACRONYM"
 >GIN</ACRONYM
@@ -1370,12 +1385,12 @@ CLASS="REPLACEABLE"
 >      These clauses specify a foreign key constraint, which requires
       that a group of one or more columns of the new table must only
       contain values that match values in the referenced
-      column(s) of some row of the referenced table.  If <TT
+      column(s) of some row of the referenced table.  If the <TT
 CLASS="REPLACEABLE"
 ><I
 >refcolumn</I
 ></TT
-> is omitted, the
+> list is omitted, the
       primary key of the <TT
 CLASS="REPLACEABLE"
 ><I
@@ -1401,21 +1416,28 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >MATCH
       SIMPLE</TT
->, which is also the default.  <TT
+> (which is the default).  <TT
 CLASS="LITERAL"
 >MATCH
       FULL</TT
 > will not allow one column of a multicolumn foreign key
-      to be null unless all foreign key columns are null.
+      to be null unless all foreign key columns are null; if they are all
+      null, the row is not required to have a match in the referenced table.
       <TT
 CLASS="LITERAL"
 >MATCH SIMPLE</TT
-> allows some foreign key columns
-      to be null while other parts of the foreign key are not
-      null. <TT
+> allows any of the foreign key columns
+      to be null; if any of them are null, the row is not required to have a
+      match in the referenced table.
+      <TT
 CLASS="LITERAL"
 >MATCH PARTIAL</TT
 > is not yet implemented.
+      (Of course, <TT
+CLASS="LITERAL"
+>NOT NULL</TT
+> constraints can be applied to the
+      referencing column(s) to prevent these cases from arising.)
      </P
 ><P
 >      In addition, when the data in the referenced columns is changed,
@@ -1483,8 +1505,8 @@ CLASS="LITERAL"
 ><DD
 ><P
 >          Delete any rows referencing the deleted row, or update the
-          value of the referencing column to the new value of the
-          referenced column, respectively.
+          values of the referencing column(s) to the new values of the
+          referenced columns, respectively.
          </P
 ></DD
 ><DT
@@ -1505,6 +1527,8 @@ CLASS="LITERAL"
 ><DD
 ><P
 >          Set the referencing column(s) to their default values.
+          (There must be a row in the referenced table matching the default
+          values, if they are not null, or the operation will fail.)
          </P
 ></DD
 ></DL
@@ -1513,8 +1537,8 @@ CLASS="LITERAL"
      </P
 ><P
 >      If the referenced column(s) are changed frequently, it might be wise to
-      add an index to the foreign key column so that referential actions
-      associated with the foreign key column can be performed more
+      add an index to the referencing column(s) so that referential actions
+      associated with the foreign key constraint can be performed more
       efficiently.
      </P
 ></DD
@@ -1872,7 +1896,7 @@ CLASS="ACRONYM"
 > table, if any
     (see <A
 HREF="storage-toast.html"
->Section 56.2</A
+>Section 59.2</A
 > for more information about TOAST).
     Note that the TOAST table inherits the
     <TT
@@ -2110,7 +2134,7 @@ HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-MIN-AGE"
      <TT
 CLASS="LITERAL"
 >autovacuum_freeze_min_age</TT
-> larger than the half system-wide
+> larger than half the system-wide
      <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-FREEZE-MAX-AGE"
 >autovacuum_freeze_max_age</A
@@ -2164,6 +2188,103 @@ CLASS="TYPE"
 HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-TABLE-AGE"
 >vacuum_freeze_table_age</A
 > parameter.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_min_age</TT
+>, <TT
+CLASS="LITERAL"
+>toast.autovacuum_multixact_freeze_min_age</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</DT
+><DD
+><P
+>      Custom <A
+HREF="runtime-config-client.html#GUC-VACUUM-MULTIXACT-FREEZE-MIN-AGE"
+>vacuum_multixact_freeze_min_age</A
+> parameter.
+      Note that autovacuum will ignore attempts to set a per-table
+      <TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_min_age</TT
+> larger than half the
+      system-wide <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
+>autovacuum_multixact_freeze_max_age</A
+>
+      setting.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_max_age</TT
+>, <TT
+CLASS="LITERAL"
+>toast.autovacuum_multixact_freeze_max_age</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</DT
+><DD
+><P
+>      Custom <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
+>autovacuum_multixact_freeze_max_age</A
+> parameter. Note
+      that autovacuum will ignore attempts to set a per-table
+      <TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_max_age</TT
+> larger than the
+      system-wide setting (it can only be set smaller).  Note that while you
+      can set <TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_max_age</TT
+> very small,
+      or even zero, this is usually unwise since it will force frequent
+      vacuuming.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_table_age</TT
+>, <TT
+CLASS="LITERAL"
+>toast.autovacuum_multixact_freeze_table_age</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</DT
+><DD
+><P
+>      Custom <A
+HREF="runtime-config-client.html#GUC-VACUUM-MULTIXACT-FREEZE-TABLE-AGE"
+>vacuum_multixact_freeze_table_age</A
+> parameter.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>user_catalog_table</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</DT
+><DD
+><P
+>      Declare a table as an additional catalog table, e.g. for the purpose of
+      logical replication. See
+      <A
+HREF="logicaldecoding-output-plugin.html#LOGICALDECODING-CAPABILITIES"
+>Section 46.6.2</A
+> for details.
      </P
 ></DD
 ></DL
@@ -2517,7 +2638,7 @@ CLASS="ACRONYM"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN70591"
+NAME="AEN76312"
 ></A
 ><H3
 >Temporary Tables</H3
@@ -2616,7 +2737,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN70614"
+NAME="AEN76335"
 ></A
 ><H3
 >Non-deferred Uniqueness Constraints</H3
@@ -2651,7 +2772,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN70622"
+NAME="AEN76343"
 ></A
 ><H3
 >Column Check Constraints</H3
@@ -2675,7 +2796,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN70628"
+NAME="AEN76349"
 ></A
 ><H3
 ><TT
@@ -2696,7 +2817,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN70634"
+NAME="AEN76355"
 ></A
 ><H3
 ><TT
@@ -2730,7 +2851,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN70643"
+NAME="AEN76364"
 ></A
 ><H3
 >Inheritance</H3
@@ -2755,7 +2876,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN70649"
+NAME="AEN76370"
 ></A
 ><H3
 >Zero-column Tables</H3
@@ -2780,7 +2901,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN70655"
+NAME="AEN76376"
 ></A
 ><H3
 ><TT
@@ -2801,7 +2922,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN70661"
+NAME="AEN76382"
 ></A
 ><H3
 >Tablespaces</H3
@@ -2823,7 +2944,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN70667"
+NAME="AEN76388"
 ></A
 ><H3
 >Typed Tables</H3
@@ -2843,7 +2964,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70671"
+NAME="AEN76392"
 ></A
 ><H2
 >See Also</H2
@@ -2853,6 +2974,9 @@ HREF="sql-altertable.html"
 >, <A
 HREF="sql-droptable.html"
 >DROP TABLE</A
+>, <A
+HREF="sql-createtableas.html"
+>CREATE TABLE AS</A
 >, <A
 HREF="sql-createtablespace.html"
 >CREATE TABLESPACE</A

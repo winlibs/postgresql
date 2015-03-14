@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: COPY
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "COPY" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "COPY" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,29 +29,30 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 COPY \- copy data between a file and a table
-.\" COPY
 .SH "SYNOPSIS"
 .sp
 .nf
 COPY \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ]
-    FROM { \*(Aq\fIfilename\fR\*(Aq | STDIN }
+    FROM { \*(Aq\fIfilename\fR\*(Aq | PROGRAM \*(Aq\fIcommand\fR\*(Aq | STDIN }
     [ [ WITH ] ( \fIoption\fR [, \&.\&.\&.] ) ]
 
 COPY { \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ] | ( \fIquery\fR ) }
-    TO { \*(Aq\fIfilename\fR\*(Aq | STDOUT }
+    TO { \*(Aq\fIfilename\fR\*(Aq | PROGRAM \*(Aq\fIcommand\fR\*(Aq | STDOUT }
     [ [ WITH ] ( \fIoption\fR [, \&.\&.\&.] ) ]
 
 where \fIoption\fR can be one of:
 
     FORMAT \fIformat_name\fR
     OIDS [ \fIboolean\fR ]
+    FREEZE [ \fIboolean\fR ]
     DELIMITER \*(Aq\fIdelimiter_character\fR\*(Aq
     NULL \*(Aq\fInull_string\fR\*(Aq
     HEADER [ \fIboolean\fR ]
     QUOTE \*(Aq\fIquote_character\fR\*(Aq
     ESCAPE \*(Aq\fIescape_character\fR\*(Aq
     FORCE_QUOTE { ( \fIcolumn_name\fR [, \&.\&.\&.] ) | * }
-    FORCE_NOT_NULL ( \fIcolumn_name\fR [, \&.\&.\&.] ) |
+    FORCE_NOT_NULL ( \fIcolumn_name\fR [, \&.\&.\&.] )
+    FORCE_NULL ( \fIcolumn_name\fR [, \&.\&.\&.] )
     ENCODING \*(Aq\fIencoding_name\fR\*(Aq
 .fi
 .SH "DESCRIPTION"
@@ -84,7 +85,13 @@ will insert the default values for those columns\&.
 \fBCOPY\fR
 with a file name instructs the
 PostgreSQL
-server to directly read from or write to a file\&. The file must be accessible to the server and the name must be specified from the viewpoint of the server\&. When
+server to directly read from or write to a file\&. The file must be accessible by the
+PostgreSQL
+user (the user ID the server runs as) and the name must be specified from the viewpoint of the server\&. When
+PROGRAM
+is specified, the server executes the given command and reads from the standard output of the program, or writes to the standard input of the program\&. The command must be specified from the viewpoint of the server, and be executable by the
+PostgreSQL
+user\&. When
 STDIN
 or
 STDOUT
@@ -112,9 +119,18 @@ command whose results are to be copied\&. Note that parentheses are required aro
 .PP
 \fIfilename\fR
 .RS 4
-The absolute path name of the input or output file\&. Windows users might need to use an
+The path name of the input or output file\&. An input file name can be an absolute or relative path, but an output file name must be an absolute path\&. Windows users might need to use an
 E\*(Aq\*(Aq
 string and double any backslashes used in the path name\&.
+.RE
+.PP
+PROGRAM
+.RS 4
+A command to execute\&. In
+\fBCOPY FROM\fR, the input is read from standard output of the command, and in
+\fBCOPY TO\fR, the output is written to the standard input of the command\&.
+.sp
+Note that the command is invoked by the shell, so if you need to pass any arguments to shell command that come from an untrusted source, you must be careful to strip or escape any special characters that might have a special meaning for the shell\&. For security reasons, it is best to use a fixed command string, or at least avoid passing any user input in it\&.
 .RE
 .PP
 STDIN
@@ -160,6 +176,15 @@ Specifies copying the OID for each row\&. (An error is raised if
 OIDS
 is specified for a table that does not have OIDs, or in the case of copying a
 \fIquery\fR\&.)
+.RE
+.PP
+FREEZE
+.RS 4
+Requests copying the data with rows already frozen, just as they would be after running the
+\fBVACUUM FREEZE\fR
+command\&. This is intended as a performance option for initial data loading\&. Rows will be frozen only if the table being loaded has been created or truncated in the current subtransaction, there are no cursors open and there are no older snapshots held by this transaction\&.
+.sp
+Note that all other sessions will immediately be able to see the data once it has been successfully loaded\&. This violates the normal rules of MVCC visibility and users specifying should be aware of the potential problems this might cause\&.
 .RE
 .PP
 DELIMITER
@@ -246,6 +271,15 @@ CSV
 format\&.
 .RE
 .PP
+FORCE_NULL
+.RS 4
+Match the specified columns\*(Aq values against the null string, even if it has been quoted, and if a match is found set the value to
+NULL\&. In the default case where the null string is empty, this converts a quoted empty string into NULL\&. This option is allowed only in
+\fBCOPY FROM\fR, and only when using
+CSV
+format\&.
+.RE
+.PP
 ENCODING
 .RS 4
 Specifies that the file is encoded in the
@@ -270,6 +304,28 @@ COPY \fIcount\fR
 The
 \fIcount\fR
 is the number of rows copied\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+
+psql
+will print this command tag only if the command was not
+COPY \&.\&.\&. TO STDOUT, or the equivalent
+psql
+meta\-command
+\ecopy \&.\&.\&. to stdout\&. This is to prevent confusing the command tag with the data that was just printed\&.
+.sp .5v
+.RE
 .SH "NOTES"
 .PP
 
@@ -294,9 +350,13 @@ Files named in a
 \fBCOPY\fR
 command are read or written directly by the server, not by the client application\&. Therefore, they must reside on or be accessible to the database server machine, not the client\&. They must be accessible to and readable or writable by the
 PostgreSQL
-user (the user ID the server runs as), not the client\&.
+user (the user ID the server runs as), not the client\&. Similarly, the command specified with
+PROGRAM
+is executed directly by the server, not by the client application, must be executable by the
+PostgreSQL
+user\&.
 \fBCOPY\fR
-naming a file is only allowed to database superusers, since it allows reading or writing any file that the server has privileges to access\&.
+naming a file or command is only allowed to database superusers, since it allows reading or writing any file that the server has privileges to access\&.
 .PP
 Do not confuse
 \fBCOPY\fR
@@ -320,6 +380,10 @@ always be specified as an absolute path\&. This is enforced by the server in the
 \fBCOPY TO\fR, but for
 \fBCOPY FROM\fR
 you do have the option of reading from a file specified by a relative path\&. The path will be interpreted relative to the working directory of the server process (normally the cluster\*(Aqs data directory), not the client\*(Aqs working directory\&.
+.PP
+Executing a command with
+PROGRAM
+might be restricted by the operating system\*(Aqs access control mechanisms, such as SELinux\&.
 .PP
 
 \fBCOPY FROM\fR
@@ -356,6 +420,12 @@ stops operation at the first error\&. This should not lead to problems in the ev
 \fBCOPY FROM\fR\&. These rows will not be visible or accessible, but they still occupy disk space\&. This might amount to a considerable amount of wasted disk space if the failure happened well into a large copy operation\&. You might wish to invoke
 \fBVACUUM\fR
 to recover the wasted space\&.
+.PP
+
+FORCE_NULL
+and
+FORCE_NOT_NULL
+can be used simultaneously on the same column\&. This results in converting quoted null strings to null values and unquoted null strings to empty strings\&.
 .SH "FILE FORMATS"
 .SS "Text Format"
 .PP
@@ -521,7 +591,10 @@ is written as an unquoted empty string, while an empty string data value is writ
 FORCE_NOT_NULL
 to prevent
 NULL
-input comparisons for specific columns\&.
+input comparisons for specific columns\&. You can also use
+FORCE_NULL
+to convert quoted null string data values to
+NULL\&.
 .PP
 Because backslash is not a special character in the
 CSV
@@ -735,6 +808,18 @@ To copy into a file just the countries whose names start with \*(AqA\*(Aq:
 .\}
 .nf
 COPY (SELECT * FROM country WHERE country_name LIKE \*(AqA%\*(Aq) TO \*(Aq/usr1/proj/bray/sql/a_list_countries\&.copy\*(Aq;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To copy into a compressed file, you can pipe the output through an external compression program:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+COPY country TO PROGRAM \*(Aqgzip > /usr1/proj/bray/sql/country_data\&.gz\*(Aq;
 .fi
 .if n \{\
 .RE

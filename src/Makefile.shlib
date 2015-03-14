@@ -34,12 +34,6 @@
 # SO_MINOR_VERSION      Minor version number to use for shared library
 # (If you want a patchlevel, include it in SO_MINOR_VERSION, e.g., "6.2".)
 #
-# Optional flags when building DLL's (only applicable to win32 and cygwin
-# platforms).
-# DLLTOOL_DEFFLAGS      Additional flags when creating the dll .def file
-# DLLTOOL_LIBFLAGS      Additional flags when creating the lib<module>.a file
-# DLLWRAP_FLAGS         Additional flags to dllwrap
-#
 # The module Makefile must also include
 # $(top_builddir)/src/Makefile.global before including this file.
 # (Makefile.global sets PORTNAME and other needed symbols.)
@@ -81,19 +75,16 @@ LINK.static = $(AR) $(AROPT)
 
 ifdef SO_MAJOR_VERSION
 # Default library naming convention used by the majority of platforms
-ifeq ($(enable_shared), yes)
 shlib		= lib$(NAME)$(DLSUFFIX).$(SO_MAJOR_VERSION).$(SO_MINOR_VERSION)
 shlib_major	= lib$(NAME)$(DLSUFFIX).$(SO_MAJOR_VERSION)
 shlib_bare	= lib$(NAME)$(DLSUFFIX)
-endif
 # Testing the soname variable is a reliable way to determine whether a
 # linkable library is being built.
 soname		= $(shlib_major)
+pkgconfigdir = $(libdir)/pkgconfig
 else
 # Naming convention for dynamically loadable modules
-ifeq ($(enable_shared), yes)
 shlib		= $(NAME)$(DLSUFFIX)
-endif
 endif
 stlib		= lib$(NAME).a
 
@@ -218,16 +209,6 @@ ifeq ($(PORTNAME), hpux)
   endif
 endif
 
-ifeq ($(PORTNAME), irix)
-  ifdef SO_MAJOR_VERSION
-    shlib		= lib$(NAME)$(DLSUFFIX).$(SO_MAJOR_VERSION)
-  endif
-  LINK.shared		= $(COMPILER) -shared
-  ifdef soname
-    LINK.shared		+= -Wl,-set_version,sgi$(SO_MAJOR_VERSION).$(SO_MINOR_VERSION)
-  endif
-endif
-
 ifeq ($(PORTNAME), linux)
   LINK.shared		= $(COMPILER) -shared
   ifdef soname
@@ -284,6 +265,7 @@ ifeq ($(PORTNAME), unixware)
 endif
 
 ifeq ($(PORTNAME), cygwin)
+  LINK.shared		= $(CC) -shared
   ifdef SO_MAJOR_VERSION
     shlib		= cyg$(NAME)$(DLSUFFIX)
   endif
@@ -309,6 +291,7 @@ all-lib: all-shared-lib
 ifdef soname
 # no static library when building a dynamically loadable module
 all-lib: all-static-lib
+all-lib: lib$(NAME).pc
 endif
 
 all-static-lib: $(stlib)
@@ -321,7 +304,6 @@ $(stlib): $(OBJS) | $(SHLIB_PREREQS)
 	$(RANLIB) $@
 endif #haslibarule
 
-ifeq ($(enable_shared), yes)
 
 ifeq (,$(filter cygwin win32,$(PORTNAME)))
 ifneq ($(PORTNAME), aix)
@@ -370,29 +352,66 @@ endif # PORTNAME == aix
 
 else # PORTNAME == cygwin || PORTNAME == win32
 
-# Cygwin or Win32 case
+ifeq ($(PORTNAME), cygwin)
 
-# If SHLIB_EXPORTS is set, the rules below will build a .def file from
-# that.  Else we build a temporary one here.
+# Cygwin case
+
+$(shlib): $(OBJS) | $(SHLIB_PREREQS)
+	$(CC) $(CFLAGS)  -shared -o $@  $(OBJS) $(LDFLAGS) $(LDFLAGS_SL) $(SHLIB_LINK) $(LIBS) $(LDAP_LIBS_BE)
+
+$(stlib): $(OBJS) | $(SHLIB_PREREQS)
+	$(LINK.static) $@ $^
+	$(RANLIB) $@
+
+else
+
+# Win32 case
+
+# There is no correct way to write a rule that generates two files.
+# Rules with two targets don't have that meaning, they are merely
+# shorthand for two otherwise separate rules.  To be safe for parallel
+# make, we must chain the dependencies like this.  The semicolon is
+# important, otherwise make will choose some built-in rule.
+
+$(stlib): $(shlib) ;
+
+# XXX A backend that loads a module linked with libgcc_s_dw2-1.dll will exit
+# uncleanly, hence -static-libgcc.  (Last verified with MinGW-w64 compilers
+# from i686-4.9.1-release-win32-dwarf-rt_v3-rev1.)  Shared libgcc has better
+# support for C++/Java exceptions; while core PostgreSQL does not use them, it
+# would be nice to support shared libgcc for the benefit of extensions.
+#
+# If SHLIB_EXPORTS is set, the rules below will build a .def file from that.
+# Else we just use --export-all-symbols.
 ifeq (,$(SHLIB_EXPORTS))
-DLL_DEFFILE = lib$(NAME)dll.def
-exports_file = $(DLL_DEFFILE)
-
-$(exports_file): $(OBJS)
-	$(DLLTOOL) --export-all $(DLLTOOL_DEFFLAGS) --output-def $@ $^
+$(shlib): $(OBJS) | $(SHLIB_PREREQS)
+	$(CC) $(CFLAGS)  -shared -static-libgcc -o $@  $(OBJS) $(LDFLAGS) $(LDFLAGS_SL) $(SHLIB_LINK) $(LIBS) -Wl,--export-all-symbols -Wl,--out-implib=$(stlib)
 else
 DLL_DEFFILE = lib$(NAME)dll.def
-endif
 
 $(shlib): $(OBJS) $(DLL_DEFFILE) | $(SHLIB_PREREQS)
-	$(DLLWRAP) -o $@ --dllname $(shlib) $(DLLWRAP_FLAGS) --def $(DLL_DEFFILE) $(OBJS) $(LDFLAGS) $(LDFLAGS_SL) $(SHLIB_LINK)
+	$(CC) $(CFLAGS)  -shared -static-libgcc -o $@  $(OBJS) $(DLL_DEFFILE) $(LDFLAGS) $(LDFLAGS_SL) $(SHLIB_LINK) $(LIBS) -Wl,--out-implib=$(stlib)
+endif
 
-$(stlib): $(shlib) $(DLL_DEFFILE) | $(SHLIB_PREREQS)
-	$(DLLTOOL) --dllname $(shlib) $(DLLTOOL_LIBFLAGS) --def $(DLL_DEFFILE) --output-lib $@
-
+endif # PORTNAME == cgywin
 endif # PORTNAME == cygwin || PORTNAME == win32
 
-endif # enable_shared
+
+%.pc: $(MAKEFILE_LIST)
+	echo 'Name: lib$(NAME)' >$@
+	echo 'Description: PostgreSQL lib$(NAME) library' >>$@
+	echo 'Url: http://www.postgresql.org/' >>$@
+	echo 'Version: $(VERSION)' >>$@
+	echo 'Requires: ' >>$@
+	echo 'Requires.private: $(PKG_CONFIG_REQUIRES_PRIVATE)' >>$@
+	echo 'Cflags: -I$(includedir)' >>$@
+	echo 'Libs: -L$(libdir) -l$(NAME)' >>$@
+# Record -L flags that the user might have passed in to the PostgreSQL
+# build to locate third-party libraries (e.g., ldap, ssl).  Filter out
+# those that point inside the build or source tree.  Use sort to
+# remove duplicates.  Also record the -l flags necessary for static
+# linking, but not those already covered by Requires.private.
+	echo 'Libs.private: $(sort $(filter-out -L.% -L$(top_srcdir)/%,$(filter -L%,$(LDFLAGS) $(SHLIB_LINK)))) $(filter-out $(PKG_CONFIG_REQUIRES_PRIVATE:lib%=-l%),$(filter -l%,$(SHLIB_LINK)))' >>$@
 
 
 # We need several not-quite-identical variants of .DEF files to build
@@ -408,13 +427,13 @@ UC_NAME = $(shell echo $(NAME) | tr 'abcdefghijklmnopqrstuvwxyz' 'ABCDEFGHIJKLMN
 
 lib$(NAME)dll.def: $(SHLIB_EXPORTS)
 	echo '; DEF file for MS VC++' >$@
-	echo 'LIBRARY LIB$(UC_NAME)' >>$@
+	echo 'LIBRARY LIB$(UC_NAME).dll' >>$@
 	echo 'EXPORTS' >>$@
 	sed -e '/^#/d' -e 's/^\(.*[ 	]\)\([0-9][0-9]*\)/    \1@ \2/' $< >>$@
 
 lib$(NAME)ddll.def: $(SHLIB_EXPORTS)
 	echo '; DEF file for MS VC++' >$@
-	echo 'LIBRARY LIB$(UC_NAME)D' >>$@
+	echo 'LIBRARY LIB$(UC_NAME)D.dll' >>$@
 	echo 'EXPORTS' >>$@
 	sed -e '/^#/d' -e 's/^\(.*[ 	]\)\([0-9][0-9]*\)/    \1@ \2/' $< >>$@
 
@@ -437,7 +456,11 @@ endif # SHLIB_EXPORTS
 install-lib: install-lib-shared
 ifdef soname
 install-lib: install-lib-static
+install-lib: install-lib-pc
 endif
+
+install-lib-pc: lib$(NAME).pc installdirs-lib
+	$(INSTALL_DATA) $< '$(DESTDIR)$(pkgconfigdir)/lib$(NAME).pc'
 
 install-lib-static: $(stlib) installdirs-lib
 	$(INSTALL_STLIB) $< '$(DESTDIR)$(libdir)/$(stlib)'
@@ -446,7 +469,6 @@ ifeq ($(PORTNAME), darwin)
 	ranlib $(stlib)
 endif
 
-ifeq ($(enable_shared), yes)
 install-lib-shared: $(shlib) installdirs-lib
 ifdef soname
 # we don't install $(shlib) on AIX
@@ -471,19 +493,11 @@ endif # not aix
 else # no soname
 	$(INSTALL_SHLIB) $< '$(DESTDIR)$(pkglibdir)/$(shlib)'
 endif
-else # not enable_shared
-ifndef soname
-install-lib-shared:
-	@echo "*****"; \
-	 echo "* Module $(NAME) was not installed due to lack of shared library support."; \
-	 echo "*****"
-endif
-endif # enable_shared
 
 
 installdirs-lib:
 ifdef soname
-	$(MKDIR_P) '$(DESTDIR)$(libdir)'
+	$(MKDIR_P) '$(DESTDIR)$(libdir)' '$(DESTDIR)$(pkgconfigdir)'
 else
 	$(MKDIR_P) '$(DESTDIR)$(pkglibdir)'
 endif
@@ -497,11 +511,10 @@ endif
 uninstall-lib:
 ifdef soname
 	rm -f '$(DESTDIR)$(libdir)/$(stlib)'
-ifeq ($(enable_shared), yes)
 	rm -f '$(DESTDIR)$(libdir)/$(shlib_bare)' \
 	  '$(DESTDIR)$(libdir)/$(shlib_major)' \
-	  '$(DESTDIR)$(libdir)/$(shlib)'
-endif # enable_shared
+	  '$(DESTDIR)$(libdir)/$(shlib)' \
+	  '$(DESTDIR)$(pkgconfigdir)/lib$(NAME).pc'
 else # no soname
 	rm -f '$(DESTDIR)$(pkglibdir)/$(shlib)'
 endif # no soname
@@ -513,7 +526,7 @@ endif # no soname
 
 .PHONY: clean-lib
 clean-lib:
-	rm -f $(shlib) $(shlib_bare) $(shlib_major) $(stlib) $(exports_file)
+	rm -f $(shlib) $(shlib_bare) $(shlib_major) $(stlib) $(exports_file) lib$(NAME).pc
 
 ifneq (,$(SHLIB_EXPORTS))
 maintainer-clean-lib:

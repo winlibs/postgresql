@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Monitoring Database Activity"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -204,12 +204,14 @@ CLASS="VARNAME"
 >stats_temp_directory</TT
 > can be
    pointed at a RAM-based file system, decreasing physical I/O requirements.
-   When the server shuts down, a permanent copy of the statistics
+   When the server shuts down cleanly, a permanent copy of the statistics
    data is stored in the <TT
 CLASS="FILENAME"
->global</TT
+>pg_stat</TT
 > subdirectory, so that
-   statistics can be retained across server restarts.
+   statistics can be retained across server restarts.  When recovery is
+   performed at server start (e.g. after immediate shutdown, server crash,
+   and point-in-time recovery), all statistics counters are reset.
   </P
 ></DIV
 ><DIV
@@ -327,6 +329,21 @@ CLASS="STRUCTNAME"
        See <A
 HREF="monitoring-stats.html#PG-STAT-ACTIVITY-VIEW"
 >pg_stat_activity</A
+> for details.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTNAME"
+>pg_stat_archiver</TT
+></TD
+><TD
+>One row only, showing statistics about the
+       WAL archiver process's activity. See
+       <A
+HREF="monitoring-stats.html#PG-STAT-ARCHIVER-VIEW"
+>pg_stat_archiver</A
 > for details.
       </TD
 ></TR
@@ -1067,6 +1084,37 @@ HREF="runtime-config-statistics.html#GUC-TRACK-ACTIVITIES"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
+>backend_xid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+><TD
+>Top-level transaction identifier of this backend, if any.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>backend_xmin</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+><TD
+>The current backend's <TT
+CLASS="LITERAL"
+>xmin</TT
+> horizon.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
 >query</TT
 ></TD
 ><TD
@@ -1135,11 +1183,145 @@ CLASS="STRUCTFIELD"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="PG-STAT-BGWRITER-VIEW"
+NAME="PG-STAT-ARCHIVER-VIEW"
 ></A
 ><P
 ><B
 >Table 27-3. <TT
+CLASS="STRUCTNAME"
+>pg_stat_archiver</TT
+> View</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Column</TH
+><TH
+>Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>archived_count</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of WAL files that have been successfully archived</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>last_archived_wal</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Name of the last WAL file successfully archived</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>last_archived_time</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>Time of the last successful archive operation</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>failed_count</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of failed attempts for archiving WAL files</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>last_failed_wal</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Name of the WAL file of the last failed archival operation</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>last_failed_time</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>Time of the last failed archival operation</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>stats_reset</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>Time at which these statistics were last reset</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   The <TT
+CLASS="STRUCTNAME"
+>pg_stat_archiver</TT
+> view will always have a
+   single row, containing data about the archiver process of the cluster.
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="PG-STAT-BGWRITER-VIEW"
+></A
+><P
+><B
+>Table 27-4. <TT
 CLASS="STRUCTNAME"
 >pg_stat_bgwriter</TT
 > View</B
@@ -1340,7 +1522,7 @@ NAME="PG-STAT-DATABASE-VIEW"
 ></A
 ><P
 ><B
->Table 27-4. <TT
+>Table 27-5. <TT
 CLASS="STRUCTNAME"
 >pg_stat_database</TT
 > View</B
@@ -1672,7 +1854,7 @@ NAME="PG-STAT-ALL-TABLES-VIEW"
 ></A
 ><P
 ><B
->Table 27-5. <TT
+>Table 27-6. <TT
 CLASS="STRUCTNAME"
 >pg_stat_all_tables</TT
 > View</B
@@ -1878,6 +2060,20 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
+>n_mod_since_analyze</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Estimated number of rows modified since this table was last analyzed</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
 >last_vacuum</TT
 ></TD
 ><TD
@@ -2026,7 +2222,7 @@ NAME="PG-STAT-ALL-INDEXES-VIEW"
 ></A
 ><P
 ><B
->Table 27-6. <TT
+>Table 27-7. <TT
 CLASS="STRUCTNAME"
 >pg_stat_all_indexes</TT
 > View</B
@@ -2249,7 +2445,7 @@ NAME="PG-STATIO-ALL-TABLES-VIEW"
 ></A
 ><P
 ><B
->Table 27-7. <TT
+>Table 27-8. <TT
 CLASS="STRUCTNAME"
 >pg_statio_all_tables</TT
 > View</B
@@ -2406,7 +2602,7 @@ CLASS="TYPE"
 >bigint</TT
 ></TD
 ><TD
->Number of disk blocks read from this table's TOAST table index (if any)</TD
+>Number of disk blocks read from this table's TOAST table indexes (if any)</TD
 ></TR
 ><TR
 ><TD
@@ -2420,7 +2616,7 @@ CLASS="TYPE"
 >bigint</TT
 ></TD
 ><TD
->Number of buffer hits in this table's TOAST table index (if any)</TD
+>Number of buffer hits in this table's TOAST table indexes (if any)</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -2450,7 +2646,7 @@ NAME="PG-STATIO-ALL-INDEXES-VIEW"
 ></A
 ><P
 ><B
->Table 27-8. <TT
+>Table 27-9. <TT
 CLASS="STRUCTNAME"
 >pg_statio_all_indexes</TT
 > View</B
@@ -2595,7 +2791,7 @@ NAME="PG-STATIO-ALL-SEQUENCES-VIEW"
 ></A
 ><P
 ><B
->Table 27-9. <TT
+>Table 27-10. <TT
 CLASS="STRUCTNAME"
 >pg_statio_all_sequences</TT
 > View</B
@@ -2702,7 +2898,7 @@ NAME="PG-STAT-USER-FUNCTIONS-VIEW"
 ></A
 ><P
 ><B
->Table 27-10. <TT
+>Table 27-11. <TT
 CLASS="STRUCTNAME"
 >pg_stat_user_functions</TT
 > View</B
@@ -2829,7 +3025,7 @@ NAME="PG-STAT-REPLICATION-VIEW"
 ></A
 ><P
 ><B
->Table 27-11. <TT
+>Table 27-12. <TT
 CLASS="STRUCTNAME"
 >pg_stat_replication</TT
 > View</B
@@ -2984,6 +3180,27 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
+>backend_xmin</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+><TD
+>This standby's <TT
+CLASS="LITERAL"
+>xmin</TT
+> horizon reported
+     by <A
+HREF="runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK"
+>hot_standby_feedback</A
+>.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
 >state</TT
 ></TD
 ><TD
@@ -3003,7 +3220,7 @@ CLASS="STRUCTFIELD"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Last transaction log position sent on this connection</TD
@@ -3017,7 +3234,7 @@ CLASS="STRUCTFIELD"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Last transaction log position written to disk by this standby
@@ -3032,7 +3249,7 @@ CLASS="STRUCTFIELD"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Last transaction log position flushed to disk by this standby
@@ -3047,7 +3264,7 @@ CLASS="STRUCTFIELD"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Last transaction log position replayed into the database on this
@@ -3101,7 +3318,7 @@ NAME="PG-STAT-DATABASE-CONFLICTS-VIEW"
 ></A
 ><P
 ><B
->Table 27-12. <TT
+>Table 27-13. <TT
 CLASS="STRUCTNAME"
 >pg_stat_database_conflicts</TT
 > View</B
@@ -3267,7 +3484,7 @@ CLASS="LITERAL"
 ><P
 >   Additional functions related to statistics collection are listed in <A
 HREF="monitoring-stats.html#MONITORING-STATS-FUNCS-TABLE"
->Table 27-13</A
+>Table 27-14</A
 >.
   </P
 ><DIV
@@ -3277,7 +3494,7 @@ NAME="MONITORING-STATS-FUNCS-TABLE"
 ></A
 ><P
 ><B
->Table 27-13. Additional Statistics Functions</B
+>Table 27-14. Additional Statistics Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3403,6 +3620,14 @@ CLASS="LITERAL"
 CLASS="STRUCTNAME"
 >pg_stat_bgwriter</TT
 > view.
+       Calling <TT
+CLASS="LITERAL"
+>pg_stat_reset_shared('archiver')</TT
+> will zero all the
+       counters shown in the <TT
+CLASS="STRUCTNAME"
+>pg_stat_archiver</TT
+> view.
       </TD
 ></TR
 ><TR
@@ -3460,7 +3685,7 @@ CLASS="STRUCTNAME"
    information.  In such cases, an older set of per-backend statistics
    access functions can be used; these are shown in <A
 HREF="monitoring-stats.html#MONITORING-STATS-BACKEND-FUNCS-TABLE"
->Table 27-14</A
+>Table 27-15</A
 >.
    These access functions use a backend ID number, which ranges from one
    to the number of currently active backends.
@@ -3489,7 +3714,7 @@ NAME="MONITORING-STATS-BACKEND-FUNCS-TABLE"
 ></A
 ><P
 ><B
->Table 27-14. Per-Backend Statistics Functions</B
+>Table 27-15. Per-Backend Statistics Functions</B
 ></P
 ><TABLE
 BORDER="1"

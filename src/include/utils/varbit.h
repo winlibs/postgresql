@@ -5,7 +5,7 @@
  *
  * Code originally contributed by Adriaan Joubert.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/varbit.h
@@ -14,6 +14,8 @@
  */
 #ifndef VARBIT_H
 #define VARBIT_H
+
+#include <limits.h>
 
 #include "fmgr.h"
 
@@ -53,6 +55,11 @@ typedef struct
 /* Number of bytes needed to store a bit string of a given length */
 #define VARBITTOTALLEN(BITLEN)	(((BITLEN) + BITS_PER_BYTE-1)/BITS_PER_BYTE + \
 								 VARHDRSZ + VARBITHDRSZ)
+/*
+ * Maximum number of bits.  Several code sites assume no overflow from
+ * computing bitlen + X; VARBITTOTALLEN() has the largest such X.
+ */
+#define VARBITMAXLEN		(INT_MAX - BITS_PER_BYTE + 1)
 /* pointer beyond the end of the bit string (like end() in STL containers) */
 #define VARBITEND(PTR)		(((bits8 *) (PTR)) + VARSIZE(PTR))
 /* Mask that will cover exactly one byte, i.e. BITS_PER_BYTE bits */

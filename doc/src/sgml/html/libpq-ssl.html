@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -235,7 +235,18 @@ CLASS="ACRONYM"
 CLASS="FILENAME"
 >~/.postgresql/root.crt</TT
 > in the user's home
-   directory. (On Microsoft Windows the file is named
+   directory. If intermediate <ACRONYM
+CLASS="ACRONYM"
+>CA</ACRONYM
+>s appear in
+   <TT
+CLASS="FILENAME"
+>root.crt</TT
+>, the file must also contain certificate
+   chains to their root <ACRONYM
+CLASS="ACRONYM"
+>CA</ACRONYM
+>s. (On Microsoft Windows the file is named
    <TT
 CLASS="FILENAME"
 >%APPDATA%\postgresql\root.crt</TT
@@ -290,7 +301,7 @@ CLASS="LITERAL"
     as that of <TT
 CLASS="LITERAL"
 >verify-ca</TT
->, meaning the sever certificate
+>, meaning the server certificate
     is validated against the CA. Relying on this behavior is discouraged,
     and applications that need certificate validation should always use
     <TT
@@ -374,23 +385,26 @@ CLASS="QUOTE"
 CLASS="FILENAME"
 >postgresql.crt</TT
 >
-   file, then its parent authority's certificate, and so on up to a
-   <SPAN
+   file, then its parent authority's certificate, and so on up to a certificate
+   authority, <SPAN
 CLASS="QUOTE"
 >"root"</SPAN
-> authority that is trusted by the server.  The root
-   certificate should be included in every case where
+> or <SPAN
+CLASS="QUOTE"
+>"intermediate"</SPAN
+>, that is trusted by
+   the server, i.e. signed by a certificate in the server's
    <TT
 CLASS="FILENAME"
->postgresql.crt</TT
-> contains more than one certificate.
+>root.crt</TT
+> file.
   </P
 ><P
->   Note that <TT
+>   Note that the client's <TT
 CLASS="FILENAME"
->root.crt</TT
-> lists the top-level CAs that are
-   considered trusted for signing server certificates.  In principle it need
+>~/.postgresql/root.crt</TT
+> lists the top-level CAs
+   that are considered trusted for signing server certificates.  In principle it need
    not list the CA that signed the client's certificate, though in most cases
    that CA would also be trusted for server certificates.
   </P

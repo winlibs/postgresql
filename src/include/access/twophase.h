@@ -4,7 +4,7 @@
  *	  Two-phase-commit related declarations.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/twophase.h
@@ -14,7 +14,9 @@
 #ifndef TWOPHASE_H
 #define TWOPHASE_H
 
-#include "storage/proc.h"
+#include "access/xlogdefs.h"
+#include "datatype/timestamp.h"
+#include "storage/lock.h"
 
 /*
  * GlobalTransactionData is defined in twophase.c; other places have no
@@ -27,6 +29,9 @@ extern int	max_prepared_xacts;
 
 extern Size TwoPhaseShmemSize(void);
 extern void TwoPhaseShmemInit(void);
+
+extern void AtAbort_Twophase(void);
+extern void PostPrepare_Twophase(void);
 
 extern PGPROC *TwoPhaseGetDummyProc(TransactionId xid);
 extern BackendId TwoPhaseGetDummyBackendId(TransactionId xid);

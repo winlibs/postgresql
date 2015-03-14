@@ -49,6 +49,36 @@ SELECT * FROM t;
  5
 (5 rows)
 
+-- recursive view
+CREATE RECURSIVE VIEW nums (n) AS
+    VALUES (1)
+UNION ALL
+    SELECT n+1 FROM nums WHERE n < 5;
+SELECT * FROM nums;
+ n 
+---
+ 1
+ 2
+ 3
+ 4
+ 5
+(5 rows)
+
+CREATE OR REPLACE RECURSIVE VIEW nums (n) AS
+    VALUES (1)
+UNION ALL
+    SELECT n+1 FROM nums WHERE n < 6;
+SELECT * FROM nums;
+ n 
+---
+ 1
+ 2
+ 3
+ 4
+ 5
+ 6
+(6 rows)
+
 -- This is an infinite loop with UNION ALL, but not with UNION
 WITH RECURSIVE t(n) AS (
     SELECT 1
@@ -139,7 +169,6 @@ CREATE TEMP TABLE department (
 	parent_department INTEGER REFERENCES department, -- upper department ID
 	name TEXT -- department name
 );
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "department_pkey" for table "department"
 INSERT INTO department VALUES (0, NULL, 'ROOT');
 INSERT INTO department VALUES (1, 0, 'A');
 INSERT INTO department VALUES (2, 1, 'B');
@@ -271,27 +300,74 @@ SELECT * FROM vsubdepartment ORDER BY name;
 
 -- Check reverse listing
 SELECT pg_get_viewdef('vsubdepartment'::regclass);
-                                                                                                                                                                                    pg_get_viewdef                                                                                                                                                                                     
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- WITH RECURSIVE subdepartment AS (SELECT department.id, department.parent_department, department.name FROM department WHERE (department.name = 'A'::text) UNION ALL SELECT d.id, d.parent_department, d.name FROM department d, subdepartment sd WHERE (d.parent_department = sd.id)) SELECT subdepartment.id, subdepartment.parent_department, subdepartment.name FROM subdepartment;
+                pg_get_viewdef                 
+-----------------------------------------------
+  WITH RECURSIVE subdepartment AS (           +
+          SELECT department.id,               +
+             department.parent_department,    +
+             department.name                  +
+            FROM department                   +
+           WHERE (department.name = 'A'::text)+
+         UNION ALL                            +
+          SELECT d.id,                        +
+             d.parent_department,             +
+             d.name                           +
+            FROM department d,                +
+             subdepartment sd                 +
+           WHERE (d.parent_department = sd.id)+
+         )                                    +
+  SELECT subdepartment.id,                    +
+     subdepartment.parent_department,         +
+     subdepartment.name                       +
+    FROM subdepartment;
 (1 row)
 
 SELECT pg_get_viewdef('vsubdepartment'::regclass, true);
-                                pg_get_viewdef                                 
--------------------------------------------------------------------------------
-  WITH RECURSIVE subdepartment AS (                                           +
-                  SELECT department.id, department.parent_department,         +
-                     department.name                                          +
-                    FROM department                                           +
-                   WHERE department.name = 'A'::text                          +
-         UNION ALL                                                            +
-                  SELECT d.id, d.parent_department, d.name                    +
-                    FROM department d, subdepartment sd                       +
-                   WHERE d.parent_department = sd.id                          +
-         )                                                                    +
-  SELECT subdepartment.id, subdepartment.parent_department, subdepartment.name+
+               pg_get_viewdef                
+---------------------------------------------
+  WITH RECURSIVE subdepartment AS (         +
+          SELECT department.id,             +
+             department.parent_department,  +
+             department.name                +
+            FROM department                 +
+           WHERE department.name = 'A'::text+
+         UNION ALL                          +
+          SELECT d.id,                      +
+             d.parent_department,           +
+             d.name                         +
+            FROM department d,              +
+             subdepartment sd               +
+           WHERE d.parent_department = sd.id+
+         )                                  +
+  SELECT subdepartment.id,                  +
+     subdepartment.parent_department,       +
+     subdepartment.name                     +
     FROM subdepartment;
 (1 row)
+
+-- Another reverse-listing example
+CREATE VIEW sums_1_100 AS
+WITH RECURSIVE t(n) AS (
+    VALUES (1)
+UNION ALL
+    SELECT n+1 FROM t WHERE n < 100
+)
+SELECT sum(n) FROM t;
+\d+ sums_1_100
+              View "public.sums_1_100"
+ Column |  Type  | Modifiers | Storage | Description 
+--------+--------+-----------+---------+-------------
+ sum    | bigint |           | plain   | 
+View definition:
+ WITH RECURSIVE t(n) AS (
+         VALUES (1)
+        UNION ALL
+         SELECT t_1.n + 1
+           FROM t t_1
+          WHERE t_1.n < 100
+        )
+ SELECT sum(t.n) AS sum
+   FROM t;
 
 -- corner case in which sub-WITH gets initialized first
 with recursive q as (
@@ -398,7 +474,6 @@ CREATE TEMPORARY TABLE tree(
     id INTEGER PRIMARY KEY,
     parent_id INTEGER REFERENCES tree(id)
 );
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "tree_pkey" for table "tree"
 INSERT INTO tree
 VALUES (1, NULL), (2, 1), (3,1), (4,2), (5,2), (6,2), (7,3), (8,3),
        (9,4), (10,4), (11,7), (12,7), (13,7), (14, 9), (15,11), (16,11);
@@ -939,12 +1014,12 @@ LINE 2:                           WHERE n IN (SELECT * FROM x))
 -- aggregate functions
 WITH RECURSIVE x(n) AS (SELECT 1 UNION ALL SELECT count(*) FROM x)
   SELECT * FROM x;
-ERROR:  aggregate functions not allowed in a recursive query's recursive term
+ERROR:  aggregate functions are not allowed in a recursive query's recursive term
 LINE 1: WITH RECURSIVE x(n) AS (SELECT 1 UNION ALL SELECT count(*) F...
                                                           ^
 WITH RECURSIVE x(n) AS (SELECT 1 UNION ALL SELECT sum(n) FROM x)
   SELECT * FROM x;
-ERROR:  aggregate functions not allowed in a recursive query's recursive term
+ERROR:  aggregate functions are not allowed in a recursive query's recursive term
 LINE 1: WITH RECURSIVE x(n) AS (SELECT 1 UNION ALL SELECT sum(n) FRO...
                                                           ^
 -- ORDER BY
@@ -2008,8 +2083,8 @@ SELECT * FROM parent;
 EXPLAIN (VERBOSE, COSTS OFF)
 WITH wcte AS ( INSERT INTO int8_tbl VALUES ( 42, 47 ) RETURNING q2 )
 DELETE FROM a USING wcte WHERE aa = q2;
-                    QUERY PLAN                    
---------------------------------------------------
+                   QUERY PLAN                   
+------------------------------------------------
  Delete on public.a
    CTE wcte
      ->  Insert on public.int8_tbl
@@ -2017,31 +2092,31 @@ DELETE FROM a USING wcte WHERE aa = q2;
            ->  Result
                  Output: 42::bigint, 47::bigint
    ->  Nested Loop
-         Output: public.a.ctid, wcte.*
-         Join Filter: (public.a.aa = wcte.q2)
+         Output: a.ctid, wcte.*
+         Join Filter: (a.aa = wcte.q2)
          ->  Seq Scan on public.a
-               Output: public.a.ctid, public.a.aa
+               Output: a.ctid, a.aa
          ->  CTE Scan on wcte
                Output: wcte.*, wcte.q2
    ->  Nested Loop
-         Output: public.a.ctid, wcte.*
-         Join Filter: (public.a.aa = wcte.q2)
-         ->  Seq Scan on public.b a
-               Output: public.a.ctid, public.a.aa
+         Output: b.ctid, wcte.*
+         Join Filter: (b.aa = wcte.q2)
+         ->  Seq Scan on public.b
+               Output: b.ctid, b.aa
          ->  CTE Scan on wcte
                Output: wcte.*, wcte.q2
    ->  Nested Loop
-         Output: public.a.ctid, wcte.*
-         Join Filter: (public.a.aa = wcte.q2)
-         ->  Seq Scan on public.c a
-               Output: public.a.ctid, public.a.aa
+         Output: c.ctid, wcte.*
+         Join Filter: (c.aa = wcte.q2)
+         ->  Seq Scan on public.c
+               Output: c.ctid, c.aa
          ->  CTE Scan on wcte
                Output: wcte.*, wcte.q2
    ->  Nested Loop
-         Output: public.a.ctid, wcte.*
-         Join Filter: (public.a.aa = wcte.q2)
-         ->  Seq Scan on public.d a
-               Output: public.a.ctid, public.a.aa
+         Output: d.ctid, wcte.*
+         Join Filter: (d.aa = wcte.q2)
+         ->  Seq Scan on public.d
+               Output: d.ctid, d.aa
          ->  CTE Scan on wcte
                Output: wcte.*, wcte.q2
 (34 rows)

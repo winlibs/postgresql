@@ -1554,6 +1554,18 @@ sqrt(2)
     <secondary>invocation</secondary>
    </indexterm>
 
+   <indexterm zone="syntax-aggregates">
+    <primary>ordered-set aggregate</primary>
+   </indexterm>
+
+   <indexterm zone="syntax-aggregates">
+    <primary>WITHIN GROUP</primary>
+   </indexterm>
+
+   <indexterm zone="syntax-aggregates">
+    <primary>FILTER</primary>
+   </indexterm>
+
    <para>
     An <firstterm>aggregate expression</firstterm> represents the
     application of an aggregate function across the rows selected by a
@@ -1562,19 +1574,20 @@ sqrt(2)
     syntax of an aggregate expression is one of the following:
 
 <synopsis>
-<replaceable>aggregate_name</replaceable> (<replaceable>expression</replaceable> [ , ... ] [ <replaceable>order_by_clause</replaceable> ] )
-<replaceable>aggregate_name</replaceable> (ALL <replaceable>expression</replaceable> [ , ... ] [ <replaceable>order_by_clause</replaceable> ] )
-<replaceable>aggregate_name</replaceable> (DISTINCT <replaceable>expression</replaceable> [ , ... ] [ <replaceable>order_by_clause</replaceable> ] )
-<replaceable>aggregate_name</replaceable> ( * )
+<replaceable>aggregate_name</replaceable> (<replaceable>expression</replaceable> [ , ... ] [ <replaceable>order_by_clause</replaceable> ] ) [ FILTER ( WHERE <replaceable>filter_clause</replaceable> ) ]
+<replaceable>aggregate_name</replaceable> (ALL <replaceable>expression</replaceable> [ , ... ] [ <replaceable>order_by_clause</replaceable> ] ) [ FILTER ( WHERE <replaceable>filter_clause</replaceable> ) ]
+<replaceable>aggregate_name</replaceable> (DISTINCT <replaceable>expression</replaceable> [ , ... ] [ <replaceable>order_by_clause</replaceable> ] ) [ FILTER ( WHERE <replaceable>filter_clause</replaceable> ) ]
+<replaceable>aggregate_name</replaceable> ( * ) [ FILTER ( WHERE <replaceable>filter_clause</replaceable> ) ]
+<replaceable>aggregate_name</replaceable> ( [ <replaceable>expression</replaceable> [ , ... ] ] ) WITHIN GROUP ( <replaceable>order_by_clause</replaceable> ) [ FILTER ( WHERE <replaceable>filter_clause</replaceable> ) ]
 </synopsis>
 
     where <replaceable>aggregate_name</replaceable> is a previously
-    defined aggregate (possibly qualified with a schema name),
+    defined aggregate (possibly qualified with a schema name) and
     <replaceable>expression</replaceable> is
     any value expression that does not itself contain an aggregate
-    expression or a window function call, and
-    <replaceable>order_by_clause</replaceable> is a optional
-    <literal>ORDER BY</> clause as described below.
+    expression or a window function call.  The optional
+    <replaceable>order_by_clause</replaceable> and
+    <replaceable>filter_clause</replaceable> are described below.
    </para>
 
    <para>
@@ -1585,9 +1598,11 @@ sqrt(2)
     The third form invokes the aggregate once for each distinct value
     of the expression (or distinct set of values, for multiple expressions)
     found in the input rows.
-    The last form invokes the aggregate once for each input row; since no
+    The fourth form invokes the aggregate once for each input row; since no
     particular input value is specified, it is generally only useful
     for the <function>count(*)</function> aggregate function.
+    The last form is used with <firstterm>ordered-set</> aggregate
+    functions, which are described below.
    </para>
 
    <para>
@@ -1656,6 +1671,71 @@ SELECT string_agg(a ORDER BY a, ',') FROM table;  -- incorrect
    </note>
 
    <para>
+    Placing <literal>ORDER BY</> within the aggregate's regular argument
+    list, as described so far, is used when ordering the input rows for
+    a <quote>normal</> aggregate for which ordering is optional.  There is a
+    subclass of aggregate functions called <firstterm>ordered-set
+    aggregates</> for which an <replaceable>order_by_clause</replaceable>
+    is <emphasis>required</>, usually because the aggregate's computation is
+    only sensible in terms of a specific ordering of its input rows.
+    Typical examples of ordered-set aggregates include rank and percentile
+    calculations.  For an ordered-set aggregate,
+    the <replaceable>order_by_clause</replaceable> is written
+    inside <literal>WITHIN GROUP (...)</>, as shown in the final syntax
+    alternative above.  The expressions in
+    the <replaceable>order_by_clause</replaceable> are evaluated once per
+    input row just like normal aggregate arguments, sorted as per
+    the <replaceable>order_by_clause</replaceable>'s requirements, and fed
+    to the aggregate function as input arguments.  (This is unlike the case
+    for a non-<literal>WITHIN GROUP</> <replaceable>order_by_clause</>,
+    which is not treated as argument(s) to the aggregate function.)  The
+    argument expressions preceding <literal>WITHIN GROUP</>, if any, are
+    called <firstterm>direct arguments</> to distinguish them from
+    the <firstterm>aggregated arguments</> listed in
+    the <replaceable>order_by_clause</replaceable>.  Unlike normal aggregate
+    arguments, direct arguments are evaluated only once per aggregate call,
+    not once per input row.  This means that they can contain variables only
+    if those variables are grouped by <literal>GROUP BY</>; this restriction
+    is the same as if the direct arguments were not inside an aggregate
+    expression at all.  Direct arguments are typically used for things like
+    percentile fractions, which only make sense as a single value per
+    aggregation calculation.  The direct argument list can be empty; in this
+    case, write just <literal>()</> not <literal>(*)</>.
+    (<productname>PostgreSQL</> will actually accept either spelling, but
+    only the first way conforms to the SQL standard.)
+    An example of an ordered-set aggregate call is:
+
+<programlisting>
+SELECT percentile_disc(0.5) WITHIN GROUP (ORDER BY income) FROM households;
+ percentile_disc
+-----------------
+           50489
+</programlisting>
+
+   which obtains the 50th percentile, or median, value of
+   the <structfield>income</> column from table <structname>households</>.
+   Here, <literal>0.5</> is a direct argument; it would make no sense
+   for the percentile fraction to be a value varying across rows.
+   </para>
+
+   <para>
+    If <literal>FILTER</literal> is specified, then only the input
+    rows for which the <replaceable>filter_clause</replaceable>
+    evaluates to true are fed to the aggregate function; other rows
+    are discarded.  For example:
+<programlisting>
+SELECT
+    count(*) AS unfiltered,
+    count(*) FILTER (WHERE i < 5) AS filtered
+FROM generate_series(1,10) AS s(i);
+ unfiltered | filtered
+------------+----------
+         10 |        4
+(1 row)
+</programlisting>
+   </para>
+
+   <para>
     The predefined aggregate functions are described in <xref
     linkend="functions-aggregate">.  Other aggregate functions can be added
     by the user.
@@ -1674,7 +1754,8 @@ SELECT string_agg(a ORDER BY a, ',') FROM table;  -- incorrect
     <xref linkend="sql-syntax-scalar-subqueries"> and
     <xref linkend="functions-subquery">), the aggregate is normally
     evaluated over the rows of the subquery.  But an exception occurs
-    if the aggregate's arguments contain only outer-level variables:
+    if the aggregate's arguments (and <replaceable>filter_clause</replaceable>
+    if any) contain only outer-level variables:
     the aggregate then belongs to the nearest such outer level, and is
     evaluated over the rows of that query.  The aggregate expression
     as a whole is then an outer reference for the subquery it appears in,
@@ -1709,10 +1790,10 @@ SELECT string_agg(a ORDER BY a, ',') FROM table;  -- incorrect
     The syntax of a window function call is one of the following:
 
 <synopsis>
-<replaceable>function_name</replaceable> (<optional><replaceable>expression</replaceable> <optional>, <replaceable>expression</replaceable> ... </optional></optional>) OVER ( <replaceable class="parameter">window_definition</replaceable> )
-<replaceable>function_name</replaceable> (<optional><replaceable>expression</replaceable> <optional>, <replaceable>expression</replaceable> ... </optional></optional>) OVER <replaceable>window_name</replaceable>
-<replaceable>function_name</replaceable> ( * ) OVER ( <replaceable class="parameter">window_definition</replaceable> )
-<replaceable>function_name</replaceable> ( * ) OVER <replaceable>window_name</replaceable>
+<replaceable>function_name</replaceable> (<optional><replaceable>expression</replaceable> <optional>, <replaceable>expression</replaceable> ... </optional></optional>) [ FILTER ( WHERE <replaceable>filter_clause</replaceable> ) ] OVER <replaceable>window_name</replaceable>
+<replaceable>function_name</replaceable> (<optional><replaceable>expression</replaceable> <optional>, <replaceable>expression</replaceable> ... </optional></optional>) [ FILTER ( WHERE <replaceable>filter_clause</replaceable> ) ] OVER ( <replaceable class="parameter">window_definition</replaceable> )
+<replaceable>function_name</replaceable> ( * ) [ FILTER ( WHERE <replaceable>filter_clause</replaceable> ) ] OVER <replaceable>window_name</replaceable>
+<replaceable>function_name</replaceable> ( * ) [ FILTER ( WHERE <replaceable>filter_clause</replaceable> ) ] OVER ( <replaceable class="parameter">window_definition</replaceable> )
 </synopsis>
     where <replaceable class="parameter">window_definition</replaceable>
     has the syntax
@@ -1742,64 +1823,109 @@ UNBOUNDED FOLLOWING
    <para>
     Here, <replaceable>expression</replaceable> represents any value
     expression that does not itself contain window function calls.
-    The <literal>PARTITION BY</> and <literal>ORDER BY</> lists have
-    essentially the same syntax and semantics as <literal>GROUP BY</>
-    and <literal>ORDER BY</> clauses of the whole query, except that their
-    expressions are always just expressions and cannot be output-column
-    names or numbers.
+   </para>
+
+   <para>
     <replaceable>window_name</replaceable> is a reference to a named window
     specification defined in the query's <literal>WINDOW</literal> clause.
-    Named window specifications are usually referenced with just
-    <literal>OVER</> <replaceable>window_name</replaceable>, but it is
-    also possible to write a window name inside the parentheses and then
-    optionally supply an ordering clause and/or frame clause (the referenced
-    window must lack these clauses, if they are supplied here).
-    This latter syntax follows the same rules as modifying an existing
-    window name within the <literal>WINDOW</literal> clause; see the
-    <xref linkend="sql-select"> reference
-    page for details.
+    Alternatively, a full <replaceable>window_definition</replaceable> can
+    be given within parentheses, using the same syntax as for defining a
+    named window in the <literal>WINDOW</literal> clause; see the
+    <xref linkend="sql-select"> reference page for details.  It's worth
+    pointing out that <literal>OVER wname</> is not exactly equivalent to
+    <literal>OVER (wname)</>; the latter implies copying and modifying the
+    window definition, and will be rejected if the referenced window
+    specification includes a frame clause.
+   </para>
+
+   <para>
+    The <literal>PARTITION BY</> option groups the rows of the query into
+    <firstterm>partitions</>, which are processed separately by the window
+    function.  <literal>PARTITION BY</> works similarly to a query-level
+    <literal>GROUP BY</> clause, except that its expressions are always just
+    expressions and cannot be output-column names or numbers.
+    Without <literal>PARTITION BY</>, all rows produced by the query are
+    treated as a single partition.
+    The <literal>ORDER BY</> option determines the order in which the rows
+    of a partition are processed by the window function.  It works similarly
+    to a query-level <literal>ORDER BY</> clause, but likewise cannot use
+    output-column names or numbers.  Without <literal>ORDER BY</>, rows are
+    processed in an unspecified order.
    </para>
 
    <para>
     The <replaceable class="parameter">frame_clause</replaceable> specifies
-    the set of rows constituting the <firstterm>window frame</>, for those
-    window functions that act on the frame instead of the whole partition.
-    If <replaceable>frame_end</> is omitted it defaults to <literal>CURRENT
-    ROW</>.  Restrictions are that
+    the set of rows constituting the <firstterm>window frame</>, which is a
+    subset of the current partition, for those window functions that act on
+    the frame instead of the whole partition.  The frame can be specified in
+    either <literal>RANGE</> or <literal>ROWS</> mode; in either case, it
+    runs from the <replaceable>frame_start</> to the
+    <replaceable>frame_end</>.  If <replaceable>frame_end</> is omitted,
+    it defaults to <literal>CURRENT ROW</>.
+   </para>
+
+   <para>
+    A <replaceable>frame_start</> of <literal>UNBOUNDED PRECEDING</> means
+    that the frame starts with the first row of the partition, and similarly
+    a <replaceable>frame_end</> of <literal>UNBOUNDED FOLLOWING</> means
+    that the frame ends with the last row of the partition.
+   </para>
+
+   <para>
+    In <literal>RANGE</> mode, a <replaceable>frame_start</> of
+    <literal>CURRENT ROW</> means the frame starts with the current row's
+    first <firstterm>peer</> row (a row that <literal>ORDER BY</> considers
+    equivalent to the current row), while a <replaceable>frame_end</> of
+    <literal>CURRENT ROW</> means the frame ends with the last equivalent
+    <literal>ORDER BY</> peer.  In <literal>ROWS</> mode, <literal>CURRENT ROW</> simply means
+    the current row.
+   </para>
+
+   <para>
+    The <replaceable>value</> <literal>PRECEDING</> and
+    <replaceable>value</> <literal>FOLLOWING</> cases are currently only
+    allowed in <literal>ROWS</> mode.  They indicate that the frame starts
+    or ends the specified number of rows before or after the current row.
+    <replaceable>value</replaceable> must be an integer expression not
+    containing any variables, aggregate functions, or window functions.
+    The value must not be null or negative; but it can be zero, which
+    just selects the current row.
+   </para>
+
+   <para>
+    The default framing option is <literal>RANGE UNBOUNDED PRECEDING</>,
+    which is the same as <literal>RANGE BETWEEN UNBOUNDED PRECEDING AND
+    CURRENT ROW</>.  With <literal>ORDER BY</>, this sets the frame to be
+    all rows from the partition start up through the current row's last
+    <literal>ORDER BY</> peer.  Without <literal>ORDER BY</>, all rows of the partition are
+    included in the window frame, since all rows become peers of the current
+    row.
+   </para>
+
+   <para>
+    Restrictions are that
     <replaceable>frame_start</> cannot be <literal>UNBOUNDED FOLLOWING</>,
     <replaceable>frame_end</> cannot be <literal>UNBOUNDED PRECEDING</>,
     and the <replaceable>frame_end</> choice cannot appear earlier in the
     above list than the <replaceable>frame_start</> choice &mdash; for example
     <literal>RANGE BETWEEN CURRENT ROW AND <replaceable>value</>
     PRECEDING</literal> is not allowed.
-    The default framing option is <literal>RANGE UNBOUNDED PRECEDING</>,
-    which is the same as <literal>RANGE BETWEEN UNBOUNDED PRECEDING AND
-    CURRENT ROW</>; it sets the frame to be all rows from the partition start
-    up through the current row's last peer in the <literal>ORDER BY</>
-    ordering (which means all rows if there is no <literal>ORDER BY</>).
-    In general, <literal>UNBOUNDED PRECEDING</> means that the frame
-    starts with the first row of the partition, and similarly
-    <literal>UNBOUNDED FOLLOWING</> means that the frame ends with the last
-    row of the partition (regardless of <literal>RANGE</> or <literal>ROWS</>
-    mode).  In <literal>ROWS</> mode, <literal>CURRENT ROW</>
-    means that the frame starts or ends with the current row; but in
-    <literal>RANGE</> mode it means that the frame starts or ends with
-    the current row's first or last peer in the <literal>ORDER BY</> ordering.
-    The <replaceable>value</> <literal>PRECEDING</> and
-    <replaceable>value</> <literal>FOLLOWING</> cases are currently only
-    allowed in <literal>ROWS</> mode.  They indicate that the frame starts
-    or ends with the row that many rows before or after the current row.
-    <replaceable>value</replaceable> must be an integer expression not
-    containing any variables, aggregate functions, or window functions.
-    The value must not be null or negative; but it can be zero, which
-    selects the current row itself.
+   </para>
+
+   <para>
+    If <literal>FILTER</literal> is specified, then only the input
+    rows for which the <replaceable>filter_clause</replaceable>
+    evaluates to true are fed to the window function; other rows
+    are discarded.  Only window functions that are aggregates accept
+    a <literal>FILTER</literal> clause.
    </para>
 
    <para>
     The built-in window functions are described in <xref
     linkend="functions-window-table">.  Other window functions can be added by
-    the user.  Also, any built-in or user-defined aggregate function can be
-    used as a window function.
+    the user.  Also, any built-in or user-defined normal aggregate function
+    can be used as a window function.  Ordered-set aggregates presently
+    cannot be used as window functions, however.
    </para>
 
    <para>
@@ -1820,7 +1946,7 @@ UNBOUNDED FOLLOWING
    <para>
     More information about window functions can be found in
     <xref linkend="tutorial-window">,
-    <xref linkend="functions-window">,
+    <xref linkend="functions-window">, and
     <xref linkend="queries-window">.
    </para>
   </sect2>
@@ -2300,6 +2426,55 @@ SELECT ... WHERE CASE WHEN x &gt; 0 THEN y/x &gt; 1.5 ELSE false END;
     example, it would be better to sidestep the problem by writing
     <literal>y &gt; 1.5*x</> instead.)
    </para>
+
+   <para>
+    <literal>CASE</> is not a cure-all for such issues, however.
+    One limitation of the technique illustrated above is that it does not
+    prevent early evaluation of constant subexpressions.
+    As described in <xref linkend="xfunc-volatility">, functions and
+    operators marked <literal>IMMUTABLE</literal> can be evaluated when
+    the query is planned rather than when it is executed.  Thus for example
+<programlisting>
+SELECT CASE WHEN x &gt; 0 THEN x ELSE 1/0 END FROM tab;
+</programlisting>
+    is likely to result in a division-by-zero failure due to the planner
+    trying to simplify the constant subexpression,
+    even if every row in the table has <literal>x &gt; 0</> so that the
+    <literal>ELSE</> arm would never be entered at run time.
+   </para>
+
+   <para>
+    While that particular example might seem silly, related cases that don't
+    obviously involve constants can occur in queries executed within
+    functions, since the values of function arguments and local variables
+    can be inserted into queries as constants for planning purposes.
+    Within <application>PL/pgSQL</> functions, for example, using an
+    <literal>IF</>-<literal>THEN</>-<literal>ELSE</> statement to protect
+    a risky computation is much safer than just nesting it in a
+    <literal>CASE</> expression.
+   </para>
+
+   <para>
+    Another limitation of the same kind is that a <literal>CASE</> cannot
+    prevent evaluation of an aggregate expression contained within it,
+    because aggregate expressions are computed before other
+    expressions in a <literal>SELECT</> list or <literal>HAVING</> clause
+    are considered.  For example, the following query can cause a
+    division-by-zero error despite seemingly having protected against it:
+<programlisting>
+SELECT CASE WHEN min(employees) > 0
+            THEN avg(expenses / employees)
+       END
+    FROM departments;
+</programlisting>
+    The <function>min()</> and <function>avg()</> aggregates are computed
+    concurrently over all the input rows, so if any row
+    has <structfield>employees</> equal to zero, the division-by-zero error
+    will occur before there is any opportunity to test the result of
+    <function>min()</>.  Instead, use a <literal>WHERE</>
+    or <literal>FILTER</> clause to prevent problematic input rows from
+    reaching an aggregate function in the first place.
+   </para>
   </sect2>
  </sect1>
 
@@ -2465,6 +2640,14 @@ SELECT concat_lower_or_upper('Hello', 'World', uppercase := true);
     having numerous parameters that have default values, named or mixed
     notation can save a great deal of writing and reduce chances for error.
    </para>
+
+   <note>
+    <para>
+     Named and mixed call notations currently cannot be used when calling an
+     aggregate function (but they do work when an aggregate function is used
+     as a window function).
+    </para>
+   </note>
   </sect2>
  </sect1>
 

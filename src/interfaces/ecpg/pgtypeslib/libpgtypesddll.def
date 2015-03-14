@@ -1,5 +1,5 @@
 ; DEF file for MS VC++
-LIBRARY LIBPGTYPESD
+LIBRARY LIBPGTYPESD.dll
 EXPORTS
     PGTYPESdate_dayofweek           @ 1
     PGTYPESdate_defmt_asc           @ 2

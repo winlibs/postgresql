@@ -1,13 +1,13 @@
 # Brazilian Portuguese message translation file for pg_config
 # Copyright (C) 2009 PostgreSQL Global Development Group
 # This file is distributed under the same license as the PostgreSQL package.
-# Euler Taveira de Oliveira <euler@timbira.com>, 2004-2012.
+# Euler Taveira de Oliveira <euler@timbira.com>, 2004-2013.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PostgreSQL 9.2\n"
+"Project-Id-Version: PostgreSQL 9.4\n"
 "Report-Msgid-Bugs-To: pgsql-bugs@postgresql.org\n"
-"POT-Creation-Date: 2012-08-18 17:41-0300\n"
+"POT-Creation-Date: 2014-05-17 15:59-0300\n"
 "PO-Revision-Date: 2005-10-04 22:15-0300\n"
 "Last-Translator: Euler Taveira de Oliveira <euler@timbira.com>\n"
 "Language-Team: Brazilian Portuguese <pgbr-dev@listas.postgresql.org.br>\n"
@@ -16,60 +16,40 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../../port/exec.c:125 ../../port/exec.c:239 ../../port/exec.c:282
+#: ../../common/exec.c:127 ../../common/exec.c:241 ../../common/exec.c:284
 #, c-format
 msgid "could not identify current directory: %s"
 msgstr "não pôde identificar diretório atual: %s"
 
-#: ../../port/exec.c:144
+#: ../../common/exec.c:146
 #, c-format
 msgid "invalid binary \"%s\""
 msgstr "binário \"%s\" é inválido"
 
-#: ../../port/exec.c:193
+#: ../../common/exec.c:195
 #, c-format
 msgid "could not read binary \"%s\""
 msgstr "não pôde ler o binário \"%s\""
 
-#: ../../port/exec.c:200
+#: ../../common/exec.c:202
 #, c-format
 msgid "could not find a \"%s\" to execute"
 msgstr "não pôde encontrar o \"%s\" para executá-lo"
 
-#: ../../port/exec.c:255 ../../port/exec.c:291
+#: ../../common/exec.c:257 ../../common/exec.c:293
 #, c-format
-msgid "could not change directory to \"%s\""
-msgstr "não pôde mudar diretório para \"%s\""
+msgid "could not change directory to \"%s\": %s"
+msgstr "não pôde mudar diretório para \"%s\": %s"
 
-#: ../../port/exec.c:270
+#: ../../common/exec.c:272
 #, c-format
 msgid "could not read symbolic link \"%s\""
 msgstr "não pôde ler link simbólico \"%s\""
 
-#: ../../port/exec.c:526
+#: ../../common/exec.c:523
 #, c-format
-msgid "child process exited with exit code %d"
-msgstr "processo filho terminou com código de saída %d"
-
-#: ../../port/exec.c:530
-#, c-format
-msgid "child process was terminated by exception 0x%X"
-msgstr "processo filho foi terminado pela exceção 0x%X"
-
-#: ../../port/exec.c:539
-#, c-format
-msgid "child process was terminated by signal %s"
-msgstr "processo filho foi terminado pelo sinal %s"
-
-#: ../../port/exec.c:542
-#, c-format
-msgid "child process was terminated by signal %d"
-msgstr "processo filho foi terminado pelo sinal %d"
-
-#: ../../port/exec.c:546
-#, c-format
-msgid "child process exited with unrecognized status %d"
-msgstr "processo filho terminou com status desconhecido %d"
+msgid "pclose failed: %s"
+msgstr "pclose falhou: %s"
 
 #: pg_config.c:243 pg_config.c:259 pg_config.c:275 pg_config.c:291
 #: pg_config.c:307 pg_config.c:323 pg_config.c:339 pg_config.c:355
@@ -160,7 +140,7 @@ msgstr "  --localedir           mostra local dos arquivos de suporte a configura
 #: pg_config.c:442
 #, c-format
 msgid "  --mandir              show location of manual pages\n"
-msgstr "  --bindir              mostra local das páginas de manual\n"
+msgstr "  --mandir              mostra local das páginas de manual\n"
 
 #: pg_config.c:443
 #, c-format

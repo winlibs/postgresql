@@ -62,6 +62,366 @@
  </para>
 </sect1>
 
+<sect1 id="gin-builtin-opclasses">
+ <title>Built-in Operator Classes</title>
+
+ <para>
+  The core <productname>PostgreSQL</> distribution
+  includes the <acronym>GIN</acronym> operator classes shown in
+  <xref linkend="gin-builtin-opclasses-table">.
+  (Some of the optional modules described in <xref linkend="contrib">
+  provide additional <acronym>GIN</acronym> operator classes.)
+ </para>
+
+  <table id="gin-builtin-opclasses-table">
+   <title>Built-in <acronym>GIN</acronym> Operator Classes</title>
+   <tgroup cols="3">
+    <thead>
+     <row>
+      <entry>Name</entry>
+      <entry>Indexed Data Type</entry>
+      <entry>Indexable Operators</entry>
+     </row>
+    </thead>
+    <tbody>
+     <row>
+      <entry><literal>_abstime_ops</></entry>
+      <entry><type>abstime[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_bit_ops</></entry>
+      <entry><type>bit[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_bool_ops</></entry>
+      <entry><type>boolean[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_bpchar_ops</></entry>
+      <entry><type>character[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_bytea_ops</></entry>
+      <entry><type>bytea[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_char_ops</></entry>
+      <entry><type>"char"[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_cidr_ops</></entry>
+      <entry><type>cidr[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_date_ops</></entry>
+      <entry><type>date[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_float4_ops</></entry>
+      <entry><type>float4[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_float8_ops</></entry>
+      <entry><type>float8[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_inet_ops</></entry>
+      <entry><type>inet[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_int2_ops</></entry>
+      <entry><type>smallint[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_int4_ops</></entry>
+      <entry><type>integer[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_int8_ops</></entry>
+      <entry><type>bigint[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_interval_ops</></entry>
+      <entry><type>interval[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_macaddr_ops</></entry>
+      <entry><type>macaddr[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_money_ops</></entry>
+      <entry><type>money[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_name_ops</></entry>
+      <entry><type>name[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_numeric_ops</></entry>
+      <entry><type>numeric[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_oid_ops</></entry>
+      <entry><type>oid[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_oidvector_ops</></entry>
+      <entry><type>oidvector[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_reltime_ops</></entry>
+      <entry><type>reltime[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_text_ops</></entry>
+      <entry><type>text[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_time_ops</></entry>
+      <entry><type>time[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_timestamp_ops</></entry>
+      <entry><type>timestamp[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_timestamptz_ops</></entry>
+      <entry><type>timestamp with time zone[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_timetz_ops</></entry>
+      <entry><type>time with time zone[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_tinterval_ops</></entry>
+      <entry><type>tinterval[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_varbit_ops</></entry>
+      <entry><type>bit varying[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>_varchar_ops</></entry>
+      <entry><type>character varying[]</></entry>
+      <entry>
+       <literal>&amp;&amp;</>
+       <literal>&lt;@</>
+       <literal>=</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>jsonb_ops</></entry>
+      <entry><type>jsonb</></entry>
+      <entry>
+       <literal>?</>
+       <literal>?&amp;</>
+       <literal>?|</>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>jsonb_path_ops</></entry>
+      <entry><type>jsonb</></entry>
+      <entry>
+       <literal>@&gt;</>
+      </entry>
+     </row>
+     <row>
+      <entry><literal>tsvector_ops</></entry>
+      <entry><type>tsvector</></entry>
+      <entry>
+       <literal>@@</>
+       <literal>@@@</>
+      </entry>
+     </row>
+    </tbody>
+   </tgroup>
+  </table>
+
+ <para>
+  Of the two operator classes for type <type>jsonb</>, <literal>jsonb_ops</>
+  is the default.  <literal>jsonb_path_ops</> supports fewer operators but
+  offers better performance for those operators.
+  See <xref linkend="json-indexing"> for details.
+ </para>
+
+</sect1>
+
 <sect1 id="gin-extensibility">
  <title>Extensibility</title>
 
@@ -74,15 +434,15 @@
 
  <para>
    All it takes to get a <acronym>GIN</acronym> access method working is to
-   implement four (or five) user-defined methods, which define the behavior of
+   implement a few user-defined methods, which define the behavior of
    keys in the tree and the relationships between keys, indexed items,
    and indexable queries. In short, <acronym>GIN</acronym> combines
    extensibility with generality, code reuse, and a clean interface.
  </para>
 
  <para>
-   The four methods that an operator class for
-   <acronym>GIN</acronym> must provide are:
+   There are three methods that an operator class for
+   <acronym>GIN</acronym> must provide:
 
  <variablelist>
     <varlistentry>
@@ -105,7 +465,7 @@
        Returns a palloc'd array of keys given an item to be indexed.  The
        number of returned keys must be stored into <literal>*nkeys</>.
        If any of the keys can be null, also palloc an array of
-       <literal>*nkeys</> booleans, store its address at
+       <literal>*nkeys</> <type>bool</type> fields, store its address at
        <literal>*nullFlags</>, and set these null flags as needed.
        <literal>*nullFlags</> can be left <symbol>NULL</symbol> (its initial value)
        if all keys are non-null.
@@ -130,11 +490,11 @@
        <literal>query</> and the method it should use to extract key values.
        The number of returned keys must be stored into <literal>*nkeys</>.
        If any of the keys can be null, also palloc an array of
-       <literal>*nkeys</> booleans, store its address at
+       <literal>*nkeys</> <type>bool</type> fields, store its address at
        <literal>*nullFlags</>, and set these null flags as needed.
-       <literal>*nullFlags</> can be left NULL (its initial value)
+       <literal>*nullFlags</> can be left <symbol>NULL</symbol> (its initial value)
        if all keys are non-null.
-       The return value can be NULL if the <literal>query</> contains no keys.
+       The return value can be <symbol>NULL</symbol> if the <literal>query</> contains no keys.
       </para>
 
       <para>
@@ -168,8 +528,8 @@
        an array of <literal>*nkeys</> booleans and store its address at
        <literal>*pmatch</>.  Each element of the array should be set to TRUE
        if the corresponding key requires partial match, FALSE if not.
-       If <literal>*pmatch</> is set to NULL then GIN assumes partial match
-       is not required.  The variable is initialized to NULL before call,
+       If <literal>*pmatch</> is set to <symbol>NULL</symbol> then GIN assumes partial match
+       is not required.  The variable is initialized to <symbol>NULL</symbol> before call,
        so this argument can simply be ignored by operator classes that do
        not support partial match.
       </para>
@@ -181,7 +541,7 @@
        To use it, <function>extractQuery</> must allocate
        an array of <literal>*nkeys</> Pointers and store its address at
        <literal>*extra_data</>, then store whatever it wants to into the
-       individual pointers.  The variable is initialized to NULL before
+       individual pointers.  The variable is initialized to <symbol>NULL</symbol> before
        call, so this argument can simply be ignored by operator classes that
        do not require extra data.  If <literal>*extra_data</> is set, the
        whole array is passed to the <function>consistent</> method, and
@@ -190,7 +550,18 @@
 
      </listitem>
     </varlistentry>
+  </variablelist>
 
+  An operator class must also provide a function to check if an indexed item
+  matches the query. It comes in two flavors, a boolean <function>consistent</>
+  function, and a ternary <function>triConsistent</> function.
+  <function>triConsistent</> covers the functionality of both, so providing
+  triConsistent alone is sufficient. However, if the boolean variant is
+  significantly cheaper to calculate, it can be advantageous to provide both.
+  If only the boolean variant is provided, some optimizations that depend on
+  refuting index items before fetching all the keys are disabled.
+
+  <variablelist>
     <varlistentry>
      <term><function>bool consistent(bool check[], StrategyNumber n, Datum query,
         int32 nkeys, Pointer extra_data[], bool *recheck,
@@ -208,14 +579,14 @@
        returned by <function>extractQuery</> for this <literal>query</> datum.
        Each element of the
        <literal>check</> array is TRUE if the indexed item contains the
-       corresponding query key, ie, if (check[i] == TRUE) the i-th key of the
+       corresponding query key, i.e., if (check[i] == TRUE) the i-th key of the
        <function>extractQuery</> result array is present in the indexed item.
        The original <literal>query</> datum is
        passed in case the <function>consistent</> method needs to consult it,
        and so are the <literal>queryKeys[]</> and <literal>nullFlags[]</>
        arrays previously returned by <function>extractQuery</>.
        <literal>extra_data</> is the extra-data array returned by
-       <function>extractQuery</>, or NULL if none.
+       <function>extractQuery</>, or <symbol>NULL</symbol> if none.
       </para>
 
       <para>
@@ -241,10 +612,38 @@
       </para>
      </listitem>
     </varlistentry>
+
+    <varlistentry>
+     <term><function>GinTernaryValue triConsistent(GinTernaryValue check[], StrategyNumber n, Datum query,
+        int32 nkeys, Pointer extra_data[],
+        Datum queryKeys[], bool nullFlags[])</></term>
+     <listitem>
+      <para>
+       <function>triConsistent</> is similar to <function>consistent</>,
+       but instead of a boolean <literal>check[]</>, there are three possible
+       values for each key: <literal>GIN_TRUE</>, <literal>GIN_FALSE</> and
+       <literal>GIN_MAYBE</>. <literal>GIN_FALSE</> and <literal>GIN_TRUE</>
+       have the same meaning as regular boolean values.
+       <literal>GIN_MAYBE</> means that the presence of that key is not known.
+       When <literal>GIN_MAYBE</> values are present, the function should only
+       return GIN_TRUE if the item matches whether or not the index item
+       contains the corresponding query keys. Likewise, the function must
+       return GIN_FALSE only if the item does not match, whether or not it
+       contains the GIN_MAYBE keys. If the result depends on the GIN_MAYBE
+       entries, i.e. the match cannot be confirmed or refuted based on the
+       known query keys, the function must return GIN_MAYBE.
+      </para>
+      <para>
+       When there are no GIN_MAYBE values in the <literal>check</> vector,
+       <literal>GIN_MAYBE</> return value is equivalent of setting
+       <literal>recheck</> flag in the boolean <function>consistent</> function.
+      </para>
+     </listitem>
+    </varlistentry>
   </variablelist>
 
-  Optionally, an operator class for
-  <acronym>GIN</acronym> can supply a fifth method:
+  Optionally, an operator class for <acronym>GIN</acronym> can supply the
+  following method:
 
   <variablelist>
     <varlistentry>
@@ -261,7 +660,7 @@
        that generated the partial match query is provided, in case its
        semantics are needed to determine when to end the scan.  Also,
        <literal>extra_data</> is the corresponding element of the extra-data
-       array made by <function>extractQuery</>, or NULL if none.
+       array made by <function>extractQuery</>, or <symbol>NULL</symbol> if none.
        Null keys are never passed to this function.
       </para>
      </listitem>
@@ -282,8 +681,9 @@
   above vary depending on the operator class.  The item values passed to
   <function>extractValue</> are always of the operator class's input type, and
   all key values must be of the class's <literal>STORAGE</> type.  The type of
-  the <literal>query</> argument passed to <function>extractQuery</> and
-  <function>consistent</> is whatever is specified as the right-hand input
+  the <literal>query</> argument passed to <function>extractQuery</>,
+  <function>consistent</> and <function>triConsistent</> is whatever is
+  specified as the right-hand input
   type of the class member operator identified by the strategy number.
   This need not be the same as the item type, so long as key values of the
   correct type can be extracted from it.
@@ -305,9 +705,9 @@
  </para>
 
  <para>
-  As of <productname>PostgreSQL</productname> 9.1, NULL key values can be
-  included in the index.  Also, placeholder NULLs are included in the index
-  for indexed items that are NULL or contain no keys according to
+  As of <productname>PostgreSQL</productname> 9.1, null key values can be
+  included in the index.  Also, placeholder nulls are included in the index
+  for indexed items that are null or contain no keys according to
   <function>extractValue</>.  This allows searches that should find empty
   items to do so.
  </para>
@@ -471,11 +871,11 @@
 
  <para>
   <acronym>GIN</acronym> assumes that indexable operators are strict.  This
-  means that <function>extractValue</> will not be called at all on a NULL
+  means that <function>extractValue</> will not be called at all on a null
   item value (instead, a placeholder index entry is created automatically),
-  and <function>extractQuery</function> will not be called on a NULL query
+  and <function>extractQuery</function> will not be called on a null query
   value either (instead, the query is presumed to be unsatisfiable).  Note
-  however that NULL key values contained within a non-null composite item
+  however that null key values contained within a non-null composite item
   or query value are supported.
  </para>
 </sect1>

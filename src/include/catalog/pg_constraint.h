@@ -5,7 +5,7 @@
  *	  along with the relation's initial contents.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/catalog/pg_constraint.h
@@ -38,7 +38,7 @@ CATALOG(pg_constraint,2606)
 	 * relations.  This is partly for backwards compatibility with past
 	 * Postgres practice, and partly because we don't want to have to obtain a
 	 * global lock to generate a globally unique name for a nameless
-	 * constraint.	We associate a namespace with constraint names only for
+	 * constraint.  We associate a namespace with constraint names only for
 	 * SQL-spec compatibility.
 	 */
 	NameData	conname;		/* name of this constraint */
@@ -57,7 +57,7 @@ CATALOG(pg_constraint,2606)
 
 	/*
 	 * contypid links to the pg_type row for a domain if this is a domain
-	 * constraint.	Otherwise it's 0.
+	 * constraint.  Otherwise it's 0.
 	 *
 	 * For SQL-style global ASSERTIONs, both conrelid and contypid would be
 	 * zero. This is not presently supported, however.
@@ -76,7 +76,7 @@ CATALOG(pg_constraint,2606)
 
 	/*
 	 * These fields, plus confkey, are only meaningful for a foreign-key
-	 * constraint.	Otherwise confrelid is 0 and the char fields are spaces.
+	 * constraint.  Otherwise confrelid is 0 and the char fields are spaces.
 	 */
 	Oid			confrelid;		/* relation referenced by foreign key */
 	char		confupdtype;	/* foreign key's ON UPDATE action */
@@ -87,7 +87,7 @@ CATALOG(pg_constraint,2606)
 	bool		conislocal;
 
 	/* Number of times inherited from direct parent relation(s) */
-	int4		coninhcount;
+	int32		coninhcount;
 
 	/* Has a local definition and cannot be inherited */
 	bool		connoinherit;
@@ -98,12 +98,12 @@ CATALOG(pg_constraint,2606)
 	 * Columns of conrelid that the constraint applies to, if known (this is
 	 * NULL for trigger constraints)
 	 */
-	int2		conkey[1];
+	int16		conkey[1];
 
 	/*
 	 * If a foreign key, the referenced columns of confrelid
 	 */
-	int2		confkey[1];
+	int16		confkey[1];
 
 	/*
 	 * If a foreign key, the OIDs of the PK = FK equality operators for each
@@ -232,7 +232,8 @@ extern Oid CreateConstraintEntry(const char *constraintName,
 					  const char *conSrc,
 					  bool conIsLocal,
 					  int conInhCount,
-					  bool conNoInherit);
+					  bool conNoInherit,
+					  bool is_internal);
 
 extern void RemoveConstraintById(Oid conId);
 extern void RenameConstraintById(Oid conId, const char *newname);
@@ -245,7 +246,8 @@ extern char *ChooseConstraintName(const char *name1, const char *name2,
 					 List *others);
 
 extern void AlterConstraintNamespaces(Oid ownerId, Oid oldNspId,
-						  Oid newNspId, bool isType, ObjectAddresses *objsMoved);
+					  Oid newNspId, bool isType, ObjectAddresses *objsMoved);
+extern void get_constraint_relation_oids(Oid constraint_oid, Oid *conrelid, Oid *confrelid);
 extern Oid	get_relation_constraint_oid(Oid relid, const char *conname, bool missing_ok);
 extern Oid	get_domain_constraint_oid(Oid typid, const char *conname, bool missing_ok);
 

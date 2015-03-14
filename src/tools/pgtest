@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# src/tools/pgtest
+# src/tools/pgtest [-n] [...]
 
 # This runs a build/initdb/regression test suite
 #
@@ -18,14 +18,25 @@ trap "rm -rf /tmp/$$" 0 1 2 3 15
 mkdir /tmp/$$
 TMP="/tmp/$$"
 
-[ "X$1" != "X-n" ] && PGCLEAN=clean
+if [ "X$1" != "X-n" ]
+then	PGCLEAN=clean
+else	shift
+fi
 
-($MAKE $PGCLEAN check 2>&1; echo "$?" > $TMP/ret) |
-	(tee  $TMP/0; exit `cat $TMP/ret`) &&
-cat $TMP/0 |
-# The following grep's have to be adjusted for your setup because
-# certain warnings are acceptable.
-grep -i warning |
-grep -v setproctitle |
-grep -v find_rule |
-grep -v yy_flex_realloc
+# Run "make check" and store return code in $TMP/ret.
+# Display output but also capture it in $TMP/0.
+($MAKE "$@" $PGCLEAN check 2>&1; echo "$?" > $TMP/ret) | tee  $TMP/0
+
+# If success, display warnings
+if [ $(cat $TMP/ret) -eq 0 ]
+then	cat $TMP/0 |
+	# The following grep's have to be adjusted for your setup because
+	# certain warnings are acceptable.
+	grep -i warning |
+	grep -v setproctitle |
+	grep -v find_rule |
+	grep -v yy_flex_realloc
+fi
+
+# return original make error code
+exit `cat $TMP/ret`

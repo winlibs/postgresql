@@ -5,11 +5,11 @@
  *
  * These functions provide conversion between rowtypes that are logically
  * equivalent but might have columns in a different order or different sets
- * of dropped columns.	There is some overlap of functionality with the
+ * of dropped columns.  There is some overlap of functionality with the
  * executor's "junkfilter" routines, but these functions work on bare
  * HeapTuples rather than TupleTableSlots.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -20,6 +20,7 @@
  */
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "access/tupconvert.h"
 #include "utils/builtins.h"
 

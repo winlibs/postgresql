@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 39. <SPAN
+>Chapter 40. <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > - <ACRONYM
@@ -99,7 +99,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPGSQL-DECLARATIONS"
->39.3. Declarations</A
+>40.3. Declarations</A
 ></H1
 ><P
 >     All variables used in a block must be declared in the
@@ -175,7 +175,7 @@ CLASS="OPTIONAL"
 > NOT NULL </SPAN
 >] [<SPAN
 CLASS="OPTIONAL"
-> { DEFAULT | := } <TT
+> { DEFAULT | := | = } <TT
 CLASS="REPLACEABLE"
 ><I
 >expression</I
@@ -208,7 +208,7 @@ CLASS="LITERAL"
 > option specifies a collation to use for the
       variable (see <A
 HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-COLLATION"
->Section 39.3.6</A
+>Section 40.3.6</A
 >).
       If <TT
 CLASS="LITERAL"
@@ -220,6 +220,14 @@ CLASS="LITERAL"
 >NOT NULL</TT
 >
       must have a nonnull default value specified.
+      Equal (<TT
+CLASS="LITERAL"
+>=</TT
+>) can be used instead of PL/SQL-compliant
+      <TT
+CLASS="LITERAL"
+>:=</TT
+>.
      </P
 ><P
 >      A variable's default value is evaluated and assigned to the variable
@@ -250,7 +258,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-PARAMETERS"
->39.3.1. Declaring Function Parameters</A
+>40.3.1. Declaring Function Parameters</A
 ></H2
 ><P
 >      Parameters passed to functions are named with the identifiers
@@ -289,12 +297,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;</PRE
 ><P>
-      The other way, which was the only way available before
-      <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.0, is to explicitly
-      declare an alias, using the declaration syntax
+      The other way is to explicitly declare an alias, using the
+      declaration syntax
 
 </P><PRE
 CLASS="SYNOPSIS"
@@ -447,8 +451,8 @@ CLASS="PROGRAMLISTING"
 >CREATE FUNCTION extended_sales(p_itemno int)
 RETURNS TABLE(quantity int, total numeric) AS $$
 BEGIN
-    RETURN QUERY SELECT quantity, quantity * price FROM sales
-                 WHERE itemno = p_itemno;
+    RETURN QUERY SELECT s.quantity, s.quantity * s.price FROM sales AS s
+                 WHERE s.itemno = p_itemno;
 END;
 $$ LANGUAGE plpgsql;</PRE
 ><P>
@@ -502,7 +506,7 @@ HREF="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC"
       This allows the function to access its actual return type
       as shown in <A
 HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-TYPE"
->Section 39.3.3</A
+>Section 40.3.3</A
 >.
       <TT
 CLASS="LITERAL"
@@ -559,7 +563,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-ALIAS"
->39.3.2. <TT
+>40.3.2. <TT
 CLASS="LITERAL"
 >ALIAS</TT
 ></A
@@ -618,7 +622,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-TYPE"
->39.3.3. Copying Types</A
+>40.3.3. Copying Types</A
 ></H2
 ><PRE
 CLASS="SYNOPSIS"
@@ -692,7 +696,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-ROWTYPES"
->39.3.4. Row Types</A
+>40.3.4. Row Types</A
 ></H2
 ><PRE
 CLASS="SYNOPSIS"
@@ -837,7 +841,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-RECORDS"
->39.3.5. Record Types</A
+>40.3.5. Record Types</A
 ></H2
 ><PRE
 CLASS="SYNOPSIS"
@@ -892,7 +896,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-COLLATION"
->39.3.6. Collation of <SPAN
+>40.3.6. Collation of <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > Variables</A

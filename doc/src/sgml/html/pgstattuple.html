@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PGSTATTUPLE"
->F.29. pgstattuple</A
+>F.30. pgstattuple</A
 ></H1
 ><P
 >  The <TT
@@ -107,8 +107,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142562"
->F.29.1. Functions</A
+NAME="AEN160005"
+>F.30.1. Functions</A
 ></H2
 ><P
 ></P
@@ -116,9 +116,9 @@ NAME="AEN142562"
 CLASS="VARIABLELIST"
 ><DL
 ><DT
-><CODE
+>&#13;     <CODE
 CLASS="FUNCTION"
->pgstattuple(text) returns record</CODE
+>pgstattuple(regclass) returns record</CODE
 ></DT
 ><DD
 ><P
@@ -131,7 +131,7 @@ CLASS="QUOTE"
 >"dead"</SPAN
 > tuples, and other info. This may help users
       to determine whether vacuum is necessary or not.  The argument is the
-      target relation's name (optionally schema-qualified).
+      target relation's name (optionally schema-qualified) or OID.
       For example:
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -325,28 +325,30 @@ CLASS="QUOTE"
 > if
      <CODE
 CLASS="FUNCTION"
->HeapTupleSatisfiesNow</CODE
+>HeapTupleSatisfiesDirty</CODE
 > returns false.
     </P
 ></DD
 ><DT
 ><CODE
 CLASS="FUNCTION"
->pgstattuple(oid) returns record</CODE
+>pgstattuple(text) returns record</CODE
 ></DT
 ><DD
 ><P
 >      This is the same as <CODE
 CLASS="FUNCTION"
->pgstattuple(text)</CODE
+>pgstattuple(regclass)</CODE
 >, except
-      that the target relation is specified by OID.
+      that the target relation is specified by TEXT. This function is kept
+      because of backward-compatibility so far, and will be deprecated in
+      the future release.
      </P
 ></DD
 ><DT
-><CODE
+>&#13;     <CODE
 CLASS="FUNCTION"
->pgstatindex(text) returns record</CODE
+>pgstatindex(regclass) returns record</CODE
 ></DT
 ><DD
 ><P
@@ -379,7 +381,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN142658"
+NAME="AEN160105"
 ></A
 ><TABLE
 BORDER="1"
@@ -557,7 +559,118 @@ CLASS="FUNCTION"
 ><DT
 ><CODE
 CLASS="FUNCTION"
->pg_relpages(text) returns bigint</CODE
+>pgstatindex(text) returns record</CODE
+></DT
+><DD
+><P
+>      This is the same as <CODE
+CLASS="FUNCTION"
+>pgstatindex(regclass)</CODE
+>, except
+      that the target index is specified by TEXT. This function is kept
+      because of backward-compatibility so far, and will be deprecated in
+      the future release.
+     </P
+></DD
+><DT
+>&#13;     <CODE
+CLASS="FUNCTION"
+>pgstatginindex(regclass) returns record</CODE
+></DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>pgstatginindex</CODE
+> returns a record showing information
+      about a GIN index.  For example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>test=&#62; SELECT * FROM pgstatginindex('test_gin_index');
+-[ RECORD 1 ]--+--
+version        | 1
+pending_pages  | 0
+pending_tuples | 0</PRE
+><P>
+     </P
+><P
+>     The output columns are:
+
+    <DIV
+CLASS="INFORMALTABLE"
+><P
+></P
+><A
+NAME="AEN160192"
+></A
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Column</TH
+><TH
+>Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>version</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>GIN version number</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>pending_pages</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>Number of pages in the pending list</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>pending_tuples</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of tuples in the pending list</TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+></DIV
+>
+    </P
+></DD
+><DT
+>&#13;     <CODE
+CLASS="FUNCTION"
+>pg_relpages(regclass) returns bigint</CODE
 ></DT
 ><DD
 ><P
@@ -568,6 +681,22 @@ CLASS="FUNCTION"
       relation.
      </P
 ></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>pg_relpages(text) returns bigint</CODE
+></DT
+><DD
+><P
+>      This is the same as <CODE
+CLASS="FUNCTION"
+>pg_relpages(regclass)</CODE
+>, except
+      that the target relation is specified by TEXT. This function is kept
+      because of backward-compatibility so far, and will be deprecated in
+      the future release.
+     </P
+></DD
 ></DL
 ></DIV
 ></DIV
@@ -576,8 +705,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142735"
->F.29.2. Authors</A
+NAME="AEN160232"
+>F.30.2. Authors</A
 ></H2
 ><P
 >   Tatsuo Ishii and Satoshi Nagayasu

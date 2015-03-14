@@ -4,7 +4,7 @@
  *	  storage manager switch public interface declarations.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/smgr.h
@@ -29,7 +29,7 @@
  *
  * An SMgrRelation may have an "owner", which is just a pointer to it from
  * somewhere else; smgr.c will clear this pointer if the SMgrRelation is
- * closed.	We use this to avoid dangling pointers from relcache to smgr
+ * closed.  We use this to avoid dangling pointers from relcache to smgr
  * without having to make the smgr explicitly aware of relcache.  There
  * can't be more than one "owner" pointer per SMgrRelation, but that's
  * all we need.
@@ -48,7 +48,7 @@ typedef struct SMgrRelationData
 	/*
 	 * These next three fields are not actually used or manipulated by smgr,
 	 * except that they are reset to InvalidBlockNumber upon a cache flush
-	 * event (in particular, upon truncation of the relation).	Higher levels
+	 * event (in particular, upon truncation of the relation).  Higher levels
 	 * store cached state here so that it will be reset when truncation
 	 * happens.  In all three cases, InvalidBlockNumber means "unknown".
 	 */
@@ -60,7 +60,7 @@ typedef struct SMgrRelationData
 
 	/*
 	 * Fields below here are intended to be private to smgr.c and its
-	 * submodules.	Do not touch them from elsewhere.
+	 * submodules.  Do not touch them from elsewhere.
 	 */
 	int			smgr_which;		/* storage manager selector */
 
@@ -80,11 +80,13 @@ extern void smgrinit(void);
 extern SMgrRelation smgropen(RelFileNode rnode, BackendId backend);
 extern bool smgrexists(SMgrRelation reln, ForkNumber forknum);
 extern void smgrsetowner(SMgrRelation *owner, SMgrRelation reln);
+extern void smgrclearowner(SMgrRelation *owner, SMgrRelation reln);
 extern void smgrclose(SMgrRelation reln);
 extern void smgrcloseall(void);
 extern void smgrclosenode(RelFileNodeBackend rnode);
 extern void smgrcreate(SMgrRelation reln, ForkNumber forknum, bool isRedo);
 extern void smgrdounlink(SMgrRelation reln, bool isRedo);
+extern void smgrdounlinkall(SMgrRelation *rels, int nrels, bool isRedo);
 extern void smgrdounlinkfork(SMgrRelation reln, ForkNumber forknum, bool isRedo);
 extern void smgrextend(SMgrRelation reln, ForkNumber forknum,
 		   BlockNumber blocknum, char *buffer, bool skipFsync);

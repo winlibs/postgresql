@@ -196,8 +196,6 @@ SELECT ARRAY[[1,2],[3,4]] || ARRAY[5,6] AS "{{1,2},{3,4},{5,6}}";
 SELECT ARRAY[0,0] || ARRAY[1,1] || ARRAY[2,2] AS "{0,0,1,1,2,2}";
 SELECT 0 || ARRAY[1,2] || 3 AS "{0,1,2,3}";
 
-ANALYZE array_op_test;
-
 SELECT * FROM array_op_test WHERE i @> '{32}' ORDER BY seqno;
 SELECT * FROM array_op_test WHERE i && '{32}' ORDER BY seqno;
 SELECT * FROM array_op_test WHERE i @> '{17}' ORDER BY seqno;
@@ -421,6 +419,14 @@ select array_length(array[[1,2,3], [4,5,6]], 1);
 select array_length(array[[1,2,3], [4,5,6]], 2);
 select array_length(array[[1,2,3], [4,5,6]], 3);
 
+select cardinality(NULL::int[]);
+select cardinality('{}'::int[]);
+select cardinality(array[1,2,3]);
+select cardinality('[2:4]={5,6,7}'::int[]);
+select cardinality('{{1,2}}'::int[]);
+select cardinality('{{1,2},{3,4},{5,6}}'::int[]);
+select cardinality('{{{1,9},{5,6}},{{2,3},{3,4}}}'::int[]);
+
 select array_agg(unique1) from (select unique1 from tenk1 where unique1 < 15 order by unique1) ss;
 select array_agg(ten) from (select ten from tenk1 where unique1 < 15 order by unique1) ss;
 select array_agg(nullif(ten, 4)) from (select ten from tenk1 where unique1 < 15 order by unique1) ss;
@@ -432,6 +438,19 @@ select unnest(array[1,2,3,4.5]::float8[]);
 select unnest(array[1,2,3,4.5]::numeric[]);
 select unnest(array[1,2,3,null,4,null,null,5,6]);
 select unnest(array[1,2,3,null,4,null,null,5,6]::text[]);
+select abs(unnest(array[1,2,null,-3]));
+select array_remove(array[1,2,2,3], 2);
+select array_remove(array[1,2,2,3], 5);
+select array_remove(array[1,NULL,NULL,3], NULL);
+select array_remove(array['A','CC','D','C','RR'], 'RR');
+select array_remove('{{1,2,2},{1,4,3}}', 2); -- not allowed
+select array_remove(array['X','X','X'], 'X') = '{}';
+select array_replace(array[1,2,5,4],5,3);
+select array_replace(array[1,2,5,4],5,NULL);
+select array_replace(array[1,2,NULL,4,NULL],NULL,5);
+select array_replace(array['A','B','DD','B'],'B','CC');
+select array_replace(array[1,NULL,3],NULL,NULL);
+select array_replace(array['AB',NULL,'CDE'],NULL,'12');
 
 -- Insert/update on a column that is array of composite
 
@@ -440,3 +459,20 @@ insert into t1 (f1[5].q1) values(42);
 select * from t1;
 update t1 set f1[5].q2 = 43;
 select * from t1;
+
+-- Check that arrays of composites are safely detoasted when needed
+
+create temp table src (f1 text);
+insert into src
+  select string_agg(random()::text,'') from generate_series(1,10000);
+create type textandtext as (c1 text, c2 text);
+create temp table dest (f1 textandtext[]);
+insert into dest select array[row(f1,f1)::textandtext] from src;
+select length(md5((f1[1]).c2)) from dest;
+delete from src;
+select length(md5((f1[1]).c2)) from dest;
+truncate table src;
+drop table src;
+select length(md5((f1[1]).c2)) from dest;
+drop table dest;
+drop type textandtext;

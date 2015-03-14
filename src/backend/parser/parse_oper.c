@@ -3,7 +3,7 @@
  * parse_oper.c
  *		handle operator things for parser
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -15,6 +15,7 @@
 
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "catalog/pg_operator.h"
 #include "catalog/pg_type.h"
 #include "lib/stringinfo.h"
@@ -147,12 +148,12 @@ LookupOperNameTypeNames(ParseState *pstate, List *opername,
 	if (oprleft == NULL)
 		leftoid = InvalidOid;
 	else
-		leftoid = typenameTypeId(pstate, oprleft);
+		leftoid = LookupTypeNameOid(pstate, oprleft, noError);
 
 	if (oprright == NULL)
 		rightoid = InvalidOid;
 	else
-		rightoid = typenameTypeId(pstate, oprright);
+		rightoid = LookupTypeNameOid(pstate, oprright, noError);
 
 	return LookupOperName(pstate, opername, leftoid, rightoid,
 						  noError, location);
@@ -406,7 +407,7 @@ oper(ParseState *pstate, List *opname, Oid ltypeId, Oid rtypeId,
 		FuncCandidateList clist;
 
 		/* Get binary operators of given name */
-		clist = OpernameGetCandidates(opname, 'b');
+		clist = OpernameGetCandidates(opname, 'b', false);
 
 		/* No operators found? Then fail... */
 		if (clist != NULL)
@@ -446,7 +447,7 @@ oper(ParseState *pstate, List *opname, Oid ltypeId, Oid rtypeId,
  *
  *	This is tighter than oper() because it will not return an operator that
  *	requires coercion of the input datatypes (but binary-compatible operators
- *	are accepted).	Otherwise, the semantics are the same.
+ *	are accepted).  Otherwise, the semantics are the same.
  */
 Operator
 compatible_oper(ParseState *pstate, List *op, Oid arg1, Oid arg2,
@@ -552,7 +553,7 @@ right_oper(ParseState *pstate, List *op, Oid arg, bool noError, int location)
 		FuncCandidateList clist;
 
 		/* Get postfix operators of given name */
-		clist = OpernameGetCandidates(op, 'r');
+		clist = OpernameGetCandidates(op, 'r', false);
 
 		/* No operators found? Then fail... */
 		if (clist != NULL)
@@ -630,7 +631,7 @@ left_oper(ParseState *pstate, List *op, Oid arg, bool noError, int location)
 		FuncCandidateList clist;
 
 		/* Get prefix operators of given name */
-		clist = OpernameGetCandidates(op, 'l');
+		clist = OpernameGetCandidates(op, 'l', false);
 
 		/* No operators found? Then fail... */
 		if (clist != NULL)
@@ -979,7 +980,7 @@ make_scalar_array_op(ParseState *pstate, List *opname,
  * mapping is pretty expensive to compute, especially for ambiguous operators;
  * this is mainly because there are a *lot* of instances of popular operator
  * names such as "=", and we have to check each one to see which is the
- * best match.	So once we have identified the correct mapping, we save it
+ * best match.  So once we have identified the correct mapping, we save it
  * in a cache that need only be flushed on pg_operator or pg_cast change.
  * (pg_cast must be considered because changes in the set of implicit casts
  * affect the set of applicable operators for any given input datatype.)
@@ -1026,7 +1027,7 @@ make_oper_cache_key(OprCacheKey *key, List *opname, Oid ltypeId, Oid rtypeId)
 	if (schemaname)
 	{
 		/* search only in exact schema given */
-		key->search_path[0] = LookupExplicitNamespace(schemaname);
+		key->search_path[0] = LookupExplicitNamespace(schemaname, false);
 	}
 	else
 	{

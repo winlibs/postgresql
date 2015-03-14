@@ -145,7 +145,7 @@
     </para>
    </sect2>
 
-   <sect2>
+   <sect2 id="extend-type-system-domains">
     <title>Domains</title>
 
     <para>
@@ -359,6 +359,12 @@
     extension.)  Also notice that while a table can be a member of an
     extension, its subsidiary objects such as indexes are not directly
     considered members of the extension.
+    Another important point is that schemas can belong to extensions, but not
+    vice versa: an extension as such has an unqualified name and does not
+    exist <quote>within</> any schema.  The extension's member objects,
+    however, will belong to schemas whenever appropriate for their object
+    types.  It may or may not be appropriate for an extension to own the
+    schema(s) its member objects are within.
    </para>
 
    <sect2>
@@ -665,6 +671,10 @@ SET LOCAL search_path TO @extschema@;
      and reload.
     </para>
 
+   <indexterm>
+    <primary>pg_extension_config_dump</primary>
+   </indexterm>
+
     <para>
      To solve this problem, an extension's script file can mark a table
      it has created as a configuration table, which will cause
@@ -702,6 +712,14 @@ SELECT pg_catalog.pg_extension_config_dump('my_config', 'WHERE NOT standard_entr
      More complicated situations, such as initially-provided rows that might
      be modified by users, can be handled by creating triggers on the
      configuration table to ensure that modified rows are marked correctly.
+    </para>
+
+    <para>
+     You can alter the filter condition associated with a configuration table
+     by calling <function>pg_extension_config_dump</> again.  (This would
+     typically be useful in an extension update script.)  The only way to mark
+     a table as no longer a configuration table is to dissociate it from the
+     extension with <command>ALTER EXTENSION ... DROP TABLE</>.
     </para>
    </sect2>
 
@@ -917,7 +935,7 @@ include $(PGXS)
     To use the <acronym>PGXS</acronym> infrastructure for your extension,
     you must write a simple makefile.
     In the makefile, you need to set some variables
-    and finally include the global <acronym>PGXS</acronym> makefile.
+    and include the global <acronym>PGXS</acronym> makefile.
     Here is an example that builds an extension module named
     <literal>isbn_issn</literal>, consisting of a shared library containing
     some C code, an extension control file, a SQL script, and a documentation
@@ -1143,15 +1161,32 @@ include $(PGXS)
     or on the <literal>make</literal> command line.
    </para>
 
-   <caution>
-    <para>
-     Changing <varname>PG_CONFIG</varname> only works when building
-     against <productname>PostgreSQL</productname> 8.3 or later.
-     With older releases it does not work to set it to anything except
-     <literal>pg_config</>; you must alter your <varname>PATH</>
-     to select the installation to build against.
-    </para>
-   </caution>
+   <para>
+    You can also run <literal>make</literal> in a directory outside the source
+    tree of your extension, if you want to keep the build directory separate.
+    This procedure is also called a
+    <indexterm><primary>VPATH</primary></indexterm><firstterm>VPATH</firstterm>
+    build.  Here's how:
+<programlisting>
+mkdir build_dir
+cd build_dir
+make -f /path/to/extension/source/tree/Makefile
+make -f /path/to/extension/source/tree/Makefile install
+</programlisting>
+   </para>
+
+   <para>
+    Alternatively, you can set up a directory for a VPATH build in a similar
+    way to how it is done for the core code. One way to do this is using the
+    core script <filename>config/prep_buildtree</>. Once this has been done
+    you can build by setting the <literal>make</literal> variable
+    <varname>VPATH</varname> like this:
+<programlisting>
+make VPATH=/path/to/extension/source/tree
+make VPATH=/path/to/extension/source/tree install
+</programlisting>
+    This procedure can work with a greater variety of directory layouts.
+   </para>
 
    <para>
     The scripts listed in the <varname>REGRESS</> variable are used for

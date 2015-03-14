@@ -30,6 +30,7 @@ extern void sql_help_ALTER_CONVERSION(PQExpBuffer buf);
 extern void sql_help_ALTER_DATABASE(PQExpBuffer buf);
 extern void sql_help_ALTER_DEFAULT_PRIVILEGES(PQExpBuffer buf);
 extern void sql_help_ALTER_DOMAIN(PQExpBuffer buf);
+extern void sql_help_ALTER_EVENT_TRIGGER(PQExpBuffer buf);
 extern void sql_help_ALTER_EXTENSION(PQExpBuffer buf);
 extern void sql_help_ALTER_FOREIGN_DATA_WRAPPER(PQExpBuffer buf);
 extern void sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf);
@@ -38,13 +39,16 @@ extern void sql_help_ALTER_GROUP(PQExpBuffer buf);
 extern void sql_help_ALTER_INDEX(PQExpBuffer buf);
 extern void sql_help_ALTER_LANGUAGE(PQExpBuffer buf);
 extern void sql_help_ALTER_LARGE_OBJECT(PQExpBuffer buf);
+extern void sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf);
 extern void sql_help_ALTER_OPERATOR(PQExpBuffer buf);
 extern void sql_help_ALTER_OPERATOR_CLASS(PQExpBuffer buf);
 extern void sql_help_ALTER_OPERATOR_FAMILY(PQExpBuffer buf);
 extern void sql_help_ALTER_ROLE(PQExpBuffer buf);
+extern void sql_help_ALTER_RULE(PQExpBuffer buf);
 extern void sql_help_ALTER_SCHEMA(PQExpBuffer buf);
 extern void sql_help_ALTER_SEQUENCE(PQExpBuffer buf);
 extern void sql_help_ALTER_SERVER(PQExpBuffer buf);
+extern void sql_help_ALTER_SYSTEM(PQExpBuffer buf);
 extern void sql_help_ALTER_TABLE(PQExpBuffer buf);
 extern void sql_help_ALTER_TABLESPACE(PQExpBuffer buf);
 extern void sql_help_ALTER_TEXT_SEARCH_CONFIGURATION(PQExpBuffer buf);
@@ -71,6 +75,7 @@ extern void sql_help_CREATE_COLLATION(PQExpBuffer buf);
 extern void sql_help_CREATE_CONVERSION(PQExpBuffer buf);
 extern void sql_help_CREATE_DATABASE(PQExpBuffer buf);
 extern void sql_help_CREATE_DOMAIN(PQExpBuffer buf);
+extern void sql_help_CREATE_EVENT_TRIGGER(PQExpBuffer buf);
 extern void sql_help_CREATE_EXTENSION(PQExpBuffer buf);
 extern void sql_help_CREATE_FOREIGN_DATA_WRAPPER(PQExpBuffer buf);
 extern void sql_help_CREATE_FOREIGN_TABLE(PQExpBuffer buf);
@@ -78,6 +83,7 @@ extern void sql_help_CREATE_FUNCTION(PQExpBuffer buf);
 extern void sql_help_CREATE_GROUP(PQExpBuffer buf);
 extern void sql_help_CREATE_INDEX(PQExpBuffer buf);
 extern void sql_help_CREATE_LANGUAGE(PQExpBuffer buf);
+extern void sql_help_CREATE_MATERIALIZED_VIEW(PQExpBuffer buf);
 extern void sql_help_CREATE_OPERATOR(PQExpBuffer buf);
 extern void sql_help_CREATE_OPERATOR_CLASS(PQExpBuffer buf);
 extern void sql_help_CREATE_OPERATOR_FAMILY(PQExpBuffer buf);
@@ -109,6 +115,7 @@ extern void sql_help_DROP_COLLATION(PQExpBuffer buf);
 extern void sql_help_DROP_CONVERSION(PQExpBuffer buf);
 extern void sql_help_DROP_DATABASE(PQExpBuffer buf);
 extern void sql_help_DROP_DOMAIN(PQExpBuffer buf);
+extern void sql_help_DROP_EVENT_TRIGGER(PQExpBuffer buf);
 extern void sql_help_DROP_EXTENSION(PQExpBuffer buf);
 extern void sql_help_DROP_FOREIGN_DATA_WRAPPER(PQExpBuffer buf);
 extern void sql_help_DROP_FOREIGN_TABLE(PQExpBuffer buf);
@@ -116,6 +123,7 @@ extern void sql_help_DROP_FUNCTION(PQExpBuffer buf);
 extern void sql_help_DROP_GROUP(PQExpBuffer buf);
 extern void sql_help_DROP_INDEX(PQExpBuffer buf);
 extern void sql_help_DROP_LANGUAGE(PQExpBuffer buf);
+extern void sql_help_DROP_MATERIALIZED_VIEW(PQExpBuffer buf);
 extern void sql_help_DROP_OPERATOR(PQExpBuffer buf);
 extern void sql_help_DROP_OPERATOR_CLASS(PQExpBuffer buf);
 extern void sql_help_DROP_OPERATOR_FAMILY(PQExpBuffer buf);
@@ -150,6 +158,7 @@ extern void sql_help_NOTIFY(PQExpBuffer buf);
 extern void sql_help_PREPARE(PQExpBuffer buf);
 extern void sql_help_PREPARE_TRANSACTION(PQExpBuffer buf);
 extern void sql_help_REASSIGN_OWNED(PQExpBuffer buf);
+extern void sql_help_REFRESH_MATERIALIZED_VIEW(PQExpBuffer buf);
 extern void sql_help_REINDEX(PQExpBuffer buf);
 extern void sql_help_RELEASE_SAVEPOINT(PQExpBuffer buf);
 extern void sql_help_RESET(PQExpBuffer buf);
@@ -186,7 +195,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER AGGREGATE",
       N_("change the definition of an aggregate function"),
       sql_help_ALTER_AGGREGATE,
-      2 },
+      8 },
 
     { "ALTER COLLATION",
       N_("change the definition of a collation"),
@@ -213,10 +222,15 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_ALTER_DOMAIN,
       17 },
 
+    { "ALTER EVENT TRIGGER",
+      N_("change the definition of an event trigger"),
+      sql_help_ALTER_EVENT_TRIGGER,
+      3 },
+
     { "ALTER EXTENSION",
       N_("change the definition of an extension"),
       sql_help_ALTER_EXTENSION,
-      28 },
+      36 },
 
     { "ALTER FOREIGN DATA WRAPPER",
       N_("change the definition of a foreign-data wrapper"),
@@ -226,7 +240,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER FOREIGN TABLE",
       N_("change the definition of a foreign table"),
       sql_help_ALTER_FOREIGN_TABLE,
-      20 },
+      26 },
 
     { "ALTER FUNCTION",
       N_("change the definition of a function"),
@@ -241,7 +255,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER INDEX",
       N_("change the definition of an index"),
       sql_help_ALTER_INDEX,
-      3 },
+      5 },
 
     { "ALTER LANGUAGE",
       N_("change the definition of a procedural language"),
@@ -252,6 +266,11 @@ static const struct _helpStruct QL_HELP[] = {
       N_("change the definition of a large object"),
       sql_help_ALTER_LARGE_OBJECT,
       0 },
+
+    { "ALTER MATERIALIZED VIEW",
+      N_("change the definition of a materialized view"),
+      sql_help_ALTER_MATERIALIZED_VIEW,
+      22 },
 
     { "ALTER OPERATOR",
       N_("change the definition of an operator"),
@@ -273,6 +292,11 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_ALTER_ROLE,
       20 },
 
+    { "ALTER RULE",
+      N_("change the definition of a rule"),
+      sql_help_ALTER_RULE,
+      0 },
+
     { "ALTER SCHEMA",
       N_("change the definition of a schema"),
       sql_help_ALTER_SCHEMA,
@@ -288,10 +312,15 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_ALTER_SERVER,
       3 },
 
+    { "ALTER SYSTEM",
+      N_("change a server configuration parameter"),
+      sql_help_ALTER_SYSTEM,
+      3 },
+
     { "ALTER TABLE",
       N_("change the definition of a table"),
       sql_help_ALTER_TABLE,
-      52 },
+      56 },
 
     { "ALTER TABLESPACE",
       N_("change the definition of a tablespace"),
@@ -371,7 +400,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "COMMENT",
       N_("define or change the comment of an object"),
       sql_help_COMMENT,
-      34 },
+      42 },
 
     { "COMMIT",
       N_("commit the current transaction"),
@@ -386,12 +415,12 @@ static const struct _helpStruct QL_HELP[] = {
     { "COPY",
       N_("copy data between a file and a table"),
       sql_help_COPY,
-      19 },
+      21 },
 
     { "CREATE AGGREGATE",
       N_("define a new aggregate function"),
       sql_help_CREATE_AGGREGATE,
-      17 },
+      46 },
 
     { "CREATE CAST",
       N_("define a new cast"),
@@ -418,6 +447,11 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_CREATE_DOMAIN,
       8 },
 
+    { "CREATE EVENT TRIGGER",
+      N_("define a new event trigger"),
+      sql_help_CREATE_EVENT_TRIGGER,
+      3 },
+
     { "CREATE EXTENSION",
       N_("install an extension"),
       sql_help_CREATE_EXTENSION,
@@ -431,7 +465,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE FOREIGN TABLE",
       N_("define a new foreign table"),
       sql_help_CREATE_FOREIGN_TABLE,
-      5 },
+      12 },
 
     { "CREATE FUNCTION",
       N_("define a new function"),
@@ -452,6 +486,11 @@ static const struct _helpStruct QL_HELP[] = {
       N_("define a new procedural language"),
       sql_help_CREATE_LANGUAGE,
       2 },
+
+    { "CREATE MATERIALIZED VIEW",
+      N_("define a new materialized view"),
+      sql_help_CREATE_MATERIALIZED_VIEW,
+      5 },
 
     { "CREATE OPERATOR",
       N_("define a new operator"),
@@ -476,12 +515,12 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE RULE",
       N_("define a new rewrite rule"),
       sql_help_CREATE_RULE,
-      2 },
+      6 },
 
     { "CREATE SCHEMA",
       N_("define a new schema"),
       sql_help_CREATE_SCHEMA,
-      1 },
+      3 },
 
     { "CREATE SEQUENCE",
       N_("define a new sequence generator"),
@@ -506,7 +545,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE TABLESPACE",
       N_("define a new tablespace"),
       sql_help_CREATE_TABLESPACE,
-      0 },
+      3 },
 
     { "CREATE TEXT SEARCH CONFIGURATION",
       N_("define a new text search configuration"),
@@ -551,7 +590,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE VIEW",
       N_("define a new view"),
       sql_help_CREATE_VIEW,
-      2 },
+      3 },
 
     { "DEALLOCATE",
       N_("deallocate a prepared statement"),
@@ -581,7 +620,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "DROP AGGREGATE",
       N_("remove an aggregate function"),
       sql_help_DROP_AGGREGATE,
-      0 },
+      6 },
 
     { "DROP CAST",
       N_("remove a cast"),
@@ -606,6 +645,11 @@ static const struct _helpStruct QL_HELP[] = {
     { "DROP DOMAIN",
       N_("remove a domain"),
       sql_help_DROP_DOMAIN,
+      0 },
+
+    { "DROP EVENT TRIGGER",
+      N_("remove an event trigger"),
+      sql_help_DROP_EVENT_TRIGGER,
       0 },
 
     { "DROP EXTENSION",
@@ -641,6 +685,11 @@ static const struct _helpStruct QL_HELP[] = {
     { "DROP LANGUAGE",
       N_("remove a procedural language"),
       sql_help_DROP_LANGUAGE,
+      0 },
+
+    { "DROP MATERIALIZED VIEW",
+      N_("remove a materialized view"),
+      sql_help_DROP_MATERIALIZED_VIEW,
       0 },
 
     { "DROP OPERATOR",
@@ -813,6 +862,11 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_REASSIGN_OWNED,
       0 },
 
+    { "REFRESH MATERIALIZED VIEW",
+      N_("replace the contents of a materialized view"),
+      sql_help_REFRESH_MATERIALIZED_VIEW,
+      1 },
+
     { "REINDEX",
       N_("rebuild indexes"),
       sql_help_REINDEX,
@@ -856,12 +910,12 @@ static const struct _helpStruct QL_HELP[] = {
     { "SECURITY LABEL",
       N_("define or change a security label applied to an object"),
       sql_help_SECURITY_LABEL,
-      17 },
+      25 },
 
     { "SELECT",
       N_("retrieve rows from a table or view"),
       sql_help_SELECT,
-      28 },
+      32 },
 
     { "SELECT INTO",
       N_("define a new table from the results of a query"),
@@ -906,7 +960,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "TABLE",
       N_("retrieve rows from a table or view"),
       sql_help_TABLE,
-      28 },
+      32 },
 
     { "TRUNCATE",
       N_("empty a table or set of tables"),
@@ -936,14 +990,14 @@ static const struct _helpStruct QL_HELP[] = {
     { "WITH",
       N_("retrieve rows from a table or view"),
       sql_help_WITH,
-      28 },
+      32 },
 
 
     { NULL, NULL, NULL }    /* End of list marker */
 };
 
 
-#define QL_HELP_COUNT	152		/* number of help items */
+#define QL_HELP_COUNT	161		/* number of help items */
 #define QL_MAX_CMD_LEN	32		/* largest strlen(cmd) */
 
 

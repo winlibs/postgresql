@@ -3,7 +3,7 @@
  * nodeLockRows.c
  *	  Routines to handle FOR UPDATE/FOR SHARE row locking
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -21,6 +21,7 @@
 
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "access/xact.h"
 #include "executor/executor.h"
 #include "executor/nodeLockRows.h"
@@ -70,8 +71,7 @@ lnext:
 		bool		isNull;
 		HeapTupleData tuple;
 		Buffer		buffer;
-		ItemPointerData update_ctid;
-		TransactionId update_xmax;
+		HeapUpdateFailureData hufd;
 		LockTupleMode lockmode;
 		HTSU_Result test;
 		HeapTuple	copyTuple;
@@ -111,20 +111,47 @@ lnext:
 		tuple.t_self = *((ItemPointer) DatumGetPointer(datum));
 
 		/* okay, try to lock the tuple */
-		if (erm->markType == ROW_MARK_EXCLUSIVE)
-			lockmode = LockTupleExclusive;
-		else
-			lockmode = LockTupleShared;
+		switch (erm->markType)
+		{
+			case ROW_MARK_EXCLUSIVE:
+				lockmode = LockTupleExclusive;
+				break;
+			case ROW_MARK_NOKEYEXCLUSIVE:
+				lockmode = LockTupleNoKeyExclusive;
+				break;
+			case ROW_MARK_SHARE:
+				lockmode = LockTupleShare;
+				break;
+			case ROW_MARK_KEYSHARE:
+				lockmode = LockTupleKeyShare;
+				break;
+			default:
+				elog(ERROR, "unsupported rowmark type");
+				lockmode = LockTupleNoKeyExclusive;		/* keep compiler quiet */
+				break;
+		}
 
-		test = heap_lock_tuple(erm->relation, &tuple, &buffer,
-							   &update_ctid, &update_xmax,
+		test = heap_lock_tuple(erm->relation, &tuple,
 							   estate->es_output_cid,
-							   lockmode, erm->noWait);
+							   lockmode, erm->noWait, true,
+							   &buffer, &hufd);
 		ReleaseBuffer(buffer);
 		switch (test)
 		{
 			case HeapTupleSelfUpdated:
-				/* treat it as deleted; do not process */
+
+				/*
+				 * The target tuple was already updated or deleted by the
+				 * current command, or by a later command in the current
+				 * transaction.  We *must* ignore the tuple in the former
+				 * case, so as to avoid the "Halloween problem" of repeated
+				 * update attempts.  In the latter case it might be sensible
+				 * to fetch the updated tuple instead, but doing so would
+				 * require changing heap_lock_tuple as well as heap_update and
+				 * heap_delete to not complain about updating "invisible"
+				 * tuples, which seems pretty scary.  So for now, treat the
+				 * tuple as deleted and do not process.
+				 */
 				goto lnext;
 
 			case HeapTupleMayBeUpdated:
@@ -136,16 +163,15 @@ lnext:
 					ereport(ERROR,
 							(errcode(ERRCODE_T_R_SERIALIZATION_FAILURE),
 							 errmsg("could not serialize access due to concurrent update")));
-				if (ItemPointerEquals(&update_ctid,
-									  &tuple.t_self))
+				if (ItemPointerEquals(&hufd.ctid, &tuple.t_self))
 				{
 					/* Tuple was deleted, so don't return it */
 					goto lnext;
 				}
 
 				/* updated, so fetch and lock the updated version */
-				copyTuple = EvalPlanQualFetch(estate, erm->relation, lockmode,
-											  &update_ctid, update_xmax);
+				copyTuple = EvalPlanQualFetch(estate, erm->relation, lockmode, erm->noWait,
+											  &hufd.ctid, hufd.xmax);
 
 				if (copyTuple == NULL)
 				{
@@ -156,12 +182,34 @@ lnext:
 				tuple.t_self = copyTuple->t_self;
 
 				/*
-				 * Need to run a recheck subquery.	Initialize EPQ state if we
+				 * Need to run a recheck subquery.  Initialize EPQ state if we
 				 * didn't do so already.
 				 */
 				if (!epq_started)
 				{
+					ListCell   *lc2;
+
 					EvalPlanQualBegin(&node->lr_epqstate, estate);
+
+					/*
+					 * Ensure that rels with already-visited rowmarks are told
+					 * not to return tuples during the first EPQ test.  We can
+					 * exit this loop once it reaches the current rowmark;
+					 * rels appearing later in the list will be set up
+					 * correctly by the EvalPlanQualSetTuple call at the top
+					 * of the loop.
+					 */
+					foreach(lc2, node->lr_arowMarks)
+					{
+						ExecAuxRowMark *aerm2 = (ExecAuxRowMark *) lfirst(lc2);
+
+						if (lc2 == lc)
+							break;
+						EvalPlanQualSetTuple(&node->lr_epqstate,
+											 aerm2->rowmark->rti,
+											 NULL);
+					}
+
 					epq_started = true;
 				}
 
@@ -187,7 +235,7 @@ lnext:
 	{
 		/*
 		 * First, fetch a copy of any rows that were successfully locked
-		 * without any update having occurred.	(We do this in a separate pass
+		 * without any update having occurred.  (We do this in a separate pass
 		 * so as to avoid overhead in the common case where there are no
 		 * concurrent updates.)
 		 */
@@ -292,7 +340,7 @@ ExecInitLockRows(LockRows *node, EState *estate, int eflags)
 
 	/*
 	 * Locate the ExecRowMark(s) that this node is responsible for, and
-	 * construct ExecAuxRowMarks for them.	(InitPlan should already have
+	 * construct ExecAuxRowMarks for them.  (InitPlan should already have
 	 * built the global list of ExecRowMarks.)
 	 */
 	lrstate->lr_arowMarks = NIL;
@@ -314,7 +362,7 @@ ExecInitLockRows(LockRows *node, EState *estate, int eflags)
 		aerm = ExecBuildAuxRowMark(erm, outerPlan->targetlist);
 
 		/*
-		 * Only locking rowmarks go into our own list.	Non-locking marks are
+		 * Only locking rowmarks go into our own list.  Non-locking marks are
 		 * passed off to the EvalPlanQual machinery.  This is because we don't
 		 * want to bother fetching non-locked rows unless we actually have to
 		 * do an EPQ recheck.

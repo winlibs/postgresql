@@ -4,7 +4,7 @@
  *	  WAL replay logic for GiST.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -64,13 +64,12 @@ gistRedoClearFollowRight(XLogRecPtr lsn, XLogRecord *record, int block_index,
 	 * of this record, because the updated NSN is not included in the full
 	 * page image.
 	 */
-	if (!XLByteLT(lsn, PageGetLSN(page)))
+	if (lsn >= PageGetLSN(page))
 	{
-		GistPageGetOpaque(page)->nsn = lsn;
+		GistPageSetNSN(page, lsn);
 		GistClearFollowRight(page);
 
 		PageSetLSN(page, lsn);
-		PageSetTLI(page, ThisTimeLineID);
 		MarkBufferDirty(buffer);
 	}
 	UnlockReleaseBuffer(buffer);
@@ -119,7 +118,7 @@ gistRedoPageUpdateRecord(XLogRecPtr lsn, XLogRecord *record)
 	page = (Page) BufferGetPage(buffer);
 
 	/* nothing more to do if change already applied */
-	if (XLByteLE(lsn, PageGetLSN(page)))
+	if (lsn <= PageGetLSN(page))
 	{
 		UnlockReleaseBuffer(buffer);
 		return;
@@ -183,9 +182,7 @@ gistRedoPageUpdateRecord(XLogRecPtr lsn, XLogRecord *record)
 		GistPageSetLeaf(page);
 	}
 
-	GistPageGetOpaque(page)->rightlink = InvalidBlockNumber;
 	PageSetLSN(page, lsn);
-	PageSetTLI(page, ThisTimeLineID);
 	MarkBufferDirty(buffer);
 	UnlockReleaseBuffer(buffer);
 }
@@ -271,7 +268,7 @@ gistRedoPageSplitRecord(XLogRecPtr lsn, XLogRecord *record)
 		if (newpage->header->blkno == GIST_ROOT_BLKNO)
 		{
 			GistPageGetOpaque(page)->rightlink = InvalidBlockNumber;
-			GistPageGetOpaque(page)->nsn = xldata->orignsn;
+			GistPageSetNSN(page, xldata->orignsn);
 			GistClearFollowRight(page);
 		}
 		else
@@ -280,7 +277,7 @@ gistRedoPageSplitRecord(XLogRecPtr lsn, XLogRecord *record)
 				GistPageGetOpaque(page)->rightlink = xlrec.page[i + 1].header->blkno;
 			else
 				GistPageGetOpaque(page)->rightlink = xldata->origrlink;
-			GistPageGetOpaque(page)->nsn = xldata->orignsn;
+			GistPageSetNSN(page, xldata->orignsn);
 			if (i < xlrec.data->npage - 1 && !isrootsplit &&
 				xldata->markfollowright)
 				GistMarkFollowRight(page);
@@ -289,7 +286,6 @@ gistRedoPageSplitRecord(XLogRecPtr lsn, XLogRecord *record)
 		}
 
 		PageSetLSN(page, lsn);
-		PageSetTLI(page, ThisTimeLineID);
 		MarkBufferDirty(buffer);
 
 		if (i == 0)
@@ -324,7 +320,6 @@ gistRedoCreateIndex(XLogRecPtr lsn, XLogRecord *record)
 	GISTInitBuffer(buffer, F_LEAF);
 
 	PageSetLSN(page, lsn);
-	PageSetTLI(page, ThisTimeLineID);
 
 	MarkBufferDirty(buffer);
 	UnlockReleaseBuffer(buffer);
@@ -362,55 +357,6 @@ gist_redo(XLogRecPtr lsn, XLogRecord *record)
 	MemoryContextReset(opCtx);
 }
 
-static void
-out_target(StringInfo buf, RelFileNode node)
-{
-	appendStringInfo(buf, "rel %u/%u/%u",
-					 node.spcNode, node.dbNode, node.relNode);
-}
-
-static void
-out_gistxlogPageUpdate(StringInfo buf, gistxlogPageUpdate *xlrec)
-{
-	out_target(buf, xlrec->node);
-	appendStringInfo(buf, "; block number %u", xlrec->blkno);
-}
-
-static void
-out_gistxlogPageSplit(StringInfo buf, gistxlogPageSplit *xlrec)
-{
-	appendStringInfo(buf, "page_split: ");
-	out_target(buf, xlrec->node);
-	appendStringInfo(buf, "; block number %u splits to %d pages",
-					 xlrec->origblkno, xlrec->npage);
-}
-
-void
-gist_desc(StringInfo buf, uint8 xl_info, char *rec)
-{
-	uint8		info = xl_info & ~XLR_INFO_MASK;
-
-	switch (info)
-	{
-		case XLOG_GIST_PAGE_UPDATE:
-			appendStringInfo(buf, "page_update: ");
-			out_gistxlogPageUpdate(buf, (gistxlogPageUpdate *) rec);
-			break;
-		case XLOG_GIST_PAGE_SPLIT:
-			out_gistxlogPageSplit(buf, (gistxlogPageSplit *) rec);
-			break;
-		case XLOG_GIST_CREATE_INDEX:
-			appendStringInfo(buf, "create_index: rel %u/%u/%u",
-							 ((RelFileNode *) rec)->spcNode,
-							 ((RelFileNode *) rec)->dbNode,
-							 ((RelFileNode *) rec)->relNode);
-			break;
-		default:
-			appendStringInfo(buf, "unknown gist op code %u", info);
-			break;
-	}
-}
-
 void
 gist_xlog_startup(void)
 {
@@ -432,7 +378,7 @@ gistXLogSplit(RelFileNode node, BlockNumber blkno, bool page_is_leaf,
 			  BlockNumber origrlink, GistNSN orignsn,
 			  Buffer leftchildbuf, bool markfollowright)
 {
-	XLogRecData *rdata;
+	XLogRecData rdata[GIST_MAX_SPLIT_PAGES * 2 + 2];
 	gistxlogPageSplit xlrec;
 	SplitedPageLayout *ptr;
 	int			npage = 0,
@@ -442,7 +388,12 @@ gistXLogSplit(RelFileNode node, BlockNumber blkno, bool page_is_leaf,
 	for (ptr = dist; ptr; ptr = ptr->next)
 		npage++;
 
-	rdata = (XLogRecData *) palloc(sizeof(XLogRecData) * (npage * 2 + 2));
+	/*
+	 * the caller should've checked this already, but doesn't hurt to check
+	 * again.
+	 */
+	if (npage > GIST_MAX_SPLIT_PAGES)
+		elog(ERROR, "GiST page split into too many halves");
 
 	xlrec.node = node;
 	xlrec.origblkno = blkno;
@@ -492,7 +443,6 @@ gistXLogSplit(RelFileNode node, BlockNumber blkno, bool page_is_leaf,
 
 	recptr = XLogInsert(RM_GIST_ID, XLOG_GIST_PAGE_SPLIT, rdata);
 
-	pfree(rdata);
 	return recptr;
 }
 
@@ -515,13 +465,11 @@ gistXLogUpdate(RelFileNode node, Buffer buffer,
 			   IndexTuple *itup, int ituplen,
 			   Buffer leftchildbuf)
 {
-	XLogRecData *rdata;
+	XLogRecData rdata[MaxIndexTuplesPerPage + 3];
 	gistxlogPageUpdate xlrec;
 	int			cur,
 				i;
 	XLogRecPtr	recptr;
-
-	rdata = (XLogRecData *) palloc(sizeof(XLogRecData) * (3 + ituplen));
 
 	xlrec.node = node;
 	xlrec.blkno = BufferGetBlockNumber(buffer);
@@ -569,6 +517,5 @@ gistXLogUpdate(RelFileNode node, Buffer buffer,
 
 	recptr = XLogInsert(RM_GIST_ID, XLOG_GIST_PAGE_UPDATE, rdata);
 
-	pfree(rdata);
 	return recptr;
 }

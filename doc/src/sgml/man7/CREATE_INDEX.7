@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE INDEX
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "CREATE INDEX" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE INDEX" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_INDEX \- define a new index
-.\" CREATE INDEX
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -43,7 +42,7 @@ CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ \fIname\fR ] ON \fItable_name\fR [ US
 .PP
 
 \fBCREATE INDEX\fR
-constructs an index on the specified column(s) of the specified table\&. Indexes are primarily used to enhance database performance (though inappropriate use can result in slower performance)\&.
+constructs an index on the specified column(s) of the specified relation, which can be a table or a materialized view\&. Indexes are primarily used to enhance database performance (though inappropriate use can result in slower performance)\&.
 .PP
 The key field(s) for the index are specified as column names, or alternatively as expressions written in parentheses\&. Multiple fields can be specified if the index method supports multicolumn indexes\&.
 .PP
@@ -199,7 +198,7 @@ GiST indexes additionally accept this parameter:
 BUFFERING
 .RS 4
 Determines whether the buffering build technique described in
-Section 53.3.1, \(lqGiST buffering build\(rq, in the documentation
+Section 56.4.1, \(lqGiST buffering build\(rq, in the documentation
 is used to build the index\&. With
 OFF
 it is disabled, with
@@ -216,7 +215,7 @@ GIN indexes accept a different parameter:
 FASTUPDATE
 .RS 4
 This setting controls usage of the fast update technique described in
-Section 55.3.1, \(lqGIN Fast Update Technique\(rq, in the documentation\&. It is a Boolean parameter:
+Section 58.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation\&. It is a Boolean parameter:
 ON
 enables fast update,
 OFF
@@ -250,7 +249,6 @@ the table afterward to ensure the pending list is emptied\&.
 .RE
 .RE
 .SS "Building Indexes Concurrently"
-.\" index: building concurrently
 .PP
 Creating an index can interfere with regular operation of a database\&. Normally
 PostgreSQL
@@ -266,9 +264,9 @@ PostgreSQL
 must perform two scans of the table, and in addition it must wait for all existing transactions that could potentially use the index to terminate\&. Thus this method requires more total work than a standard index build and takes significantly longer to complete\&. However, since it allows normal operations to continue while the index is built, this method is useful for adding new indexes in a production environment\&. Of course, the extra CPU and I/O load imposed by the index creation might slow other operations\&.
 .PP
 In a concurrent index build, the index is actually entered into the system catalogs in one transaction, then two table scans occur in two more transactions\&. Any transaction active when the second table scan starts can block concurrent index creation until it completes, even transactions that only reference the table after the second table scan starts\&. Concurrent index creation serially waits for each old transaction to complete using the method outlined in section
-Section 45.58, \(lqpg_locks\(rq, in the documentation\&.
+Section 48.60, \(lqpg_locks\(rq, in the documentation\&.
 .PP
-If a problem arises while scanning the table, such as a uniqueness violation in a unique index, the
+If a problem arises while scanning the table, such as a deadlock or a uniqueness violation in a unique index, the
 \fBCREATE INDEX\fR
 command will fail but leave behind an
 \(lqinvalid\(rq

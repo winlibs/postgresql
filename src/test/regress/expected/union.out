@@ -317,6 +317,8 @@ SELECT q1 FROM int8_tbl EXCEPT ALL SELECT DISTINCT q2 FROM int8_tbl;
               123
 (3 rows)
 
+SELECT q1 FROM int8_tbl EXCEPT ALL SELECT q1 FROM int8_tbl FOR NO KEY UPDATE;
+ERROR:  FOR NO KEY UPDATE is not allowed with UNION/INTERSECT/EXCEPT
 --
 -- Mixed types
 --
@@ -412,6 +414,7 @@ SELECT q1 FROM int8_tbl EXCEPT SELECT q2 FROM int8_tbl ORDER BY q2 LIMIT 1;
 ERROR:  column "q2" does not exist
 LINE 1: ... int8_tbl EXCEPT SELECT q2 FROM int8_tbl ORDER BY q2 LIMIT 1...
                                                              ^
+HINT:  There is a column named "q2" in table "*SELECT* 2", but it cannot be referenced from this part of the query.
 -- But this should work:
 SELECT q1 FROM int8_tbl EXCEPT (((SELECT q2 FROM int8_tbl ORDER BY q2 LIMIT 1)));
         q1        
@@ -462,7 +465,6 @@ LINE 1: SELECT '3.4'::numeric UNION SELECT 'foo';
 CREATE TEMP TABLE t1 (a text, b text);
 CREATE INDEX t1_ab_idx on t1 ((a || b));
 CREATE TEMP TABLE t2 (ab text primary key);
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "t2_pkey" for table "t2"
 INSERT INTO t1 VALUES ('a', 'b'), ('x', 'y');
 INSERT INTO t2 VALUES ('ab'), ('xy');
 set enable_seqscan = off;
@@ -474,15 +476,14 @@ explain (costs off)
   UNION ALL
   SELECT * FROM t2) t
  WHERE ab = 'ab';
-                    QUERY PLAN                     
----------------------------------------------------
- Result
-   ->  Append
-         ->  Index Scan using t1_ab_idx on t1
-               Index Cond: ((a || b) = 'ab'::text)
-         ->  Index Only Scan using t2_pkey on t2
-               Index Cond: (ab = 'ab'::text)
-(6 rows)
+                 QUERY PLAN                  
+---------------------------------------------
+ Append
+   ->  Index Scan using t1_ab_idx on t1
+         Index Cond: ((a || b) = 'ab'::text)
+   ->  Index Only Scan using t2_pkey on t2
+         Index Cond: (ab = 'ab'::text)
+(5 rows)
 
 explain (costs off)
  SELECT * FROM
@@ -493,16 +494,86 @@ explain (costs off)
                     QUERY PLAN                     
 ---------------------------------------------------
  HashAggregate
+   Group Key: ((t1.a || t1.b))
    ->  Append
          ->  Index Scan using t1_ab_idx on t1
                Index Cond: ((a || b) = 'ab'::text)
          ->  Index Only Scan using t2_pkey on t2
                Index Cond: (ab = 'ab'::text)
-(6 rows)
+(7 rows)
+
+--
+-- Test that ORDER BY for UNION ALL can be pushed down to inheritance
+-- children.
+--
+CREATE TEMP TABLE t1c (b text, a text);
+ALTER TABLE t1c INHERIT t1;
+CREATE TEMP TABLE t2c (primary key (ab)) INHERITS (t2);
+INSERT INTO t1c VALUES ('v', 'w'), ('c', 'd'), ('m', 'n'), ('e', 'f');
+INSERT INTO t2c VALUES ('vw'), ('cd'), ('mn'), ('ef');
+CREATE INDEX t1c_ab_idx on t1c ((a || b));
+set enable_seqscan = on;
+set enable_indexonlyscan = off;
+explain (costs off)
+  SELECT * FROM
+  (SELECT a || b AS ab FROM t1
+   UNION ALL
+   SELECT ab FROM t2) t
+  ORDER BY 1 LIMIT 8;
+                   QUERY PLAN                   
+------------------------------------------------
+ Limit
+   ->  Merge Append
+         Sort Key: ((t1.a || t1.b))
+         ->  Index Scan using t1_ab_idx on t1
+         ->  Index Scan using t1c_ab_idx on t1c
+         ->  Index Scan using t2_pkey on t2
+         ->  Index Scan using t2c_pkey on t2c
+(7 rows)
+
+  SELECT * FROM
+  (SELECT a || b AS ab FROM t1
+   UNION ALL
+   SELECT ab FROM t2) t
+  ORDER BY 1 LIMIT 8;
+ ab 
+----
+ ab
+ ab
+ cd
+ dc
+ ef
+ fe
+ mn
+ nm
+(8 rows)
 
 reset enable_seqscan;
 reset enable_indexscan;
 reset enable_bitmapscan;
+-- This simpler variant of the above test has been observed to fail differently
+create table events (event_id int primary key);
+create table other_events (event_id int primary key);
+create table events_child () inherits (events);
+explain (costs off)
+select event_id
+ from (select event_id from events
+       union all
+       select event_id from other_events) ss
+ order by event_id;
+                        QUERY PLAN                        
+----------------------------------------------------------
+ Merge Append
+   Sort Key: events.event_id
+   ->  Index Scan using events_pkey on events
+   ->  Sort
+         Sort Key: events_child.event_id
+         ->  Seq Scan on events_child
+   ->  Index Scan using other_events_pkey on other_events
+(7 rows)
+
+drop table events_child, events, other_events;
+reset enable_indexonlyscan;
 -- Test constraint exclusion of UNION ALL subqueries
 explain (costs off)
  SELECT * FROM
@@ -510,10 +581,132 @@ explain (costs off)
    UNION ALL
    SELECT 2 AS t, * FROM tenk1 b) c
  WHERE t = 2;
-           QUERY PLAN            
----------------------------------
- Result
-   ->  Append
-         ->  Seq Scan on tenk1 b
+        QUERY PLAN         
+---------------------------
+ Append
+   ->  Seq Scan on tenk1 b
+(2 rows)
+
+-- Test that we push quals into UNION sub-selects only when it's safe
+explain (costs off)
+SELECT * FROM
+  (SELECT 1 AS t, 2 AS x
+   UNION
+   SELECT 2 AS t, 4 AS x) ss
+WHERE x < 4;
+                 QUERY PLAN                 
+--------------------------------------------
+ Unique
+   ->  Sort
+         Sort Key: (1), (2)
+         ->  Append
+               ->  Result
+               ->  Result
+                     One-Time Filter: false
+(7 rows)
+
+SELECT * FROM
+  (SELECT 1 AS t, 2 AS x
+   UNION
+   SELECT 2 AS t, 4 AS x) ss
+WHERE x < 4;
+ t | x 
+---+---
+ 1 | 2
+(1 row)
+
+explain (costs off)
+SELECT * FROM
+  (SELECT 1 AS t, generate_series(1,10) AS x
+   UNION
+   SELECT 2 AS t, 4 AS x) ss
+WHERE x < 4
+ORDER BY x;
+                       QUERY PLAN                       
+--------------------------------------------------------
+ Sort
+   Sort Key: ss.x
+   ->  Subquery Scan on ss
+         Filter: (ss.x < 4)
+         ->  HashAggregate
+               Group Key: (1), (generate_series(1, 10))
+               ->  Append
+                     ->  Result
+                     ->  Result
+(9 rows)
+
+SELECT * FROM
+  (SELECT 1 AS t, generate_series(1,10) AS x
+   UNION
+   SELECT 2 AS t, 4 AS x) ss
+WHERE x < 4
+ORDER BY x;
+ t | x 
+---+---
+ 1 | 1
+ 1 | 2
+ 1 | 3
 (3 rows)
 
+explain (costs off)
+SELECT * FROM
+  (SELECT 1 AS t, (random()*3)::int AS x
+   UNION
+   SELECT 2 AS t, 4 AS x) ss
+WHERE x > 3;
+                                 QUERY PLAN                                 
+----------------------------------------------------------------------------
+ Subquery Scan on ss
+   Filter: (ss.x > 3)
+   ->  Unique
+         ->  Sort
+               Sort Key: (1), (((random() * 3::double precision))::integer)
+               ->  Append
+                     ->  Result
+                     ->  Result
+(8 rows)
+
+SELECT * FROM
+  (SELECT 1 AS t, (random()*3)::int AS x
+   UNION
+   SELECT 2 AS t, 4 AS x) ss
+WHERE x > 3;
+ t | x 
+---+---
+ 2 | 4
+(1 row)
+
+-- Test proper handling of parameterized appendrel paths when the
+-- potential join qual is expensive
+create function expensivefunc(int) returns int
+language plpgsql immutable strict cost 10000
+as $$begin return $1; end$$;
+create temp table t3 as select generate_series(-1000,1000) as x;
+create index t3i on t3 (expensivefunc(x));
+analyze t3;
+explain (costs off)
+select * from
+  (select * from t3 a union all select * from t3 b) ss
+  join int4_tbl on f1 = expensivefunc(x);
+                         QUERY PLAN                         
+------------------------------------------------------------
+ Nested Loop
+   ->  Seq Scan on int4_tbl
+   ->  Append
+         ->  Index Scan using t3i on t3 a
+               Index Cond: (expensivefunc(x) = int4_tbl.f1)
+         ->  Index Scan using t3i on t3 b
+               Index Cond: (expensivefunc(x) = int4_tbl.f1)
+(7 rows)
+
+select * from
+  (select * from t3 a union all select * from t3 b) ss
+  join int4_tbl on f1 = expensivefunc(x);
+ x | f1 
+---+----
+ 0 |  0
+ 0 |  0
+(2 rows)
+
+drop table t3;
+drop function expensivefunc(int);

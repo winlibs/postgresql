@@ -7,7 +7,6 @@
 /* can be used in either frontend or backend */
 #ifdef FRONTEND
 #include "postgres_fe.h"
-#define Assert(condition)
 #else
 #include "postgres.h"
 #endif
@@ -99,7 +98,7 @@ pg_euc2wchar_with_len(const unsigned char *from, pg_wchar *to, int len)
 			*to |= *from++;
 			len -= 2;
 		}
-		else							/* must be ASCII */
+		else	/* must be ASCII */
 		{
 			*to = *from++;
 			len--;
@@ -514,7 +513,7 @@ pg_wchar2utf_with_len(const pg_wchar *from, unsigned char *to, int len)
 
 	while (len > 0 && *from)
 	{
-		int char_len;
+		int			char_len;
 
 		unicode_to_utf8(*from, to);
 		char_len = pg_utf_mblen(to);
@@ -885,6 +884,12 @@ static int
 pg_mule_dsplen(const unsigned char *s)
 {
 	int			len;
+
+	/*
+	 * Note: it's not really appropriate to assume that all multibyte charsets
+	 * are double-wide on screen.  But this seems an okay approximation for
+	 * the MULE charsets we currently support.
+	 */
 
 	if (IS_LC1(*s))
 		len = 1;
@@ -1507,7 +1512,7 @@ pg_utf8_islegal(const unsigned char *source, int length)
  *
  * Not knowing anything about the properties of the encoding in use, we just
  * keep incrementing the last byte until we get a validly-encoded result,
- * or we run out of values to try.	We don't bother to try incrementing
+ * or we run out of values to try.  We don't bother to try incrementing
  * higher-order bytes, so there's no growth in runtime for wider characters.
  * (If we did try to do that, we'd need to consider the likelihood that 255
  * is not a valid final byte in the encoding.)
@@ -1537,7 +1542,7 @@ pg_generic_charinc(unsigned char *charptr, int len)
  * For a one-byte character less than 0x7F, we just increment the byte.
  *
  * For a multibyte character, every byte but the first must fall between 0x80
- * and 0xBF; and the first byte must be between 0xC0 and 0xF4.	We increment
+ * and 0xBF; and the first byte must be between 0xC0 and 0xF4.  We increment
  * the last byte that's not already at its maximum value.  If we can't find a
  * byte that's less than the maximum allowable value, we simply fail.  We also
  * need some special-case logic to skip regions used for surrogate pair
@@ -1715,8 +1720,8 @@ pg_eucjp_increment(unsigned char *charptr, int length)
  * XXX must be sorted by the same order as enum pg_enc (in mb/pg_wchar.h)
  *-------------------------------------------------------------------
  */
-pg_wchar_tbl pg_wchar_table[] = {
-	{pg_ascii2wchar_with_len, pg_wchar2single_with_len, pg_ascii_mblen, pg_ascii_dsplen, pg_ascii_verifier, 1},	/* PG_SQL_ASCII */
+const pg_wchar_tbl pg_wchar_table[] = {
+	{pg_ascii2wchar_with_len, pg_wchar2single_with_len, pg_ascii_mblen, pg_ascii_dsplen, pg_ascii_verifier, 1}, /* PG_SQL_ASCII */
 	{pg_eucjp2wchar_with_len, pg_wchar2euc_with_len, pg_eucjp_mblen, pg_eucjp_dsplen, pg_eucjp_verifier, 3},	/* PG_EUC_JP */
 	{pg_euccn2wchar_with_len, pg_wchar2euc_with_len, pg_euccn_mblen, pg_euccn_dsplen, pg_euccn_verifier, 2},	/* PG_EUC_CN */
 	{pg_euckr2wchar_with_len, pg_wchar2euc_with_len, pg_euckr_mblen, pg_euckr_dsplen, pg_euckr_verifier, 3},	/* PG_EUC_KR */
@@ -1751,13 +1756,13 @@ pg_wchar_tbl pg_wchar_table[] = {
 	{pg_latin12wchar_with_len, pg_wchar2single_with_len, pg_latin1_mblen, pg_latin1_dsplen, pg_latin1_verifier, 1},		/* PG_WIN1255 */
 	{pg_latin12wchar_with_len, pg_wchar2single_with_len, pg_latin1_mblen, pg_latin1_dsplen, pg_latin1_verifier, 1},		/* PG_WIN1257 */
 	{pg_latin12wchar_with_len, pg_wchar2single_with_len, pg_latin1_mblen, pg_latin1_dsplen, pg_latin1_verifier, 1},		/* PG_KOI8U */
-	{0, 0, pg_sjis_mblen, pg_sjis_dsplen, pg_sjis_verifier, 2},	/* PG_SJIS */
-	{0, 0, pg_big5_mblen, pg_big5_dsplen, pg_big5_verifier, 2},	/* PG_BIG5 */
-	{0, 0, pg_gbk_mblen, pg_gbk_dsplen, pg_gbk_verifier, 2},		/* PG_GBK */
-	{0, 0, pg_uhc_mblen, pg_uhc_dsplen, pg_uhc_verifier, 2},		/* PG_UHC */
-	{0, 0, pg_gb18030_mblen, pg_gb18030_dsplen, pg_gb18030_verifier, 4},	/* PG_GB18030 */
-	{0, 0, pg_johab_mblen, pg_johab_dsplen, pg_johab_verifier, 3}, /* PG_JOHAB */
-	{0, 0, pg_sjis_mblen, pg_sjis_dsplen, pg_sjis_verifier, 2}		/* PG_SHIFT_JIS_2004 */
+	{0, 0, pg_sjis_mblen, pg_sjis_dsplen, pg_sjis_verifier, 2}, /* PG_SJIS */
+	{0, 0, pg_big5_mblen, pg_big5_dsplen, pg_big5_verifier, 2}, /* PG_BIG5 */
+	{0, 0, pg_gbk_mblen, pg_gbk_dsplen, pg_gbk_verifier, 2},	/* PG_GBK */
+	{0, 0, pg_uhc_mblen, pg_uhc_dsplen, pg_uhc_verifier, 2},	/* PG_UHC */
+	{0, 0, pg_gb18030_mblen, pg_gb18030_dsplen, pg_gb18030_verifier, 4},		/* PG_GB18030 */
+	{0, 0, pg_johab_mblen, pg_johab_dsplen, pg_johab_verifier, 3},		/* PG_JOHAB */
+	{0, 0, pg_sjis_mblen, pg_sjis_dsplen, pg_sjis_verifier, 2}	/* PG_SHIFT_JIS_2004 */
 };
 
 /* returns the byte length of a word for mule internal code */
@@ -1773,10 +1778,7 @@ pg_mic_mblen(const unsigned char *mbstr)
 int
 pg_encoding_mblen(int encoding, const char *mbstr)
 {
-	Assert(PG_VALID_ENCODING(encoding));
-
-	return ((encoding >= 0 &&
-			 encoding < sizeof(pg_wchar_table) / sizeof(pg_wchar_tbl)) ?
+	return (PG_VALID_ENCODING(encoding) ?
 		((*pg_wchar_table[encoding].mblen) ((const unsigned char *) mbstr)) :
 	((*pg_wchar_table[PG_SQL_ASCII].mblen) ((const unsigned char *) mbstr)));
 }
@@ -1787,10 +1789,7 @@ pg_encoding_mblen(int encoding, const char *mbstr)
 int
 pg_encoding_dsplen(int encoding, const char *mbstr)
 {
-	Assert(PG_VALID_ENCODING(encoding));
-
-	return ((encoding >= 0 &&
-			 encoding < sizeof(pg_wchar_table) / sizeof(pg_wchar_tbl)) ?
+	return (PG_VALID_ENCODING(encoding) ?
 	   ((*pg_wchar_table[encoding].dsplen) ((const unsigned char *) mbstr)) :
 	((*pg_wchar_table[PG_SQL_ASCII].dsplen) ((const unsigned char *) mbstr)));
 }
@@ -1803,10 +1802,7 @@ pg_encoding_dsplen(int encoding, const char *mbstr)
 int
 pg_encoding_verifymb(int encoding, const char *mbstr, int len)
 {
-	Assert(PG_VALID_ENCODING(encoding));
-
-	return ((encoding >= 0 &&
-			 encoding < sizeof(pg_wchar_table) / sizeof(pg_wchar_tbl)) ?
+	return (PG_VALID_ENCODING(encoding) ?
 			((*pg_wchar_table[encoding].mbverify) ((const unsigned char *) mbstr, len)) :
 			((*pg_wchar_table[PG_SQL_ASCII].mbverify) ((const unsigned char *) mbstr, len)));
 }

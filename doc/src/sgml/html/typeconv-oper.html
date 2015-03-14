@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Type Conversion"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -99,7 +99,7 @@ NAME="TYPECONV-OPER"
 >   The specific operator that is referenced by an operator expression
    is determined using the following procedure.
    Note that this procedure is indirectly affected
-   by the precedence of the involved operators, since that will determine
+   by the precedence of the operators involved, since that will determine
    which sub-expressions are taken to be the inputs of which operators.
    See <A
 HREF="sql-syntax-lexical.html#SQL-PRECEDENCE"
@@ -116,6 +116,9 @@ CLASS="PROCEDURE"
 TYPE="1"
 ><LI
 CLASS="STEP"
+><A
+NAME="OP-RESOL-SELECT"
+></A
 ><P
 >Select the operators to be considered from the
 <CODE
@@ -145,6 +148,9 @@ search path position.</P
 ></LI
 ><LI
 CLASS="STEP"
+><A
+NAME="OP-RESOL-EXACT-MATCH"
+></A
 ><P
 >Check for an operator accepting exactly the input argument types.
 If one exists (there can be only one exact match in the set of
@@ -154,6 +160,9 @@ CLASS="SUBSTEPS"
 TYPE="a"
 ><LI
 CLASS="STEP"
+><A
+NAME="OP-RESOL-EXACT-UNKNOWN"
+></A
 ><P
 >If one argument of a binary operator invocation is of the <TT
 CLASS="TYPE"
@@ -169,10 +178,26 @@ CLASS="TYPE"
 >unknown</TT
 > input, will never find a match at this step.</P
 ></LI
+><LI
+CLASS="STEP"
+><A
+NAME="OP-RESOL-EXACT-DOMAIN"
+></A
+><P
+>If one argument of a binary operator invocation is of the <TT
+CLASS="TYPE"
+>unknown</TT
+>
+type and the other is of a domain type, next check to see if there is an
+operator accepting exactly the domain's base type on both sides; if so, use it.</P
+></LI
 ></OL
 ></LI
 ><LI
 CLASS="STEP"
+><A
+NAME="OP-RESOL-BEST-MATCH"
+></A
 ><P
 >Look for the best match.</P
 ><OL
@@ -193,9 +218,15 @@ candidate remains, use it; else continue to the next step.</P
 ><LI
 CLASS="STEP"
 ><P
+>If any input argument is of a domain type, treat it as being of the
+domain's base type for all subsequent steps.  This ensures that domains
+act like their base types for purposes of ambiguous-operator resolution.</P
+></LI
+><LI
+CLASS="STEP"
+><P
 >Run through all candidates and keep those with the most exact matches
-on input types.  (Domains are considered the same as their base type
-for this purpose.)  Keep all candidates if none have exact matches.
+on input types.  Keep all candidates if none have exact matches.
 If only one candidate remains, use it; else continue to the next step.</P
 ></LI
 ><LI
@@ -233,6 +264,9 @@ If only one candidate remains, use it; else continue to the next step.</P
 ></LI
 ><LI
 CLASS="STEP"
+><A
+NAME="OP-RESOL-LAST-UNKNOWN"
+></A
 ><P
 >If there are both <TT
 CLASS="TYPE"
@@ -259,7 +293,7 @@ Otherwise, fail.</P
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN20673"
+NAME="AEN22797"
 ></A
 ><P
 ><B
@@ -301,7 +335,7 @@ CLASS="SCREEN"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN20681"
+NAME="AEN22805"
 ></A
 ><P
 ><B
@@ -358,7 +392,7 @@ type to resolve the unknown-type literals as.</P
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN20693"
+NAME="AEN22817"
 ></A
 ><P
 ><B
@@ -449,7 +483,7 @@ CLASS="SCREEN"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN20712"
+NAME="AEN22836"
 ></A
 ><P
 ><B
@@ -498,14 +532,114 @@ CLASS="TYPE"
 >).
 Since none of these polymorphic pseudo-types (see <A
 HREF="datatype-pseudo.html"
->Section 8.19</A
+>Section 8.20</A
 >) are considered preferred, the parser cannot
-resolve the ambiguity on that basis.  However, the last resolution rule tells
+resolve the ambiguity on that basis.
+However, <A
+HREF="typeconv-oper.html#OP-RESOL-LAST-UNKNOWN"
+>step 3.f</A
+> tells
 it to assume that the unknown-type literal is of the same type as the other
 input, that is, integer array.  Now only one of the two operators can match,
 so array inclusion is selected.  (Had range inclusion been selected, we would
 have gotten an error, because the string does not have the right format to be
 a range literal.)</P
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN22850"
+></A
+><P
+><B
+>Example 10-5. Custom Operator on a Domain Type</B
+></P
+><P
+>Users sometimes try to declare operators applying just to a domain type.
+This is possible but is not nearly as useful as it might seem, because the
+operator resolution rules are designed to select operators applying to the
+domain's base type.  As an example consider
+</P><PRE
+CLASS="SCREEN"
+>CREATE DOMAIN mytext AS text CHECK(...);
+CREATE FUNCTION mytext_eq_text (mytext, text) RETURNS boolean AS ...;
+CREATE OPERATOR = (procedure=mytext_eq_text, leftarg=mytext, rightarg=text);
+CREATE TABLE mytable (val mytext);
+
+SELECT * FROM mytable WHERE val = 'foo';</PRE
+><P>
+This query will not use the custom operator.  The parser will first see if
+there is a <TT
+CLASS="TYPE"
+>mytext</TT
+> <TT
+CLASS="LITERAL"
+>=</TT
+> <TT
+CLASS="TYPE"
+>mytext</TT
+> operator
+(<A
+HREF="typeconv-oper.html#OP-RESOL-EXACT-UNKNOWN"
+>step 2.a</A
+>), which there is not;
+then it will consider the domain's base type <TT
+CLASS="TYPE"
+>text</TT
+>, and see if
+there is a <TT
+CLASS="TYPE"
+>text</TT
+> <TT
+CLASS="LITERAL"
+>=</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+> operator
+(<A
+HREF="typeconv-oper.html#OP-RESOL-EXACT-DOMAIN"
+>step 2.b</A
+>), which there is;
+so it resolves the <TT
+CLASS="TYPE"
+>unknown</TT
+>-type literal as <TT
+CLASS="TYPE"
+>text</TT
+> and
+uses the <TT
+CLASS="TYPE"
+>text</TT
+> <TT
+CLASS="LITERAL"
+>=</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+> operator.
+The only way to get the custom operator to be used is to explicitly cast
+the literal:
+</P><PRE
+CLASS="SCREEN"
+>SELECT * FROM mytable WHERE val = text 'foo';</PRE
+><P>
+so that the <TT
+CLASS="TYPE"
+>mytext</TT
+> <TT
+CLASS="LITERAL"
+>=</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+> operator is found
+immediately according to the exact-match rule.  If the best-match rules
+are reached, they actively discriminate against operators on domain types.
+If they did not, such an operator would create too many ambiguous-operator
+failures, because the casting rules always consider a domain as castable
+to or from its base type, and so the domain operator would be considered
+usable in all the same cases as a similarly-named operator on the base type.</P
 ></DIV
 ></DIV
 ><DIV

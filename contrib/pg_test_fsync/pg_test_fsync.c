@@ -24,8 +24,9 @@
 #define XLOG_BLCKSZ_K	(XLOG_BLCKSZ / 1024)
 
 #define LABEL_FORMAT		"        %-32s"
-#define NA_FORMAT			"%18s"
-#define OPS_FORMAT			"%9.3f ops/sec"
+#define NA_FORMAT			"%20s"
+#define OPS_FORMAT			"%11.3f ops/sec  %6.0f usecs/op"
+#define USECS_SEC			1000000
 
 /* These are macros to avoid timing the function call overhead. */
 #ifndef WIN32
@@ -59,7 +60,7 @@ do { \
 
 static const char *progname;
 
-static int	secs_per_test = 2;
+static int	secs_per_test = 5;
 static int	needs_unlink = 0;
 static char full_buf[XLOG_SEG_SIZE],
 		   *buf,
@@ -100,14 +101,14 @@ main(int argc, char *argv[])
 	handle_args(argc, argv);
 
 	/* Prevent leaving behind the test file */
-	signal(SIGINT, signal_cleanup);
-	signal(SIGTERM, signal_cleanup);
+	pqsignal(SIGINT, signal_cleanup);
+	pqsignal(SIGTERM, signal_cleanup);
 #ifndef WIN32
-	signal(SIGALRM, process_alarm);
+	pqsignal(SIGALRM, process_alarm);
 #endif
 #ifdef SIGHUP
 	/* Not defined on win32 */
-	signal(SIGHUP, signal_cleanup);
+	pqsignal(SIGHUP, signal_cleanup);
 #endif
 
 	prepare_buf();
@@ -139,13 +140,13 @@ handle_args(int argc, char *argv[])
 		{"secs-per-test", required_argument, NULL, 's'},
 		{NULL, 0, NULL, 0}
 	};
+
 	int			option;			/* Command line option */
 	int			optindex = 0;	/* used by getopt_long */
 
 	if (argc > 1)
 	{
-		if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ||
-			strcmp(argv[1], "-?") == 0)
+		if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-?") == 0)
 		{
 			printf("Usage: %s [-f FILENAME] [-s SECS-PER-TEST]\n", progname);
 			exit(0);
@@ -205,7 +206,7 @@ prepare_buf(void)
 	for (ops = 0; ops < XLOG_SEG_SIZE; ops++)
 		full_buf[ops] = random();
 
-	buf = (char *) TYPEALIGN(ALIGNOF_XLOG_BUFFER, full_buf);
+	buf = (char *) TYPEALIGN(XLOG_BLCKSZ, full_buf);
 }
 
 static void
@@ -258,8 +259,6 @@ test_sync(int writes_per_op)
 	}
 	else
 	{
-		if ((tmpfile = open(filename, O_RDWR | O_DSYNC | PG_O_DIRECT, 0)) == -1)
-			die("could not open output file");
 		START_TIMER;
 		for (ops = 0; alarm_triggered == false; ops++)
 		{
@@ -368,6 +367,13 @@ test_sync(int writes_per_op)
 		{
 			for (writes = 0; writes < writes_per_op; writes++)
 				if (write(tmpfile, buf, XLOG_BLCKSZ) != XLOG_BLCKSZ)
+
+					/*
+					 * This can generate write failures if the filesystem has
+					 * a large block size, e.g. 4k, and there is no support
+					 * for O_DIRECT writes smaller than the file system block
+					 * size, e.g. XFS.
+					 */
 					die("write failed");
 			if (lseek(tmpfile, 0, SEEK_SET) == -1)
 				die("seek failed");
@@ -568,8 +574,9 @@ print_elapse(struct timeval start_t, struct timeval stop_t, int ops)
 	double		total_time = (stop_t.tv_sec - start_t.tv_sec) +
 	(stop_t.tv_usec - start_t.tv_usec) * 0.000001;
 	double		per_second = ops / total_time;
+	double		avg_op_time_us = (total_time / ops) * USECS_SEC;
 
-	printf(OPS_FORMAT "\n", per_second);
+	printf(OPS_FORMAT "\n", per_second, avg_op_time_us);
 }
 
 #ifndef WIN32

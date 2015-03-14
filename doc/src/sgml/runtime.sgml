@@ -507,11 +507,11 @@ psql: could not connect to server: No such file or directory
   <title>Managing Kernel Resources</title>
 
   <para>
-   A large <productname>PostgreSQL</> installation can quickly exhaust
-   various operating system resource limits. (On some systems, the
-   factory defaults are so low that you don't even need a really
-   <quote>large</> installation.) If you have encountered this kind of
-   problem, keep reading.
+   <productname>PostgreSQL</> can sometimes exhaust various operating system
+   resource limits, especially when multiple copies of the server are running
+   on the same system, or in very large installations.  This section explains
+   the kernel resources used by <productname>PostgreSQL</> and the steps you
+   can take to resolve problems related to kernel resource consumption.
   </para>
 
   <sect2 id="sysvipc">
@@ -529,14 +529,11 @@ psql: could not connect to server: No such file or directory
     Shared memory and semaphores are collectively referred to as
     <quote><systemitem class="osname">System V</>
     <acronym>IPC</></quote> (together with message queues, which are not
-    relevant for <productname>PostgreSQL</>). Almost all modern
-    operating systems provide these features, but many of them don't have
-    them turned on or sufficiently sized by default, especially as
-    available RAM and the demands of database applications grow.
-    (On <systemitem class="osname">Windows</>,
-    <productname>PostgreSQL</> provides its own replacement
-    implementation of these facilities, so most of this section
-    can be disregarded.)
+    relevant for <productname>PostgreSQL</>).  Except on
+    <systemitem class="osname">Windows</>, where <productname>PostgreSQL</>
+    provides its own replacement implementation of these facilities, these
+    facilities are required in order to run
+    <productname>PostgreSQL</>.
    </para>
 
    <para>
@@ -558,6 +555,14 @@ psql: could not connect to server: No such file or directory
     them, however, vary. Suggestions for some platforms are given below.
    </para>
 
+   <note>
+     <para>
+       Prior to <productname>PostgreSQL</> 9.3, the amount of System V shared
+       memory required to start the server was much larger.  If you are running
+       an older version of the server, please consult the documentation for
+       your server version.
+     </para>
+   </note>
 
    <table id="sysvipc-parameters">
     <title><systemitem class="osname">System V</> <acronym>IPC</> Parameters</title>
@@ -575,7 +580,7 @@ psql: could not connect to server: No such file or directory
       <row>
        <entry><varname>SHMMAX</></>
        <entry>Maximum size of shared memory segment (bytes)</>
-       <entry>at least several megabytes (see text)</entry>
+       <entry>at least 1kB (more if running many copies of the server)</entry>
       </row>
 
       <row>
@@ -636,36 +641,22 @@ psql: could not connect to server: No such file or directory
     </tgroup>
    </table>
 
-
    <para>
-    <indexterm><primary>SHMMAX</primary></indexterm> The most important
-    shared memory parameter is <varname>SHMMAX</>, the maximum size, in
-    bytes, of a shared memory segment. If you get an error message from
-    <function>shmget</> like <quote>Invalid argument</>, it is
-    likely that this limit has been exceeded.  The size of the required
-    shared memory segment varies depending on several
-    <productname>PostgreSQL</> configuration parameters, as shown in
-    <xref linkend="shared-memory-parameters">.  (Any error message you might
-    get will include the exact size of the failed allocation request.)
-    You can, as a temporary solution, lower some of those settings to
-    avoid the failure.  While it is possible to get
-    <productname>PostgreSQL</> to run with <varname>SHMMAX</> as small as
-    2 MB, you need considerably more for acceptable performance.  Desirable
-    settings are in the hundreds of megabytes to a few gigabytes.
-   </para>
-
-   <para>
-    Some systems also have a limit on the total amount of shared memory in
-    the system (<varname>SHMALL</>).  Make sure this is large enough
-    for <productname>PostgreSQL</> plus any other applications that
-    are using shared memory segments.  Note that <varname>SHMALL</>
-    is measured in pages rather than bytes on many systems.
+    <productname>PostgreSQL</> requires a few bytes of System V shared memory
+    (typically 48 bytes, on 64-bit platforms) for each copy of the server.
+    On most modern operating systems, this amount can easily be allocated.
+    However, if you are running many copies of the server, or if other
+    applications are also using System V shared memory, it may be necessary
+    to increase <varname>SHMMAX</>, the maximum size in bytes of a shared
+    memory segment, or <varname>SHMALL</>, the total amount of System V shared
+    memory system-wide.  Note that <varname>SHMALL</> is measured in pages
+    rather than bytes on many systems.
    </para>
 
    <para>
     Less likely to cause problems is the minimum size for shared
     memory segments (<varname>SHMMIN</>), which should be at most
-    approximately 500 kB for <productname>PostgreSQL</> (it is
+    approximately 32 bytes for <productname>PostgreSQL</> (it is
     usually just 1). The maximum number of segments system-wide
     (<varname>SHMMNI</>) or per-process (<varname>SHMSEG</>) are unlikely
     to cause a problem unless your system has them set to zero.
@@ -721,8 +712,9 @@ psql: could not connect to server: No such file or directory
 
     <variablelist>
      <varlistentry>
-      <term><systemitem class="osname">AIX</></term>
+      <term><systemitem class="osname">AIX</>
       <indexterm><primary>AIX</><secondary>IPC configuration</></>
+      </term>
       <listitem>
        <para>
         At least as of version 5.1, it should not be necessary to do
@@ -743,35 +735,37 @@ psql: could not connect to server: No such file or directory
 
 
      <varlistentry>
-      <term><systemitem class="osname">FreeBSD</></term>
+      <term><systemitem class="osname">FreeBSD</>
       <indexterm><primary>FreeBSD</><secondary>IPC configuration</></>
+      </term>
       <listitem>
        <para>
-        The default settings are only suitable for small installations
-        (for example, default <varname>SHMMAX</varname> is 32
-        MB). Changes can be made via the <command>sysctl</command> or
+        The default settings can be changed using
+        the <command>sysctl</command> or
         <command>loader</command> interfaces.  The following
         parameters can be set using <command>sysctl</command>:
 <screen>
-<prompt>$</prompt> <userinput>sysctl -w kern.ipc.shmall=32768</userinput>
-<prompt>$</prompt> <userinput>sysctl -w kern.ipc.shmmax=134217728</userinput>
-<prompt>$</prompt> <userinput>sysctl -w kern.ipc.semmap=256</userinput>
+<prompt>#</prompt> <userinput>sysctl kern.ipc.shmall=32768</userinput>
+<prompt>#</prompt> <userinput>sysctl kern.ipc.shmmax=134217728</userinput>
 </screen>
-        To have these settings persist over reboots, modify
+        To make these settings persist over reboots, modify
         <filename>/etc/sysctl.conf</filename>.
        </para>
 
        <para>
-        The remaining semaphore settings are read-only as far as
-        <command>sysctl</command> is concerned, but can be changed
-        before boot using the <command>loader</command> prompt:
-<screen>
-<prompt>(loader)</prompt> <userinput>set kern.ipc.semmni=256</userinput>
-<prompt>(loader)</prompt> <userinput>set kern.ipc.semmns=512</userinput>
-<prompt>(loader)</prompt> <userinput>set kern.ipc.semmnu=256</userinput>
-</screen>
-        Similarly these can be saved between reboots in
-        <filename>/boot/loader.conf</filename>.
+        These semaphore-related settings are read-only as far as
+        <command>sysctl</command> is concerned, but can be set in
+        <filename>/boot/loader.conf</filename>:
+<programlisting>
+kern.ipc.semmni=256
+kern.ipc.semmns=512
+kern.ipc.semmnu=256
+</programlisting>
+        After modifying these values a reboot is required for the new
+        settings to take effect.
+        (Note: FreeBSD does not use <varname>SEMMAP</>.  Older versions
+        would accept but ignore a setting for <literal>kern.ipc.semmap</>;
+        newer versions reject it altogether.)
        </para>
 
        <para>
@@ -801,8 +795,9 @@ psql: could not connect to server: No such file or directory
      </varlistentry>
 
      <varlistentry>
-      <term><systemitem class="osname">NetBSD</></term>
+      <term><systemitem class="osname">NetBSD</>
       <indexterm><primary>NetBSD</><secondary>IPC configuration</></>
+      </term>
       <listitem>
        <para>
         In <systemitem class="osname">NetBSD</> 5.0 and later,
@@ -832,8 +827,9 @@ psql: could not connect to server: No such file or directory
      </varlistentry>
 
      <varlistentry>
-      <term><systemitem class="osname">OpenBSD</></term>
+      <term><systemitem class="osname">OpenBSD</>
       <indexterm><primary>OpenBSD</><secondary>IPC configuration</></>
+      </term>
       <listitem>
        <para>
         The options <varname>SYSVSHM</> and <varname>SYSVSEM</> need
@@ -864,8 +860,9 @@ option        SEMMAP=256
      </varlistentry>
 
      <varlistentry>
-      <term><systemitem class="osname">HP-UX</></term>
+      <term><systemitem class="osname">HP-UX</>
       <indexterm><primary>HP-UX</><secondary>IPC configuration</></>
+      </term>
       <listitem>
        <para>
         The default settings tend to suffice for normal installations.
@@ -885,18 +882,16 @@ option        SEMMAP=256
 
 
      <varlistentry>
-      <term><systemitem class="osname">Linux</></term>
+      <term><systemitem class="osname">Linux</>
       <indexterm><primary>Linux</><secondary>IPC configuration</></>
+      </term>
       <listitem>
        <para>
-        The default maximum segment size is 32 MB, which is only adequate
-        for very small <productname>PostgreSQL</productname>
-        installations.  The default maximum total size is 2097152
+        The default maximum segment size is 32 MB, and the
+        default maximum total size is 2097152
         pages.  A page is almost always 4096 bytes except in unusual
         kernel configurations with <quote>huge pages</quote>
-        (use <literal>getconf PAGE_SIZE</literal> to verify).  That
-        makes a default limit of 8 GB, which is often enough, but not
-        always.
+        (use <literal>getconf PAGE_SIZE</literal> to verify).
        </para>
 
        <para>
@@ -930,8 +925,9 @@ option        SEMMAP=256
 
 
      <varlistentry>
-      <term><systemitem class="osname">Mac OS X</></term>
-      <indexterm><primary>Mac OS X</><secondary>IPC configuration</></>
+      <term><systemitem class="osname">OS X</>
+      <indexterm><primary>OS X</><secondary>IPC configuration</></>
+      </term>
       <listitem>
        <para>
         The recommended method for configuring shared memory in OS X
@@ -993,8 +989,9 @@ sysctl -w kern.sysv.shmall
 
 
      <varlistentry>
-      <term><systemitem class="osname">SCO OpenServer</></term>
+      <term><systemitem class="osname">SCO OpenServer</>
       <indexterm><primary>SCO OpenServer</><secondary>IPC configuration</></>
+      </term>
       <listitem>
        <para>
         In the default configuration, only 512 kB of shared memory per
@@ -1021,12 +1018,12 @@ sysctl -w kern.sysv.shmall
 
      <varlistentry>
       <term><systemitem class="osname">Solaris</> 2.6 to 2.9 (Solaris
-      6 to Solaris 9)</term>
+      6 to Solaris 9)
       <indexterm><primary>Solaris</><secondary>IPC configuration</></>
+      </term>
       <listitem>
        <para>
-        The default maximum size of a shared memory segment is too low for
-        <productname>PostgreSQL</>. The relevant settings can be changed in
+        The relevant settings can be changed in
         <filename>/etc/system</>, for example:
 <programlisting>
 set shmsys:shminfo_shmmax=0x2000000
@@ -1048,16 +1045,15 @@ set semsys:seminfo_semmsl=32
 
      <varlistentry>
       <term><systemitem class="osname">Solaris</> 2.10 (Solaris
-      10)</term>
+      10) and later</term>
       <term><systemitem class="osname">OpenSolaris</></term>
       <listitem>
        <para>
-        In Solaris 10 and OpenSolaris, the default shared memory and
+        In Solaris 10 and later, and OpenSolaris, the default shared memory and
         semaphore settings are good enough for most
         <productname>PostgreSQL</> applications.  Solaris now defaults
-        to a <varname>SHMMAX</> of one-quarter of system <acronym>RAM</>.  If
-        you need to increase this in order to set shared memory settings
-        slightly higher, you should use a project setting associated
+        to a <varname>SHMMAX</> of one-quarter of system <acronym>RAM</>.
+        To further adjust this setting, use a project setting associated
         with the <literal>postgres</> user.  For example, run the
         following as <literal>root</>:
 <programlisting>
@@ -1067,7 +1063,7 @@ projadd -c "PostgreSQL DB User" -K "project.max-shm-memory=(privileged,8GB,deny)
 
        <para>
         This command adds the <literal>user.postgres</> project and
-        raises the shared memory maximum for the <literal>postgres</>
+        sets the shared memory maximum for the <literal>postgres</>
         user to 8GB, and takes effect the next time that user logs
         in, or when you restart <productname>PostgreSQL</> (not reload).
         The above assumes that <productname>PostgreSQL</> is run by
@@ -1089,7 +1085,7 @@ project.max-msg-ids=(priv,4096,deny)
         Additionally, if you are running <productname>PostgreSQL</>
         inside a zone, you may need to raise the zone resource usage
         limits as well.  See "Chapter2:  Projects and Tasks" in the
-        <citetitle>Solaris 10 System Administrator's Guide</> for more
+        <citetitle>System Administrator's Guide</> for more
         information on <literal>projects</> and <command>prctl</>.
        </para>
       </listitem>
@@ -1097,12 +1093,13 @@ project.max-msg-ids=(priv,4096,deny)
 
 
      <varlistentry>
-      <term><systemitem class="osname">UnixWare</></term>
+      <term><systemitem class="osname">UnixWare</>
       <indexterm><primary>UnixWare</><secondary>IPC configuration</></>
+      </term>
       <listitem>
        <para>
         On <productname>UnixWare</> 7, the maximum size for shared
-        memory segments is only 512 kB in the default configuration.
+        memory segments is 512 kB in the default configuration.
         To display the current value of <varname>SHMMAX</>, run:
 <programlisting>
 /etc/conf/bin/idtune -g SHMMAX
@@ -1125,57 +1122,6 @@ project.max-msg-ids=(priv,4096,deny)
      </varlistentry>
 
     </variablelist>
-
-
-   <table id="shared-memory-parameters">
-    <title><productname>PostgreSQL</productname> Shared Memory Usage</>
-
-    <tgroup cols="2">
-     <thead>
-      <row>
-       <entry>Usage</>
-       <entry>Approximate shared memory bytes required (as of 8.3)</>
-      </row>
-     </thead>
-
-     <tbody>
-      <row>
-       <entry>Connections</>
-       <entry>(1800 + 270 * <xref
-       linkend="guc-max-locks-per-transaction">) * <xref
-       linkend="guc-max-connections"></entry>
-      </row>
-
-      <row>
-       <entry>Autovacuum workers</>
-       <entry>(1800 + 270 * <xref
-       linkend="guc-max-locks-per-transaction">) * <xref
-       linkend="guc-autovacuum-max-workers"></entry>
-      </row>
-
-      <row>
-       <entry>Prepared transactions</>
-       <entry>(770 + 270 * <xref
-       linkend="guc-max-locks-per-transaction">) * <xref linkend="guc-max-prepared-transactions"></entry>
-      </row>
-
-      <row>
-       <entry>Shared disk buffers</>
-       <entry>(<xref linkend="guc-block-size"> + 208) * <xref linkend="guc-shared-buffers"></entry>
-      </row>
-
-      <row>
-       <entry>WAL buffers</>
-       <entry>(<xref linkend="guc-wal-block-size"> + 8) * <xref linkend="guc-wal-buffers"></entry>
-      </row>
-
-      <row>
-       <entry>Fixed space requirements</>
-       <entry>770 kB</entry>
-      </row>
-     </tbody>
-    </tgroup>
-   </table>
 
   </sect2>
 
@@ -1373,6 +1319,57 @@ echo -1000 > /proc/self/oom_score_adj
    </para>
    </note>
   </sect2>
+
+  <sect2 id="linux-huge-pages">
+   <title>Linux huge pages</title>
+
+   <para>
+    Using huge pages reduces overhead when using large contiguous chunks of
+    memory, like <productname>PostgreSQL</productname> does. To enable this
+    feature in <productname>PostgreSQL</productname> you need a kernel
+    with <varname>CONFIG_HUGETLBFS=y</varname> and
+    <varname>CONFIG_HUGETLB_PAGE=y</varname>. You also have to tune the system
+    setting <varname>vm.nr_hugepages</varname>. To estimate the number of
+    necessary huge pages start <productname>PostgreSQL</productname> without
+    huge pages enabled and check the <varname>VmPeak</varname> value from the
+    proc file system:
+<programlisting>
+$ <userinput>head -1 /path/to/data/directory/postmaster.pid</userinput>
+4170
+$ <userinput>grep ^VmPeak /proc/4170/status</userinput>
+VmPeak:  6490428 kB
+</programlisting>
+     <literal>6490428</literal> / <literal>2048</literal>
+     (<varname>PAGE_SIZE</varname> is <literal>2MB</literal> in this case) are
+     roughly <literal>3169.154</literal> huge pages, so you will need at
+     least <literal>3170</literal> huge pages:
+<programlisting>
+$ <userinput>sysctl -w vm.nr_hugepages=3170</userinput>
+</programlisting>
+    Sometimes the kernel is not able to allocate the desired number of huge
+    pages, so it might be necessary to repeat that command or to reboot. Don't
+    forget to add an entry to <filename>/etc/sysctl.conf</filename> to persist
+    this setting through reboots.
+   </para>
+
+   <para>
+    The default behavior for huge pages in
+    <productname>PostgreSQL</productname> is to use them when possible and
+    to fallback to normal pages when failing. To enforce the use of huge
+    pages, you can set
+    <link linkend="guc-huge-pages"><varname>huge_pages</varname></link>
+    to <literal>on</literal>. Note that in this case
+    <productname>PostgreSQL</productname> will fail to start if not enough huge
+    pages are available.
+   </para>
+
+   <para>
+    For a detailed description of the <productname>Linux</productname> huge
+    pages feature have a look
+    at <ulink url="https://www.kernel.org/doc/Documentation/vm/hugetlbpage.txt">https://www.kernel.org/doc/Documentation/vm/hugetlbpage.txt</ulink>.
+   </para>
+
+  </sect2>
  </sect1>
 
 
@@ -1428,11 +1425,11 @@ echo -1000 > /proc/self/oom_score_adj
      <listitem>
       <para>
       This is the <firstterm>Immediate Shutdown</firstterm> mode.
-      The master <command>postgres</command> process will send a
-      <systemitem>SIGQUIT</systemitem> to all child processes and exit
-      immediately, without properly shutting itself down. The child processes
-      likewise exit immediately upon receiving
-      <systemitem>SIGQUIT</systemitem>. This will lead to recovery (by
+      The server will send <systemitem>SIGQUIT</systemitem> to all child
+      processes and wait for them to terminate.  Those that don't terminate
+      within 5 seconds, will be sent <systemitem>SIGKILL</systemitem> by the
+      master <command>postgres</command> process, which will then terminate
+      without further waiting.  This will lead to recovery (by
       replaying the WAL log) upon next start-up. This is recommended
       only in emergencies.
       </para>
@@ -1512,8 +1509,9 @@ $ <userinput>kill -INT `head -1 /usr/local/pgsql/data/postmaster.pid`</userinput
    For <emphasis>major</> releases of <productname>PostgreSQL</>, the
    internal data storage format is subject to change, thus complicating
    upgrades.  The traditional method for moving data to a new major version
-   is to dump and reload the database.  Other methods are available,
-   as discussed below.
+   is to dump and reload the database, though this can be slow.  A
+   faster method is <xref linkend="pgupgrade">.  Replication methods are
+   also available, as discussed below.
   </para>
 
   <para>
@@ -1588,12 +1586,14 @@ $ <userinput>kill -INT `head -1 /usr/local/pgsql/data/postmaster.pid`</userinput
 
   </variablelist>
 
-  <sect2 id="upgrade-methods-pgdump">
-   <title>Upgrading Data via <application>pg_dump</></title>
+  <sect2 id="upgrading-via-pgdumpall">
+   <title>Upgrading Data via <application>pg_dumpall</></title>
 
    <para>
-    To dump data from one major version of <productname>PostgreSQL</> and
-    reload it in another, you must use <application>pg_dump</>; file system
+    One upgrade method is to dump data from one major version of
+    <productname>PostgreSQL</> and reload it in another &mdash;  to do
+    this, you must use a <emphasis>logical</> backup tool like
+    <application>pg_dumpall</>; file system
     level backup methods will not work. (There are checks in place that prevent
     you from using a data directory with an incompatible version of
     <productname>PostgreSQL</productname>, so no great harm can be done by
@@ -1602,7 +1602,8 @@ $ <userinput>kill -INT `head -1 /usr/local/pgsql/data/postmaster.pid`</userinput
 
    <para>
     It is recommended that you use the <application>pg_dump</> and
-    <application>pg_dumpall</> programs from the newer version of
+    <application>pg_dumpall</> programs from the <emphasis>newer</>
+    version of
     <productname>PostgreSQL</>, to take advantage of enhancements
     that might have been made in these programs.  Current releases of the
     dump programs can read data from any server version back to 7.0.
@@ -1637,14 +1638,12 @@ $ <userinput>kill -INT `head -1 /usr/local/pgsql/data/postmaster.pid`</userinput
 <screen>
 <userinput>pg_dumpall &gt; <replaceable>outputfile</></userinput>
 </screen>
-      If you need to preserve OIDs (such as when using them as
-      foreign keys), then use the <option>-o</option> option when running
-      <application>pg_dumpall</>.
      </para>
 
      <para>
       To make the backup, you can use the <application>pg_dumpall</application>
-      command from the version you are currently running.  For best
+      command from the version you are currently running;  see <xref
+      linkend="backup-dump-all"> for more details.  For best
       results, however, try to use the <application>pg_dumpall</application>
       command from <productname>PostgreSQL</productname> &version;,
       since this version contains bug fixes and improvements over older
@@ -1678,7 +1677,8 @@ $ <userinput>kill -INT `head -1 /usr/local/pgsql/data/postmaster.pid`</userinput
     <step>
      <para>
       If restoring from backup, rename or delete the old installation
-      directory.  It is a good idea to rename the directory, rather than
+      directory if it is not version-specific.  It is a good idea to
+      rename the directory, rather than
       delete it, in case you have trouble and need to revert to it.  Keep
       in mind the directory might consume significant disk space.  To rename
       the directory, use a command like this:
@@ -1750,15 +1750,23 @@ pg_dumpall -p 5432 | psql -d postgres -p 5433
 
   </sect2>
 
-  <sect2 id="upgrading-methods-other">
-   <title>Non-Dump Upgrade Methods</title>
+  <sect2 id="upgrading-via-pg-upgrade">
+   <title>Upgrading Data via <application>pg_upgrade</></title>
 
    <para>
-    The <link linkend="pgupgrade">pg_upgrade</link> module allows an
-    installation to be migrated in-place from one major
-    <productname>PostgreSQL</> version to the next.  Upgrades can be
-    performed in minutes.
+    The <xref linkend="pgupgrade"> module allows an installation to
+    be migrated in-place from one major <productname>PostgreSQL</>
+    version to another.  Upgrades can be performed in minutes,
+    particularly with <option>--link</> mode.  It requires steps similar to
+    <application>pg_dumpall</> above, e.g.  starting/stopping the server,
+    running <application>initdb</>.  The <application>pg_upgrade</> <link
+    linkend="pgupgrade">documentation</> outlines the necessary steps.
    </para>
+
+  </sect2>
+
+  <sect2 id="upgrading-via-replication">
+   <title>Upgrading Data via Replication</title>
 
    <para>
     It is also possible to use certain replication methods, such as
@@ -1798,7 +1806,7 @@ pg_dumpall -p 5432 | psql -d postgres -p 5433
   <para>
    The simplest way to prevent spoofing for <literal>local</>
    connections is to use a Unix domain socket directory (<xref
-   linkend="guc-unix-socket-directory">) that has write permission only
+   linkend="guc-unix-socket-directories">) that has write permission only
    for a trusted local user.  This prevents a malicious user from creating
    their own socket file in that directory.  If you are concerned that
    some applications might still reference <filename>/tmp</> for the
@@ -1817,7 +1825,7 @@ pg_dumpall -p 5432 | psql -d postgres -p 5433
    (<xref linkend="ssl-tcp">). The TCP client must connect using
    <literal>sslmode=verify-ca</> or
    <literal>verify-full</> and have the appropriate root certificate
-   file installed (<xref linkend="libpq-connect">).
+   file installed (<xref linkend="libq-ssl-certificates">).
   </para>
  </sect1>
 
@@ -1881,12 +1889,12 @@ pg_dumpall -p 5432 | psql -d postgres -p 5433
 
    <listitem>
     <para>
-     On Linux, encryption can be layered on top of a file system
-     using a <quote>loopback device</quote>. This allows an entire
-     file system partition to be encrypted on disk, and decrypted by the
-     operating system. On FreeBSD, the equivalent facility is called
-     GEOM Based Disk Encryption (<acronym>gbde</acronym>), and many
-     other operating systems support this functionality, including Windows.
+     Storage encryption can be performed at the file system level or the
+     block level.  Linux file system encryption options include eCryptfs
+     and EncFS, while FreeBSD uses PEFS.  Block level or full disk
+     encryption options include dm-crypt + LUKS on Linux and GEOM
+     modules geli and gbde on FreeBSD.  Many other operating systems
+     support this functionality, including Windows.
     </para>
 
     <para>
@@ -2052,10 +2060,10 @@ pg_dumpall -p 5432 | psql -d postgres -p 5433
    <quote>intermediate</> certificate authority, rather than one that is
    directly trusted by clients.  To use such a certificate, append the
    certificate of the signing authority to the <filename>server.crt</> file,
-   then its parent authority's certificate, and so on up to a <quote>root</>
-   authority that is trusted by the clients.  The root certificate should
-   be included in every case where <filename>server.crt</> contains more than
-   one certificate.
+   then its parent authority's certificate, and so on up to a certificate
+   authority, <quote>root</> or <quote>intermediate</>, that is trusted by
+   clients, i.e. signed by a certificate in the clients'
+   <filename>root.crt</filename> files.
   </para>
 
   <sect2 id="ssl-client-certificates">
@@ -2074,7 +2082,10 @@ pg_dumpall -p 5432 | psql -d postgres -p 5433
    SSL connection startup.  (See <xref linkend="libpq-ssl"> for a
    description of how to set up certificates on the client.)  The server will
    verify that the client's certificate is signed by one of the trusted
-   certificate authorities.  Certificate Revocation List (CRL) entries
+   certificate authorities.  If intermediate <acronym>CA</>s appear in
+   <filename>root.crt</filename>, the file must also contain certificate
+   chains to their root <acronym>CA</>s.  Certificate Revocation List
+   (CRL) entries
    are also checked if the parameter <xref linkend="guc-ssl-crl-file"> is set.
    <!-- If this URL changes replace it with a URL to www.archive.org. -->
    (See <ulink
@@ -2092,8 +2103,9 @@ pg_dumpall -p 5432 | psql -d postgres -p 5433
   </para>
 
   <para>
-   Note that <filename>root.crt</filename> lists the top-level CAs that are
-   considered trusted for signing client certificates.  In principle it need
+   Note that the server's <filename>root.crt</filename> lists the top-level
+   CAs that are considered trusted for signing client certificates.
+   In principle it need
    not list the CA that signed the server's certificate, though in most cases
    that CA would also be trusted for client certificates.
   </para>

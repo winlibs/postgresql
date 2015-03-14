@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -475,7 +475,7 @@ CLASS="TYPE"
 >, as
     shown in <A
 HREF="functions-bitstring.html#FUNCTIONS-BIT-STRING-OP-TABLE"
->Table 9-10</A
+>Table 9-11</A
 >.
    </P
 ><P
@@ -1113,32 +1113,6 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
->random()</CODE
-></TT
->
-       </TD
-><TD
-><TT
-CLASS="TYPE"
->dp</TT
-></TD
-><TD
->random value in the range 0.0 &lt;= x &lt; 1.0</TD
-><TD
-><TT
-CLASS="LITERAL"
->random()</TT
-></TD
-><TD
->&nbsp;</TD
-></TR
-><TR
-><TD
->        
-        <TT
-CLASS="LITERAL"
-><CODE
-CLASS="FUNCTION"
 >round(<TT
 CLASS="TYPE"
 >dp</TT
@@ -1205,39 +1179,6 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >42.44</TT
 ></TD
-></TR
-><TR
-><TD
->        
-        <TT
-CLASS="LITERAL"
-><CODE
-CLASS="FUNCTION"
->setseed(<TT
-CLASS="TYPE"
->dp</TT
->)</CODE
-></TT
->
-       </TD
-><TD
-><TT
-CLASS="TYPE"
->void</TT
-></TD
-><TD
->set seed for subsequent <TT
-CLASS="LITERAL"
->random()</TT
-> calls (value between -1.0 and
-       1.0, inclusive)</TD
-><TD
-><TT
-CLASS="LITERAL"
->setseed(0.54823)</TT
-></TD
-><TD
->&nbsp;</TD
 ></TR
 ><TR
 ><TD
@@ -1513,9 +1454,102 @@ CLASS="LITERAL"
 ></TABLE
 ></DIV
 ><P
+>    <A
+HREF="functions-math.html#FUNCTIONS-MATH-RANDOM-TABLE"
+>Table 9-4</A
+> shows functions for
+    generating random numbers.
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-MATH-RANDOM-TABLE"
+></A
+><P
+><B
+>Table 9-4. Random Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Function</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>random()</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>dp</TT
+></TD
+><TD
+>random value in the range 0.0 &lt;= x &lt; 1.0</TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>setseed(<TT
+CLASS="TYPE"
+>dp</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>void</TT
+></TD
+><TD
+>set seed for subsequent <TT
+CLASS="LITERAL"
+>random()</TT
+> calls (value between -1.0 and
+       1.0, inclusive)</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   The characteristics of the values returned by
+   <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>random()</CODE
+></TT
+> depend
+   on the system implementation. It is not suitable for cryptographic
+   applications; see <A
+HREF="pgcrypto.html"
+>pgcrypto</A
+> module for an alternative.
+   </P
+><P
 >   Finally, <A
 HREF="functions-math.html#FUNCTIONS-MATH-TRIG-TABLE"
->Table 9-4</A
+>Table 9-5</A
 > shows the
    available trigonometric functions.  All trigonometric functions
    take arguments and return values of type <TT
@@ -1547,7 +1581,7 @@ NAME="FUNCTIONS-MATH-TRIG-TABLE"
 ></A
 ><P
 ><B
->Table 9-4. Trigonometric Functions</B
+>Table 9-5. Trigonometric Functions</B
 ></P
 ><TABLE
 BORDER="1"

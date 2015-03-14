@@ -4,7 +4,7 @@
  *	  header file for postgres vacuum cleaner and statistics analyzer
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/commands/vacuum.h
@@ -25,12 +25,12 @@
 
 /*----------
  * ANALYZE builds one of these structs for each attribute (column) that is
- * to be analyzed.	The struct and subsidiary data are in anl_context,
+ * to be analyzed.  The struct and subsidiary data are in anl_context,
  * so they live until the end of the ANALYZE operation.
  *
  * The type-specific typanalyze function is passed a pointer to this struct
  * and must return TRUE to continue analysis, FALSE to skip analysis of this
- * column.	In the TRUE case it must set the compute_stats and minrows fields,
+ * column.  In the TRUE case it must set the compute_stats and minrows fields,
  * and can optionally set extra_data to pass additional info to compute_stats.
  * minrows is its request for the minimum number of sample rows to be gathered
  * (but note this request might not be honored, eg if there are fewer rows
@@ -73,7 +73,7 @@ typedef struct VacAttrStats
 	 * type-specific typanalyze function.
 	 *
 	 * Note: do not assume that the data being analyzed has the same datatype
-	 * shown in attr, ie do not trust attr->atttypid, attlen, etc.	This is
+	 * shown in attr, ie do not trust attr->atttypid, attlen, etc.  This is
 	 * because some index opclasses store a different type than the underlying
 	 * column/expression.  Instead use attrtypid, attrtypmod, and attrtype for
 	 * information about the datatype being fed to the typanalyze function.
@@ -98,9 +98,9 @@ typedef struct VacAttrStats
 	 */
 	bool		stats_valid;
 	float4		stanullfrac;	/* fraction of entries that are NULL */
-	int4		stawidth;		/* average width of column values */
+	int32		stawidth;		/* average width of column values */
 	float4		stadistinct;	/* # distinct values */
-	int2		stakind[STATISTIC_NUM_SLOTS];
+	int16		stakind[STATISTIC_NUM_SLOTS];
 	Oid			staop[STATISTIC_NUM_SLOTS];
 	int			numnumbers[STATISTIC_NUM_SLOTS];
 	float4	   *stanumbers[STATISTIC_NUM_SLOTS];
@@ -114,7 +114,7 @@ typedef struct VacAttrStats
 	 * elements. It should then overwrite these fields.
 	 */
 	Oid			statypid[STATISTIC_NUM_SLOTS];
-	int2		statyplen[STATISTIC_NUM_SLOTS];
+	int16		statyplen[STATISTIC_NUM_SLOTS];
 	bool		statypbyval[STATISTIC_NUM_SLOTS];
 	char		statypalign[STATISTIC_NUM_SLOTS];
 
@@ -136,6 +136,8 @@ extern PGDLLIMPORT int default_statistics_target;		/* PGDLLIMPORT for
 														 * PostGIS */
 extern int	vacuum_freeze_min_age;
 extern int	vacuum_freeze_table_age;
+extern int	vacuum_multixact_freeze_min_age;
+extern int	vacuum_multixact_freeze_table_age;
 
 
 /* in commands/vacuum.c */
@@ -153,12 +155,18 @@ extern void vac_update_relstats(Relation relation,
 					double num_tuples,
 					BlockNumber num_all_visible_pages,
 					bool hasindex,
-					TransactionId frozenxid);
-extern void vacuum_set_xid_limits(int freeze_min_age, int freeze_table_age,
-					  bool sharedRel,
+					TransactionId frozenxid,
+					MultiXactId minmulti,
+					bool in_outer_xact);
+extern void vacuum_set_xid_limits(Relation rel,
+					  int freeze_min_age, int freeze_table_age,
+					  int multixact_freeze_min_age,
+					  int multixact_freeze_table_age,
 					  TransactionId *oldestXmin,
 					  TransactionId *freezeLimit,
-					  TransactionId *freezeTableLimit);
+					  TransactionId *xidFullScanLimit,
+					  MultiXactId *multiXactCutoff,
+					  MultiXactId *mxactFullScanLimit);
 extern void vac_update_datfrozenxid(void);
 extern void vacuum_delay_point(void);
 
@@ -168,7 +176,7 @@ extern void lazy_vacuum_rel(Relation onerel, VacuumStmt *vacstmt,
 
 /* in commands/analyze.c */
 extern void analyze_rel(Oid relid, VacuumStmt *vacstmt,
-			BufferAccessStrategy bstrategy);
+			bool in_outer_xact, BufferAccessStrategy bstrategy);
 extern bool std_typanalyze(VacAttrStats *stats);
 extern double anl_random_fract(void);
 extern double anl_init_selection_state(int n);

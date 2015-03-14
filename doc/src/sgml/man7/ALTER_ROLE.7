@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER ROLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "ALTER ROLE" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "ALTER ROLE" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 ALTER_ROLE \- change a database role
-.\" ALTER ROLE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -51,9 +50,9 @@ where \fIoption\fR can be:
 ALTER ROLE \fIname\fR RENAME TO \fInew_name\fR
 
 ALTER ROLE \fIname\fR [ IN DATABASE \fIdatabase_name\fR ] SET \fIconfiguration_parameter\fR { TO | = } { \fIvalue\fR | DEFAULT }
-ALTER ROLE \fIname\fR [ IN DATABASE \fIdatabase_name\fR ] SET \fIconfiguration_parameter\fR FROM CURRENT
-ALTER ROLE \fIname\fR [ IN DATABASE \fIdatabase_name\fR ] RESET \fIconfiguration_parameter\fR
-ALTER ROLE \fIname\fR [ IN DATABASE \fIdatabase_name\fR ] RESET ALL
+ALTER ROLE { \fIname\fR | ALL } [ IN DATABASE \fIdatabase_name\fR ] SET \fIconfiguration_parameter\fR FROM CURRENT
+ALTER ROLE { \fIname\fR | ALL } [ IN DATABASE \fIdatabase_name\fR ] RESET \fIconfiguration_parameter\fR
+ALTER ROLE { \fIname\fR | ALL } [ IN DATABASE \fIdatabase_name\fR ] RESET ALL
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -80,7 +79,16 @@ MD5\-encrypted\&.
 .PP
 The remaining variants change a role\*(Aqs session default for a configuration variable, either for all databases or, when the
 IN DATABASE
-clause is specified, only for sessions in the named database\&. Whenever the role subsequently starts a new session, the specified value becomes the session default, overriding whatever setting is present in
+clause is specified, only for sessions in the named database\&. If
+ALL
+is specified instead of a role name, this changes the setting for all roles\&. Using
+ALL
+with
+IN DATABASE
+is effectively the same as using the command
+ALTER DATABASE \&.\&.\&. SET \&.\&.\&.\&.
+.PP
+Whenever the role subsequently starts a new session, the specified value becomes the session default, overriding whatever setting is present in
 postgresql\&.conf
 or has been received from the
 \fBpostgres\fR
@@ -88,9 +96,11 @@ command line\&. This only happens at login time; executing
 SET ROLE (\fBSET_ROLE\fR(7))
 or
 SET SESSION AUTHORIZATION (\fBSET_SESSION_AUTHORIZATION\fR(7))
-does not cause new configuration values to be set\&. Settings set for all databases are overridden by database\-specific settings attached to a role\&. Superusers can change anyone\*(Aqs session defaults\&. Roles having
+does not cause new configuration values to be set\&. Settings set for all databases are overridden by database\-specific settings attached to a role\&. Settings for specific databases or specific roles override settings for all roles\&.
+.PP
+Superusers can change anyone\*(Aqs session defaults\&. Roles having
 CREATEROLE
-privilege can change defaults for non\-superuser roles\&. Ordinary roles can only set defaults for themselves\&. Certain configuration variables cannot be set this way, or can only be set if a superuser issues the command\&.
+privilege can change defaults for non\-superuser roles\&. Ordinary roles can only set defaults for themselves\&. Certain configuration variables cannot be set this way, or can only be set if a superuser issues the command\&. Only superusers can change a setting for all roles in all databases\&.
 .SH "PARAMETERS"
 .PP
 \fIname\fR
@@ -98,7 +108,43 @@ privilege can change defaults for non\-superuser roles\&. Ordinary roles can onl
 The name of the role whose attributes are to be altered\&.
 .RE
 .PP
-SUPERUSER, NOSUPERUSER, CREATEDB, NOCREATEDB, CREATEROLE, NOCREATEROLE, CREATEUSER, NOCREATEUSER, INHERIT, NOINHERIT, LOGIN, NOLOGIN, REPLICATION, NOREPLICATION, CONNECTION LIMIT \fIconnlimit\fR, PASSWORD \fIpassword\fR, ENCRYPTED, UNENCRYPTED, VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq
+SUPERUSER
+.br
+NOSUPERUSER
+.br
+CREATEDB
+.br
+NOCREATEDB
+.br
+CREATEROLE
+.br
+NOCREATEROLE
+.br
+CREATEUSER
+.br
+NOCREATEUSER
+.br
+INHERIT
+.br
+NOINHERIT
+.br
+LOGIN
+.br
+NOLOGIN
+.br
+REPLICATION
+.br
+NOREPLICATION
+.br
+CONNECTION LIMIT \fIconnlimit\fR
+.br
+PASSWORD \fIpassword\fR
+.br
+ENCRYPTED
+.br
+UNENCRYPTED
+.br
+VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq
 .RS 4
 These clauses alter attributes originally set by
 CREATE ROLE (\fBCREATE_ROLE\fR(7))\&. For more information, see the
@@ -116,7 +162,9 @@ The new name of the role\&.
 The name of the database the configuration variable should be set in\&.
 .RE
 .PP
-\fIconfiguration_parameter\fR, \fIvalue\fR
+\fIconfiguration_parameter\fR
+.br
+\fIvalue\fR
 .RS 4
 Set this role\*(Aqs session default for the specified configuration parameter to the given value\&. If
 \fIvalue\fR
@@ -266,4 +314,4 @@ statement is a
 PostgreSQL
 extension\&.
 .SH "SEE ALSO"
-CREATE ROLE (\fBCREATE_ROLE\fR(7)), DROP ROLE (\fBDROP_ROLE\fR(7)), \fBSET\fR(7)
+CREATE ROLE (\fBCREATE_ROLE\fR(7)), DROP ROLE (\fBDROP_ROLE\fR(7)), ALTER DATABASE (\fBALTER_DATABASE\fR(7)), \fBSET\fR(7)

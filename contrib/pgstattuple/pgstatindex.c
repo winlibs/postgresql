@@ -27,7 +27,9 @@
 
 #include "postgres.h"
 
+#include "access/gin_private.h"
 #include "access/heapam.h"
+#include "access/htup_details.h"
 #include "access/nbtree.h"
 #include "catalog/namespace.h"
 #include "funcapi.h"
@@ -37,14 +39,23 @@
 #include "utils/rel.h"
 
 
-extern Datum pgstatindex(PG_FUNCTION_ARGS);
-extern Datum pg_relpages(PG_FUNCTION_ARGS);
-
+/*
+ * Because of backward-compatibility issue, we have decided to have
+ * two types of interfaces, with regclass-type input arg and text-type
+ * input arg, for each function.
+ *
+ * Those functions which have text-type input arg will be deprecated
+ * in the future release.
+ */
 PG_FUNCTION_INFO_V1(pgstatindex);
+PG_FUNCTION_INFO_V1(pgstatindexbyid);
 PG_FUNCTION_INFO_V1(pg_relpages);
+PG_FUNCTION_INFO_V1(pg_relpagesbyid);
+PG_FUNCTION_INFO_V1(pgstatginindex);
 
 #define IS_INDEX(r) ((r)->rd_rel->relkind == RELKIND_INDEX)
 #define IS_BTREE(r) ((r)->rd_rel->relam == BTREE_AM_OID)
+#define IS_GIN(r) ((r)->rd_rel->relam == GIN_AM_OID)
 
 #define CHECK_PAGE_OFFSET_RANGE(pg, offnum) { \
 		if ( !(FirstOffsetNumber <= (offnum) && \
@@ -79,6 +90,21 @@ typedef struct BTIndexStat
 	uint64		fragments;
 } BTIndexStat;
 
+/* ------------------------------------------------
+ * A structure for a whole GIN index statistics
+ * used by pgstatginindex().
+ * ------------------------------------------------
+ */
+typedef struct GinIndexStat
+{
+	int32		version;
+
+	BlockNumber pending_pages;
+	int64		pending_tuples;
+} GinIndexStat;
+
+static Datum pgstatindex_impl(Relation rel, FunctionCallInfo fcinfo);
+
 /* ------------------------------------------------------
  * pgstatindex()
  *
@@ -91,11 +117,6 @@ pgstatindex(PG_FUNCTION_ARGS)
 	text	   *relname = PG_GETARG_TEXT_P(0);
 	Relation	rel;
 	RangeVar   *relrv;
-	Datum		result;
-	BlockNumber nblocks;
-	BlockNumber blkno;
-	BTIndexStat indexStat;
-	BufferAccessStrategy bstrategy = GetAccessStrategy(BAS_BULKREAD);
 
 	if (!superuser())
 		ereport(ERROR,
@@ -104,6 +125,34 @@ pgstatindex(PG_FUNCTION_ARGS)
 
 	relrv = makeRangeVarFromNameList(textToQualifiedNameList(relname));
 	rel = relation_openrv(relrv, AccessShareLock);
+
+	PG_RETURN_DATUM(pgstatindex_impl(rel, fcinfo));
+}
+
+Datum
+pgstatindexbyid(PG_FUNCTION_ARGS)
+{
+	Oid			relid = PG_GETARG_OID(0);
+	Relation	rel;
+
+	if (!superuser())
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+				 (errmsg("must be superuser to use pgstattuple functions"))));
+
+	rel = relation_open(relid, AccessShareLock);
+
+	PG_RETURN_DATUM(pgstatindex_impl(rel, fcinfo));
+}
+
+static Datum
+pgstatindex_impl(Relation rel, FunctionCallInfo fcinfo)
+{
+	Datum		result;
+	BlockNumber nblocks;
+	BlockNumber blkno;
+	BTIndexStat indexStat;
+	BufferAccessStrategy bstrategy = GetAccessStrategy(BAS_BULKREAD);
 
 	if (!IS_INDEX(rel) || !IS_BTREE(rel))
 		elog(ERROR, "relation \"%s\" is not a btree index",
@@ -216,39 +265,29 @@ pgstatindex(PG_FUNCTION_ARGS)
 			elog(ERROR, "return type must be a row type");
 
 		j = 0;
-		values[j] = palloc(32);
-		snprintf(values[j++], 32, "%d", indexStat.version);
-		values[j] = palloc(32);
-		snprintf(values[j++], 32, "%d", indexStat.level);
-		values[j] = palloc(32);
-		snprintf(values[j++], 32, INT64_FORMAT,
-				 (indexStat.root_pages +
-				  indexStat.leaf_pages +
-				  indexStat.internal_pages +
-				  indexStat.deleted_pages +
-				  indexStat.empty_pages) * BLCKSZ);
-		values[j] = palloc(32);
-		snprintf(values[j++], 32, "%u", indexStat.root_blkno);
-		values[j] = palloc(32);
-		snprintf(values[j++], 32, INT64_FORMAT, indexStat.internal_pages);
-		values[j] = palloc(32);
-		snprintf(values[j++], 32, INT64_FORMAT, indexStat.leaf_pages);
-		values[j] = palloc(32);
-		snprintf(values[j++], 32, INT64_FORMAT, indexStat.empty_pages);
-		values[j] = palloc(32);
-		snprintf(values[j++], 32, INT64_FORMAT, indexStat.deleted_pages);
-		values[j] = palloc(32);
+		values[j++] = psprintf("%d", indexStat.version);
+		values[j++] = psprintf("%d", indexStat.level);
+		values[j++] = psprintf(INT64_FORMAT,
+							   (indexStat.root_pages +
+								indexStat.leaf_pages +
+								indexStat.internal_pages +
+								indexStat.deleted_pages +
+								indexStat.empty_pages) * BLCKSZ);
+		values[j++] = psprintf("%u", indexStat.root_blkno);
+		values[j++] = psprintf(INT64_FORMAT, indexStat.internal_pages);
+		values[j++] = psprintf(INT64_FORMAT, indexStat.leaf_pages);
+		values[j++] = psprintf(INT64_FORMAT, indexStat.empty_pages);
+		values[j++] = psprintf(INT64_FORMAT, indexStat.deleted_pages);
 		if (indexStat.max_avail > 0)
-			snprintf(values[j++], 32, "%.2f",
-					 100.0 - (double) indexStat.free_space / (double) indexStat.max_avail * 100.0);
+			values[j++] = psprintf("%.2f",
+								   100.0 - (double) indexStat.free_space / (double) indexStat.max_avail * 100.0);
 		else
-			snprintf(values[j++], 32, "NaN");
-		values[j] = palloc(32);
+			values[j++] = pstrdup("NaN");
 		if (indexStat.leaf_pages > 0)
-			snprintf(values[j++], 32, "%.2f",
-					 (double) indexStat.fragments / (double) indexStat.leaf_pages * 100.0);
+			values[j++] = psprintf("%.2f",
+								   (double) indexStat.fragments / (double) indexStat.leaf_pages * 100.0);
 		else
-			snprintf(values[j++], 32, "NaN");
+			values[j++] = pstrdup("NaN");
 
 		tuple = BuildTupleFromCStrings(TupleDescGetAttInMetadata(tupleDesc),
 									   values);
@@ -256,7 +295,7 @@ pgstatindex(PG_FUNCTION_ARGS)
 		result = HeapTupleGetDatum(tuple);
 	}
 
-	PG_RETURN_DATUM(result);
+	return result;
 }
 
 /* --------------------------------------------------------
@@ -291,4 +330,103 @@ pg_relpages(PG_FUNCTION_ARGS)
 	relation_close(rel, AccessShareLock);
 
 	PG_RETURN_INT64(relpages);
+}
+
+Datum
+pg_relpagesbyid(PG_FUNCTION_ARGS)
+{
+	Oid			relid = PG_GETARG_OID(0);
+	int64		relpages;
+	Relation	rel;
+
+	if (!superuser())
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+				 (errmsg("must be superuser to use pgstattuple functions"))));
+
+	rel = relation_open(relid, AccessShareLock);
+
+	/* note: this will work OK on non-local temp tables */
+
+	relpages = RelationGetNumberOfBlocks(rel);
+
+	relation_close(rel, AccessShareLock);
+
+	PG_RETURN_INT64(relpages);
+}
+
+/* ------------------------------------------------------
+ * pgstatginindex()
+ *
+ * Usage: SELECT * FROM pgstatginindex('ginindex');
+ * ------------------------------------------------------
+ */
+Datum
+pgstatginindex(PG_FUNCTION_ARGS)
+{
+	Oid			relid = PG_GETARG_OID(0);
+	Relation	rel;
+	Buffer		buffer;
+	Page		page;
+	GinMetaPageData *metadata;
+	GinIndexStat stats;
+	HeapTuple	tuple;
+	TupleDesc	tupleDesc;
+	Datum		values[3];
+	bool		nulls[3] = {false, false, false};
+	Datum		result;
+
+	if (!superuser())
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+				 (errmsg("must be superuser to use pgstattuple functions"))));
+
+	rel = relation_open(relid, AccessShareLock);
+
+	if (!IS_INDEX(rel) || !IS_GIN(rel))
+		elog(ERROR, "relation \"%s\" is not a GIN index",
+			 RelationGetRelationName(rel));
+
+	/*
+	 * Reject attempts to read non-local temporary relations; we would be
+	 * likely to get wrong data since we have no visibility into the owning
+	 * session's local buffers.
+	 */
+	if (RELATION_IS_OTHER_TEMP(rel))
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+			   errmsg("cannot access temporary indexes of other sessions")));
+
+	/*
+	 * Read metapage
+	 */
+	buffer = ReadBuffer(rel, GIN_METAPAGE_BLKNO);
+	LockBuffer(buffer, GIN_SHARE);
+	page = BufferGetPage(buffer);
+	metadata = GinPageGetMeta(page);
+
+	stats.version = metadata->ginVersion;
+	stats.pending_pages = metadata->nPendingPages;
+	stats.pending_tuples = metadata->nPendingHeapTuples;
+
+	UnlockReleaseBuffer(buffer);
+	relation_close(rel, AccessShareLock);
+
+	/*
+	 * Build a tuple descriptor for our result type
+	 */
+	if (get_call_result_type(fcinfo, NULL, &tupleDesc) != TYPEFUNC_COMPOSITE)
+		elog(ERROR, "return type must be a row type");
+
+	values[0] = Int32GetDatum(stats.version);
+	values[1] = UInt32GetDatum(stats.pending_pages);
+	values[2] = Int64GetDatum(stats.pending_tuples);
+
+	/*
+	 * Build and return the tuple
+	 */
+	tuple = heap_form_tuple(tupleDesc, values, nulls);
+	result = HeapTupleGetDatum(tuple);
+
+	PG_RETURN_DATUM(result);
 }

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: vacuumdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "VACUUMDB" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "VACUUMDB" "1" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,10 +29,9 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 vacuumdb \- garbage\-collect and analyze a PostgreSQL database
-.\" vacuumdb
 .SH "SYNOPSIS"
 .HP \w'\fBvacuumdb\fR\ 'u
-\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\fB\-\-table\fR\ |\ \fB\-t\fR\ \fItable\fR\ [(\ \fIcolumn\fR\ [,\&.\&.\&.]\ )]] [\fIdbname\fR]
+\fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\ \fB\-\-table\fR\ |\ \fB\-t\fR\ \fItable\fR\ [(\ \fIcolumn\fR\ [,\&.\&.\&.]\ )]\ ]...  [\fIdbname\fR]
 .HP \w'\fBvacuumdb\fR\ 'u
 \fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-\-all\fR | \fB\-a\fR 
 .SH "DESCRIPTION"
@@ -57,12 +56,16 @@ is a wrapper around the SQL command
 vacuumdb
 accepts the following command\-line arguments:
 .PP
-\fB\-a\fR, \fB\-\-all\fR
+\fB\-a\fR
+.br
+\fB\-\-all\fR
 .RS 4
 Vacuum all databases\&.
 .RE
 .PP
-\fB[\-d]\fR\fB \fR\fB\fIdbname\fR\fR, \fB[\-\-dbname=]\fR\fB\fIdbname\fR\fR
+\fB[\-d]\fR\fB \fR\fB\fIdbname\fR\fR
+.br
+\fB[\-\-dbname=]\fR\fB\fIdbname\fR\fR
 .RS 4
 Specifies the name of the database to be cleaned or analyzed\&. If this is not specified and
 \fB\-a\fR
@@ -71,33 +74,43 @@ Specifies the name of the database to be cleaned or analyzed\&. If this is not s
 \fBPGDATABASE\fR\&. If that is not set, the user name specified for the connection is used\&.
 .RE
 .PP
-\fB\-e\fR, \fB\-\-echo\fR
+\fB\-e\fR
+.br
+\fB\-\-echo\fR
 .RS 4
 Echo the commands that
 vacuumdb
 generates and sends to the server\&.
 .RE
 .PP
-\fB\-f\fR, \fB\-\-full\fR
+\fB\-f\fR
+.br
+\fB\-\-full\fR
 .RS 4
 Perform
 \(lqfull\(rq
 vacuuming\&.
 .RE
 .PP
-\fB\-F\fR, \fB\-\-freeze\fR
+\fB\-F\fR
+.br
+\fB\-\-freeze\fR
 .RS 4
 Aggressively
 \(lqfreeze\(rq
 tuples\&.
 .RE
 .PP
-\fB\-q\fR, \fB\-\-quiet\fR
+\fB\-q\fR
+.br
+\fB\-\-quiet\fR
 .RS 4
 Do not display progress messages\&.
 .RE
 .PP
-\fB\-t \fR\fB\fItable\fR\fR\fB [ (\fR\fB\fIcolumn\fR\fR\fB [,\&.\&.\&.]) ]\fR, \fB\-\-table=\fR\fB\fItable\fR\fR\fB [ (\fR\fB\fIcolumn\fR\fR\fB [,\&.\&.\&.]) ]\fR
+\fB\-t \fR\fB\fItable\fR\fR\fB [ (\fR\fB\fIcolumn\fR\fR\fB [,\&.\&.\&.]) ]\fR
+.br
+\fB\-\-table=\fR\fB\fItable\fR\fR\fB [ (\fR\fB\fIcolumn\fR\fR\fB [,\&.\&.\&.]) ]\fR
 .RS 4
 Clean or analyze
 \fItable\fR
@@ -105,7 +118,9 @@ only\&. Column names can be specified only in conjunction with the
 \fB\-\-analyze\fR
 or
 \fB\-\-analyze\-only\fR
-options\&.
+options\&. Multiple tables can be vacuumed by writing multiple
+\fB\-t\fR
+switches\&.
 .if n \{\
 .sp
 .\}
@@ -123,29 +138,48 @@ If you specify columns, you probably have to escape the parentheses from the she
 .RE
 .RE
 .PP
-\fB\-v\fR, \fB\-\-verbose\fR
+\fB\-v\fR
+.br
+\fB\-\-verbose\fR
 .RS 4
 Print detailed information during processing\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 vacuumdb
 version and exit\&.
 .RE
 .PP
-\fB\-z\fR, \fB\-\-analyze\fR
+\fB\-z\fR
+.br
+\fB\-\-analyze\fR
 .RS 4
 Also calculate statistics for use by the optimizer\&.
 .RE
 .PP
-\fB\-Z\fR, \fB\-\-analyze\-only\fR
+\fB\-Z\fR
+.br
+\fB\-\-analyze\-only\fR
 .RS 4
 Only calculate statistics for use by the optimizer (no vacuum)\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-\-analyze\-in\-stages\fR
+.RS 4
+Only calculate statistics for use by the optimizer (no vacuum), like
+\fB\-\-analyze\-only\fR\&. Run several (currently three) stages of analyze with different configuration settings, to produce usable statistics faster\&.
+.sp
+This option is useful to analyze a database that was newly populated from a restored dump or by
+\fBpg_upgrade\fR\&. This option will try to create some statistics as fast as possible, to make the database usable, and then produce full statistics in the subsequent stages\&.
+.RE
+.PP
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 vacuumdb
@@ -156,29 +190,39 @@ command line arguments, and exit\&.
 vacuumdb
 also accepts the following command\-line arguments for connection parameters:
 .PP
-\fB\-h \fR\fB\fIhost\fR\fR, \fB\-\-host=\fR\fB\fIhost\fR\fR
+\fB\-h \fR\fB\fIhost\fR\fR
+.br
+\fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
 Specifies the host name of the machine on which the server is running\&. If the value begins with a slash, it is used as the directory for the Unix domain socket\&.
 .RE
 .PP
-\fB\-p \fR\fB\fIport\fR\fR, \fB\-\-port=\fR\fB\fIport\fR\fR
+\fB\-p \fR\fB\fIport\fR\fR
+.br
+\fB\-\-port=\fR\fB\fIport\fR\fR
 .RS 4
 Specifies the TCP port or local Unix domain socket file extension on which the server is listening for connections\&.
 .RE
 .PP
-\fB\-U \fR\fB\fIusername\fR\fR, \fB\-\-username=\fR\fB\fIusername\fR\fR
+\fB\-U \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-username=\fR\fB\fIusername\fR\fR
 .RS 4
 User name to connect as\&.
 .RE
 .PP
-\fB\-w\fR, \fB\-\-no\-password\fR
+\fB\-w\fR
+.br
+\fB\-\-no\-password\fR
 .RS 4
 Never issue a password prompt\&. If the server requires password authentication and a password is not available by other means such as a
 \&.pgpass
 file, the connection attempt will fail\&. This option can be useful in batch jobs and scripts where no user is present to enter a password\&.
 .RE
 .PP
-\fB\-W\fR, \fB\-\-password\fR
+\fB\-W\fR
+.br
+\fB\-\-password\fR
 .RS 4
 Force
 vacuumdb
@@ -203,7 +247,13 @@ will be used\&.
 .RE
 .SH "ENVIRONMENT"
 .PP
-\fBPGDATABASE\fR, \fBPGHOST\fR, \fBPGPORT\fR, \fBPGUSER\fR
+\fBPGDATABASE\fR
+.br
+\fBPGHOST\fR
+.br
+\fBPGPORT\fR
+.br
+\fBPGUSER\fR
 .RS 4
 Default connection parameters
 .RE

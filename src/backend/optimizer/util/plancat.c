@@ -4,7 +4,7 @@
  *	   routines for accessing the system catalogs
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -19,10 +19,14 @@
 
 #include "access/genam.h"
 #include "access/heapam.h"
+#include "access/htup_details.h"
+#include "access/nbtree.h"
 #include "access/sysattr.h"
 #include "access/transam.h"
+#include "access/xlog.h"
 #include "catalog/catalog.h"
 #include "catalog/heap.h"
+#include "foreign/fdwapi.h"
 #include "miscadmin.h"
 #include "nodes/makefuncs.h"
 #include "optimizer/clauses.h"
@@ -64,6 +68,7 @@ static List *build_index_tlist(PlannerInfo *root, IndexOptInfo *index,
  *	min_attr	lowest valid AttrNumber
  *	max_attr	highest valid AttrNumber
  *	indexlist	list of IndexOptInfos for relation's indexes
+ *	fdwroutine	if it's a foreign table, the FDW function pointers
  *	pages		number of pages
  *	tuples		number of tuples
  *
@@ -123,7 +128,7 @@ get_relation_info(PlannerInfo *root, Oid relationObjectId, bool inhparent,
 	 * Don't bother with indexes for an inheritance parent, either.
 	 */
 	if (inhparent ||
-		(IgnoreSystemIndexes && IsSystemClass(relation->rd_rel)))
+		(IgnoreSystemIndexes && IsSystemRelation(relation)))
 		hasindex = false;
 	else
 		hasindex = relation->rd_rel->relhasindex;
@@ -350,6 +355,17 @@ get_relation_info(PlannerInfo *root, Oid relationObjectId, bool inhparent,
 					info->tuples = rel->tuples;
 			}
 
+			if (info->relam == BTREE_AM_OID)
+			{
+				/* For btrees, get tree height while we have the index open */
+				info->tree_height = _bt_getrootheight(indexRelation);
+			}
+			else
+			{
+				/* For other index types, just set it to "unknown" for now */
+				info->tree_height = -1;
+			}
+
 			index_close(indexRelation, NoLock);
 
 			indexinfos = lcons(info, indexinfos);
@@ -359,6 +375,12 @@ get_relation_info(PlannerInfo *root, Oid relationObjectId, bool inhparent,
 	}
 
 	rel->indexlist = indexinfos;
+
+	/* Grab the fdwroutine info using the relcache, while we have it */
+	if (relation->rd_rel->relkind == RELKIND_FOREIGN_TABLE)
+		rel->fdwroutine = GetFdwRoutineForRelation(relation, true);
+	else
+		rel->fdwroutine = NULL;
 
 	heap_close(relation, NoLock);
 
@@ -395,6 +417,7 @@ estimate_rel_size(Relation rel, int32 *attr_widths,
 	{
 		case RELKIND_RELATION:
 		case RELKIND_INDEX:
+		case RELKIND_MATVIEW:
 		case RELKIND_TOASTVALUE:
 			/* it has storage, ok to call the smgr */
 			curpages = RelationGetNumberOfBlocks(rel);
@@ -404,12 +427,12 @@ estimate_rel_size(Relation rel, int32 *attr_widths,
 			 * minimum size estimate of 10 pages.  The idea here is to avoid
 			 * assuming a newly-created table is really small, even if it
 			 * currently is, because that may not be true once some data gets
-			 * loaded into it.	Once a vacuum or analyze cycle has been done
+			 * loaded into it.  Once a vacuum or analyze cycle has been done
 			 * on it, it's more reasonable to believe the size is somewhat
 			 * stable.
 			 *
 			 * (Note that this is only an issue if the plan gets cached and
-			 * used again after the table has been filled.	What we're trying
+			 * used again after the table has been filled.  What we're trying
 			 * to avoid is using a nestloop-type plan on a table that has
 			 * grown substantially since the plan was made.  Normally,
 			 * autovacuum/autoanalyze will occur once enough inserts have
@@ -418,7 +441,7 @@ estimate_rel_size(Relation rel, int32 *attr_widths,
 			 * such as temporary tables.)
 			 *
 			 * We approximate "never vacuumed" by "has relpages = 0", which
-			 * means this will also fire on genuinely empty relations.	Not
+			 * means this will also fire on genuinely empty relations.  Not
 			 * great, but fortunately that's a seldom-seen case in the real
 			 * world, and it shouldn't degrade the quality of the plan too
 			 * much anyway to err in this direction.
@@ -763,7 +786,7 @@ relation_excluded_by_constraints(PlannerInfo *root,
 		return false;
 
 	/*
-	 * OK to fetch the constraint expressions.	Include "col IS NOT NULL"
+	 * OK to fetch the constraint expressions.  Include "col IS NOT NULL"
 	 * expressions for attnotnull columns, in case we can refute those.
 	 */
 	constraint_pred = get_relation_constraints(root, rte->relid, rel, true);
@@ -811,7 +834,7 @@ relation_excluded_by_constraints(PlannerInfo *root,
  * Exception: if there are any dropped columns, we punt and return NIL.
  * Ideally we would like to handle the dropped-column case too.  However this
  * creates problems for ExecTypeFromTL, which may be asked to build a tupdesc
- * for a tlist that includes vars of no-longer-existent types.	In theory we
+ * for a tlist that includes vars of no-longer-existent types.  In theory we
  * could dig out the required info from the pg_attribute entries of the
  * relation, but that data is not readily available to ExecTypeFromTL.
  * For now, we don't apply the physical-tlist optimization when there are

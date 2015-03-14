@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Concurrency Control"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -361,10 +361,18 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >CREATE INDEX CONCURRENTLY</TT
 >, and
-         some forms of <TT
+         <TT
+CLASS="COMMAND"
+>ALTER TABLE VALIDATE</TT
+> and other
+         <TT
 CLASS="COMMAND"
 >ALTER TABLE</TT
->.
+> variants (for full details see
+         <A
+HREF="sql-altertable.html"
+>ALTER TABLE</A
+>).
         </P
 ></DD
 ><DT
@@ -488,11 +496,10 @@ CLASS="LITERAL"
          transaction holding this lock mode.
         </P
 ><P
->         This lock mode is not automatically acquired on tables by any
-         <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> command.
+>         Acquired by <TT
+CLASS="COMMAND"
+>REFRESH MATERIALIZED VIEW CONCURRENTLY</TT
+>.
         </P
 ></DD
 ><DT
@@ -538,9 +545,6 @@ CLASS="LITERAL"
 ><P
 >         Acquired by the <TT
 CLASS="COMMAND"
->ALTER TABLE</TT
->, <TT
-CLASS="COMMAND"
 >DROP TABLE</TT
 >,
          <TT
@@ -557,7 +561,14 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >VACUUM FULL</TT
 >
-         commands.
+         commands. Many forms of <TT
+CLASS="COMMAND"
+>ALTER TABLE</TT
+> also acquire
+         a lock at this level (see <A
+HREF="sql-altertable.html"
+>ALTER TABLE</A
+>).
          This is also the default lock mode for <TT
 CLASS="COMMAND"
 >LOCK TABLE</TT
@@ -887,40 +898,232 @@ NAME="LOCKING-ROWS"
 ></H2
 ><P
 >     In addition to table-level locks, there are row-level locks, which
-     can be exclusive or shared locks.  An exclusive row-level lock on a
-     specific row is automatically acquired when the row is updated or
-     deleted.  The lock is held until the transaction commits or rolls
-     back, just like table-level locks.  Row-level locks do
-     not affect data querying; they block only <SPAN
+     are listed as below with the contexts in which they are used
+     automatically by <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>.  See
+     <A
+HREF="explicit-locking.html#ROW-LOCK-COMPATIBILITY"
+>Table 13-3</A
+> for a complete table of
+     row-level lock conflicts.  Note that a transaction can hold
+     conflicting locks on the same row, even in different subtransactions;
+     but other than that, two transactions can never hold conflicting locks
+     on the same row.  Row-level locks do not affect data querying; they
+     block only <SPAN
 CLASS="emphasis"
 ><I
 CLASS="EMPHASIS"
->writers to the same
-     row</I
+>writers and lockers</I
 ></SPAN
->.
+> to the same row.
     </P
 ><P
->     To acquire an exclusive row-level lock on a row without actually
-     modifying the row, select the row with <TT
+></P
+><DIV
+CLASS="VARIABLELIST"
+><P
+><B
+>Row-level Lock Modes</B
+></P
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+></DT
+><DD
+><P
+>         <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+> causes the rows retrieved by the
+         <TT
 CLASS="COMMAND"
->SELECT FOR
-     UPDATE</TT
->.  Note that once the row-level lock is acquired,
-     the transaction can update the row multiple times without
-     fear of conflicts.
-    </P
-><P
->     To acquire a shared row-level lock on a row, select the row with
-     <TT
+>SELECT</TT
+> statement to be locked as though for
+         update.  This prevents them from being locked, modified or deleted by
+         other transactions until the current transaction ends.  That is,
+         other transactions that attempt <TT
+CLASS="COMMAND"
+>UPDATE</TT
+>,
+         <TT
+CLASS="COMMAND"
+>DELETE</TT
+>,
+         <TT
+CLASS="COMMAND"
+>SELECT FOR UPDATE</TT
+>,
+         <TT
+CLASS="COMMAND"
+>SELECT FOR NO KEY UPDATE</TT
+>,
+         <TT
 CLASS="COMMAND"
 >SELECT FOR SHARE</TT
->.  A shared lock does not prevent
-     other transactions from acquiring the same shared lock.  However,
-     no transaction is allowed to update, delete, or exclusively lock a
-     row on which any other transaction holds a shared lock.  Any attempt
-     to do so will block until the shared lock(s) have been released.
-    </P
+> or
+         <TT
+CLASS="COMMAND"
+>SELECT FOR KEY SHARE</TT
+>
+         of these rows will be blocked until the current transaction ends;
+         conversely, <TT
+CLASS="COMMAND"
+>SELECT FOR UPDATE</TT
+> will wait for a
+         concurrent transaction that has run any of those commands on the
+         same row,
+         and will then lock and return the updated row (or no row, if the
+         row was deleted).  Within a <TT
+CLASS="LITERAL"
+>REPEATABLE READ</TT
+> or
+         <TT
+CLASS="LITERAL"
+>SERIALIZABLE</TT
+> transaction,
+         however, an error will be thrown if a row to be locked has changed
+         since the transaction started.  For further discussion see
+         <A
+HREF="applevel-consistency.html"
+>Section 13.4</A
+>.
+        </P
+><P
+>         The <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+> lock mode
+         is also acquired by any <TT
+CLASS="COMMAND"
+>DELETE</TT
+> on a row, and also by an
+         <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> that modifies the values on certain columns.  Currently,
+         the set of columns considered for the <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> case are those that
+         have a unique index on them that can be used in a foreign key (so partial
+         indexes and expressional indexes are not considered), but this may change
+         in the future.
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+></DT
+><DD
+><P
+>         Behaves similarly to <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+>, except that the lock
+         acquired is weaker: this lock will not block
+         <TT
+CLASS="LITERAL"
+>SELECT FOR KEY SHARE</TT
+> commands that attempt to acquire
+         a lock on the same rows. This lock mode is also acquired by any
+         <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> that does not acquire a <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+> lock.
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FOR SHARE</TT
+></DT
+><DD
+><P
+>         Behaves similarly to <TT
+CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, except that it
+         acquires a shared lock rather than exclusive lock on each retrieved
+         row.  A shared lock blocks other transactions from performing
+         <TT
+CLASS="COMMAND"
+>UPDATE</TT
+>, <TT
+CLASS="COMMAND"
+>DELETE</TT
+>,
+         <TT
+CLASS="COMMAND"
+>SELECT FOR UPDATE</TT
+> or
+         <TT
+CLASS="COMMAND"
+>SELECT FOR NO KEY UPDATE</TT
+> on these rows, but it does not
+         prevent them from performing <TT
+CLASS="COMMAND"
+>SELECT FOR SHARE</TT
+> or
+         <TT
+CLASS="COMMAND"
+>SELECT FOR KEY SHARE</TT
+>.
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
+></DT
+><DD
+><P
+>         Behaves similarly to <TT
+CLASS="LITERAL"
+>FOR SHARE</TT
+>, except that the
+         lock is weaker: <TT
+CLASS="LITERAL"
+>SELECT FOR UPDATE</TT
+> is blocked, but not
+         <TT
+CLASS="LITERAL"
+>SELECT FOR NO KEY UPDATE</TT
+>.  A key-shared lock blocks
+         other transactions from performing <TT
+CLASS="COMMAND"
+>DELETE</TT
+> or
+         any <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> that changes the key values, but not
+         other <TT
+CLASS="COMMAND"
+>UPDATE</TT
+>, and neither does it prevent
+         <TT
+CLASS="COMMAND"
+>SELECT FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="COMMAND"
+>SELECT FOR SHARE</TT
+>,
+         or <TT
+CLASS="COMMAND"
+>SELECT FOR KEY SHARE</TT
+>.
+        </P
+></DD
+></DL
+></DIV
 ><P
 >     <SPAN
 CLASS="PRODUCTNAME"
@@ -935,6 +1138,119 @@ CLASS="COMMAND"
 > modifies selected rows to mark them locked, and so
      will result in disk writes.
     </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="ROW-LOCK-COMPATIBILITY"
+></A
+><P
+><B
+>Table 13-3. Conflicting Row-level Locks</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL
+WIDTH="1*"
+TITLE="lockst"><COL><COL><COL
+WIDTH="1*"
+TITLE="lockend"><THEAD
+><TR
+><TH
+ROWSPAN="2"
+>Requested Lock Mode</TH
+><TH
+COLSPAN="4"
+>Current Lock Mode</TH
+></TR
+><TR
+><TH
+>FOR KEY SHARE</TH
+><TH
+>FOR SHARE</TH
+><TH
+>FOR NO KEY UPDATE</TH
+><TH
+>FOR UPDATE</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>FOR KEY SHARE</TD
+><TD
+ALIGN="CENTER"
+>&nbsp;</TD
+><TD
+ALIGN="CENTER"
+>&nbsp;</TD
+><TD
+ALIGN="CENTER"
+>&nbsp;</TD
+><TD
+ALIGN="CENTER"
+>X</TD
+></TR
+><TR
+><TD
+>FOR SHARE</TD
+><TD
+ALIGN="CENTER"
+>&nbsp;</TD
+><TD
+ALIGN="CENTER"
+>&nbsp;</TD
+><TD
+ALIGN="CENTER"
+>X</TD
+><TD
+ALIGN="CENTER"
+>X</TD
+></TR
+><TR
+><TD
+>FOR NO KEY UPDATE</TD
+><TD
+ALIGN="CENTER"
+>&nbsp;</TD
+><TD
+ALIGN="CENTER"
+>X</TD
+><TD
+ALIGN="CENTER"
+>X</TD
+><TD
+ALIGN="CENTER"
+>X</TD
+></TR
+><TR
+><TD
+>FOR UPDATE</TD
+><TD
+ALIGN="CENTER"
+>X</TD
+><TD
+ALIGN="CENTER"
+>X</TD
+><TD
+ALIGN="CENTER"
+>X</TD
+><TD
+ALIGN="CENTER"
+>X</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="LOCKING-PAGES"
+>13.3.3. Page-level Locks</A
+></H2
 ><P
 >     In addition to table and row locks, page-level share/exclusive locks are
      used to control read/write access to table pages in the shared buffer
@@ -949,7 +1265,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LOCKING-DEADLOCKS"
->13.3.3. Deadlocks</A
+>13.3.4. Deadlocks</A
 ></H2
 ><P
 >     The use of explicit locking can increase the likelihood of
@@ -1048,7 +1364,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="ADVISORY-LOCKS"
->13.3.4. Advisory Locks</A
+>13.3.5. Advisory Locks</A
 ></H2
 ><P
 >     <SPAN
@@ -1064,7 +1380,7 @@ CLASS="FIRSTTERM"
      correctly.  Advisory locks can be useful for locking strategies
      that are an awkward fit for the MVCC model.
      For example, a common use of advisory locks is to emulate pessimistic
-     locking strategies typical of so called <SPAN
+     locking strategies typical of so-called <SPAN
 CLASS="QUOTE"
 >"flat file"</SPAN
 > data
@@ -1168,7 +1484,7 @@ CLASS="STRUCTNAME"
 >     The functions provided to manipulate advisory locks are described in
      <A
 HREF="functions-admin.html#FUNCTIONS-ADVISORY-LOCKS"
->Section 9.26.8</A
+>Section 9.26.9</A
 >.
     </P
 ></DIV

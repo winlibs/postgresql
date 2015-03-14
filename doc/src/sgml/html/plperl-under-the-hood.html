@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/Perl - Perl Procedural Language"
 HREF="plperl.html"><LINK
 REL="PREVIOUS"
-TITLE="PL/Perl Triggers"
-HREF="plperl-triggers.html"><LINK
+TITLE="PL/Perl Event Triggers"
+HREF="plperl-event-triggers.html"><LINK
 REL="NEXT"
 TITLE="PL/Python - Python Procedural Language"
 HREF="plpython.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="PL/Perl Triggers"
-HREF="plperl-triggers.html"
+TITLE="PL/Perl Event Triggers"
+HREF="plperl-event-triggers.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 41. PL/Perl - Perl Procedural Language</TD
+>Chapter 42. PL/Perl - Perl Procedural Language</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPERL-UNDER-THE-HOOD"
->41.7. PL/Perl Under the Hood</A
+>42.8. PL/Perl Under the Hood</A
 ></H1
 ><DIV
 CLASS="SECT2"
@@ -101,7 +101,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPERL-CONFIG"
->41.7.1. Configuration</A
+>42.8.1. Configuration</A
 ></H2
 ><P
 >  This section lists configuration parameters that affect <SPAN
@@ -124,7 +124,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies Perl code to be executed when a Perl interpreter is first
@@ -172,7 +173,7 @@ CLASS="PROGRAMLISTING"
 ><P
 >        Initialization will happen in the postmaster if the plperl library is
         included in <A
-HREF="runtime-config-resource.html#GUC-SHARED-PRELOAD-LIBRARIES"
+HREF="runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES"
 >shared_preload_libraries</A
 >, in which
         case extra consideration should be given to the risk of destabilizing
@@ -212,13 +213,15 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)<BR><TT
+>)
+       <BR><TT
 CLASS="VARNAME"
 >plperl.on_plperlu_init</TT
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+       </DT
 ><DD
 ><P
 >        These parameters specify Perl code to be executed when a Perl
@@ -272,7 +275,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+       </DT
 ><DD
 ><P
 >        When set true subsequent compilations of PL/Perl functions will have
@@ -292,7 +296,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPERL-MISSING"
->41.7.2. Limitations and Missing Features</A
+>42.8.2. Limitations and Missing Features</A
 ></H2
 ><P
 >   The following features are currently missing from PL/Perl, but they
@@ -375,7 +379,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="plperl-triggers.html"
+HREF="plperl-event-triggers.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -403,7 +407,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->PL/Perl Triggers</TD
+>PL/Perl Event Triggers</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

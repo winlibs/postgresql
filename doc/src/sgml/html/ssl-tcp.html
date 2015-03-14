@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -270,16 +270,19 @@ CLASS="QUOTE"
 CLASS="FILENAME"
 >server.crt</TT
 > file,
-   then its parent authority's certificate, and so on up to a <SPAN
+   then its parent authority's certificate, and so on up to a certificate
+   authority, <SPAN
 CLASS="QUOTE"
 >"root"</SPAN
->
-   authority that is trusted by the clients.  The root certificate should
-   be included in every case where <TT
+> or <SPAN
+CLASS="QUOTE"
+>"intermediate"</SPAN
+>, that is trusted by
+   clients, i.e. signed by a certificate in the clients'
+   <TT
 CLASS="FILENAME"
->server.crt</TT
-> contains more than
-   one certificate.
+>root.crt</TT
+> files.
   </P
 ><DIV
 CLASS="SECT2"
@@ -329,7 +332,19 @@ HREF="libpq-ssl.html"
 > for a
    description of how to set up certificates on the client.)  The server will
    verify that the client's certificate is signed by one of the trusted
-   certificate authorities.  Certificate Revocation List (CRL) entries
+   certificate authorities.  If intermediate <ACRONYM
+CLASS="ACRONYM"
+>CA</ACRONYM
+>s appear in
+   <TT
+CLASS="FILENAME"
+>root.crt</TT
+>, the file must also contain certificate
+   chains to their root <ACRONYM
+CLASS="ACRONYM"
+>CA</ACRONYM
+>s.  Certificate Revocation List
+   (CRL) entries
    are also checked if the parameter <A
 HREF="runtime-config-connection.html#GUC-SSL-CRL-FILE"
 >ssl_crl_file</A
@@ -363,11 +378,12 @@ CLASS="LITERAL"
    &mdash; but it will not insist that a client certificate be presented.
   </P
 ><P
->   Note that <TT
+>   Note that the server's <TT
 CLASS="FILENAME"
 >root.crt</TT
-> lists the top-level CAs that are
-   considered trusted for signing client certificates.  In principle it need
+> lists the top-level
+   CAs that are considered trusted for signing client certificates.
+   In principle it need
    not list the CA that signed the server's certificate, though in most cases
    that CA would also be trusted for client certificates.
   </P
@@ -380,7 +396,7 @@ CLASS="LITERAL"
    control user authentication as well as providing connection security.
    See <A
 HREF="auth-methods.html#AUTH-CERT"
->Section 19.3.10</A
+>Section 19.3.9</A
 > for details.
   </P
 ></DIV
@@ -395,7 +411,7 @@ NAME="SSL-SERVER-FILES"
 ><P
 >    <A
 HREF="ssl-tcp.html#SSL-FILE-USAGE"
->Table 17-3</A
+>Table 17-2</A
 > summarizes the files that are
     relevant to the SSL setup on the server.  (The shown file names are default
     or typical names.  The locally configured names could be different.)
@@ -407,7 +423,7 @@ NAME="SSL-FILE-USAGE"
 ></A
 ><P
 ><B
->Table 17-3. SSL Server File Usage</B
+>Table 17-2. SSL Server File Usage</B
 ></P
 ><TABLE
 BORDER="1"

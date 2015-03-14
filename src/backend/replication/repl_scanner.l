@@ -4,7 +4,7 @@
  * repl_scanner.l
  *	  a lexical scanner for the replication commands
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -15,9 +15,18 @@
  */
 #include "postgres.h"
 
+#include "utils/builtins.h"
+#include "parser/scansup.h"
+
 /* Avoid exit() on fatal scanner errors (a bit ugly -- see yy_fatal_error) */
 #undef fprintf
-#define fprintf(file, fmt, msg)  ereport(ERROR, (errmsg_internal("%s", msg)))
+#define fprintf(file, fmt, msg)  fprintf_to_ereport(fmt, msg)
+
+static void
+fprintf_to_ereport(const char *fmt, const char *msg)
+{
+	ereport(ERROR, (errmsg_internal("%s", msg)));
+}
 
 /* Handle to the buffer that the lexer uses internally */
 static YY_BUFFER_STATE scanbufhandle;
@@ -40,7 +49,7 @@ static void addlitchar(unsigned char ychar);
 %option warn
 %option prefix="replication_yy"
 
-%x xq
+%x xq xd
 
 /* Extended quote
  * xqdouble implements embedded quote, ''''
@@ -49,10 +58,25 @@ xqstart			{quote}
 xqdouble		{quote}{quote}
 xqinside		[^']+
 
+/* Double quote
+ * Allows embedded spaces and other special characters into identifiers.
+ */
+dquote			\"
+xdstart			{dquote}
+xdstop			{dquote}
+xddouble		{dquote}{dquote}
+xdinside		[^"]+
+
+digit			[0-9]+
 hexdigit		[0-9A-Za-z]+
 
 quote			'
 quotestop		{quote}
+
+ident_start		[A-Za-z\200-\377_]
+ident_cont		[A-Za-z\200-\377_0-9\$]
+
+identifier		{ident_start}{ident_cont}*
 
 %%
 
@@ -62,18 +86,37 @@ IDENTIFY_SYSTEM		{ return K_IDENTIFY_SYSTEM; }
 LABEL			{ return K_LABEL; }
 NOWAIT			{ return K_NOWAIT; }
 PROGRESS			{ return K_PROGRESS; }
+MAX_RATE		{ return K_MAX_RATE; }
 WAL			{ return K_WAL; }
+TIMELINE			{ return K_TIMELINE; }
 START_REPLICATION	{ return K_START_REPLICATION; }
+CREATE_REPLICATION_SLOT		{ return K_CREATE_REPLICATION_SLOT; }
+DROP_REPLICATION_SLOT		{ return K_DROP_REPLICATION_SLOT; }
+TIMELINE_HISTORY	{ return K_TIMELINE_HISTORY; }
+PHYSICAL			{ return K_PHYSICAL; }
+LOGICAL				{ return K_LOGICAL; }
+SLOT				{ return K_SLOT; }
+
 ","				{ return ','; }
 ";"				{ return ';'; }
+"("				{ return '('; }
+")"				{ return ')'; }
 
 [\n]			;
 [\t]			;
 " "				;
 
+{digit}+		{
+					yylval.uintval = strtoul(yytext, NULL, 10);
+					return UCONST;
+				}
+
 {hexdigit}+\/{hexdigit}+		{
-					if (sscanf(yytext, "%X/%X", &yylval.recptr.xlogid, &yylval.recptr.xrecoff) != 2)
+					uint32	hi,
+							lo;
+					if (sscanf(yytext, "%X/%X", &hi, &lo) != 2)
 						yyerror("invalid streaming start location");
+					yylval.recptr = ((uint64) hi) << 32 | lo;
 					return RECPTR;
 				}
 
@@ -81,20 +124,49 @@ START_REPLICATION	{ return K_START_REPLICATION; }
 					BEGIN(xq);
 					startlit();
 				}
+
 <xq>{quotestop}	{
 					yyless(1);
 					BEGIN(INITIAL);
 					yylval.str = litbufdup();
 					return SCONST;
 				}
-<xq>{xqdouble} {
+
+<xq>{xqdouble}	{
 					addlitchar('\'');
 				}
+
 <xq>{xqinside}  {
 					addlit(yytext, yyleng);
 				}
 
-<xq><<EOF>>		{ yyerror("unterminated quoted string"); }
+{xdstart}		{
+					BEGIN(xd);
+					startlit();
+				}
+
+<xd>{xdstop}	{
+					int len;
+					yyless(1);
+					BEGIN(INITIAL);
+					yylval.str = litbufdup();
+					len = strlen(yylval.str);
+					truncate_identifier(yylval.str, len, true);
+					return IDENT;
+				}
+
+<xd>{xdinside}  {
+					addlit(yytext, yyleng);
+				}
+
+{identifier}	{
+					int len = strlen(yytext);
+
+					yylval.str = downcase_truncate_identifier(yytext, len, true);
+					return IDENT;
+				}
+
+<xq,xd><<EOF>>	{ yyerror("unterminated quoted string"); }
 
 
 <<EOF>>			{
@@ -133,7 +205,7 @@ addlitchar(unsigned char ychar)
 	appendStringInfoChar(&litbuf, ychar);
 }
 
-void
+void __attribute__((noreturn))
 yyerror(const char *message)
 {
 	ereport(ERROR,

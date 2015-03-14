@@ -3,7 +3,7 @@
  * snapmgr.h
  *	  POSTGRES snapshot manager
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/snapmgr.h
@@ -13,7 +13,9 @@
 #ifndef SNAPMGR_H
 #define SNAPMGR_H
 
+#include "fmgr.h"
 #include "utils/resowner.h"
+#include "utils/snapshot.h"
 
 
 extern bool FirstSnapshotSet;
@@ -21,10 +23,15 @@ extern bool FirstSnapshotSet;
 extern TransactionId TransactionXmin;
 extern TransactionId RecentXmin;
 extern TransactionId RecentGlobalXmin;
+extern TransactionId RecentGlobalDataXmin;
 
 extern Snapshot GetTransactionSnapshot(void);
 extern Snapshot GetLatestSnapshot(void);
 extern void SnapshotSetCommandId(CommandId curcid);
+
+extern Snapshot GetCatalogSnapshot(Oid relid);
+extern Snapshot GetNonHistoricCatalogSnapshot(Oid relid);
+extern void InvalidateCatalogSnapshot(void);
 
 extern void PushActiveSnapshot(Snapshot snapshot);
 extern void PushCopiedSnapshot(Snapshot snapshot);
@@ -46,5 +53,15 @@ extern Datum pg_export_snapshot(PG_FUNCTION_ARGS);
 extern void ImportSnapshot(const char *idstr);
 extern bool XactHasExportedSnapshots(void);
 extern void DeleteAllExportedSnapshotFiles(void);
+extern bool ThereAreNoPriorRegisteredSnapshots(void);
+
+extern char *ExportSnapshot(Snapshot snapshot);
+
+/* Support for catalog timetravel for logical decoding */
+struct HTAB;
+extern struct HTAB *HistoricSnapshotGetTupleCids(void);
+extern void SetupHistoricSnapshot(Snapshot snapshot_now, struct HTAB *tuplecids);
+extern void TeardownHistoricSnapshot(bool is_error);
+extern bool HistoricSnapshotActive(void);
 
 #endif   /* SNAPMGR_H */

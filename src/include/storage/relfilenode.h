@@ -4,7 +4,7 @@
  *	  Physical access information for relations.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/relfilenode.h
@@ -14,29 +14,8 @@
 #ifndef RELFILENODE_H
 #define RELFILENODE_H
 
+#include "common/relpath.h"
 #include "storage/backendid.h"
-
-/*
- * The physical storage of a relation consists of one or more forks. The
- * main fork is always created, but in addition to that there can be
- * additional forks for storing various metadata. ForkNumber is used when
- * we need to refer to a specific fork in a relation.
- */
-typedef enum ForkNumber
-{
-	InvalidForkNumber = -1,
-	MAIN_FORKNUM = 0,
-	FSM_FORKNUM,
-	VISIBILITYMAP_FORKNUM,
-	INIT_FORKNUM
-
-	/*
-	 * NOTE: if you add a new fork, change MAX_FORKNUM below and update the
-	 * forkNames array in catalog.c
-	 */
-} ForkNumber;
-
-#define MAX_FORKNUM		INIT_FORKNUM
 
 /*
  * RelFileNode must provide all that we need to know to physically access
@@ -48,14 +27,15 @@ typedef enum ForkNumber
  * spcNode identifies the tablespace of the relation.  It corresponds to
  * pg_tablespace.oid.
  *
- * dbNode identifies the database of the relation.	It is zero for
+ * dbNode identifies the database of the relation.  It is zero for
  * "shared" relations (those common to all databases of a cluster).
  * Nonzero dbNode values correspond to pg_database.oid.
  *
  * relNode identifies the specific relation.  relNode corresponds to
  * pg_class.relfilenode (NOT pg_class.oid, because we need to be able
  * to assign new physical files to relations in some situations).
- * Notice that relNode is only unique within a particular database.
+ * Notice that relNode is only unique within a database in a particular
+ * tablespace.
  *
  * Note: spcNode must be GLOBALTABLESPACE_OID if and only if dbNode is
  * zero.  We support shared relations only in the "global" tablespace.

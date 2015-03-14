@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SET
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "SET" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "SET" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 SET \- change a run\-time parameter
-.\" SET
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -127,11 +126,7 @@ LOCAL
 Specifies that the command takes effect for only the current transaction\&. After
 \fBCOMMIT\fR
 or
-\fBROLLBACK\fR, the session\-level setting takes effect again\&. Note that
-\fBSET LOCAL\fR
-will appear to have no effect if it is executed outside a
-\fBBEGIN\fR
-block, since the transaction will end immediately\&.
+\fBROLLBACK\fR, the session\-level setting takes effect again\&. Issuing this outside of a transaction block emits a warning and otherwise has no effect\&.
 .RE
 .PP
 \fIconfiguration_parameter\fR
@@ -216,11 +211,19 @@ INTERVAL \*(Aq\-08:00\*(Aq HOUR TO MINUTE
 The time zone 8 hours west from UTC (equivalent to PST)\&.
 .RE
 .PP
-LOCAL, DEFAULT
+LOCAL
+.br
+DEFAULT
 .RS 4
 Set the time zone to your local time zone (that is, the server\*(Aqs default value of
 \fItimezone\fR)\&.
 .RE
+.sp
+Timezone settings given as numbers or intervals are internally translated to POSIX timezone syntax\&. For example, after
+SET TIME ZONE \-7,
+\fBSHOW TIME ZONE\fR
+would report
+<\-07>+07\&.
 .sp
 See
 Section 8.5.3, \(lqTime Zones\(rq, in the documentation

@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
 HREF="contrib.html"><LINK
 REL="PREVIOUS"
-TITLE="pg_freespacemap"
-HREF="pgfreespacemap.html"><LINK
+TITLE="pg_prewarm"
+HREF="pgprewarm.html"><LINK
 REL="NEXT"
 TITLE="pg_stat_statements"
 HREF="pgstatstatements.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="pg_freespacemap"
-HREF="pgfreespacemap.html"
+TITLE="pg_prewarm"
+HREF="pgprewarm.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PGROWLOCKS"
->F.27. pgrowlocks</A
+>F.28. pgrowlocks</A
 ></H1
 ><P
 >  The <TT
@@ -107,8 +107,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142231"
->F.27.1. Overview</A
+NAME="AEN159630"
+>F.28.1. Overview</A
 ></H2
 ><PRE
 CLASS="SYNOPSIS"
@@ -165,27 +165,6 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
->lock_type</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
->Shared</TT
-> for shared lock, or
-             <TT
-CLASS="LITERAL"
->Exclusive</TT
-> for exclusive lock</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
 >locker</TT
 ></TD
 ><TD
@@ -223,6 +202,41 @@ CLASS="TYPE"
 ></TD
 ><TD
 >Transaction IDs of lockers (more than one if multitransaction)</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>lock_type</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text[]</TT
+></TD
+><TD
+>Lock mode of lockers (more than one if multitransaction),
+       an array of <TT
+CLASS="LITERAL"
+>Key Share</TT
+>, <TT
+CLASS="LITERAL"
+>Share</TT
+>,
+       <TT
+CLASS="LITERAL"
+>For No Key Update</TT
+>, <TT
+CLASS="LITERAL"
+>No Key Update</TT
+>,
+       <TT
+CLASS="LITERAL"
+>For Update</TT
+>, <TT
+CLASS="LITERAL"
+>Update</TT
+>.</TD
 ></TR
 ><TR
 ><TD
@@ -290,11 +304,7 @@ CLASS="PROGRAMLISTING"
   WHERE p.locked_row = a.ctid;</PRE
 ><P>
 
-   Be aware however that (as of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.3) such a
-   query will be very inefficient.
+   Be aware however that such a query will be very inefficient.
   </P
 ></DIV
 ><DIV
@@ -302,8 +312,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142298"
->F.27.2. Sample Output</A
+NAME="AEN159702"
+>F.28.2. Sample Output</A
 ></H2
 ><PRE
 CLASS="SCREEN"
@@ -321,8 +331,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142301"
->F.27.3. Author</A
+NAME="AEN159705"
+>F.28.3. Author</A
 ></H2
 ><P
 >   Tatsuo Ishii
@@ -345,7 +355,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="pgfreespacemap.html"
+HREF="pgprewarm.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -373,7 +383,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->pg_freespacemap</TD
+>pg_prewarm</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

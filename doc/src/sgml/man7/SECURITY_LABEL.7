@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SECURITY LABEL
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "SECURITY LABEL" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "SECURITY LABEL" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 SECURITY_LABEL \- define or change a security label applied to an object
-.\" SECURITY LABEL
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -37,12 +36,14 @@ SECURITY LABEL [ FOR \fIprovider\fR ] ON
 {
   TABLE \fIobject_name\fR |
   COLUMN \fItable_name\fR\&.\fIcolumn_name\fR |
-  AGGREGATE \fIagg_name\fR (\fIagg_type\fR [, \&.\&.\&.] ) |
+  AGGREGATE \fIaggregate_name\fR ( \fIaggregate_signature\fR ) |
   DATABASE \fIobject_name\fR |
   DOMAIN \fIobject_name\fR |
+  EVENT TRIGGER \fIobject_name\fR |
   FOREIGN TABLE \fIobject_name\fR
   FUNCTION \fIfunction_name\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) |
   LARGE OBJECT \fIlarge_object_oid\fR |
+  MATERIALIZED VIEW \fIobject_name\fR |
   [ PROCEDURAL ] LANGUAGE \fIobject_name\fR |
   ROLE \fIobject_name\fR |
   SCHEMA \fIobject_name\fR |
@@ -51,6 +52,12 @@ SECURITY LABEL [ FOR \fIprovider\fR ] ON
   TYPE \fIobject_name\fR |
   VIEW \fIobject_name\fR
 } IS \*(Aq\fIlabel\fR\*(Aq
+
+where \fIaggregate_signature\fR is:
+
+* |
+[ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [ , \&.\&.\&. ] |
+[ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [ , \&.\&.\&. ] ] ORDER BY [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [ , \&.\&.\&. ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -83,7 +90,13 @@ places no restrictions on whether or how a label provider must interpret securit
 SE\-Linux\&. Such systems make all access control decisions based on object labels, rather than traditional discretionary access control (DAC) concepts such as users and groups\&.
 .SH "PARAMETERS"
 .PP
-\fIobject_name\fR, \fItable_name\&.column_name\fR, \fIagg_name\fR, \fIfunction_name\fR
+\fIobject_name\fR
+.br
+\fItable_name\&.column_name\fR
+.br
+\fIaggregate_name\fR
+.br
+\fIfunction_name\fR
 .RS 4
 The name of the object to be labeled\&. Names of tables, aggregates, domains, foreign tables, functions, sequences, types, and views can be schema\-qualified\&.
 .RE
@@ -93,22 +106,15 @@ The name of the object to be labeled\&. Names of tables, aggregates, domains, fo
 The name of the provider with which this label is to be associated\&. The named provider must be loaded and must consent to the proposed labeling operation\&. If exactly one provider is loaded, the provider name may be omitted for brevity\&.
 .RE
 .PP
-\fIarg_type\fR
-.RS 4
-An input data type on which the aggregate function operates\&. To reference a zero\-argument aggregate function, write
-*
-in place of the list of input data types\&.
-.RE
-.PP
 \fIargmode\fR
 .RS 4
-The mode of a function argument:
+The mode of a function or aggregate argument:
 IN,
 OUT,
 INOUT, or
 VARIADIC\&. If omitted, the default is
 IN\&. Note that
-\fBSECURITY LABEL ON FUNCTION\fR
+\fBSECURITY LABEL\fR
 does not actually pay any attention to
 OUT
 arguments, since only the input arguments are needed to determine the function\*(Aqs identity\&. So it is sufficient to list the
@@ -120,14 +126,14 @@ arguments\&.
 .PP
 \fIargname\fR
 .RS 4
-The name of a function argument\&. Note that
-\fBSECURITY LABEL ON FUNCTION\fR
+The name of a function or aggregate argument\&. Note that
+\fBSECURITY LABEL\fR
 does not actually pay any attention to argument names, since only the argument data types are needed to determine the function\*(Aqs identity\&.
 .RE
 .PP
 \fIargtype\fR
 .RS 4
-The data type(s) of the function\*(Aqs arguments (optionally schema\-qualified), if any\&.
+The data type of a function or aggregate argument\&.
 .RE
 .PP
 \fIlarge_object_oid\fR

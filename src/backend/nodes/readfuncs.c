@@ -3,7 +3,7 @@
  * readfuncs.c
  *	  Reader functions for Postgres tree nodes.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -12,7 +12,7 @@
  *
  * NOTES
  *	  Path and Plan nodes do not have any readfuncs support, because we
- *	  never have occasion to read them in.	(There was once code here that
+ *	  never have occasion to read them in.  (There was once code here that
  *	  claimed to read them, but it was broken as well as unused.)  We
  *	  never read executor state trees, either.
  *
@@ -34,7 +34,7 @@
 
 /*
  * Macros to simplify reading of different kinds of fields.  Use these
- * wherever possible to reduce the chance for silly typos.	Note that these
+ * wherever possible to reduce the chance for silly typos.  Note that these
  * hard-wire conventions about the names of the local variables in a Read
  * routine.
  */
@@ -48,8 +48,7 @@
 /* And a few guys need only the pg_strtok support fields */
 #define READ_TEMP_LOCALS()	\
 	char	   *token;		\
-	int			length;		\
-	(void) token				/* possibly unused */
+	int			length
 
 /* ... but most need both */
 #define READ_LOCALS(nodeTypeName)			\
@@ -108,16 +107,19 @@
 #define READ_LOCATION_FIELD(fldname) \
 	token = pg_strtok(&length);		/* skip :fldname */ \
 	token = pg_strtok(&length);		/* get field value */ \
+	(void) token;				/* in case not used elsewhere */ \
 	local_node->fldname = -1	/* set field to "unknown" */
 
 /* Read a Node field */
 #define READ_NODE_FIELD(fldname) \
 	token = pg_strtok(&length);		/* skip :fldname */ \
+	(void) token;				/* in case not used elsewhere */ \
 	local_node->fldname = nodeRead(NULL, 0)
 
 /* Read a bitmapset field */
 #define READ_BITMAPSET_FIELD(fldname) \
 	token = pg_strtok(&length);		/* skip :fldname */ \
+	(void) token;				/* in case not used elsewhere */ \
 	local_node->fldname = _readBitmapset()
 
 /* Routine exit */
@@ -128,7 +130,7 @@
 /*
  * NOTE: use atoi() to read values written with %d, or atoui() to read
  * values written with %u in outfuncs.c.  An exception is OID values,
- * for which use atooid().	(As of 7.1, outfuncs.c writes OIDs as %u,
+ * for which use atooid().  (As of 7.1, outfuncs.c writes OIDs as %u,
  * but this will probably change in the future.)
  */
 #define atoui(x)  ((unsigned int) strtoul((x), NULL, 10))
@@ -210,6 +212,7 @@ _readQuery(void)
 	READ_NODE_FIELD(rtable);
 	READ_NODE_FIELD(jointree);
 	READ_NODE_FIELD(targetList);
+	READ_NODE_FIELD(withCheckOptions);
 	READ_NODE_FIELD(returningList);
 	READ_NODE_FIELD(groupClause);
 	READ_NODE_FIELD(havingQual);
@@ -250,6 +253,21 @@ _readDeclareCursorStmt(void)
 	READ_STRING_FIELD(portalname);
 	READ_INT_FIELD(options);
 	READ_NODE_FIELD(query);
+
+	READ_DONE();
+}
+
+/*
+ * _readWithCheckOption
+ */
+static WithCheckOption *
+_readWithCheckOption(void)
+{
+	READ_LOCALS(WithCheckOption);
+
+	READ_STRING_FIELD(viewname);
+	READ_NODE_FIELD(qual);
+	READ_BOOL_FIELD(cascaded);
 
 	READ_DONE();
 }
@@ -301,7 +319,7 @@ _readRowMarkClause(void)
 	READ_LOCALS(RowMarkClause);
 
 	READ_UINT_FIELD(rti);
-	READ_BOOL_FIELD(forUpdate);
+	READ_ENUM_FIELD(strength, LockClauseStrength);
 	READ_BOOL_FIELD(noWait);
 	READ_BOOL_FIELD(pushedDown);
 
@@ -394,6 +412,7 @@ _readIntoClause(void)
 	READ_NODE_FIELD(options);
 	READ_ENUM_FIELD(onCommit, OnCommitAction);
 	READ_STRING_FIELD(tableSpaceName);
+	READ_NODE_FIELD(viewQuery);
 	READ_BOOL_FIELD(skipData);
 
 	READ_DONE();
@@ -475,10 +494,14 @@ _readAggref(void)
 	READ_OID_FIELD(aggtype);
 	READ_OID_FIELD(aggcollid);
 	READ_OID_FIELD(inputcollid);
+	READ_NODE_FIELD(aggdirectargs);
 	READ_NODE_FIELD(args);
 	READ_NODE_FIELD(aggorder);
 	READ_NODE_FIELD(aggdistinct);
+	READ_NODE_FIELD(aggfilter);
 	READ_BOOL_FIELD(aggstar);
+	READ_BOOL_FIELD(aggvariadic);
+	READ_CHAR_FIELD(aggkind);
 	READ_UINT_FIELD(agglevelsup);
 	READ_LOCATION_FIELD(location);
 
@@ -498,6 +521,7 @@ _readWindowFunc(void)
 	READ_OID_FIELD(wincollid);
 	READ_OID_FIELD(inputcollid);
 	READ_NODE_FIELD(args);
+	READ_NODE_FIELD(aggfilter);
 	READ_UINT_FIELD(winref);
 	READ_BOOL_FIELD(winstar);
 	READ_BOOL_FIELD(winagg);
@@ -537,6 +561,7 @@ _readFuncExpr(void)
 	READ_OID_FIELD(funcid);
 	READ_OID_FIELD(funcresulttype);
 	READ_BOOL_FIELD(funcretset);
+	READ_BOOL_FIELD(funcvariadic);
 	READ_ENUM_FIELD(funcformat, CoercionForm);
 	READ_OID_FIELD(funccollid);
 	READ_OID_FIELD(inputcollid);
@@ -576,7 +601,7 @@ _readOpExpr(void)
 	/*
 	 * The opfuncid is stored in the textual format primarily for debugging
 	 * and documentation reasons.  We want to always read it as zero to force
-	 * it to be re-looked-up in the pg_operator entry.	This ensures that
+	 * it to be re-looked-up in the pg_operator entry.  This ensures that
 	 * stored rules don't have hidden dependencies on operators' functions.
 	 * (We don't currently support an ALTER OPERATOR command, but might
 	 * someday.)
@@ -607,7 +632,7 @@ _readDistinctExpr(void)
 	/*
 	 * The opfuncid is stored in the textual format primarily for debugging
 	 * and documentation reasons.  We want to always read it as zero to force
-	 * it to be re-looked-up in the pg_operator entry.	This ensures that
+	 * it to be re-looked-up in the pg_operator entry.  This ensures that
 	 * stored rules don't have hidden dependencies on operators' functions.
 	 * (We don't currently support an ALTER OPERATOR command, but might
 	 * someday.)
@@ -638,7 +663,7 @@ _readNullIfExpr(void)
 	/*
 	 * The opfuncid is stored in the textual format primarily for debugging
 	 * and documentation reasons.  We want to always read it as zero to force
-	 * it to be re-looked-up in the pg_operator entry.	This ensures that
+	 * it to be re-looked-up in the pg_operator entry.  This ensures that
 	 * stored rules don't have hidden dependencies on operators' functions.
 	 * (We don't currently support an ALTER OPERATOR command, but might
 	 * someday.)
@@ -669,7 +694,7 @@ _readScalarArrayOpExpr(void)
 	/*
 	 * The opfuncid is stored in the textual format primarily for debugging
 	 * and documentation reasons.  We want to always read it as zero to force
-	 * it to be re-looked-up in the pg_operator entry.	This ensures that
+	 * it to be re-looked-up in the pg_operator entry.  This ensures that
 	 * stored rules don't have hidden dependencies on operators' functions.
 	 * (We don't currently support an ALTER OPERATOR command, but might
 	 * someday.)
@@ -1199,10 +1224,8 @@ _readRangeTblEntry(void)
 			READ_NODE_FIELD(joinaliasvars);
 			break;
 		case RTE_FUNCTION:
-			READ_NODE_FIELD(funcexpr);
-			READ_NODE_FIELD(funccoltypes);
-			READ_NODE_FIELD(funccoltypmods);
-			READ_NODE_FIELD(funccolcollations);
+			READ_NODE_FIELD(functions);
+			READ_BOOL_FIELD(funcordinality);
 			break;
 		case RTE_VALUES:
 			READ_NODE_FIELD(values_lists);
@@ -1222,12 +1245,33 @@ _readRangeTblEntry(void)
 			break;
 	}
 
+	READ_BOOL_FIELD(lateral);
 	READ_BOOL_FIELD(inh);
 	READ_BOOL_FIELD(inFromCl);
 	READ_UINT_FIELD(requiredPerms);
 	READ_OID_FIELD(checkAsUser);
 	READ_BITMAPSET_FIELD(selectedCols);
 	READ_BITMAPSET_FIELD(modifiedCols);
+	READ_NODE_FIELD(securityQuals);
+
+	READ_DONE();
+}
+
+/*
+ * _readRangeTblFunction
+ */
+static RangeTblFunction *
+_readRangeTblFunction(void)
+{
+	READ_LOCALS(RangeTblFunction);
+
+	READ_NODE_FIELD(funcexpr);
+	READ_INT_FIELD(funccolcount);
+	READ_NODE_FIELD(funccolnames);
+	READ_NODE_FIELD(funccoltypes);
+	READ_NODE_FIELD(funccoltypmods);
+	READ_NODE_FIELD(funccolcollations);
+	READ_BITMAPSET_FIELD(funcparams);
 
 	READ_DONE();
 }
@@ -1255,6 +1299,8 @@ parseNodeString(void)
 
 	if (MATCH("QUERY", 5))
 		return_value = _readQuery();
+	else if (MATCH("WITHCHECKOPTION", 15))
+		return_value = _readWithCheckOption();
 	else if (MATCH("SORTGROUPCLAUSE", 15))
 		return_value = _readSortGroupClause();
 	else if (MATCH("WINDOWCLAUSE", 12))
@@ -1353,6 +1399,8 @@ parseNodeString(void)
 		return_value = _readFromExpr();
 	else if (MATCH("RTE", 3))
 		return_value = _readRangeTblEntry();
+	else if (MATCH("RANGETBLFUNCTION", 16))
+		return_value = _readRangeTblFunction();
 	else if (MATCH("NOTIFY", 6))
 		return_value = _readNotifyStmt();
 	else if (MATCH("DECLARECURSOR", 13))
@@ -1392,15 +1440,13 @@ readDatum(bool typbyval)
 
 	token = pg_strtok(&tokenLength);	/* read the '[' */
 	if (token == NULL || token[0] != '[')
-		elog(ERROR, "expected \"[\" to start datum, but got \"%s\"; length = %lu",
-			 token ? (const char *) token : "[NULL]",
-			 (unsigned long) length);
+		elog(ERROR, "expected \"[\" to start datum, but got \"%s\"; length = %zu",
+			 token ? (const char *) token : "[NULL]", length);
 
 	if (typbyval)
 	{
 		if (length > (Size) sizeof(Datum))
-			elog(ERROR, "byval datum but length = %lu",
-				 (unsigned long) length);
+			elog(ERROR, "byval datum but length = %zu", length);
 		res = (Datum) 0;
 		s = (char *) (&res);
 		for (i = 0; i < (Size) sizeof(Datum); i++)
@@ -1424,9 +1470,8 @@ readDatum(bool typbyval)
 
 	token = pg_strtok(&tokenLength);	/* read the ']' */
 	if (token == NULL || token[0] != ']')
-		elog(ERROR, "expected \"]\" to end datum, but got \"%s\"; length = %lu",
-			 token ? (const char *) token : "[NULL]",
-			 (unsigned long) length);
+		elog(ERROR, "expected \"]\" to end datum, but got \"%s\"; length = %zu",
+			 token ? (const char *) token : "[NULL]", length);
 
 	return res;
 }

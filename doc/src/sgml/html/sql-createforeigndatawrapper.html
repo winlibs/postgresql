@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEFOREIGNDATAWRAPPER"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN67721"
+NAME="AEN73258"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN67721"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN67726"
+NAME="AEN73261"
 ></A
 ><H2
 >Synopsis</H2
@@ -142,7 +142,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67733"
+NAME="AEN73268"
 ></A
 ><H2
 >Description</H2
@@ -164,7 +164,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67739"
+NAME="AEN73274"
 ></A
 ><H2
 >Parameters</H2
@@ -234,11 +234,11 @@ CLASS="REPLACEABLE"
 ><I
 >validator_function</I
 ></TT
-> is the
-      name of a previously registered function that will be called to
+>
+      is the name of a previously registered function that will be called to
       check the generic options given to the foreign-data wrapper, as
-      well as options for foreign servers and user mappings using the
-      foreign-data wrapper.  If no validator function or <TT
+      well as options for foreign servers, user mappings and foreign tables
+      using the foreign-data wrapper.  If no validator function or <TT
 CLASS="LITERAL"
 >NO
       VALIDATOR</TT
@@ -292,33 +292,24 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67774"
+NAME="AEN73309"
 ></A
 ><H2
 >Notes</H2
 ><P
->   At the moment, the foreign-data wrapper functionality is rudimentary.
-   There is no support for updating a foreign table, and optimization of
-   queries is primitive (and mostly left to the wrapper, too).
-  </P
-><P
->   There is one built-in foreign-data wrapper validator function
-   provided:
-   <TT
-CLASS="FILENAME"
->postgresql_fdw_validator</TT
->, which accepts
-   options corresponding to <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> connection
-   parameters.
+>   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>'s foreign-data functionality is still under
+   active development.  Optimization of queries is primitive (and mostly left
+   to the wrapper, too).  Thus, there is considerable room for future
+   performance improvements.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67780"
+NAME="AEN73313"
 ></A
 ><H2
 >Examples</H2
@@ -361,7 +352,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67792"
+NAME="AEN73325"
 ></A
 ><H2
 >Compatibility</H2
@@ -385,7 +376,10 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >LANGUAGE</TT
 >
-   are not implemented in PostgreSQL.
+   are not implemented in <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>.
   </P
 ><P
 >   Note, however, that the SQL/MED functionality as a whole is not yet
@@ -395,7 +389,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67801"
+NAME="AEN73335"
 ></A
 ><H2
 >See Also</H2
@@ -411,6 +405,9 @@ HREF="sql-createserver.html"
 >, <A
 HREF="sql-createusermapping.html"
 >CREATE USER MAPPING</A
+>, <A
+HREF="sql-createforeigntable.html"
+>CREATE FOREIGN TABLE</A
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

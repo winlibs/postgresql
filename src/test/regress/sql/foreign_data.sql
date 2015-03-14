@@ -267,7 +267,6 @@ CREATE SCHEMA foreign_schema;
 CREATE SERVER s0 FOREIGN DATA WRAPPER dummy;
 CREATE FOREIGN TABLE ft1 ();                                    -- ERROR
 CREATE FOREIGN TABLE ft1 () SERVER no_server;                   -- ERROR
-CREATE FOREIGN TABLE ft1 (c1 serial) SERVER sc;                 -- ERROR
 CREATE FOREIGN TABLE ft1 () SERVER s0 WITH OIDS;                -- ERROR
 CREATE FOREIGN TABLE ft1 (
 	c1 integer OPTIONS ("param 1" 'val1') NOT NULL,
@@ -289,15 +288,15 @@ COMMENT ON COLUMN ft1.c1 IS 'foreign column';
 COMMENT ON COLUMN ft1.c1 IS NULL;
 
 ALTER FOREIGN TABLE ft1 ADD COLUMN c4 integer;
-ALTER FOREIGN TABLE ft1 ADD COLUMN c5 integer DEFAULT 0;        -- ERROR
+ALTER FOREIGN TABLE ft1 ADD COLUMN c5 integer DEFAULT 0;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c6 integer;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c7 integer NOT NULL;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c8 integer;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c9 integer;
 ALTER FOREIGN TABLE ft1 ADD COLUMN c10 integer OPTIONS (p1 'v1');
 
-ALTER FOREIGN TABLE ft1 ALTER COLUMN c4 SET DEFAULT 0;          -- ERROR
-ALTER FOREIGN TABLE ft1 ALTER COLUMN c5 DROP DEFAULT;           -- ERROR
+ALTER FOREIGN TABLE ft1 ALTER COLUMN c4 SET DEFAULT 0;
+ALTER FOREIGN TABLE ft1 ALTER COLUMN c5 DROP DEFAULT;
 ALTER FOREIGN TABLE ft1 ALTER COLUMN c6 SET NOT NULL;
 ALTER FOREIGN TABLE ft1 ALTER COLUMN c7 DROP NOT NULL;
 ALTER FOREIGN TABLE ft1 ALTER COLUMN c8 TYPE char(10) USING '0'; -- ERROR
@@ -470,6 +469,50 @@ GRANT USAGE ON FOREIGN SERVER s9 TO regress_test_role;          -- WARNING
 CREATE USER MAPPING FOR current_user SERVER s9;
 DROP SERVER s9 CASCADE;                                         -- ERROR
 RESET ROLE;
+
+-- Triggers
+CREATE FUNCTION dummy_trigger() RETURNS TRIGGER AS $$
+  BEGIN
+    RETURN NULL;
+  END
+$$ language plpgsql;
+
+CREATE TRIGGER trigtest_before_stmt BEFORE INSERT OR UPDATE OR DELETE
+ON foreign_schema.foreign_table_1
+FOR EACH STATEMENT
+EXECUTE PROCEDURE dummy_trigger();
+
+CREATE TRIGGER trigtest_after_stmt AFTER INSERT OR UPDATE OR DELETE
+ON foreign_schema.foreign_table_1
+FOR EACH STATEMENT
+EXECUTE PROCEDURE dummy_trigger();
+
+CREATE TRIGGER trigtest_before_row BEFORE INSERT OR UPDATE OR DELETE
+ON foreign_schema.foreign_table_1
+FOR EACH ROW
+EXECUTE PROCEDURE dummy_trigger();
+
+CREATE TRIGGER trigtest_after_row AFTER INSERT OR UPDATE OR DELETE
+ON foreign_schema.foreign_table_1
+FOR EACH ROW
+EXECUTE PROCEDURE dummy_trigger();
+
+CREATE CONSTRAINT TRIGGER trigtest_constraint AFTER INSERT OR UPDATE OR DELETE
+ON foreign_schema.foreign_table_1
+FOR EACH ROW
+EXECUTE PROCEDURE dummy_trigger();
+
+ALTER FOREIGN TABLE foreign_schema.foreign_table_1
+	DISABLE TRIGGER trigtest_before_stmt;
+ALTER FOREIGN TABLE foreign_schema.foreign_table_1
+	ENABLE TRIGGER trigtest_before_stmt;
+
+DROP TRIGGER trigtest_before_stmt ON foreign_schema.foreign_table_1;
+DROP TRIGGER trigtest_before_row ON foreign_schema.foreign_table_1;
+DROP TRIGGER trigtest_after_stmt ON foreign_schema.foreign_table_1;
+DROP TRIGGER trigtest_after_row ON foreign_schema.foreign_table_1;
+
+DROP FUNCTION dummy_trigger();
 
 -- DROP FOREIGN TABLE
 DROP FOREIGN TABLE no_table;                                    -- ERROR

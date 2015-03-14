@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="SQL-DROP-OWNED">
+ <indexterm zone="sql-drop-owned">
+  <primary>DROP OWNED</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle>DROP OWNED</refentrytitle>
   <manvolnum>7</manvolnum>
@@ -15,10 +19,6 @@ PostgreSQL documentation
   <refpurpose>remove database objects owned by a database role</refpurpose>
  </refnamediv>
 
- <indexterm zone="sql-drop-owned">
-  <primary>DROP OWNED</primary>
- </indexterm>
-
  <refsynopsisdiv>
 <synopsis>
 DROP OWNED BY <replaceable class="PARAMETER">name</replaceable> [, ...] [ CASCADE | RESTRICT ]
@@ -29,10 +29,11 @@ DROP OWNED BY <replaceable class="PARAMETER">name</replaceable> [, ...] [ CASCAD
   <title>Description</title>
 
   <para>
-   <command>DROP OWNED</command> drops all the objects in the current
+   <command>DROP OWNED</command> drops all the objects within the current
    database that are owned by one of the specified roles. Any
    privileges granted to the given roles on objects in the current
-   database will also be revoked.
+   database and on shared objects (databases, tablespaces) will also be
+   revoked.
   </para>
  </refsect1>
 
@@ -93,7 +94,7 @@ DROP OWNED BY <replaceable class="PARAMETER">name</replaceable> [, ...] [ CASCAD
   </para>
 
   <para>
-   Databases owned by the role(s) will not be removed.
+   Databases and tablespaces owned by the role(s) will not be removed.
   </para>
  </refsect1>
 

@@ -113,8 +113,8 @@
    <structfield>amoptionalkey</structfield> false.
    One reason that an index AM might set
    <structfield>amoptionalkey</structfield> false is if it doesn't index
-   NULLs.  Since most indexable operators are
-   strict and hence cannot return TRUE for NULL inputs,
+   null values.  Since most indexable operators are
+   strict and hence cannot return true for null inputs,
    it is at first sight attractive to not store index entries for null values:
    they could never be returned by an index scan anyway.  However, this
    argument fails when an index scan has no restriction clause for a given
@@ -168,7 +168,7 @@ ambuild (Relation heapRelation,
 void
 ambuildempty (Relation indexRelation);
 </programlisting>
-   Build an empty index, and write it to the initialization fork (INIT_FORKNUM)
+   Build an empty index, and write it to the initialization fork (<symbol>INIT_FORKNUM</symbol>)
    of the given relation.  This method is called only for unlogged tables; the
    empty index written to the initialization fork will be copied over the main
    relation fork on each server restart.
@@ -278,7 +278,7 @@ amcanreturn (Relation indexRelation);
 </programlisting>
    Check whether the index can support <firstterm>index-only scans</> by
    returning the indexed column values for an index entry in the form of an
-   IndexTuple.  Return TRUE if so, else FALSE.  If the index AM can never
+   <structname>IndexTuple</structname>.  Return TRUE if so, else FALSE.  If the index AM can never
    support index-only scans (an example is hash, which stores only
    the hash values not the original data), it is sufficient to set its
    <structfield>amcanreturn</> field to zero in <structname>pg_am</>.
@@ -713,7 +713,7 @@ amrestrpos (IndexScanDesc scan);
    When using an MVCC-compliant snapshot, there is no problem because
    the new occupant of the slot is certain to be too new to pass the
    snapshot test.  However, with a non-MVCC-compliant snapshot (such as
-   <literal>SnapshotNow</>), it would be possible to accept and return
+   <literal>SnapshotAny</>), it would be possible to accept and return
    a row that does not in fact match the scan keys.  We could defend
    against this scenario by requiring the scan keys to be rechecked
    against the heap row in all cases, but that is too expensive.  Instead,
@@ -746,7 +746,7 @@ amrestrpos (IndexScanDesc scan);
   <para>
    When the <structfield>ampredlocks</> flag is not set, any scan using that
    index access method within a serializable transaction will acquire a
-   non-blocking predicate lock on the full index.  This will generate a
+   nonblocking predicate lock on the full index.  This will generate a
    read-write conflict with the insert of any tuple into that index by a
    concurrent serializable transaction.  If certain patterns of read-write
    conflicts are detected among a set of concurrent serializable

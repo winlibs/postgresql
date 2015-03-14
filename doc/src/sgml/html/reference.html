@@ -9,11 +9,11 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="PREVIOUS"
-TITLE="Examples"
-HREF="spi-examples.html"><LINK
+TITLE="Synchronous Replication Support for Logical Decoding"
+HREF="logicaldecoding-synchronous.html"><LINK
 REL="NEXT"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
@@ -23,7 +23,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="PART"
 ><DIV
@@ -36,12 +36,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -50,8 +50,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="Examples"
-HREF="spi-examples.html"
+TITLE="Synchronous Replication Support for Logical Decoding"
+HREF="logicaldecoding-synchronous.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -97,7 +97,7 @@ CLASS="TITLE"
 ><DIV
 CLASS="PARTINTRO"
 ><A
-NAME="AEN61811"
+NAME="AEN66607"
 ></A
 ><P
 >   The entries in this Reference are meant to provide in reasonable
@@ -170,6 +170,11 @@ HREF="sql-alterdomain.html"
   </DT
 ><DT
 ><A
+HREF="sql-altereventtrigger.html"
+>ALTER EVENT TRIGGER</A
+>&nbsp;--&nbsp;change the definition of an event trigger</DT
+><DT
+><A
 HREF="sql-alterextension.html"
 >ALTER EXTENSION</A
 >&nbsp;--&nbsp;   change the definition of an extension
@@ -211,6 +216,11 @@ HREF="sql-alterlargeobject.html"
 >&nbsp;--&nbsp;change the definition of a large object</DT
 ><DT
 ><A
+HREF="sql-altermaterializedview.html"
+>ALTER MATERIALIZED VIEW</A
+>&nbsp;--&nbsp;change the definition of a materialized view</DT
+><DT
+><A
 HREF="sql-alteroperator.html"
 >ALTER OPERATOR</A
 >&nbsp;--&nbsp;change the definition of an operator</DT
@@ -231,6 +241,11 @@ HREF="sql-alterrole.html"
 >&nbsp;--&nbsp;change a database role</DT
 ><DT
 ><A
+HREF="sql-alterrule.html"
+>ALTER RULE</A
+>&nbsp;--&nbsp;change the definition of a rule</DT
+><DT
+><A
 HREF="sql-alterschema.html"
 >ALTER SCHEMA</A
 >&nbsp;--&nbsp;change the definition of a schema</DT
@@ -245,6 +260,11 @@ HREF="sql-altersequence.html"
 HREF="sql-alterserver.html"
 >ALTER SERVER</A
 >&nbsp;--&nbsp;change the definition of a foreign server</DT
+><DT
+><A
+HREF="sql-altersystem.html"
+>ALTER SYSTEM</A
+>&nbsp;--&nbsp;change a server configuration parameter</DT
 ><DT
 ><A
 HREF="sql-altertable.html"
@@ -378,6 +398,11 @@ HREF="sql-createdomain.html"
 >&nbsp;--&nbsp;define a new domain</DT
 ><DT
 ><A
+HREF="sql-createeventtrigger.html"
+>CREATE EVENT TRIGGER</A
+>&nbsp;--&nbsp;define a new event trigger</DT
+><DT
+><A
 HREF="sql-createextension.html"
 >CREATE EXTENSION</A
 >&nbsp;--&nbsp;install an extension</DT
@@ -411,6 +436,11 @@ HREF="sql-createindex.html"
 HREF="sql-createlanguage.html"
 >CREATE LANGUAGE</A
 >&nbsp;--&nbsp;define a new procedural language</DT
+><DT
+><A
+HREF="sql-creatematerializedview.html"
+>CREATE MATERIALIZED VIEW</A
+>&nbsp;--&nbsp;define a new materialized view</DT
 ><DT
 ><A
 HREF="sql-createoperator.html"
@@ -568,6 +598,11 @@ HREF="sql-dropdomain.html"
 >&nbsp;--&nbsp;remove a domain</DT
 ><DT
 ><A
+HREF="sql-dropeventtrigger.html"
+>DROP EVENT TRIGGER</A
+>&nbsp;--&nbsp;remove an event trigger</DT
+><DT
+><A
 HREF="sql-dropextension.html"
 >DROP EXTENSION</A
 >&nbsp;--&nbsp;remove an extension</DT
@@ -601,6 +636,11 @@ HREF="sql-dropindex.html"
 HREF="sql-droplanguage.html"
 >DROP LANGUAGE</A
 >&nbsp;--&nbsp;remove a procedural language</DT
+><DT
+><A
+HREF="sql-dropmaterializedview.html"
+>DROP MATERIALIZED VIEW</A
+>&nbsp;--&nbsp;remove a materialized view</DT
 ><DT
 ><A
 HREF="sql-dropoperator.html"
@@ -771,6 +811,11 @@ HREF="sql-prepare-transaction.html"
 HREF="sql-reassign-owned.html"
 >REASSIGN OWNED</A
 >&nbsp;--&nbsp;change the ownership of database objects owned by a database role</DT
+><DT
+><A
+HREF="sql-refreshmaterializedview.html"
+>REFRESH MATERIALIZED VIEW</A
+>&nbsp;--&nbsp;replace the contents of a materialized view</DT
 ><DT
 ><A
 HREF="sql-reindex.html"
@@ -1018,12 +1063,34 @@ CLASS="PRODUCTNAME"
 > database cluster into a script file</DT
 ><DT
 ><A
-HREF="app-pgreceivexlog.html"
->pg_receivexlog</A
->&nbsp;--&nbsp;streams transaction logs from a <SPAN
+HREF="app-pg-isready.html"
+><SPAN
+CLASS="APPLICATION"
+>pg_isready</SPAN
+></A
+>&nbsp;--&nbsp;check the connection status of a <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> cluster</DT
+> server</DT
+><DT
+><A
+HREF="app-pgreceivexlog.html"
+>pg_receivexlog</A
+>&nbsp;--&nbsp;stream transaction logs from a <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> server</DT
+><DT
+><A
+HREF="app-pgrecvlogical.html"
+><SPAN
+CLASS="APPLICATION"
+>pg_recvlogical</SPAN
+></A
+>&nbsp;--&nbsp;control <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> logical decoding streams</DT
 ><DT
 ><A
 HREF="app-pgrestore.html"
@@ -1165,7 +1232,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="spi-examples.html"
+HREF="logicaldecoding-synchronous.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -1193,7 +1260,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Examples</TD
+>Synchronous Replication Support for Logical Decoding</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

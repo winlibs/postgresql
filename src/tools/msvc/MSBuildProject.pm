@@ -1,7 +1,7 @@
 package MSBuildProject;
 
 #
-# Package that encapsulates a MSBuild (Visual C++ 2010) project file
+# Package that encapsulates a MSBuild project file (Visual C++ 2010 or greater)
 #
 # src/tools/msvc/MSBuildProject.pm
 #
@@ -18,6 +18,7 @@ sub _new
 	bless($self, $classname);
 
 	$self->{filenameExtension} = '.vcxproj';
+	$self->{ToolsVersion}      = '4.0';
 
 	return $self;
 }
@@ -28,7 +29,7 @@ sub WriteHeader
 
 	print $f <<EOF;
 <?xml version="1.0" encoding="Windows-1252"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="$self->{ToolsVersion}" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
 EOF
 	$self->WriteConfigurationHeader($f, 'Debug');
@@ -64,7 +65,7 @@ EOF
 
 	# We have to use this flag on 32 bit targets because the 32bit perls
 	# are built with it and sometimes crash if we don't.
-	my $use_32bit_time_t = 
+	my $use_32bit_time_t =
 	  $self->{platform} eq 'Win32' ? '_USE_32BIT_TIME_T;' : '';
 
 	$self->WriteItemDefinitionGroup(
@@ -323,6 +324,7 @@ sub WriteItemDefinitionGroup
       <ProgramDatabaseFile>.\\$cfgname\\$self->{name}\\$self->{name}.pdb</ProgramDatabaseFile>
       <GenerateMapFile>false</GenerateMapFile>
       <MapFileName>.\\$cfgname\\$self->{name}\\$self->{name}.map</MapFileName>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <SubSystem>Console</SubSystem>
       <TargetMachine>$targetmachine</TargetMachine>
 EOF
@@ -393,6 +395,72 @@ sub new
 	bless($self, $classname);
 
 	$self->{vcver} = '10.00';
+
+	return $self;
+}
+
+package VC2012Project;
+
+#
+# Package that encapsulates a Visual C++ 2012 project file
+#
+
+use strict;
+use warnings;
+use base qw(MSBuildProject);
+
+sub new
+{
+	my $classname = shift;
+	my $self      = $classname->SUPER::_new(@_);
+	bless($self, $classname);
+
+	$self->{vcver}           = '11.00';
+	$self->{PlatformToolset} = 'v110';
+
+	return $self;
+}
+
+# This override adds the <PlatformToolset> element
+# to the PropertyGroup labeled "Configuration"
+sub WriteConfigurationPropertyGroup
+{
+	my ($self, $f, $cfgname, $p) = @_;
+	my $cfgtype =
+	  ($self->{type} eq "exe")
+	  ? 'Application'
+	  : ($self->{type} eq "dll" ? 'DynamicLibrary' : 'StaticLibrary');
+
+	print $f <<EOF;
+  <PropertyGroup Condition="'\$(Configuration)|\$(Platform)'=='$cfgname|$self->{platform}'" Label="Configuration">
+    <ConfigurationType>$cfgtype</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>$p->{wholeopt}</WholeProgramOptimization>
+    <PlatformToolset>$self->{PlatformToolset}</PlatformToolset>
+  </PropertyGroup>
+EOF
+}
+
+package VC2013Project;
+
+#
+# Package that encapsulates a Visual C++ 2013 project file
+#
+
+use strict;
+use warnings;
+use base qw(VC2012Project);
+
+sub new
+{
+	my $classname = shift;
+	my $self      = $classname->SUPER::_new(@_);
+	bless($self, $classname);
+
+	$self->{vcver}           = '12.00';
+	$self->{PlatformToolset} = 'v120';
+	$self->{ToolsVersion}    = '12.0';
 
 	return $self;
 }

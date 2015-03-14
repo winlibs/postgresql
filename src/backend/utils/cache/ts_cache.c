@@ -17,7 +17,7 @@
  * any database access.
  *
  *
- * Copyright (c) 2006-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2006-2014, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/utils/cache/ts_cache.c
@@ -28,6 +28,7 @@
 
 #include "access/genam.h"
 #include "access/heapam.h"
+#include "access/htup_details.h"
 #include "access/xact.h"
 #include "catalog/indexing.h"
 #include "catalog/namespace.h"
@@ -39,6 +40,7 @@
 #include "commands/defrem.h"
 #include "tsearch/ts_cache.h"
 #include "utils/builtins.h"
+#include "utils/catcache.h"
 #include "utils/fmgroids.h"
 #include "utils/inval.h"
 #include "utils/lsyscache.h"
@@ -482,7 +484,7 @@ lookup_ts_config_cache(Oid cfgId)
 		maprel = heap_open(TSConfigMapRelationId, AccessShareLock);
 		mapidx = index_open(TSConfigMapIndexId, AccessShareLock);
 		mapscan = systable_beginscan_ordered(maprel, mapidx,
-											 SnapshotNow, 1, &mapskey);
+											 NULL, 1, &mapskey);
 
 		while ((maptup = systable_getnext_ordered(mapscan, ForwardScanDirection)) != NULL)
 		{
@@ -602,11 +604,8 @@ check_TSCurrentConfig(char **newval, void **extra, GucSource source)
 		cfgId = get_ts_config_oid(stringToQualifiedNameList(*newval), true);
 
 		/*
-		 * When source == PGC_S_TEST, we are checking the argument of an ALTER
-		 * DATABASE SET or ALTER USER SET command.	It could be that the
-		 * intended use of the setting is for some other database, so we
-		 * should not error out if the text search configuration is not
-		 * present in the current database.  We issue a NOTICE instead.
+		 * When source == PGC_S_TEST, don't throw a hard error for a
+		 * nonexistent configuration, only a NOTICE.  See comments in guc.h.
 		 */
 		if (!OidIsValid(cfgId))
 		{
@@ -640,7 +639,7 @@ check_TSCurrentConfig(char **newval, void **extra, GucSource source)
 		free(*newval);
 		*newval = strdup(buf);
 		pfree(buf);
-		if (!newval)
+		if (!*newval)
 			return false;
 	}
 

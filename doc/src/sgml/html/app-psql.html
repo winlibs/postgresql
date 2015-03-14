@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN83316"
+NAME="AEN90143"
 ></A
 ><H2
 >Name</H2
@@ -113,7 +113,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN83323"
+NAME="AEN90148"
 ></A
 ><H2
 >Synopsis</H2
@@ -142,7 +142,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83332"
+NAME="AEN90157"
 ></A
 ><H2
 >Description</H2
@@ -187,8 +187,8 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->      Print all input lines to standard output as they are read. This is more
-      useful for script processing than interactive mode. This is
+>      Print all nonempty input lines to standard output as they are read.
+      (This does not apply to lines read interactively.) This is
       equivalent to setting the variable <TT
 CLASS="VARNAME"
 >ECHO</TT
@@ -254,7 +254,7 @@ CLASS="FILENAME"
       ignored with this option.
       </P
 ><P
-><TT
+>      <TT
 CLASS="REPLACEABLE"
 ><I
 >command</I
@@ -277,8 +277,8 @@ CLASS="APPLICATION"
       pipe the string into <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
->, like
-      this: <TT
+>, for example:
+      <TT
 CLASS="LITERAL"
 >echo '\x \\ SELECT * FROM foo;' | psql</TT
 >.
@@ -304,6 +304,29 @@ CLASS="APPLICATION"
 >psql</SPAN
 >'s standard input.  Also, only
        the result of the last SQL command is returned.
+      </P
+><P
+>       Because of these legacy behaviors, putting more than one command in
+       the <TT
+CLASS="OPTION"
+>-c</TT
+> string often has unexpected results.  It's
+       better to feed multiple commands to <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>'s
+       standard input, either using <SPAN
+CLASS="APPLICATION"
+>echo</SPAN
+> as
+       illustrated above, or via a shell here-document, for example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>psql &lt;&lt;EOF
+\x
+SELECT * FROM foo;
+EOF</PRE
+><P>
       </P
 ></DD
 ><DT
@@ -356,8 +379,8 @@ CLASS="LITERAL"
 CLASS="PARAMETER"
 >conninfo</TT
 > string. See <A
-HREF="libpq-connect.html"
->Section 31.1</A
+HREF="libpq-connect.html#LIBPQ-CONNSTRING"
+>Section 31.1.1</A
 > for more information.
       </P
 ></DD
@@ -405,10 +428,9 @@ CLASS="APPLICATION"
       setting the variable <TT
 CLASS="VARNAME"
 >ECHO_HIDDEN</TT
-> from within
-      <SPAN
-CLASS="APPLICATION"
->psql</SPAN
+> to <TT
+CLASS="LITERAL"
+>on</TT
 >.
       </P
 ></DD
@@ -629,8 +651,9 @@ CLASS="OPTION"
 ><P
 >       Do not use <SPAN
 CLASS="APPLICATION"
->readline</SPAN
-> for line editing and do not use the history.
+>Readline</SPAN
+> for line editing and do
+       not use the command history.
        This can be useful to turn off tab expansion when cutting and pasting.
       </P
 ></DD
@@ -752,14 +775,14 @@ CLASS="APPLICATION"
 CLASS="OPTION"
 >-c</TT
 > option.
-      Within <SPAN
-CLASS="APPLICATION"
->psql</SPAN
-> you can also set the
-      <TT
+      This is equivalent to setting the variable <TT
 CLASS="VARNAME"
 >QUIET</TT
-> variable to achieve the same effect.
+>
+      to <TT
+CLASS="LITERAL"
+>on</TT
+>.
       </P
 ></DD
 ><DT
@@ -1128,20 +1151,17 @@ CLASS="OPTION"
 >        When <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> executes a script with the
-        <TT
-CLASS="OPTION"
->-f</TT
-> option, adding this option wraps
-        <TT
+> executes a script, adding
+        this option wraps <TT
 CLASS="COMMAND"
 >BEGIN</TT
 >/<TT
 CLASS="COMMAND"
 >COMMIT</TT
-> around the script to execute it
-        as a single transaction.  This ensures that either all the commands
-        complete successfully, or no changes are applied.
+> around the
+        script to execute it as a single transaction.  This ensures that
+        either all the commands complete successfully, or no changes are
+        applied.
        </P
 ><P
 >        If the script itself uses <TT
@@ -1184,7 +1204,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83697"
+NAME="AEN90526"
 ></A
 ><H2
 >Exit Status</H2
@@ -1205,7 +1225,7 @@ CLASS="VARNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83702"
+NAME="AEN90531"
 ></A
 ><H2
 >Usage</H2
@@ -1261,7 +1281,8 @@ CLASS="LITERAL"
     determined at compile time.
     Since the database server uses the same default, you will not have
     to specify the port in most cases. The default user name is your
-    Unix user name, as is the default database name. Note that you cannot
+    operating-system user name, as is the default database name.
+    Note that you cannot
     just connect to any database under any user name. Your database
     administrator should have informed you about your access rights.
     </P
@@ -1321,14 +1342,14 @@ CLASS="USERINPUT"
      This way you can also use <ACRONYM
 CLASS="ACRONYM"
 >LDAP</ACRONYM
-> for connection parameter lookup as
-     described in <A
+> for connection
+     parameter lookup as described in <A
 HREF="libpq-ldap.html"
 >Section 31.17</A
 >.
      See <A
-HREF="libpq-connect.html"
->Section 31.1</A
+HREF="libpq-connect.html#LIBPQ-PARAMKEYWORDS"
+>Section 31.1.2</A
 > for more information on all the
      available connection options.
     </P
@@ -1341,7 +1362,7 @@ CLASS="APPLICATION"
 > will return an error and terminate.
     </P
 ><P
->     If at least one of standard input or standard output are a
+>     If both standard input and standard output are a
      terminal, then <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
@@ -1390,7 +1411,7 @@ CLASS="PROGRAMLISTING"
 CLASS="USERINPUT"
 >psql testdb</KBD
 >
-psql (9.2.2)
+psql (9.4.1)
 Type "help" for help.
 
 testdb=&gt;</PRE
@@ -1420,6 +1441,14 @@ HREF="sql-listen.html"
     <A
 HREF="sql-notify.html"
 >NOTIFY</A
+>.
+    </P
+><P
+>    While C-style block comments are passed to the server for
+    processing and removal, SQL-standard comments are removed by
+    <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
 >.
     </P
 ></DIV
@@ -1807,50 +1836,20 @@ CLASS="LITERAL"
         { <TT
 CLASS="REPLACEABLE"
 ><I
->filename</I
+>'filename'</I
+></TT
+> | program <TT
+CLASS="REPLACEABLE"
+><I
+>'command'</I
 ></TT
 > | stdin | stdout | pstdin | pstdout }
-        [ with ]
-            [ binary ]
-            [ oids ]
-            [ delimiter [ as ] '<TT
+        [ [ with ] ( <TT
 CLASS="REPLACEABLE"
 ><I
->character</I
+>option</I
 ></TT
->' ]
-            [ null [ as ] '<TT
-CLASS="REPLACEABLE"
-><I
->string</I
-></TT
->' ]
-            [ csv
-              [ header ]
-              [ quote [ as ] '<TT
-CLASS="REPLACEABLE"
-><I
->character</I
-></TT
->' ]
-              [ escape [ as ] '<TT
-CLASS="REPLACEABLE"
-><I
->character</I
-></TT
->' ]
-              [ force quote <TT
-CLASS="REPLACEABLE"
-><I
->column_list</I
-></TT
-> | * ]
-              [ force not null <TT
-CLASS="REPLACEABLE"
-><I
->column_list</I
-></TT
-> ] ]</TT
+> [, ...] ) ]</TT
 ></DT
 ><DD
 ><P
@@ -1874,7 +1873,81 @@ CLASS="APPLICATION"
         privileges are required.
         </P
 ><P
->        The syntax of the command is similar to that of the
+>        When <TT
+CLASS="LITERAL"
+>program</TT
+> is specified,
+        <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> is
+        executed by <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> and the data passed from
+        or to <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> is
+        routed between the server and the client.
+        Again, the execution privileges are those of
+        the local user, not the server, and no SQL superuser
+        privileges are required.
+        </P
+><P
+>        For <TT
+CLASS="LITERAL"
+>\copy ... from stdin</TT
+>, data rows are read from the same
+        source that issued the command, continuing until <TT
+CLASS="LITERAL"
+>\.</TT
+>
+        is read or the stream reaches <ACRONYM
+CLASS="ACRONYM"
+>EOF</ACRONYM
+>. This option is useful
+        for populating tables in-line within a SQL script file.
+        For <TT
+CLASS="LITERAL"
+>\copy ... to stdout</TT
+>, output is sent to the same place
+        as <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> command output, and
+        the <TT
+CLASS="LITERAL"
+>COPY <TT
+CLASS="REPLACEABLE"
+><I
+>count</I
+></TT
+></TT
+> command status is
+        not printed (since it might be confused with a data row).
+        To read/write <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>'s standard input or
+        output regardless of the current command source or <TT
+CLASS="LITERAL"
+>\o</TT
+>
+        option, write <TT
+CLASS="LITERAL"
+>from pstdin</TT
+> or <TT
+CLASS="LITERAL"
+>to pstdout</TT
+>.
+        </P
+><P
+>        The syntax of this command is similar to that of the
         <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
@@ -1882,42 +1955,20 @@ CLASS="ACRONYM"
 HREF="sql-copy.html"
 >COPY</A
 >
-        command.  Note that, because of this,
-        special parsing rules apply to the <TT
+        command.  All options other than the data source/destination are
+        as specified for <A
+HREF="sql-copy.html"
+>COPY</A
+>.
+        Because of this, special parsing rules apply to the <TT
 CLASS="COMMAND"
 >\copy</TT
 >
-        command. In particular, the variable substitution rules and
-        backslash escapes do not apply.
-        </P
-><P
-><TT
-CLASS="LITERAL"
->\copy ... from stdin | to stdout</TT
->
-        reads/writes based on the command input and output respectively.
-        All rows are read from the same source that issued the command,
-        continuing until <TT
-CLASS="LITERAL"
->\.</TT
-> is read or the stream
-        reaches <ACRONYM
-CLASS="ACRONYM"
->EOF</ACRONYM
->. Output is sent to the same place as
-        command output. To read/write from
-        <SPAN
+        command. In particular, <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
->'s standard input or output, use
-        <TT
-CLASS="LITERAL"
->pstdin</TT
-> or <TT
-CLASS="LITERAL"
->pstdout</TT
->. This option is useful
-        for populating tables in-line within a SQL script file.
+>'s variable substitution
+        rules and backslash escapes do not apply.
         </P
 ><DIV
 CLASS="TIP"
@@ -2015,7 +2066,12 @@ CLASS="LITERAL"
 > is identical, except that
         more information is displayed: any comments associated with the
         columns of the table are shown, as is the presence of OIDs in the
-        table, the view definition if the relation is a view.
+        table, the view definition if the relation is a view, a non-default
+        <A
+HREF="sql-altertable.html#SQL-CREATETABLE-REPLICA-IDENTITY"
+>replica
+        identity</A
+> setting.
         </P
 ><P
 >        By default, only user-created objects are shown;  supply a
@@ -2347,6 +2403,17 @@ CLASS="REPLACEABLE"
 > ]</TT
 ><BR><TT
 CLASS="LITERAL"
+>\dm[S+] [ <A
+HREF="app-psql.html#APP-PSQL-PATTERNS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+></A
+> ]</TT
+><BR><TT
+CLASS="LITERAL"
 >\ds[S+] [ <A
 HREF="app-psql.html#APP-PSQL-PATTERNS"
 ><TT
@@ -2390,6 +2457,9 @@ CLASS="LITERAL"
 >i</TT
 >, <TT
 CLASS="LITERAL"
+>m</TT
+>, <TT
+CLASS="LITERAL"
 >s</TT
 >,
         <TT
@@ -2399,7 +2469,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >v</TT
 >
-        stand for foreign table, index, sequence, table, and view,
+        stand for foreign table, index, materialized view, sequence, table, and view,
         respectively.
         You can specify any or all of
         these letters, in any order, to obtain a listing of objects
@@ -2647,18 +2717,19 @@ CLASS="REPLACEABLE"
 >pattern</I
 ></TT
 > is specified, only
-        functions whose names match the pattern are shown.  If the
-        form <TT
-CLASS="LITERAL"
->\df+</TT
-> is used, additional information
-        about each function, including volatility, language, source
-        code and description, is shown.  By default, only user-created
+        functions whose names match the pattern are shown.
+        By default, only user-created
         objects are shown; supply a pattern or the <TT
 CLASS="LITERAL"
 >S</TT
 >
         modifier to include system objects.
+        If the form <TT
+CLASS="LITERAL"
+>\df+</TT
+> is used, additional information
+        about each function is shown, including security classification,
+        volatility, owner, language, source code and description.
         </P
 ><DIV
 CLASS="TIP"
@@ -2932,7 +3003,7 @@ CLASS="LITERAL"
 ><DT
 ><TT
 CLASS="LITERAL"
->\do[S] [ <A
+>\do[S+] [ <A
 HREF="app-psql.html#APP-PSQL-PATTERNS"
 ><TT
 CLASS="REPLACEABLE"
@@ -2944,7 +3015,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Lists operators with their operand and return types.
+>        Lists operators with their operand and result types.
         If <TT
 CLASS="REPLACEABLE"
 ><I
@@ -2952,12 +3023,18 @@ CLASS="REPLACEABLE"
 ></TT
 > is
         specified, only operators whose names match the pattern are listed.
-        By default, only user-created objects are shown;  supply a
+        By default, only user-created objects are shown; supply a
         pattern or the <TT
 CLASS="LITERAL"
 >S</TT
 > modifier to include system
         objects.
+        If <TT
+CLASS="LITERAL"
+>+</TT
+> is appended to the command name,
+        additional information about each operator is shown, currently just
+        the name of the underlying function.
         </P
 ></DD
 ><DT
@@ -3214,6 +3291,37 @@ CLASS="LITERAL"
 >\dx+</TT
 > is used, all the objects belonging
         to each matching extension are listed.
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dy[+] [ <A
+HREF="app-psql.html#APP-PSQL-PATTERNS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+></A
+> ]</TT
+></DT
+><DD
+><P
+>        Lists event triggers.
+        If <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+>
+        is specified, only those event triggers whose names match the pattern
+        are listed.
+        If <TT
+CLASS="LITERAL"
+>+</TT
+> is appended to the command name, each object
+        is listed with its associated description.
         </P
 ></DD
 ><DT
@@ -3491,41 +3599,45 @@ CLASS="COMMAND"
 ><DT
 ><TT
 CLASS="LITERAL"
->\g</TT
-> [ { <TT
+>\g [ <TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
-> | <TT
+> ]</TT
+><BR><TT
 CLASS="LITERAL"
->|</TT
-><TT
+>\g [ |<TT
 CLASS="REPLACEABLE"
 ><I
 >command</I
 ></TT
-> } ]</DT
+> ]</TT
+></DT
 ><DD
 ><P
->        Sends the current query input buffer to the server and
+>        Sends the current query input buffer to the server, and
         optionally stores the query's output in <TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
 > or pipes the output
-        into a separate Unix shell executing <TT
+        to the shell command <TT
 CLASS="REPLACEABLE"
 ><I
 >command</I
 ></TT
->. A bare
-        <TT
+>.  The file or command is
+        written to only if the query successfully returns zero or more tuples,
+        not if the query fails or is a non-data-returning SQL command.
+        </P
+><P
+>        A bare <TT
 CLASS="LITERAL"
 >\g</TT
-> is virtually equivalent to a semicolon. A
-        <TT
+> is essentially equivalent to a semicolon.
+        A <TT
 CLASS="LITERAL"
 >\g</TT
 > with argument is a <SPAN
@@ -3536,6 +3648,83 @@ CLASS="QUOTE"
 CLASS="COMMAND"
 >\o</TT
 > command.
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\gset [ <TT
+CLASS="REPLACEABLE"
+><I
+>prefix</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>         Sends the current query input buffer to the server and stores the
+         query's output into <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> variables (see <A
+HREF="app-psql.html#APP-PSQL-VARIABLES"
+><I
+>Variables</I
+></A
+>).
+         The query to be executed must return exactly one row.  Each column of
+         the row is stored into a separate variable, named the same as the
+         column.  For example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>=&gt; <KBD
+CLASS="USERINPUT"
+>SELECT 'hello' AS var1, 10 AS var2</KBD
+>
+-&gt; <KBD
+CLASS="USERINPUT"
+>\gset</KBD
+>
+=&gt; <KBD
+CLASS="USERINPUT"
+>\echo :var1 :var2</KBD
+>
+hello 10</PRE
+><P>
+        </P
+><P
+>         If you specify a <TT
+CLASS="REPLACEABLE"
+><I
+>prefix</I
+></TT
+>,
+         that string is prepended to the query's column names to create the
+         variable names to use:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>=&gt; <KBD
+CLASS="USERINPUT"
+>SELECT 'hello' AS var1, 10 AS var2</KBD
+>
+-&gt; <KBD
+CLASS="USERINPUT"
+>\gset result_</KBD
+>
+=&gt; <KBD
+CLASS="USERINPUT"
+>\echo :result_var1 :result_var2</KBD
+>
+hello 10</PRE
+><P>
+        </P
+><P
+>         If a column result is NULL, the corresponding variable is unset
+         rather than being set.
+        </P
+><P
+>         If the query fails or does not return one row,
+         no variables are changed.
         </P
 ></DD
 ><DT
@@ -3607,6 +3796,9 @@ CLASS="USERINPUT"
 ><TT
 CLASS="LITERAL"
 >\H</TT
+> or <TT
+CLASS="LITERAL"
+>\html</TT
 ></DT
 ><DD
 ><P
@@ -3629,11 +3821,14 @@ CLASS="COMMAND"
 ><DT
 ><TT
 CLASS="LITERAL"
->\i <TT
+>\i</TT
+> or <TT
+CLASS="LITERAL"
+>\include</TT
+> <TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
-></TT
 ></TT
 ></DT
 ><DD
@@ -3669,11 +3864,14 @@ CLASS="LITERAL"
 ><DT
 ><TT
 CLASS="LITERAL"
->\ir <TT
+>\ir</TT
+> or <TT
+CLASS="LITERAL"
+>\include_relative</TT
+> <TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
-></TT
 ></TT
 ></DT
 ><DD
@@ -3698,21 +3896,30 @@ CLASS="LITERAL"
 ><DT
 ><TT
 CLASS="LITERAL"
->\l</TT
-> (or <TT
+>\l[+]</TT
+> or <TT
 CLASS="LITERAL"
->\list</TT
->)<BR><TT
-CLASS="LITERAL"
->\l+</TT
-> (or <TT
-CLASS="LITERAL"
->\list+</TT
->)</DT
+>\list[+] [ <A
+HREF="app-psql.html#APP-PSQL-PATTERNS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+></A
+> ]</TT
+></DT
 ><DD
 ><P
->        List the names, owners, character set encodings, and access privileges
-        of all the databases in the server.
+>        List the databases in the server and show their names, owners,
+        character set encodings, and access privileges.
+        If <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> is specified,
+        only databases whose names match the pattern are listed.
         If <TT
 CLASS="LITERAL"
 >+</TT
@@ -3894,35 +4101,41 @@ CLASS="ACRONYM"
 ><TT
 CLASS="LITERAL"
 >\o</TT
-> [ {<TT
+> or <TT
+CLASS="LITERAL"
+>\out [ <TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
-> | <TT
+> ]</TT
+><BR><TT
 CLASS="LITERAL"
->|</TT
-><TT
+>\o</TT
+> or <TT
+CLASS="LITERAL"
+>\out [ |<TT
 CLASS="REPLACEABLE"
 ><I
 >command</I
 ></TT
->} ]</DT
+> ]</TT
+></DT
 ><DD
 ><P
->        Saves future query results to the file <TT
+>        Arranges to save future query results to the file <TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
-> or pipes future results
-        into a separate Unix shell to execute <TT
+> or pipe future results
+        to the shell command <TT
 CLASS="REPLACEABLE"
 ><I
 >command</I
 ></TT
->. If no arguments are
-        specified, the query output will be reset to the standard output.
+>. If no argument is
+        specified, the query output is reset to the standard output.
         </P
 ><P
 ><SPAN
@@ -3957,6 +4170,9 @@ CLASS="COMMAND"
 ><TT
 CLASS="LITERAL"
 >\p</TT
+> or <TT
+CLASS="LITERAL"
+>\print</TT
 ></DT
 ><DD
 ><P
@@ -4035,7 +4251,7 @@ CLASS="LITERAL"
 ><DT
 ><TT
 CLASS="LITERAL"
->\pset <TT
+>\pset [ <TT
 CLASS="REPLACEABLE"
 ><I
 >option</I
@@ -4045,7 +4261,7 @@ CLASS="REPLACEABLE"
 ><I
 >value</I
 ></TT
-> ]</TT
+> ] ]</TT
 ></DT
 ><DD
 ><P
@@ -4080,6 +4296,13 @@ CLASS="REPLACEABLE"
         the current setting being displayed.
         </P
 ><P
+>        <TT
+CLASS="COMMAND"
+>\pset</TT
+> without any arguments displays the current status
+        of all printing options.
+        </P
+><P
 >        Adjustable printing options are:
         <P
 ></P
@@ -4112,6 +4335,18 @@ CLASS="LITERAL"
 > attribute; in the
           other formats only values 0 (no border), 1 (internal dividing lines),
           and 2 (table frame) make sense.
+          <TT
+CLASS="LITERAL"
+>latex</TT
+> and <TT
+CLASS="LITERAL"
+>latex-longtable</TT
+>
+          also support a <TT
+CLASS="LITERAL"
+>border</TT
+> value of 3 which adds
+          a dividing line between each row.
           </P
 ></DD
 ><DT
@@ -4295,7 +4530,15 @@ CLASS="LITERAL"
           <TT
 CLASS="LITERAL"
 >latex</TT
->, or <TT
+> (uses <TT
+CLASS="LITERAL"
+>tabular</TT
+>),
+          <TT
+CLASS="LITERAL"
+>latex-longtable</TT
+>, or
+          <TT
 CLASS="LITERAL"
 >troff-ms</TT
 >.
@@ -4353,21 +4596,40 @@ CLASS="LITERAL"
 >, <TT
 CLASS="LITERAL"
 >latex</TT
+>,
+          <TT
+CLASS="LITERAL"
+>latex-longtable</TT
 >, and <TT
 CLASS="LITERAL"
 >troff-ms</TT
 >
           formats put out tables that are intended to
           be included in documents using the respective mark-up
-          language. They are not complete documents! (This might not be
-          so dramatic in <ACRONYM
+          language. They are not complete documents! This might not be
+          necessary in <ACRONYM
 CLASS="ACRONYM"
 >HTML</ACRONYM
->, but in <SPAN
+>, but in
+          <SPAN
 CLASS="APPLICATION"
 >LaTeX</SPAN
-> you must
-          have a complete document wrapper.)
+> you must have a complete
+          document wrapper.  <TT
+CLASS="LITERAL"
+>latex-longtable</TT
+>
+          also requires the <SPAN
+CLASS="APPLICATION"
+>LaTeX</SPAN
+>
+          <TT
+CLASS="LITERAL"
+>longtable</TT
+> and <TT
+CLASS="LITERAL"
+>booktabs</TT
+> packages.
           </P
 ></DD
 ><DT
@@ -4617,18 +4879,14 @@ CLASS="LITERAL"
 >)</DT
 ><DD
 ><P
->          Specifies attributes to be placed inside the
-          <ACRONYM
+>          In <ACRONYM
 CLASS="ACRONYM"
 >HTML</ACRONYM
-> <CODE
+> format, this specifies attributes
+          to be placed inside the <CODE
 CLASS="SGMLTAG"
 >table</CODE
-> tag in
-          <TT
-CLASS="LITERAL"
->html</TT
-> output format. This
+> tag.  This
           could for example be <TT
 CLASS="LITERAL"
 >cellpadding</TT
@@ -4653,6 +4911,19 @@ CLASS="REPLACEABLE"
 ></TT
 > is given,
           the table attributes are unset.
+          </P
+><P
+>          In <TT
+CLASS="LITERAL"
+>latex-longtable</TT
+> format, this controls
+          the proportional width of each column containing a left-aligned
+          data type.  It is specified as a whitespace-separated list of values,
+          e.g. <TT
+CLASS="LITERAL"
+>'0.2 0.2 0.6'</TT
+>.  Unspecified output columns
+          use the last specified value.
           </P
 ></DD
 ><DT
@@ -4756,22 +5027,6 @@ CLASS="COMMAND"
         </P
 ></BLOCKQUOTE
 ></DIV
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->        It is an error to call <TT
-CLASS="COMMAND"
->\pset</TT
-> without any
-        arguments. In the future this case might show the current status
-        of all printing options.
-        </P
-></BLOCKQUOTE
-></DIV
 ></DD
 ><DT
 ><TT
@@ -4817,6 +5072,9 @@ CLASS="COMMAND"
 ><TT
 CLASS="LITERAL"
 >\r</TT
+> or <TT
+CLASS="LITERAL"
+>\reset</TT
 ></DT
 ><DD
 ><P
@@ -4835,29 +5093,32 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Print or save the command line history to <TT
+>        Print <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>'s command line history
+        to <TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
->. If <TT
+>.
+        If <TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
-> is omitted, the history
-        is written to the standard output. This option is only available
+> is omitted,
+        the history is written to the standard output (using the pager if
+        appropriate).  This command is not available
         if <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> is configured to use the
-        <ACRONYM
-CLASS="ACRONYM"
->GNU</ACRONYM
-> <SPAN
+> was built
+        without <SPAN
 CLASS="APPLICATION"
 >Readline</SPAN
-> library.
+> support.
         </P
 ></DD
 ><DT
@@ -4948,7 +5209,7 @@ HREF="sql-set.html"
 ><DT
 ><TT
 CLASS="LITERAL"
->\setenv [ <TT
+>\setenv <TT
 CLASS="REPLACEABLE"
 ><I
 >name</I
@@ -4958,7 +5219,7 @@ CLASS="REPLACEABLE"
 ><I
 >value</I
 ></TT
-> ] ]</TT
+> ]</TT
 ></DT
 ><DD
 ><P
@@ -5128,6 +5389,9 @@ CLASS="REPLACEABLE"
 ><TT
 CLASS="LITERAL"
 >\w</TT
+> or <TT
+CLASS="LITERAL"
+>\write</TT
 > <TT
 CLASS="REPLACEABLE"
 ><I
@@ -5136,6 +5400,9 @@ CLASS="REPLACEABLE"
 ><BR><TT
 CLASS="LITERAL"
 >\w</TT
+> or <TT
+CLASS="LITERAL"
+>\write</TT
 > <TT
 CLASS="LITERAL"
 >|</TT
@@ -5152,13 +5419,33 @@ CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
-> or pipes it to the Unix
+> or pipes it to the shell
         command <TT
 CLASS="REPLACEABLE"
 ><I
 >command</I
 ></TT
 >.
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\watch [ <TT
+CLASS="REPLACEABLE"
+><I
+>seconds</I
+></TT
+> ]</TT
+></DT
+><DD
+><P
+>        Repeatedly execute the current query buffer (like <TT
+CLASS="LITERAL"
+>\g</TT
+>)
+        until interrupted or the query fails.  Wait the specified number of
+        seconds (default 2) between executions.
         </P
 ></DD
 ><DT
@@ -5239,7 +5526,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Escapes to a separate Unix shell or executes the Unix command
+>        Escapes to a separate shell or executes the shell command
         <TT
 CLASS="REPLACEABLE"
 ><I
@@ -5247,7 +5534,8 @@ CLASS="REPLACEABLE"
 ></TT
 >. The
         arguments are not further interpreted; the shell will see them
-        as-is.
+        as-is.  In particular, the variable substitution rules and
+        backslash escapes do not apply.
         </P
 ></DD
 ><DT
@@ -5500,7 +5788,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84883"
+NAME="AEN91788"
 ></A
 ><H3
 >Advanced Features</H3
@@ -5652,7 +5940,8 @@ CLASS="VARIABLELIST"
 ><TT
 CLASS="VARNAME"
 >AUTOCOMMIT</TT
-></DT
+>
+       </DT
 ><DD
 ><P
 >        When <TT
@@ -5790,9 +6079,9 @@ CLASS="VARNAME"
 >        If set to <TT
 CLASS="LITERAL"
 >all</TT
->, all lines
-        entered from the keyboard or from a script are written to the standard output
-        before they are parsed or executed. To select this behavior on program
+>, all nonempty input lines are printed
+        to standard output as they are read.  (This does not apply to lines
+        read interactively.)  To select this behavior on program
         start-up, use the switch <TT
 CLASS="OPTION"
 >-a</TT
@@ -5804,8 +6093,8 @@ CLASS="LITERAL"
         <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> merely prints all queries as
-        they are sent to the server. The switch for this is
+> prints each query to standard output
+        as it is sent to the server. The switch for this is
         <TT
 CLASS="OPTION"
 >-e</TT
@@ -5819,8 +6108,12 @@ CLASS="VARNAME"
 ></DT
 ><DD
 ><P
->        When this variable is set and a backslash command queries the
-        database, the query is first shown. This way you can study the
+>        When this variable is set to <TT
+CLASS="LITERAL"
+>on</TT
+> and a backslash command
+        queries the database, the query is first shown.
+        This feature helps you to study
         <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
@@ -6083,31 +6376,32 @@ CLASS="ACRONYM"
 ><TT
 CLASS="VARNAME"
 >ON_ERROR_ROLLBACK</TT
-></DT
+>
+       </DT
 ><DD
 ><P
->        When <TT
+>        When set to <TT
 CLASS="LITERAL"
 >on</TT
 >, if a statement in a transaction block
         generates an error, the error is ignored and the transaction
-        continues. When <TT
+        continues. When set to <TT
 CLASS="LITERAL"
 >interactive</TT
 >, such errors are only
         ignored in interactive sessions, and not when reading script
-        files. When <TT
+        files. When unset or set to <TT
 CLASS="LITERAL"
 >off</TT
-> (the default), a statement in a
+>, a statement in a
         transaction block that generates an error aborts the entire
-        transaction. The on_error_rollback-on mode works by issuing an
+        transaction. The error rollback mode works by issuing an
         implicit <TT
 CLASS="COMMAND"
 >SAVEPOINT</TT
 > for you, just before each command
-        that is in a transaction block, and rolls back to the savepoint
-        on error.
+        that is in a transaction block, and then rolling back to the
+        savepoint if the command fails.
         </P
 ></DD
 ><DT
@@ -6118,7 +6412,11 @@ CLASS="VARNAME"
 ><DD
 ><P
 >        By default, command processing continues after an error.  When this
-        variable is set, it will instead stop immediately.  In interactive mode,
+        variable is set to <TT
+CLASS="LITERAL"
+>on</TT
+>, processing will instead stop
+        immediately.  In interactive mode,
         <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
@@ -6179,8 +6477,11 @@ CLASS="VARNAME"
 ></DT
 ><DD
 ><P
->        This variable is equivalent to the command line option
-        <TT
+>        Setting this variable to <TT
+CLASS="LITERAL"
+>on</TT
+> is equivalent to the command
+        line option <TT
 CLASS="OPTION"
 >-q</TT
 >. It is probably not too useful in
@@ -6194,8 +6495,11 @@ CLASS="VARNAME"
 ></DT
 ><DD
 ><P
->        This variable is equivalent to the command line option
-        <TT
+>        Setting this variable to <TT
+CLASS="LITERAL"
+>on</TT
+> is equivalent to the command
+        line option <TT
 CLASS="OPTION"
 >-S</TT
 >.
@@ -6208,8 +6512,11 @@ CLASS="VARNAME"
 ></DT
 ><DD
 ><P
->        This variable is equivalent to the command line option
-        <TT
+>        Setting this variable to <TT
+CLASS="LITERAL"
+>on</TT
+> is equivalent to the command
+        line option <TT
 CLASS="OPTION"
 >-s</TT
 >.
@@ -6792,7 +7099,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT3"
 ><A
-NAME="AEN85271"
+NAME="AEN92181"
 ></A
 ><H4
 >Command-Line Editing</H4
@@ -6818,7 +7125,13 @@ CLASS="APPLICATION"
     <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
-> parser.  If for some reason you do not like the tab completion, you
+> parser.  The queries generated by tab-completion
+    can also interfere with other SQL commands, e.g. <TT
+CLASS="LITERAL"
+>SET
+    TRANSACTION ISOLATION LEVEL</TT
+>.
+    If for some reason you do not like the tab completion, you
     can turn it off by putting this in a file named
     <TT
 CLASS="FILENAME"
@@ -7074,82 +7387,103 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85369"
+NAME="AEN92280"
 ></A
 ><H2
 >Files</H2
 ><P
 ></P
-><UL
-><LI
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="FILENAME"
+>psqlrc</TT
+> and <TT
+CLASS="FILENAME"
+>~/.psqlrc</TT
+></DT
+><DD
 ><P
 >     Unless it is passed an <TT
 CLASS="OPTION"
 >-X</TT
->
-     or <TT
+> or <TT
 CLASS="OPTION"
 >-c</TT
 > option,
      <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> attempts to
-     read and execute commands from the system-wide
-     <TT
+> attempts to read and execute commands
+     from the system-wide startup file (<TT
 CLASS="FILENAME"
 >psqlrc</TT
-> file and the user's
-     <TT
+>) and then
+     the user's personal startup file (<TT
 CLASS="FILENAME"
 >~/.psqlrc</TT
-> file before starting up.
-     (On Windows, the user's startup file is named
-     <TT
-CLASS="FILENAME"
->%APPDATA%\postgresql\psqlrc.conf</TT
->.)
-     See <TT
-CLASS="FILENAME"
-><TT
-CLASS="REPLACEABLE"
-><I
->PREFIX</I
-></TT
->/share/psqlrc.sample</TT
->
-     for information on setting up the system-wide file.  It could be used
-     to set up the client or the server to taste (using the <TT
+>), after
+     connecting to the database but before accepting normal commands.
+     These files can be used to set up the client and/or the server to taste,
+     typically with <TT
 CLASS="COMMAND"
->\set
-     </TT
+>\set</TT
 > and <TT
 CLASS="COMMAND"
 >SET</TT
-> commands).
+>
+     commands.
     </P
 ><P
->     The location of the user's <TT
-CLASS="FILENAME"
->~/.psqlrc</TT
-> file can
-     also be set explicitly via the <TT
-CLASS="ENVAR"
->PSQLRC</TT
-> environment
-     setting.
-    </P
-></LI
-><LI
-><P
->     Both the system-wide <TT
+>     The system-wide startup file is named <TT
 CLASS="FILENAME"
 >psqlrc</TT
-> file and the user's
+> and is
+     sought in the installation's <SPAN
+CLASS="QUOTE"
+>"system configuration"</SPAN
+> directory,
+     which is most reliably identified by running <TT
+CLASS="LITERAL"
+>pg_config
+     --sysconfdir</TT
+>.  By default this directory will be <TT
+CLASS="FILENAME"
+>../etc/</TT
+>
+     relative to the directory containing
+     the <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> executables.  The name of this
+     directory can be set explicitly via the <TT
+CLASS="ENVAR"
+>PGSYSCONFDIR</TT
+>
+     environment variable.
+    </P
+><P
+>     The user's personal startup file is named <TT
+CLASS="FILENAME"
+>.psqlrc</TT
+>
+     and is sought in the invoking user's home directory.  On Windows, which
+     lacks such a concept, the personal startup file is named
      <TT
 CLASS="FILENAME"
->~/.psqlrc</TT
-> file can be made <SPAN
+>%APPDATA%\postgresql\psqlrc.conf</TT
+>.
+     The location of the user's startup file can be set explicitly via
+     the <TT
+CLASS="ENVAR"
+>PSQLRC</TT
+> environment variable.
+    </P
+><P
+>     Both the system-wide startup file and the user's personal startup file
+     can be made <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
 >-version-specific
@@ -7157,10 +7491,7 @@ CLASS="APPLICATION"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 >
-     major or minor <SPAN
-CLASS="APPLICATION"
->psql</SPAN
-> release number,
+     major or minor release number to the file name,
      for example <TT
 CLASS="FILENAME"
 >~/.psqlrc-9.2</TT
@@ -7172,8 +7503,13 @@ CLASS="FILENAME"
      version-matching file will be read in preference to a
      non-version-specific file.
     </P
-></LI
-><LI
+></DD
+><DT
+><TT
+CLASS="FILENAME"
+>.psql_history</TT
+></DT
+><DD
 ><P
 >     The command-line history is stored in the file
      <TT
@@ -7186,20 +7522,20 @@ CLASS="FILENAME"
 > on Windows.
     </P
 ><P
->     The location of the history file can
-     also be set explicitly via the <TT
+>     The location of the history file can be set explicitly via
+     the <TT
 CLASS="ENVAR"
 >PSQL_HISTORY</TT
-> environment
-     setting.
+> environment variable.
     </P
-></LI
-></UL
+></DD
+></DL
+></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85402"
+NAME="AEN92321"
 ></A
 ><H2
 >Notes</H2
@@ -7226,23 +7562,42 @@ CLASS="PRODUCTNAME"
 ><SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> is only guaranteed to work smoothly
-       with servers of the same version. That does not mean other combinations
-       will fail outright, but subtle and not-so-subtle problems might come
-       up.  Backslash commands are particularly likely to fail if the
-       server is of a newer version than <SPAN
+> works best with servers of the same
+       or an older major version.  Backslash commands are particularly likely
+       to fail if the server is of a newer version than <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> itself.  However,
-       backslash commands of the <TT
+>
+       itself.  However, backslash commands of the <TT
 CLASS="LITERAL"
 >\d</TT
-> family should work with
-       servers of versions back to 7.4, though not necessarily with servers
-       newer than  <SPAN
+> family should
+       work with servers of versions back to 7.4, though not necessarily with
+       servers newer than <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> itself.
+> itself.  The general
+       functionality of running SQL commands and displaying query results
+       should also work with servers of a newer major version, but this cannot
+       be guaranteed in all cases.
+      </P
+><P
+>       If you want to use <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> to connect to several
+       servers of different major versions, it is recommended that you use the
+       newest version of <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>.  Alternatively, you
+       can keep a copy of <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> from each major
+       version around and be sure to use the version that matches the
+       respective server.  But in practice, this additional complication should
+       not be necessary.
       </P
 ></LI
 ></UL
@@ -7250,7 +7605,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85415"
+NAME="AEN92338"
 ></A
 ><H2
 >Notes for Windows Users</H2

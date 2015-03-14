@@ -2,7 +2,7 @@
 #
 # Makefile for ecpg library
 #
-# Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+# Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
 # Portions Copyright (c) 1994, Regents of the University of California
 #
 # src/interfaces/ecpg/ecpglib/Makefile
@@ -15,10 +15,10 @@ include $(top_builddir)/src/Makefile.global
 
 NAME= ecpg
 SO_MAJOR_VERSION= 6
-SO_MINOR_VERSION= 4
+SO_MINOR_VERSION= 6
 
 override CPPFLAGS := -I../include -I$(top_srcdir)/src/interfaces/ecpg/include \
-	-I$(libpq_srcdir) -I$(top_builddir)/src/port $(CPPFLAGS)
+	-I$(libpq_srcdir) -I$(top_builddir)/src/port -DFRONTEND $(CPPFLAGS)
 override CFLAGS += $(PTHREAD_CFLAGS)
 
 # Need to recompile any libpgport object files
@@ -26,7 +26,7 @@ LIBS := $(filter-out -lpgport, $(LIBS))
 
 OBJS= execute.o typename.o descriptor.o sqlda.o data.o error.o prepare.o memory.o \
 	connect.o misc.o path.o pgstrcasecmp.o \
-	$(filter snprintf.o strlcpy.o win32setlocale.o, $(LIBOBJS))
+	$(filter snprintf.o strlcpy.o win32setlocale.o isinf.o, $(LIBOBJS))
 
 # thread.c is needed only for non-WIN32 implementation of path.c
 ifneq ($(PORTNAME), win32)
@@ -38,10 +38,7 @@ SHLIB_PREREQS = submake-libpq submake-pgtypeslib
 
 SHLIB_EXPORTS = exports.txt
 
-ifeq ($(PORTNAME), win32)
-# Link to shfolder.dll instead of shell32.dll
-SHLIB_LINK += -lshfolder
-endif
+PKG_CONFIG_REQUIRES_PRIVATE = libpq libpgtypes
 
 all: all-lib
 
@@ -57,7 +54,7 @@ include $(top_srcdir)/src/Makefile.shlib
 # necessarily use the same object files as the backend uses. Instead,
 # symlink the source files in here and build our own object file.
 
-path.c pgstrcasecmp.c snprintf.c strlcpy.c thread.c win32setlocale.c: % : $(top_srcdir)/src/port/%
+path.c pgstrcasecmp.c snprintf.c strlcpy.c thread.c win32setlocale.c isinf.c: % : $(top_srcdir)/src/port/%
 	rm -f $@ && $(LN_S) $< .
 
 misc.o: misc.c $(top_builddir)/src/port/pg_config_paths.h
@@ -74,6 +71,6 @@ uninstall: uninstall-lib
 
 clean distclean: clean-lib
 	rm -f $(OBJS)
-	rm -f path.c pgstrcasecmp.c snprintf.c strlcpy.c thread.c win32setlocale.c
+	rm -f path.c pgstrcasecmp.c snprintf.c strlcpy.c thread.c win32setlocale.c isinf.c
 
 maintainer-clean: distclean maintainer-clean-lib

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -222,18 +222,18 @@ CLASS="PROGRAMLISTING"
 dn:cn=mydatabase,dc=mycompany,dc=com
 changetype:add
 objectclass:top
-objectclass:groupOfUniqueNames
+objectclass:device
 cn:mydatabase
-uniqueMember:host=dbserver.mycompany.com
-uniqueMember:port=5439
-uniqueMember:dbname=mydb
-uniqueMember:user=mydb_user
-uniqueMember:sslmode=require</PRE
+description:host=dbserver.mycompany.com
+description:port=5439
+description:dbname=mydb
+description:user=mydb_user
+description:sslmode=require</PRE
 ><P>
    might be queried with the following LDAP URL:
 </P><PRE
 CLASS="PROGRAMLISTING"
->ldap://ldap.mycompany.com/dc=mycompany,dc=com?uniqueMember?one?(cn=mydatabase)</PRE
+>ldap://ldap.mycompany.com/dc=mycompany,dc=com?description?one?(cn=mydatabase)</PRE
 ><P>
   </P
 ><P

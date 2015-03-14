@@ -108,7 +108,8 @@
 
      <listitem>
       <simpara>To protect against loss of very old data due to
-      <firstterm>transaction ID wraparound</>.</simpara>
+      <firstterm>transaction ID wraparound</> or
+      <firstterm>multixact ID wraparound</>.</simpara>
      </listitem>
     </orderedlist>
 
@@ -379,6 +380,11 @@
     <secondary>wraparound</secondary>
    </indexterm>
 
+    <indexterm>
+     <primary>wraparound</primary>
+     <secondary>of transaction IDs</secondary>
+    </indexterm>
+
    <para>
     <productname>PostgreSQL</productname>'s MVCC transaction semantics
     depend on being able to compare transaction ID (<acronym>XID</>)
@@ -397,11 +403,15 @@
 
    <para>
     The reason that periodic vacuuming solves the problem is that
-    <productname>PostgreSQL</productname> reserves a special XID
-    as <literal>FrozenXID</>.  This XID does not follow the normal XID
+    <command>VACUUM</> will mark rows as <emphasis>frozen</>, indicating that
+    they were inserted by a transaction which committed sufficiently far in
+    the past that the effects of the inserting transaction is certain to be
+    visible, from an MVCC perspective, to all current and future transactions.
+    <productname>PostgreSQL</> reserves a special XID,
+    <literal>FrozenTransactionId</>, which does not follow the normal XID
     comparison rules and is always considered older
     than every normal XID. Normal XIDs are
-    compared using modulo-2<superscript>31</> arithmetic. This means
+    compared using modulo-2<superscript>32</> arithmetic. This means
     that for every normal XID, there are two billion XIDs that are
     <quote>older</> and two billion that are <quote>newer</>; another
     way to say it is that the normal XID space is circular with no
@@ -410,20 +420,19 @@
     the next two billion transactions, no matter which normal XID we are
     talking about. If the row version still exists after more than two billion
     transactions, it will suddenly appear to be in the future. To
-    prevent this, old row versions must be reassigned the XID
-    <literal>FrozenXID</> sometime before they reach the
-    two-billion-transactions-old mark. Once they are assigned this
-    special XID, they will appear to be <quote>in the past</> to all
-    normal transactions regardless of wraparound issues, and so such
-    row versions will be valid until deleted, no matter how long that is.
-    This reassignment of old XIDs is handled by <command>VACUUM</>.
+    prevent this, frozen row versions are treated as if the inserting XID were
+    <literal>FrozenTransactionId</>, so that they will appear to be
+    <quote>in the past</> to all normal transactions regardless of wraparound
+    issues, and so such row versions will be valid until deleted, no matter
+    how long that is.
    </para>
 
    <para>
     <xref linkend="guc-vacuum-freeze-min-age">
-    controls how old an XID value has to be before it's replaced with
-    <literal>FrozenXID</>.  Larger values of this setting
-    preserve transactional information longer, while smaller values increase
+    controls how old an XID value has to be before its row version will be
+    frozen.  Increasing this setting may avoid unnecessary work if the
+    rows that would otherwise be frozen will soon be modified again,
+    but decreasing this setting increases
     the number of transactions that can elapse before the table must be
     vacuumed again.
    </para>
@@ -431,8 +440,8 @@
    <para>
     <command>VACUUM</> normally skips pages that don't have any dead row
     versions, but those pages might still have row versions with old XID
-    values.  To ensure all old XIDs have been replaced by
-    <literal>FrozenXID</>, a scan of the whole table is needed.
+    values.  To ensure all old row versions have been frozen, a
+    scan of the whole table is needed.
     <xref linkend="guc-vacuum-freeze-table-age"> controls when
     <command>VACUUM</> does that: a whole table sweep is forced if
     the table hasn't been fully scanned for <varname>vacuum_freeze_table_age</>
@@ -447,8 +456,8 @@
     the time <command>VACUUM</> last scanned the whole table.  If it were to go
     unvacuumed for longer than
     that, data loss could result.  To ensure that this does not happen,
-    autovacuum is invoked on any table that might contain XIDs older than the
-    age specified by the configuration parameter <xref
+    autovacuum is invoked on any table that might contain unfrozen rows with
+    XIDs older than the age specified by the configuration parameter <xref
     linkend="guc-autovacuum-freeze-max-age">.  (This will happen even if
     autovacuum is disabled.)
    </para>
@@ -504,37 +513,37 @@
 
    <para>
     One disadvantage of decreasing <varname>vacuum_freeze_min_age</> is that
-    it might cause <command>VACUUM</> to do useless work: changing a table row's
-    XID to <literal>FrozenXID</> is a waste of time if the row is modified
+    it might cause <command>VACUUM</> to do useless work: freezing a row
+    version is a waste of time if the row is modified
     soon thereafter (causing it to acquire a new XID).  So the setting should
     be large enough that rows are not frozen until they are unlikely to change
-    any more.  Another disadvantage of decreasing this setting is
-    that details about exactly which transaction inserted or modified a
-    row will be lost sooner.  This information sometimes comes in handy,
-    particularly when trying to analyze what went wrong after a database
-    failure.  For these two reasons, decreasing this setting is not
-    recommended except for completely static tables.
+    any more.
    </para>
 
    <para>
-    To track the age of the oldest XIDs in a database,
+    To track the age of the oldest unfrozen XIDs in a database,
     <command>VACUUM</> stores XID
     statistics in the system tables <structname>pg_class</> and
     <structname>pg_database</>.  In particular,
     the <structfield>relfrozenxid</> column of a table's
     <structname>pg_class</> row contains the freeze cutoff XID that was used
-    by the last whole-table <command>VACUUM</> for that table.  All normal
-    XIDs older than this cutoff XID are guaranteed to have been replaced by
-    <literal>FrozenXID</> within the table.  Similarly,
+    by the last whole-table <command>VACUUM</> for that table.  All rows
+    inserted by transactions with XIDs older than this cutoff XID are
+    guaranteed to have been frozen.  Similarly,
     the <structfield>datfrozenxid</> column of a database's
-    <structname>pg_database</> row is a lower bound on the normal XIDs
+    <structname>pg_database</> row is a lower bound on the unfrozen XIDs
     appearing in that database &mdash; it is just the minimum of the
     per-table <structfield>relfrozenxid</> values within the database.
     A convenient way to
     examine this information is to execute queries such as:
 
 <programlisting>
-SELECT relname, age(relfrozenxid) FROM pg_class WHERE relkind = 'r';
+SELECT c.oid::regclass as table_name,
+       greatest(age(c.relfrozenxid),age(t.relfrozenxid)) as age
+FROM pg_class c
+LEFT JOIN pg_class t ON c.reltoastrelid = t.oid
+WHERE c.relkind IN ('r', 'm');
+
 SELECT datname, age(datfrozenxid) FROM pg_database;
 </programlisting>
 
@@ -581,19 +590,70 @@ HINT:  To avoid a database shutdown, execute a database-wide VACUUM in "mydb".
 
 <programlisting>
 ERROR:  database is not accepting commands to avoid wraparound data loss in database "mydb"
-HINT:  Stop the postmaster and use a standalone backend to VACUUM in "mydb".
+HINT:  Stop the postmaster and vacuum that database in single-user mode.
 </programlisting>
 
     The 1-million-transaction safety margin exists to let the
     administrator recover without data loss, by manually executing the
     required <command>VACUUM</> commands.  However, since the system will not
     execute commands once it has gone into the safety shutdown mode,
-    the only way to do this is to stop the server and use a single-user
-    backend to execute <command>VACUUM</>.  The shutdown mode is not enforced
-    by a single-user backend.  See the <xref linkend="app-postgres"> reference
-    page for details about using a single-user backend.
+    the only way to do this is to stop the server and start the server in single-user
+    mode to execute <command>VACUUM</>.  The shutdown mode is not enforced
+    in single-user mode.  See the <xref linkend="app-postgres"> reference
+    page for details about using single-user mode.
    </para>
 
+   <sect3 id="vacuum-for-multixact-wraparound">
+    <title>Multixacts and Wraparound</title>
+
+    <indexterm>
+     <primary>MultiXactId</primary>
+    </indexterm>
+
+    <indexterm>
+     <primary>wraparound</primary>
+     <secondary>of multixact IDs</secondary>
+    </indexterm>
+
+    <para>
+     <firstterm>Multixact IDs</> are used to support row locking by
+     multiple transactions.  Since there is only limited space in a tuple
+     header to store lock information, that information is encoded as
+     a <quote>multiple transaction ID</>, or multixact ID for short,
+     whenever there is more than one transaction concurrently locking a
+     row.  Information about which transaction IDs are included in any
+     particular multixact ID is stored separately in
+     the <filename>pg_multixact</> subdirectory, and only the multixact ID
+     appears in the <structfield>xmax</> field in the tuple header.
+     Like transaction IDs, multixact IDs are implemented as a
+     32-bit counter and corresponding storage, all of which requires
+     careful aging management, storage cleanup, and wraparound handling.
+    </para>
+
+    <para>
+     During a <command>VACUUM</> table scan, either partial or of the whole
+     table, any multixact ID older than
+     <xref linkend="guc-vacuum-multixact-freeze-min-age">
+     is replaced by a different value, which can be the zero value, a single
+     transaction ID, or a newer multixact ID.  For each table,
+     <structname>pg_class</>.<structfield>relminmxid</> stores the oldest
+     possible multixact ID still appearing in any tuple of that table.
+     If this value is older than
+     <xref linkend="guc-vacuum-multixact-freeze-table-age">, a whole-table
+     scan is forced.  Whole-table <command>VACUUM</> scans, regardless of
+     what causes them, enable advancing the value for that table.
+     Eventually, as all tables in all databases are scanned and their
+     oldest multixact values are advanced, on-disk storage for older
+     multixacts can be removed.
+    </para>
+
+    <para>
+     As a safety device, a whole-table vacuum scan will occur for any table
+     whose multixact-age is greater than
+     <xref linkend="guc-autovacuum-multixact-freeze-max-age">.
+     This will occur even if autovacuum is nominally disabled.
+    </para>
+   </sect3>
   </sect2>
 
   <sect2 id="autovacuum">
@@ -633,6 +693,8 @@ HINT:  Stop the postmaster and use a standalone backend to VACUUM in "mydb".
     the next database will be processed as soon as the first worker finishes.
     Each worker process will check each table within its database and
     execute <command>VACUUM</> and/or <command>ANALYZE</> as needed.
+    <varname>log_autovacuum_min_duration</varname> can be used to monitor
+    autovacuum activity.
    </para>
 
    <para>
@@ -725,10 +787,13 @@ analyze threshold = analyze base threshold + analyze scale factor * number of tu
    </para>
 
    <para>
-    When multiple workers are running, the cost limit is
+    When multiple workers are running, the cost delay parameters are
     <quote>balanced</quote> among all the running workers, so that the
-    total impact on the system is the same, regardless of the number
-    of workers actually running.
+    total I/O impact on the system is the same regardless of the number
+    of workers actually running.  However, any workers processing tables whose
+    <literal>autovacuum_vacuum_cost_delay</> or
+    <literal>autovacuum_vacuum_cost_limit</> have been set are not considered
+    in the balancing algorithm.
    </para>
   </sect2>
  </sect1>
@@ -743,8 +808,9 @@ analyze threshold = analyze base threshold + analyze scale factor * number of tu
 
   <para>
    In some situations it is worthwhile to rebuild indexes periodically
-   with the <xref linkend="sql-reindex">
-   command.
+   with the <xref linkend="sql-reindex"> command or a series of individual
+   rebuilding steps.
+
   </para>
 
   <para>
@@ -769,6 +835,23 @@ analyze threshold = analyze base threshold + analyze scale factor * number of tu
    adjacent pages are usually also physically adjacent in a newly built index.
    (This consideration does not apply to non-B-tree indexes.)  It
    might be worthwhile to reindex periodically just to improve access speed.
+  </para>
+
+  <para>
+   <xref linkend="sql-reindex"> can be used safely and easily in all cases.
+   But since the command requires an exclusive table lock, it is
+   often preferable to execute an index rebuild with a sequence of
+   creation and replacement steps.  Index types that support
+   <xref linkend="sql-createindex"> with the <literal>CONCURRENTLY</>
+   option can instead be recreated that way. If that is successful and the
+   resulting index is valid, the original index can then be replaced by
+   the newly built one using a combination of <xref linkend="sql-alterindex">
+   and <xref linkend="sql-dropindex">. When an index is used to enforce
+   uniqueness or other constraints, <xref linkend="sql-altertable"> might
+   be necessary to swap the existing constraint with one enforced by
+   the new index. Review this alternate multi-step rebuild approach
+   carefully before using it as there are limitations on which
+   indexes can be reindexed this way, and errors must be handled.
   </para>
  </sect1>
 
@@ -865,7 +948,7 @@ pg_ctl start | rotatelogs /var/log/pgsql_log 86400
   </para>
 
   <para>
-   <ulink url="http://pgfouine.projects.postgresql.org/"><productname>pgFouine</productname></ulink>
+   <ulink url="http://dalibo.github.io/pgbadger/"><productname>pgBadger</productname></ulink>
    is an external project that does sophisticated log file analysis.
    <ulink
    url="http://bucardo.org/wiki/Check_postgres"><productname>check_postgres</productname></ulink>

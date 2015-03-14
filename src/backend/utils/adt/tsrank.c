@@ -3,7 +3,7 @@
  * tsrank.c
  *		rank tsvector by tsquery
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -20,7 +20,7 @@
 #include "miscadmin.h"
 
 
-static float weights[] = {0.1f, 0.2f, 0.4f, 1.0f};
+static const float weights[] = {0.1f, 0.2f, 0.4f, 1.0f};
 
 #define wpos(wep)	( w[ WEP_GETWEIGHT(wep) ] )
 
@@ -33,14 +33,14 @@ static float weights[] = {0.1f, 0.2f, 0.4f, 1.0f};
 #define RANK_NORM_RDIVRPLUS1	0x20
 #define DEF_NORM_METHOD			RANK_NO_NORM
 
-static float calc_rank_or(float *w, TSVector t, TSQuery q);
-static float calc_rank_and(float *w, TSVector t, TSQuery q);
+static float calc_rank_or(const float *w, TSVector t, TSQuery q);
+static float calc_rank_and(const float *w, TSVector t, TSQuery q);
 
 /*
  * Returns a weight of a word collocation
  */
 static float4
-word_distance(int4 w)
+word_distance(int32 w)
 {
 	if (w > 100)
 		return 1e-30f;
@@ -202,7 +202,7 @@ static WordEntryPosVector POSNULL = {
 };
 
 static float
-calc_rank_and(float *w, TSVector t, TSQuery q)
+calc_rank_and(const float *w, TSVector t, TSQuery q)
 {
 	WordEntryPosVector **pos;
 	int			i,
@@ -213,7 +213,7 @@ calc_rank_and(float *w, TSVector t, TSQuery q)
 			   *firstentry;
 	WordEntryPos *post,
 			   *ct;
-	int4		dimt,
+	int32		dimt,
 				lenct,
 				dist,
 				nitem;
@@ -278,12 +278,12 @@ calc_rank_and(float *w, TSVector t, TSQuery q)
 }
 
 static float
-calc_rank_or(float *w, TSVector t, TSQuery q)
+calc_rank_or(const float *w, TSVector t, TSQuery q)
 {
 	WordEntry  *entry,
 			   *firstentry;
 	WordEntryPos *post;
-	int4		dimt,
+	int32		dimt,
 				j,
 				i,
 				nitem;
@@ -297,7 +297,7 @@ calc_rank_or(float *w, TSVector t, TSQuery q)
 	{
 		float		resj,
 					wjm;
-		int4		jm;
+		int32		jm;
 
 		firstentry = entry = find_wordentry(t, q, item[i], &nitem);
 		if (!entry)
@@ -347,7 +347,7 @@ calc_rank_or(float *w, TSVector t, TSQuery q)
 }
 
 static float
-calc_rank(float *w, TSVector t, TSQuery q, int4 method)
+calc_rank(const float *w, TSVector t, TSQuery q, int32 method)
 {
 	QueryItem  *item = GETQUERY(q);
 	float		res = 0.0;
@@ -387,7 +387,7 @@ calc_rank(float *w, TSVector t, TSQuery q, int4 method)
 	return res;
 }
 
-static float *
+static const float *
 getWeights(ArrayType *win)
 {
 	static float ws[lengthof(weights)];
@@ -530,11 +530,11 @@ typedef struct
 	int			q;
 	DocRepresentation *begin;
 	DocRepresentation *end;
-} Extention;
+} CoverExt;
 
 
 static bool
-Cover(DocRepresentation *doc, int len, QueryRepresentation *qr, Extention *ext)
+Cover(DocRepresentation *doc, int len, QueryRepresentation *qr, CoverExt *ext)
 {
 	DocRepresentation *ptr;
 	int			lastpos = ext->pos;
@@ -621,7 +621,7 @@ get_docrep(TSVector txt, QueryRepresentation *qr, int *doclen)
 	WordEntry  *entry,
 			   *firstentry;
 	WordEntryPos *post;
-	int4		dimt,
+	int32		dimt,
 				j,
 				i,
 				nitem;
@@ -658,8 +658,9 @@ get_docrep(TSVector txt, QueryRepresentation *qr, int *doclen)
 			}
 			else
 			{
-				dimt = POSNULL.npos;
-				post = POSNULL.pos;
+				/* ignore words without positions */
+				entry++;
+				continue;
 			}
 
 			while (cur + dimt >= len)
@@ -723,13 +724,13 @@ get_docrep(TSVector txt, QueryRepresentation *qr, int *doclen)
 }
 
 static float4
-calc_rank_cd(float4 *arrdata, TSVector txt, TSQuery query, int method)
+calc_rank_cd(const float4 *arrdata, TSVector txt, TSQuery query, int method)
 {
 	DocRepresentation *doc;
 	int			len,
 				i,
 				doclen = 0;
-	Extention	ext;
+	CoverExt	ext;
 	double		Wdoc = 0.0;
 	double		invws[lengthof(weights)];
 	double		SumDist = 0.0,
@@ -759,7 +760,7 @@ calc_rank_cd(float4 *arrdata, TSVector txt, TSQuery query, int method)
 		return 0.0;
 	}
 
-	MemSet(&ext, 0, sizeof(Extention));
+	MemSet(&ext, 0, sizeof(CoverExt));
 	while (Cover(doc, doclen, &qr, &ext))
 	{
 		double		Cpos = 0.0;

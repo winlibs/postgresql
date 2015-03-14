@@ -3,7 +3,7 @@
  * async.c
  *	  Asynchronous notification: NOTIFY, LISTEN, UNLISTEN
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -126,6 +126,7 @@
 #include "miscadmin.h"
 #include "storage/ipc.h"
 #include "storage/lmgr.h"
+#include "storage/procarray.h"
 #include "storage/procsignal.h"
 #include "storage/sinval.h"
 #include "tcop/tcopprot.h"
@@ -150,7 +151,7 @@
  *
  * This struct declaration has the maximal length, but in a real queue entry
  * the data area is only big enough for the actual channel and payload strings
- * (each null-terminated).	AsyncQueueEntryEmptySize is the minimum possible
+ * (each null-terminated).  AsyncQueueEntryEmptySize is the minimum possible
  * entry size, if both channel and payload strings are empty (but note it
  * doesn't include alignment padding).
  *
@@ -206,8 +207,6 @@ typedef struct QueueBackendStatus
 	int32		pid;			/* either a PID or InvalidPid */
 	QueuePosition pos;			/* backend has read queue up to here */
 } QueueBackendStatus;
-
-#define InvalidPid				(-1)
 
 /*
  * Shared memory state for LISTEN/NOTIFY (excluding its SLRU stuff)
@@ -266,7 +265,7 @@ static SlruCtlData AsyncCtlData;
  *
  * The most data we can have in the queue at a time is QUEUE_MAX_PAGE/2
  * pages, because more than that would confuse slru.c into thinking there
- * was a wraparound condition.	With the default BLCKSZ this means there
+ * was a wraparound condition.  With the default BLCKSZ this means there
  * can be up to 8GB of queued-and-not-read data.
  *
  * Note: it's possible to redefine QUEUE_MAX_PAGE with a smaller multiple of
@@ -350,11 +349,11 @@ static volatile sig_atomic_t notifyInterruptOccurred = 0;
 /* True if we've registered an on_shmem_exit cleanup */
 static bool unlistenExitRegistered = false;
 
+/* True if we're currently registered as a listener in asyncQueueControl */
+static bool amRegisteredListener = false;
+
 /* has this backend sent notifications in the current transaction? */
 static bool backendHasSentNotifications = false;
-
-/* has this backend executed its first LISTEN in the current transaction? */
-static bool backendHasExecutedInitialListen = false;
 
 /* GUC parameter */
 bool		Trace_notify = false;
@@ -370,13 +369,13 @@ static void Exec_UnlistenAllCommit(void);
 static bool IsListeningOn(const char *channel);
 static void asyncQueueUnregister(void);
 static bool asyncQueueIsFull(void);
-static bool asyncQueueAdvance(QueuePosition *position, int entryLength);
+static bool asyncQueueAdvance(volatile QueuePosition *position, int entryLength);
 static void asyncQueueNotificationToEntry(Notification *n, AsyncQueueEntry *qe);
 static ListCell *asyncQueueAddEntries(ListCell *nextNotify);
 static void asyncQueueFillWarning(void);
 static bool SignalBackends(void);
 static void asyncQueueReadAllNotifications(void);
-static bool asyncQueueProcessPageEntries(QueuePosition *current,
+static bool asyncQueueProcessPageEntries(volatile QueuePosition *current,
 							 QueuePosition stop,
 							 char *page_buffer);
 static void asyncQueueAdvanceTail(void);
@@ -396,7 +395,7 @@ asyncQueuePagePrecedes(int p, int q)
 	int			diff;
 
 	/*
-	 * We have to compare modulo (QUEUE_MAX_PAGE+1)/2.	Both inputs should be
+	 * We have to compare modulo (QUEUE_MAX_PAGE+1)/2.  Both inputs should be
 	 * in the range 0..QUEUE_MAX_PAGE.
 	 */
 	Assert(p >= 0 && p <= QUEUE_MAX_PAGE);
@@ -724,6 +723,7 @@ static void
 Async_UnlistenOnExit(int code, Datum arg)
 {
 	Exec_UnlistenAllCommit();
+	asyncQueueUnregister();
 }
 
 /*
@@ -767,8 +767,6 @@ PreCommit_Notify(void)
 
 	if (Trace_notify)
 		elog(DEBUG1, "PreCommit_Notify");
-
-	Assert(backendHasExecutedInitialListen == false);
 
 	/* Preflight for any pending listen/unlisten actions */
 	foreach(p, pendingActions)
@@ -828,7 +826,7 @@ PreCommit_Notify(void)
 		while (nextNotify != NULL)
 		{
 			/*
-			 * Add the pending notifications to the queue.	We acquire and
+			 * Add the pending notifications to the queue.  We acquire and
 			 * release AsyncQueueLock once per page, which might be overkill
 			 * but it does allow readers to get in while we're doing this.
 			 *
@@ -892,11 +890,9 @@ AtCommit_Notify(void)
 		}
 	}
 
-	/*
-	 * If we did an initial LISTEN, listenChannels now has the entry, so we no
-	 * longer need or want the flag to be set.
-	 */
-	backendHasExecutedInitialListen = false;
+	/* If no longer listening to anything, get out of listener array */
+	if (amRegisteredListener && listenChannels == NIL)
+		asyncQueueUnregister();
 
 	/* And clean up */
 	ClearPendingActionsAndNotifies();
@@ -914,18 +910,11 @@ Exec_ListenPreCommit(void)
 	 * Nothing to do if we are already listening to something, nor if we
 	 * already ran this routine in this transaction.
 	 */
-	if (listenChannels != NIL || backendHasExecutedInitialListen)
+	if (amRegisteredListener)
 		return;
 
 	if (Trace_notify)
 		elog(DEBUG1, "Exec_ListenPreCommit(%d)", MyProcPid);
-
-	/*
-	 * We need this variable to detect an aborted initial LISTEN. In that case
-	 * we would set up our pointer but not listen on any channel. This flag
-	 * gets cleared in AtCommit_Notify or AtAbort_Notify().
-	 */
-	backendHasExecutedInitialListen = true;
 
 	/*
 	 * Before registering, make sure we will unlisten before dying. (Note:
@@ -933,7 +922,7 @@ Exec_ListenPreCommit(void)
 	 */
 	if (!unlistenExitRegistered)
 	{
-		on_shmem_exit(Async_UnlistenOnExit, 0);
+		before_shmem_exit(Async_UnlistenOnExit, 0);
 		unlistenExitRegistered = true;
 	}
 
@@ -949,6 +938,9 @@ Exec_ListenPreCommit(void)
 	QUEUE_BACKEND_POS(MyBackendId) = QUEUE_TAIL;
 	QUEUE_BACKEND_PID(MyBackendId) = MyProcPid;
 	LWLockRelease(AsyncQueueLock);
+
+	/* Now we are listed in the global array, so remember we're listening */
+	amRegisteredListener = true;
 
 	/*
 	 * Try to move our pointer forward as far as possible. This will skip over
@@ -1022,10 +1014,6 @@ Exec_UnlistenCommit(const char *channel)
 	 * We do not complain about unlistening something not being listened;
 	 * should we?
 	 */
-
-	/* If no longer listening to anything, get out of listener array */
-	if (listenChannels == NIL)
-		asyncQueueUnregister();
 }
 
 /*
@@ -1041,8 +1029,6 @@ Exec_UnlistenAllCommit(void)
 
 	list_free_deep(listenChannels);
 	listenChannels = NIL;
-
-	asyncQueueUnregister();
 }
 
 /*
@@ -1056,12 +1042,12 @@ Exec_UnlistenAllCommit(void)
  * The reason that this is not done in AtCommit_Notify is that there is
  * a nonzero chance of errors here (for example, encoding conversion errors
  * while trying to format messages to our frontend).  An error during
- * AtCommit_Notify would be a PANIC condition.	The timing is also arranged
+ * AtCommit_Notify would be a PANIC condition.  The timing is also arranged
  * to ensure that a transaction's self-notifies are delivered to the frontend
  * before it gets the terminating ReadyForQuery message.
  *
  * Note that we send signals and process the queue even if the transaction
- * eventually aborted.	This is because we need to clean out whatever got
+ * eventually aborted.  This is because we need to clean out whatever got
  * added to the queue.
  *
  * NOTE: we are outside of any transaction here.
@@ -1151,7 +1137,7 @@ IsListeningOn(const char *channel)
 
 /*
  * Remove our entry from the listeners array when we are no longer listening
- * on any channel.	NB: must not fail if we're already not listening.
+ * on any channel.  NB: must not fail if we're already not listening.
  */
 static void
 asyncQueueUnregister(void)
@@ -1160,6 +1146,9 @@ asyncQueueUnregister(void)
 
 	Assert(listenChannels == NIL);		/* else caller error */
 
+	if (!amRegisteredListener)	/* nothing to do */
+		return;
+
 	LWLockAcquire(AsyncQueueLock, LW_SHARED);
 	/* check if entry is valid and oldest ... */
 	advanceTail = (MyProcPid == QUEUE_BACKEND_PID(MyBackendId)) &&
@@ -1167,6 +1156,9 @@ asyncQueueUnregister(void)
 	/* ... then mark it invalid */
 	QUEUE_BACKEND_PID(MyBackendId) = InvalidPid;
 	LWLockRelease(AsyncQueueLock);
+
+	/* mark ourselves as no longer listed in the global array */
+	amRegisteredListener = false;
 
 	/* If we were the laziest backend, try to advance the tail pointer */
 	if (advanceTail)
@@ -1187,7 +1179,7 @@ asyncQueueIsFull(void)
 	/*
 	 * The queue is full if creating a new head page would create a page that
 	 * logically precedes the current global tail pointer, ie, the head
-	 * pointer would wrap around compared to the tail.	We cannot create such
+	 * pointer would wrap around compared to the tail.  We cannot create such
 	 * a head page for fear of confusing slru.c.  For safety we round the tail
 	 * pointer back to a segment boundary (compare the truncation logic in
 	 * asyncQueueAdvanceTail).
@@ -1206,11 +1198,11 @@ asyncQueueIsFull(void)
 
 /*
  * Advance the QueuePosition to the next entry, assuming that the current
- * entry is of length entryLength.	If we jump to a new page the function
+ * entry is of length entryLength.  If we jump to a new page the function
  * returns true, else false.
  */
 static bool
-asyncQueueAdvance(QueuePosition *position, int entryLength)
+asyncQueueAdvance(volatile QueuePosition *position, int entryLength)
 {
 	int			pageno = QUEUE_POS_PAGE(*position);
 	int			offset = QUEUE_POS_OFFSET(*position);
@@ -1275,7 +1267,7 @@ asyncQueueNotificationToEntry(Notification *n, AsyncQueueEntry *qe)
  * the last byte which simplifies reading the page later.
  *
  * We are passed the list cell containing the next notification to write
- * and return the first still-unwritten cell back.	Eventually we will return
+ * and return the first still-unwritten cell back.  Eventually we will return
  * NULL indicating all is done.
  *
  * We are holding AsyncQueueLock already from the caller and grab AsyncCtlLock
@@ -1352,7 +1344,7 @@ asyncQueueAddEntries(ListCell *nextNotify)
 			 * Page is full, so we're done here, but first fill the next page
 			 * with zeroes.  The reason to do this is to ensure that slru.c's
 			 * idea of the head page is always the same as ours, which avoids
-			 * boundary problems in SimpleLruTruncate.	The test in
+			 * boundary problems in SimpleLruTruncate.  The test in
 			 * asyncQueueIsFull() ensured that there is room to create this
 			 * page without overrunning the queue.
 			 */
@@ -1524,21 +1516,12 @@ void
 AtAbort_Notify(void)
 {
 	/*
-	 * If we LISTEN but then roll back the transaction we have set our pointer
-	 * but have not made any entry in listenChannels. In that case, remove our
-	 * pointer again.
+	 * If we LISTEN but then roll back the transaction after PreCommit_Notify,
+	 * we have registered as a listener but have not made any entry in
+	 * listenChannels.  In that case, deregister again.
 	 */
-	if (backendHasExecutedInitialListen)
-	{
-		/*
-		 * Checking listenChannels should be redundant but it can't hurt doing
-		 * it for safety reasons.
-		 */
-		if (listenChannels == NIL)
-			asyncQueueUnregister();
-
-		backendHasExecutedInitialListen = false;
-	}
+	if (amRegisteredListener && listenChannels == NIL)
+		asyncQueueUnregister();
 
 	/* And clean up */
 	ClearPendingActionsAndNotifies();
@@ -1668,11 +1651,15 @@ HandleNotifyInterrupt(void)
 
 		/*
 		 * We may be called while ImmediateInterruptOK is true; turn it off
-		 * while messing with the NOTIFY state.  (We would have to save and
-		 * restore it anyway, because PGSemaphore operations inside
-		 * ProcessIncomingNotify() might reset it.)
+		 * while messing with the NOTIFY state.  This prevents problems if
+		 * SIGINT or similar arrives while we're working.  Just to be real
+		 * sure, bump the interrupt holdoff counter as well.  That way, even
+		 * if something inside ProcessIncomingNotify() transiently sets
+		 * ImmediateInterruptOK (eg while waiting on a lock), we won't get
+		 * interrupted until we're done with the notify interrupt.
 		 */
 		ImmediateInterruptOK = false;
+		HOLD_INTERRUPTS();
 
 		/*
 		 * I'm not sure whether some flavors of Unix might allow another
@@ -1702,8 +1689,10 @@ HandleNotifyInterrupt(void)
 		}
 
 		/*
-		 * Restore ImmediateInterruptOK, and check for interrupts if needed.
+		 * Restore the holdoff level and ImmediateInterruptOK, and check for
+		 * interrupts if needed.
 		 */
+		RESUME_INTERRUPTS();
 		ImmediateInterruptOK = save_ImmediateInterruptOK;
 		if (save_ImmediateInterruptOK)
 			CHECK_FOR_INTERRUPTS();
@@ -1782,7 +1771,7 @@ EnableNotifyInterrupt(void)
  *		is disabled until the next EnableNotifyInterrupt call.
  *
  *		The PROCSIG_CATCHUP_INTERRUPT signal handler also needs to call this,
- *		so as to prevent conflicts if one signal interrupts the other.	So we
+ *		so as to prevent conflicts if one signal interrupts the other.  So we
  *		must return the previous state of the flag.
  */
 bool
@@ -1803,7 +1792,7 @@ DisableNotifyInterrupt(void)
 static void
 asyncQueueReadAllNotifications(void)
 {
-	QueuePosition pos;
+	volatile QueuePosition pos;
 	QueuePosition oldpos;
 	QueuePosition head;
 	bool		advanceTail;
@@ -1877,7 +1866,7 @@ asyncQueueReadAllNotifications(void)
 			/*
 			 * We copy the data from SLRU into a local buffer, so as to avoid
 			 * holding the AsyncCtlLock while we are examining the entries and
-			 * possibly transmitting them to our frontend.	Copy only the part
+			 * possibly transmitting them to our frontend.  Copy only the part
 			 * of the page we will actually inspect.
 			 */
 			slotno = SimpleLruReadPage_ReadOnly(AsyncCtl, curpage,
@@ -1951,7 +1940,7 @@ asyncQueueReadAllNotifications(void)
  * and deliver relevant ones to my frontend.
  *
  * The current page must have been fetched into page_buffer from shared
- * memory.	(We could access the page right in shared memory, but that
+ * memory.  (We could access the page right in shared memory, but that
  * would imply holding the AsyncCtlLock throughout this routine.)
  *
  * We stop if we reach the "stop" position, or reach a notification from an
@@ -1963,7 +1952,7 @@ asyncQueueReadAllNotifications(void)
  * The QueuePosition *current is advanced past all processed messages.
  */
 static bool
-asyncQueueProcessPageEntries(QueuePosition *current,
+asyncQueueProcessPageEntries(volatile QueuePosition *current,
 							 QueuePosition stop,
 							 char *page_buffer)
 {
@@ -1990,7 +1979,27 @@ asyncQueueProcessPageEntries(QueuePosition *current,
 		/* Ignore messages destined for other databases */
 		if (qe->dboid == MyDatabaseId)
 		{
-			if (TransactionIdDidCommit(qe->xid))
+			if (TransactionIdIsInProgress(qe->xid))
+			{
+				/*
+				 * The source transaction is still in progress, so we can't
+				 * process this message yet.  Break out of the loop, but first
+				 * back up *current so we will reprocess the message next
+				 * time.  (Note: it is unlikely but not impossible for
+				 * TransactionIdDidCommit to fail, so we can't really avoid
+				 * this advance-then-back-up behavior when dealing with an
+				 * uncommitted message.)
+				 *
+				 * Note that we must test TransactionIdIsInProgress before we
+				 * test TransactionIdDidCommit, else we might return a message
+				 * from a transaction that is not yet visible to snapshots;
+				 * compare the comments at the head of tqual.c.
+				 */
+				*current = thisentry;
+				reachedStop = true;
+				break;
+			}
+			else if (TransactionIdDidCommit(qe->xid))
 			{
 				/* qe->data is the null-terminated channel name */
 				char	   *channel = qe->data;
@@ -2003,27 +2012,12 @@ asyncQueueProcessPageEntries(QueuePosition *current,
 					NotifyMyFrontEnd(channel, payload, qe->srcPid);
 				}
 			}
-			else if (TransactionIdDidAbort(qe->xid))
-			{
-				/*
-				 * If the source transaction aborted, we just ignore its
-				 * notifications.
-				 */
-			}
 			else
 			{
 				/*
-				 * The transaction has neither committed nor aborted so far,
-				 * so we can't process its message yet.  Break out of the
-				 * loop, but first back up *current so we will reprocess the
-				 * message next time.  (Note: it is unlikely but not
-				 * impossible for TransactionIdDidCommit to fail, so we can't
-				 * really avoid this advance-then-back-up behavior when
-				 * dealing with an uncommitted message.)
+				 * The source transaction aborted or crashed, so we just
+				 * ignore its notifications.
 				 */
-				*current = thisentry;
-				reachedStop = true;
-				break;
 			}
 		}
 
@@ -2152,7 +2146,7 @@ NotifyMyFrontEnd(const char *channel, const char *payload, int32 srcPid)
 		pq_endmessage(&buf);
 
 		/*
-		 * NOTE: we do not do pq_flush() here.	For a self-notify, it will
+		 * NOTE: we do not do pq_flush() here.  For a self-notify, it will
 		 * happen at the end of the transaction, and for incoming notifies
 		 * ProcessIncomingNotify will do it after finding all the notifies.
 		 */

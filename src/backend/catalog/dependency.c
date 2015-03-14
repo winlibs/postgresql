@@ -4,7 +4,7 @@
  *	  Routines to support inter-object dependencies.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -14,12 +14,11 @@
  */
 #include "postgres.h"
 
-#include "access/sysattr.h"
+#include "access/htup_details.h"
 #include "access/xact.h"
 #include "catalog/dependency.h"
 #include "catalog/heap.h"
 #include "catalog/index.h"
-#include "catalog/namespace.h"
 #include "catalog/objectaccess.h"
 #include "catalog/pg_amop.h"
 #include "catalog/pg_amproc.h"
@@ -34,6 +33,7 @@
 #include "catalog/pg_database.h"
 #include "catalog/pg_default_acl.h"
 #include "catalog/pg_depend.h"
+#include "catalog/pg_event_trigger.h"
 #include "catalog/pg_extension.h"
 #include "catalog/pg_foreign_data_wrapper.h"
 #include "catalog/pg_foreign_server.h"
@@ -54,23 +54,18 @@
 #include "catalog/pg_type.h"
 #include "catalog/pg_user_mapping.h"
 #include "commands/comment.h"
-#include "commands/dbcommands.h"
 #include "commands/defrem.h"
+#include "commands/event_trigger.h"
 #include "commands/extension.h"
 #include "commands/proclang.h"
 #include "commands/schemacmds.h"
 #include "commands/seclabel.h"
-#include "commands/tablespace.h"
 #include "commands/trigger.h"
 #include "commands/typecmds.h"
-#include "foreign/foreign.h"
-#include "miscadmin.h"
 #include "nodes/nodeFuncs.h"
 #include "parser/parsetree.h"
 #include "rewrite/rewriteRemove.h"
 #include "storage/lmgr.h"
-#include "utils/acl.h"
-#include "utils/builtins.h"
 #include "utils/fmgroids.h"
 #include "utils/guc.h"
 #include "utils/lsyscache.h"
@@ -158,7 +153,8 @@ static const Oid object_classes[MAX_OCLASS] = {
 	ForeignServerRelationId,	/* OCLASS_FOREIGN_SERVER */
 	UserMappingRelationId,		/* OCLASS_USER_MAPPING */
 	DefaultAclRelationId,		/* OCLASS_DEFACL */
-	ExtensionRelationId			/* OCLASS_EXTENSION */
+	ExtensionRelationId,		/* OCLASS_EXTENSION */
+	EventTriggerRelationId		/* OCLASS_EVENT_TRIGGER */
 };
 
 
@@ -167,13 +163,13 @@ static void findDependentObjects(const ObjectAddress *object,
 					 ObjectAddressStack *stack,
 					 ObjectAddresses *targetObjects,
 					 const ObjectAddresses *pendingObjects,
-					 Relation depRel);
+					 Relation *depRel);
 static void reportDependentObjects(const ObjectAddresses *targetObjects,
 					   DropBehavior behavior,
 					   int msglevel,
 					   const ObjectAddress *origObject);
 static void deleteOneObject(const ObjectAddress *object,
-				Relation depRel, int32 flags);
+				Relation *depRel, int32 flags);
 static void doDeletion(const ObjectAddress *object, int flags);
 static void AcquireDeletionLock(const ObjectAddress *object, int flags);
 static void ReleaseDeletionLock(const ObjectAddress *object);
@@ -192,9 +188,45 @@ static bool object_address_present_add_flags(const ObjectAddress *object,
 static bool stack_address_present_add_flags(const ObjectAddress *object,
 								int flags,
 								ObjectAddressStack *stack);
-static void getRelationDescription(StringInfo buffer, Oid relid);
-static void getOpFamilyDescription(StringInfo buffer, Oid opfid);
 
+
+/*
+ * Go through the objects given running the final actions on them, and execute
+ * the actual deletion.
+ */
+static void
+deleteObjectsInList(ObjectAddresses *targetObjects, Relation *depRel,
+					int flags)
+{
+	int			i;
+
+	/*
+	 * Keep track of objects for event triggers, if necessary.
+	 */
+	if (trackDroppedObjectsNeeded())
+	{
+		for (i = 0; i < targetObjects->numrefs; i++)
+		{
+			ObjectAddress *thisobj = targetObjects->refs + i;
+
+			if ((!(flags & PERFORM_DELETION_INTERNAL)) &&
+				EventTriggerSupportsObjectClass(getObjectClass(thisobj)))
+			{
+				EventTriggerSQLDropAddObject(thisobj);
+			}
+		}
+	}
+
+	/*
+	 * Delete all the objects in the proper order.
+	 */
+	for (i = 0; i < targetObjects->numrefs; i++)
+	{
+		ObjectAddress *thisobj = targetObjects->refs + i;
+
+		deleteOneObject(thisobj, depRel, flags);
+	}
+}
 
 /*
  * performDeletion: attempt to drop the specified object.  If CASCADE
@@ -212,7 +244,7 @@ static void getOpFamilyDescription(StringInfo buffer, Oid opfid);
  * not the direct result of a user-initiated action.  For example, when a
  * temporary schema is cleaned out so that a new backend can use it, or when
  * a column default is dropped as an intermediate step while adding a new one,
- * that's an internal operation.  On the other hand, when the we drop something
+ * that's an internal operation.  On the other hand, when we drop something
  * because the user issued a DROP statement against it, that's not internal.
  */
 void
@@ -221,7 +253,6 @@ performDeletion(const ObjectAddress *object,
 {
 	Relation	depRel;
 	ObjectAddresses *targetObjects;
-	int			i;
 
 	/*
 	 * We save some cycles by opening pg_depend just once and passing the
@@ -230,7 +261,7 @@ performDeletion(const ObjectAddress *object,
 	depRel = heap_open(DependRelationId, RowExclusiveLock);
 
 	/*
-	 * Acquire deletion lock on the target object.	(Ideally the caller has
+	 * Acquire deletion lock on the target object.  (Ideally the caller has
 	 * done this already, but many places are sloppy about it.)
 	 */
 	AcquireDeletionLock(object, 0);
@@ -246,7 +277,7 @@ performDeletion(const ObjectAddress *object,
 						 NULL,	/* empty stack */
 						 targetObjects,
 						 NULL,	/* no pendingObjects */
-						 depRel);
+						 &depRel);
 
 	/*
 	 * Check if deletion is allowed, and report about cascaded deletes.
@@ -256,15 +287,8 @@ performDeletion(const ObjectAddress *object,
 						   NOTICE,
 						   object);
 
-	/*
-	 * Delete all the objects in the proper order.
-	 */
-	for (i = 0; i < targetObjects->numrefs; i++)
-	{
-		ObjectAddress *thisobj = targetObjects->refs + i;
-
-		deleteOneObject(thisobj, depRel, flags);
-	}
+	/* do the deed */
+	deleteObjectsInList(targetObjects, &depRel, flags);
 
 	/* And clean up */
 	free_object_addresses(targetObjects);
@@ -324,7 +348,7 @@ performMultipleDeletions(const ObjectAddresses *objects,
 							 NULL,		/* empty stack */
 							 targetObjects,
 							 objects,
-							 depRel);
+							 &depRel);
 	}
 
 	/*
@@ -338,15 +362,8 @@ performMultipleDeletions(const ObjectAddresses *objects,
 						   NOTICE,
 						   (objects->numrefs == 1 ? objects->refs : NULL));
 
-	/*
-	 * Delete all the objects in the proper order.
-	 */
-	for (i = 0; i < targetObjects->numrefs; i++)
-	{
-		ObjectAddress *thisobj = targetObjects->refs + i;
-
-		deleteOneObject(thisobj, depRel, flags);
-	}
+	/* do the deed */
+	deleteObjectsInList(targetObjects, &depRel, flags);
 
 	/* And clean up */
 	free_object_addresses(targetObjects);
@@ -356,12 +373,16 @@ performMultipleDeletions(const ObjectAddresses *objects,
 
 /*
  * deleteWhatDependsOn: attempt to drop everything that depends on the
- * specified object, though not the object itself.	Behavior is always
+ * specified object, though not the object itself.  Behavior is always
  * CASCADE.
  *
  * This is currently used only to clean out the contents of a schema
  * (namespace): the passed object is a namespace.  We normally want this
  * to be done silently, so there's an option to suppress NOTICE messages.
+ *
+ * Note we don't fire object drop event triggers here; it would be wrong to do
+ * so for the current only use of this function, but if more callers are added
+ * this might need to be reconsidered.
  */
 void
 deleteWhatDependsOn(const ObjectAddress *object,
@@ -378,7 +399,7 @@ deleteWhatDependsOn(const ObjectAddress *object,
 	depRel = heap_open(DependRelationId, RowExclusiveLock);
 
 	/*
-	 * Acquire deletion lock on the target object.	(Ideally the caller has
+	 * Acquire deletion lock on the target object.  (Ideally the caller has
 	 * done this already, but many places are sloppy about it.)
 	 */
 	AcquireDeletionLock(object, 0);
@@ -394,7 +415,7 @@ deleteWhatDependsOn(const ObjectAddress *object,
 						 NULL,	/* empty stack */
 						 targetObjects,
 						 NULL,	/* no pendingObjects */
-						 depRel);
+						 &depRel);
 
 	/*
 	 * Check if deletion is allowed, and report about cascaded deletes.
@@ -420,10 +441,10 @@ deleteWhatDependsOn(const ObjectAddress *object,
 		 * Since this function is currently only used to clean out temporary
 		 * schemas, we pass PERFORM_DELETION_INTERNAL here, indicating that
 		 * the operation is an automatic system operation rather than a user
-		 * action.	If, in the future, this function is used for other
+		 * action.  If, in the future, this function is used for other
 		 * purposes, we might need to revisit this.
 		 */
-		deleteOneObject(thisobj, depRel, PERFORM_DELETION_INTERNAL);
+		deleteOneObject(thisobj, &depRel, PERFORM_DELETION_INTERNAL);
 	}
 
 	/* And clean up */
@@ -437,7 +458,7 @@ deleteWhatDependsOn(const ObjectAddress *object,
  *
  * For every object that depends on the starting object, acquire a deletion
  * lock on the object, add it to targetObjects (if not already there),
- * and recursively find objects that depend on it.	An object's dependencies
+ * and recursively find objects that depend on it.  An object's dependencies
  * will be placed into targetObjects before the object itself; this means
  * that the finished list's order represents a safe deletion order.
  *
@@ -458,7 +479,7 @@ deleteWhatDependsOn(const ObjectAddress *object,
  *	targetObjects: list of objects that are scheduled to be deleted
  *	pendingObjects: list of other objects slated for destruction, but
  *			not necessarily in targetObjects yet (can be NULL if none)
- *	depRel: already opened pg_depend relation
+ *	*depRel: already opened pg_depend relation
  */
 static void
 findDependentObjects(const ObjectAddress *object,
@@ -466,7 +487,7 @@ findDependentObjects(const ObjectAddress *object,
 					 ObjectAddressStack *stack,
 					 ObjectAddresses *targetObjects,
 					 const ObjectAddresses *pendingObjects,
-					 Relation depRel)
+					 Relation *depRel)
 {
 	ScanKeyData key[3];
 	int			nkeys;
@@ -489,7 +510,7 @@ findDependentObjects(const ObjectAddress *object,
 	 * will not break a loop at an internal dependency: if we enter the loop
 	 * at an "owned" object we will switch and start at the "owning" object
 	 * instead.  We could probably hack something up to avoid breaking at an
-	 * auto dependency, too, if we had to.	However there are no known cases
+	 * auto dependency, too, if we had to.  However there are no known cases
 	 * where that would be necessary.
 	 */
 	if (stack_address_present_add_flags(object, flags, stack))
@@ -510,7 +531,7 @@ findDependentObjects(const ObjectAddress *object,
 	/*
 	 * The target object might be internally dependent on some other object
 	 * (its "owner"), and/or be a member of an extension (also considered its
-	 * owner).	If so, and if we aren't recursing from the owning object, we
+	 * owner).  If so, and if we aren't recursing from the owning object, we
 	 * have to transform this deletion request into a deletion request of the
 	 * owning object.  (We'll eventually recurse back to this object, but the
 	 * owning object has to be visited first so it will be deleted after.) The
@@ -536,8 +557,8 @@ findDependentObjects(const ObjectAddress *object,
 	else
 		nkeys = 2;
 
-	scan = systable_beginscan(depRel, DependDependerIndexId, true,
-							  SnapshotNow, nkeys, key);
+	scan = systable_beginscan(*depRel, DependDependerIndexId, true,
+							  NULL, nkeys, key);
 
 	while (HeapTupleIsValid(tup = systable_getnext(scan)))
 	{
@@ -573,7 +594,7 @@ findDependentObjects(const ObjectAddress *object,
 					/*
 					 * Exception 1a: if the owning object is listed in
 					 * pendingObjects, just release the caller's lock and
-					 * return.	We'll eventually complete the DROP when we
+					 * return.  We'll eventually complete the DROP when we
 					 * reach that entry in the pending list.
 					 */
 					if (pendingObjects &&
@@ -626,7 +647,7 @@ findDependentObjects(const ObjectAddress *object,
 				 * owning object.
 				 *
 				 * First, release caller's lock on this object and get
-				 * deletion lock on the owning object.	(We must release
+				 * deletion lock on the owning object.  (We must release
 				 * caller's lock to avoid deadlock against a concurrent
 				 * deletion of the owning object.)
 				 */
@@ -711,8 +732,8 @@ findDependentObjects(const ObjectAddress *object,
 	else
 		nkeys = 2;
 
-	scan = systable_beginscan(depRel, DependReferenceIndexId, true,
-							  SnapshotNow, nkeys, key);
+	scan = systable_beginscan(*depRel, DependReferenceIndexId, true,
+							  NULL, nkeys, key);
 
 	while (HeapTupleIsValid(tup = systable_getnext(scan)))
 	{
@@ -788,7 +809,7 @@ findDependentObjects(const ObjectAddress *object,
 	systable_endscan(scan);
 
 	/*
-	 * Finally, we can add the target object to targetObjects.	Be careful to
+	 * Finally, we can add the target object to targetObjects.  Be careful to
 	 * include any flags that were passed back down to us from inner recursion
 	 * levels.
 	 */
@@ -843,7 +864,7 @@ reportDependentObjects(const ObjectAddresses *targetObjects,
 	/*
 	 * We limit the number of dependencies reported to the client to
 	 * MAX_REPORTED_DEPS, since client software may not deal well with
-	 * enormous error strings.	The server log always gets a full report.
+	 * enormous error strings.  The server log always gets a full report.
 	 */
 #define MAX_REPORTED_DEPS 100
 
@@ -876,7 +897,7 @@ reportDependentObjects(const ObjectAddresses *targetObjects,
 							DEPFLAG_EXTENSION))
 		{
 			/*
-			 * auto-cascades are reported at DEBUG2, not msglevel.	We don't
+			 * auto-cascades are reported at DEBUG2, not msglevel.  We don't
 			 * try to combine them with the regular message because the
 			 * results are too confusing when client_min_messages and
 			 * log_min_messages are different.
@@ -982,10 +1003,10 @@ reportDependentObjects(const ObjectAddresses *targetObjects,
 /*
  * deleteOneObject: delete a single object for performDeletion.
  *
- * depRel is the already-open pg_depend relation.
+ * *depRel is the already-open pg_depend relation.
  */
 static void
-deleteOneObject(const ObjectAddress *object, Relation depRel, int flags)
+deleteOneObject(const ObjectAddress *object, Relation *depRel, int flags)
 {
 	ScanKeyData key[3];
 	int			nkeys;
@@ -993,14 +1014,8 @@ deleteOneObject(const ObjectAddress *object, Relation depRel, int flags)
 	HeapTuple	tup;
 
 	/* DROP hook of the objects being removed */
-	if (object_access_hook)
-	{
-		ObjectAccessDrop drop_arg;
-
-		drop_arg.dropflags = flags;
-		InvokeObjectAccessHook(OAT_DROP, object->classId, object->objectId,
-							   object->objectSubId, &drop_arg);
-	}
+	InvokeObjectDropHookArg(object->classId, object->objectId,
+							object->objectSubId, flags);
 
 	/*
 	 * Close depRel if we are doing a drop concurrently.  The object deletion
@@ -1008,7 +1023,7 @@ deleteOneObject(const ObjectAddress *object, Relation depRel, int flags)
 	 * relation open across doDeletion().
 	 */
 	if (flags & PERFORM_DELETION_CONCURRENTLY)
-		heap_close(depRel, RowExclusiveLock);
+		heap_close(*depRel, RowExclusiveLock);
 
 	/*
 	 * Delete the object itself, in an object-type-dependent way.
@@ -1025,7 +1040,7 @@ deleteOneObject(const ObjectAddress *object, Relation depRel, int flags)
 	 * Reopen depRel if we closed it above
 	 */
 	if (flags & PERFORM_DELETION_CONCURRENTLY)
-		depRel = heap_open(DependRelationId, RowExclusiveLock);
+		*depRel = heap_open(DependRelationId, RowExclusiveLock);
 
 	/*
 	 * Now remove any pg_depend records that link from this object to others.
@@ -1053,18 +1068,18 @@ deleteOneObject(const ObjectAddress *object, Relation depRel, int flags)
 	else
 		nkeys = 2;
 
-	scan = systable_beginscan(depRel, DependDependerIndexId, true,
-							  SnapshotNow, nkeys, key);
+	scan = systable_beginscan(*depRel, DependDependerIndexId, true,
+							  NULL, nkeys, key);
 
 	while (HeapTupleIsValid(tup = systable_getnext(scan)))
 	{
-		simple_heap_delete(depRel, &tup->t_self);
+		simple_heap_delete(*depRel, &tup->t_self);
 	}
 
 	systable_endscan(scan);
 
 	/*
-	 * Delete shared dependency references related to this object.	Again, if
+	 * Delete shared dependency references related to this object.  Again, if
 	 * subId = 0, remove records for sub-objects too.
 	 */
 	deleteSharedDependencyRecordsFor(object->classId, object->objectId,
@@ -1230,6 +1245,10 @@ doDeletion(const ObjectAddress *object, int flags)
 			RemoveExtensionById(object->objectId);
 			break;
 
+		case OCLASS_EVENT_TRIGGER:
+			RemoveEventTriggerById(object->objectId);
+			break;
+
 		default:
 			elog(ERROR, "unrecognized object class: %u",
 				 object->classId);
@@ -1325,13 +1344,13 @@ recordDependencyOnExpr(const ObjectAddress *depender,
  * recordDependencyOnSingleRelExpr - find expression dependencies
  *
  * As above, but only one relation is expected to be referenced (with
- * varno = 1 and varlevelsup = 0).	Pass the relation OID instead of a
+ * varno = 1 and varlevelsup = 0).  Pass the relation OID instead of a
  * range table.  An additional frammish is that dependencies on that
  * relation (or its component columns) will be marked with 'self_behavior',
  * whereas 'behavior' is used for everything else.
  *
  * NOTE: the caller should ensure that a whole-table dependency on the
- * specified relation is created separately, if one is needed.	In particular,
+ * specified relation is created separately, if one is needed.  In particular,
  * a whole-row Var "relation.*" will not cause this routine to emit any
  * dependency item.  This is appropriate behavior for subexpressions of an
  * ordinary query, so other cases need to cope as necessary.
@@ -1451,7 +1470,7 @@ find_expr_references_walker(Node *node,
 
 		/*
 		 * A whole-row Var references no specific columns, so adds no new
-		 * dependency.	(We assume that there is a whole-table dependency
+		 * dependency.  (We assume that there is a whole-table dependency
 		 * arising from each underlying rangetable entry.  While we could
 		 * record such a dependency when finding a whole-row Var that
 		 * references a relation directly, it's quite unclear how to extend
@@ -1510,7 +1529,7 @@ find_expr_references_walker(Node *node,
 
 		/*
 		 * If it's a regclass or similar literal referring to an existing
-		 * object, add a reference to that object.	(Currently, only the
+		 * object, add a reference to that object.  (Currently, only the
 		 * regclass and regconfig cases have any likely use, but we may as
 		 * well handle all the OID-alias datatypes consistently.)
 		 */
@@ -1738,8 +1757,7 @@ find_expr_references_walker(Node *node,
 
 		/*
 		 * Add whole-relation refs for each plain relation mentioned in the
-		 * subquery's rtable, as well as refs for any datatypes and collations
-		 * used in a RECORD function's output.
+		 * subquery's rtable.
 		 *
 		 * Note: query_tree_walker takes care of recursing into RTE_FUNCTION
 		 * RTEs, subqueries, etc, so no need to do that here.  But keep it
@@ -1747,34 +1765,19 @@ find_expr_references_walker(Node *node,
 		 *
 		 * Note: we don't need to worry about collations mentioned in
 		 * RTE_VALUES or RTE_CTE RTEs, because those must just duplicate
-		 * collations referenced in other parts of the Query.
+		 * collations referenced in other parts of the Query.  We do have to
+		 * worry about collations mentioned in RTE_FUNCTION, but we take care
+		 * of those when we recurse to the RangeTblFunction node(s).
 		 */
 		foreach(lc, query->rtable)
 		{
 			RangeTblEntry *rte = (RangeTblEntry *) lfirst(lc);
-			ListCell   *ct;
 
 			switch (rte->rtekind)
 			{
 				case RTE_RELATION:
 					add_object_address(OCLASS_CLASS, rte->relid, 0,
 									   context->addrs);
-					break;
-				case RTE_FUNCTION:
-					foreach(ct, rte->funccoltypes)
-					{
-						add_object_address(OCLASS_TYPE, lfirst_oid(ct), 0,
-										   context->addrs);
-					}
-					foreach(ct, rte->funccolcollations)
-					{
-						Oid			collid = lfirst_oid(ct);
-
-						if (OidIsValid(collid) &&
-							collid != DEFAULT_COLLATION_OID)
-							add_object_address(OCLASS_COLLATION, collid, 0,
-											   context->addrs);
-					}
 					break;
 				default:
 					break;
@@ -1843,6 +1846,30 @@ find_expr_references_walker(Node *node,
 		/* we need to look at the groupClauses for operator references */
 		find_expr_references_walker((Node *) setop->groupClauses, context);
 		/* fall through to examine child nodes */
+	}
+	else if (IsA(node, RangeTblFunction))
+	{
+		RangeTblFunction *rtfunc = (RangeTblFunction *) node;
+		ListCell   *ct;
+
+		/*
+		 * Add refs for any datatypes and collations used in a column
+		 * definition list for a RECORD function.  (For other cases, it should
+		 * be enough to depend on the function itself.)
+		 */
+		foreach(ct, rtfunc->funccoltypes)
+		{
+			add_object_address(OCLASS_TYPE, lfirst_oid(ct), 0,
+							   context->addrs);
+		}
+		foreach(ct, rtfunc->funccolcollations)
+		{
+			Oid			collid = lfirst_oid(ct);
+
+			if (OidIsValid(collid) && collid != DEFAULT_COLLATION_OID)
+				add_object_address(OCLASS_COLLATION, collid, 0,
+								   context->addrs);
+		}
 	}
 
 	return expression_tree_walker(node, find_expr_references_walker,
@@ -2083,6 +2110,7 @@ object_address_present_add_flags(const ObjectAddress *object,
 								 int flags,
 								 ObjectAddresses *addrs)
 {
+	bool		result = false;
 	int			i;
 
 	for (i = addrs->numrefs - 1; i >= 0; i--)
@@ -2097,22 +2125,48 @@ object_address_present_add_flags(const ObjectAddress *object,
 				ObjectAddressExtra *thisextra = addrs->extras + i;
 
 				thisextra->flags |= flags;
-				return true;
+				result = true;
 			}
-			if (thisobj->objectSubId == 0)
+			else if (thisobj->objectSubId == 0)
 			{
 				/*
 				 * We get here if we find a need to delete a column after
-				 * having already decided to drop its whole table.	Obviously
-				 * we no longer need to drop the column.  But don't plaster
-				 * its flags on the table.
+				 * having already decided to drop its whole table.  Obviously
+				 * we no longer need to drop the subobject, so report that we
+				 * found the subobject in the array.  But don't plaster its
+				 * flags on the whole object.
 				 */
-				return true;
+				result = true;
+			}
+			else if (object->objectSubId == 0)
+			{
+				/*
+				 * We get here if we find a need to delete a whole table after
+				 * having already decided to drop one of its columns.  We
+				 * can't report that the whole object is in the array, but we
+				 * should mark the subobject with the whole object's flags.
+				 *
+				 * It might seem attractive to physically delete the column's
+				 * array entry, or at least mark it as no longer needing
+				 * separate deletion.  But that could lead to, e.g., dropping
+				 * the column's datatype before we drop the table, which does
+				 * not seem like a good idea.  This is a very rare situation
+				 * in practice, so we just take the hit of doing a separate
+				 * DROP COLUMN action even though we know we're gonna delete
+				 * the table later.
+				 *
+				 * Because there could be other subobjects of this object in
+				 * the array, this case means we always have to loop through
+				 * the whole array; we cannot exit early on a match.
+				 */
+				ObjectAddressExtra *thisextra = addrs->extras + i;
+
+				thisextra->flags |= flags;
 			}
 		}
 	}
 
-	return false;
+	return result;
 }
 
 /*
@@ -2123,6 +2177,7 @@ stack_address_present_add_flags(const ObjectAddress *object,
 								int flags,
 								ObjectAddressStack *stack)
 {
+	bool		result = false;
 	ObjectAddressStack *stackptr;
 
 	for (stackptr = stack; stackptr; stackptr = stackptr->next)
@@ -2135,21 +2190,31 @@ stack_address_present_add_flags(const ObjectAddress *object,
 			if (object->objectSubId == thisobj->objectSubId)
 			{
 				stackptr->flags |= flags;
-				return true;
+				result = true;
 			}
-
-			/*
-			 * Could visit column with whole table already on stack; this is
-			 * the same case noted in object_address_present_add_flags(), and
-			 * as in that case, we don't propagate flags for the component to
-			 * the whole object.
-			 */
-			if (thisobj->objectSubId == 0)
-				return true;
+			else if (thisobj->objectSubId == 0)
+			{
+				/*
+				 * We're visiting a column with whole table already on stack.
+				 * As in object_address_present_add_flags(), we can skip
+				 * further processing of the subobject, but we don't want to
+				 * propagate flags for the subobject to the whole object.
+				 */
+				result = true;
+			}
+			else if (object->objectSubId == 0)
+			{
+				/*
+				 * We're visiting a table with column already on stack.  As in
+				 * object_address_present_add_flags(), we should propagate
+				 * flags for the whole object to each of its subobjects.
+				 */
+				stackptr->flags |= flags;
+			}
 		}
 	}
 
-	return false;
+	return result;
 }
 
 /*
@@ -2191,7 +2256,7 @@ getObjectClass(const ObjectAddress *object)
 	/* only pg_class entries can have nonzero objectSubId */
 	if (object->classId != RelationRelationId &&
 		object->objectSubId != 0)
-		elog(ERROR, "invalid objectSubId 0 for object class %u",
+		elog(ERROR, "invalid non-zero objectSubId for object class %u",
 			 object->classId);
 
 	switch (object->classId)
@@ -2286,793 +2351,12 @@ getObjectClass(const ObjectAddress *object)
 
 		case ExtensionRelationId:
 			return OCLASS_EXTENSION;
+
+		case EventTriggerRelationId:
+			return OCLASS_EVENT_TRIGGER;
 	}
 
 	/* shouldn't get here */
 	elog(ERROR, "unrecognized object class: %u", object->classId);
 	return OCLASS_CLASS;		/* keep compiler quiet */
-}
-
-/*
- * getObjectDescription: build an object description for messages
- *
- * The result is a palloc'd string.
- */
-char *
-getObjectDescription(const ObjectAddress *object)
-{
-	StringInfoData buffer;
-
-	initStringInfo(&buffer);
-
-	switch (getObjectClass(object))
-	{
-		case OCLASS_CLASS:
-			getRelationDescription(&buffer, object->objectId);
-			if (object->objectSubId != 0)
-				appendStringInfo(&buffer, _(" column %s"),
-								 get_relid_attribute_name(object->objectId,
-													   object->objectSubId));
-			break;
-
-		case OCLASS_PROC:
-			appendStringInfo(&buffer, _("function %s"),
-							 format_procedure(object->objectId));
-			break;
-
-		case OCLASS_TYPE:
-			appendStringInfo(&buffer, _("type %s"),
-							 format_type_be(object->objectId));
-			break;
-
-		case OCLASS_CAST:
-			{
-				Relation	castDesc;
-				ScanKeyData skey[1];
-				SysScanDesc rcscan;
-				HeapTuple	tup;
-				Form_pg_cast castForm;
-
-				castDesc = heap_open(CastRelationId, AccessShareLock);
-
-				ScanKeyInit(&skey[0],
-							ObjectIdAttributeNumber,
-							BTEqualStrategyNumber, F_OIDEQ,
-							ObjectIdGetDatum(object->objectId));
-
-				rcscan = systable_beginscan(castDesc, CastOidIndexId, true,
-											SnapshotNow, 1, skey);
-
-				tup = systable_getnext(rcscan);
-
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "could not find tuple for cast %u",
-						 object->objectId);
-
-				castForm = (Form_pg_cast) GETSTRUCT(tup);
-
-				appendStringInfo(&buffer, _("cast from %s to %s"),
-								 format_type_be(castForm->castsource),
-								 format_type_be(castForm->casttarget));
-
-				systable_endscan(rcscan);
-				heap_close(castDesc, AccessShareLock);
-				break;
-			}
-
-		case OCLASS_COLLATION:
-			{
-				HeapTuple	collTup;
-				Form_pg_collation coll;
-
-				collTup = SearchSysCache1(COLLOID,
-										  ObjectIdGetDatum(object->objectId));
-				if (!HeapTupleIsValid(collTup))
-					elog(ERROR, "cache lookup failed for collation %u",
-						 object->objectId);
-				coll = (Form_pg_collation) GETSTRUCT(collTup);
-				appendStringInfo(&buffer, _("collation %s"),
-								 NameStr(coll->collname));
-				ReleaseSysCache(collTup);
-				break;
-			}
-
-		case OCLASS_CONSTRAINT:
-			{
-				HeapTuple	conTup;
-				Form_pg_constraint con;
-
-				conTup = SearchSysCache1(CONSTROID,
-										 ObjectIdGetDatum(object->objectId));
-				if (!HeapTupleIsValid(conTup))
-					elog(ERROR, "cache lookup failed for constraint %u",
-						 object->objectId);
-				con = (Form_pg_constraint) GETSTRUCT(conTup);
-
-				if (OidIsValid(con->conrelid))
-				{
-					StringInfoData rel;
-
-					initStringInfo(&rel);
-					getRelationDescription(&rel, con->conrelid);
-					appendStringInfo(&buffer, _("constraint %s on %s"),
-									 NameStr(con->conname), rel.data);
-					pfree(rel.data);
-				}
-				else
-				{
-					appendStringInfo(&buffer, _("constraint %s"),
-									 NameStr(con->conname));
-				}
-
-				ReleaseSysCache(conTup);
-				break;
-			}
-
-		case OCLASS_CONVERSION:
-			{
-				HeapTuple	conTup;
-
-				conTup = SearchSysCache1(CONVOID,
-										 ObjectIdGetDatum(object->objectId));
-				if (!HeapTupleIsValid(conTup))
-					elog(ERROR, "cache lookup failed for conversion %u",
-						 object->objectId);
-				appendStringInfo(&buffer, _("conversion %s"),
-				 NameStr(((Form_pg_conversion) GETSTRUCT(conTup))->conname));
-				ReleaseSysCache(conTup);
-				break;
-			}
-
-		case OCLASS_DEFAULT:
-			{
-				Relation	attrdefDesc;
-				ScanKeyData skey[1];
-				SysScanDesc adscan;
-				HeapTuple	tup;
-				Form_pg_attrdef attrdef;
-				ObjectAddress colobject;
-
-				attrdefDesc = heap_open(AttrDefaultRelationId, AccessShareLock);
-
-				ScanKeyInit(&skey[0],
-							ObjectIdAttributeNumber,
-							BTEqualStrategyNumber, F_OIDEQ,
-							ObjectIdGetDatum(object->objectId));
-
-				adscan = systable_beginscan(attrdefDesc, AttrDefaultOidIndexId,
-											true, SnapshotNow, 1, skey);
-
-				tup = systable_getnext(adscan);
-
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "could not find tuple for attrdef %u",
-						 object->objectId);
-
-				attrdef = (Form_pg_attrdef) GETSTRUCT(tup);
-
-				colobject.classId = RelationRelationId;
-				colobject.objectId = attrdef->adrelid;
-				colobject.objectSubId = attrdef->adnum;
-
-				appendStringInfo(&buffer, _("default for %s"),
-								 getObjectDescription(&colobject));
-
-				systable_endscan(adscan);
-				heap_close(attrdefDesc, AccessShareLock);
-				break;
-			}
-
-		case OCLASS_LANGUAGE:
-			{
-				HeapTuple	langTup;
-
-				langTup = SearchSysCache1(LANGOID,
-										  ObjectIdGetDatum(object->objectId));
-				if (!HeapTupleIsValid(langTup))
-					elog(ERROR, "cache lookup failed for language %u",
-						 object->objectId);
-				appendStringInfo(&buffer, _("language %s"),
-				  NameStr(((Form_pg_language) GETSTRUCT(langTup))->lanname));
-				ReleaseSysCache(langTup);
-				break;
-			}
-		case OCLASS_LARGEOBJECT:
-			appendStringInfo(&buffer, _("large object %u"),
-							 object->objectId);
-			break;
-
-		case OCLASS_OPERATOR:
-			appendStringInfo(&buffer, _("operator %s"),
-							 format_operator(object->objectId));
-			break;
-
-		case OCLASS_OPCLASS:
-			{
-				HeapTuple	opcTup;
-				Form_pg_opclass opcForm;
-				HeapTuple	amTup;
-				Form_pg_am	amForm;
-				char	   *nspname;
-
-				opcTup = SearchSysCache1(CLAOID,
-										 ObjectIdGetDatum(object->objectId));
-				if (!HeapTupleIsValid(opcTup))
-					elog(ERROR, "cache lookup failed for opclass %u",
-						 object->objectId);
-				opcForm = (Form_pg_opclass) GETSTRUCT(opcTup);
-
-				amTup = SearchSysCache1(AMOID,
-										ObjectIdGetDatum(opcForm->opcmethod));
-				if (!HeapTupleIsValid(amTup))
-					elog(ERROR, "cache lookup failed for access method %u",
-						 opcForm->opcmethod);
-				amForm = (Form_pg_am) GETSTRUCT(amTup);
-
-				/* Qualify the name if not visible in search path */
-				if (OpclassIsVisible(object->objectId))
-					nspname = NULL;
-				else
-					nspname = get_namespace_name(opcForm->opcnamespace);
-
-				appendStringInfo(&buffer, _("operator class %s for access method %s"),
-								 quote_qualified_identifier(nspname,
-												  NameStr(opcForm->opcname)),
-								 NameStr(amForm->amname));
-
-				ReleaseSysCache(amTup);
-				ReleaseSysCache(opcTup);
-				break;
-			}
-
-		case OCLASS_OPFAMILY:
-			getOpFamilyDescription(&buffer, object->objectId);
-			break;
-
-		case OCLASS_AMOP:
-			{
-				Relation	amopDesc;
-				ScanKeyData skey[1];
-				SysScanDesc amscan;
-				HeapTuple	tup;
-				Form_pg_amop amopForm;
-				StringInfoData opfam;
-
-				amopDesc = heap_open(AccessMethodOperatorRelationId,
-									 AccessShareLock);
-
-				ScanKeyInit(&skey[0],
-							ObjectIdAttributeNumber,
-							BTEqualStrategyNumber, F_OIDEQ,
-							ObjectIdGetDatum(object->objectId));
-
-				amscan = systable_beginscan(amopDesc, AccessMethodOperatorOidIndexId, true,
-											SnapshotNow, 1, skey);
-
-				tup = systable_getnext(amscan);
-
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "could not find tuple for amop entry %u",
-						 object->objectId);
-
-				amopForm = (Form_pg_amop) GETSTRUCT(tup);
-
-				initStringInfo(&opfam);
-				getOpFamilyDescription(&opfam, amopForm->amopfamily);
-
-				/*------
-				   translator: %d is the operator strategy (a number), the
-				   first two %s's are data type names, the third %s is the
-				   description of the operator family, and the last %s is the
-				   textual form of the operator with arguments.  */
-				appendStringInfo(&buffer, _("operator %d (%s, %s) of %s: %s"),
-								 amopForm->amopstrategy,
-								 format_type_be(amopForm->amoplefttype),
-								 format_type_be(amopForm->amoprighttype),
-								 opfam.data,
-								 format_operator(amopForm->amopopr));
-
-				pfree(opfam.data);
-
-				systable_endscan(amscan);
-				heap_close(amopDesc, AccessShareLock);
-				break;
-			}
-
-		case OCLASS_AMPROC:
-			{
-				Relation	amprocDesc;
-				ScanKeyData skey[1];
-				SysScanDesc amscan;
-				HeapTuple	tup;
-				Form_pg_amproc amprocForm;
-				StringInfoData opfam;
-
-				amprocDesc = heap_open(AccessMethodProcedureRelationId,
-									   AccessShareLock);
-
-				ScanKeyInit(&skey[0],
-							ObjectIdAttributeNumber,
-							BTEqualStrategyNumber, F_OIDEQ,
-							ObjectIdGetDatum(object->objectId));
-
-				amscan = systable_beginscan(amprocDesc, AccessMethodProcedureOidIndexId, true,
-											SnapshotNow, 1, skey);
-
-				tup = systable_getnext(amscan);
-
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "could not find tuple for amproc entry %u",
-						 object->objectId);
-
-				amprocForm = (Form_pg_amproc) GETSTRUCT(tup);
-
-				initStringInfo(&opfam);
-				getOpFamilyDescription(&opfam, amprocForm->amprocfamily);
-
-				/*------
-				   translator: %d is the function number, the first two %s's
-				   are data type names, the third %s is the description of the
-				   operator family, and the last %s is the textual form of the
-				   function with arguments.  */
-				appendStringInfo(&buffer, _("function %d (%s, %s) of %s: %s"),
-								 amprocForm->amprocnum,
-								 format_type_be(amprocForm->amproclefttype),
-								 format_type_be(amprocForm->amprocrighttype),
-								 opfam.data,
-								 format_procedure(amprocForm->amproc));
-
-				pfree(opfam.data);
-
-				systable_endscan(amscan);
-				heap_close(amprocDesc, AccessShareLock);
-				break;
-			}
-
-		case OCLASS_REWRITE:
-			{
-				Relation	ruleDesc;
-				ScanKeyData skey[1];
-				SysScanDesc rcscan;
-				HeapTuple	tup;
-				Form_pg_rewrite rule;
-
-				ruleDesc = heap_open(RewriteRelationId, AccessShareLock);
-
-				ScanKeyInit(&skey[0],
-							ObjectIdAttributeNumber,
-							BTEqualStrategyNumber, F_OIDEQ,
-							ObjectIdGetDatum(object->objectId));
-
-				rcscan = systable_beginscan(ruleDesc, RewriteOidIndexId, true,
-											SnapshotNow, 1, skey);
-
-				tup = systable_getnext(rcscan);
-
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "could not find tuple for rule %u",
-						 object->objectId);
-
-				rule = (Form_pg_rewrite) GETSTRUCT(tup);
-
-				appendStringInfo(&buffer, _("rule %s on "),
-								 NameStr(rule->rulename));
-				getRelationDescription(&buffer, rule->ev_class);
-
-				systable_endscan(rcscan);
-				heap_close(ruleDesc, AccessShareLock);
-				break;
-			}
-
-		case OCLASS_TRIGGER:
-			{
-				Relation	trigDesc;
-				ScanKeyData skey[1];
-				SysScanDesc tgscan;
-				HeapTuple	tup;
-				Form_pg_trigger trig;
-
-				trigDesc = heap_open(TriggerRelationId, AccessShareLock);
-
-				ScanKeyInit(&skey[0],
-							ObjectIdAttributeNumber,
-							BTEqualStrategyNumber, F_OIDEQ,
-							ObjectIdGetDatum(object->objectId));
-
-				tgscan = systable_beginscan(trigDesc, TriggerOidIndexId, true,
-											SnapshotNow, 1, skey);
-
-				tup = systable_getnext(tgscan);
-
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "could not find tuple for trigger %u",
-						 object->objectId);
-
-				trig = (Form_pg_trigger) GETSTRUCT(tup);
-
-				appendStringInfo(&buffer, _("trigger %s on "),
-								 NameStr(trig->tgname));
-				getRelationDescription(&buffer, trig->tgrelid);
-
-				systable_endscan(tgscan);
-				heap_close(trigDesc, AccessShareLock);
-				break;
-			}
-
-		case OCLASS_SCHEMA:
-			{
-				char	   *nspname;
-
-				nspname = get_namespace_name(object->objectId);
-				if (!nspname)
-					elog(ERROR, "cache lookup failed for namespace %u",
-						 object->objectId);
-				appendStringInfo(&buffer, _("schema %s"), nspname);
-				break;
-			}
-
-		case OCLASS_TSPARSER:
-			{
-				HeapTuple	tup;
-
-				tup = SearchSysCache1(TSPARSEROID,
-									  ObjectIdGetDatum(object->objectId));
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "cache lookup failed for text search parser %u",
-						 object->objectId);
-				appendStringInfo(&buffer, _("text search parser %s"),
-					 NameStr(((Form_pg_ts_parser) GETSTRUCT(tup))->prsname));
-				ReleaseSysCache(tup);
-				break;
-			}
-
-		case OCLASS_TSDICT:
-			{
-				HeapTuple	tup;
-
-				tup = SearchSysCache1(TSDICTOID,
-									  ObjectIdGetDatum(object->objectId));
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "cache lookup failed for text search dictionary %u",
-						 object->objectId);
-				appendStringInfo(&buffer, _("text search dictionary %s"),
-					  NameStr(((Form_pg_ts_dict) GETSTRUCT(tup))->dictname));
-				ReleaseSysCache(tup);
-				break;
-			}
-
-		case OCLASS_TSTEMPLATE:
-			{
-				HeapTuple	tup;
-
-				tup = SearchSysCache1(TSTEMPLATEOID,
-									  ObjectIdGetDatum(object->objectId));
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "cache lookup failed for text search template %u",
-						 object->objectId);
-				appendStringInfo(&buffer, _("text search template %s"),
-				  NameStr(((Form_pg_ts_template) GETSTRUCT(tup))->tmplname));
-				ReleaseSysCache(tup);
-				break;
-			}
-
-		case OCLASS_TSCONFIG:
-			{
-				HeapTuple	tup;
-
-				tup = SearchSysCache1(TSCONFIGOID,
-									  ObjectIdGetDatum(object->objectId));
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "cache lookup failed for text search configuration %u",
-						 object->objectId);
-				appendStringInfo(&buffer, _("text search configuration %s"),
-					 NameStr(((Form_pg_ts_config) GETSTRUCT(tup))->cfgname));
-				ReleaseSysCache(tup);
-				break;
-			}
-
-		case OCLASS_ROLE:
-			{
-				appendStringInfo(&buffer, _("role %s"),
-								 GetUserNameFromId(object->objectId));
-				break;
-			}
-
-		case OCLASS_DATABASE:
-			{
-				char	   *datname;
-
-				datname = get_database_name(object->objectId);
-				if (!datname)
-					elog(ERROR, "cache lookup failed for database %u",
-						 object->objectId);
-				appendStringInfo(&buffer, _("database %s"), datname);
-				break;
-			}
-
-		case OCLASS_TBLSPACE:
-			{
-				char	   *tblspace;
-
-				tblspace = get_tablespace_name(object->objectId);
-				if (!tblspace)
-					elog(ERROR, "cache lookup failed for tablespace %u",
-						 object->objectId);
-				appendStringInfo(&buffer, _("tablespace %s"), tblspace);
-				break;
-			}
-
-		case OCLASS_FDW:
-			{
-				ForeignDataWrapper *fdw;
-
-				fdw = GetForeignDataWrapper(object->objectId);
-				appendStringInfo(&buffer, _("foreign-data wrapper %s"), fdw->fdwname);
-				break;
-			}
-
-		case OCLASS_FOREIGN_SERVER:
-			{
-				ForeignServer *srv;
-
-				srv = GetForeignServer(object->objectId);
-				appendStringInfo(&buffer, _("server %s"), srv->servername);
-				break;
-			}
-
-		case OCLASS_USER_MAPPING:
-			{
-				HeapTuple	tup;
-				Oid			useid;
-				char	   *usename;
-
-				tup = SearchSysCache1(USERMAPPINGOID,
-									  ObjectIdGetDatum(object->objectId));
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "cache lookup failed for user mapping %u",
-						 object->objectId);
-
-				useid = ((Form_pg_user_mapping) GETSTRUCT(tup))->umuser;
-
-				ReleaseSysCache(tup);
-
-				if (OidIsValid(useid))
-					usename = GetUserNameFromId(useid);
-				else
-					usename = "public";
-
-				appendStringInfo(&buffer, _("user mapping for %s"), usename);
-				break;
-			}
-
-		case OCLASS_DEFACL:
-			{
-				Relation	defaclrel;
-				ScanKeyData skey[1];
-				SysScanDesc rcscan;
-				HeapTuple	tup;
-				Form_pg_default_acl defacl;
-
-				defaclrel = heap_open(DefaultAclRelationId, AccessShareLock);
-
-				ScanKeyInit(&skey[0],
-							ObjectIdAttributeNumber,
-							BTEqualStrategyNumber, F_OIDEQ,
-							ObjectIdGetDatum(object->objectId));
-
-				rcscan = systable_beginscan(defaclrel, DefaultAclOidIndexId,
-											true, SnapshotNow, 1, skey);
-
-				tup = systable_getnext(rcscan);
-
-				if (!HeapTupleIsValid(tup))
-					elog(ERROR, "could not find tuple for default ACL %u",
-						 object->objectId);
-
-				defacl = (Form_pg_default_acl) GETSTRUCT(tup);
-
-				switch (defacl->defaclobjtype)
-				{
-					case DEFACLOBJ_RELATION:
-						appendStringInfo(&buffer,
-										 _("default privileges on new relations belonging to role %s"),
-									  GetUserNameFromId(defacl->defaclrole));
-						break;
-					case DEFACLOBJ_SEQUENCE:
-						appendStringInfo(&buffer,
-										 _("default privileges on new sequences belonging to role %s"),
-									  GetUserNameFromId(defacl->defaclrole));
-						break;
-					case DEFACLOBJ_FUNCTION:
-						appendStringInfo(&buffer,
-										 _("default privileges on new functions belonging to role %s"),
-									  GetUserNameFromId(defacl->defaclrole));
-						break;
-					default:
-						/* shouldn't get here */
-						appendStringInfo(&buffer,
-								_("default privileges belonging to role %s"),
-									  GetUserNameFromId(defacl->defaclrole));
-						break;
-				}
-
-				if (OidIsValid(defacl->defaclnamespace))
-				{
-					appendStringInfo(&buffer,
-									 _(" in schema %s"),
-								get_namespace_name(defacl->defaclnamespace));
-				}
-
-				systable_endscan(rcscan);
-				heap_close(defaclrel, AccessShareLock);
-				break;
-			}
-
-		case OCLASS_EXTENSION:
-			{
-				char	   *extname;
-
-				extname = get_extension_name(object->objectId);
-				if (!extname)
-					elog(ERROR, "cache lookup failed for extension %u",
-						 object->objectId);
-				appendStringInfo(&buffer, _("extension %s"), extname);
-				break;
-			}
-
-		default:
-			appendStringInfo(&buffer, "unrecognized object %u %u %d",
-							 object->classId,
-							 object->objectId,
-							 object->objectSubId);
-			break;
-	}
-
-	return buffer.data;
-}
-
-/*
- * getObjectDescriptionOids: as above, except the object is specified by Oids
- */
-char *
-getObjectDescriptionOids(Oid classid, Oid objid)
-{
-	ObjectAddress address;
-
-	address.classId = classid;
-	address.objectId = objid;
-	address.objectSubId = 0;
-
-	return getObjectDescription(&address);
-}
-
-/*
- * subroutine for getObjectDescription: describe a relation
- */
-static void
-getRelationDescription(StringInfo buffer, Oid relid)
-{
-	HeapTuple	relTup;
-	Form_pg_class relForm;
-	char	   *nspname;
-	char	   *relname;
-
-	relTup = SearchSysCache1(RELOID,
-							 ObjectIdGetDatum(relid));
-	if (!HeapTupleIsValid(relTup))
-		elog(ERROR, "cache lookup failed for relation %u", relid);
-	relForm = (Form_pg_class) GETSTRUCT(relTup);
-
-	/* Qualify the name if not visible in search path */
-	if (RelationIsVisible(relid))
-		nspname = NULL;
-	else
-		nspname = get_namespace_name(relForm->relnamespace);
-
-	relname = quote_qualified_identifier(nspname, NameStr(relForm->relname));
-
-	switch (relForm->relkind)
-	{
-		case RELKIND_RELATION:
-			appendStringInfo(buffer, _("table %s"),
-							 relname);
-			break;
-		case RELKIND_INDEX:
-			appendStringInfo(buffer, _("index %s"),
-							 relname);
-			break;
-		case RELKIND_SEQUENCE:
-			appendStringInfo(buffer, _("sequence %s"),
-							 relname);
-			break;
-		case RELKIND_UNCATALOGED:
-			appendStringInfo(buffer, _("uncataloged table %s"),
-							 relname);
-			break;
-		case RELKIND_TOASTVALUE:
-			appendStringInfo(buffer, _("toast table %s"),
-							 relname);
-			break;
-		case RELKIND_VIEW:
-			appendStringInfo(buffer, _("view %s"),
-							 relname);
-			break;
-		case RELKIND_COMPOSITE_TYPE:
-			appendStringInfo(buffer, _("composite type %s"),
-							 relname);
-			break;
-		case RELKIND_FOREIGN_TABLE:
-			appendStringInfo(buffer, _("foreign table %s"),
-							 relname);
-			break;
-		default:
-			/* shouldn't get here */
-			appendStringInfo(buffer, _("relation %s"),
-							 relname);
-			break;
-	}
-
-	ReleaseSysCache(relTup);
-}
-
-/*
- * subroutine for getObjectDescription: describe an operator family
- */
-static void
-getOpFamilyDescription(StringInfo buffer, Oid opfid)
-{
-	HeapTuple	opfTup;
-	Form_pg_opfamily opfForm;
-	HeapTuple	amTup;
-	Form_pg_am	amForm;
-	char	   *nspname;
-
-	opfTup = SearchSysCache1(OPFAMILYOID, ObjectIdGetDatum(opfid));
-	if (!HeapTupleIsValid(opfTup))
-		elog(ERROR, "cache lookup failed for opfamily %u", opfid);
-	opfForm = (Form_pg_opfamily) GETSTRUCT(opfTup);
-
-	amTup = SearchSysCache1(AMOID, ObjectIdGetDatum(opfForm->opfmethod));
-	if (!HeapTupleIsValid(amTup))
-		elog(ERROR, "cache lookup failed for access method %u",
-			 opfForm->opfmethod);
-	amForm = (Form_pg_am) GETSTRUCT(amTup);
-
-	/* Qualify the name if not visible in search path */
-	if (OpfamilyIsVisible(opfid))
-		nspname = NULL;
-	else
-		nspname = get_namespace_name(opfForm->opfnamespace);
-
-	appendStringInfo(buffer, _("operator family %s for access method %s"),
-					 quote_qualified_identifier(nspname,
-												NameStr(opfForm->opfname)),
-					 NameStr(amForm->amname));
-
-	ReleaseSysCache(amTup);
-	ReleaseSysCache(opfTup);
-}
-
-/*
- * SQL-level callable version of getObjectDescription
- */
-Datum
-pg_describe_object(PG_FUNCTION_ARGS)
-{
-	Oid			classid = PG_GETARG_OID(0);
-	Oid			objid = PG_GETARG_OID(1);
-	int32		subobjid = PG_GETARG_INT32(2);
-	char	   *description = NULL;
-	ObjectAddress address;
-
-	/* for "pinned" items in pg_depend, return null */
-	if (!OidIsValid(classid) && !OidIsValid(objid))
-		PG_RETURN_NULL();
-
-	address.classId = classid;
-	address.objectId = objid;
-	address.objectSubId = subobjid;
-
-	description = getObjectDescription(&address);
-	PG_RETURN_TEXT_P(cstring_to_text(description));
 }

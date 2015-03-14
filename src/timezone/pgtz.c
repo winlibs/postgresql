@@ -3,7 +3,7 @@
  * pgtz.c
  *	  Timezone Library Integration Functions
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/timezone/pgtz.c
@@ -83,7 +83,7 @@ pg_open_tzfile(const char *name, char *canonname)
 	 * Loop to split the given name into directory levels; for each level,
 	 * search using scan_directory_ci().
 	 */
-	strcpy(fullname, pg_TZDIR());
+	strlcpy(fullname, pg_TZDIR(), sizeof(fullname));
 	orignamelen = fullnamelen = strlen(fullname);
 	fname = name;
 	for (;;)
@@ -119,7 +119,7 @@ pg_open_tzfile(const char *name, char *canonname)
 
 /*
  * Scan specified directory for a case-insensitive match to fname
- * (of length fnamelen --- fname may not be null terminated!).	If found,
+ * (of length fnamelen --- fname may not be null terminated!).  If found,
  * copy the actual filename into canonname and return true.
  */
 static bool
@@ -142,7 +142,7 @@ scan_directory_ci(const char *dirname, const char *fname, int fnamelen,
 	while ((direntry = ReadDir(dirdesc, dirname)) != NULL)
 	{
 		/*
-		 * Ignore . and .., plus any other "hidden" files.	This is a security
+		 * Ignore . and .., plus any other "hidden" files.  This is a security
 		 * measure to prevent access to files outside the timezone directory.
 		 */
 		if (direntry->d_name[0] == '.')
@@ -288,6 +288,49 @@ pg_tzset(const char *name)
 	return &tzp->tz;
 }
 
+/*
+ * Load a fixed-GMT-offset timezone.
+ * This is used for SQL-spec SET TIME ZONE INTERVAL 'foo' cases.
+ * It's otherwise equivalent to pg_tzset().
+ *
+ * The GMT offset is specified in seconds, positive values meaning west of
+ * Greenwich (ie, POSIX not ISO sign convention).  However, we use ISO
+ * sign convention in the displayable abbreviation for the zone.
+ *
+ * Caution: this can fail (return NULL) if the specified offset is outside
+ * the range allowed by the zic library.
+ */
+pg_tz *
+pg_tzset_offset(long gmtoffset)
+{
+	long		absoffset = (gmtoffset < 0) ? -gmtoffset : gmtoffset;
+	char		offsetstr[64];
+	char		tzname[128];
+
+	snprintf(offsetstr, sizeof(offsetstr),
+			 "%02ld", absoffset / SECSPERHOUR);
+	absoffset %= SECSPERHOUR;
+	if (absoffset != 0)
+	{
+		snprintf(offsetstr + strlen(offsetstr),
+				 sizeof(offsetstr) - strlen(offsetstr),
+				 ":%02ld", absoffset / SECSPERMIN);
+		absoffset %= SECSPERMIN;
+		if (absoffset != 0)
+			snprintf(offsetstr + strlen(offsetstr),
+					 sizeof(offsetstr) - strlen(offsetstr),
+					 ":%02ld", absoffset);
+	}
+	if (gmtoffset > 0)
+		snprintf(tzname, sizeof(tzname), "<-%s>+%s",
+				 offsetstr, offsetstr);
+	else
+		snprintf(tzname, sizeof(tzname), "<+%s>-%s",
+				 offsetstr, offsetstr);
+
+	return pg_tzset(tzname);
+}
+
 
 /*
  * Initialize timezone library
@@ -295,7 +338,7 @@ pg_tzset(const char *name)
  * This is called before GUC variable initialization begins.  Its purpose
  * is to ensure that log_timezone has a valid value before any logging GUC
  * variables could become set to values that require elog.c to provide
- * timestamps (e.g., log_line_prefix).	We may as well initialize
+ * timestamps (e.g., log_line_prefix).  We may as well initialize
  * session_timestamp to something valid, too.
  */
 void

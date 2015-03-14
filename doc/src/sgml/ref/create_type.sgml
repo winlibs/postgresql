@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="SQL-CREATETYPE">
+ <indexterm zone="sql-createtype">
+  <primary>CREATE TYPE</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle>CREATE TYPE</refentrytitle>
   <manvolnum>7</manvolnum>
@@ -14,10 +18,6 @@ PostgreSQL documentation
   <refname>CREATE TYPE</refname>
   <refpurpose>define a new data type</refpurpose>
  </refnamediv>
-
- <indexterm zone="sql-createtype">
-  <primary>CREATE TYPE</primary>
- </indexterm>
 
  <refsynopsisdiv>
 <synopsis>
@@ -136,7 +136,7 @@ CREATE TYPE <replaceable class="parameter">name</replaceable>
     be any type with an associated b-tree operator class (to determine the
     ordering of values for the range type).  Normally the subtype's default
     b-tree operator class is used to determine ordering; to use a non-default
-    opclass, specify its name with <replaceable
+    operator class, specify its name with <replaceable
     class="parameter">subtype_opclass</replaceable>.  If the subtype is
     collatable, and you want to use a non-default collation in the range's
     ordering, specify the desired collation with the <replaceable

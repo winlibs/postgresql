@@ -3,7 +3,7 @@
  * lsyscache.h
  *	  Convenience routines for common queries in the system catalog cache.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/lsyscache.h
@@ -13,7 +13,9 @@
 #ifndef LSYSCACHE_H
 #define LSYSCACHE_H
 
+#include "access/attnum.h"
 #include "access/htup.h"
+#include "nodes/pg_list.h"
 
 /* Result list element for get_op_btree_interpretation */
 typedef struct OpBtreeInterpretation
@@ -88,6 +90,7 @@ extern Oid	get_func_namespace(Oid funcid);
 extern Oid	get_func_rettype(Oid funcid);
 extern int	get_func_nargs(Oid funcid);
 extern Oid	get_func_signature(Oid funcid, Oid **argtypes, int *nargs);
+extern Oid	get_func_variadictype(Oid funcid);
 extern bool get_func_retset(Oid funcid);
 extern bool func_strict(Oid funcid);
 extern char func_volatile(Oid funcid);

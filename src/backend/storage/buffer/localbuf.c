@@ -4,7 +4,7 @@
  *	  local buffer manager. Fast buffer manager for temporary tables,
  *	  which never need to be WAL-logged or checkpointed, etc.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994-5, Regents of the University of California
  *
  *
@@ -21,7 +21,7 @@
 #include "storage/bufmgr.h"
 #include "utils/guc.h"
 #include "utils/memutils.h"
-#include "utils/resowner.h"
+#include "utils/resowner_private.h"
 
 
 /*#define LBDEBUG*/
@@ -94,7 +94,7 @@ LocalPrefetchBuffer(SMgrRelation smgr, ForkNumber forkNum,
  *	  Find or create a local buffer for the given page of the given relation.
  *
  * API is similar to bufmgr.c's BufferAlloc, except that we do not need
- * to do any locking since this is all local.	Also, IO_IN_PROGRESS
+ * to do any locking since this is all local.   Also, IO_IN_PROGRESS
  * does not get set.  Lastly, we support only default access strategy
  * (hence, usage_count is always advanced).
  */
@@ -196,15 +196,18 @@ LocalBufferAlloc(SMgrRelation smgr, ForkNumber forkNum, BlockNumber blockNum,
 	if (bufHdr->flags & BM_DIRTY)
 	{
 		SMgrRelation oreln;
+		Page		localpage = (char *) LocalBufHdrGetBlock(bufHdr);
 
 		/* Find smgr relation for buffer */
 		oreln = smgropen(bufHdr->tag.rnode, MyBackendId);
+
+		PageSetChecksumInplace(localpage, bufHdr->tag.blockNum);
 
 		/* And write... */
 		smgrwrite(oreln,
 				  bufHdr->tag.forkNum,
 				  bufHdr->tag.blockNum,
-				  (char *) LocalBufHdrGetBlock(bufHdr),
+				  localpage,
 				  false);
 
 		/* Mark not-dirty now in case we error out below */
@@ -289,7 +292,7 @@ MarkLocalBufferDirty(Buffer buffer)
  *		specified relation that have block numbers >= firstDelBlock.
  *		(In particular, with firstDelBlock = 0, all pages are removed.)
  *		Dirty pages are simply dropped, without bothering to write them
- *		out first.	Therefore, this is NOT rollback-able, and so should be
+ *		out first.  Therefore, this is NOT rollback-able, and so should be
  *		used only with extreme caution!
  *
  *		See DropRelFileNodeBuffers in bufmgr.c for more notes.
@@ -456,7 +459,7 @@ GetLocalBufferStorage(void)
 		/*
 		 * We allocate local buffers in a context of their own, so that the
 		 * space eaten for them is easily recognizable in MemoryContextStats
-		 * output.	Create the context on first use.
+		 * output.  Create the context on first use.
 		 */
 		if (LocalBufferContext == NULL)
 			LocalBufferContext =
@@ -496,14 +499,22 @@ void
 AtEOXact_LocalBuffers(bool isCommit)
 {
 #ifdef USE_ASSERT_CHECKING
-	if (assert_enabled)
+	if (assert_enabled && LocalRefCount)
 	{
+		int			RefCountErrors = 0;
 		int			i;
 
 		for (i = 0; i < NLocBuffer; i++)
 		{
-			Assert(LocalRefCount[i] == 0);
+			if (LocalRefCount[i] != 0)
+			{
+				Buffer		b = -i - 1;
+
+				PrintBufferLeakWarning(b);
+				RefCountErrors++;
+			}
 		}
+		Assert(RefCountErrors == 0);
 	}
 #endif
 }
@@ -522,12 +533,20 @@ AtProcExit_LocalBuffers(void)
 #ifdef USE_ASSERT_CHECKING
 	if (assert_enabled && LocalRefCount)
 	{
+		int			RefCountErrors = 0;
 		int			i;
 
 		for (i = 0; i < NLocBuffer; i++)
 		{
-			Assert(LocalRefCount[i] == 0);
+			if (LocalRefCount[i] != 0)
+			{
+				Buffer		b = -i - 1;
+
+				PrintBufferLeakWarning(b);
+				RefCountErrors++;
+			}
 		}
+		Assert(RefCountErrors == 0);
 	}
 #endif
 }

@@ -3,7 +3,7 @@
  * execUtils.c
  *	  miscellaneous executor utility routines
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -105,7 +105,7 @@ CreateExecutorState(void)
 	 * Initialize all fields of the Executor State structure
 	 */
 	estate->es_direction = ForwardScanDirection;
-	estate->es_snapshot = SnapshotNow;
+	estate->es_snapshot = InvalidSnapshot;		/* caller must initialize this */
 	estate->es_crosscheck_snapshot = InvalidSnapshot;	/* no crosscheck */
 	estate->es_range_table = NIL;
 	estate->es_plannedstmt = NULL;
@@ -342,7 +342,7 @@ CreateStandaloneExprContext(void)
  * any previously computed pass-by-reference expression result will go away!
  *
  * If isCommit is false, we are being called in error cleanup, and should
- * not call callbacks but only release memory.	(It might be better to call
+ * not call callbacks but only release memory.  (It might be better to call
  * the callbacks and pass the isCommit flag to them, but that would require
  * more invasive code changes than currently seems justified.)
  *
@@ -371,7 +371,7 @@ FreeExprContext(ExprContext *econtext, bool isCommit)
  * ReScanExprContext
  *
  *		Reset an expression context in preparation for a rescan of its
- *		plan node.	This requires calling any registered shutdown callbacks,
+ *		plan node.  This requires calling any registered shutdown callbacks,
  *		since any partially complete set-returning-functions must be canceled.
  *
  * Note we make no assumption about the caller's memory context.
@@ -412,7 +412,7 @@ MakePerTupleExprContext(EState *estate)
 /* ----------------
  *		ExecAssignExprContext
  *
- *		This initializes the ps_ExprContext field.	It is only necessary
+ *		This initializes the ps_ExprContext field.  It is only necessary
  *		to do this for nodes which use ExecQual or ExecProject
  *		because those routines require an econtext. Other nodes that
  *		don't have to evaluate expressions don't need to do this.
@@ -458,7 +458,7 @@ ExecAssignResultTypeFromTL(PlanState *planstate)
 
 	/*
 	 * ExecTypeFromTL needs the parse-time representation of the tlist, not a
-	 * list of ExprStates.	This is good because some plan nodes don't bother
+	 * list of ExprStates.  This is good because some plan nodes don't bother
 	 * to set up planstate->targetlist ...
 	 */
 	tupDesc = ExecTypeFromTL(planstate->plan->targetlist, hasoid);
@@ -486,7 +486,7 @@ ExecGetResultType(PlanState *planstate)
  * the given tlist should be a list of ExprState nodes, not Expr nodes.
  *
  * inputDesc can be NULL, but if it is not, we check to see whether simple
- * Vars in the tlist match the descriptor.	It is important to provide
+ * Vars in the tlist match the descriptor.  It is important to provide
  * inputDesc for relation-scan plan nodes, as a cross check that the relation
  * hasn't been changed since the plan was made.  At higher levels of a plan,
  * there is no need to recheck.
@@ -649,9 +649,9 @@ get_last_attnums(Node *node, ProjectionInfo *projInfo)
 	}
 
 	/*
-	 * Don't examine the arguments of Aggrefs or WindowFuncs, because those do
-	 * not represent expressions to be evaluated within the overall
-	 * targetlist's econtext.
+	 * Don't examine the arguments or filters of Aggrefs or WindowFuncs,
+	 * because those do not represent expressions to be evaluated within the
+	 * overall targetlist's econtext.
 	 */
 	if (IsA(node, Aggref))
 		return false;
@@ -692,7 +692,7 @@ ExecAssignProjectionInfo(PlanState *planstate,
  *
  * However ... there is no particular need to do it during ExecEndNode,
  * because FreeExecutorState will free any remaining ExprContexts within
- * the EState.	Letting FreeExecutorState do it allows the ExprContexts to
+ * the EState.  Letting FreeExecutorState do it allows the ExprContexts to
  * be freed in reverse order of creation, rather than order of creation as
  * will happen if we delete them here, which saves O(N^2) work in the list
  * cleanup inside FreeExprContext.
@@ -712,7 +712,7 @@ ExecFreeExprContext(PlanState *planstate)
  *		the following scan type support functions are for
  *		those nodes which are stubborn and return tuples in
  *		their Scan tuple slot instead of their Result tuple
- *		slot..	luck fur us, these nodes do not do projections
+ *		slot..  luck fur us, these nodes do not do projections
  *		so we don't have to worry about getting the ProjectionInfo
  *		right for them...  -cim 6/3/91
  * ----------------------------------------------------------------
@@ -798,8 +798,9 @@ ExecRelationIsTargetRelation(EState *estate, Index scanrelid)
  * ----------------------------------------------------------------
  */
 Relation
-ExecOpenScanRelation(EState *estate, Index scanrelid)
+ExecOpenScanRelation(EState *estate, Index scanrelid, int eflags)
 {
+	Relation	rel;
 	Oid			reloid;
 	LOCKMODE	lockmode;
 
@@ -827,9 +828,24 @@ ExecOpenScanRelation(EState *estate, Index scanrelid)
 		}
 	}
 
-	/* OK, open the relation and acquire lock as needed */
+	/* Open the relation and acquire lock as needed */
 	reloid = getrelid(scanrelid, estate->es_range_table);
-	return heap_open(reloid, lockmode);
+	rel = heap_open(reloid, lockmode);
+
+	/*
+	 * Complain if we're attempting a scan of an unscannable relation, except
+	 * when the query won't actually be run.  This is a slightly klugy place
+	 * to do this, perhaps, but there is no better place.
+	 */
+	if ((eflags & (EXEC_FLAG_EXPLAIN_ONLY | EXEC_FLAG_WITH_NO_DATA)) == 0 &&
+		!RelationIsScannable(rel))
+		ereport(ERROR,
+				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+				 errmsg("materialized view \"%s\" has not been populated",
+						RelationGetRelationName(rel)),
+				 errhint("Use the REFRESH MATERIALIZED VIEW command.")));
+
+	return rel;
 }
 
 /* ----------------------------------------------------------------
@@ -1095,7 +1111,7 @@ ExecInsertIndexTuples(TupleTableSlot *slot,
 		/*
 		 * If the index has an associated exclusion constraint, check that.
 		 * This is simpler than the process for uniqueness checks since we
-		 * always insert first and then check.	If the constraint is deferred,
+		 * always insert first and then check.  If the constraint is deferred,
 		 * we check now anyway, but don't throw error on violation; instead
 		 * we'll queue a recheck event.
 		 *
@@ -1279,7 +1295,7 @@ retry:
 
 		/*
 		 * If an in-progress transaction is affecting the visibility of this
-		 * tuple, we need to wait for it to complete and then recheck.	For
+		 * tuple, we need to wait for it to complete and then recheck.  For
 		 * simplicity we do rechecking by just restarting the whole scan ---
 		 * this case probably doesn't happen often enough to be worth trying
 		 * harder, and anyway we don't want to hold any index internal locks
@@ -1291,7 +1307,8 @@ retry:
 		if (TransactionIdIsValid(xwait))
 		{
 			index_endscan(index_scan);
-			XactLockTableWait(xwait);
+			XactLockTableWait(xwait, heap, &tup->t_data->t_ctid,
+							  XLTW_RecheckExclusionConstr);
 			goto retry;
 		}
 
@@ -1306,15 +1323,23 @@ retry:
 					(errcode(ERRCODE_EXCLUSION_VIOLATION),
 					 errmsg("could not create exclusion constraint \"%s\"",
 							RelationGetRelationName(index)),
-					 errdetail("Key %s conflicts with key %s.",
-							   error_new, error_existing)));
+					 error_new && error_existing ?
+						errdetail("Key %s conflicts with key %s.",
+								  error_new, error_existing) :
+						errdetail("Key conflicts exist."),
+					 errtableconstraint(heap,
+										RelationGetRelationName(index))));
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_EXCLUSION_VIOLATION),
 					 errmsg("conflicting key value violates exclusion constraint \"%s\"",
 							RelationGetRelationName(index)),
-					 errdetail("Key %s conflicts with existing key %s.",
-							   error_new, error_existing)));
+					 error_new && error_existing ?
+						errdetail("Key %s conflicts with existing key %s.",
+								  error_new, error_existing) :
+						errdetail("Key conflicts with existing key."),
+					 errtableconstraint(heap,
+										RelationGetRelationName(index))));
 	}
 
 	index_endscan(index_scan);
@@ -1336,7 +1361,7 @@ retry:
 
 /*
  * Check existing tuple's index values to see if it really matches the
- * exclusion condition against the new_values.	Returns true if conflict.
+ * exclusion condition against the new_values.  Returns true if conflict.
  */
 static bool
 index_recheck_constraint(Relation index, Oid *constr_procs,

@@ -33,14 +33,22 @@ AC_MSG_CHECKING([Python configuration directory])
 python_majorversion=`${PYTHON} -c "import sys; print(sys.version[[0]])"`
 python_version=`${PYTHON} -c "import sys; print(sys.version[[:3]])"`
 python_configdir=`${PYTHON} -c "import distutils.sysconfig; print(' '.join(filter(None,distutils.sysconfig.get_config_vars('LIBPL'))))"`
-python_includespec=`${PYTHON} -c "import distutils.sysconfig; print('-I'+distutils.sysconfig.get_python_inc())"`
+AC_MSG_RESULT([$python_configdir])
+
+AC_MSG_CHECKING([Python include directories])
+python_includespec=`${PYTHON} -c "
+import distutils.sysconfig
+a = '-I' + distutils.sysconfig.get_python_inc(False)
+b = '-I' + distutils.sysconfig.get_python_inc(True)
+if a == b:
+    print(a)
+else:
+    print(a + ' ' + b)"`
+AC_MSG_RESULT([$python_includespec])
 
 AC_SUBST(python_majorversion)[]dnl
 AC_SUBST(python_version)[]dnl
-AC_SUBST(python_configdir)[]dnl
 AC_SUBST(python_includespec)[]dnl
-# This should be enough of a message.
-AC_MSG_RESULT([$python_configdir])
 ])# _PGAC_CHECK_PYTHON_DIRS
 
 
@@ -60,6 +68,7 @@ python_libdir=`${PYTHON} -c "import distutils.sysconfig; print(' '.join(filter(N
 python_ldlibrary=`${PYTHON} -c "import distutils.sysconfig; print(' '.join(filter(None,distutils.sysconfig.get_config_vars('LDLIBRARY'))))"`
 python_so=`${PYTHON} -c "import distutils.sysconfig; print(' '.join(filter(None,distutils.sysconfig.get_config_vars('SO'))))"`
 ldlibrary=`echo "${python_ldlibrary}" | sed "s/${python_so}$//"`
+python_enable_shared=`${PYTHON} -c "import distutils.sysconfig; print(distutils.sysconfig.get_config_vars().get('Py_ENABLE_SHARED',0))"`
 
 if test x"${python_libdir}" != x"" -a x"${python_ldlibrary}" != x"" -a x"${python_ldlibrary}" != x"${ldlibrary}"
 then
@@ -84,6 +93,7 @@ AC_MSG_RESULT([${python_libspec} ${python_additional_libs}])
 AC_SUBST(python_libdir)[]dnl
 AC_SUBST(python_libspec)[]dnl
 AC_SUBST(python_additional_libs)[]dnl
+AC_SUBST(python_enable_shared)[]dnl
 
 # threaded python is not supported on OpenBSD
 AC_MSG_CHECKING(whether Python is compiled with thread support)

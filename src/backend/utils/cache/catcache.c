@@ -3,7 +3,7 @@
  * catcache.c
  *	  System catalog cache for tuples matching a key.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -21,6 +21,7 @@
 #include "access/sysattr.h"
 #include "access/tuptoaster.h"
 #include "access/valid.h"
+#include "access/xact.h"
 #include "catalog/pg_operator.h"
 #include "catalog/pg_type.h"
 #include "miscadmin.h"
@@ -33,7 +34,7 @@
 #include "utils/inval.h"
 #include "utils/memutils.h"
 #include "utils/rel.h"
-#include "utils/resowner.h"
+#include "utils/resowner_private.h"
 #include "utils/syscache.h"
 #include "utils/tqual.h"
 
@@ -291,7 +292,7 @@ CatalogCacheComputeTupleHashValue(CatCache *cache, HeapTuple tuple)
 static void
 CatCachePrintStats(int code, Datum arg)
 {
-	CatCache   *cache;
+	slist_iter	iter;
 	long		cc_searches = 0;
 	long		cc_hits = 0;
 	long		cc_neg_hits = 0;
@@ -300,8 +301,10 @@ CatCachePrintStats(int code, Datum arg)
 	long		cc_lsearches = 0;
 	long		cc_lhits = 0;
 
-	for (cache = CacheHdr->ch_caches; cache; cache = cache->cc_next)
+	slist_foreach(iter, &CacheHdr->ch_caches)
 	{
+		CatCache   *cache = slist_container(CatCache, cc_next, iter.cur);
+
 		if (cache->cc_ntup == 0 && cache->cc_searches == 0)
 			continue;			/* don't print unused caches */
 		elog(DEBUG2, "catcache %s/%u: %d tup, %ld srch, %ld+%ld=%ld hits, %ld+%ld=%ld loads, %ld invals, %ld lsrch, %ld lhits",
@@ -369,7 +372,7 @@ CatCacheRemoveCTup(CatCache *cache, CatCTup *ct)
 	}
 
 	/* delink from linked list */
-	DLRemove(&ct->cache_elem);
+	dlist_delete(&ct->cache_elem);
 
 	/* free associated tuple data */
 	if (ct->tuple.t_data != NULL)
@@ -412,7 +415,7 @@ CatCacheRemoveCList(CatCache *cache, CatCList *cl)
 	}
 
 	/* delink from linked list */
-	DLRemove(&cl->cache_elem);
+	dlist_delete(&cl->cache_elem);
 
 	/* free associated tuple data */
 	if (cl->tuple.t_data != NULL)
@@ -442,18 +445,18 @@ CatCacheRemoveCList(CatCache *cache, CatCList *cl)
 void
 CatalogCacheIdInvalidate(int cacheId, uint32 hashValue)
 {
-	CatCache   *ccp;
+	slist_iter	cache_iter;
 
 	CACHE1_elog(DEBUG2, "CatalogCacheIdInvalidate: called");
 
 	/*
 	 * inspect caches to find the proper cache
 	 */
-	for (ccp = CacheHdr->ch_caches; ccp; ccp = ccp->cc_next)
+	slist_foreach(cache_iter, &CacheHdr->ch_caches)
 	{
+		CatCache   *ccp = slist_container(CatCache, cc_next, cache_iter.cur);
 		Index		hashIndex;
-		Dlelem	   *elt,
-				   *nextelt;
+		dlist_mutable_iter iter;
 
 		if (cacheId != ccp->id)
 			continue;
@@ -468,11 +471,9 @@ CatalogCacheIdInvalidate(int cacheId, uint32 hashValue)
 		 * Invalidate *all* CatCLists in this cache; it's too hard to tell
 		 * which searches might still be correct, so just zap 'em all.
 		 */
-		for (elt = DLGetHead(&ccp->cc_lists); elt; elt = nextelt)
+		dlist_foreach_modify(iter, &ccp->cc_lists)
 		{
-			CatCList   *cl = (CatCList *) DLE_VAL(elt);
-
-			nextelt = DLGetSucc(elt);
+			CatCList   *cl = dlist_container(CatCList, cache_elem, iter.cur);
 
 			if (cl->refcount > 0)
 				cl->dead = true;
@@ -484,12 +485,9 @@ CatalogCacheIdInvalidate(int cacheId, uint32 hashValue)
 		 * inspect the proper hash bucket for tuple matches
 		 */
 		hashIndex = HASH_INDEX(hashValue, ccp->cc_nbuckets);
-
-		for (elt = DLGetHead(&ccp->cc_bucket[hashIndex]); elt; elt = nextelt)
+		dlist_foreach_modify(iter, &ccp->cc_bucket[hashIndex])
 		{
-			CatCTup    *ct = (CatCTup *) DLE_VAL(elt);
-
-			nextelt = DLGetSucc(elt);
+			CatCTup    *ct = dlist_container(CatCTup, cache_elem, iter.cur);
 
 			if (hashValue == ct->hash_value)
 			{
@@ -557,18 +555,20 @@ AtEOXact_CatCache(bool isCommit)
 #ifdef USE_ASSERT_CHECKING
 	if (assert_enabled)
 	{
-		CatCache   *ccp;
+		slist_iter	cache_iter;
 
-		for (ccp = CacheHdr->ch_caches; ccp; ccp = ccp->cc_next)
+		slist_foreach(cache_iter, &CacheHdr->ch_caches)
 		{
-			Dlelem	   *elt;
+			CatCache   *ccp = slist_container(CatCache, cc_next, cache_iter.cur);
+			dlist_iter	iter;
 			int			i;
 
 			/* Check CatCLists */
-			for (elt = DLGetHead(&ccp->cc_lists); elt; elt = DLGetSucc(elt))
+			dlist_foreach(iter, &ccp->cc_lists)
 			{
-				CatCList   *cl = (CatCList *) DLE_VAL(elt);
+				CatCList   *cl;
 
+				cl = dlist_container(CatCList, cache_elem, iter.cur);
 				Assert(cl->cl_magic == CL_MAGIC);
 				Assert(cl->refcount == 0);
 				Assert(!cl->dead);
@@ -577,12 +577,13 @@ AtEOXact_CatCache(bool isCommit)
 			/* Check individual tuples */
 			for (i = 0; i < ccp->cc_nbuckets; i++)
 			{
-				for (elt = DLGetHead(&ccp->cc_bucket[i]);
-					 elt;
-					 elt = DLGetSucc(elt))
-				{
-					CatCTup    *ct = (CatCTup *) DLE_VAL(elt);
+				dlist_head *bucket = &ccp->cc_bucket[i];
 
+				dlist_foreach(iter, bucket)
+				{
+					CatCTup    *ct;
+
+					ct = dlist_container(CatCTup, cache_elem, iter.cur);
 					Assert(ct->ct_magic == CT_MAGIC);
 					Assert(ct->refcount == 0);
 					Assert(!ct->dead);
@@ -604,16 +605,13 @@ AtEOXact_CatCache(bool isCommit)
 static void
 ResetCatalogCache(CatCache *cache)
 {
-	Dlelem	   *elt,
-			   *nextelt;
+	dlist_mutable_iter iter;
 	int			i;
 
 	/* Remove each list in this cache, or at least mark it dead */
-	for (elt = DLGetHead(&cache->cc_lists); elt; elt = nextelt)
+	dlist_foreach_modify(iter, &cache->cc_lists)
 	{
-		CatCList   *cl = (CatCList *) DLE_VAL(elt);
-
-		nextelt = DLGetSucc(elt);
+		CatCList   *cl = dlist_container(CatCList, cache_elem, iter.cur);
 
 		if (cl->refcount > 0)
 			cl->dead = true;
@@ -624,11 +622,11 @@ ResetCatalogCache(CatCache *cache)
 	/* Remove each tuple in this cache, or at least mark it dead */
 	for (i = 0; i < cache->cc_nbuckets; i++)
 	{
-		for (elt = DLGetHead(&cache->cc_bucket[i]); elt; elt = nextelt)
-		{
-			CatCTup    *ct = (CatCTup *) DLE_VAL(elt);
+		dlist_head *bucket = &cache->cc_bucket[i];
 
-			nextelt = DLGetSucc(elt);
+		dlist_foreach_modify(iter, bucket)
+		{
+			CatCTup    *ct = dlist_container(CatCTup, cache_elem, iter.cur);
 
 			if (ct->refcount > 0 ||
 				(ct->c_list && ct->c_list->refcount > 0))
@@ -654,12 +652,16 @@ ResetCatalogCache(CatCache *cache)
 void
 ResetCatalogCaches(void)
 {
-	CatCache   *cache;
+	slist_iter	iter;
 
 	CACHE1_elog(DEBUG2, "ResetCatalogCaches called");
 
-	for (cache = CacheHdr->ch_caches; cache; cache = cache->cc_next)
+	slist_foreach(iter, &CacheHdr->ch_caches)
+	{
+		CatCache   *cache = slist_container(CatCache, cc_next, iter.cur);
+
 		ResetCatalogCache(cache);
+	}
 
 	CACHE1_elog(DEBUG2, "end of ResetCatalogCaches call");
 }
@@ -680,12 +682,14 @@ ResetCatalogCaches(void)
 void
 CatalogCacheFlushCatalog(Oid catId)
 {
-	CatCache   *cache;
+	slist_iter	iter;
 
 	CACHE2_elog(DEBUG2, "CatalogCacheFlushCatalog called for %u", catId);
 
-	for (cache = CacheHdr->ch_caches; cache; cache = cache->cc_next)
+	slist_foreach(iter, &CacheHdr->ch_caches)
 	{
+		CatCache   *cache = slist_container(CatCache, cc_next, iter.cur);
+
 		/* Does this cache store tuples of the target catalog? */
 		if (cache->cc_reloid == catId)
 		{
@@ -732,9 +736,8 @@ InitCatCache(int id,
 	int			i;
 
 	/*
-	 * nbuckets is the number of hash buckets to use in this catcache.
-	 * Currently we just use a hard-wired estimate of an appropriate size for
-	 * each cache; maybe later make them dynamically resizable?
+	 * nbuckets is the initial number of hash buckets to use in this catcache.
+	 * It will be enlarged later if it becomes too full.
 	 *
 	 * nbuckets must be a power of two.  We check this via Assert rather than
 	 * a full runtime check because the values will be coming from constant
@@ -760,7 +763,7 @@ InitCatCache(int id,
 	if (CacheHdr == NULL)
 	{
 		CacheHdr = (CatCacheHeader *) palloc(sizeof(CatCacheHeader));
-		CacheHdr->ch_caches = NULL;
+		slist_init(&CacheHdr->ch_caches);
 		CacheHdr->ch_ntup = 0;
 #ifdef CATCACHE_STATS
 		/* set up to dump stats at backend exit */
@@ -771,9 +774,10 @@ InitCatCache(int id,
 	/*
 	 * allocate a new cache structure
 	 *
-	 * Note: we assume zeroing initializes the Dllist headers correctly
+	 * Note: we rely on zeroing to initialize all the dlist headers correctly
 	 */
-	cp = (CatCache *) palloc0(sizeof(CatCache) + nbuckets * sizeof(Dllist));
+	cp = (CatCache *) palloc0(sizeof(CatCache));
+	cp->cc_bucket = palloc0(nbuckets * sizeof(dlist_head));
 
 	/*
 	 * initialize the cache's relation information for the relation
@@ -801,8 +805,7 @@ InitCatCache(int id,
 	/*
 	 * add completed cache to top of group header's list
 	 */
-	cp->cc_next = CacheHdr->ch_caches;
-	CacheHdr->ch_caches = cp;
+	slist_push_head(&CacheHdr->ch_caches, &cp->cc_next);
 
 	/*
 	 * back to the old context before we return...
@@ -813,10 +816,48 @@ InitCatCache(int id,
 }
 
 /*
+ * Enlarge a catcache, doubling the number of buckets.
+ */
+static void
+RehashCatCache(CatCache *cp)
+{
+	dlist_head *newbucket;
+	int			newnbuckets;
+	int			i;
+
+	elog(DEBUG1, "rehashing catalog cache id %d for %s; %d tups, %d buckets",
+		 cp->id, cp->cc_relname, cp->cc_ntup, cp->cc_nbuckets);
+
+	/* Allocate a new, larger, hash table. */
+	newnbuckets = cp->cc_nbuckets * 2;
+	newbucket = (dlist_head *) MemoryContextAllocZero(CacheMemoryContext, newnbuckets * sizeof(dlist_head));
+
+	/* Move all entries from old hash table to new. */
+	for (i = 0; i < cp->cc_nbuckets; i++)
+	{
+		dlist_mutable_iter iter;
+
+		dlist_foreach_modify(iter, &cp->cc_bucket[i])
+		{
+			CatCTup    *ct = dlist_container(CatCTup, cache_elem, iter.cur);
+			int			hashIndex = HASH_INDEX(ct->hash_value, newnbuckets);
+
+			dlist_delete(iter.cur);
+			dlist_push_head(&newbucket[hashIndex], &ct->cache_elem);
+		}
+	}
+
+	/* Switch to the new array. */
+	pfree(cp->cc_bucket);
+	cp->cc_nbuckets = newnbuckets;
+	cp->cc_bucket = newbucket;
+}
+
+/*
  *		CatalogCacheInitializeCache
  *
  * This function does final initialization of a catcache: obtain the tuple
- * descriptor and set up the hash and equality function links.	We assume
+ * descriptor and set up the hash and equality function links.  We assume
  * that the relcache entry can be opened at this point!
  */
 #ifdef CACHEDEBUG
@@ -1041,7 +1082,7 @@ IndexScanOK(CatCache *cache, ScanKey cur_skey)
  *		if necessary (on the first access to a particular cache).
  *
  *		The result is NULL if not found, or a pointer to a HeapTuple in
- *		the cache.	The caller must not modify the tuple, and must call
+ *		the cache.  The caller must not modify the tuple, and must call
  *		ReleaseCatCache() when done with it.
  *
  * The search key values should be expressed as Datums of the key columns'
@@ -1060,11 +1101,15 @@ SearchCatCache(CatCache *cache,
 	ScanKeyData cur_skey[CATCACHE_MAXKEYS];
 	uint32		hashValue;
 	Index		hashIndex;
-	Dlelem	   *elt;
+	dlist_iter	iter;
+	dlist_head *bucket;
 	CatCTup    *ct;
 	Relation	relation;
 	SysScanDesc scandesc;
 	HeapTuple	ntp;
+
+	/* Make sure we're in a xact, even if this ends up being a cache hit */
+	Assert(IsTransactionState());
 
 	/*
 	 * one-time startup overhead for each cache
@@ -1093,14 +1138,16 @@ SearchCatCache(CatCache *cache,
 
 	/*
 	 * scan the hash bucket until we find a match or exhaust our tuples
+	 *
+	 * Note: it's okay to use dlist_foreach here, even though we modify the
+	 * dlist within the loop, because we don't continue the loop afterwards.
 	 */
-	for (elt = DLGetHead(&cache->cc_bucket[hashIndex]);
-		 elt;
-		 elt = DLGetSucc(elt))
+	bucket = &cache->cc_bucket[hashIndex];
+	dlist_foreach(iter, bucket)
 	{
 		bool		res;
 
-		ct = (CatCTup *) DLE_VAL(elt);
+		ct = dlist_container(CatCTup, cache_elem, iter.cur);
 
 		if (ct->dead)
 			continue;			/* ignore dead entries */
@@ -1125,7 +1172,7 @@ SearchCatCache(CatCache *cache,
 		 * most frequently accessed elements in any hashbucket will tend to be
 		 * near the front of the hashbucket's list.)
 		 */
-		DLMoveToFront(&ct->cache_elem);
+		dlist_move_head(bucket, &ct->cache_elem);
 
 		/*
 		 * If it's a positive entry, bump its refcount and return it. If it's
@@ -1168,8 +1215,8 @@ SearchCatCache(CatCache *cache,
 	 * the relation --- for example, due to shared-cache-inval messages being
 	 * processed during heap_open().  This is OK.  It's even possible for one
 	 * of those lookups to find and enter the very same tuple we are trying to
-	 * fetch here.	If that happens, we will enter a second copy of the tuple
-	 * into the cache.	The first copy will never be referenced again, and
+	 * fetch here.  If that happens, we will enter a second copy of the tuple
+	 * into the cache.  The first copy will never be referenced again, and
 	 * will eventually age out of the cache, so there's no functional problem.
 	 * This case is rare enough that it's not worth expending extra cycles to
 	 * detect.
@@ -1179,7 +1226,7 @@ SearchCatCache(CatCache *cache,
 	scandesc = systable_beginscan(relation,
 								  cache->cc_indexoid,
 								  IndexScanOK(cache, cur_skey),
-								  SnapshotNow,
+								  NULL,
 								  cache->cc_nkeys,
 								  cur_skey);
 
@@ -1208,7 +1255,7 @@ SearchCatCache(CatCache *cache,
 	 *
 	 * In bootstrap mode, we don't build negative entries, because the cache
 	 * invalidation mechanism isn't alive and can't clear them if the tuple
-	 * gets created later.	(Bootstrap doesn't do UPDATEs, so it doesn't need
+	 * gets created later.  (Bootstrap doesn't do UPDATEs, so it doesn't need
 	 * cache inval for that.)
 	 */
 	if (ct == NULL)
@@ -1340,7 +1387,7 @@ SearchCatCacheList(CatCache *cache,
 {
 	ScanKeyData cur_skey[CATCACHE_MAXKEYS];
 	uint32		lHashValue;
-	Dlelem	   *elt;
+	dlist_iter	iter;
 	CatCList   *cl;
 	CatCTup    *ct;
 	List	   *volatile ctlist;
@@ -1381,14 +1428,15 @@ SearchCatCacheList(CatCache *cache,
 
 	/*
 	 * scan the items until we find a match or exhaust our list
+	 *
+	 * Note: it's okay to use dlist_foreach here, even though we modify the
+	 * dlist within the loop, because we don't continue the loop afterwards.
 	 */
-	for (elt = DLGetHead(&cache->cc_lists);
-		 elt;
-		 elt = DLGetSucc(elt))
+	dlist_foreach(iter, &cache->cc_lists)
 	{
 		bool		res;
 
-		cl = (CatCList *) DLE_VAL(elt);
+		cl = dlist_container(CatCList, cache_elem, iter.cur);
 
 		if (cl->dead)
 			continue;			/* ignore dead entries */
@@ -1416,7 +1464,7 @@ SearchCatCacheList(CatCache *cache,
 		 * since there's no point in that unless they are searched for
 		 * individually.)
 		 */
-		DLMoveToFront(&cl->cache_elem);
+		dlist_move_head(&cache->cc_lists, &cl->cache_elem);
 
 		/* Bump the list's refcount and return it */
 		ResourceOwnerEnlargeCatCacheListRefs(CurrentResourceOwner);
@@ -1457,7 +1505,7 @@ SearchCatCacheList(CatCache *cache,
 		scandesc = systable_beginscan(relation,
 									  cache->cc_indexoid,
 									  IndexScanOK(cache, cur_skey),
-									  SnapshotNow,
+									  NULL,
 									  nkeys,
 									  cur_skey);
 
@@ -1468,6 +1516,8 @@ SearchCatCacheList(CatCache *cache,
 		{
 			uint32		hashValue;
 			Index		hashIndex;
+			bool		found = false;
+			dlist_head *bucket;
 
 			/*
 			 * See if there's an entry for this tuple already.
@@ -1476,11 +1526,10 @@ SearchCatCacheList(CatCache *cache,
 			hashValue = CatalogCacheComputeTupleHashValue(cache, ntp);
 			hashIndex = HASH_INDEX(hashValue, cache->cc_nbuckets);
 
-			for (elt = DLGetHead(&cache->cc_bucket[hashIndex]);
-				 elt;
-				 elt = DLGetSucc(elt))
+			bucket = &cache->cc_bucket[hashIndex];
+			dlist_foreach(iter, bucket)
 			{
-				ct = (CatCTup *) DLE_VAL(elt);
+				ct = dlist_container(CatCTup, cache_elem, iter.cur);
 
 				if (ct->dead || ct->negative)
 					continue;	/* ignore dead and negative entries */
@@ -1498,10 +1547,11 @@ SearchCatCacheList(CatCache *cache,
 				if (ct->c_list)
 					continue;
 
+				found = true;
 				break;			/* A-OK */
 			}
 
-			if (elt == NULL)
+			if (!found)
 			{
 				/* We didn't find a usable entry, so make a new one */
 				ct = CatalogCacheCreateEntry(cache, ntp,
@@ -1535,7 +1585,7 @@ SearchCatCacheList(CatCache *cache,
 		/*
 		 * We are now past the last thing that could trigger an elog before we
 		 * have finished building the CatCList and remembering it in the
-		 * resource owner.	So it's OK to fall out of the PG_TRY, and indeed
+		 * resource owner.  So it's OK to fall out of the PG_TRY, and indeed
 		 * we'd better do so before we start marking the members as belonging
 		 * to the list.
 		 */
@@ -1564,7 +1614,6 @@ SearchCatCacheList(CatCache *cache,
 
 	cl->cl_magic = CL_MAGIC;
 	cl->my_cache = cache;
-	DLInitElem(&cl->cache_elem, cl);
 	cl->refcount = 0;			/* for the moment */
 	cl->dead = false;
 	cl->ordered = ordered;
@@ -1587,7 +1636,7 @@ SearchCatCacheList(CatCache *cache,
 	}
 	Assert(i == nmembers);
 
-	DLAddHead(&cache->cc_lists, &cl->cache_elem);
+	dlist_push_head(&cache->cc_lists, &cl->cache_elem);
 
 	/* Finally, bump the list's refcount and return it */
 	cl->refcount++;
@@ -1625,7 +1674,7 @@ ReleaseCatCacheList(CatCList *list)
 /*
  * CatalogCacheCreateEntry
  *		Create a new CatCTup entry, copying the given HeapTuple and other
- *		supplied data into it.	The new entry initially has refcount 0.
+ *		supplied data into it.  The new entry initially has refcount 0.
  */
 static CatCTup *
 CatalogCacheCreateEntry(CatCache *cache, HeapTuple ntp,
@@ -1664,17 +1713,23 @@ CatalogCacheCreateEntry(CatCache *cache, HeapTuple ntp,
 	 */
 	ct->ct_magic = CT_MAGIC;
 	ct->my_cache = cache;
-	DLInitElem(&ct->cache_elem, (void *) ct);
 	ct->c_list = NULL;
 	ct->refcount = 0;			/* for the moment */
 	ct->dead = false;
 	ct->negative = negative;
 	ct->hash_value = hashValue;
 
-	DLAddHead(&cache->cc_bucket[hashIndex], &ct->cache_elem);
+	dlist_push_head(&cache->cc_bucket[hashIndex], &ct->cache_elem);
 
 	cache->cc_ntup++;
 	CacheHdr->ch_ntup++;
+
+	/*
+	 * If the hash table has become too full, enlarge the buckets array. Quite
+	 * arbitrarily, we enlarge when fill factor > 2.
+	 */
+	if (cache->cc_ntup > cache->cc_nbuckets * 2)
+		RehashCatCache(cache);
 
 	return ct;
 }
@@ -1785,7 +1840,7 @@ PrepareToInvalidateCacheTuple(Relation relation,
 							  HeapTuple newtuple,
 							  void (*function) (int, uint32, Oid))
 {
-	CatCache   *ccp;
+	slist_iter	iter;
 	Oid			reloid;
 
 	CACHE1_elog(DEBUG2, "PrepareToInvalidateCacheTuple: called");
@@ -1808,8 +1863,9 @@ PrepareToInvalidateCacheTuple(Relation relation,
 	 * ----------------
 	 */
 
-	for (ccp = CacheHdr->ch_caches; ccp; ccp = ccp->cc_next)
+	slist_foreach(iter, &CacheHdr->ch_caches)
 	{
+		CatCache   *ccp = slist_container(CatCache, cc_next, iter.cur);
 		uint32		hashvalue;
 		Oid			dbid;
 

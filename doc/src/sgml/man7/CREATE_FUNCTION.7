@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE FUNCTION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "CREATE FUNCTION" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE FUNCTION" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_FUNCTION \- define a new function
-.\" CREATE FUNCTION
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -116,7 +115,7 @@ notation\&.
 .PP
 \fIargname\fR
 .RS 4
-The name of an argument\&. Some languages (currently only PL/pgSQL) let you use the name in the function body\&. For other languages the name of an input argument is just extra documentation, so far as the function itself is concerned; but you can use input argument names when calling a function to improve readability (see
+The name of an argument\&. Some languages (including SQL and PL/pgSQL) let you use the name in the function body\&. For other languages the name of an input argument is just extra documentation, so far as the function itself is concerned; but you can use input argument names when calling a function to improve readability (see
 Section 4.3, \(lqCalling Functions\(rq, in the documentation)\&. In any case, the name of an output argument is significant, because it defines the column name in the result row type\&. (If you omit the name for an output argument, the system will choose a default column name\&.)
 .RE
 .PP
@@ -187,10 +186,11 @@ syntax\&.
 .PP
 \fIlang_name\fR
 .RS 4
-The name of the language that the function is implemented in\&. Can be
-SQL,
-C,
-internal, or the name of a user\-defined procedural language\&. For backward compatibility, the name can be enclosed by single quotes\&.
+The name of the language that the function is implemented in\&. It can be
+sql,
+c,
+internal, or the name of a user\-defined procedural language, e\&.g\&.
+plpgsql\&. Enclosing the name in single quotes is deprecated and requires matching case\&.
 .RE
 .PP
 WINDOW
@@ -203,7 +203,11 @@ WINDOW
 attribute cannot be changed when replacing an existing function definition\&.
 .RE
 .PP
-IMMUTABLE, STABLE, VOLATILE
+IMMUTABLE
+.br
+STABLE
+.br
+VOLATILE
 .RS 4
 These attributes inform the query optimizer about the behavior of the function\&. At most one choice can be specified\&. If none of these appear,
 VOLATILE
@@ -239,10 +243,14 @@ security_barrier
 option\&. See
 CREATE VIEW (\fBCREATE_VIEW\fR(7))
 and
-Section 37.4, \(lqRules and Privileges\(rq, in the documentation\&. This option can only be set by the superuser\&.
+Section 38.5, \(lqRules and Privileges\(rq, in the documentation\&. This option can only be set by the superuser\&.
 .RE
 .PP
-CALLED ON NULL INPUT, RETURNS NULL ON NULL INPUT, STRICT
+CALLED ON NULL INPUT
+.br
+RETURNS NULL ON NULL INPUT
+.br
+STRICT
 .RS 4
 CALLED ON NULL INPUT
 (the default) indicates that the function will be called normally when some of its arguments are null\&. It is then the function author\*(Aqs responsibility to check for null values if necessary and respond appropriately\&.
@@ -253,7 +261,9 @@ STRICT
 indicates that the function always returns null whenever any of its arguments are null\&. If this parameter is specified, the function is not executed when there are null arguments; instead a null result is assumed automatically\&.
 .RE
 .PP
-[EXTERNAL] SECURITY INVOKER, [EXTERNAL] SECURITY DEFINER
+[EXTERNAL] SECURITY INVOKER
+.br
+[EXTERNAL] SECURITY DEFINER
 .RS 4
 SECURITY INVOKER
 indicates that the function is to be executed with the privileges of the user that calls it\&. That is the default\&.
@@ -276,7 +286,9 @@ cpu_operator_cost\&. If the function returns a set, this is the cost per returne
 A positive number giving the estimated number of rows that the planner should expect the function to return\&. This is only allowed when the function is declared to return a set\&. The default assumption is 1000 rows\&.
 .RE
 .PP
-\fIconfiguration_parameter\fR, \fIvalue\fR
+\fIconfiguration_parameter\fR
+.br
+\fIvalue\fR
 .RS 4
 The
 SET
@@ -396,10 +408,12 @@ will fail due to the ambiguity about which function should be called\&.
 .PP
 The full
 SQL
-type syntax is allowed for input arguments and return value\&. However, some details of the type specification (e\&.g\&., the precision field for type
-numeric) are the responsibility of the underlying function implementation and are silently swallowed (i\&.e\&., not recognized or enforced) by the
-\fBCREATE FUNCTION\fR
-command\&.
+type syntax is allowed for declaring a function\*(Aqs arguments and return value\&. However, parenthesized type modifiers (e\&.g\&., the precision field for type
+numeric) are discarded by
+\fBCREATE FUNCTION\fR\&. Thus for example
+CREATE FUNCTION foo (varchar(10)) \&.\&.\&.
+is exactly the same as
+CREATE FUNCTION foo (varchar) \&.\&.\&.\&.
 .PP
 When replacing an existing function with
 \fBCREATE OR REPLACE FUNCTION\fR, there are restrictions on changing parameter names\&. You cannot change the name already assigned to any input parameter (although you can add names to parameters that had none before)\&. If there is more than one output parameter, you cannot change the names of the output parameters, because that would change the column names of the anonymous composite type that describes the function\*(Aqs result\&. These restrictions are made to ensure that existing calls of the function do not stop working when it is replaced\&.
@@ -581,9 +595,9 @@ For compatibility with some other database systems,
 can be written either before or after
 \fIargname\fR\&. But only the first way is standard\-compliant\&.
 .PP
-The SQL standard does not specify parameter defaults\&. The syntax with the
+For parameter defaults, the SQL standard specifies only the syntax with the
 DEFAULT
-key word is from Oracle, and it is somewhat in the spirit of the standard: SQL/PSM uses it for variable default values\&. The syntax with
+key word\&. The syntax with
 =
 is used in T\-SQL and Firebird\&.
 .SH "SEE ALSO"

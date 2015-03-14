@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE SEQUENCE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "CREATE SEQUENCE" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE SEQUENCE" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_SEQUENCE \- define a new sequence generator
-.\" CREATE SEQUENCE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -90,7 +89,9 @@ INCREMENT BY \fIincrement\fR
 specifies which value is added to the current sequence value to create a new value\&. A positive value will make an ascending sequence, a negative one a descending sequence\&. The default value is 1\&.
 .RE
 .PP
-\fIminvalue\fR, NO MINVALUE
+\fIminvalue\fR
+.br
+NO MINVALUE
 .RS 4
 The optional clause
 MINVALUE \fIminvalue\fR
@@ -99,7 +100,9 @@ determines the minimum value a sequence can generate\&. If this clause is not su
 is specified, then defaults will be used\&. The defaults are 1 and \-263\-1 for ascending and descending sequences, respectively\&.
 .RE
 .PP
-\fImaxvalue\fR, NO MAXVALUE
+\fImaxvalue\fR
+.br
+NO MAXVALUE
 .RS 4
 The optional clause
 MAXVALUE \fImaxvalue\fR
@@ -126,7 +129,9 @@ CACHE \fIcache\fR
 specifies how many sequence numbers are to be preallocated and stored in memory for faster access\&. The minimum value is 1 (only one value can be generated at a time, i\&.e\&., no cache), and this is also the default\&.
 .RE
 .PP
-CYCLE, NO CYCLE
+CYCLE
+.br
+NO CYCLE
 .RS 4
 The
 CYCLE
@@ -152,7 +157,9 @@ NO CYCLE
 is the default\&.
 .RE
 .PP
-OWNED BY \fItable_name\fR\&.\fIcolumn_name\fR, OWNED BY NONE
+OWNED BY \fItable_name\fR\&.\fIcolumn_name\fR
+.br
+OWNED BY NONE
 .RS 4
 The
 OWNED BY
@@ -167,9 +174,7 @@ to remove a sequence\&.
 .PP
 Sequences are based on
 bigint
-arithmetic, so the range cannot exceed the range of an eight\-byte integer (\-9223372036854775808 to 9223372036854775807)\&. On some older platforms, there might be no compiler support for eight\-byte integers, in which case sequences use regular
-integer
-arithmetic (range \-2147483648 to +2147483647)\&.
+arithmetic, so the range cannot exceed the range of an eight\-byte integer (\-9223372036854775808 to 9223372036854775807)\&.
 .PP
 Unexpected results might be obtained if a
 \fIcache\fR

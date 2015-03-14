@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 39. <SPAN
+>Chapter 40. <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > - <ACRONYM
@@ -99,7 +99,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPGSQL-STATEMENTS"
->39.5. Basic Statements</A
+>40.5. Basic Statements</A
 ></H1
 ><P
 >    In this section and the following ones, we describe all the statement
@@ -112,11 +112,11 @@ CLASS="APPLICATION"
     to be an SQL command and is sent to the main database engine to execute,
     as described in <A
 HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-SQL-NORESULT"
->Section 39.5.2</A
+>Section 40.5.2</A
 >
     and <A
 HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-SQL-ONEROW"
->Section 39.5.3</A
+>Section 40.5.3</A
 >.
    </P
 ><DIV
@@ -125,7 +125,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-ASSIGNMENT"
->39.5.1. Assignment</A
+>40.5.1. Assignment</A
 ></H2
 ><P
 >     An assignment of a value to a <SPAN
@@ -140,7 +140,7 @@ CLASS="REPLACEABLE"
 ><I
 >variable</I
 ></TT
-> := <TT
+> { := | = } <TT
 CLASS="REPLACEABLE"
 ><I
 >expression</I
@@ -156,7 +156,14 @@ CLASS="COMMAND"
      a row value, if the variable is a row or record variable).  The target
      variable can be a simple variable (optionally qualified with a block
      name), a field of a row or record variable, or an element of an array
-     that is a simple variable or field.
+     that is a simple variable or field.  Equal (<TT
+CLASS="LITERAL"
+>=</TT
+>) can be
+     used instead of PL/SQL-compliant <TT
+CLASS="LITERAL"
+>:=</TT
+>.
     </P
 ><P
 >     If the expression's result data type doesn't match the variable's
@@ -189,7 +196,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-SQL-NORESULT"
->39.5.2. Executing a Command With No Result</A
+>40.5.2. Executing a Command With No Result</A
 ></H2
 ><P
 >     For any SQL command that does not return rows, for example
@@ -216,7 +223,7 @@ CLASS="APPLICATION"
      at run time.  This is exactly like the processing described earlier
      for expressions; for details see <A
 HREF="plpgsql-implementation.html#PLPGSQL-VAR-SUBST"
->Section 39.10.1</A
+>Section 40.10.1</A
 >.
     </P
 ><P
@@ -228,7 +235,7 @@ CLASS="APPLICATION"
      plan for the command, as discussed in
      <A
 HREF="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING"
->Section 39.10.2</A
+>Section 40.10.2</A
 >.
     </P
 ><P
@@ -302,7 +309,7 @@ CLASS="LITERAL"
      least one row, or false if it produced no rows (see
      <A
 HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS"
->Section 39.5.5</A
+>Section 40.5.5</A
 >).
     </P
 ><DIV
@@ -348,7 +355,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-SQL-ONEROW"
->39.5.3. Executing a Query with a Single-row Result</A
+>40.5.3. Executing a Query with a Single-row Result</A
 ></H2
 ><P
 >     The result of a SQL command yielding a single row (possibly of multiple
@@ -565,7 +572,7 @@ CLASS="LITERAL"
 > variable (see
      <A
 HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS"
->Section 39.5.5</A
+>Section 40.5.5</A
 >) to
      determine whether a row was returned:
 
@@ -641,6 +648,54 @@ CLASS="LITERAL"
 > with which to determine
      which affected row should be returned.
     </P
+><P
+>     If <TT
+CLASS="LITERAL"
+>print_strict_params</TT
+> is enabled for the function,
+     then when an error is thrown because the requirements
+     of <TT
+CLASS="LITERAL"
+>STRICT</TT
+> are not met, the <TT
+CLASS="LITERAL"
+>DETAIL</TT
+> part of
+     the error message will include information about the parameters
+     passed to the query.
+     You can change the <TT
+CLASS="LITERAL"
+>print_strict_params</TT
+>
+     setting for all functions by setting
+     <TT
+CLASS="VARNAME"
+>plpgsql.print_strict_params</TT
+>, though only subsequent
+     function compilations will be affected.  You can also enable it
+     on a per-function basis by using a compiler option, for example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION get_userid(username text) RETURNS int
+AS $$
+#print_strict_params on
+DECLARE
+userid int;
+BEGIN
+    SELECT users.userid INTO STRICT userid
+        FROM users WHERE users.username = get_userid.username;
+    RETURN userid;
+END
+$$ LANGUAGE plpgsql;</PRE
+><P>
+     On failure, this function might produce an error message such as
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ERROR:  query returned no rows
+DETAIL:  parameters: $1 = 'nosuchuser'
+CONTEXT:  PL/pgSQL function get_userid(text) line 6 at SQL statement</PRE
+><P>
+    </P
 ><DIV
 CLASS="NOTE"
 ><BLOCKQUOTE
@@ -663,7 +718,7 @@ CLASS="COMMAND"
 >     To handle cases where you need to process multiple result rows
      from a SQL query, see <A
 HREF="plpgsql-control-structures.html#PLPGSQL-RECORDS-ITERATING"
->Section 39.6.4</A
+>Section 40.6.4</A
 >.
     </P
 ></DIV
@@ -673,7 +728,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-EXECUTING-DYN"
->39.5.4. Executing Dynamic Commands</A
+>40.5.4. Executing Dynamic Commands</A
 ></H2
 ><P
 >     Oftentimes you will want to generate dynamic commands inside your
@@ -689,7 +744,7 @@ CLASS="APPLICATION"
      normal attempts to cache plans for commands (as discussed in
      <A
 HREF="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING"
->Section 39.10.2</A
+>Section 40.10.2</A
 >) will not work in such
      scenarios.  To handle this sort of problem, the
      <TT
@@ -959,7 +1014,7 @@ NAME="PLPGSQL-QUOTE-LITERAL-EXAMPLE"
 ></A
 ><P
 ><B
->Example 39-1. Quoting Values In Dynamic Queries</B
+>Example 40-1. Quoting Values In Dynamic Queries</B
 ></P
 ><P
 >     When working with dynamic commands you will often have to handle escaping
@@ -968,7 +1023,7 @@ NAME="PLPGSQL-QUOTE-LITERAL-EXAMPLE"
      not use dollar quoting, please refer to the
      overview in <A
 HREF="plpgsql-development-tips.html#PLPGSQL-QUOTE-TIPS"
->Section 39.11.1</A
+>Section 40.11.1</A
 >, which can save you
      some effort when translating said code to a more reasonable scheme.)
     </P
@@ -1019,7 +1074,7 @@ CLASS="FUNCTION"
 >     Because <CODE
 CLASS="FUNCTION"
 >quote_literal</CODE
-> is labelled
+> is labeled
      <TT
 CLASS="LITERAL"
 >STRICT</TT
@@ -1192,7 +1247,7 @@ CLASS="COMMAND"
 >EXECUTE</TT
 > can be seen in <A
 HREF="plpgsql-porting.html#PLPGSQL-PORTING-EX2"
->Example 39-8</A
+>Example 40-9</A
 >, which builds and executes a
      <TT
 CLASS="COMMAND"
@@ -1206,7 +1261,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-DIAGNOSTICS"
->39.5.5. Obtaining the Result Status</A
+>40.5.5. Obtaining the Result Status</A
 ></H2
 ><P
 >     There are several ways to determine the effect of a command. The
@@ -1226,7 +1281,7 @@ CLASS="REPLACEABLE"
 ><I
 >variable</I
 ></TT
-> = <TT
+> { = | := } <TT
 CLASS="REPLACEABLE"
 ><I
 >item</I
@@ -1274,6 +1329,17 @@ CLASS="COMMAND"
 >INSERT</TT
 > command into a
      table containing OIDs.
+     Colon-equal (<TT
+CLASS="LITERAL"
+>:=</TT
+>) can be used instead of SQL-standard
+     <TT
+CLASS="LITERAL"
+>=</TT
+> for <TT
+CLASS="COMMAND"
+>GET DIAGNOSTICS</TT
+>.
     </P
 ><P
 >     An example:
@@ -1459,7 +1525,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-NULL"
->39.5.6. Doing Nothing At All</A
+>40.5.6. Doing Nothing At All</A
 ></H2
 ><P
 >     Sometimes a placeholder statement that does nothing is useful.

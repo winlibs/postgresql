@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_test_timing
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "PG_TEST_TIMING" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PG_TEST_TIMING" "1" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 pg_test_timing \- measure timing overhead
-.\" pg_test_timing
 .SH "SYNOPSIS"
 .HP \w'\fBpg_test_timing\fR\ 'u
 \fBpg_test_timing\fR [\fIoption\fR...]
@@ -46,19 +45,25 @@ results\&.
 pg_test_timing
 accepts the following command\-line options:
 .PP
-\fB\-d \fR\fB\fIduration\fR\fR, \fB\-\-duration=\fR\fB\fIduration\fR\fR
+\fB\-d \fR\fB\fIduration\fR\fR
+.br
+\fB\-\-duration=\fR\fB\fIduration\fR\fR
 .RS 4
 Specifies the test duration, in seconds\&. Longer durations give slightly better accuracy, and are more likely to discover problems with the system clock moving backwards\&. The default test duration is 3 seconds\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 pg_test_timing
 version and exit\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 pg_test_timing
@@ -76,12 +81,12 @@ Good results will show most (>90%) individual timing calls take less than one mi
 Testing timing overhead for 3 seconds\&.
 Per loop time including overhead: 35\&.96 nsec
 Histogram of timing durations:
-   < usec:      count   percent
-       16:          2  0\&.00000%
-        8:         13  0\&.00002%
-        4:        126  0\&.00015%
-        2:    2999652  3\&.59518%
-        1:   80435604 96\&.40465%
+< usec   % of total      count
+     1     96\&.40465   80435604 
+     2      3\&.59518    2999652  
+     4      0\&.00015        126  
+     8      0\&.00002         13  
+    16      0\&.00000          2  
 .fi
 .if n \{\
 .RE
@@ -125,12 +130,12 @@ tsc hpet acpi_pm
 # pg_test_timing
 Per loop time including overhead: 722\&.92 nsec
 Histogram of timing durations:
-   < usec:      count   percent
-       16:          3  0\&.00007%
-        8:        563  0\&.01357%
-        4:       3241  0\&.07810%
-        2:    2990371 72\&.05956%
-        1:    1155682 27\&.84870%
+< usec   % of total      count
+     1     27\&.84870    1155682 
+     2     72\&.05956    2990371 
+     4      0\&.07810       3241  
+     8      0\&.01357        563  
+    16      0\&.00007          3  
 .fi
 .if n \{\
 .RE
@@ -148,8 +153,13 @@ FreeBSD also allows changing the time source on the fly, and it logs information
 .RS 4
 .\}
 .nf
-dmesg | grep "Timecounter"
-sysctl kern\&.timecounter\&.hardware=TSC
+# dmesg | grep "Timecounter"
+Timecounter "ACPI\-fast" frequency 3579545 Hz quality 900
+Timecounter "i8254" frequency 1193182 Hz quality 0
+Timecounters tick every 10\&.000 msec
+Timecounter "TSC" frequency 2531787134 Hz quality 800
+# sysctl kern\&.timecounter\&.hardware=TSC
+kern\&.timecounter\&.hardware: ACPI\-fast \-> TSC
 .fi
 .if n \{\
 .RE
@@ -170,13 +180,13 @@ $ pg_test_timing
 Testing timing overhead for 3 seconds\&.
 Per timing duration including loop overhead: 97\&.75 ns
 Histogram of timing durations:
-   < usec:      count   percent
-       32:          1  0\&.00000%
-       16:          1  0\&.00000%
-        8:         22  0\&.00007%
-        4:       3010  0\&.00981%
-        2:    2993204  9\&.75277%
-        1:   27694571 90\&.23734%
+< usec   % of total      count
+     1     90\&.23734   27694571 
+     2      9\&.75277    2993204  
+     4      0\&.00981       3010  
+     8      0\&.00007         22  
+    16      0\&.00000          1  
+    32      0\&.00000          1  
 .fi
 .if n \{\
 .RE
@@ -195,7 +205,7 @@ The High Precision Event Timer (HPET) is the preferred timer on systems where it
 .PP
 Advanced Configuration and Power Interface (ACPI) provides a Power Management (PM) Timer, which Linux refers to as the acpi_pm\&. The clock derived from acpi_pm will at best provide 300 nanosecond resolution\&.
 .PP
-Timers used on older PC hardware including the 8254 Programmable Interval Timer (PIT), the real\-time clock (RTC), the Advanced Programmable Interrupt Controller (APIC) timer, and the Cyclone timer\&. These timers aim for millisecond resolution\&.
+Timers used on older PC hardware include the 8254 Programmable Interval Timer (PIT), the real\-time clock (RTC), the Advanced Programmable Interrupt Controller (APIC) timer, and the Cyclone timer\&. These timers aim for millisecond resolution\&.
 .SH "AUTHOR"
 .PP
 Ants Aasma

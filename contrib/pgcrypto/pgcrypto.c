@@ -17,7 +17,7 @@
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.	IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
@@ -35,6 +35,7 @@
 
 #include "parser/scansup.h"
 #include "utils/builtins.h"
+#include "utils/uuid.h"
 
 #include "px.h"
 #include "px-crypt.h"
@@ -441,6 +442,32 @@ pg_random_bytes(PG_FUNCTION_ARGS)
 				 errmsg("Random generator error: %s", px_strerror(err))));
 
 	PG_RETURN_BYTEA_P(res);
+}
+
+/* SQL function: gen_random_uuid() returns uuid */
+PG_FUNCTION_INFO_V1(pg_random_uuid);
+
+Datum
+pg_random_uuid(PG_FUNCTION_ARGS)
+{
+	uint8	   *buf = (uint8 *) palloc(UUID_LEN);
+	int			err;
+
+	/* generate random bits */
+	err = px_get_pseudo_random_bytes(buf, UUID_LEN);
+	if (err < 0)
+		ereport(ERROR,
+				(errcode(ERRCODE_EXTERNAL_ROUTINE_INVOCATION_EXCEPTION),
+				 errmsg("Random generator error: %s", px_strerror(err))));
+
+	/*
+	 * Set magic numbers for a "version 4" (pseudorandom) UUID, see
+	 * http://tools.ietf.org/html/rfc4122#section-4.4
+	 */
+	buf[6] = (buf[6] & 0x0f) | 0x40;	/* "version" field */
+	buf[8] = (buf[8] & 0x3f) | 0x80;	/* "variant" field */
+
+	PG_RETURN_UUID_P((pg_uuid_t *) buf);
 }
 
 static void *

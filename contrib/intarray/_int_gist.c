@@ -21,14 +21,6 @@ PG_FUNCTION_INFO_V1(g_int_picksplit);
 PG_FUNCTION_INFO_V1(g_int_union);
 PG_FUNCTION_INFO_V1(g_int_same);
 
-Datum		g_int_consistent(PG_FUNCTION_ARGS);
-Datum		g_int_compress(PG_FUNCTION_ARGS);
-Datum		g_int_decompress(PG_FUNCTION_ARGS);
-Datum		g_int_penalty(PG_FUNCTION_ARGS);
-Datum		g_int_picksplit(PG_FUNCTION_ARGS);
-Datum		g_int_union(PG_FUNCTION_ARGS);
-Datum		g_int_same(PG_FUNCTION_ARGS);
-
 
 /*
 ** The GiST Consistent method for _intments
@@ -106,7 +98,7 @@ g_int_union(PG_FUNCTION_ARGS)
 {
 	GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
 	int		   *size = (int *) PG_GETARG_POINTER(1);
-	int4		i,
+	int32		i,
 			   *ptr;
 	ArrayType  *res;
 	int			totlen = 0;
@@ -128,7 +120,7 @@ g_int_union(PG_FUNCTION_ARGS)
 		int			nel;
 
 		nel = ARRNELEMS(ent);
-		memcpy(ptr, ARRPTR(ent), nel * sizeof(int4));
+		memcpy(ptr, ARRPTR(ent), nel * sizeof(int32));
 		ptr += nel;
 	}
 
@@ -217,8 +209,6 @@ g_int_compress(PG_FUNCTION_ARGS)
 	}
 	else
 		PG_RETURN_POINTER(entry);
-
-	PG_RETURN_POINTER(entry);
 }
 
 Datum
@@ -317,8 +307,8 @@ g_int_same(PG_FUNCTION_ARGS)
 	ArrayType  *a = PG_GETARG_ARRAYTYPE_P(0);
 	ArrayType  *b = PG_GETARG_ARRAYTYPE_P(1);
 	bool	   *result = (bool *) PG_GETARG_POINTER(2);
-	int4		n = ARRNELEMS(a);
-	int4	   *da,
+	int32		n = ARRNELEMS(a);
+	int32	   *da,
 			   *db;
 
 	CHECKARRVALID(a);
@@ -482,7 +472,7 @@ g_int_picksplit(PG_FUNCTION_ARGS)
 	qsort((void *) costvector, maxoff, sizeof(SPLITCOST), comparecost);
 
 	/*
-	 * Now split up the regions between the two seeds.	An important property
+	 * Now split up the regions between the two seeds.  An important property
 	 * of this split algorithm is that the split vector v has the indices of
 	 * items to be split in order in its left and right vectors.  We exploit
 	 * this property by doing a merge in the code that actually splits the
@@ -500,7 +490,7 @@ g_int_picksplit(PG_FUNCTION_ARGS)
 
 		/*
 		 * If we've already decided where to place this item, just put it on
-		 * the right list.	Otherwise, we need to figure out which page needs
+		 * the right list.  Otherwise, we need to figure out which page needs
 		 * the least enlargement in order to store the item.
 		 */
 

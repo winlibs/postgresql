@@ -7,7 +7,7 @@
  * This file contains WAL control and information functions.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/backend/access/transam/xlogfuncs.c
@@ -16,7 +16,9 @@
  */
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "access/xlog.h"
+#include "access/xlog_fn.h"
 #include "access/xlog_internal.h"
 #include "access/xlogutils.h"
 #include "catalog/catalog.h"
@@ -28,10 +30,9 @@
 #include "utils/builtins.h"
 #include "utils/numeric.h"
 #include "utils/guc.h"
+#include "utils/pg_lsn.h"
 #include "utils/timestamp.h"
-
-
-static void validate_xlog_location(char *str);
+#include "storage/fd.h"
 
 
 /*
@@ -50,15 +51,17 @@ pg_start_backup(PG_FUNCTION_ARGS)
 	bool		fast = PG_GETARG_BOOL(1);
 	char	   *backupidstr;
 	XLogRecPtr	startpoint;
-	char		startxlogstr[MAXFNAMELEN];
 
 	backupidstr = text_to_cstring(backupid);
 
-	startpoint = do_pg_start_backup(backupidstr, fast, NULL);
+	if (!superuser() && !has_rolreplication(GetUserId()))
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+		   errmsg("must be superuser or replication role to run a backup")));
 
-	snprintf(startxlogstr, sizeof(startxlogstr), "%X/%X",
-			 startpoint.xlogid, startpoint.xrecoff);
-	PG_RETURN_TEXT_P(cstring_to_text(startxlogstr));
+	startpoint = do_pg_start_backup(backupidstr, fast, NULL, NULL);
+
+	PG_RETURN_LSN(startpoint);
 }
 
 /*
@@ -78,13 +81,15 @@ Datum
 pg_stop_backup(PG_FUNCTION_ARGS)
 {
 	XLogRecPtr	stoppoint;
-	char		stopxlogstr[MAXFNAMELEN];
 
-	stoppoint = do_pg_stop_backup(NULL, true);
+	if (!superuser() && !has_rolreplication(GetUserId()))
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+		 (errmsg("must be superuser or replication role to run a backup"))));
 
-	snprintf(stopxlogstr, sizeof(stopxlogstr), "%X/%X",
-			 stoppoint.xlogid, stoppoint.xrecoff);
-	PG_RETURN_TEXT_P(cstring_to_text(stopxlogstr));
+	stoppoint = do_pg_stop_backup(NULL, true, NULL);
+
+	PG_RETURN_LSN(stoppoint);
 }
 
 /*
@@ -94,7 +99,6 @@ Datum
 pg_switch_xlog(PG_FUNCTION_ARGS)
 {
 	XLogRecPtr	switchpoint;
-	char		location[MAXFNAMELEN];
 
 	if (!superuser())
 		ereport(ERROR,
@@ -112,9 +116,7 @@ pg_switch_xlog(PG_FUNCTION_ARGS)
 	/*
 	 * As a convenience, return the WAL location of the switch record
 	 */
-	snprintf(location, sizeof(location), "%X/%X",
-			 switchpoint.xlogid, switchpoint.xrecoff);
-	PG_RETURN_TEXT_P(cstring_to_text(location));
+	PG_RETURN_LSN(switchpoint);
 }
 
 /*
@@ -126,7 +128,6 @@ pg_create_restore_point(PG_FUNCTION_ARGS)
 	text	   *restore_name = PG_GETARG_TEXT_P(0);
 	char	   *restore_name_str;
 	XLogRecPtr	restorepoint;
-	char		location[MAXFNAMELEN];
 
 	if (!superuser())
 		ereport(ERROR,
@@ -143,7 +144,7 @@ pg_create_restore_point(PG_FUNCTION_ARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 			 errmsg("WAL level not sufficient for creating a restore point"),
-				 errhint("wal_level must be set to \"archive\" or \"hot_standby\" at server start.")));
+				 errhint("wal_level must be set to \"archive\", \"hot_standby\", or \"logical\" at server start.")));
 
 	restore_name_str = text_to_cstring(restore_name);
 
@@ -157,9 +158,7 @@ pg_create_restore_point(PG_FUNCTION_ARGS)
 	/*
 	 * As a convenience, return the WAL location of the restore point record
 	 */
-	snprintf(location, sizeof(location), "%X/%X",
-			 restorepoint.xlogid, restorepoint.xrecoff);
-	PG_RETURN_TEXT_P(cstring_to_text(location));
+	PG_RETURN_LSN(restorepoint);
 }
 
 /*
@@ -173,7 +172,6 @@ Datum
 pg_current_xlog_location(PG_FUNCTION_ARGS)
 {
 	XLogRecPtr	current_recptr;
-	char		location[MAXFNAMELEN];
 
 	if (RecoveryInProgress())
 		ereport(ERROR,
@@ -183,9 +181,7 @@ pg_current_xlog_location(PG_FUNCTION_ARGS)
 
 	current_recptr = GetXLogWriteRecPtr();
 
-	snprintf(location, sizeof(location), "%X/%X",
-			 current_recptr.xlogid, current_recptr.xrecoff);
-	PG_RETURN_TEXT_P(cstring_to_text(location));
+	PG_RETURN_LSN(current_recptr);
 }
 
 /*
@@ -197,7 +193,6 @@ Datum
 pg_current_xlog_insert_location(PG_FUNCTION_ARGS)
 {
 	XLogRecPtr	current_recptr;
-	char		location[MAXFNAMELEN];
 
 	if (RecoveryInProgress())
 		ereport(ERROR,
@@ -207,9 +202,7 @@ pg_current_xlog_insert_location(PG_FUNCTION_ARGS)
 
 	current_recptr = GetXLogInsertRecPtr();
 
-	snprintf(location, sizeof(location), "%X/%X",
-			 current_recptr.xlogid, current_recptr.xrecoff);
-	PG_RETURN_TEXT_P(cstring_to_text(location));
+	PG_RETURN_LSN(current_recptr);
 }
 
 /*
@@ -222,16 +215,13 @@ Datum
 pg_last_xlog_receive_location(PG_FUNCTION_ARGS)
 {
 	XLogRecPtr	recptr;
-	char		location[MAXFNAMELEN];
 
-	recptr = GetWalRcvWriteRecPtr(NULL);
+	recptr = GetWalRcvWriteRecPtr(NULL, NULL);
 
-	if (recptr.xlogid == 0 && recptr.xrecoff == 0)
+	if (recptr == 0)
 		PG_RETURN_NULL();
 
-	snprintf(location, sizeof(location), "%X/%X",
-			 recptr.xlogid, recptr.xrecoff);
-	PG_RETURN_TEXT_P(cstring_to_text(location));
+	PG_RETURN_LSN(recptr);
 }
 
 /*
@@ -244,16 +234,13 @@ Datum
 pg_last_xlog_replay_location(PG_FUNCTION_ARGS)
 {
 	XLogRecPtr	recptr;
-	char		location[MAXFNAMELEN];
 
 	recptr = GetXLogReplayRecPtr(NULL);
 
-	if (recptr.xlogid == 0 && recptr.xrecoff == 0)
+	if (recptr == 0)
 		PG_RETURN_NULL();
 
-	snprintf(location, sizeof(location), "%X/%X",
-			 recptr.xlogid, recptr.xrecoff);
-	PG_RETURN_TEXT_P(cstring_to_text(location));
+	PG_RETURN_LSN(recptr);
 }
 
 /*
@@ -267,14 +254,9 @@ pg_last_xlog_replay_location(PG_FUNCTION_ARGS)
 Datum
 pg_xlogfile_name_offset(PG_FUNCTION_ARGS)
 {
-	text	   *location = PG_GETARG_TEXT_P(0);
-	char	   *locationstr;
-	unsigned int uxlogid;
-	unsigned int uxrecoff;
-	uint32		xlogid;
-	uint32		xlogseg;
+	XLogSegNo	xlogsegno;
 	uint32		xrecoff;
-	XLogRecPtr	locationpoint;
+	XLogRecPtr	locationpoint = PG_GETARG_LSN(0);
 	char		xlogfilename[MAXFNAMELEN];
 	Datum		values[2];
 	bool		isnull[2];
@@ -287,22 +269,6 @@ pg_xlogfile_name_offset(PG_FUNCTION_ARGS)
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 				 errmsg("recovery is in progress"),
 				 errhint("pg_xlogfile_name_offset() cannot be executed during recovery.")));
-
-	/*
-	 * Read input and parse
-	 */
-	locationstr = text_to_cstring(location);
-
-	validate_xlog_location(locationstr);
-
-	if (sscanf(locationstr, "%X/%X", &uxlogid, &uxrecoff) != 2)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("could not parse transaction log location \"%s\"",
-						locationstr)));
-
-	locationpoint.xlogid = uxlogid;
-	locationpoint.xrecoff = uxrecoff;
 
 	/*
 	 * Construct a tuple descriptor for the result row.  This must match this
@@ -319,8 +285,8 @@ pg_xlogfile_name_offset(PG_FUNCTION_ARGS)
 	/*
 	 * xlogfilename
 	 */
-	XLByteToPrevSeg(locationpoint, xlogid, xlogseg);
-	XLogFileName(xlogfilename, ThisTimeLineID, xlogid, xlogseg);
+	XLByteToPrevSeg(locationpoint, xlogsegno);
+	XLogFileName(xlogfilename, ThisTimeLineID, xlogsegno);
 
 	values[0] = CStringGetTextDatum(xlogfilename);
 	isnull[0] = false;
@@ -328,7 +294,7 @@ pg_xlogfile_name_offset(PG_FUNCTION_ARGS)
 	/*
 	 * offset
 	 */
-	xrecoff = locationpoint.xrecoff - xlogseg * XLogSegSize;
+	xrecoff = locationpoint % XLogSegSize;
 
 	values[1] = UInt32GetDatum(xrecoff);
 	isnull[1] = false;
@@ -350,13 +316,8 @@ pg_xlogfile_name_offset(PG_FUNCTION_ARGS)
 Datum
 pg_xlogfile_name(PG_FUNCTION_ARGS)
 {
-	text	   *location = PG_GETARG_TEXT_P(0);
-	char	   *locationstr;
-	unsigned int uxlogid;
-	unsigned int uxrecoff;
-	uint32		xlogid;
-	uint32		xlogseg;
-	XLogRecPtr	locationpoint;
+	XLogSegNo	xlogsegno;
+	XLogRecPtr	locationpoint = PG_GETARG_LSN(0);
 	char		xlogfilename[MAXFNAMELEN];
 
 	if (RecoveryInProgress())
@@ -365,21 +326,8 @@ pg_xlogfile_name(PG_FUNCTION_ARGS)
 				 errmsg("recovery is in progress"),
 		 errhint("pg_xlogfile_name() cannot be executed during recovery.")));
 
-	locationstr = text_to_cstring(location);
-
-	validate_xlog_location(locationstr);
-
-	if (sscanf(locationstr, "%X/%X", &uxlogid, &uxrecoff) != 2)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("could not parse transaction log location \"%s\"",
-						locationstr)));
-
-	locationpoint.xlogid = uxlogid;
-	locationpoint.xrecoff = uxrecoff;
-
-	XLByteToPrevSeg(locationpoint, xlogid, xlogseg);
-	XLogFileName(xlogfilename, ThisTimeLineID, xlogid, xlogseg);
+	XLByteToPrevSeg(locationpoint, xlogsegno);
+	XLogFileName(xlogfilename, ThisTimeLineID, xlogsegno);
 
 	PG_RETURN_TEXT_P(cstring_to_text(xlogfilename));
 }
@@ -434,11 +382,6 @@ pg_xlog_replay_resume(PG_FUNCTION_ARGS)
 Datum
 pg_is_xlog_replay_paused(PG_FUNCTION_ARGS)
 {
-	if (!superuser())
-		ereport(ERROR,
-				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				 (errmsg("must be superuser to control recovery"))));
-
 	if (!RecoveryInProgress())
 		ereport(ERROR,
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
@@ -476,90 +419,91 @@ pg_is_in_recovery(PG_FUNCTION_ARGS)
 }
 
 /*
- * Validate the text form of a transaction log location.
- * (Just using sscanf() input allows incorrect values such as
- * negatives, so we have to be a bit more careful about that).
- */
-static void
-validate_xlog_location(char *str)
-{
-#define MAXLSNCOMPONENT		8
-
-	int			len1,
-				len2;
-
-	len1 = strspn(str, "0123456789abcdefABCDEF");
-	if (len1 < 1 || len1 > MAXLSNCOMPONENT || str[len1] != '/')
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for transaction log location: \"%s\"", str)));
-
-	len2 = strspn(str + len1 + 1, "0123456789abcdefABCDEF");
-	if (len2 < 1 || len2 > MAXLSNCOMPONENT || str[len1 + 1 + len2] != '\0')
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for transaction log location: \"%s\"", str)));
-}
-
-/*
  * Compute the difference in bytes between two WAL locations.
  */
 Datum
 pg_xlog_location_diff(PG_FUNCTION_ARGS)
 {
-	text	   *location1 = PG_GETARG_TEXT_P(0);
-	text	   *location2 = PG_GETARG_TEXT_P(1);
-	char	   *str1,
-			   *str2;
-	XLogRecPtr	loc1,
-				loc2;
-	Numeric		result;
+	Datum		result;
 
-	/*
-	 * Read and parse input
-	 */
-	str1 = text_to_cstring(location1);
-	str2 = text_to_cstring(location2);
-
-	validate_xlog_location(str1);
-	validate_xlog_location(str2);
-
-	if (sscanf(str1, "%X/%X", &loc1.xlogid, &loc1.xrecoff) != 2)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-		   errmsg("could not parse transaction log location \"%s\"", str1)));
-	if (sscanf(str2, "%X/%X", &loc2.xlogid, &loc2.xrecoff) != 2)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-		   errmsg("could not parse transaction log location \"%s\"", str2)));
-
-	/*
-	 * Sanity check
-	 */
-	if (loc1.xrecoff > XLogFileSize)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("xrecoff \"%X\" is out of valid range, 0..%X", loc1.xrecoff, XLogFileSize)));
-	if (loc2.xrecoff > XLogFileSize)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("xrecoff \"%X\" is out of valid range, 0..%X", loc2.xrecoff, XLogFileSize)));
-
-	/*
-	 * result = XLogFileSize * (xlogid1 - xlogid2) + xrecoff1 - xrecoff2
-	 */
-	result = DatumGetNumeric(DirectFunctionCall2(numeric_sub,
-	   DirectFunctionCall1(int8_numeric, Int64GetDatum((int64) loc1.xlogid)),
-	 DirectFunctionCall1(int8_numeric, Int64GetDatum((int64) loc2.xlogid))));
-	result = DatumGetNumeric(DirectFunctionCall2(numeric_mul,
-	  DirectFunctionCall1(int8_numeric, Int64GetDatum((int64) XLogFileSize)),
-												 NumericGetDatum(result)));
-	result = DatumGetNumeric(DirectFunctionCall2(numeric_add,
-												 NumericGetDatum(result),
-	DirectFunctionCall1(int8_numeric, Int64GetDatum((int64) loc1.xrecoff))));
-	result = DatumGetNumeric(DirectFunctionCall2(numeric_sub,
-												 NumericGetDatum(result),
-	DirectFunctionCall1(int8_numeric, Int64GetDatum((int64) loc2.xrecoff))));
+	result = DirectFunctionCall2(pg_lsn_mi,
+								 PG_GETARG_DATUM(0),
+								 PG_GETARG_DATUM(1));
 
 	PG_RETURN_NUMERIC(result);
+}
+
+/*
+ * Returns bool with current on-line backup mode, a global state.
+ */
+Datum
+pg_is_in_backup(PG_FUNCTION_ARGS)
+{
+	PG_RETURN_BOOL(BackupInProgress());
+}
+
+/*
+ * Returns start time of an online exclusive backup.
+ *
+ * When there's no exclusive backup in progress, the function
+ * returns NULL.
+ */
+Datum
+pg_backup_start_time(PG_FUNCTION_ARGS)
+{
+	Datum		xtime;
+	FILE	   *lfp;
+	char		fline[MAXPGPATH];
+	char		backup_start_time[30];
+
+	/*
+	 * See if label file is present
+	 */
+	lfp = AllocateFile(BACKUP_LABEL_FILE, "r");
+	if (lfp == NULL)
+	{
+		if (errno != ENOENT)
+			ereport(ERROR,
+					(errcode_for_file_access(),
+					 errmsg("could not read file \"%s\": %m",
+							BACKUP_LABEL_FILE)));
+		PG_RETURN_NULL();
+	}
+
+	/*
+	 * Parse the file to find the START TIME line.
+	 */
+	backup_start_time[0] = '\0';
+	while (fgets(fline, sizeof(fline), lfp) != NULL)
+	{
+		if (sscanf(fline, "START TIME: %25[^\n]\n", backup_start_time) == 1)
+			break;
+	}
+
+	/* Check for a read error. */
+	if (ferror(lfp))
+		ereport(ERROR,
+				(errcode_for_file_access(),
+			   errmsg("could not read file \"%s\": %m", BACKUP_LABEL_FILE)));
+
+	/* Close the backup label file. */
+	if (FreeFile(lfp))
+		ereport(ERROR,
+				(errcode_for_file_access(),
+			  errmsg("could not close file \"%s\": %m", BACKUP_LABEL_FILE)));
+
+	if (strlen(backup_start_time) == 0)
+		ereport(ERROR,
+				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
+				 errmsg("invalid data in file \"%s\"", BACKUP_LABEL_FILE)));
+
+	/*
+	 * Convert the time string read from file to TimestampTz form.
+	 */
+	xtime = DirectFunctionCall3(timestamptz_in,
+								CStringGetDatum(backup_start_time),
+								ObjectIdGetDatum(InvalidOid),
+								Int32GetDatum(-1));
+
+	PG_RETURN_DATUM(xtime);
 }

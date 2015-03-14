@@ -4,7 +4,7 @@
  *	  implementation of insert algorithm
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -19,12 +19,13 @@
 #include "access/spgist_private.h"
 #include "miscadmin.h"
 #include "storage/bufmgr.h"
+#include "utils/rel.h"
 
 
 /*
  * SPPageDesc tracks all info about a page we are inserting into.  In some
  * situations it actually identifies a tuple, or even a specific node within
- * an inner tuple.	But any of the fields can be invalid.  If the buffer
+ * an inner tuple.  But any of the fields can be invalid.  If the buffer
  * field is valid, it implies we hold pin and exclusive lock on that buffer.
  * page pointer should be valid exactly when buffer is.
  */
@@ -121,7 +122,8 @@ cmpOffsetNumbers(const void *a, const void *b)
  *
  * NB: this is used during WAL replay, so beware of trying to make it too
  * smart.  In particular, it shouldn't use "state" except for calling
- * spgFormDeadTuple().
+ * spgFormDeadTuple().  This is also used in a critical section, so no
+ * pallocs either!
  */
 void
 spgPageIndexMultiDelete(SpGistState *state, Page page,
@@ -130,7 +132,7 @@ spgPageIndexMultiDelete(SpGistState *state, Page page,
 						BlockNumber blkno, OffsetNumber offnum)
 {
 	OffsetNumber firstItem;
-	OffsetNumber *sortednos;
+	OffsetNumber sortednos[MaxIndexTuplesPerPage];
 	SpGistDeadTuple tuple = NULL;
 	int			i;
 
@@ -144,7 +146,6 @@ spgPageIndexMultiDelete(SpGistState *state, Page page,
 	 * replacement tuples.)  However, we must not scribble on the caller's
 	 * array, so we have to make a copy.
 	 */
-	sortednos = (OffsetNumber *) palloc(sizeof(OffsetNumber) * nitems);
 	memcpy(sortednos, itemnos, sizeof(OffsetNumber) * nitems);
 	if (nitems > 1)
 		qsort(sortednos, nitems, sizeof(OffsetNumber), cmpOffsetNumbers);
@@ -172,8 +173,6 @@ spgPageIndexMultiDelete(SpGistState *state, Page page,
 		else if (tupstate == SPGIST_PLACEHOLDER)
 			SpGistPageGetOpaque(page)->nPlaceholder++;
 	}
-
-	pfree(sortednos);
 }
 
 /*
@@ -218,7 +217,6 @@ addLeafTuple(Relation index, SpGistState *state, SpGistLeafTuple leafTuple,
 	xlrec.nodeI = 0;
 
 	ACCEPT_RDATA_DATA(&xlrec, sizeof(xlrec), 0);
-	/* we assume sizeof(xlrec) is at least int-aligned */
 	ACCEPT_RDATA_DATA(leafTuple, leafTuple->size, 1);
 	ACCEPT_RDATA_BUFFER(current->buffer, 2);
 
@@ -250,7 +248,7 @@ addLeafTuple(Relation index, SpGistState *state, SpGistLeafTuple leafTuple,
 	else
 	{
 		/*
-		 * Tuple must be inserted into existing chain.	We mustn't change the
+		 * Tuple must be inserted into existing chain.  We mustn't change the
 		 * chain's head address, but we don't need to chase the entire chain
 		 * to put the tuple at the end; we can insert it second.
 		 *
@@ -307,13 +305,11 @@ addLeafTuple(Relation index, SpGistState *state, SpGistLeafTuple leafTuple,
 		recptr = XLogInsert(RM_SPGIST_ID, XLOG_SPGIST_ADD_LEAF, rdata);
 
 		PageSetLSN(current->page, recptr);
-		PageSetTLI(current->page, ThisTimeLineID);
 
 		/* update parent only if we actually changed it */
 		if (xlrec.blknoParent != InvalidBlockNumber)
 		{
 			PageSetLSN(parent->page, recptr);
-			PageSetTLI(parent->page, ThisTimeLineID);
 		}
 	}
 
@@ -536,9 +532,9 @@ moveLeafs(Relation index, SpGistState *state,
 	{
 		XLogRecPtr	recptr;
 
-		ACCEPT_RDATA_DATA(&xlrec, MAXALIGN(sizeof(xlrec)), 0);
-		ACCEPT_RDATA_DATA(toDelete, MAXALIGN(sizeof(OffsetNumber) * nDelete), 1);
-		ACCEPT_RDATA_DATA(toInsert, MAXALIGN(sizeof(OffsetNumber) * nInsert), 2);
+		ACCEPT_RDATA_DATA(&xlrec, SizeOfSpgxlogMoveLeafs, 0);
+		ACCEPT_RDATA_DATA(toDelete, sizeof(OffsetNumber) * nDelete, 1);
+		ACCEPT_RDATA_DATA(toInsert, sizeof(OffsetNumber) * nInsert, 2);
 		ACCEPT_RDATA_DATA(leafdata, leafptr - leafdata, 3);
 		ACCEPT_RDATA_BUFFER(current->buffer, 4);
 		ACCEPT_RDATA_BUFFER(nbuf, 5);
@@ -547,11 +543,8 @@ moveLeafs(Relation index, SpGistState *state,
 		recptr = XLogInsert(RM_SPGIST_ID, XLOG_SPGIST_MOVE_LEAFS, rdata);
 
 		PageSetLSN(current->page, recptr);
-		PageSetTLI(current->page, ThisTimeLineID);
 		PageSetLSN(npage, recptr);
-		PageSetTLI(npage, ThisTimeLineID);
 		PageSetLSN(parent->page, recptr);
-		PageSetTLI(parent->page, ThisTimeLineID);
 	}
 
 	END_CRIT_SECTION();
@@ -820,7 +813,7 @@ doPickSplit(Relation index, SpGistState *state,
 	 * We may not actually insert new tuple because another picksplit may be
 	 * necessary due to too large value, but we will try to allocate enough
 	 * space to include it; and in any case it has to be included in the input
-	 * for the picksplit function.	So don't increment nToInsert yet.
+	 * for the picksplit function.  So don't increment nToInsert yet.
 	 */
 	in.datums[in.nTuples] = SGLTDATUM(newLeafTuple, state);
 	heapPtrs[in.nTuples] = newLeafTuple->heapPtr;
@@ -878,7 +871,7 @@ doPickSplit(Relation index, SpGistState *state,
 	/*
 	 * Check to see if the picksplit function failed to separate the values,
 	 * ie, it put them all into the same child node.  If so, select allTheSame
-	 * mode and create a random split instead.	See comments for
+	 * mode and create a random split instead.  See comments for
 	 * checkAllTheSame as to why we need to know if the new leaf tuples could
 	 * fit on one page.
 	 */
@@ -1043,7 +1036,7 @@ doPickSplit(Relation index, SpGistState *state,
 										&xlrec.initDest);
 
 		/*
-		 * Attempt to assign node groups to the two pages.	We might fail to
+		 * Attempt to assign node groups to the two pages.  We might fail to
 		 * do so, even if totalLeafSizes is less than the available space,
 		 * because we can't split a group across pages.
 		 */
@@ -1122,9 +1115,8 @@ doPickSplit(Relation index, SpGistState *state,
 
 	leafdata = leafptr = (char *) palloc(totalLeafSizes);
 
-	ACCEPT_RDATA_DATA(&xlrec, MAXALIGN(sizeof(xlrec)), 0);
-	ACCEPT_RDATA_DATA(innerTuple, innerTuple->size, 1);
-	nRdata = 2;
+	ACCEPT_RDATA_DATA(&xlrec, SizeOfSpgxlogPickSplit, 0);
+	nRdata = 1;
 
 	/* Here we begin making the changes to the target pages */
 	START_CRIT_SECTION();
@@ -1158,7 +1150,7 @@ doPickSplit(Relation index, SpGistState *state,
 		{
 			xlrec.nDelete = nToDelete;
 			ACCEPT_RDATA_DATA(toDelete,
-							  MAXALIGN(sizeof(OffsetNumber) * nToDelete),
+							  sizeof(OffsetNumber) * nToDelete,
 							  nRdata);
 			nRdata++;
 			ACCEPT_RDATA_BUFFER(current->buffer, nRdata);
@@ -1257,13 +1249,11 @@ doPickSplit(Relation index, SpGistState *state,
 	}
 
 	xlrec.nInsert = nToInsert;
-	ACCEPT_RDATA_DATA(toInsert,
-					  MAXALIGN(sizeof(OffsetNumber) * nToInsert),
-					  nRdata);
+	ACCEPT_RDATA_DATA(toInsert, sizeof(OffsetNumber) * nToInsert, nRdata);
 	nRdata++;
-	ACCEPT_RDATA_DATA(leafPageSelect,
-					  MAXALIGN(sizeof(uint8) * nToInsert),
-					  nRdata);
+	ACCEPT_RDATA_DATA(leafPageSelect, sizeof(uint8) * nToInsert, nRdata);
+	nRdata++;
+	ACCEPT_RDATA_DATA(innerTuple, innerTuple->size, nRdata);
 	nRdata++;
 	ACCEPT_RDATA_DATA(leafdata, leafptr - leafdata, nRdata);
 	nRdata++;
@@ -1400,7 +1390,6 @@ doPickSplit(Relation index, SpGistState *state,
 			Page		page = BufferGetPage(newLeafBuffer);
 
 			PageSetLSN(page, recptr);
-			PageSetTLI(page, ThisTimeLineID);
 		}
 
 		if (saveCurrent.buffer != InvalidBuffer)
@@ -1408,16 +1397,13 @@ doPickSplit(Relation index, SpGistState *state,
 			Page		page = BufferGetPage(saveCurrent.buffer);
 
 			PageSetLSN(page, recptr);
-			PageSetTLI(page, ThisTimeLineID);
 		}
 
 		PageSetLSN(current->page, recptr);
-		PageSetTLI(current->page, ThisTimeLineID);
 
 		if (parent->buffer != InvalidBuffer)
 		{
 			PageSetLSN(parent->page, recptr);
-			PageSetTLI(parent->page, ThisTimeLineID);
 		}
 	}
 
@@ -1528,7 +1514,6 @@ spgAddNodeAction(Relation index, SpGistState *state,
 	xlrec.newPage = false;
 
 	ACCEPT_RDATA_DATA(&xlrec, sizeof(xlrec), 0);
-	/* we assume sizeof(xlrec) is at least int-aligned */
 	ACCEPT_RDATA_DATA(newInnerTuple, newInnerTuple->size, 1);
 	ACCEPT_RDATA_BUFFER(current->buffer, 2);
 
@@ -1556,7 +1541,6 @@ spgAddNodeAction(Relation index, SpGistState *state,
 			recptr = XLogInsert(RM_SPGIST_ID, XLOG_SPGIST_ADD_NODE, rdata);
 
 			PageSetLSN(current->page, recptr);
-			PageSetTLI(current->page, ThisTimeLineID);
 		}
 
 		END_CRIT_SECTION();
@@ -1666,11 +1650,8 @@ spgAddNodeAction(Relation index, SpGistState *state,
 
 			/* we don't bother to check if any of these are redundant */
 			PageSetLSN(current->page, recptr);
-			PageSetTLI(current->page, ThisTimeLineID);
 			PageSetLSN(parent->page, recptr);
-			PageSetTLI(parent->page, ThisTimeLineID);
 			PageSetLSN(saveCurrent.page, recptr);
-			PageSetTLI(saveCurrent.page, ThisTimeLineID);
 		}
 
 		END_CRIT_SECTION();
@@ -1747,7 +1728,6 @@ spgSplitNodeAction(Relation index, SpGistState *state,
 	xlrec.newPage = false;
 
 	ACCEPT_RDATA_DATA(&xlrec, sizeof(xlrec), 0);
-	/* we assume sizeof(xlrec) is at least int-aligned */
 	ACCEPT_RDATA_DATA(prefixTuple, prefixTuple->size, 1);
 	ACCEPT_RDATA_DATA(postfixTuple, postfixTuple->size, 2);
 	ACCEPT_RDATA_BUFFER(current->buffer, 3);
@@ -1830,12 +1810,10 @@ spgSplitNodeAction(Relation index, SpGistState *state,
 		recptr = XLogInsert(RM_SPGIST_ID, XLOG_SPGIST_SPLIT_TUPLE, rdata);
 
 		PageSetLSN(current->page, recptr);
-		PageSetTLI(current->page, ThisTimeLineID);
 
 		if (newBuffer != InvalidBuffer)
 		{
 			PageSetLSN(BufferGetPage(newBuffer), recptr);
-			PageSetTLI(BufferGetPage(newBuffer), ThisTimeLineID);
 		}
 	}
 
@@ -1850,9 +1828,13 @@ spgSplitNodeAction(Relation index, SpGistState *state,
 }
 
 /*
- * Insert one item into the index
+ * Insert one item into the index.
+ *
+ * Returns true on success, false if we failed to complete the insertion
+ * because of conflict with a concurrent insert.  In the latter case,
+ * caller should re-call spgdoinsert() with the same args.
  */
-void
+bool
 spgdoinsert(Relation index, SpGistState *state,
 			ItemPointer heapPtr, Datum datum, bool isnull)
 {
@@ -1861,6 +1843,14 @@ spgdoinsert(Relation index, SpGistState *state,
 	int			leafSize;
 	SPPageDesc	current,
 				parent;
+	FmgrInfo   *procinfo = NULL;
+
+	/*
+	 * Look up FmgrInfo of the user-defined choose function once, to save
+	 * cycles in the loop below.
+	 */
+	if (!isnull)
+		procinfo = index_getprocinfo(index, 1, SPGIST_CHOOSE_PROC);
 
 	/*
 	 * Since we don't use index_form_tuple in this AM, we have to make sure
@@ -1887,9 +1877,9 @@ spgdoinsert(Relation index, SpGistState *state,
 	if (leafSize > SPGIST_PAGE_CAPACITY && !state->config.longValuesOK)
 		ereport(ERROR,
 				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
-			errmsg("index row size %lu exceeds maximum %lu for index \"%s\"",
-				   (unsigned long) (leafSize - sizeof(ItemIdData)),
-				 (unsigned long) (SPGIST_PAGE_CAPACITY - sizeof(ItemIdData)),
+			errmsg("index row size %zu exceeds maximum %zu for index \"%s\"",
+				   leafSize - sizeof(ItemIdData),
+				   SPGIST_PAGE_CAPACITY - sizeof(ItemIdData),
 				   RelationGetRelationName(index)),
 			errhint("Values larger than a buffer page cannot be indexed.")));
 
@@ -1921,7 +1911,7 @@ spgdoinsert(Relation index, SpGistState *state,
 		if (current.blkno == InvalidBlockNumber)
 		{
 			/*
-			 * Create a leaf page.	If leafSize is too large to fit on a page,
+			 * Create a leaf page.  If leafSize is too large to fit on a page,
 			 * we won't actually use the page yet, but it simplifies the API
 			 * for doPickSplit to always have a leaf page at hand; so just
 			 * quietly limit our request to a page size.
@@ -1933,11 +1923,34 @@ spgdoinsert(Relation index, SpGistState *state,
 								&isNew);
 			current.blkno = BufferGetBlockNumber(current.buffer);
 		}
-		else if (parent.buffer == InvalidBuffer ||
-				 current.blkno != parent.blkno)
+		else if (parent.buffer == InvalidBuffer)
 		{
+			/* we hold no parent-page lock, so no deadlock is possible */
 			current.buffer = ReadBuffer(index, current.blkno);
 			LockBuffer(current.buffer, BUFFER_LOCK_EXCLUSIVE);
+		}
+		else if (current.blkno != parent.blkno)
+		{
+			/* descend to a new child page */
+			current.buffer = ReadBuffer(index, current.blkno);
+
+			/*
+			 * Attempt to acquire lock on child page.  We must beware of
+			 * deadlock against another insertion process descending from that
+			 * page to our parent page (see README).  If we fail to get lock,
+			 * abandon the insertion and tell our caller to start over.
+			 *
+			 * XXX this could be improved, because failing to get lock on a
+			 * buffer is not proof of a deadlock situation; the lock might be
+			 * held by a reader, or even just background writer/checkpointer
+			 * process.  Perhaps it'd be worth retrying after sleeping a bit?
+			 */
+			if (!ConditionalLockBuffer(current.buffer))
+			{
+				ReleaseBuffer(current.buffer);
+				UnlockReleaseBuffer(parent.buffer);
+				return false;
+			}
 		}
 		else
 		{
@@ -2007,7 +2020,6 @@ spgdoinsert(Relation index, SpGistState *state,
 			SpGistInnerTuple innerTuple;
 			spgChooseIn in;
 			spgChooseOut out;
-			FmgrInfo   *procinfo;
 
 			/*
 			 * spgAddNode and spgSplitTuple cases will loop back to here to
@@ -2035,7 +2047,6 @@ spgdoinsert(Relation index, SpGistState *state,
 			if (!isnull)
 			{
 				/* use user-defined choose method */
-				procinfo = index_getprocinfo(index, 1, SPGIST_CHOOSE_PROC);
 				FunctionCall2Coll(procinfo,
 								  index->rd_indcollation[0],
 								  PointerGetDatum(&in),
@@ -2103,7 +2114,7 @@ spgdoinsert(Relation index, SpGistState *state,
 									 out.result.addNode.nodeLabel);
 
 					/*
-					 * Retry insertion into the enlarged node.	We assume that
+					 * Retry insertion into the enlarged node.  We assume that
 					 * we'll get a MatchNode result this time.
 					 */
 					goto process_inner_tuple;
@@ -2139,4 +2150,6 @@ spgdoinsert(Relation index, SpGistState *state,
 		SpGistSetLastUsedPage(index, parent.buffer);
 		UnlockReleaseBuffer(parent.buffer);
 	}
+
+	return true;
 }

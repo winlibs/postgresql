@@ -3,7 +3,7 @@
  * wparser_def.c
  *		Default text search parser
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -330,7 +330,7 @@ TParserInit(char *str, int len)
 
 	/*
 	 * Use of %.*s here is a bit risky since it can misbehave if the data is
-	 * not in what libc thinks is the prevailing encoding.	However, since
+	 * not in what libc thinks is the prevailing encoding.  However, since
 	 * this is just a debugging aid, we choose to live with that.
 	 */
 	fprintf(stderr, "parsing \"%.*s\"\n", len, str);
@@ -432,7 +432,7 @@ TParserCopyClose(TParser *prs)
  *	  or give wrong result.
  *	- multibyte encoding and C-locale often are used for
  *	  Asian languages.
- *	- if locale is C the we use pgwstr instead of wstr
+ *	- if locale is C then we use pgwstr instead of wstr.
  */
 
 #ifdef USE_WIDE_UPPER_LOWER
@@ -444,9 +444,13 @@ p_is##type(TParser *prs) {													\
 	if ( prs->usewide )														\
 	{																		\
 		if ( prs->pgwstr )													\
-			return is##type( 0xff & *( prs->pgwstr + prs->state->poschar) );\
-																			\
-		return isw##type( *(wint_t*)( prs->wstr + prs->state->poschar ) );	\
+		{																	\
+			unsigned int c = *(prs->pgwstr + prs->state->poschar);			\
+			if ( c > 0x7f )													\
+				return 0;													\
+			return is##type( c );											\
+		}																	\
+		return isw##type( *( prs->wstr + prs->state->poschar ) );			\
 	}																		\
 																			\
 	return is##type( *(unsigned char*)( prs->str + prs->state->posbyte ) ); \
@@ -475,10 +479,10 @@ p_isalnum(TParser *prs)
 			if (c > 0x7f)
 				return 1;
 
-			return isalnum(0xff & c);
+			return isalnum(c);
 		}
 
-		return iswalnum((wint_t) *(prs->wstr + prs->state->poschar));
+		return iswalnum(*(prs->wstr + prs->state->poschar));
 	}
 
 	return isalnum(*(unsigned char *) (prs->str + prs->state->posbyte));
@@ -507,10 +511,10 @@ p_isalpha(TParser *prs)
 			if (c > 0x7f)
 				return 1;
 
-			return isalpha(0xff & c);
+			return isalpha(c);
 		}
 
-		return iswalpha((wint_t) *(prs->wstr + prs->state->poschar));
+		return iswalpha(*(prs->wstr + prs->state->poschar));
 	}
 
 	return isalpha(*(unsigned char *) (prs->str + prs->state->posbyte));
@@ -789,7 +793,7 @@ p_isspecial(TParser *prs)
 	 */
 	if (GetDatabaseEncoding() == PG_UTF8 && prs->usewide)
 	{
-		static pg_wchar strange_letter[] = {
+		static const pg_wchar strange_letter[] = {
 			/*
 			 * use binary search, so elements should be ordered
 			 */
@@ -1023,7 +1027,7 @@ p_isspecial(TParser *prs)
 			0xAA34,				/* CHAM CONSONANT SIGN RA */
 			0xAA4D				/* CHAM CONSONANT SIGN FINAL H */
 		};
-		pg_wchar   *StopLow = strange_letter,
+		const pg_wchar *StopLow = strange_letter,
 				   *StopHigh = strange_letter + lengthof(strange_letter),
 				   *StopMiddle;
 		pg_wchar	c;
@@ -2133,12 +2137,12 @@ mark_fragment(HeadlineParsedText *prs, int highlight, int startpos, int endpos)
 
 typedef struct
 {
-	int4		startpos;
-	int4		endpos;
-	int4		poslen;
-	int4		curlen;
-	int2		in;
-	int2		excluded;
+	int32		startpos;
+	int32		endpos;
+	int32		poslen;
+	int32		curlen;
+	int16		in;
+	int16		excluded;
 } CoverPos;
 
 static void
@@ -2191,24 +2195,24 @@ mark_hl_fragments(HeadlineParsedText *prs, TSQuery query, int highlight,
 				  int shortword, int min_words,
 				  int max_words, int max_fragments)
 {
-	int4		poslen,
+	int32		poslen,
 				curlen,
 				i,
 				f,
 				num_f = 0;
-	int4		stretch,
+	int32		stretch,
 				maxstretch,
 				posmarker;
 
-	int4		startpos = 0,
+	int32		startpos = 0,
 				endpos = 0,
 				p = 0,
 				q = 0;
 
-	int4		numcovers = 0,
+	int32		numcovers = 0,
 				maxcovers = 32;
 
-	int4		minI,
+	int32		minI,
 				minwords,
 				maxitems;
 	CoverPos   *covers;

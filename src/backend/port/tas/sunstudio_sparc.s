@@ -3,7 +3,7 @@
 ! sunstudio_sparc.s
 !	  compare and swap for Sun Studio on Sparc
 !
-! Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+! Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
 ! Portions Copyright (c) 1994, Regents of the University of California
 !
 ! IDENTIFICATION
@@ -37,6 +37,8 @@ pg_atomic_cas:
 	!
 	!   http://cvs.opensolaris.org/source/xref/on/usr/src/lib/libc/sparc/threads/sparc.il
 	!
+	! NB: We're assuming we're running on a TSO system here - solaris
+	! userland luckily always has done so.
 
 #if defined(__sparcv9) || defined(__sparcv8plus)
 	cas     [%o0],%o2,%o1

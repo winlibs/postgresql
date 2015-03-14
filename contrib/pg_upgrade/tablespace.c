@@ -3,13 +3,15 @@
  *
  *	tablespace functions
  *
- *	Copyright (c) 2010-2012, PostgreSQL Global Development Group
+ *	Copyright (c) 2010-2014, PostgreSQL Global Development Group
  *	contrib/pg_upgrade/tablespace.c
  */
 
-#include "postgres.h"
+#include "postgres_fe.h"
 
 #include "pg_upgrade.h"
+
+#include <sys/types.h>
 
 static void get_tablespace_paths(void);
 static void set_tablespace_directory_suffix(ClusterInfo *cluster);
@@ -23,11 +25,10 @@ init_tablespaces(void)
 	set_tablespace_directory_suffix(&old_cluster);
 	set_tablespace_directory_suffix(&new_cluster);
 
-	if (os_info.num_tablespaces > 0 &&
+	if (os_info.num_old_tablespaces > 0 &&
 	strcmp(old_cluster.tablespace_suffix, new_cluster.tablespace_suffix) == 0)
-		pg_log(PG_FATAL,
-			   "Cannot upgrade to/from the same system catalog version when\n"
-			   "using tablespaces.\n");
+		pg_fatal("Cannot upgrade to/from the same system catalog version when\n"
+				 "using tablespaces.\n");
 }
 
 
@@ -57,17 +58,46 @@ get_tablespace_paths(void)
 
 	res = executeQueryOrDie(conn, "%s", query);
 
-	if ((os_info.num_tablespaces = PQntuples(res)) != 0)
-		os_info.tablespaces = (char **) pg_malloc(
-								   os_info.num_tablespaces * sizeof(char *));
+	if ((os_info.num_old_tablespaces = PQntuples(res)) != 0)
+		os_info.old_tablespaces = (char **) pg_malloc(
+							   os_info.num_old_tablespaces * sizeof(char *));
 	else
-		os_info.tablespaces = NULL;
+		os_info.old_tablespaces = NULL;
 
 	i_spclocation = PQfnumber(res, "spclocation");
 
-	for (tblnum = 0; tblnum < os_info.num_tablespaces; tblnum++)
-		os_info.tablespaces[tblnum] = pg_strdup(
+	for (tblnum = 0; tblnum < os_info.num_old_tablespaces; tblnum++)
+	{
+		struct stat statBuf;
+
+		os_info.old_tablespaces[tblnum] = pg_strdup(
 									 PQgetvalue(res, tblnum, i_spclocation));
+
+		/*
+		 * Check that the tablespace path exists and is a directory.
+		 * Effectively, this is checking only for tables/indexes in
+		 * non-existent tablespace directories.  Databases located in
+		 * non-existent tablespaces already throw a backend error.
+		 * Non-existent tablespace directories can occur when a data directory
+		 * that contains user tablespaces is moved as part of pg_upgrade
+		 * preparation and the symbolic links are not updated.
+		 */
+		if (stat(os_info.old_tablespaces[tblnum], &statBuf) != 0)
+		{
+			if (errno == ENOENT)
+				report_status(PG_FATAL,
+							  "tablespace directory \"%s\" does not exist\n",
+							  os_info.old_tablespaces[tblnum]);
+			else
+				report_status(PG_FATAL,
+						   "cannot stat() tablespace directory \"%s\": %s\n",
+					   os_info.old_tablespaces[tblnum], getErrorText(errno));
+		}
+		if (!S_ISDIR(statBuf.st_mode))
+			report_status(PG_FATAL,
+						  "tablespace path \"%s\" is not a directory\n",
+						  os_info.old_tablespaces[tblnum]);
+	}
 
 	PQclear(res);
 
@@ -85,12 +115,10 @@ set_tablespace_directory_suffix(ClusterInfo *cluster)
 	else
 	{
 		/* This cluster has a version-specific subdirectory */
-		cluster->tablespace_suffix = pg_malloc(4 +
-										 strlen(cluster->major_version_str) +
-											   10 /* OIDCHARS */ + 1);
 
 		/* The leading slash is needed to start a new directory. */
-		sprintf(cluster->tablespace_suffix, "/PG_%s_%d", cluster->major_version_str,
-				cluster->controldata.cat_ver);
+		cluster->tablespace_suffix = psprintf("/PG_%s_%d",
+											  cluster->major_version_str,
+											  cluster->controldata.cat_ver);
 	}
 }

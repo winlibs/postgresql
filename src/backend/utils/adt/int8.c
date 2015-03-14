@@ -3,7 +3,7 @@
  * int8.c
  *	  Internal 64-bit integer operations
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -73,7 +73,7 @@ scanint8(const char *str, bool errorOK, int64 *result)
 		ptr++;
 
 		/*
-		 * Do an explicit check for INT64_MIN.	Ugly though this is, it's
+		 * Do an explicit check for INT64_MIN.  Ugly though this is, it's
 		 * cleaner than trying to get the loop below to handle it portably.
 		 */
 		if (strncmp(ptr, "9223372036854775808", 19) == 0)
@@ -519,7 +519,7 @@ int8pl(PG_FUNCTION_ARGS)
 	result = arg1 + arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of different signs then their sum
+	 * Overflow check.  If the inputs are of different signs then their sum
 	 * cannot overflow.  If the inputs are of the same sign, their sum had
 	 * better be that sign too.
 	 */
@@ -540,8 +540,8 @@ int8mi(PG_FUNCTION_ARGS)
 	result = arg1 - arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of the same sign then their
-	 * difference cannot overflow.	If they are of different signs then the
+	 * Overflow check.  If the inputs are of the same sign then their
+	 * difference cannot overflow.  If they are of different signs then the
 	 * result should be of the same sign as the first input.
 	 */
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
@@ -561,7 +561,7 @@ int8mul(PG_FUNCTION_ARGS)
 	result = arg1 * arg2;
 
 	/*
-	 * Overflow check.	We basically check to see if result / arg2 gives arg1
+	 * Overflow check.  We basically check to see if result / arg2 gives arg1
 	 * again.  There are two cases where this fails: arg2 = 0 (which cannot
 	 * overflow) and arg1 = INT64_MIN, arg2 = -1 (where the division itself
 	 * will overflow and thus incorrectly match).
@@ -717,13 +717,58 @@ int8inc(PG_FUNCTION_ARGS)
 	}
 }
 
+Datum
+int8dec(PG_FUNCTION_ARGS)
+{
+	/*
+	 * When int8 is pass-by-reference, we provide this special case to avoid
+	 * palloc overhead for COUNT(): when called as an aggregate, we know that
+	 * the argument is modifiable local storage, so just update it in-place.
+	 * (If int8 is pass-by-value, then of course this is useless as well as
+	 * incorrect, so just ifdef it out.)
+	 */
+#ifndef USE_FLOAT8_BYVAL		/* controls int8 too */
+	if (AggCheckCallContext(fcinfo, NULL))
+	{
+		int64	   *arg = (int64 *) PG_GETARG_POINTER(0);
+		int64		result;
+
+		result = *arg - 1;
+		/* Overflow check */
+		if (result > 0 && *arg < 0)
+			ereport(ERROR,
+					(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+					 errmsg("bigint out of range")));
+
+		*arg = result;
+		PG_RETURN_POINTER(arg);
+	}
+	else
+#endif
+	{
+		/* Not called as an aggregate, so just do it the dumb way */
+		int64		arg = PG_GETARG_INT64(0);
+		int64		result;
+
+		result = arg - 1;
+		/* Overflow check */
+		if (result > 0 && arg < 0)
+			ereport(ERROR,
+					(errcode(ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE),
+					 errmsg("bigint out of range")));
+
+		PG_RETURN_INT64(result);
+	}
+}
+
+
 /*
- * These functions are exactly like int8inc but are used for aggregates that
- * count only non-null values.	Since the functions are declared strict,
- * the null checks happen before we ever get here, and all we need do is
- * increment the state value.  We could actually make these pg_proc entries
- * point right at int8inc, but then the opr_sanity regression test would
- * complain about mismatched entries for a built-in function.
+ * These functions are exactly like int8inc/int8dec but are used for
+ * aggregates that count only non-null values.  Since the functions are
+ * declared strict, the null checks happen before we ever get here, and all we
+ * need do is increment the state value.  We could actually make these pg_proc
+ * entries point right at int8inc/int8dec, but then the opr_sanity regression
+ * test would complain about mismatched entries for a built-in function.
  */
 
 Datum
@@ -736,6 +781,12 @@ Datum
 int8inc_float8_float8(PG_FUNCTION_ARGS)
 {
 	return int8inc(fcinfo);
+}
+
+Datum
+int8dec_any(PG_FUNCTION_ARGS)
+{
+	return int8dec(fcinfo);
 }
 
 
@@ -773,7 +824,7 @@ int84pl(PG_FUNCTION_ARGS)
 	result = arg1 + arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of different signs then their sum
+	 * Overflow check.  If the inputs are of different signs then their sum
 	 * cannot overflow.  If the inputs are of the same sign, their sum had
 	 * better be that sign too.
 	 */
@@ -794,8 +845,8 @@ int84mi(PG_FUNCTION_ARGS)
 	result = arg1 - arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of the same sign then their
-	 * difference cannot overflow.	If they are of different signs then the
+	 * Overflow check.  If the inputs are of the same sign then their
+	 * difference cannot overflow.  If they are of different signs then the
 	 * result should be of the same sign as the first input.
 	 */
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
@@ -815,7 +866,7 @@ int84mul(PG_FUNCTION_ARGS)
 	result = arg1 * arg2;
 
 	/*
-	 * Overflow check.	We basically check to see if result / arg1 gives arg2
+	 * Overflow check.  We basically check to see if result / arg1 gives arg2
 	 * again.  There is one case where this fails: arg1 = 0 (which cannot
 	 * overflow).
 	 *
@@ -882,7 +933,7 @@ int48pl(PG_FUNCTION_ARGS)
 	result = arg1 + arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of different signs then their sum
+	 * Overflow check.  If the inputs are of different signs then their sum
 	 * cannot overflow.  If the inputs are of the same sign, their sum had
 	 * better be that sign too.
 	 */
@@ -903,8 +954,8 @@ int48mi(PG_FUNCTION_ARGS)
 	result = arg1 - arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of the same sign then their
-	 * difference cannot overflow.	If they are of different signs then the
+	 * Overflow check.  If the inputs are of the same sign then their
+	 * difference cannot overflow.  If they are of different signs then the
 	 * result should be of the same sign as the first input.
 	 */
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
@@ -924,7 +975,7 @@ int48mul(PG_FUNCTION_ARGS)
 	result = arg1 * arg2;
 
 	/*
-	 * Overflow check.	We basically check to see if result / arg2 gives arg1
+	 * Overflow check.  We basically check to see if result / arg2 gives arg1
 	 * again.  There is one case where this fails: arg2 = 0 (which cannot
 	 * overflow).
 	 *
@@ -970,7 +1021,7 @@ int82pl(PG_FUNCTION_ARGS)
 	result = arg1 + arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of different signs then their sum
+	 * Overflow check.  If the inputs are of different signs then their sum
 	 * cannot overflow.  If the inputs are of the same sign, their sum had
 	 * better be that sign too.
 	 */
@@ -991,8 +1042,8 @@ int82mi(PG_FUNCTION_ARGS)
 	result = arg1 - arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of the same sign then their
-	 * difference cannot overflow.	If they are of different signs then the
+	 * Overflow check.  If the inputs are of the same sign then their
+	 * difference cannot overflow.  If they are of different signs then the
 	 * result should be of the same sign as the first input.
 	 */
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
@@ -1012,7 +1063,7 @@ int82mul(PG_FUNCTION_ARGS)
 	result = arg1 * arg2;
 
 	/*
-	 * Overflow check.	We basically check to see if result / arg1 gives arg2
+	 * Overflow check.  We basically check to see if result / arg1 gives arg2
 	 * again.  There is one case where this fails: arg1 = 0 (which cannot
 	 * overflow).
 	 *
@@ -1079,7 +1130,7 @@ int28pl(PG_FUNCTION_ARGS)
 	result = arg1 + arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of different signs then their sum
+	 * Overflow check.  If the inputs are of different signs then their sum
 	 * cannot overflow.  If the inputs are of the same sign, their sum had
 	 * better be that sign too.
 	 */
@@ -1100,8 +1151,8 @@ int28mi(PG_FUNCTION_ARGS)
 	result = arg1 - arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of the same sign then their
-	 * difference cannot overflow.	If they are of different signs then the
+	 * Overflow check.  If the inputs are of the same sign then their
+	 * difference cannot overflow.  If they are of different signs then the
 	 * result should be of the same sign as the first input.
 	 */
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
@@ -1121,7 +1172,7 @@ int28mul(PG_FUNCTION_ARGS)
 	result = arg1 * arg2;
 
 	/*
-	 * Overflow check.	We basically check to see if result / arg2 gives arg1
+	 * Overflow check.  We basically check to see if result / arg2 gives arg1
 	 * again.  There is one case where this fails: arg2 = 0 (which cannot
 	 * overflow).
 	 *

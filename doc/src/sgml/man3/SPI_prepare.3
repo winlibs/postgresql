@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SPI_prepare
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "SPI_PREPARE" "3" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "SPI_PREPARE" "3" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 SPI_prepare \- prepare a statement, without executing it yet
-.\" SPI_prepare
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -113,6 +112,17 @@ or
 CURSOR_OPT_CUSTOM_PLAN
 flag to
 \fBSPI_prepare_cursor\fR, to force use of generic or custom plans respectively\&.
+.PP
+Although the main point of a prepared statement is to avoid repeated parse analysis and planning of the statement,
+PostgreSQL
+will force re\-analysis and re\-planning of the statement before using it whenever database objects used in the statement have undergone definitional (DDL) changes since the previous use of the prepared statement\&. Also, if the value of
+search_path
+changes from one use to the next, the statement will be re\-parsed using the new
+\fIsearch_path\fR\&. (This latter behavior is new as of
+PostgreSQL
+9\&.3\&.) See
+\fBPREPARE\fR(7)
+for more information about the behavior of prepared statements\&.
 .PP
 This function should only be called from a connected procedure\&.
 .PP

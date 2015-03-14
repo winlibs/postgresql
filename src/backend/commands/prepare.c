@@ -7,7 +7,7 @@
  * accessed via the extended FE/BE query protocol.
  *
  *
- * Copyright (c) 2002-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2002-2014, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/commands/prepare.c
@@ -174,7 +174,7 @@ PrepareQuery(PrepareStmt *stmt, const char *queryString)
  * ExecuteQuery --- implement the 'EXECUTE' utility statement.
  *
  * This code also supports CREATE TABLE ... AS EXECUTE.  That case is
- * indicated by passing a non-null intoClause.	The DestReceiver is already
+ * indicated by passing a non-null intoClause.  The DestReceiver is already
  * set up correctly for CREATE TABLE AS, but we still have to make a few
  * other adjustments here.
  *
@@ -211,7 +211,7 @@ ExecuteQuery(ExecuteStmt *stmt, IntoClause *intoClause,
 	{
 		/*
 		 * Need an EState to evaluate parameters; must not delete it till end
-		 * of query, in case parameters are pass-by-reference.	Note that the
+		 * of query, in case parameters are pass-by-reference.  Note that the
 		 * passed-in "params" could possibly be referenced in the parameter
 		 * expressions.
 		 */
@@ -237,7 +237,7 @@ ExecuteQuery(ExecuteStmt *stmt, IntoClause *intoClause,
 	/*
 	 * For CREATE TABLE ... AS EXECUTE, we must verify that the prepared
 	 * statement is one that produces tuples.  Currently we insist that it be
-	 * a plain old SELECT.	In future we might consider supporting other
+	 * a plain old SELECT.  In future we might consider supporting other
 	 * things such as INSERT ... RETURNING, but there are a couple of issues
 	 * to be settled first, notably how WITH NO DATA should be handled in such
 	 * a case (do we really want to suppress execution?) and how to pass down
@@ -354,21 +354,7 @@ EvaluateParams(PreparedStatement *pstmt, List *params,
 		Oid			expected_type_id = param_types[i];
 		Oid			given_type_id;
 
-		expr = transformExpr(pstate, expr);
-
-		/* Cannot contain subselects or aggregates */
-		if (pstate->p_hasSubLinks)
-			ereport(ERROR,
-					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-					 errmsg("cannot use subquery in EXECUTE parameter")));
-		if (pstate->p_hasAggs)
-			ereport(ERROR,
-					(errcode(ERRCODE_GROUPING_ERROR),
-			  errmsg("cannot use aggregate function in EXECUTE parameter")));
-		if (pstate->p_hasWindowFuncs)
-			ereport(ERROR,
-					(errcode(ERRCODE_WINDOWING_ERROR),
-				 errmsg("cannot use window function in EXECUTE parameter")));
+		expr = transformExpr(pstate, expr, EXPR_KIND_EXECUTE_PARAMETER);
 
 		given_type_id = exprType(expr);
 
@@ -543,7 +529,7 @@ FetchPreparedStatementResultDesc(PreparedStatement *stmt)
 
 /*
  * Given a prepared statement that returns tuples, extract the query
- * targetlist.	Returns NIL if the statement doesn't have a determinable
+ * targetlist.  Returns NIL if the statement doesn't have a determinable
  * targetlist.
  *
  * Note: this is pretty ugly, but since it's only used in corner cases like
@@ -658,7 +644,7 @@ ExplainExecuteQuery(ExecuteStmt *execstmt, IntoClause *into, ExplainState *es,
 	{
 		/*
 		 * Need an EState to evaluate parameters; must not delete it till end
-		 * of query, in case parameters are pass-by-reference.	Note that the
+		 * of query, in case parameters are pass-by-reference.  Note that the
 		 * passed-in "params" could possibly be referenced in the parameter
 		 * expressions.
 		 */
@@ -679,7 +665,7 @@ ExplainExecuteQuery(ExecuteStmt *execstmt, IntoClause *into, ExplainState *es,
 		PlannedStmt *pstmt = (PlannedStmt *) lfirst(p);
 
 		if (IsA(pstmt, PlannedStmt))
-			ExplainOnePlan(pstmt, into, es, query_string, paramLI);
+			ExplainOnePlan(pstmt, into, es, query_string, paramLI, NULL);
 		else
 			ExplainOneUtility((Node *) pstmt, into, es, query_string, paramLI);
 

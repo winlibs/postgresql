@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="  Installation from Source Code"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -205,7 +205,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25137"
+NAME="AEN27459"
 >15.7.1.1. GCC Issues</A
 ></H3
 ><P
@@ -226,7 +226,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25141"
+NAME="AEN27463"
 >15.7.1.2. Unix-Domain Sockets Broken</A
 ></H3
 ><P
@@ -270,7 +270,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25150"
+NAME="AEN27472"
 >15.7.1.3. Internet Address Issues</A
 ></H3
 ><P
@@ -385,7 +385,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25173"
+NAME="AEN27495"
 >15.7.1.4. Memory Management</A
 ></H3
 ><P
@@ -546,13 +546,13 @@ CLASS="COMMAND"
     </P
 ><H3
 ><A
-NAME="AEN25206"
+NAME="AEN27528"
 >References and Resources</A
 ></H3
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN25208"
+NAME="AEN27530"
 ></A
 ><P
 >"<A
@@ -570,7 +570,7 @@ STYLE="margin-left: 0.5in"
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN25214"
+NAME="AEN27536"
 ></A
 ><P
 >"<A
@@ -588,7 +588,7 @@ STYLE="margin-left: 0.5in"
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN25220"
+NAME="AEN27542"
 ></A
 ><P
 >"<A
@@ -606,7 +606,7 @@ STYLE="margin-left: 0.5in"
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN25226"
+NAME="AEN27548"
 ></A
 ><P
 >"<A
@@ -624,7 +624,7 @@ STYLE="margin-left: 0.5in"
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN25232"
+NAME="AEN27554"
 ></A
 ><P
 >"<A
@@ -642,12 +642,12 @@ STYLE="margin-left: 0.5in"
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN25238"
+NAME="AEN27560"
 ></A
 ><P
 ><I
 ><A
-HREF="  http://www.redbooks.ibm.com/abstracts/sg245674.html?Open"
+HREF="http://www.redbooks.ibm.com/abstracts/sg245674.html?Open"
 TARGET="_top"
 >Developing and Porting C and C++ Applications on AIX</A
 ></I
@@ -693,17 +693,6 @@ CLASS="LITERAL"
 >       Set your path to use the Cygwin bin directory before the
        Windows utilities.  This will help prevent problems with
        compilation.
-      </P
-></LI
-><LI
-><P
->       The GNU make command is called <TT
-CLASS="COMMAND"
->make</TT
->, not <TT
-CLASS="COMMAND"
->gmake</TT
->.
       </P
 ></LI
 ><LI
@@ -948,90 +937,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="INSTALLATION-NOTES-IRIX"
->15.7.4. IRIX</A
-></H2
-><P
->    PostgreSQL has been reported to run successfully on MIPS r8000,
-    r10000 (both ip25 and ip27) and r12000(ip35) processors, running
-    IRIX 6.5.5m, 6.5.12, 6.5.13, and 6.5.26 with MIPSPro compilers
-    version 7.30, 7.3.1.2m, 7.3, and 7.4.4m.
-   </P
-><P
->    You will need the MIPSPro full ANSI C compiler.  There are
-    problems trying to build with GCC.  It is a known GCC bug (not
-    fixed as of version 3.0) related to using functions that return
-    certain kinds of structures. This bug affects functions like
-    <CODE
-CLASS="FUNCTION"
->inet_ntoa</CODE
->, <CODE
-CLASS="FUNCTION"
->inet_lnaof</CODE
->, <CODE
-CLASS="FUNCTION"
->inet_netof</CODE
->, <CODE
-CLASS="FUNCTION"
->inet_makeaddr</CODE
->,
-    and <CODE
-CLASS="FUNCTION"
->semctl</CODE
->.  It is supposed to be fixed by forcing
-    code to link those functions with libgcc, but this has not been
-    tested yet.
-   </P
-><P
->    It is known that version 7.4.1m of the MIPSPro compiler generates
-    incorrect code.  The symptom is <SPAN
-CLASS="QUOTE"
->"invalid primary checkpoint
-    record"</SPAN
-> when trying to start the database.)  Version 7.4.4m
-    is OK; the status of intermediate versions is uncertain.
-   </P
-><P
->    There may be a compilation problem like the following:
-</P><PRE
-CLASS="SCREEN"
->cc-1020 cc: ERROR File = pqcomm.c, Line = 427
-  The identifier "TCP_NODELAY" is undefined.
-
-                if (setsockopt(port-&#62;sock, IPPROTO_TCP, TCP_NODELAY,</PRE
-><P>
-    Some versions include TCP definitions
-    in <TT
-CLASS="FILENAME"
->sys/xti.h</TT
->, so it is necessary to
-    add <TT
-CLASS="LITERAL"
->#include &lt;sys/xti.h&gt;</TT
->
-    in <TT
-CLASS="FILENAME"
->src/backend/libpq/pqcomm.c</TT
-> and in
-    <TT
-CLASS="FILENAME"
->src/interfaces/libpq/fe-connect.c</TT
->.  If you encounter
-    this, please let us know so we can develop a proper fix.
-   </P
-><P
->    In the regression tests, there might be some low-order-digit
-    differences in the geometry tests, depending on which FPU are you
-    using.  Any other error is cause for suspicion.
-   </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
 NAME="INSTALLATION-NOTES-MINGW"
->15.7.5. MinGW/Native Windows</A
+>15.7.4. MinGW/Native Windows</A
 ></H2
 ><P
 >    PostgreSQL for Windows can be built using MinGW, a Unix-like build
@@ -1106,7 +1013,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="WINDOWS-CRASH-DUMPS"
->15.7.5.1. Collecting Crash Dumps on Windows</A
+>15.7.4.1. Collecting Crash Dumps on Windows</A
 ></H3
 ><P
 >     If PostgreSQL on Windows crashes, it has the ability to generate
@@ -1139,7 +1046,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="INSTALLATION-NOTES-SCO"
->15.7.6. SCO OpenServer and SCO UnixWare</A
+>15.7.5. SCO OpenServer and SCO UnixWare</A
 ></H2
 ><P
 >    PostgreSQL can be built on SCO UnixWare 7 and SCO OpenServer 5.
@@ -1152,8 +1059,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25372"
->15.7.6.1. Skunkware</A
+NAME="AEN27669"
+>15.7.5.1. Skunkware</A
 ></H3
 ><P
 >     You should locate your copy of the SCO Skunkware CD.  The
@@ -1185,8 +1092,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25378"
->15.7.6.2. GNU Make</A
+NAME="AEN27675"
+>15.7.5.2. GNU Make</A
 ></H3
 ><P
 >     You need to use the GNU Make program, which is on the Skunkware
@@ -1194,17 +1101,6 @@ NAME="AEN25378"
      as <TT
 CLASS="FILENAME"
 >/usr/local/bin/make</TT
->.  To avoid confusion
-     with the SCO <TT
-CLASS="FILENAME"
->make</TT
-> program, you may want to rename GNU <TT
-CLASS="FILENAME"
->make</TT
-> to
-     <TT
-CLASS="FILENAME"
->gmake</TT
 >.
     </P
 ><P
@@ -1221,8 +1117,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25387"
->15.7.6.3. Readline</A
+NAME="AEN27681"
+>15.7.5.3. Readline</A
 ></H3
 ><P
 >     The Readline library is on the Skunkware CD.  But it is not
@@ -1264,8 +1160,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25397"
->15.7.6.4. Using the UDK on OpenServer</A
+NAME="AEN27691"
+>15.7.5.4. Using the UDK on OpenServer</A
 ></H3
 ><P
 >     If you are using the new Universal Development Kit (UDK) compiler
@@ -1287,8 +1183,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25402"
->15.7.6.5. Reading the PostgreSQL Man Pages</A
+NAME="AEN27696"
+>15.7.5.5. Reading the PostgreSQL Man Pages</A
 ></H3
 ><P
 >     By default, the PostgreSQL man pages are installed into
@@ -1323,8 +1219,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25410"
->15.7.6.6. C99 Issues with the 7.1.1b Feature Supplement</A
+NAME="AEN27704"
+>15.7.5.6. C99 Issues with the 7.1.1b Feature Supplement</A
 ></H3
 ><P
 >     For compilers earlier than the one released with OpenUNIX 8.0.0
@@ -1354,8 +1250,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25417"
->15.7.6.7. Threading on UnixWare</A
+NAME="AEN27711"
+>15.7.5.7. Threading on UnixWare</A
 ></H3
 ><P
 >     For threading, you<SPAN
@@ -1396,7 +1292,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="INSTALLATION-NOTES-SOLARIS"
->15.7.7. Solaris</A
+>15.7.6. Solaris</A
 ></H2
 ><P
 >    PostgreSQL is well-supported on Solaris.  The more up to date your
@@ -1408,8 +1304,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25432"
->15.7.7.1. Required Tools</A
+NAME="AEN27726"
+>15.7.6.1. Required Tools</A
 ></H3
 ><P
 >     You can build with either GCC or Sun's compiler suite.  For
@@ -1429,9 +1325,9 @@ CLASS="FILENAME"
 ><P
 >     You can download Sun Studio
      from <A
-HREF="http://developers.sun.com/sunstudio/downloads/"
+HREF="http://www.oracle.com/technetwork/server-storage/solarisstudio/downloads/"
 TARGET="_top"
->http://developers.sun.com/sunstudio/downloads/</A
+>http://www.oracle.com/technetwork/server-storage/solarisstudio/downloads/</A
 >.
      Many of GNU tools are integrated into Solaris 10, or they are
      present on the Solaris companion CD.  If you like packages for
@@ -1440,12 +1336,8 @@ TARGET="_top"
 HREF="http://www.sunfreeware.com"
 TARGET="_top"
 >http://www.sunfreeware.com</A
->
-     or <A
-HREF="http://www.blastwave.org"
-TARGET="_top"
->http://www.blastwave.org</A
->.  If you prefer
+>.
+     If you prefer
      sources, look
      at <A
 HREF="http://www.gnu.org/order/ftp.html"
@@ -1459,8 +1351,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25442"
->15.7.7.2. Problems with OpenSSL</A
+NAME="AEN27735"
+>15.7.6.2. Problems with OpenSSL</A
 ></H3
 ><P
 >     When you build PostgreSQL with OpenSSL support you might get
@@ -1516,8 +1408,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25460"
->15.7.7.3. configure Complains About a Failed Test Program</A
+NAME="AEN27753"
+>15.7.6.3. configure Complains About a Failed Test Program</A
 ></H3
 ><P
 >     If <TT
@@ -1555,8 +1447,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25470"
->15.7.7.4. 64-bit Build Sometimes Crashes</A
+NAME="AEN27763"
+>15.7.6.4. 64-bit Build Sometimes Crashes</A
 ></H3
 ><P
 >     On Solaris 7 and older, the 64-bit version of libc has a buggy
@@ -1600,8 +1492,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25480"
->15.7.7.5. Compiling for Optimal Performance</A
+NAME="AEN27773"
+>15.7.6.5. Compiling for Optimal Performance</A
 ></H3
 ><P
 >     On the SPARC architecture, Sun Studio is strongly recommended for
@@ -1630,26 +1522,14 @@ CLASS="OPTION"
      and that is why 32-bit code is significant slower on this CPU
      family.
     </P
-><P
->     Some tricks for tuning PostgreSQL and Solaris for performance can
-     be found
-     at <A
-HREF="http://www.sun.com/servers/coolthreads/tnb/applications_postgresql.jsp"
-TARGET="_top"
->http://www.sun.com/servers/coolthreads/tnb/applications_postgresql.jsp</A
->.
-     This article is primary focused on T2000 platform, but many of
-     the recommendations are also useful on other hardware with
-     Solaris.
-    </P
 ></DIV
 ><DIV
 CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN25489"
->15.7.7.6. Using DTrace for Tracing PostgreSQL</A
+NAME="AEN27780"
+>15.7.6.6. Using DTrace for Tracing PostgreSQL</A
 ></H3
 ><P
 >     Yes, using DTrace is possible.  See 
@@ -1659,9 +1539,9 @@ HREF="dynamic-trace.html"
 > for further
      information.  You can also find more information in this
      article: <A
-HREF="http://blogs.sun.com/robertlor/entry/user_level_dtrace_probes_in"
+HREF="https://blogs.oracle.com/robertlor/entry/user_level_dtrace_probes_in"
 TARGET="_top"
->http://blogs.sun.com/robertlor/entry/user_level_dtrace_probes_in</A
+>https://blogs.oracle.com/robertlor/entry/user_level_dtrace_probes_in</A
 >.
     </P
 ><P
@@ -1678,7 +1558,7 @@ AbortTransaction                    utils/probes.o
 CommitTransaction                   utils/probes.o
 ld: fatal: Symbol referencing errors. No output written to postgres
 collect2: ld returned 1 exit status
-gmake: *** [postgres] Error 1</PRE
+make: *** [postgres] Error 1</PRE
 ><P>
      your DTrace installation is too old to handle probes in static
      functions.  You need Solaris 10u4 or newer.

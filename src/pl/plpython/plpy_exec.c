@@ -6,6 +6,7 @@
 
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "access/xact.h"
 #include "catalog/pg_type.h"
 #include "commands/trigger.h"
@@ -88,7 +89,7 @@ PLy_exec_function(FunctionCallInfo fcinfo, PLyProcedure *proc)
 					ereport(ERROR,
 							(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 							 errmsg("unsupported set function return mode"),
-							 errdetail("PL/Python set-returning functions only support returning only value per call.")));
+							 errdetail("PL/Python set-returning functions only support returning one value per call.")));
 				}
 				rsi->returnMode = SFRM_ValuePerCall;
 
@@ -246,7 +247,7 @@ PLy_exec_trigger(FunctionCallInfo fcinfo, PLyProcedure *proc)
 	Assert(CALLED_AS_TRIGGER(fcinfo));
 
 	/*
-	 * Input/output conversion for trigger tuples.	Use the result TypeInfo
+	 * Input/output conversion for trigger tuples.  Use the result TypeInfo
 	 * variable to store the tuple conversion info.  We do this over again on
 	 * each call to cover the possibility that the relation's tupdesc changed
 	 * since the trigger was last called. PLy_input_tuple_funcs and
@@ -634,9 +635,7 @@ PLy_modify_tuple(PLyProcedure *proc, PyObject *pltd, TriggerData *tdata,
 {
 	PyObject   *volatile plntup;
 	PyObject   *volatile plkeys;
-	PyObject   *volatile platt;
 	PyObject   *volatile plval;
-	PyObject   *volatile plstr;
 	HeapTuple	rtup;
 	int			natts,
 				i,
@@ -652,7 +651,7 @@ PLy_modify_tuple(PLyProcedure *proc, PyObject *pltd, TriggerData *tdata,
 	plerrcontext.previous = error_context_stack;
 	error_context_stack = &plerrcontext;
 
-	plntup = plkeys = platt = plval = plstr = NULL;
+	plntup = plkeys = plval = NULL;
 	modattrs = NULL;
 	modvalues = NULL;
 	modnulls = NULL;
@@ -662,10 +661,10 @@ PLy_modify_tuple(PLyProcedure *proc, PyObject *pltd, TriggerData *tdata,
 		if ((plntup = PyDict_GetItemString(pltd, "new")) == NULL)
 			ereport(ERROR,
 					(errmsg("TD[\"new\"] deleted, cannot modify row")));
+		Py_INCREF(plntup);
 		if (!PyDict_Check(plntup))
 			ereport(ERROR,
 					(errmsg("TD[\"new\"] is not a dictionary")));
-		Py_INCREF(plntup);
 
 		plkeys = PyDict_Keys(plntup);
 		natts = PyList_Size(plkeys);
@@ -678,6 +677,7 @@ PLy_modify_tuple(PLyProcedure *proc, PyObject *pltd, TriggerData *tdata,
 
 		for (i = 0; i < natts; i++)
 		{
+			PyObject   *platt;
 			char	   *plattstr;
 
 			platt = PyList_GetItem(plkeys, i);
@@ -744,7 +744,6 @@ PLy_modify_tuple(PLyProcedure *proc, PyObject *pltd, TriggerData *tdata,
 		Py_XDECREF(plntup);
 		Py_XDECREF(plkeys);
 		Py_XDECREF(plval);
-		Py_XDECREF(plstr);
 
 		if (modnulls)
 			pfree(modnulls);

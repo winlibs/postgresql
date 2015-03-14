@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -126,7 +126,7 @@ CLASS="ACRONYM"
     arguments.  Details are in
     <A
 HREF="functions-string.html#FUNCTIONS-STRING-SQL"
->Table 9-5</A
+>Table 9-6</A
 >.
     <SPAN
 CLASS="PRODUCTNAME"
@@ -135,7 +135,7 @@ CLASS="PRODUCTNAME"
     that use the regular function invocation syntax
     (see <A
 HREF="functions-string.html#FUNCTIONS-STRING-OTHER"
->Table 9-6</A
+>Table 9-7</A
 >).
    </P
 ><DIV
@@ -162,7 +162,7 @@ CLASS="LITERAL"
 >) still accepts non-string input, so long as at least one
      input is of a string type, as shown in <A
 HREF="functions-string.html#FUNCTIONS-STRING-SQL"
->Table 9-5</A
+>Table 9-6</A
 >.  For other cases, insert an explicit
      coercion to <TT
 CLASS="TYPE"
@@ -178,7 +178,7 @@ NAME="FUNCTIONS-STRING-SQL"
 ></A
 ><P
 ><B
->Table 9-5. <ACRONYM
+>Table 9-6. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > String Functions and Operators</B
@@ -697,6 +697,57 @@ CLASS="LITERAL"
 ></TR
 ><TR
 ><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>trim([<SPAN
+CLASS="OPTIONAL"
+>leading | trailing
+        | both</SPAN
+>] [<SPAN
+CLASS="OPTIONAL"
+>from</SPAN
+>]
+        <TT
+CLASS="PARAMETER"
+>string</TT
+>
+        [<SPAN
+CLASS="OPTIONAL"
+><TT
+CLASS="PARAMETER"
+>, characters</TT
+></SPAN
+>]
+        )</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>        Non-standard version of <CODE
+CLASS="FUNCTION"
+>trim()</CODE
+>
+       </TD
+><TD
+><TT
+CLASS="LITERAL"
+>trim(both from 'xTomxx', 'x')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>Tom</TT
+></TD
+></TR
+><TR
+><TD
 >        
         <TT
 CLASS="LITERAL"
@@ -734,14 +785,14 @@ CLASS="LITERAL"
 >    Additional string manipulation functions are available and are
     listed in <A
 HREF="functions-string.html#FUNCTIONS-STRING-OTHER"
->Table 9-6</A
+>Table 9-7</A
 >.  Some of them are used internally to implement the
     <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 >-standard string functions listed in <A
 HREF="functions-string.html#FUNCTIONS-STRING-SQL"
->Table 9-5</A
+>Table 9-6</A
 >.
    </P
 ><DIV
@@ -751,7 +802,7 @@ NAME="FUNCTIONS-STRING-OTHER"
 ></A
 ><P
 ><B
->Table 9-6. Other String Functions</B
+>Table 9-7. Other String Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -943,7 +994,8 @@ CLASS="TYPE"
 >text</TT
 ></TD
 ><TD
->        Concatenate all arguments. NULL arguments are ignored.
+>        Concatenate the text representations of all the arguments.
+        NULL arguments are ignored.
        </TD
 ><TD
 ><TT
@@ -993,8 +1045,8 @@ CLASS="TYPE"
 >text</TT
 ></TD
 ><TD
->        Concatenate all but first arguments with separators. The first
-        parameter is used as a separator. NULL arguments are ignored.
+>        Concatenate all but the first argument with separators. The first
+        argument is used as the separator string. NULL arguments are ignored.
        </TD
 ><TD
 ><TT
@@ -1063,7 +1115,7 @@ CLASS="COMMAND"
 >.
         Also there are some predefined conversions. See <A
 HREF="functions-string.html#CONVERSION-NAMES"
->Table 9-7</A
+>Table 9-8</A
 > for available conversions.
        </TD
 ><TD
@@ -1272,10 +1324,16 @@ CLASS="LITERAL"
         <TT
 CLASS="LITERAL"
 >escape</TT
-> merely outputs null bytes as <TT
+> converts zero bytes and high-bit-set bytes to
+        octal sequences (<TT
 CLASS="LITERAL"
->\000</TT
-> and
+>\</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>nnn</I
+></TT
+>) and
         doubles backslashes.
        </TD
 ><TD
@@ -1309,7 +1367,7 @@ CLASS="TYPE"
 >
         [, <TT
 CLASS="PARAMETER"
->str</TT
+>formatarg</TT
 > <TT
 CLASS="TYPE"
 >"any"</TT
@@ -1322,49 +1380,14 @@ CLASS="TYPE"
 >text</TT
 ></TD
 ><TD
->         Format a string.  This function is similar to the C function
-         <CODE
+>         Format arguments according to a format string.
+         This function is similar to the C function <CODE
 CLASS="FUNCTION"
 >sprintf</CODE
->; but only the following conversion specifications
-         are recognized: <TT
-CLASS="LITERAL"
->%s</TT
-> interpolates the corresponding
-         argument as a string; <TT
-CLASS="LITERAL"
->%I</TT
-> escapes its argument as
-         an SQL identifier; <TT
-CLASS="LITERAL"
->%L</TT
-> escapes its argument as an
-         SQL literal; <TT
-CLASS="LITERAL"
->%%</TT
-> outputs a literal <TT
-CLASS="LITERAL"
->%</TT
 >.
-         A conversion can reference an explicit parameter position by preceding
-         the conversion specifier with <TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
->$</TT
->, where
-         <TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
-> is the argument position.
-         See also <A
-HREF="plpgsql-statements.html#PLPGSQL-QUOTE-LITERAL-EXAMPLE"
->Example 39-1</A
+         See <A
+HREF="functions-string.html#FUNCTIONS-STRING-FORMAT"
+>Section 9.4.1</A
 >.
        </TD
 ><TD
@@ -1787,7 +1810,7 @@ CLASS="ACRONYM"
         Embedded quotes are properly doubled.
         See also <A
 HREF="plpgsql-statements.html#PLPGSQL-QUOTE-LITERAL-EXAMPLE"
->Example 39-1</A
+>Example 40-1</A
 >.
        </TD
 ><TD
@@ -1841,7 +1864,7 @@ CLASS="FUNCTION"
 > is often more suitable.
         See also <A
 HREF="plpgsql-statements.html#PLPGSQL-QUOTE-LITERAL-EXAMPLE"
->Example 39-1</A
+>Example 40-1</A
 >.
        </TD
 ><TD
@@ -1925,7 +1948,7 @@ CLASS="LITERAL"
         Embedded single-quotes and backslashes are properly doubled.
         See also <A
 HREF="plpgsql-statements.html#PLPGSQL-QUOTE-LITERAL-EXAMPLE"
->Example 39-1</A
+>Example 40-1</A
 >.
        </TD
 ><TD
@@ -2882,6 +2905,40 @@ CLASS="LITERAL"
 ></TABLE
 ></DIV
 ><P
+>    The <CODE
+CLASS="FUNCTION"
+>concat</CODE
+>, <CODE
+CLASS="FUNCTION"
+>concat_ws</CODE
+> and
+    <CODE
+CLASS="FUNCTION"
+>format</CODE
+> functions are variadic, so it is possible to
+    pass the values to be concatenated or formatted as an array marked with
+    the <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> keyword (see <A
+HREF="xfunc-sql.html#XFUNC-SQL-VARIADIC-FUNCTIONS"
+>Section 35.4.5</A
+>).  The array's elements are
+    treated as if they were separate ordinary arguments to the function.
+    If the variadic array argument is NULL, <CODE
+CLASS="FUNCTION"
+>concat</CODE
+>
+    and <CODE
+CLASS="FUNCTION"
+>concat_ws</CODE
+> return NULL, but
+    <CODE
+CLASS="FUNCTION"
+>format</CODE
+> treats a NULL as a zero-element array.
+   </P
+><P
 >   See also the aggregate function <CODE
 CLASS="FUNCTION"
 >string_agg</CODE
@@ -2898,7 +2955,7 @@ NAME="CONVERSION-NAMES"
 ></A
 ><P
 ><B
->Table 9-7. Built-in Conversions</B
+>Table 9-8. Built-in Conversions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2908,8 +2965,8 @@ CLASS="CALSTABLE"
 ><TH
 >Conversion Name
         <A
-NAME="AEN9820"
-HREF="#FTN.AEN9820"
+NAME="AEN10395"
+HREF="#FTN.AEN10395"
 ><SPAN
 CLASS="footnote"
 >[a]</SPAN
@@ -5018,7 +5075,7 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->ut8_to_euc_jis_2004</TT
+>utf8_to_euc_jis_2004</TT
 ></TD
 ><TD
 ><TT
@@ -5052,7 +5109,7 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->ut8_to_shift_jis_2004</TT
+>utf8_to_shift_jis_2004</TT
 ></TD
 ><TD
 ><TT
@@ -5104,7 +5161,7 @@ CLASS="LITERAL"
 ><TD
 COLSPAN="3"
 >Notes:<BR><A
-NAME="FTN.AEN9820"
+NAME="FTN.AEN10395"
 >a. </A
 >          The conversion names follow a standard naming scheme: The
           official name of the source encoding with all
@@ -5118,6 +5175,506 @@ CLASS="LITERAL"
          <BR></TD
 ></TR
 ></TABLE
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="FUNCTIONS-STRING-FORMAT"
+>9.4.1. <CODE
+CLASS="FUNCTION"
+>format</CODE
+></A
+></H2
+><P
+>     The function <CODE
+CLASS="FUNCTION"
+>format</CODE
+> produces output formatted according to
+     a format string, in a style similar to the C function
+     <CODE
+CLASS="FUNCTION"
+>sprintf</CODE
+>.
+    </P
+><P
+></P><PRE
+CLASS="SYNOPSIS"
+><CODE
+CLASS="FUNCTION"
+>format</CODE
+>(<TT
+CLASS="PARAMETER"
+>formatstr</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+> [, <TT
+CLASS="PARAMETER"
+>formatarg</TT
+> <TT
+CLASS="TYPE"
+>"any"</TT
+> [, ...] ])</PRE
+><P>
+     <TT
+CLASS="REPLACEABLE"
+><I
+>formatstr</I
+></TT
+> is a format string that specifies how the
+     result should be formatted.  Text in the format string is copied
+     directly to the result, except where <I
+CLASS="FIRSTTERM"
+>format specifiers</I
+> are
+     used.  Format specifiers act as placeholders in the string, defining how
+     subsequent function arguments should be formatted and inserted into the
+     result.  Each <TT
+CLASS="REPLACEABLE"
+><I
+>formatarg</I
+></TT
+> argument is converted to text
+     according to the usual output rules for its data type, and then formatted
+     and inserted into the result string according to the format specifier(s).
+    </P
+><P
+>     Format specifiers are introduced by a <TT
+CLASS="LITERAL"
+>%</TT
+> character and have
+     the form
+</P><PRE
+CLASS="SYNOPSIS"
+>%[<TT
+CLASS="REPLACEABLE"
+><I
+>position</I
+></TT
+>][<TT
+CLASS="REPLACEABLE"
+><I
+>flags</I
+></TT
+>][<TT
+CLASS="REPLACEABLE"
+><I
+>width</I
+></TT
+>]<TT
+CLASS="REPLACEABLE"
+><I
+>type</I
+></TT
+></PRE
+><P>
+     where the component fields are:
+
+     <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>position</I
+></TT
+> (optional)</DT
+><DD
+><P
+>         A string of the form <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>$</TT
+> where
+         <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> is the index of the argument to print.
+         Index 1 means the first argument after
+         <TT
+CLASS="REPLACEABLE"
+><I
+>formatstr</I
+></TT
+>.  If the <TT
+CLASS="REPLACEABLE"
+><I
+>position</I
+></TT
+> is
+         omitted, the default is to use the next argument in sequence.
+        </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>flags</I
+></TT
+> (optional)</DT
+><DD
+><P
+>         Additional options controlling how the format specifier's output is
+         formatted.  Currently the only supported flag is a minus sign
+         (<TT
+CLASS="LITERAL"
+>-</TT
+>) which will cause the format specifier's output to be
+         left-justified.  This has no effect unless the <TT
+CLASS="REPLACEABLE"
+><I
+>width</I
+></TT
+>
+         field is also specified.
+        </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>width</I
+></TT
+> (optional)</DT
+><DD
+><P
+>         Specifies the <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>minimum</I
+></SPAN
+> number of characters to use to
+         display the format specifier's output.  The output is padded on the
+         left or right (depending on the <TT
+CLASS="LITERAL"
+>-</TT
+> flag) with spaces as
+         needed to fill the width.  A too-small width does not cause
+         truncation of the output, but is simply ignored.  The width may be
+         specified using any of the following: a positive integer; an
+         asterisk (<TT
+CLASS="LITERAL"
+>*</TT
+>) to use the next function argument as the
+         width; or a string of the form <TT
+CLASS="LITERAL"
+>*<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>$</TT
+> to
+         use the <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>th function argument as the width.
+        </P
+><P
+>         If the width comes from a function argument, that argument is
+         consumed before the argument that is used for the format specifier's
+         value.  If the width argument is negative, the result is left
+         aligned (as if the <TT
+CLASS="LITERAL"
+>-</TT
+> flag had been specified) within a
+         field of length <CODE
+CLASS="FUNCTION"
+>abs</CODE
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>width</I
+></TT
+>).
+        </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>type</I
+></TT
+> (required)</DT
+><DD
+><P
+>         The type of format conversion to use to produce the format
+         specifier's output.  The following types are supported:
+         <P
+></P
+></P><UL
+><LI
+><P
+>            <TT
+CLASS="LITERAL"
+>s</TT
+> formats the argument value as a simple
+            string.  A null value is treated as an empty string.
+           </P
+></LI
+><LI
+><P
+>            <TT
+CLASS="LITERAL"
+>I</TT
+> treats the argument value as an SQL
+            identifier, double-quoting it if necessary.
+            It is an error for the value to be null.
+           </P
+></LI
+><LI
+><P
+>            <TT
+CLASS="LITERAL"
+>L</TT
+> quotes the argument value as an SQL literal.
+            A null value is displayed as the string <TT
+CLASS="LITERAL"
+>NULL</TT
+>, without
+            quotes.
+           </P
+></LI
+></UL
+><P>
+        </P
+></DD
+></DL
+></DIV
+><P>
+    </P
+><P
+>     In addition to the format specifiers described above, the special sequence
+     <TT
+CLASS="LITERAL"
+>%%</TT
+> may be used to output a literal <TT
+CLASS="LITERAL"
+>%</TT
+> character.
+    </P
+><P
+>     Here are some examples of the basic format conversions:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT format('Hello %s', 'World');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>Hello World</SAMP
+>
+
+SELECT format('Testing %s, %s, %s, %%', 'one', 'two', 'three');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>Testing one, two, three, %</SAMP
+>
+
+SELECT format('INSERT INTO %I VALUES(%L)', 'Foo bar', E'O\'Reilly');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>INSERT INTO "Foo bar" VALUES('O''Reilly')</SAMP
+>
+
+SELECT format('INSERT INTO %I VALUES(%L)', 'locations', E'C:\\Program Files');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>INSERT INTO locations VALUES(E'C:\\Program Files')</SAMP
+></PRE
+><P>
+    </P
+><P
+>     Here are examples using <TT
+CLASS="REPLACEABLE"
+><I
+>width</I
+></TT
+> fields
+     and the <TT
+CLASS="LITERAL"
+>-</TT
+> flag:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT format('|%10s|', 'foo');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>|       foo|</SAMP
+>
+
+SELECT format('|%-10s|', 'foo');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>|foo       |</SAMP
+>
+
+SELECT format('|%*s|', 10, 'foo');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>|       foo|</SAMP
+>
+
+SELECT format('|%*s|', -10, 'foo');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>|foo       |</SAMP
+>
+
+SELECT format('|%-*s|', 10, 'foo');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>|foo       |</SAMP
+>
+
+SELECT format('|%-*s|', -10, 'foo');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>|foo       |</SAMP
+></PRE
+><P>
+    </P
+><P
+>     These examples show use of <TT
+CLASS="REPLACEABLE"
+><I
+>position</I
+></TT
+> fields:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT format('Testing %3$s, %2$s, %1$s', 'one', 'two', 'three');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>Testing three, two, one</SAMP
+>
+
+SELECT format('|%*2$s|', 'foo', 10, 'bar');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>|       bar|</SAMP
+>
+
+SELECT format('|%1$*2$s|', 'foo', 10, 'bar');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>|       foo|</SAMP
+></PRE
+><P>
+    </P
+><P
+>     Unlike the standard C function <CODE
+CLASS="FUNCTION"
+>sprintf</CODE
+>,
+     <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>'s <CODE
+CLASS="FUNCTION"
+>format</CODE
+> function allows format
+     specifiers with and without <TT
+CLASS="REPLACEABLE"
+><I
+>position</I
+></TT
+> fields to be mixed
+     in the same format string.  A format specifier without a
+     <TT
+CLASS="REPLACEABLE"
+><I
+>position</I
+></TT
+> field always uses the next argument after the
+     last argument consumed.
+     In addition, the <CODE
+CLASS="FUNCTION"
+>format</CODE
+> function does not require all
+     function arguments to be used in the format string.
+     For example:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT format('Testing %3$s, %2$s, %s', 'one', 'two', 'three');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>Testing three, two, three</SAMP
+></PRE
+><P>
+    </P
+><P
+>     The <TT
+CLASS="LITERAL"
+>%I</TT
+> and <TT
+CLASS="LITERAL"
+>%L</TT
+> format specifiers are particularly
+     useful for safely constructing dynamic SQL statements.  See
+     <A
+HREF="plpgsql-statements.html#PLPGSQL-QUOTE-LITERAL-EXAMPLE"
+>Example 40-1</A
+>.
+    </P
 ></DIV
 ></DIV
 ><DIV

@@ -5,12 +5,22 @@ top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
 
 
-# On some platforms we can only build PL/Python if libpython is a
-# shared library.  Since there is no official way to determine this
-# (at least not in pre-2.3 Python), we see if there is a file that is
-# named like a shared library.
+# We need libpython as a shared library.  In Python >=2.5, configure
+# asks Python directly.  But because this has been broken in Debian
+# for a long time (http://bugs.debian.org/695979), and to support
+# older Python versions, we see if there is a file that is named like
+# a shared library as a fallback.
+ifeq (1,$(python_enable_shared))
+shared_libpython = yes
+else
+ifeq ($(PORTNAME), darwin)
+# OS X does supply a .dylib even though Py_ENABLE_SHARED does not get set
+shared_libpython = yes
+else
 ifneq (,$(wildcard $(python_libdir)/libpython*$(DLSUFFIX)*))
 shared_libpython = yes
+endif
+endif
 endif
 
 # Windows needs to convert backslashed paths to normal slashes,
@@ -21,16 +31,8 @@ python_includespec := $(subst \,/,$(python_includespec))
 override python_libspec =
 endif
 
-# Darwin (OS X) has its own ideas about how to do this.
-ifeq ($(PORTNAME), darwin)
-shared_libpython = yes
-override python_libspec = -framework Python
-override python_additional_libs =
-endif
-
-# If we don't have a shared library and the platform doesn't allow it
-# to work without, we have to skip it.
-ifneq (,$(findstring yes, $(shared_libpython)$(allow_nonpic_in_shlib)))
+# If we don't have a shared library, we have to skip it.
+ifeq ($(shared_libpython),yes)
 
 override CPPFLAGS := -I. -I$(srcdir) $(python_includespec) $(CPPFLAGS)
 
@@ -62,14 +64,19 @@ endif
 # which are not compatible with mingw gcc. Therefore we need to build a
 # new import library to link with.
 ifeq ($(PORTNAME), win32)
+
 pytverstr=$(subst .,,${python_version})
+PYTHONDLL=$(subst \,/,$(WINDIR))/system32/python${pytverstr}.dll
+
 OBJS += libpython${pytverstr}.a
+
 libpython${pytverstr}.a: python${pytverstr}.def
-	dlltool --dllname python${pytverstr}.dll --def python${pytverstr}.def --output-lib  libpython${pytverstr}.a
-WD=$(subst \,/,$(WINDIR))
-python${pytverstr}.def: $(WD)/system32/python${pytverstr}.dll
-	pexports $(WD)/system32/python${pytverstr}.dll > python${pytverstr}.def
-endif
+	dlltool --dllname python${pytverstr}.dll --def python${pytverstr}.def --output-lib libpython${pytverstr}.a
+
+python${pytverstr}.def:
+	pexports $(PYTHONDLL) > $@
+
+endif # win32
 
 
 SHLIB_LINK = $(python_libspec) $(python_additional_libs) $(filter -lintl,$(LIBS))
@@ -103,6 +110,8 @@ REGRESS = \
 	plpython_subtransaction \
 	plpython_drop
 
+REGRESS_PLPYTHON3_MANGLE := $(REGRESS)
+
 # where to find psql for running the tests
 PSQLDIR = $(bindir)
 
@@ -129,9 +138,20 @@ uninstall-data:
 
 ifeq ($(python_majorversion),3)
 # Adjust regression tests for Python 3 compatibility
-prep3:
-	$(MKDIR_P) python3 python3/sql python3/expected
-	for file in $(srcdir)/sql/*.sql $(srcdir)/expected/*.out; do \
+#
+# Mention those regression test files that need to be mangled in the
+# variable REGRESS_PLPYTHON3_MANGLE.  They will be copied to a
+# subdirectory python3/ and have their Python syntax and other bits
+# adjusted to work with Python 3.
+
+# Note that the order of the tests needs to be preserved in this
+# expression.
+REGRESS := $(foreach test,$(REGRESS),$(if $(filter $(test),$(REGRESS_PLPYTHON3_MANGLE)),python3/$(test),$(test)))
+
+.PHONY: pgregress-python3-mangle
+pgregress-python3-mangle:
+	$(MKDIR_P) sql/python3 expected/python3 results/python3
+	for file in $(patsubst %,$(srcdir)/sql/%.sql,$(REGRESS_PLPYTHON3_MANGLE)) $(patsubst %,$(srcdir)/expected/%*.out,$(REGRESS_PLPYTHON3_MANGLE)); do \
 	  sed -e 's/except \([[:alpha:]][[:alpha:].]*\), *\([[:alpha:]][[:alpha:]]*\):/except \1 as \2:/g' \
 	      -e "s/<type 'exceptions\.\([[:alpha:]]*\)'>/<class '\1'>/g" \
 	      -e "s/<type 'long'>/<class 'int'>/g" \
@@ -143,26 +163,22 @@ prep3:
 	      -e "s/LANGUAGE plpython2u/LANGUAGE plpython3u/g" \
 	      -e "s/EXTENSION plpythonu/EXTENSION plpython3u/g" \
 	      -e "s/EXTENSION plpython2u/EXTENSION plpython3u/g" \
-	    $$file >`echo $$file | sed 's,^.*\(/[^/][^/]*/[^/][^/]*\)$$,python3\1,'` || exit; \
+	    $$file >`echo $$file | sed 's,^.*/\([^/][^/]*/\)\([^/][^/]*\)$$,\1python3/\2,'` || exit; \
 	done
 
-clean3:
-	rm -rf python3/
+check installcheck: pgregress-python3-mangle
 
-check: all submake prep3
-	$(pg_regress_check) --inputdir=./python3 --outputdir=./python3 $(REGRESS_OPTS) $(REGRESS)
+pg_regress_clean_files += sql/python3/ expected/python3/ results/python3/
 
-installcheck: submake prep3
-	$(pg_regress_installcheck) --inputdir=./python3 --outputdir=./python3 $(REGRESS_OPTS) $(REGRESS)
+endif # Python 3
 
-clean: clean3
-else # not Python 3
+
 check: all submake
 	$(pg_regress_check) $(REGRESS_OPTS) $(REGRESS)
 
 installcheck: submake
 	$(pg_regress_installcheck) $(REGRESS_OPTS) $(REGRESS)
-endif # not Python 3
+
 
 .PHONY: submake
 submake:

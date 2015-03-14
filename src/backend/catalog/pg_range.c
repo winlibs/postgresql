@@ -3,7 +3,7 @@
  * pg_range.c
  *	  routines to support manipulation of the pg_range relation
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -16,6 +16,7 @@
 
 #include "access/genam.h"
 #include "access/heapam.h"
+#include "access/htup_details.h"
 #include "catalog/dependency.h"
 #include "catalog/indexing.h"
 #include "catalog/pg_collation.h"
@@ -125,7 +126,7 @@ RangeDelete(Oid rangeTypeOid)
 				ObjectIdGetDatum(rangeTypeOid));
 
 	scan = systable_beginscan(pg_range, RangeTypidIndexId, true,
-							  SnapshotNow, 1, key);
+							  NULL, 1, key);
 
 	while (HeapTupleIsValid(tup = systable_getnext(scan)))
 	{

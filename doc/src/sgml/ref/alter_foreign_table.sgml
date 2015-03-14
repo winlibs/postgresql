@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="SQL-ALTERFOREIGNTABLE">
+ <indexterm zone="sql-alterforeigntable">
+  <primary>ALTER FOREIGN TABLE</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle>ALTER FOREIGN TABLE</refentrytitle>
   <manvolnum>7</manvolnum>
@@ -14,10 +18,6 @@ PostgreSQL documentation
   <refname>ALTER FOREIGN TABLE</refname>
   <refpurpose>change the definition of a foreign table</refpurpose>
  </refnamediv>
-
- <indexterm zone="sql-alterforeigntable">
-  <primary>ALTER FOREIGN TABLE</primary>
- </indexterm>
 
  <refsynopsisdiv>
 <synopsis>
@@ -32,14 +32,20 @@ ALTER FOREIGN TABLE [ IF EXISTS ] <replaceable class="PARAMETER">name</replaceab
 
 <phrase>where <replaceable class="PARAMETER">action</replaceable> is one of:</phrase>
 
-    ADD [ COLUMN ] <replaceable class="PARAMETER">column_name</replaceable> <replaceable class="PARAMETER">data_type</replaceable> [ NULL | NOT NULL ]
+    ADD [ COLUMN ] <replaceable class="PARAMETER">column_name</replaceable> <replaceable class="PARAMETER">data_type</replaceable> [ COLLATE <replaceable class="PARAMETER">collation</replaceable> ] [ <replaceable class="PARAMETER">column_constraint</replaceable> [ ... ] ]
     DROP [ COLUMN ] [ IF EXISTS ] <replaceable class="PARAMETER">column_name</replaceable> [ RESTRICT | CASCADE ]
     ALTER [ COLUMN ] <replaceable class="PARAMETER">column_name</replaceable> [ SET DATA ] TYPE <replaceable class="PARAMETER">data_type</replaceable>
+    ALTER [ COLUMN ] <replaceable class="PARAMETER">column_name</replaceable> SET DEFAULT <replaceable class="PARAMETER">expression</replaceable>
+    ALTER [ COLUMN ] <replaceable class="PARAMETER">column_name</replaceable> DROP DEFAULT
     ALTER [ COLUMN ] <replaceable class="PARAMETER">column_name</replaceable> { SET | DROP } NOT NULL
     ALTER [ COLUMN ] <replaceable class="PARAMETER">column_name</replaceable> SET STATISTICS <replaceable class="PARAMETER">integer</replaceable>
     ALTER [ COLUMN ] <replaceable class="PARAMETER">column_name</replaceable> SET ( <replaceable class="PARAMETER">attribute_option</replaceable> = <replaceable class="PARAMETER">value</replaceable> [, ... ] )
     ALTER [ COLUMN ] <replaceable class="PARAMETER">column_name</replaceable> RESET ( <replaceable class="PARAMETER">attribute_option</replaceable> [, ... ] )
     ALTER [ COLUMN ] <replaceable class="PARAMETER">column_name</replaceable> OPTIONS ( [ ADD | SET | DROP ] <replaceable class="PARAMETER">option</replaceable> ['<replaceable class="PARAMETER">value</replaceable>'] [, ... ])
+    DISABLE TRIGGER [ <replaceable class="PARAMETER">trigger_name</replaceable> | ALL | USER ]
+    ENABLE TRIGGER [ <replaceable class="PARAMETER">trigger_name</replaceable> | ALL | USER ]
+    ENABLE REPLICA TRIGGER <replaceable class="PARAMETER">trigger_name</replaceable>
+    ENABLE ALWAYS TRIGGER <replaceable class="PARAMETER">trigger_name</replaceable>
     OWNER TO <replaceable class="PARAMETER">new_owner</replaceable>
     OPTIONS ( [ ADD | SET | DROP ] <replaceable class="PARAMETER">option</replaceable> ['<replaceable class="PARAMETER">value</replaceable>'] [, ... ])
 </synopsis>
@@ -59,6 +65,9 @@ ALTER FOREIGN TABLE [ IF EXISTS ] <replaceable class="PARAMETER">name</replaceab
      <para>
       This form adds a new column to the foreign table, using the same syntax as
       <xref linkend="SQL-CREATEFOREIGNTABLE">.
+      Unlike the case when adding a column to a regular table, nothing happens
+      to the underlying storage: this action simply declares that
+      some new column is now accessible through the foreign table.
      </para>
     </listitem>
    </varlistentry>
@@ -98,6 +107,18 @@ ALTER FOREIGN TABLE [ IF EXISTS ] <replaceable class="PARAMETER">name</replaceab
    </varlistentry>
 
    <varlistentry>
+    <term><literal>SET</literal>/<literal>DROP DEFAULT</literal></term>
+    <listitem>
+     <para>
+      These forms set or remove the default value for a column.
+      Default values only apply in subsequent <command>INSERT</command>
+      or <command>UPDATE</> commands; they do not cause rows already in the
+      table to change.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
     <term><literal>SET</literal>/<literal>DROP NOT NULL</literal></term>
     <listitem>
      <para>
@@ -127,6 +148,17 @@ ALTER FOREIGN TABLE [ IF EXISTS ] <replaceable class="PARAMETER">name</replaceab
       This form sets or resets per-attribute options.
       See the similar form of <xref linkend="sql-altertable">
       for more details.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><literal>DISABLE</literal>/<literal>ENABLE [ REPLICA | ALWAYS ] TRIGGER</literal></term>
+    <listitem>
+     <para>
+      These forms configure the firing of trigger(s) belonging to the foreign
+      table.  See the similar form of <xref linkend="sql-altertable"> for more
+      details.
      </para>
     </listitem>
    </varlistentry>
@@ -268,6 +300,37 @@ ALTER FOREIGN TABLE [ IF EXISTS ] <replaceable class="PARAMETER">name</replaceab
        <para>
         Refuse to drop the column if there are any dependent
         objects. This is the default behavior.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><replaceable class="PARAMETER">trigger_name</replaceable></term>
+      <listitem>
+       <para>
+        Name of a single trigger to disable or enable.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><literal>ALL</literal></term>
+      <listitem>
+       <para>
+        Disable or enable all triggers belonging to the foreign table.  (This
+        requires superuser privilege if any of the triggers are internally
+        generated triggers.  The core system does not add such triggers to
+        foreign tables, but add-on code could do so.)
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><literal>USER</literal></term>
+      <listitem>
+       <para>
+        Disable or enable all triggers belonging to the foreign table except
+        for internally generated triggers.
        </para>
       </listitem>
      </varlistentry>

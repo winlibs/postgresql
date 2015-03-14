@@ -5,7 +5,6 @@ CREATE TEMP TABLE x (
 	d text,
 	e text
 ) WITH OIDS;
-NOTICE:  CREATE TABLE will create implicit sequence "x_a_seq" for serial column "x.a"
 CREATE FUNCTION fn_x_before () RETURNS TRIGGER AS '
   BEGIN
 		NEW.e := ''before trigger fired''::text;
@@ -255,6 +254,184 @@ SELECT * FROM testnull;
     | 
 (4 rows)
 
+BEGIN;
+CREATE TABLE vistest (LIKE testeoc);
+COPY vistest FROM stdin CSV;
+COMMIT;
+SELECT * FROM vistest;
+ a  
+----
+ a0
+ b
+(2 rows)
+
+BEGIN;
+TRUNCATE vistest;
+COPY vistest FROM stdin CSV;
+SELECT * FROM vistest;
+ a  
+----
+ a1
+ b
+(2 rows)
+
+SAVEPOINT s1;
+TRUNCATE vistest;
+COPY vistest FROM stdin CSV;
+SELECT * FROM vistest;
+ a  
+----
+ d1
+ e
+(2 rows)
+
+COMMIT;
+SELECT * FROM vistest;
+ a  
+----
+ d1
+ e
+(2 rows)
+
+BEGIN;
+TRUNCATE vistest;
+COPY vistest FROM stdin CSV FREEZE;
+SELECT * FROM vistest;
+ a  
+----
+ a2
+ b
+(2 rows)
+
+SAVEPOINT s1;
+TRUNCATE vistest;
+COPY vistest FROM stdin CSV FREEZE;
+SELECT * FROM vistest;
+ a  
+----
+ d2
+ e
+(2 rows)
+
+COMMIT;
+SELECT * FROM vistest;
+ a  
+----
+ d2
+ e
+(2 rows)
+
+BEGIN;
+TRUNCATE vistest;
+COPY vistest FROM stdin CSV FREEZE;
+SELECT * FROM vistest;
+ a 
+---
+ x
+ y
+(2 rows)
+
+COMMIT;
+TRUNCATE vistest;
+COPY vistest FROM stdin CSV FREEZE;
+ERROR:  cannot perform FREEZE because the table was not created or truncated in the current subtransaction
+BEGIN;
+TRUNCATE vistest;
+SAVEPOINT s1;
+COPY vistest FROM stdin CSV FREEZE;
+ERROR:  cannot perform FREEZE because the table was not created or truncated in the current subtransaction
+COMMIT;
+BEGIN;
+INSERT INTO vistest VALUES ('z');
+SAVEPOINT s1;
+TRUNCATE vistest;
+ROLLBACK TO SAVEPOINT s1;
+COPY vistest FROM stdin CSV FREEZE;
+ERROR:  cannot perform FREEZE because the table was not created or truncated in the current subtransaction
+COMMIT;
+CREATE FUNCTION truncate_in_subxact() RETURNS VOID AS
+$$
+BEGIN
+	TRUNCATE vistest;
+EXCEPTION
+  WHEN OTHERS THEN
+	INSERT INTO vistest VALUES ('subxact failure');
+END;
+$$ language plpgsql;
+BEGIN;
+INSERT INTO vistest VALUES ('z');
+SELECT truncate_in_subxact();
+ truncate_in_subxact 
+---------------------
+ 
+(1 row)
+
+COPY vistest FROM stdin CSV FREEZE;
+SELECT * FROM vistest;
+ a  
+----
+ d4
+ e
+(2 rows)
+
+COMMIT;
+SELECT * FROM vistest;
+ a  
+----
+ d4
+ e
+(2 rows)
+
+-- Test FORCE_NOT_NULL and FORCE_NULL options
+CREATE TEMP TABLE forcetest (
+    a INT NOT NULL,
+    b TEXT NOT NULL,
+    c TEXT,
+    d TEXT,
+    e TEXT
+);
+\pset null NULL
+-- should succeed with no effect ("b" remains an empty string, "c" remains NULL)
+BEGIN;
+COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL(b), FORCE_NULL(c));
+COMMIT;
+SELECT b, c FROM forcetest WHERE a = 1;
+ b |  c   
+---+------
+   | NULL
+(1 row)
+
+-- should succeed, FORCE_NULL and FORCE_NOT_NULL can be both specified
+BEGIN;
+COPY forcetest (a, b, c, d) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL(c,d), FORCE_NULL(c,d));
+COMMIT;
+SELECT c, d FROM forcetest WHERE a = 2;
+ c |  d   
+---+------
+   | NULL
+(1 row)
+
+-- should fail with not-null constraint violation
+BEGIN;
+COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NULL(b), FORCE_NOT_NULL(c));
+ERROR:  null value in column "b" violates not-null constraint
+DETAIL:  Failing row contains (3, null, , null, null).
+CONTEXT:  COPY forcetest, line 1: "3,,"""
+ROLLBACK;
+-- should fail with "not referenced by COPY" error
+BEGIN;
+COPY forcetest (d, e) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL(b));
+ERROR:  FORCE NOT NULL column "b" not referenced by COPY
+ROLLBACK;
+-- should fail with "not referenced by COPY" error
+BEGIN;
+COPY forcetest (d, e) FROM STDIN WITH (FORMAT csv, FORCE_NULL(b));
+ERROR:  FORCE NULL column "b" not referenced by COPY
+ROLLBACK;
+\pset null ''
+DROP TABLE forcetest;
+DROP TABLE vistest;
+DROP FUNCTION truncate_in_subxact();
 DROP TABLE x, y;
 DROP FUNCTION fn_x_before();
 DROP FUNCTION fn_x_after();

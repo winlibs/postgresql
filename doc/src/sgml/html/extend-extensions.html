@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -220,13 +220,22 @@ HREF="sql-alterextension.html"
     extension.)  Also notice that while a table can be a member of an
     extension, its subsidiary objects such as indexes are not directly
     considered members of the extension.
+    Another important point is that schemas can belong to extensions, but not
+    vice versa: an extension as such has an unqualified name and does not
+    exist <SPAN
+CLASS="QUOTE"
+>"within"</SPAN
+> any schema.  The extension's member objects,
+    however, will belong to schemas whenever appropriate for their object
+    types.  It may or may not be appropriate for an extension to own the
+    schema(s) its member objects are within.
    </P
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN54001"
+NAME="AEN57274"
 >35.15.1. Extension Files</A
 ></H2
 ><P
@@ -624,7 +633,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN54119"
+NAME="AEN57392"
 >35.15.2. Extension Relocatability</A
 ></H2
 ><P
@@ -800,7 +809,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN54160"
+NAME="AEN57433"
 >35.15.3. Extension Configuration Tables</A
 ></H2
 ><P
@@ -875,13 +884,26 @@ CLASS="STRUCTFIELD"
      be modified by users, can be handled by creating triggers on the
      configuration table to ensure that modified rows are marked correctly.
     </P
+><P
+>     You can alter the filter condition associated with a configuration table
+     by calling <CODE
+CLASS="FUNCTION"
+>pg_extension_config_dump</CODE
+> again.  (This would
+     typically be useful in an extension update script.)  The only way to mark
+     a table as no longer a configuration table is to dissociate it from the
+     extension with <TT
+CLASS="COMMAND"
+>ALTER EXTENSION ... DROP TABLE</TT
+>.
+    </P
 ></DIV
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN54176"
+NAME="AEN57454"
 >35.15.4. Extension Updates</A
 ></H2
 ><P
@@ -1134,7 +1156,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN54231"
+NAME="AEN57509"
 >35.15.5. Extension Example</A
 ></H2
 ><P

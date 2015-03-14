@@ -4,7 +4,7 @@
  * src/backend/utils/adt/formatting.c
  *
  *
- *	 Portions Copyright (c) 1999-2012, PostgreSQL Global Development Group
+ *	 Portions Copyright (c) 1999-2014, PostgreSQL Global Development Group
  *
  *
  *	 TO_CHAR(); TO_TIMESTAMP(); TO_DATE(); TO_NUMBER();
@@ -110,7 +110,7 @@
  * Maximal length of one node
  * ----------
  */
-#define DCH_MAX_ITEM_SIZ		9		/* max julian day		*/
+#define DCH_MAX_ITEM_SIZ	   12		/* max localized day name		*/
 #define NUM_MAX_ITEM_SIZ		8		/* roman number (RN has 15 chars)	*/
 
 /* ----------
@@ -120,13 +120,6 @@
 #define MAXFLOATWIDTH	60
 #define MAXDOUBLEWIDTH	500
 
-
-/* ----------
- * External (defined in PgSQL datetime.c (timestamp utils))
- * ----------
- */
-extern char *months[],			/* month abbreviation	*/
-		   *days[];				/* full days		*/
 
 /* ----------
  * Format parser structs
@@ -188,12 +181,12 @@ struct FormatNode
  * Full months
  * ----------
  */
-static char *months_full[] = {
+static const char *const months_full[] = {
 	"January", "February", "March", "April", "May", "June", "July",
 	"August", "September", "October", "November", "December", NULL
 };
 
-static char *days_short[] = {
+static const char *const days_short[] = {
 	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", NULL
 };
 
@@ -226,8 +219,8 @@ static char *days_short[] = {
  * matches for BC have an odd index.  So the boolean value for BC is given by
  * taking the array index of the match, modulo 2.
  */
-static char *adbc_strings[] = {ad_STR, bc_STR, AD_STR, BC_STR, NULL};
-static char *adbc_strings_long[] = {a_d_STR, b_c_STR, A_D_STR, B_C_STR, NULL};
+static const char *const adbc_strings[] = {ad_STR, bc_STR, AD_STR, BC_STR, NULL};
+static const char *const adbc_strings_long[] = {a_d_STR, b_c_STR, A_D_STR, B_C_STR, NULL};
 
 /* ----------
  * AM / PM
@@ -253,8 +246,8 @@ static char *adbc_strings_long[] = {a_d_STR, b_c_STR, A_D_STR, B_C_STR, NULL};
  * matches for PM have an odd index.  So the boolean value for PM is given by
  * taking the array index of the match, modulo 2.
  */
-static char *ampm_strings[] = {am_STR, pm_STR, AM_STR, PM_STR, NULL};
-static char *ampm_strings_long[] = {a_m_STR, p_m_STR, A_M_STR, P_M_STR, NULL};
+static const char *const ampm_strings[] = {am_STR, pm_STR, AM_STR, PM_STR, NULL};
+static const char *const ampm_strings_long[] = {a_m_STR, p_m_STR, A_M_STR, P_M_STR, NULL};
 
 /* ----------
  * Months in roman-numeral
@@ -262,26 +255,26 @@ static char *ampm_strings_long[] = {a_m_STR, p_m_STR, A_M_STR, P_M_STR, NULL};
  *	'VIII' must have higher precedence than 'V')
  * ----------
  */
-static char *rm_months_upper[] =
+static const char *const rm_months_upper[] =
 {"XII", "XI", "X", "IX", "VIII", "VII", "VI", "V", "IV", "III", "II", "I", NULL};
 
-static char *rm_months_lower[] =
+static const char *const rm_months_lower[] =
 {"xii", "xi", "x", "ix", "viii", "vii", "vi", "v", "iv", "iii", "ii", "i", NULL};
 
 /* ----------
  * Roman numbers
  * ----------
  */
-static char *rm1[] = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", NULL};
-static char *rm10[] = {"X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC", NULL};
-static char *rm100[] = {"C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM", NULL};
+static const char *const rm1[] = {"I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", NULL};
+static const char *const rm10[] = {"X", "XX", "XXX", "XL", "L", "LX", "LXX", "LXXX", "XC", NULL};
+static const char *const rm100[] = {"C", "CC", "CCC", "CD", "D", "DC", "DCC", "DCCC", "CM", NULL};
 
 /* ----------
  * Ordinal postfixes
  * ----------
  */
-static char *numTH[] = {"ST", "ND", "RD", "TH", NULL};
-static char *numth[] = {"st", "nd", "rd", "th", NULL};
+static const char *const numTH[] = {"ST", "ND", "RD", "TH", NULL};
+static const char *const numth[] = {"st", "nd", "rd", "th", NULL};
 
 /* ----------
  * Flags & Options:
@@ -412,7 +405,7 @@ typedef struct
 				mi,
 				ss,
 				ssss,
-				d,
+				d,				/* stored as 1-7, Sunday = 1, 0 means missing */
 				dd,
 				ddd,
 				mm,
@@ -525,10 +518,12 @@ do { \
  * Suffixes definition for DATE-TIME TO/FROM CHAR
  * ----------
  */
-static KeySuffix DCH_suff[] = {
+#define TM_SUFFIX_LEN	2
+
+static const KeySuffix DCH_suff[] = {
 	{"FM", 2, DCH_S_FM, SUFFTYPE_PREFIX},
 	{"fm", 2, DCH_S_FM, SUFFTYPE_PREFIX},
-	{"TM", 2, DCH_S_TM, SUFFTYPE_PREFIX},
+	{"TM", TM_SUFFIX_LEN, DCH_S_TM, SUFFTYPE_PREFIX},
 	{"tm", 2, DCH_S_TM, SUFFTYPE_PREFIX},
 	{"TH", 2, DCH_S_TH, SUFFTYPE_POSTFIX},
 	{"th", 2, DCH_S_th, SUFFTYPE_POSTFIX},
@@ -536,6 +531,7 @@ static KeySuffix DCH_suff[] = {
 	/* last */
 	{NULL, 0, 0, 0}
 };
+
 
 /* ----------
  * Format-pictures (KeyWord).
@@ -600,6 +596,7 @@ typedef enum
 	DCH_MS,
 	DCH_Month,
 	DCH_Mon,
+	DCH_OF,
 	DCH_P_M,
 	DCH_PM,
 	DCH_Q,
@@ -746,6 +743,7 @@ static const KeyWord DCH_keywords[] = {
 	{"MS", 2, DCH_MS, TRUE, FROM_CHAR_DATE_NONE},
 	{"Month", 5, DCH_Month, FALSE, FROM_CHAR_DATE_GREGORIAN},
 	{"Mon", 3, DCH_Mon, FALSE, FROM_CHAR_DATE_GREGORIAN},
+	{"OF", 2, DCH_OF, FALSE, FROM_CHAR_DATE_NONE},		/* O */
 	{"P.M.", 4, DCH_P_M, FALSE, FROM_CHAR_DATE_NONE},	/* P */
 	{"PM", 2, DCH_PM, FALSE, FROM_CHAR_DATE_NONE},
 	{"Q", 1, DCH_Q, TRUE, FROM_CHAR_DATE_NONE}, /* Q */
@@ -874,7 +872,7 @@ static const int DCH_index[KeyWord_INDEX_SIZE] = {
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	-1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
 	-1, -1, -1, -1, -1, DCH_A_D, DCH_B_C, DCH_CC, DCH_DAY, -1,
-	DCH_FX, -1, DCH_HH24, DCH_IDDD, DCH_J, -1, -1, DCH_MI, -1, -1,
+	DCH_FX, -1, DCH_HH24, DCH_IDDD, DCH_J, -1, -1, DCH_MI, -1, DCH_OF,
 	DCH_P_M, DCH_Q, DCH_RM, DCH_SSSS, DCH_TZ, DCH_US, -1, DCH_WW, -1, DCH_Y_YYY,
 	-1, -1, -1, -1, -1, -1, -1, DCH_a_d, DCH_b_c, DCH_cc,
 	DCH_day, -1, DCH_fx, -1, DCH_hh24, DCH_iddd, DCH_j, -1, -1, DCH_mi,
@@ -922,7 +920,7 @@ typedef struct NUMProc
 				num_count,		/* number of write digits	*/
 				num_in,			/* is inside number		*/
 				num_curr,		/* current position in number	*/
-				num_pre,		/* space before first number	*/
+				out_pre_spaces,	/* spaces before first digit	*/
 
 				read_dec,		/* to_number - was read dec. point	*/
 				read_post,		/* to_number - number of dec. digit */
@@ -948,10 +946,10 @@ typedef struct NUMProc
  */
 static const KeyWord *index_seq_search(char *str, const KeyWord *kw,
 				 const int *index);
-static KeySuffix *suff_search(char *str, KeySuffix *suf, int type);
+static const KeySuffix *suff_search(char *str, const KeySuffix *suf, int type);
 static void NUMDesc_prepare(NUMDesc *num, FormatNode *n);
 static void parse_format(FormatNode *node, char *str, const KeyWord *kw,
-			 KeySuffix *suf, const int *index, int ver, NUMDesc *Num);
+			 const KeySuffix *suf, const int *index, int ver, NUMDesc *Num);
 
 static void DCH_to_char(FormatNode *node, bool is_interval,
 			TmToChar *in, char *out, Oid collid);
@@ -962,7 +960,7 @@ static void dump_index(const KeyWord *k, const int *index);
 static void dump_node(FormatNode *node, int max);
 #endif
 
-static char *get_th(char *num, int type);
+static const char *get_th(char *num, int type);
 static char *str_numth(char *dest, char *num, int type);
 static int	adjust_partial_year_to_2020(int year);
 static int	strspace_len(char *str);
@@ -971,8 +969,8 @@ static void from_char_set_mode(TmFromChar *tmfc, const FromCharDateMode mode);
 static void from_char_set_int(int *dest, const int value, const FormatNode *node);
 static int	from_char_parse_int_len(int *dest, char **src, const int len, FormatNode *node);
 static int	from_char_parse_int(int *dest, char **src, FormatNode *node);
-static int	seq_search(char *name, char **array, int type, int max, int *len);
-static int	from_char_seq_search(int *dest, char **src, char **array, int type, int max, FormatNode *node);
+static int	seq_search(char *name, const char *const * array, int type, int max, int *len);
+static int	from_char_seq_search(int *dest, char **src, const char *const * array, int type, int max, FormatNode *node);
 static void do_to_timestamp(text *date_txt, text *fmt,
 				struct pg_tm * tm, fsec_t *fsec);
 static char *fill_str(char *str, int c, int max);
@@ -980,10 +978,11 @@ static FormatNode *NUM_cache(int len, NUMDesc *Num, text *pars_str, bool *should
 static char *int_to_roman(int number);
 static void NUM_prepare_locale(NUMProc *Np);
 static char *get_last_relevant_decnum(char *num);
-static void NUM_numpart_from_char(NUMProc *Np, int id, int plen);
+static void NUM_numpart_from_char(NUMProc *Np, int id, int input_len);
 static void NUM_numpart_to_char(NUMProc *Np, int id);
-static char *NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
-			  int plen, int sign, bool is_to_char, Oid collid);
+static char *NUM_processor(FormatNode *node, NUMDesc *Num, char *inout,
+			  char *number, int from_char_input_len, int to_char_out_pre_spaces,
+			  int sign, bool is_to_char, Oid collid);
 static DCHCacheEntry *DCH_cache_search(char *str);
 static DCHCacheEntry *DCH_cache_getnew(char *str);
 
@@ -1022,10 +1021,10 @@ index_seq_search(char *str, const KeyWord *kw, const int *index)
 	return NULL;
 }
 
-static KeySuffix *
-suff_search(char *str, KeySuffix *suf, int type)
+static const KeySuffix *
+suff_search(char *str, const KeySuffix *suf, int type)
 {
-	KeySuffix  *s;
+	const KeySuffix *s;
 
 	for (s = suf; s->name != NULL; s++)
 	{
@@ -1045,7 +1044,6 @@ suff_search(char *str, KeySuffix *suf, int type)
 static void
 NUMDesc_prepare(NUMDesc *num, FormatNode *n)
 {
-
 	if (n->type != NODE_TYPE_ACTION)
 		return;
 
@@ -1236,9 +1234,9 @@ NUMDesc_prepare(NUMDesc *num, FormatNode *n)
  */
 static void
 parse_format(FormatNode *node, char *str, const KeyWord *kw,
-			 KeySuffix *suf, const int *index, int ver, NUMDesc *Num)
+			 const KeySuffix *suf, const int *index, int ver, NUMDesc *Num)
 {
-	KeySuffix  *s;
+	const KeySuffix *s;
 	FormatNode *n;
 	int			node_set = 0,
 				suffix,
@@ -1400,7 +1398,7 @@ dump_node(FormatNode *node, int max)
  * type --> 0 upper, 1 lower
  * ----------
  */
-static char *
+static const char *
 get_th(char *num, int type)
 {
 	int			len = strlen(num),
@@ -1439,7 +1437,6 @@ get_th(char *num, int type)
 				return numTH[3];
 			return numth[3];
 	}
-	return NULL;
 }
 
 /* ----------
@@ -1493,12 +1490,7 @@ str_tolower(const char *buff, size_t nbytes, Oid collid)
 	/* C/POSIX collations use this path regardless of database encoding */
 	if (lc_ctype_is_c(collid))
 	{
-		char	   *p;
-
-		result = pnstrdup(buff, nbytes);
-
-		for (p = result; *p; p++)
-			*p = pg_ascii_tolower((unsigned char) *p);
+		result = asc_tolower(buff, nbytes);
 	}
 #ifdef USE_WIDE_UPPER_LOWER
 	else if (pg_database_encoding_max_length() > 1)
@@ -1618,12 +1610,7 @@ str_toupper(const char *buff, size_t nbytes, Oid collid)
 	/* C/POSIX collations use this path regardless of database encoding */
 	if (lc_ctype_is_c(collid))
 	{
-		char	   *p;
-
-		result = pnstrdup(buff, nbytes);
-
-		for (p = result; *p; p++)
-			*p = pg_ascii_toupper((unsigned char) *p);
+		result = asc_toupper(buff, nbytes);
 	}
 #ifdef USE_WIDE_UPPER_LOWER
 	else if (pg_database_encoding_max_length() > 1)
@@ -1744,23 +1731,7 @@ str_initcap(const char *buff, size_t nbytes, Oid collid)
 	/* C/POSIX collations use this path regardless of database encoding */
 	if (lc_ctype_is_c(collid))
 	{
-		char	   *p;
-
-		result = pnstrdup(buff, nbytes);
-
-		for (p = result; *p; p++)
-		{
-			char		c;
-
-			if (wasalnum)
-				*p = c = pg_ascii_tolower((unsigned char) *p);
-			else
-				*p = c = pg_ascii_toupper((unsigned char) *p);
-			/* we don't trust isalnum() here */
-			wasalnum = ((c >= 'A' && c <= 'Z') ||
-						(c >= 'a' && c <= 'z') ||
-						(c >= '0' && c <= '9'));
-		}
+		result = asc_initcap(buff, nbytes);
 	}
 #ifdef USE_WIDE_UPPER_LOWER
 	else if (pg_database_encoding_max_length() > 1)
@@ -1856,7 +1827,7 @@ str_initcap(const char *buff, size_t nbytes, Oid collid)
 
 		/*
 		 * Note: we assume that toupper_l()/tolower_l() will not be so broken
-		 * as to need guard tests.	When using the default collation, we apply
+		 * as to need guard tests.  When using the default collation, we apply
 		 * the traditional Postgres behavior that forces ASCII-style treatment
 		 * of I/i, but in non-default collations you get exactly what the
 		 * collation says.
@@ -1887,6 +1858,87 @@ str_initcap(const char *buff, size_t nbytes, Oid collid)
 	return result;
 }
 
+/*
+ * ASCII-only lower function
+ *
+ * We pass the number of bytes so we can pass varlena and char*
+ * to this function.  The result is a palloc'd, null-terminated string.
+ */
+char *
+asc_tolower(const char *buff, size_t nbytes)
+{
+	char	   *result;
+	char	   *p;
+
+	if (!buff)
+		return NULL;
+
+	result = pnstrdup(buff, nbytes);
+
+	for (p = result; *p; p++)
+		*p = pg_ascii_tolower((unsigned char) *p);
+
+	return result;
+}
+
+/*
+ * ASCII-only upper function
+ *
+ * We pass the number of bytes so we can pass varlena and char*
+ * to this function.  The result is a palloc'd, null-terminated string.
+ */
+char *
+asc_toupper(const char *buff, size_t nbytes)
+{
+	char	   *result;
+	char	   *p;
+
+	if (!buff)
+		return NULL;
+
+	result = pnstrdup(buff, nbytes);
+
+	for (p = result; *p; p++)
+		*p = pg_ascii_toupper((unsigned char) *p);
+
+	return result;
+}
+
+/*
+ * ASCII-only initcap function
+ *
+ * We pass the number of bytes so we can pass varlena and char*
+ * to this function.  The result is a palloc'd, null-terminated string.
+ */
+char *
+asc_initcap(const char *buff, size_t nbytes)
+{
+	char	   *result;
+	char	   *p;
+	int			wasalnum = false;
+
+	if (!buff)
+		return NULL;
+
+	result = pnstrdup(buff, nbytes);
+
+	for (p = result; *p; p++)
+	{
+		char		c;
+
+		if (wasalnum)
+			*p = c = pg_ascii_tolower((unsigned char) *p);
+		else
+			*p = c = pg_ascii_toupper((unsigned char) *p);
+		/* we don't trust isalnum() here */
+		wasalnum = ((c >= 'A' && c <= 'Z') ||
+					(c >= 'a' && c <= 'z') ||
+					(c >= '0' && c <= '9'));
+	}
+
+	return result;
+}
+
 /* convenience routines for when the input is null-terminated */
 
 static char *
@@ -1906,6 +1958,20 @@ str_initcap_z(const char *buff, Oid collid)
 {
 	return str_initcap(buff, strlen(buff), collid);
 }
+
+static char *
+asc_tolower_z(const char *buff)
+{
+	return asc_tolower(buff, strlen(buff));
+}
+
+static char *
+asc_toupper_z(const char *buff)
+{
+	return asc_toupper(buff, strlen(buff));
+}
+
+/* asc_initcap_z is not currently needed */
 
 
 /* ----------
@@ -2199,11 +2265,11 @@ from_char_parse_int(int *dest, char **src, FormatNode *node)
  * ----------
  */
 static int
-seq_search(char *name, char **array, int type, int max, int *len)
+seq_search(char *name, const char *const * array, int type, int max, int *len)
 {
-	char	   *p,
-			   *n,
-			  **a;
+	const char *p;
+	const char *const * a;
+	char	   *n;
 	int			last,
 				i;
 
@@ -2277,7 +2343,7 @@ seq_search(char *name, char **array, int type, int max, int *len)
  * If the string doesn't match, throw an error.
  */
 static int
-from_char_seq_search(int *dest, char **src, char **array, int type, int max,
+from_char_seq_search(int *dest, char **src, const char *const * array, int type, int max,
 					 FormatNode *node)
 {
 	int			len;
@@ -2419,7 +2485,8 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 				INVALID_FOR_INTERVAL;
 				if (tmtcTzn(in))
 				{
-					char	   *p = str_tolower_z(tmtcTzn(in), collid);
+					/* We assume here that timezone names aren't localized */
+					char	   *p = asc_tolower_z(tmtcTzn(in));
 
 					strcpy(s, p);
 					pfree(p);
@@ -2431,6 +2498,16 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 				if (tmtcTzn(in))
 				{
 					strcpy(s, tmtcTzn(in));
+					s += strlen(s);
+				}
+				break;
+			case DCH_OF:
+				INVALID_FOR_INTERVAL;
+				sprintf(s, "%+0*ld", S_FM(n->suffix) ? 0 : 3, tm->tm_gmtoff / SECS_PER_HOUR);
+				s += strlen(s);
+				if (tm->tm_gmtoff % SECS_PER_HOUR != 0)
+				{
+					sprintf(s, ":%02ld", (tm->tm_gmtoff % SECS_PER_HOUR) / SECS_PER_MINUTE);
 					s += strlen(s);
 				}
 				break;
@@ -2463,10 +2540,19 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 				if (!tm->tm_mon)
 					break;
 				if (S_TM(n->suffix))
-					strcpy(s, str_toupper_z(localized_full_months[tm->tm_mon - 1], collid));
+				{
+					char *str = str_toupper_z(localized_full_months[tm->tm_mon - 1], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
+				}
 				else
 					sprintf(s, "%*s", S_FM(n->suffix) ? 0 : -9,
-						 str_toupper_z(months_full[tm->tm_mon - 1], collid));
+							asc_toupper_z(months_full[tm->tm_mon - 1]));
 				s += strlen(s);
 				break;
 			case DCH_Month:
@@ -2474,9 +2560,19 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 				if (!tm->tm_mon)
 					break;
 				if (S_TM(n->suffix))
-					strcpy(s, str_initcap_z(localized_full_months[tm->tm_mon - 1], collid));
+				{
+					char *str = str_initcap_z(localized_full_months[tm->tm_mon - 1], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
+				}
 				else
-					sprintf(s, "%*s", S_FM(n->suffix) ? 0 : -9, months_full[tm->tm_mon - 1]);
+					sprintf(s, "%*s", S_FM(n->suffix) ? 0 : -9,
+							months_full[tm->tm_mon - 1]);
 				s += strlen(s);
 				break;
 			case DCH_month:
@@ -2484,12 +2580,19 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 				if (!tm->tm_mon)
 					break;
 				if (S_TM(n->suffix))
-					strcpy(s, str_tolower_z(localized_full_months[tm->tm_mon - 1], collid));
-				else
 				{
-					sprintf(s, "%*s", S_FM(n->suffix) ? 0 : -9, months_full[tm->tm_mon - 1]);
-					*s = pg_tolower((unsigned char) *s);
+					char *str = str_tolower_z(localized_full_months[tm->tm_mon - 1], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
 				}
+				else
+					sprintf(s, "%*s", S_FM(n->suffix) ? 0 : -9,
+							asc_tolower_z(months_full[tm->tm_mon - 1]));
 				s += strlen(s);
 				break;
 			case DCH_MON:
@@ -2497,9 +2600,18 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 				if (!tm->tm_mon)
 					break;
 				if (S_TM(n->suffix))
-					strcpy(s, str_toupper_z(localized_abbrev_months[tm->tm_mon - 1], collid));
+				{
+					char *str = str_toupper_z(localized_abbrev_months[tm->tm_mon - 1], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
+				}
 				else
-					strcpy(s, str_toupper_z(months[tm->tm_mon - 1], collid));
+					strcpy(s, asc_toupper_z(months[tm->tm_mon - 1]));
 				s += strlen(s);
 				break;
 			case DCH_Mon:
@@ -2507,7 +2619,16 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 				if (!tm->tm_mon)
 					break;
 				if (S_TM(n->suffix))
-					strcpy(s, str_initcap_z(localized_abbrev_months[tm->tm_mon - 1], collid));
+				{
+					char *str = str_initcap_z(localized_abbrev_months[tm->tm_mon - 1], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
+				}
 				else
 					strcpy(s, months[tm->tm_mon - 1]);
 				s += strlen(s);
@@ -2517,12 +2638,18 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 				if (!tm->tm_mon)
 					break;
 				if (S_TM(n->suffix))
-					strcpy(s, str_tolower_z(localized_abbrev_months[tm->tm_mon - 1], collid));
-				else
 				{
-					strcpy(s, months[tm->tm_mon - 1]);
-					*s = pg_tolower((unsigned char) *s);
+					char *str = str_tolower_z(localized_abbrev_months[tm->tm_mon - 1], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
 				}
+				else
+					strcpy(s, asc_tolower_z(months[tm->tm_mon - 1]));
 				s += strlen(s);
 				break;
 			case DCH_MM:
@@ -2534,43 +2661,87 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 			case DCH_DAY:
 				INVALID_FOR_INTERVAL;
 				if (S_TM(n->suffix))
-					strcpy(s, str_toupper_z(localized_full_days[tm->tm_wday], collid));
+				{
+					char *str = str_toupper_z(localized_full_days[tm->tm_wday], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
+				}
 				else
 					sprintf(s, "%*s", S_FM(n->suffix) ? 0 : -9,
-							str_toupper_z(days[tm->tm_wday], collid));
+							asc_toupper_z(days[tm->tm_wday]));
 				s += strlen(s);
 				break;
 			case DCH_Day:
 				INVALID_FOR_INTERVAL;
 				if (S_TM(n->suffix))
-					strcpy(s, str_initcap_z(localized_full_days[tm->tm_wday], collid));
+				{
+					char *str = str_initcap_z(localized_full_days[tm->tm_wday], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
+				}
 				else
-					sprintf(s, "%*s", S_FM(n->suffix) ? 0 : -9, days[tm->tm_wday]);
+					sprintf(s, "%*s", S_FM(n->suffix) ? 0 : -9,
+							days[tm->tm_wday]);
 				s += strlen(s);
 				break;
 			case DCH_day:
 				INVALID_FOR_INTERVAL;
 				if (S_TM(n->suffix))
-					strcpy(s, str_tolower_z(localized_full_days[tm->tm_wday], collid));
-				else
 				{
-					sprintf(s, "%*s", S_FM(n->suffix) ? 0 : -9, days[tm->tm_wday]);
-					*s = pg_tolower((unsigned char) *s);
+					char *str = str_tolower_z(localized_full_days[tm->tm_wday], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
 				}
+				else
+					sprintf(s, "%*s", S_FM(n->suffix) ? 0 : -9,
+							asc_tolower_z(days[tm->tm_wday]));
 				s += strlen(s);
 				break;
 			case DCH_DY:
 				INVALID_FOR_INTERVAL;
 				if (S_TM(n->suffix))
-					strcpy(s, str_toupper_z(localized_abbrev_days[tm->tm_wday], collid));
+				{
+					char *str = str_toupper_z(localized_abbrev_days[tm->tm_wday], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
+				}
 				else
-					strcpy(s, str_toupper_z(days_short[tm->tm_wday], collid));
+					strcpy(s, asc_toupper_z(days_short[tm->tm_wday]));
 				s += strlen(s);
 				break;
 			case DCH_Dy:
 				INVALID_FOR_INTERVAL;
 				if (S_TM(n->suffix))
-					strcpy(s, str_initcap_z(localized_abbrev_days[tm->tm_wday], collid));
+				{
+					char *str = str_initcap_z(localized_abbrev_days[tm->tm_wday], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
+				}
 				else
 					strcpy(s, days_short[tm->tm_wday]);
 				s += strlen(s);
@@ -2578,12 +2749,18 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 			case DCH_dy:
 				INVALID_FOR_INTERVAL;
 				if (S_TM(n->suffix))
-					strcpy(s, str_tolower_z(localized_abbrev_days[tm->tm_wday], collid));
-				else
 				{
-					strcpy(s, days_short[tm->tm_wday]);
-					*s = pg_tolower((unsigned char) *s);
+					char *str = str_tolower_z(localized_abbrev_days[tm->tm_wday], collid);
+
+					if (strlen(str) < (n->key->len + TM_SUFFIX_LEN) * DCH_MAX_ITEM_SIZ)
+						strcpy(s, str);
+					else
+						ereport(ERROR,
+								(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+								 errmsg("localized string format value too long")));
 				}
+				else
+					strcpy(s, asc_tolower_z(days_short[tm->tm_wday]));
 				s += strlen(s);
 				break;
 			case DCH_DDD:
@@ -2641,8 +2818,15 @@ DCH_to_char(FormatNode *node, bool is_interval, TmToChar *in, char *out, Oid col
 			case DCH_CC:
 				if (is_interval)	/* straight calculation */
 					i = tm->tm_year / 100;
-				else	/* century 21 starts in 2001 */
-					i = (tm->tm_year - 1) / 100 + 1;
+				else
+				{
+					if (tm->tm_year > 0)
+						/* Century 20 == 1901 - 2000 */
+						i = (tm->tm_year - 1) / 100 + 1;
+					else
+						/* Century 6BC == 600BC - 501BC */
+						i = tm->tm_year / 100 - 1;
+				}
 				if (i <= 99 && i >= -99)
 					sprintf(s, "%0*d", S_FM(n->suffix) ? 0 : 2, i);
 				else
@@ -2767,14 +2951,20 @@ DCH_from_char(FormatNode *node, char *in, TmFromChar *out)
 	{
 		if (n->type != NODE_TYPE_ACTION)
 		{
+			/*
+			 * Separator, so consume one character from input string.  Notice
+			 * we don't insist that the consumed character match the format's
+			 * character.
+			 */
 			s++;
-			/* Ignore spaces when not in FX (fixed width) mode */
-			if (isspace((unsigned char) n->character) && !fx_mode)
-			{
-				while (*s != '\0' && isspace((unsigned char) *s))
-					s++;
-			}
 			continue;
+		}
+
+		/* Ignore spaces before fields when not in FX (fixed width) mode */
+		if (!fx_mode && n->key->id != DCH_FX)
+		{
+			while (*s != '\0' && isspace((unsigned char) *s))
+				s++;
 		}
 
 		from_char_set_mode(out, n->key->date_mode);
@@ -2848,9 +3038,10 @@ DCH_from_char(FormatNode *node, char *in, TmFromChar *out)
 				break;
 			case DCH_tz:
 			case DCH_TZ:
+			case DCH_OF:
 				ereport(ERROR,
 						(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-						 errmsg("\"TZ\"/\"tz\" format patterns are not supported in to_date")));
+						 errmsg("\"TZ\"/\"tz\"/\"OF\" format patterns are not supported in to_date")));
 			case DCH_A_D:
 			case DCH_B_C:
 			case DCH_a_d:
@@ -2891,6 +3082,7 @@ DCH_from_char(FormatNode *node, char *in, TmFromChar *out)
 				from_char_seq_search(&value, &s, days, ONE_UPPER,
 									 MAX_DAY_LEN, n);
 				from_char_set_int(&out->d, value, n);
+				out->d++;
 				break;
 			case DCH_DY:
 			case DCH_Dy:
@@ -2898,6 +3090,7 @@ DCH_from_char(FormatNode *node, char *in, TmFromChar *out)
 				from_char_seq_search(&value, &s, days, ONE_UPPER,
 									 MAX_DY_LEN, n);
 				from_char_set_int(&out->d, value, n);
+				out->d++;
 				break;
 			case DCH_DDD:
 				from_char_parse_int(&out->ddd, &s, n);
@@ -2913,11 +3106,13 @@ DCH_from_char(FormatNode *node, char *in, TmFromChar *out)
 				break;
 			case DCH_D:
 				from_char_parse_int(&out->d, &s, n);
-				out->d--;
 				s += SKIP_THth(n->suffix);
 				break;
 			case DCH_ID:
 				from_char_parse_int_len(&out->d, &s, 1, n);
+				/* Shift numbering to match Gregorian where Sunday = 1 */
+				if (++out->d > 7)
+					out->d = 1;
 				s += SKIP_THth(n->suffix);
 				break;
 			case DCH_WW:
@@ -3322,6 +3517,12 @@ to_date(PG_FUNCTION_ARGS)
 
 	do_to_timestamp(date_txt, fmt, &tm, &fsec);
 
+	if (!IS_VALID_JULIAN(tm.tm_year, tm.tm_mon, tm.tm_mday))
+		ereport(ERROR,
+				(errcode(ERRCODE_DATETIME_VALUE_OUT_OF_RANGE),
+				 errmsg("date out of range: \"%s\"",
+						text_to_cstring(date_txt))));
+
 	result = date2j(tm.tm_year, tm.tm_mon, tm.tm_mday) - POSTGRES_EPOCH_JDATE;
 
 	PG_RETURN_DATEADT(result);
@@ -3466,33 +3667,43 @@ do_to_timestamp(text *date_txt, text *fmt,
 		/*
 		 * If CC and YY (or Y) are provided, use YY as 2 low-order digits for
 		 * the year in the given century.  Keep in mind that the 21st century
-		 * runs from 2001-2100, not 2000-2099.
-		 *
-		 * If a 4-digit year is provided, we use that and ignore CC.
+		 * AD runs from 2001-2100, not 2000-2099; 6th century BC runs from
+		 * 600BC to 501BC.
 		 */
 		if (tmfc.cc && tmfc.yysz <= 2)
 		{
+			if (tmfc.bc)
+				tmfc.cc = -tmfc.cc;
 			tm->tm_year = tmfc.year % 100;
 			if (tm->tm_year)
-				tm->tm_year += (tmfc.cc - 1) * 100;
+			{
+				if (tmfc.cc >= 0)
+					tm->tm_year += (tmfc.cc - 1) * 100;
+				else
+					tm->tm_year = (tmfc.cc + 1) * 100 - tm->tm_year + 1;
+			}
 			else
-				tm->tm_year = tmfc.cc * 100;
+				/* find century year for dates ending in "00" */
+				tm->tm_year = tmfc.cc * 100 + ((tmfc.cc >= 0) ? 0 : 1);
 		}
 		else
+			/* If a 4-digit year is provided, we use that and ignore CC. */
+		{
 			tm->tm_year = tmfc.year;
+			if (tmfc.bc && tm->tm_year > 0)
+				tm->tm_year = -(tm->tm_year - 1);
+		}
 	}
 	else if (tmfc.cc)			/* use first year of century */
-		tm->tm_year = (tmfc.cc - 1) * 100 + 1;
-
-	if (tmfc.bc)
 	{
-		if (tm->tm_year > 0)
-			tm->tm_year = -(tm->tm_year - 1);
+		if (tmfc.bc)
+			tmfc.cc = -tmfc.cc;
+		if (tmfc.cc >= 0)
+			/* +1 because 21st century started in 2001 */
+			tm->tm_year = (tmfc.cc - 1) * 100 + 1;
 		else
-			ereport(ERROR,
-					(errcode(ERRCODE_INVALID_DATETIME_FORMAT),
-					 errmsg("inconsistent use of year %04d and \"BC\"",
-							tm->tm_year)));
+			/* +1 because year == 599 is 600 BC */
+			tm->tm_year = tmfc.cc * 100 + 1;
 	}
 
 	if (tmfc.j)
@@ -3518,7 +3729,7 @@ do_to_timestamp(text *date_txt, text *fmt,
 	if (tmfc.w)
 		tmfc.dd = (tmfc.w - 1) * 7 + 1;
 	if (tmfc.d)
-		tm->tm_wday = tmfc.d;
+		tm->tm_wday = tmfc.d - 1;		/* convert to native numbering */
 	if (tmfc.dd)
 		tm->tm_mday = tmfc.dd;
 	if (tmfc.ddd)
@@ -3530,7 +3741,7 @@ do_to_timestamp(text *date_txt, text *fmt,
 	{
 		/*
 		 * The month and day field have not been set, so we use the
-		 * day-of-year field to populate them.	Depending on the date mode,
+		 * day-of-year field to populate them.  Depending on the date mode,
 		 * this field may be interpreted as a Gregorian day-of-year, or an ISO
 		 * week date day-of-year.
 		 */
@@ -3955,7 +4166,7 @@ get_last_relevant_decnum(char *num)
  * ----------
  */
 static void
-NUM_numpart_from_char(NUMProc *Np, int id, int plen)
+NUM_numpart_from_char(NUMProc *Np, int id, int input_len)
 {
 	bool		isread = FALSE;
 
@@ -3967,8 +4178,8 @@ NUM_numpart_from_char(NUMProc *Np, int id, int plen)
 	if (*Np->inout_p == ' ')
 		Np->inout_p++;
 
-#define OVERLOAD_TEST	(Np->inout_p >= Np->inout + plen)
-#define AMOUNT_TEST(_s) (plen-(Np->inout_p-Np->inout) >= _s)
+#define OVERLOAD_TEST	(Np->inout_p >= Np->inout + input_len)
+#define AMOUNT_TEST(_s) (input_len-(Np->inout_p-Np->inout) >= _s)
 
 	if (*Np->inout_p == ' ')
 		Np->inout_p++;
@@ -4043,7 +4254,7 @@ NUM_numpart_from_char(NUMProc *Np, int id, int plen)
 #endif
 
 	/*
-	 * read digit
+	 * read digit or decimal point
 	 */
 	if (isdigit((unsigned char) *Np->inout_p))
 	{
@@ -4063,39 +4274,27 @@ NUM_numpart_from_char(NUMProc *Np, int id, int plen)
 #ifdef DEBUG_TO_FROM_CHAR
 		elog(DEBUG_elog_output, "Read digit (%c)", *Np->inout_p);
 #endif
-
-		/*
-		 * read decimal point
-		 */
 	}
 	else if (IS_DECIMAL(Np->Num) && Np->read_dec == FALSE)
 	{
+		/*
+		 * We need not test IS_LDECIMAL(Np->Num) explicitly here, because
+		 * Np->decimal is always just "." if we don't have a D format token.
+		 * So we just unconditionally match to Np->decimal.
+		 */
+		int			x = strlen(Np->decimal);
+
 #ifdef DEBUG_TO_FROM_CHAR
-		elog(DEBUG_elog_output, "Try read decimal point (%c)", *Np->inout_p);
+		elog(DEBUG_elog_output, "Try read decimal point (%c)",
+			 *Np->inout_p);
 #endif
-		if (*Np->inout_p == '.')
+		if (x && AMOUNT_TEST(x) && strncmp(Np->inout_p, Np->decimal, x) == 0)
 		{
+			Np->inout_p += x - 1;
 			*Np->number_p = '.';
 			Np->number_p++;
 			Np->read_dec = TRUE;
 			isread = TRUE;
-		}
-		else
-		{
-			int			x = strlen(Np->decimal);
-
-#ifdef DEBUG_TO_FROM_CHAR
-			elog(DEBUG_elog_output, "Try read locale point (%c)",
-				 *Np->inout_p);
-#endif
-			if (x && AMOUNT_TEST(x) && strncmp(Np->inout_p, Np->decimal, x) == 0)
-			{
-				Np->inout_p += x - 1;
-				*Np->number_p = '.';
-				Np->number_p++;
-				Np->read_dec = TRUE;
-				isread = TRUE;
-			}
 		}
 	}
 
@@ -4119,7 +4318,7 @@ NUM_numpart_from_char(NUMProc *Np, int id, int plen)
 		 * next char is not digit
 		 */
 		if (IS_LSIGN(Np->Num) && isread &&
-			(Np->inout_p + 1) <= Np->inout + plen &&
+			(Np->inout_p + 1) <= Np->inout + input_len &&
 			!isdigit((unsigned char) *(Np->inout_p + 1)))
 		{
 			int			x;
@@ -4214,7 +4413,7 @@ NUM_numpart_to_char(NUMProc *Np, int id)
 	 * handle "9.9" --> " .1"
 	 */
 	if (Np->sign_wrote == FALSE &&
-		(Np->num_curr >= Np->num_pre || (IS_ZERO(Np->Num) && Np->Num->zero_start == Np->num_curr)) &&
+		(Np->num_curr >= Np->out_pre_spaces || (IS_ZERO(Np->Num) && Np->Num->zero_start == Np->num_curr)) &&
 		(IS_PREDEC_SPACE(Np) == FALSE || (Np->last_relevant && *Np->last_relevant == '.')))
 	{
 		if (IS_LSIGN(Np->Num))
@@ -4258,7 +4457,7 @@ NUM_numpart_to_char(NUMProc *Np, int id)
 	 */
 	if (id == NUM_9 || id == NUM_0 || id == NUM_D || id == NUM_DEC)
 	{
-		if (Np->num_curr < Np->num_pre &&
+		if (Np->num_curr < Np->out_pre_spaces &&
 			(Np->Num->zero_start > Np->num_curr || !IS_ZERO(Np->Num)))
 		{
 			/*
@@ -4271,7 +4470,7 @@ NUM_numpart_to_char(NUMProc *Np, int id)
 			}
 		}
 		else if (IS_ZERO(Np->Num) &&
-				 Np->num_curr < Np->num_pre &&
+				 Np->num_curr < Np->out_pre_spaces &&
 				 Np->Num->zero_start <= Np->num_curr)
 		{
 			/*
@@ -4340,10 +4539,12 @@ NUM_numpart_to_char(NUMProc *Np, int id)
 					Np->num_in = TRUE;
 				}
 			}
-			++Np->number_p;
+			/* do no exceed string length */
+			if (*Np->number_p)
+				++Np->number_p;
 		}
 
-		end = Np->num_count + (Np->num_pre ? 1 : 0) + (IS_DECIMAL(Np->Num) ? 1 : 0);
+		end = Np->num_count + (Np->out_pre_spaces ? 1 : 0) + (IS_DECIMAL(Np->Num) ? 1 : 0);
 
 		if (Np->last_relevant && Np->last_relevant == Np->number_p)
 			end = Np->num_curr;
@@ -4369,13 +4570,10 @@ NUM_numpart_to_char(NUMProc *Np, int id)
 	++Np->num_curr;
 }
 
-/*
- * Note: 'plen' is used in FROM_CHAR conversion and it's length of
- * input (inout). In TO_CHAR conversion it's space before first number.
- */
 static char *
-NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
-			  int plen, int sign, bool is_to_char, Oid collid)
+NUM_processor(FormatNode *node, NUMDesc *Num, char *inout,
+			  char *number, int from_char_input_len, int to_char_out_pre_spaces,
+			  int sign, bool is_to_char, Oid collid)
 {
 	FormatNode *n;
 	NUMProc		_Np,
@@ -4415,7 +4613,7 @@ NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
 					 errmsg("\"RN\" not supported for input")));
 
 		Np->Num->lsign = Np->Num->pre_lsign_num = Np->Num->post =
-			Np->Num->pre = Np->num_pre = Np->sign = 0;
+			Np->Num->pre = Np->out_pre_spaces = Np->sign = 0;
 
 		if (IS_FILLMODE(Np->Num))
 		{
@@ -4473,7 +4671,7 @@ NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
 
 	if (is_to_char)
 	{
-		Np->num_pre = plen;
+		Np->out_pre_spaces = to_char_out_pre_spaces;
 
 		if (IS_FILLMODE(Np->Num) && IS_DECIMAL(Np->Num))
 		{
@@ -4483,22 +4681,22 @@ NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
 			 * If any '0' specifiers are present, make sure we don't strip
 			 * those digits.
 			 */
-			if (Np->last_relevant && Np->Num->zero_end > Np->num_pre)
+			if (Np->last_relevant && Np->Num->zero_end > Np->out_pre_spaces)
 			{
 				char	   *last_zero;
 
-				last_zero = Np->number + (Np->Num->zero_end - Np->num_pre);
+				last_zero = Np->number + (Np->Num->zero_end - Np->out_pre_spaces);
 				if (Np->last_relevant < last_zero)
 					Np->last_relevant = last_zero;
 			}
 		}
 
-		if (Np->sign_wrote == FALSE && Np->num_pre == 0)
+		if (Np->sign_wrote == FALSE && Np->out_pre_spaces == 0)
 			++Np->num_count;
 	}
 	else
 	{
-		Np->num_pre = 0;
+		Np->out_pre_spaces = 0;
 		*Np->number = ' ';		/* sign space */
 		*(Np->number + 1) = '\0';
 	}
@@ -4514,7 +4712,7 @@ NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
 		 Np->Num->pre,
 		 Np->Num->post,
 		 Np->num_count,
-		 Np->num_pre,
+		 Np->out_pre_spaces,
 		 Np->sign_wrote ? "Yes" : "No",
 		 IS_ZERO(Np->Num) ? "Yes" : "No",
 		 Np->Num->zero_start,
@@ -4549,7 +4747,7 @@ NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
 			/*
 			 * Check non-string inout end
 			 */
-			if (Np->inout_p >= Np->inout + plen)
+			if (Np->inout_p >= Np->inout + from_char_input_len)
 				break;
 		}
 
@@ -4579,7 +4777,7 @@ NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
 					}
 					else
 					{
-						NUM_numpart_from_char(Np, n->key->id, plen);
+						NUM_numpart_from_char(Np, n->key->id, from_char_input_len);
 						break;	/* switch() case: */
 					}
 
@@ -4664,12 +4862,12 @@ NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
 				case NUM_rn:
 					if (IS_FILLMODE(Np->Num))
 					{
-						strcpy(Np->inout_p, str_tolower_z(Np->number_p, collid));
+						strcpy(Np->inout_p, asc_tolower_z(Np->number_p));
 						Np->inout_p += strlen(Np->inout_p) - 1;
 					}
 					else
 					{
-						sprintf(Np->inout_p, "%15s", str_tolower_z(Np->number_p, collid));
+						sprintf(Np->inout_p, "%15s", asc_tolower_z(Np->number_p));
 						Np->inout_p += strlen(Np->inout_p) - 1;
 					}
 					break;
@@ -4789,7 +4987,7 @@ NUM_processor(FormatNode *node, NUMDesc *Num, char *inout, char *number,
  */
 #define NUM_TOCHAR_prepare \
 do { \
-	len = VARSIZE_ANY_EXHDR(fmt); \
+	int len = VARSIZE_ANY_EXHDR(fmt); \
 	if (len <= 0 || len >= (INT_MAX-VARHDRSZ)/NUM_MAX_ITEM_SIZ)		\
 		PG_RETURN_TEXT_P(cstring_to_text("")); \
 	result	= (text *) palloc0((len * NUM_MAX_ITEM_SIZ) + 1 + VARHDRSZ);	\
@@ -4802,7 +5000,9 @@ do { \
  */
 #define NUM_TOCHAR_finish \
 do { \
-	NUM_processor(format, &Num, VARDATA(result), numstr, plen, sign, true, PG_GET_COLLATION()); \
+	int		len; \
+									\
+	NUM_processor(format, &Num, VARDATA(result), numstr, 0, out_pre_spaces, sign, true, PG_GET_COLLATION()); \
 									\
 	if (shouldFree)					\
 		pfree(format);				\
@@ -4844,7 +5044,7 @@ numeric_to_number(PG_FUNCTION_ARGS)
 	numstr = (char *) palloc((len * NUM_MAX_ITEM_SIZ) + 1);
 
 	NUM_processor(format, &Num, VARDATA(value), numstr,
-				  VARSIZE(value) - VARHDRSZ, 0, false, PG_GET_COLLATION());
+				  VARSIZE(value) - VARHDRSZ, 0, 0, false, PG_GET_COLLATION());
 
 	scale = Num.post;
 	precision = Max(0, Num.pre) + scale;
@@ -4873,8 +5073,7 @@ numeric_to_char(PG_FUNCTION_ARGS)
 	FormatNode *format;
 	text	   *result;
 	bool		shouldFree;
-	int			len = 0,
-				plen = 0,
+	int			out_pre_spaces = 0,
 				sign = 0;
 	char	   *numstr,
 			   *orgnum,
@@ -4920,16 +5119,15 @@ numeric_to_char(PG_FUNCTION_ARGS)
 			numstr = (char *) palloc(strlen(orgnum) + 2);
 			*numstr = ' ';
 			strcpy(numstr + 1, orgnum);
-			len = strlen(numstr);
 		}
 		else
 		{
 			numstr = orgnum;
-			len = strlen(orgnum);
 		}
 	}
 	else
 	{
+		int			numstr_pre_len;
 		Numeric		val = value;
 
 		if (IS_MULTI(&Num))
@@ -4964,14 +5162,17 @@ numeric_to_char(PG_FUNCTION_ARGS)
 			sign = '+';
 			numstr = orgnum;
 		}
-		if ((p = strchr(numstr, '.')))
-			len = p - numstr;
-		else
-			len = strlen(numstr);
 
-		if (Num.pre > len)
-			plen = Num.pre - len;
-		else if (len > Num.pre)
+		if ((p = strchr(numstr, '.')))
+			numstr_pre_len = p - numstr;
+		else
+			numstr_pre_len = strlen(numstr);
+
+		/* needs padding? */
+		if (numstr_pre_len < Num.pre)
+			out_pre_spaces = Num.pre - numstr_pre_len;
+		/* overflowed prefix digit format? */
+		else if (numstr_pre_len > Num.pre)
 		{
 			numstr = (char *) palloc(Num.pre + Num.post + 2);
 			fill_str(numstr, '#', Num.pre + Num.post + 1);
@@ -4996,8 +5197,7 @@ int4_to_char(PG_FUNCTION_ARGS)
 	FormatNode *format;
 	text	   *result;
 	bool		shouldFree;
-	int			len = 0,
-				plen = 0,
+	int			out_pre_spaces = 0,
 				sign = 0;
 	char	   *numstr,
 			   *orgnum;
@@ -5023,11 +5223,12 @@ int4_to_char(PG_FUNCTION_ARGS)
 		if (*orgnum == '+')
 			*orgnum = ' ';
 
-		len = strlen(orgnum);
 		numstr = orgnum;
 	}
 	else
 	{
+		int			numstr_pre_len;
+
 		if (IS_MULTI(&Num))
 		{
 			orgnum = DatumGetCString(DirectFunctionCall1(int4out,
@@ -5047,22 +5248,26 @@ int4_to_char(PG_FUNCTION_ARGS)
 		}
 		else
 			sign = '+';
-		len = strlen(orgnum);
 
+		numstr_pre_len = strlen(orgnum);
+
+		/* post-decimal digits?  Pad out with zeros. */
 		if (Num.post)
 		{
-			numstr = (char *) palloc(len + Num.post + 2);
+			numstr = (char *) palloc(numstr_pre_len + Num.post + 2);
 			strcpy(numstr, orgnum);
-			*(numstr + len) = '.';
-			memset(numstr + len + 1, '0', Num.post);
-			*(numstr + len + Num.post + 1) = '\0';
+			*(numstr + numstr_pre_len) = '.';
+			memset(numstr + numstr_pre_len + 1, '0', Num.post);
+			*(numstr + numstr_pre_len + Num.post + 1) = '\0';
 		}
 		else
 			numstr = orgnum;
 
-		if (Num.pre > len)
-			plen = Num.pre - len;
-		else if (len > Num.pre)
+		/* needs padding? */
+		if (numstr_pre_len < Num.pre)
+			out_pre_spaces = Num.pre - numstr_pre_len;
+		/* overflowed prefix digit format? */
+		else if (numstr_pre_len > Num.pre)
 		{
 			numstr = (char *) palloc(Num.pre + Num.post + 2);
 			fill_str(numstr, '#', Num.pre + Num.post + 1);
@@ -5087,8 +5292,7 @@ int8_to_char(PG_FUNCTION_ARGS)
 	FormatNode *format;
 	text	   *result;
 	bool		shouldFree;
-	int			len = 0,
-				plen = 0,
+	int			out_pre_spaces = 0,
 				sign = 0;
 	char	   *numstr,
 			   *orgnum;
@@ -5123,16 +5327,16 @@ int8_to_char(PG_FUNCTION_ARGS)
 			numstr = (char *) palloc(strlen(orgnum) + 2);
 			*numstr = ' ';
 			strcpy(numstr + 1, orgnum);
-			len = strlen(numstr);
 		}
 		else
 		{
 			numstr = orgnum;
-			len = strlen(orgnum);
 		}
 	}
 	else
 	{
+		int			numstr_pre_len;
+
 		if (IS_MULTI(&Num))
 		{
 			double		multi = pow((double) 10, (double) Num.multi);
@@ -5154,22 +5358,26 @@ int8_to_char(PG_FUNCTION_ARGS)
 		}
 		else
 			sign = '+';
-		len = strlen(orgnum);
 
+		numstr_pre_len = strlen(orgnum);
+
+		/* post-decimal digits?  Pad out with zeros. */
 		if (Num.post)
 		{
-			numstr = (char *) palloc(len + Num.post + 2);
+			numstr = (char *) palloc(numstr_pre_len + Num.post + 2);
 			strcpy(numstr, orgnum);
-			*(numstr + len) = '.';
-			memset(numstr + len + 1, '0', Num.post);
-			*(numstr + len + Num.post + 1) = '\0';
+			*(numstr + numstr_pre_len) = '.';
+			memset(numstr + numstr_pre_len + 1, '0', Num.post);
+			*(numstr + numstr_pre_len + Num.post + 1) = '\0';
 		}
 		else
 			numstr = orgnum;
 
-		if (Num.pre > len)
-			plen = Num.pre - len;
-		else if (len > Num.pre)
+		/* needs padding? */
+		if (numstr_pre_len < Num.pre)
+			out_pre_spaces = Num.pre - numstr_pre_len;
+		/* overflowed prefix digit format? */
+		else if (numstr_pre_len > Num.pre)
 		{
 			numstr = (char *) palloc(Num.pre + Num.post + 2);
 			fill_str(numstr, '#', Num.pre + Num.post + 1);
@@ -5194,8 +5402,7 @@ float4_to_char(PG_FUNCTION_ARGS)
 	FormatNode *format;
 	text	   *result;
 	bool		shouldFree;
-	int			len = 0,
-				plen = 0,
+	int			out_pre_spaces = 0,
 				sign = 0;
 	char	   *numstr,
 			   *orgnum,
@@ -5229,13 +5436,13 @@ float4_to_char(PG_FUNCTION_ARGS)
 			if (*orgnum == '+')
 				*orgnum = ' ';
 
-			len = strlen(orgnum);
 			numstr = orgnum;
 		}
 	}
 	else
 	{
 		float4		val = value;
+		int			numstr_pre_len;
 
 		if (IS_MULTI(&Num))
 		{
@@ -5247,13 +5454,13 @@ float4_to_char(PG_FUNCTION_ARGS)
 
 		orgnum = (char *) palloc(MAXFLOATWIDTH + 1);
 		snprintf(orgnum, MAXFLOATWIDTH + 1, "%.0f", fabs(val));
-		len = strlen(orgnum);
-		if (Num.pre > len)
-			plen = Num.pre - len;
-		if (len >= FLT_DIG)
+		numstr_pre_len = strlen(orgnum);
+
+		/* adjust post digits to fit max float digits */
+		if (numstr_pre_len >= FLT_DIG)
 			Num.post = 0;
-		else if (Num.post + len > FLT_DIG)
-			Num.post = FLT_DIG - len;
+		else if (numstr_pre_len + Num.post > FLT_DIG)
+			Num.post = FLT_DIG - numstr_pre_len;
 		snprintf(orgnum, MAXFLOATWIDTH + 1, "%.*f", Num.post, val);
 
 		if (*orgnum == '-')
@@ -5266,14 +5473,17 @@ float4_to_char(PG_FUNCTION_ARGS)
 			sign = '+';
 			numstr = orgnum;
 		}
-		if ((p = strchr(numstr, '.')))
-			len = p - numstr;
-		else
-			len = strlen(numstr);
 
-		if (Num.pre > len)
-			plen = Num.pre - len;
-		else if (len > Num.pre)
+		if ((p = strchr(numstr, '.')))
+			numstr_pre_len = p - numstr;
+		else
+			numstr_pre_len = strlen(numstr);
+
+		/* needs padding? */
+		if (numstr_pre_len < Num.pre)
+			out_pre_spaces = Num.pre - numstr_pre_len;
+		/* overflowed prefix digit format? */
+		else if (numstr_pre_len > Num.pre)
 		{
 			numstr = (char *) palloc(Num.pre + Num.post + 2);
 			fill_str(numstr, '#', Num.pre + Num.post + 1);
@@ -5298,8 +5508,7 @@ float8_to_char(PG_FUNCTION_ARGS)
 	FormatNode *format;
 	text	   *result;
 	bool		shouldFree;
-	int			len = 0,
-				plen = 0,
+	int			out_pre_spaces = 0,
 				sign = 0;
 	char	   *numstr,
 			   *orgnum,
@@ -5333,13 +5542,13 @@ float8_to_char(PG_FUNCTION_ARGS)
 			if (*orgnum == '+')
 				*orgnum = ' ';
 
-			len = strlen(orgnum);
 			numstr = orgnum;
 		}
 	}
 	else
 	{
 		float8		val = value;
+		int			numstr_pre_len;
 
 		if (IS_MULTI(&Num))
 		{
@@ -5349,13 +5558,13 @@ float8_to_char(PG_FUNCTION_ARGS)
 			Num.pre += Num.multi;
 		}
 		orgnum = (char *) palloc(MAXDOUBLEWIDTH + 1);
-		len = snprintf(orgnum, MAXDOUBLEWIDTH + 1, "%.0f", fabs(val));
-		if (Num.pre > len)
-			plen = Num.pre - len;
-		if (len >= DBL_DIG)
+		numstr_pre_len = snprintf(orgnum, MAXDOUBLEWIDTH + 1, "%.0f", fabs(val));
+
+		/* adjust post digits to fit max double digits */
+		if (numstr_pre_len >= DBL_DIG)
 			Num.post = 0;
-		else if (Num.post + len > DBL_DIG)
-			Num.post = DBL_DIG - len;
+		else if (numstr_pre_len + Num.post > DBL_DIG)
+			Num.post = DBL_DIG - numstr_pre_len;
 		snprintf(orgnum, MAXDOUBLEWIDTH + 1, "%.*f", Num.post, val);
 
 		if (*orgnum == '-')
@@ -5368,14 +5577,17 @@ float8_to_char(PG_FUNCTION_ARGS)
 			sign = '+';
 			numstr = orgnum;
 		}
-		if ((p = strchr(numstr, '.')))
-			len = p - numstr;
-		else
-			len = strlen(numstr);
 
-		if (Num.pre > len)
-			plen = Num.pre - len;
-		else if (len > Num.pre)
+		if ((p = strchr(numstr, '.')))
+			numstr_pre_len = p - numstr;
+		else
+			numstr_pre_len = strlen(numstr);
+
+		/* needs padding? */
+		if (numstr_pre_len < Num.pre)
+			out_pre_spaces = Num.pre - numstr_pre_len;
+		/* overflowed prefix digit format? */
+		else if (numstr_pre_len > Num.pre)
 		{
 			numstr = (char *) palloc(Num.pre + Num.post + 2);
 			fill_str(numstr, '#', Num.pre + Num.post + 1);

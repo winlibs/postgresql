@@ -9,24 +9,24 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
 HREF="catalogs.html"><LINK
 REL="PREVIOUS"
+TITLE="pg_class"
+HREF="catalog-pg-class.html"><LINK
+REL="NEXT"
 TITLE="pg_constraint"
 HREF="catalog-pg-constraint.html"><LINK
-REL="NEXT"
-TITLE="pg_conversion"
-HREF="catalog-pg-conversion.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="pg_constraint"
-HREF="catalog-pg-constraint.html"
+TITLE="pg_class"
+HREF="catalog-pg-class.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -71,14 +71,14 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 45. System Catalogs</TD
+>Chapter 48. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="pg_conversion"
-HREF="catalog-pg-conversion.html"
+TITLE="pg_constraint"
+HREF="catalog-pg-constraint.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOG-PG-COLLATION"
->45.13. <TT
+>48.12. <TT
 CLASS="STRUCTNAME"
 >pg_collation</TT
 ></A
@@ -113,11 +113,11 @@ HREF="collation.html"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN89527"
+NAME="AEN96420"
 ></A
 ><P
 ><B
->Table 45-13. <TT
+>Table 48-12. <TT
 CLASS="STRUCTNAME"
 >pg_collation</TT
 > Columns</B
@@ -138,6 +138,22 @@ CLASS="CALSTABLE"
 ></TR
 ></THEAD
 ><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>oid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>Row identifier (hidden attribute; must be explicitly selected)</TD
+></TR
 ><TR
 ><TD
 ><TT
@@ -345,7 +361,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="catalog-pg-constraint.html"
+HREF="catalog-pg-class.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -363,7 +379,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="catalog-pg-conversion.html"
+HREF="catalog-pg-constraint.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -375,7 +391,7 @@ ALIGN="left"
 VALIGN="top"
 ><TT
 CLASS="STRUCTNAME"
->pg_constraint</TT
+>pg_class</TT
 ></TD
 ><TD
 WIDTH="34%"
@@ -392,7 +408,7 @@ ALIGN="right"
 VALIGN="top"
 ><TT
 CLASS="STRUCTNAME"
->pg_conversion</TT
+>pg_constraint</TT
 ></TD
 ></TR
 ></TABLE

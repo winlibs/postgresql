@@ -4,7 +4,7 @@
  *	  definitions for query plan nodes
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/nodes/plannodes.h
@@ -172,7 +172,9 @@ typedef struct ModifyTable
 	List	   *resultRelations;	/* integer list of RT indexes */
 	int			resultRelIndex; /* index of first resultRel in plan's list */
 	List	   *plans;			/* plan(s) producing source data */
+	List	   *withCheckOptionLists;	/* per-target-table WCO lists */
 	List	   *returningLists; /* per-target-table RETURNING tlists */
+	List	   *fdwPrivLists;	/* per-target-table FDW private data lists */
 	List	   *rowMarks;		/* PlanRowMarks (non-locking only) */
 	int			epqParam;		/* ID of Param for EvalPlanQual re-eval */
 } ModifyTable;
@@ -229,7 +231,7 @@ typedef struct RecursiveUnion
  *	 BitmapAnd node -
  *		Generate the intersection of the results of sub-plans.
  *
- * The subplans must be of types that yield tuple bitmaps.	The targetlist
+ * The subplans must be of types that yield tuple bitmaps.  The targetlist
  * and qual fields of the plan are unused and are always NIL.
  * ----------------
  */
@@ -243,7 +245,7 @@ typedef struct BitmapAnd
  *	 BitmapOr node -
  *		Generate the union of the results of sub-plans.
  *
- * The subplans must be of types that yield tuple bitmaps.	The targetlist
+ * The subplans must be of types that yield tuple bitmaps.  The targetlist
  * and qual fields of the plan are unused and are always NIL.
  * ----------------
  */
@@ -277,7 +279,7 @@ typedef Scan SeqScan;
  * in the same form it appeared in the query WHERE condition.  Each should
  * be of the form (indexkey OP comparisonval) or (comparisonval OP indexkey).
  * The indexkey is a Var or expression referencing column(s) of the index's
- * base table.	The comparisonval might be any expression, but it won't use
+ * base table.  The comparisonval might be any expression, but it won't use
  * any columns of the base table.  The expressions are ordered by index
  * column position (but items referencing the same index column can appear
  * in any order).  indexqualorig is used at runtime only if we have to recheck
@@ -292,7 +294,7 @@ typedef Scan SeqScan;
  * that are being implemented by the index, while indexorderby is modified to
  * have index column Vars on the left-hand side.  Here, multiple expressions
  * must appear in exactly the ORDER BY order, and this is not necessarily the
- * index column order.	Only the expressions are provided, not the auxiliary
+ * index column order.  Only the expressions are provided, not the auxiliary
  * sort-order information from the ORDER BY SortGroupClauses; it's assumed
  * that the sort ordering is fully determinable from the top-level operators.
  * indexorderbyorig is unused at run time, but is needed for EXPLAIN.
@@ -344,7 +346,7 @@ typedef struct IndexOnlyScan
  *		bitmap index scan node
  *
  * BitmapIndexScan delivers a bitmap of potential tuple locations;
- * it does not access the heap itself.	The bitmap is used by an
+ * it does not access the heap itself.  The bitmap is used by an
  * ancestor BitmapHeapScan node, possibly after passing through
  * intermediate BitmapAnd and/or BitmapOr nodes to combine it with
  * the results of other BitmapIndexScans.
@@ -404,7 +406,7 @@ typedef struct TidScan
  * purposes.
  *
  * Note: we store the sub-plan in the type-specific subplan field, not in
- * the generic lefttree field as you might expect.	This is because we do
+ * the generic lefttree field as you might expect.  This is because we do
  * not want plan-tree-traversal routines to recurse into the subplan without
  * knowing that they are changing Query contexts.
  * ----------------
@@ -422,11 +424,8 @@ typedef struct SubqueryScan
 typedef struct FunctionScan
 {
 	Scan		scan;
-	Node	   *funcexpr;		/* expression tree for func call */
-	List	   *funccolnames;	/* output column names (string Value nodes) */
-	List	   *funccoltypes;	/* OID list of column type OIDs */
-	List	   *funccoltypmods; /* integer list of column typmods */
-	List	   *funccolcollations;		/* OID list of column collation OIDs */
+	List	   *functions;		/* list of RangeTblFunction nodes */
+	bool		funcordinality; /* WITH ORDINALITY */
 } FunctionScan;
 
 /* ----------------
@@ -752,32 +751,53 @@ typedef struct Limit
  * RowMarkType -
  *	  enums for types of row-marking operations
  *
+ * The first four of these values represent different lock strengths that
+ * we can take on tuples according to SELECT FOR [KEY] UPDATE/SHARE requests.
+ * We only support these on regular tables.  For foreign tables, any locking
+ * that might be done for these requests must happen during the initial row
+ * fetch; there is no mechanism for going back to lock a row later (and thus
+ * no need for EvalPlanQual machinery during updates of foreign tables).
+ * This means that the semantics will be a bit different than for a local
+ * table; in particular we are likely to lock more rows than would be locked
+ * locally, since remote rows will be locked even if they then fail
+ * locally-checked restriction or join quals.  However, the alternative of
+ * doing a separate remote query to lock each selected row is extremely
+ * unappealing, so let's do it like this for now.
+ *
  * When doing UPDATE, DELETE, or SELECT FOR UPDATE/SHARE, we have to uniquely
  * identify all the source rows, not only those from the target relations, so
  * that we can perform EvalPlanQual rechecking at need.  For plain tables we
- * can just fetch the TID, the same as for a target relation.  Otherwise (for
- * example for VALUES or FUNCTION scans) we have to copy the whole row value.
- * The latter is pretty inefficient but fortunately the case is not
- * performance-critical in practice.
+ * can just fetch the TID, much as for a target relation; this case is
+ * represented by ROW_MARK_REFERENCE.  Otherwise (for example for VALUES or
+ * FUNCTION scans) we have to copy the whole row value.  ROW_MARK_COPY is
+ * pretty inefficient, since most of the time we'll never need the data; but
+ * fortunately the case is not performance-critical in practice.  Note that
+ * we use ROW_MARK_COPY for non-target foreign tables, even if the FDW has a
+ * concept of rowid and so could theoretically support some form of
+ * ROW_MARK_REFERENCE.  Although copying the whole row value is inefficient,
+ * it's probably still faster than doing a second remote fetch, so it doesn't
+ * seem worth the extra complexity to permit ROW_MARK_REFERENCE.
  */
 typedef enum RowMarkType
 {
 	ROW_MARK_EXCLUSIVE,			/* obtain exclusive tuple lock */
+	ROW_MARK_NOKEYEXCLUSIVE,	/* obtain no-key exclusive tuple lock */
 	ROW_MARK_SHARE,				/* obtain shared tuple lock */
+	ROW_MARK_KEYSHARE,			/* obtain keyshare tuple lock */
 	ROW_MARK_REFERENCE,			/* just fetch the TID */
 	ROW_MARK_COPY				/* physically copy the row value */
 } RowMarkType;
 
-#define RowMarkRequiresRowShareLock(marktype)  ((marktype) <= ROW_MARK_SHARE)
+#define RowMarkRequiresRowShareLock(marktype)  ((marktype) <= ROW_MARK_KEYSHARE)
 
 /*
  * PlanRowMark -
- *	   plan-time representation of FOR UPDATE/SHARE clauses
+ *	   plan-time representation of FOR [KEY] UPDATE/SHARE clauses
  *
  * When doing UPDATE, DELETE, or SELECT FOR UPDATE/SHARE, we create a separate
- * PlanRowMark node for each non-target relation in the query.	Relations that
+ * PlanRowMark node for each non-target relation in the query.  Relations that
  * are not specified as FOR UPDATE/SHARE are marked ROW_MARK_REFERENCE (if
- * real tables) or ROW_MARK_COPY (if not).
+ * regular tables) or ROW_MARK_COPY (if not).
  *
  * Initially all PlanRowMarks have rti == prti and isParent == false.
  * When the planner discovers that a relation is the root of an inheritance
@@ -789,7 +809,7 @@ typedef enum RowMarkType
  *
  * The planner also adds resjunk output columns to the plan that carry
  * information sufficient to identify the locked or fetched rows.  For
- * tables (markType != ROW_MARK_COPY), these columns are named
+ * regular tables (markType != ROW_MARK_COPY), these columns are named
  *		tableoid%u			OID of table
  *		ctid%u				TID of row
  * The tableoid column is only present for an inheritance hierarchy.
@@ -821,7 +841,7 @@ typedef struct PlanRowMark
  *
  * We track the objects on which a PlannedStmt depends in two ways:
  * relations are recorded as a simple list of OIDs, and everything else
- * is represented as a list of PlanInvalItems.	A PlanInvalItem is designed
+ * is represented as a list of PlanInvalItems.  A PlanInvalItem is designed
  * to be used with the syscache invalidation mechanism, so it identifies a
  * system catalog entry by cache ID and hash value.
  */

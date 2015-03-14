@@ -3,7 +3,7 @@
  * reloptions.c
  *	  Core support for relation options (pg_class.reloptions)
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -17,12 +17,14 @@
 
 #include "access/gist_private.h"
 #include "access/hash.h"
+#include "access/htup_details.h"
 #include "access/nbtree.h"
 #include "access/reloptions.h"
 #include "access/spgist.h"
 #include "catalog/pg_type.h"
 #include "commands/defrem.h"
 #include "commands/tablespace.h"
+#include "commands/view.h"
 #include "nodes/makefuncs.h"
 #include "utils/array.h"
 #include "utils/attoptcache.h"
@@ -58,6 +60,14 @@ static relopt_bool boolRelOpts[] =
 			RELOPT_KIND_HEAP | RELOPT_KIND_TOAST
 		},
 		true
+	},
+	{
+		{
+			"user_catalog_table",
+			"Declare a table as an additional catalog table, e.g. for the purpose of logical replication",
+			RELOPT_KIND_HEAP
+		},
+		false
 	},
 	{
 		{
@@ -163,6 +173,14 @@ static relopt_int intRelOpts[] =
 	},
 	{
 		{
+			"autovacuum_multixact_freeze_min_age",
+			"Minimum multixact age at which VACUUM should freeze a row multixact's, for autovacuum",
+			RELOPT_KIND_HEAP | RELOPT_KIND_TOAST
+		},
+		-1, 0, 1000000000
+	},
+	{
+		{
 			"autovacuum_freeze_max_age",
 			"Age at which to autovacuum a table to prevent transaction ID wraparound",
 			RELOPT_KIND_HEAP | RELOPT_KIND_TOAST
@@ -171,11 +189,27 @@ static relopt_int intRelOpts[] =
 	},
 	{
 		{
+			"autovacuum_multixact_freeze_max_age",
+			"Multixact age at which to autovacuum a table to prevent multixact wraparound",
+			RELOPT_KIND_HEAP | RELOPT_KIND_TOAST
+		},
+		-1, 100000000, 2000000000
+	},
+	{
+		{
 			"autovacuum_freeze_table_age",
-			"Age at which VACUUM should perform a full table sweep to replace old Xid values with FrozenXID",
+			"Age at which VACUUM should perform a full table sweep to freeze row versions",
 			RELOPT_KIND_HEAP | RELOPT_KIND_TOAST
 		}, -1, 0, 2000000000
 	},
+	{
+		{
+			"autovacuum_multixact_freeze_table_age",
+			"Age of multixact at which VACUUM should perform a full table sweep to freeze row versions",
+			RELOPT_KIND_HEAP | RELOPT_KIND_TOAST
+		}, -1, 0, 2000000000
+	},
+
 	/* list terminator */
 	{{NULL}}
 };
@@ -246,6 +280,17 @@ static relopt_string stringRelOpts[] =
 		false,
 		gistValidateBufferingOption,
 		"auto"
+	},
+	{
+		{
+			"check_option",
+			"View has WITH CHECK OPTION defined (local or cascaded).",
+			RELOPT_KIND_VIEW
+		},
+		0,
+		true,
+		validateWithCheckOption,
+		NULL
 	},
 	/* list terminator */
 	{{NULL}}
@@ -495,7 +540,7 @@ add_real_reloption(bits32 kinds, char *name, char *desc, double default_val,
  *		Add a new string reloption
  *
  * "validator" is an optional function pointer that can be used to test the
- * validity of the values.	It must elog(ERROR) when the argument string is
+ * validity of the values.  It must elog(ERROR) when the argument string is
  * not acceptable for the variable.  Note that the default value must pass
  * the validation.
  */
@@ -789,9 +834,11 @@ extractRelOptions(HeapTuple tuple, TupleDesc tupdesc, Oid amoptions)
 	{
 		case RELKIND_RELATION:
 		case RELKIND_TOASTVALUE:
-		case RELKIND_VIEW:
-		case RELKIND_UNCATALOGED:
+		case RELKIND_MATVIEW:
 			options = heap_reloptions(classForm->relkind, datum, false);
+			break;
+		case RELKIND_VIEW:
+			options = view_reloptions(datum, false);
 			break;
 		case RELKIND_INDEX:
 			options = index_reloptions(amoptions, datum, false);
@@ -823,7 +870,7 @@ extractRelOptions(HeapTuple tuple, TupleDesc tupdesc, Oid amoptions)
  * is returned.
  *
  * Note: values of type int, bool and real are allocated as part of the
- * returned array.	Values of type string are allocated separately and must
+ * returned array.  Values of type string are allocated separately and must
  * be freed by the caller.
  */
 relopt_value *
@@ -1145,12 +1192,18 @@ default_reloptions(Datum reloptions, bool validate, relopt_kind kind)
 		offsetof(StdRdOptions, autovacuum) +offsetof(AutoVacOpts, freeze_max_age)},
 		{"autovacuum_freeze_table_age", RELOPT_TYPE_INT,
 		offsetof(StdRdOptions, autovacuum) +offsetof(AutoVacOpts, freeze_table_age)},
+		{"autovacuum_multixact_freeze_min_age", RELOPT_TYPE_INT,
+		offsetof(StdRdOptions, autovacuum) +offsetof(AutoVacOpts, multixact_freeze_min_age)},
+		{"autovacuum_multixact_freeze_max_age", RELOPT_TYPE_INT,
+		offsetof(StdRdOptions, autovacuum) +offsetof(AutoVacOpts, multixact_freeze_max_age)},
+		{"autovacuum_multixact_freeze_table_age", RELOPT_TYPE_INT,
+		offsetof(StdRdOptions, autovacuum) +offsetof(AutoVacOpts, multixact_freeze_table_age)},
 		{"autovacuum_vacuum_scale_factor", RELOPT_TYPE_REAL,
 		offsetof(StdRdOptions, autovacuum) +offsetof(AutoVacOpts, vacuum_scale_factor)},
 		{"autovacuum_analyze_scale_factor", RELOPT_TYPE_REAL,
 		offsetof(StdRdOptions, autovacuum) +offsetof(AutoVacOpts, analyze_scale_factor)},
-		{"security_barrier", RELOPT_TYPE_BOOL,
-		offsetof(StdRdOptions, security_barrier)},
+		{"user_catalog_table", RELOPT_TYPE_BOOL,
+		offsetof(StdRdOptions, user_catalog_table)}
 	};
 
 	options = parseRelOptions(reloptions, validate, kind, &numoptions);
@@ -1167,6 +1220,38 @@ default_reloptions(Datum reloptions, bool validate, relopt_kind kind)
 	pfree(options);
 
 	return (bytea *) rdopts;
+}
+
+/*
+ * Option parser for views
+ */
+bytea *
+view_reloptions(Datum reloptions, bool validate)
+{
+	relopt_value *options;
+	ViewOptions *vopts;
+	int			numoptions;
+	static const relopt_parse_elt tab[] = {
+		{"security_barrier", RELOPT_TYPE_BOOL,
+		offsetof(ViewOptions, security_barrier)},
+		{"check_option", RELOPT_TYPE_STRING,
+		offsetof(ViewOptions, check_option_offset)}
+	};
+
+	options = parseRelOptions(reloptions, validate, RELOPT_KIND_VIEW, &numoptions);
+
+	/* if none set, we're done */
+	if (numoptions == 0)
+		return NULL;
+
+	vopts = allocateReloptStruct(sizeof(ViewOptions), options, numoptions);
+
+	fillRelOptions((void *) vopts, sizeof(ViewOptions), options, numoptions,
+				   validate, tab, lengthof(tab));
+
+	pfree(options);
+
+	return (bytea *) vopts;
 }
 
 /*
@@ -1191,9 +1276,8 @@ heap_reloptions(char relkind, Datum reloptions, bool validate)
 			}
 			return (bytea *) rdopts;
 		case RELKIND_RELATION:
+		case RELKIND_MATVIEW:
 			return default_reloptions(reloptions, validate, RELOPT_KIND_HEAP);
-		case RELKIND_VIEW:
-			return default_reloptions(reloptions, validate, RELOPT_KIND_VIEW);
 		default:
 			/* other relkinds are not supported */
 			return NULL;

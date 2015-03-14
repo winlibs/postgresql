@@ -2,7 +2,8 @@
 <!--
 
 Use </link> not just </> so INSTALL.html can be created without links
-to the main documentation.  Don't use <xref>.
+to the main documentation.  Don't use <xref>; or if you must, wrap it
+in a standalone-ignore clause.
 
 -->
 
@@ -31,9 +32,9 @@ to the main documentation.  Don't use <xref>.
   <para>
 <synopsis>
 ./configure
-gmake
+make
 su
-gmake install
+make install
 adduser postgres
 mkdir /usr/local/pgsql/data
 chown postgres /usr/local/pgsql/data
@@ -76,14 +77,11 @@ su - postgres
 
       <acronym>GNU</> <application>make</> version 3.80 or newer is required; other
       <application>make</> programs or older <acronym>GNU</> <application>make</> versions will <emphasis>not</> work.
-      <acronym>GNU</> <application>make</> is often installed under
-      the name <filename>gmake</filename>; this document will always
-      refer to it by that name. (On some systems
-      <acronym>GNU</acronym> <application>make</> is the default tool with the name
-      <filename>make</>.) To test for <acronym>GNU</acronym>
+      (<acronym>GNU</> <application>make</> is sometimes installed under
+      the name <filename>gmake</filename>.)  To test for <acronym>GNU</acronym>
       <application>make</application> enter:
 <screen>
-<userinput>gmake --version</userinput>
+<userinput>make --version</userinput>
 </screen>
      </para>
     </listitem>
@@ -205,8 +203,12 @@ su - postgres
       language, you need a <productname>Python</productname>
       installation with the header files and
       the <application>distutils</application> module.  The minimum
-      required version is <productname>Python</productname>
-      2.3.  <productname>Python 3</productname> is supported if it's
+      required version is <productname>Python</productname> 2.3.
+      (To work with function arguments of type <type>numeric</>, a 2.3.x
+      installation must include the separately-available <filename>cdecimal</>
+      module; note the <application>PL/Python</> regression tests
+      will not pass if that is missing.)
+      <productname>Python 3</productname> is supported if it's
       version 3.1 or later; but see
       <![%standalone-include[the <application>PL/Python</> documentation]]>
       <![%standalone-ignore[<xref linkend="plpython-python23">]]>
@@ -280,6 +282,16 @@ su - postgres
       encryption using those services.
      </para>
     </listitem>
+
+    <listitem>
+     <para>
+      To build the <productname>PostgreSQL</productname> documentation,
+      there is a separate set of requirements; see
+      <![%standalone-ignore;[<xref linkend="docguide-toolsets">.]]>
+      <![%standalone-include;[the main documentation's appendix on
+      documentation.]]>
+     </para>
+    </listitem>
    </itemizedlist>
   </para>
 
@@ -321,7 +333,8 @@ su - postgres
       <application>Perl</> 5.8 or later is needed to build from a Git checkout,
       or if you changed the input files for any of the build steps that
       use Perl scripts.  If building on Windows you will need
-      <application>Perl</> in any case.
+      <application>Perl</> in any case.  <application>Perl</application> is
+      also required to run some test suites.
      </para>
     </listitem>
    </itemizedlist>
@@ -352,16 +365,18 @@ su - postgres
   <title>Getting The Source</title>
 
   <para>
-   The <productname>PostgreSQL</> &version; sources can be obtained by
-   anonymous FTP from <ulink
-   url="ftp://ftp.postgresql.org/pub/source/v&version;/postgresql-&version;.tar.gz"></ulink>.
-   Other download options can be found on our website:
-   <ulink url="http://www.postgresql.org/download/"></ulink>. After you
-   have obtained the file, unpack it:
+   The <productname>PostgreSQL</> &version; sources can be obtained from the
+   download section of our
+   website: <ulink url="http://www.postgresql.org/download/"></ulink>.  You
+   should get a file named <filename>postgresql-&version;.tar.gz</filename>
+   or <filename>postgresql-&version;.tar.bz2</filename>. After
+   you have obtained the file, unpack it:
 <screen>
 <userinput>gunzip postgresql-&version;.tar.gz</userinput>
 <userinput>tar xf postgresql-&version;.tar</userinput>
 </screen>
+   (Use <command>bunzip2</command> instead of <command>gunzip</command> if you
+   have the <filename>.bz2</filename> file.)
    This will create a directory
    <filename>postgresql-&version;</filename> under the current directory
    with the <productname>PostgreSQL</> sources.
@@ -409,7 +424,7 @@ su - postgres
 <userinput>mkdir build_dir</userinput>
 <userinput>cd build_dir</userinput>
 <userinput>/path/to/source/tree/configure [options go here]</userinput>
-<userinput>gmake</userinput>
+<userinput>make</userinput>
 </screen>
    </para>
 
@@ -616,6 +631,19 @@ su - postgres
     <para>
      <variablelist>
       <varlistentry>
+       <term><option>--with-extra-version=<replaceable>STRING</></option></term>
+       <listitem>
+        <para>
+         Append <replaceable>STRING</> to the PostgreSQL version number.  You
+         can use this, for example, to mark binaries built from unreleased Git
+         snapshots or containing custom patches with an extra version string
+         such as a <command>git describe</command> identifier or a
+         distribution package release number.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
        <term><option>--with-includes=<replaceable>DIRECTORIES</></option></term>
        <listitem>
         <para>
@@ -746,27 +774,11 @@ su - postgres
       </varlistentry>
 
       <varlistentry>
-       <term><option>--with-krb5</option></term>
-       <listitem>
-        <para>
-         Build with support for Kerberos 5 authentication. On many
-         systems, the Kerberos system is not installed in a location
-         that is searched by default (e.g., <filename>/usr/include</>,
-         <filename>/usr/lib</>), so you must use the options
-         <option>--with-includes</> and <option>--with-libraries</> in
-         addition to this option.  <filename>configure</> will check
-         for the required header files and libraries to make sure that
-         your Kerberos installation is sufficient before proceeding.
-        </para>
-       </listitem>
-      </varlistentry>
-
-      <varlistentry>
        <term><option>--with-krb-srvnam=<replaceable>NAME</></option></term>
        <listitem>
         <para>
-         The default name of the Kerberos service principal (also used
-         by GSSAPI).
+         The default name of the Kerberos service principal used
+         by GSSAPI.
          <literal>postgres</literal> is the default. There's usually no
          reason to change this unless you have a Windows environment,
          in which case it must be set to upper case
@@ -776,12 +788,12 @@ su - postgres
       </varlistentry>
 
       <varlistentry>
+       <term><option>--with-openssl</option>
        <indexterm>
         <primary>OpenSSL</primary>
         <seealso>SSL</seealso>
        </indexterm>
-
-       <term><option>--with-openssl</option></term>
+       </term>
        <listitem>
         <para>
          Build with support for <acronym>SSL</> (encrypted)
@@ -852,8 +864,43 @@ su - postgres
        <listitem>
         <para>
          Build with Bonjour support.  This requires Bonjour support
-         in your operating system.  Recommended on Mac OS X.
+         in your operating system.  Recommended on OS X.
         </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><option>--with-uuid=<replaceable>LIBRARY</replaceable></option></term>
+       <listitem>
+        <para>
+         Build the <![%standalone-include[uuid-ossp]]>
+         <![%standalone-ignore[<xref linkend="uuid-ossp">]]> module
+         (which provides functions to generate UUIDs), using the specified
+         UUID library.<indexterm><primary>UUID</primary></indexterm>
+         <replaceable>LIBRARY</replaceable> must be one of:
+        </para>
+        <itemizedlist>
+         <listitem>
+          <para>
+           <option>bsd</> to use the UUID functions found in FreeBSD, NetBSD,
+           and some other BSD-derived systems
+          </para>
+         </listitem>
+         <listitem>
+          <para>
+           <option>e2fs</> to use the UUID library created by
+           the <literal>e2fsprogs</> project; this library is present in most
+           Linux systems and in OS X, and can be obtained for other
+           platforms as well
+          </para>
+         </listitem>
+         <listitem>
+          <para>
+           <option>ossp</> to use the <ulink
+           url="http://www.ossp.org/pkg/lib/uuid/">OSSP UUID library</ulink>
+          </para>
+         </listitem>
+        </itemizedlist>
        </listitem>
       </varlistentry>
 
@@ -861,13 +908,7 @@ su - postgres
        <term><option>--with-ossp-uuid</option></term>
        <listitem>
         <para>
-         Build components using the <ulink
-         url="http://www.ossp.org/pkg/lib/uuid/">OSSP UUID
-         library</ulink>.  Specifically, build the
-         <![%standalone-include[uuid-ossp]]>
-         <![%standalone-ignore[<xref linkend="uuid-ossp">]]> module,
-         which provides functions to generate
-         UUIDs.<indexterm><primary>UUID</primary></indexterm>
+         Obsolete equivalent of <literal>--with-uuid=ossp</literal>.
         </para>
        </listitem>
       </varlistentry>
@@ -1058,15 +1099,16 @@ su - postgres
       </varlistentry>
 
       <varlistentry>
-       <term><option>--with-system-tzdata=<replaceable>DIRECTORY</replaceable></option></term>
+       <term><option>--with-system-tzdata=<replaceable>DIRECTORY</replaceable></option>
        <indexterm>
         <primary>time zone data</primary>
        </indexterm>
+       </term>
        <listitem>
         <para>
          <productname>PostgreSQL</> includes its own time zone database,
          which it requires for date and time operations.  This time zone
-         database is in fact compatible with the <quote>zoneinfo</> time zone
+         database is in fact compatible with the IANA time zone
          database provided by many operating systems such as FreeBSD,
          Linux, and Solaris, so it would be redundant to install it again.
          When this option is used, the system-supplied time zone database
@@ -1229,6 +1271,16 @@ su - postgres
        </listitem>
       </varlistentry>
 
+      <varlistentry>
+       <term><option>--enable-tap-tests</option></term>
+       <listitem>
+        <para>
+         Enable tests using the Perl TAP tools.  This requires a Perl
+         installation and the Perl module <literal>IPC::Run</literal>.
+         <![%standalone-ignore;[See <xref linkend="regress-tap"> for more information.]]>
+        </para>
+       </listitem>
+      </varlistentry>
      </variablelist>
     </para>
 
@@ -1431,7 +1483,7 @@ su - postgres
       source code lines.  If you get confused while trying to debug
       optimized code, recompile the specific files of interest with
       <option>-O0</>.  An easy way to do this is by passing an option
-      to <application>make</>: <command>gmake PROFILE=-O0 file.o</>.
+      to <application>make</>: <command>make PROFILE=-O0 file.o</>.
      </para>
     </note>
    </step>
@@ -1442,7 +1494,7 @@ su - postgres
    <para>
     To start the build, type:
 <screen>
-<userinput>gmake</userinput>
+<userinput>make</userinput>
 </screen>
     (Remember to use <acronym>GNU</> <application>make</>.) The build
     will take a few minutes depending on your
@@ -1457,7 +1509,7 @@ All of PostgreSQL is successfully made. Ready to install.
    documentation (HTML and man pages), and the additional modules
    (<filename>contrib</filename>), type instead:
 <screen>
-<userinput>gmake world</userinput>
+<userinput>make world</userinput>
 </screen>
    The last line displayed should be:
 <screen>
@@ -1480,7 +1532,7 @@ PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
     runs on your machine in the way the developers expected it
     to. Type:
 <screen>
-<userinput>gmake check</userinput>
+<userinput>make check</userinput>
 </screen>
     (This won't work as root; do it as an unprivileged user.)
     <![%standalone-include[The file
@@ -1508,7 +1560,7 @@ PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
    <para>
     To install <productname>PostgreSQL</> enter:
 <screen>
-<userinput>gmake install</userinput>
+<userinput>make install</userinput>
 </screen>
     This will install files into the directories that were specified
     in <xref linkend="configure">. Make sure that you have appropriate
@@ -1521,21 +1573,21 @@ PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
    <para>
     To install the documentation (HTML and man pages), enter:
 <screen>
-<userinput>gmake install-docs</userinput>
+<userinput>make install-docs</userinput>
 </screen>
    </para>
 
    <para>
     If you built the world above, type instead:
 <screen>
-<userinput>gmake install-world</userinput>
+<userinput>make install-world</userinput>
 </screen>
     This also installs the documentation.
    </para>
 
    <para>
-    You can use <literal>gmake install-strip</literal> instead of
-    <literal>gmake install</literal> to strip the executable files and
+    You can use <literal>make install-strip</literal> instead of
+    <literal>make install</literal> to strip the executable files and
     libraries as they are installed.  This will save some space.  If
     you built with debugging support, stripping will effectively
     remove the debugging support, so it should only be done if
@@ -1550,7 +1602,7 @@ PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
     The standard installation provides all the header files needed for client
     application development as well as for server-side program
     development, such as custom functions or data types written in C.
-    (Prior to <productname>PostgreSQL</> 8.0, a separate <literal>gmake
+    (Prior to <productname>PostgreSQL</> 8.0, a separate <literal>make
     install-all-headers</> command was needed for the latter, but this
     step has been folded into the standard install.)
    </para>
@@ -1561,10 +1613,10 @@ PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
      If you want to install only the client applications and
      interface libraries, then you can use these commands:
 <screen>
-<userinput>gmake -C src/bin install</>
-<userinput>gmake -C src/include install</>
-<userinput>gmake -C src/interfaces install</>
-<userinput>gmake -C doc install</>
+<userinput>make -C src/bin install</>
+<userinput>make -C src/include install</>
+<userinput>make -C src/interfaces install</>
+<userinput>make -C doc install</>
 </screen>
     <filename>src/bin</> has a few binaries for server-only use,
     but they are small.
@@ -1576,7 +1628,7 @@ PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
   <formalpara>
    <title>Uninstallation:</title>
    <para>
-    To undo the installation use the command <command>gmake
+    To undo the installation use the command <command>make
     uninstall</>. However, this will not remove any created directories.
    </para>
   </formalpara>
@@ -1586,11 +1638,11 @@ PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
 
    <para>
     After the installation you can free disk space by removing the built
-    files from the source tree with the command <command>gmake
+    files from the source tree with the command <command>make
     clean</>. This will preserve the files made by the <command>configure</command>
-    program, so that you can rebuild everything with <command>gmake</>
+    program, so that you can rebuild everything with <command>make</>
     later on. To reset the source tree to the state in which it was
-    distributed, use <command>gmake distclean</>. If you are going to
+    distributed, use <command>make distclean</>. If you are going to
     build for several platforms within the same source tree you must do
     this and re-configure for each platform.  (Alternatively, use
     a separate build tree for each platform, so that the source tree
@@ -1602,7 +1654,7 @@ PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
    If you perform a build and then discover that your <command>configure</>
    options were wrong, or if you change anything that <command>configure</>
    investigates (for example, software upgrades), then it's a good
-   idea to do <command>gmake distclean</> before reconfiguring and
+   idea to do <command>make distclean</> before reconfiguring and
    rebuilding.  Without this, your changes in configuration choices
    might not propagate everywhere they need to.
   </para>
@@ -1624,8 +1676,8 @@ PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
     shared libraries.  The systems on which this is
     <emphasis>not</emphasis> necessary include
     <systemitem class="osname">FreeBSD</>,
-    <systemitem class="osname">HP-UX</>, <systemitem
-    class="osname">IRIX</>, <systemitem class="osname">Linux</>,
+    <systemitem class="osname">HP-UX</>,
+    <systemitem class="osname">Linux</>,
     <systemitem class="osname">NetBSD</>, <systemitem
     class="osname">OpenBSD</>, <systemitem class="osname">Tru64
     UNIX</> (formerly <systemitem class="osname">Digital UNIX</>), and
@@ -1894,7 +1946,7 @@ kill `cat /usr/local/pgsql/data/postmaster.pid`
     <listitem>
      <para>
       Run the regression tests against the installed server (using
-      <command>gmake installcheck</command>). If you didn't run the
+      <command>make installcheck</command>). If you didn't run the
       tests before installation, you should definitely do it now. This
       is also explained in the documentation.
      </para>
@@ -1940,7 +1992,7 @@ kill `cat /usr/local/pgsql/data/postmaster.pid`
    In general, <productname>PostgreSQL</> can be expected to work on
    these CPU architectures: x86, x86_64, IA64, PowerPC,
    PowerPC 64, S/390, S/390x, Sparc, Sparc 64, Alpha, ARM, MIPS, MIPSEL, M68K,
-   and PA-RISC.  Code support exists for M32R, NS32K, and VAX, but these
+   and PA-RISC.  Code support exists for M32R and VAX, but these
    architectures are not known to have been tested recently.  It is often
    possible to build on an unsupported CPU type by configuring with
    <option>--disable-spinlocks</option>, but performance will be poor.
@@ -1949,7 +2001,7 @@ kill `cat /usr/local/pgsql/data/postmaster.pid`
   <para>
    <productname>PostgreSQL</> can be expected to work on these operating
    systems: Linux (all recent distributions), Windows (Win2000 SP4 and later),
-   FreeBSD, OpenBSD, NetBSD, Mac OS X, AIX, HP/UX, IRIX, Solaris, Tru64 Unix,
+   FreeBSD, OpenBSD, NetBSD, OS X, AIX, HP/UX, Solaris, Tru64 Unix,
    and UnixWare.  Other Unix-like systems may also work but are not currently
    being tested.  In most cases, all CPU architectures supported by
    a given operating system will work.  Look in
@@ -2309,7 +2361,7 @@ createlang: language installation failed: ERROR:  could not load library "/opt/d
      </biblioentry>
 
      <biblioentry>
-       <title><ulink url="  http://www.redbooks.ibm.com/abstracts/sg245674.html?Open">Developing and Porting C and C++ Applications on AIX</ulink></title>
+       <title><ulink url="http://www.redbooks.ibm.com/abstracts/sg245674.html?Open">Developing and Porting C and C++ Applications on AIX</ulink></title>
        <publisher>
         <publishername>IBM Redbook</publishername>
        </publisher>
@@ -2345,12 +2397,6 @@ createlang: language installation failed: ERROR:  could not load library "/opt/d
        Set your path to use the Cygwin bin directory before the
        Windows utilities.  This will help prevent problems with
        compilation.
-      </para>
-     </listitem>
-
-     <listitem>
-      <para>
-       The GNU make command is called <command>make</command>, not <command>gmake</command>.
       </para>
      </listitem>
 
@@ -2519,62 +2565,6 @@ PHSS_30849  s700_800 u2comp/be/plugin library Patch
    </para>
   </sect2>
 
-  <sect2 id="installation-notes-irix">
-   <title>IRIX</title>
-
-   <indexterm zone="installation-notes-irix">
-    <primary>IRIX</primary>
-    <secondary>installation on</secondary>
-   </indexterm>
-
-   <para>
-    PostgreSQL has been reported to run successfully on MIPS r8000,
-    r10000 (both ip25 and ip27) and r12000(ip35) processors, running
-    IRIX 6.5.5m, 6.5.12, 6.5.13, and 6.5.26 with MIPSPro compilers
-    version 7.30, 7.3.1.2m, 7.3, and 7.4.4m.
-   </para>
-
-   <para>
-    You will need the MIPSPro full ANSI C compiler.  There are
-    problems trying to build with GCC.  It is a known GCC bug (not
-    fixed as of version 3.0) related to using functions that return
-    certain kinds of structures. This bug affects functions like
-    <function>inet_ntoa</>, <function>inet_lnaof</>, <function>inet_netof</>, <function>inet_makeaddr</>,
-    and <function>semctl</>.  It is supposed to be fixed by forcing
-    code to link those functions with libgcc, but this has not been
-    tested yet.
-   </para>
-
-   <para>
-    It is known that version 7.4.1m of the MIPSPro compiler generates
-    incorrect code.  The symptom is <quote>invalid primary checkpoint
-    record</quote> when trying to start the database.)  Version 7.4.4m
-    is OK; the status of intermediate versions is uncertain.
-   </para>
-
-   <para>
-    There may be a compilation problem like the following:
-<screen>
-cc-1020 cc: ERROR File = pqcomm.c, Line = 427
-  The identifier "TCP_NODELAY" is undefined.
-
-                if (setsockopt(port->sock, IPPROTO_TCP, TCP_NODELAY,
-</screen>
-    Some versions include TCP definitions
-    in <filename>sys/xti.h</filename>, so it is necessary to
-    add <literal>#include &lt;sys/xti.h&gt;</literal>
-    in <filename>src/backend/libpq/pqcomm.c</> and in
-    <filename>src/interfaces/libpq/fe-connect.c</>.  If you encounter
-    this, please let us know so we can develop a proper fix.
-   </para>
-
-   <para>
-    In the regression tests, there might be some low-order-digit
-    differences in the geometry tests, depending on which FPU are you
-    using.  Any other error is cause for suspicion.
-   </para>
-  </sect2>
-
   <sect2 id="installation-notes-mingw">
    <title>MinGW/Native Windows</title>
 
@@ -2693,9 +2683,7 @@ cc-1020 cc: ERROR File = pqcomm.c, Line = 427
     <para>
      You need to use the GNU Make program, which is on the Skunkware
      CD.  By default, it installs
-     as <filename>/usr/local/bin/make</filename>.  To avoid confusion
-     with the SCO <filename>make</filename> program, you may want to rename GNU <filename>make</filename> to
-     <filename>gmake</filename>.
+     as <filename>/usr/local/bin/make</filename>.
     </para>
 
     <para>
@@ -2825,12 +2813,12 @@ MANPATH=/usr/lib/scohelp/%L/man:/usr/dt/man:/usr/man:/usr/share/man:scohelp:/usr
 
     <para>
      You can download Sun Studio
-     from <ulink url="http://developers.sun.com/sunstudio/downloads/"></ulink>.
+     from <ulink url="http://www.oracle.com/technetwork/server-storage/solarisstudio/downloads/"></ulink>.
      Many of GNU tools are integrated into Solaris 10, or they are
      present on the Solaris companion CD.  If you like packages for
      older version of Solaris, you can find these tools
-     at <ulink url="http://www.sunfreeware.com"></ulink>
-     or <ulink url="http://www.blastwave.org"></ulink>.  If you prefer
+     at <ulink url="http://www.sunfreeware.com"></ulink>.
+     If you prefer
      sources, look
      at <ulink url="http://www.gnu.org/order/ftp.html"></ulink>.
     </para>
@@ -2925,15 +2913,6 @@ LIBOBJS = snprintf.o
      and that is why 32-bit code is significant slower on this CPU
      family.
     </para>
-
-    <para>
-     Some tricks for tuning PostgreSQL and Solaris for performance can
-     be found
-     at <ulink url="http://www.sun.com/servers/coolthreads/tnb/applications_postgresql.jsp"></ulink>.
-     This article is primary focused on T2000 platform, but many of
-     the recommendations are also useful on other hardware with
-     Solaris.
-    </para>
    </sect3>
 
    <sect3>
@@ -2944,7 +2923,7 @@ LIBOBJS = snprintf.o
      documentation]]>
      <![%standalone-ignore[<xref linkend="dynamic-trace">]]> for further
      information.  You can also find more information in this
-     article: <ulink url="http://blogs.sun.com/robertlor/entry/user_level_dtrace_probes_in"></ulink>.
+     article: <ulink url="https://blogs.oracle.com/robertlor/entry/user_level_dtrace_probes_in"></ulink>.
     </para>
 
     <para>
@@ -2957,7 +2936,7 @@ AbortTransaction                    utils/probes.o
 CommitTransaction                   utils/probes.o
 ld: fatal: Symbol referencing errors. No output written to postgres
 collect2: ld returned 1 exit status
-gmake: *** [postgres] Error 1
+make: *** [postgres] Error 1
 </screen>
      your DTrace installation is too old to handle probes in static
      functions.  You need Solaris 10u4 or newer.

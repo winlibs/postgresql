@@ -1,5 +1,5 @@
 ; DEF file for MS VC++
-LIBRARY LIBECPGD
+LIBRARY LIBECPGD.dll
 EXPORTS
     ECPGallocate_desc                @ 1
     ECPGconnect                      @ 2

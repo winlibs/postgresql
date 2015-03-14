@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-COMMENT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN66091"
+NAME="AEN71348"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN66091"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN66096"
+NAME="AEN71351"
 ></A
 ><H2
 >Synopsis</H2
@@ -114,14 +114,14 @@ CLASS="SYNOPSIS"
   AGGREGATE <TT
 CLASS="REPLACEABLE"
 ><I
->agg_name</I
+>aggregate_name</I
 ></TT
-> (<TT
+> ( <TT
 CLASS="REPLACEABLE"
 ><I
->agg_type</I
+>aggregate_signature</I
 ></TT
-> [, ...] ) |
+> ) |
   CAST (<TT
 CLASS="REPLACEABLE"
 ><I
@@ -185,6 +185,12 @@ CLASS="REPLACEABLE"
 >object_name</I
 ></TT
 > |
+  EVENT TRIGGER <TT
+CLASS="REPLACEABLE"
+><I
+>object_name</I
+></TT
+> |
   FOREIGN DATA WRAPPER <TT
 CLASS="REPLACEABLE"
 ><I
@@ -228,6 +234,12 @@ CLASS="REPLACEABLE"
 CLASS="REPLACEABLE"
 ><I
 >large_object_oid</I
+></TT
+> |
+  MATERIALIZED VIEW <TT
+CLASS="REPLACEABLE"
+><I
+>object_name</I
 ></TT
 > |
   OPERATOR <TT
@@ -373,12 +385,74 @@ CLASS="REPLACEABLE"
 ><I
 >text</I
 ></TT
->'</PRE
+>'
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>where <TT
+CLASS="REPLACEABLE"
+><I
+>aggregate_signature</I
+></TT
+> is:</SPAN
+></SPAN
+>
+
+* |
+[ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [ , ... ] |
+[ [ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [ , ... ] ] ORDER BY [ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [ , ... ]</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66144"
+NAME="AEN71412"
 ></A
 ><H2
 >Description</H2
@@ -440,14 +514,14 @@ CLASS="FUNCTION"
 >
     (see <A
 HREF="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE"
->Table 9-54</A
+>Table 9-60</A
 >).
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66162"
+NAME="AEN71430"
 ></A
 ><H2
 >Parameters</H2
@@ -475,7 +549,7 @@ CLASS="REPLACEABLE"
 ><BR><TT
 CLASS="REPLACEABLE"
 ><I
->agg_name</I
+>aggregate_name</I
 ></TT
 ><BR><TT
 CLASS="REPLACEABLE"
@@ -523,23 +597,6 @@ CLASS="REPLACEABLE"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->agg_type</I
-></TT
-></DT
-><DD
-><P
->      An input data type on which the aggregate function operates.
-      To reference a zero-argument aggregate function, write <TT
-CLASS="LITERAL"
->*</TT
->
-      in place of the list of input data types.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
 >source_type</I
 ></TT
 ></DT
@@ -569,7 +626,8 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      The mode of a function argument: <TT
+>      The mode of a function or aggregate
+      argument: <TT
 CLASS="LITERAL"
 >IN</TT
 >, <TT
@@ -589,7 +647,7 @@ CLASS="LITERAL"
 >.
       Note that <TT
 CLASS="COMMAND"
->COMMENT ON FUNCTION</TT
+>COMMENT</TT
 > does not actually pay
       any attention to <TT
 CLASS="LITERAL"
@@ -618,10 +676,10 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      The name of a function argument.
+>      The name of a function or aggregate argument.
       Note that <TT
 CLASS="COMMAND"
->COMMENT ON FUNCTION</TT
+>COMMENT</TT
 > does not actually pay
       any attention to argument names, since only the argument data
       types are needed to determine the function's identity.
@@ -636,8 +694,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      The data type(s) of the function's arguments (optionally
-      schema-qualified), if any.
+>      The data type of a function or aggregate argument.
      </P
 ></DD
 ><DT
@@ -706,7 +763,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66252"
+NAME="AEN71514"
 ></A
 ><H2
 >Notes</H2
@@ -723,7 +780,7 @@ NAME="AEN66252"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66255"
+NAME="AEN71517"
 ></A
 ><H2
 >Examples</H2
@@ -765,6 +822,7 @@ COMMENT ON FUNCTION my_function (timestamp) IS 'Returns Roman Numeral';
 COMMENT ON INDEX my_index IS 'Enforces uniqueness on employee ID';
 COMMENT ON LANGUAGE plpython IS 'Python support for stored procedures';
 COMMENT ON LARGE OBJECT 346344 IS 'Planning document';
+COMMENT ON MATERIALIZED VIEW my_matview IS 'Summary of order history';
 COMMENT ON OPERATOR ^ (text, text) IS 'Performs intersection of two texts';
 COMMENT ON OPERATOR - (NONE, integer) IS 'Unary minus';
 COMMENT ON OPERATOR CLASS int4ops USING btree IS '4 byte integer operators for btrees';
@@ -777,7 +835,7 @@ COMMENT ON SERVER myserver IS 'my foreign server';
 COMMENT ON TABLE my_schema.my_table IS 'Employee Information';
 COMMENT ON TABLESPACE my_tablespace IS 'Tablespace for indexes';
 COMMENT ON TEXT SEARCH CONFIGURATION my_config IS 'Special word filtering';
-COMMENT ON TEXT SEARCH DICTIONARY swedish IS 'Snowball stemmer for swedish language';
+COMMENT ON TEXT SEARCH DICTIONARY swedish IS 'Snowball stemmer for Swedish language';
 COMMENT ON TEXT SEARCH PARSER my_parser IS 'Splits text into words';
 COMMENT ON TEXT SEARCH TEMPLATE snowball IS 'Snowball stemmer';
 COMMENT ON TRIGGER my_trigger ON my_table IS 'Used for RI';
@@ -788,7 +846,7 @@ COMMENT ON VIEW my_view IS 'View of departmental costs';</PRE
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66263"
+NAME="AEN71525"
 ></A
 ><H2
 >Compatibility</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -104,9 +104,7 @@ HREF="datatype-geometric.html#DATATYPE-GEO-TABLE"
     types available in <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
->.  The
-    most fundamental type, the point, forms the basis for all of the
-    other types.
+>.
    </P
 ><DIV
 CLASS="TABLE"
@@ -127,9 +125,9 @@ CLASS="CALSTABLE"
 ><TH
 >Storage Size</TH
 ><TH
->Representation</TH
-><TH
 >Description</TH
+><TH
+>Representation</TH
 ></TR
 ></THEAD
 ><TBODY
@@ -155,9 +153,9 @@ CLASS="TYPE"
 ><TD
 >32 bytes</TD
 ><TD
->Infinite line (not fully implemented)</TD
+>Infinite line</TD
 ><TD
->((x1,y1),(x2,y2))</TD
+>{A,B,C}</TD
 ></TR
 ><TR
 ><TD
@@ -253,7 +251,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN6473"
+NAME="AEN6730"
 >8.8.1. Points</A
 ></H2
 ><P
@@ -312,19 +310,200 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN6487"
->8.8.2. Line Segments</A
+NAME="DATATYPE-LINE"
+>8.8.2. Lines</A
 ></H2
 ><P
->     Line segments (<TT
+>     Lines are represented by the linear
+     equation <TT
+CLASS="REPLACEABLE"
+><I
+>A</I
+></TT
+>x + <TT
+CLASS="REPLACEABLE"
+><I
+>B</I
+></TT
+>y + <TT
+CLASS="REPLACEABLE"
+><I
+>C</I
+></TT
+> = 0,
+     where <TT
+CLASS="REPLACEABLE"
+><I
+>A</I
+></TT
+> and <TT
+CLASS="REPLACEABLE"
+><I
+>B</I
+></TT
+> are not both zero.  Values
+     of type <TT
+CLASS="TYPE"
+>line</TT
+> are input and output in the following form:
+</P><PRE
+CLASS="SYNOPSIS"
+>{ <TT
+CLASS="REPLACEABLE"
+><I
+>A</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>B</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>C</I
+></TT
+> }</PRE
+><P>
+
+     Alternatively, any of the following forms can be used for input:
+
+</P><PRE
+CLASS="SYNOPSIS"
+>[ ( <TT
+CLASS="REPLACEABLE"
+><I
+>x1</I
+></TT
+> , <TT
+CLASS="REPLACEABLE"
+><I
+>y1</I
+></TT
+> ) , ( <TT
+CLASS="REPLACEABLE"
+><I
+>x2</I
+></TT
+> , <TT
+CLASS="REPLACEABLE"
+><I
+>y2</I
+></TT
+> ) ]
+( ( <TT
+CLASS="REPLACEABLE"
+><I
+>x1</I
+></TT
+> , <TT
+CLASS="REPLACEABLE"
+><I
+>y1</I
+></TT
+> ) , ( <TT
+CLASS="REPLACEABLE"
+><I
+>x2</I
+></TT
+> , <TT
+CLASS="REPLACEABLE"
+><I
+>y2</I
+></TT
+> ) )
+  ( <TT
+CLASS="REPLACEABLE"
+><I
+>x1</I
+></TT
+> , <TT
+CLASS="REPLACEABLE"
+><I
+>y1</I
+></TT
+> ) , ( <TT
+CLASS="REPLACEABLE"
+><I
+>x2</I
+></TT
+> , <TT
+CLASS="REPLACEABLE"
+><I
+>y2</I
+></TT
+> )
+    <TT
+CLASS="REPLACEABLE"
+><I
+>x1</I
+></TT
+> , <TT
+CLASS="REPLACEABLE"
+><I
+>y1</I
+></TT
+>   ,   <TT
+CLASS="REPLACEABLE"
+><I
+>x2</I
+></TT
+> , <TT
+CLASS="REPLACEABLE"
+><I
+>y2</I
+></TT
+></PRE
+><P>
+
+     where
+     <TT
+CLASS="LITERAL"
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>x1</I
+></TT
+>,<TT
+CLASS="REPLACEABLE"
+><I
+>y1</I
+></TT
+>)</TT
+>
+     and
+     <TT
+CLASS="LITERAL"
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>x2</I
+></TT
+>,<TT
+CLASS="REPLACEABLE"
+><I
+>y2</I
+></TT
+>)</TT
+>
+     are two different points on the line.
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="DATATYPE-LSEG"
+>8.8.3. Line Segments</A
+></H2
+><P
+>     Line segments are represented by pairs of points that are the endpoints
+     of the segment.  Values of type <TT
 CLASS="TYPE"
 >lseg</TT
->) are represented by pairs of points.
-     Values of type <TT
-CLASS="TYPE"
->lseg</TT
-> are specified using any of the following
-     syntaxes:
+> are specified using any
+     of the following syntaxes:
 
 </P><PRE
 CLASS="SYNOPSIS"
@@ -455,8 +634,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN6520"
->8.8.3. Boxes</A
+NAME="AEN6814"
+>8.8.4. Boxes</A
 ></H2
 ><P
 >     Boxes are represented by pairs of points that are opposite
@@ -580,8 +759,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN6549"
->8.8.4. Paths</A
+NAME="AEN6843"
+>8.8.5. Paths</A
 ></H2
 ><P
 >     Paths are represented by lists of connected points. Paths can be
@@ -733,8 +912,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN6582"
->8.8.5. Polygons</A
+NAME="DATATYPE-POLYGON"
+>8.8.6. Polygons</A
 ></H2
 ><P
 >     Polygons are represented by lists of points (the vertexes of the
@@ -848,8 +1027,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN6607"
->8.8.6. Circles</A
+NAME="DATATYPE-CIRCLE"
+>8.8.7. Circles</A
 ></H2
 ><P
 >     Circles are represented by a center point and radius.

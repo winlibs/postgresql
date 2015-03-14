@@ -39,18 +39,18 @@ my $vcver = Mkvcbuild::mkvcbuild($config);
 
 my $bconf     = $ENV{CONFIG} || "Release";
 my $buildwhat = $ARGV[1]     || "";
-if ($ARGV[0] eq 'DEBUG')
+if (uc($ARGV[0]) eq 'DEBUG')
 {
 	$bconf = "Debug";
 }
-elsif ($ARGV[0] ne "RELEASE")
+elsif (uc($ARGV[0]) ne "RELEASE")
 {
 	$buildwhat = $ARGV[0] || "";
 }
 
 # ... and do it
 
-if ($buildwhat and $vcver eq '10.00')
+if ($buildwhat and $vcver >= 10.00)
 {
 	system(
 "msbuild $buildwhat.vcxproj /verbosity:detailed /p:Configuration=$bconf");

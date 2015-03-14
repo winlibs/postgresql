@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: LOCK
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "LOCK" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "LOCK" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 LOCK \- lock a table
-.\" LOCK
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -172,12 +171,12 @@ only deals with table\-level locks, and so the mode names involving
 ROW
 are all misnomers\&. These mode names should generally be read as indicating the intention of the user to acquire row\-level locks within the locked table\&. Also,
 ROW EXCLUSIVE
-mode is a sharable table lock\&. Keep in mind that all the lock modes have identical semantics so far as
+mode is a shareable table lock\&. Keep in mind that all the lock modes have identical semantics so far as
 \fBLOCK TABLE\fR
 is concerned, differing only in the rules about which modes conflict with which\&. For information on how to acquire an actual row\-level lock, see
 Section 13.3.2, \(lqRow-level Locks\(rq, in the documentation
 and the
-FOR UPDATE/FOR SHARE Clause
+The Locking Clause
 in the
 \fBSELECT\fR
 reference documentation\&.

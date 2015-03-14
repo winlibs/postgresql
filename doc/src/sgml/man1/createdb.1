@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: createdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "CREATEDB" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATEDB" "1" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 createdb \- create a new PostgreSQL database
-.\" createdb
 .SH "SYNOPSIS"
 .HP \w'\fBcreatedb\fR\ 'u
 \fBcreatedb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\fIdbname\fR\ [\fIdescription\fR]]
@@ -69,19 +68,25 @@ databases in this cluster\&. The default is to create a database with the same n
 Specifies a comment to be associated with the newly created database\&.
 .RE
 .PP
-\fB\-D \fR\fB\fItablespace\fR\fR, \fB\-\-tablespace=\fR\fB\fItablespace\fR\fR
+\fB\-D \fR\fB\fItablespace\fR\fR
+.br
+\fB\-\-tablespace=\fR\fB\fItablespace\fR\fR
 .RS 4
 Specifies the default tablespace for the database\&. (This name is processed as a double\-quoted identifier\&.)
 .RE
 .PP
-\fB\-e\fR, \fB\-\-echo\fR
+\fB\-e\fR
+.br
+\fB\-\-echo\fR
 .RS 4
 Echo the commands that
 createdb
 generates and sends to the server\&.
 .RE
 .PP
-\fB\-E \fR\fB\fIencoding\fR\fR, \fB\-\-encoding=\fR\fB\fIencoding\fR\fR
+\fB\-E \fR\fB\fIencoding\fR\fR
+.br
+\fB\-\-encoding=\fR\fB\fIencoding\fR\fR
 .RS 4
 Specifies the character encoding scheme to be used in this database\&. The character sets supported by the
 PostgreSQL
@@ -89,7 +94,9 @@ server are described in
 Section 22.3.1, \(lqSupported Character Sets\(rq, in the documentation\&.
 .RE
 .PP
-\fB\-l \fR\fB\fIlocale\fR\fR, \fB\-\-locale=\fR\fB\fIlocale\fR\fR
+\fB\-l \fR\fB\fIlocale\fR\fR
+.br
+\fB\-\-locale=\fR\fB\fIlocale\fR\fR
 .RS 4
 Specifies the locale to be used in this database\&. This is equivalent to specifying both
 \fB\-\-lc\-collate\fR
@@ -107,24 +114,32 @@ Specifies the LC_COLLATE setting to be used in this database\&.
 Specifies the LC_CTYPE setting to be used in this database\&.
 .RE
 .PP
-\fB\-O \fR\fB\fIowner\fR\fR, \fB\-\-owner=\fR\fB\fIowner\fR\fR
+\fB\-O \fR\fB\fIowner\fR\fR
+.br
+\fB\-\-owner=\fR\fB\fIowner\fR\fR
 .RS 4
 Specifies the database user who will own the new database\&. (This name is processed as a double\-quoted identifier\&.)
 .RE
 .PP
-\fB\-T \fR\fB\fItemplate\fR\fR, \fB\-\-template=\fR\fB\fItemplate\fR\fR
+\fB\-T \fR\fB\fItemplate\fR\fR
+.br
+\fB\-\-template=\fR\fB\fItemplate\fR\fR
 .RS 4
 Specifies the template database from which to build this database\&. (This name is processed as a double\-quoted identifier\&.)
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 createdb
 version and exit\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 createdb
@@ -144,29 +159,39 @@ CREATE DATABASE (\fBCREATE_DATABASE\fR(7)); see there for more information about
 createdb
 also accepts the following command\-line arguments for connection parameters:
 .PP
-\fB\-h \fR\fB\fIhost\fR\fR, \fB\-\-host=\fR\fB\fIhost\fR\fR
+\fB\-h \fR\fB\fIhost\fR\fR
+.br
+\fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
 Specifies the host name of the machine on which the server is running\&. If the value begins with a slash, it is used as the directory for the Unix domain socket\&.
 .RE
 .PP
-\fB\-p \fR\fB\fIport\fR\fR, \fB\-\-port=\fR\fB\fIport\fR\fR
+\fB\-p \fR\fB\fIport\fR\fR
+.br
+\fB\-\-port=\fR\fB\fIport\fR\fR
 .RS 4
 Specifies the TCP port or the local Unix domain socket file extension on which the server is listening for connections\&.
 .RE
 .PP
-\fB\-U \fR\fB\fIusername\fR\fR, \fB\-\-username=\fR\fB\fIusername\fR\fR
+\fB\-U \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-username=\fR\fB\fIusername\fR\fR
 .RS 4
 User name to connect as\&.
 .RE
 .PP
-\fB\-w\fR, \fB\-\-no\-password\fR
+\fB\-w\fR
+.br
+\fB\-\-no\-password\fR
 .RS 4
 Never issue a password prompt\&. If the server requires password authentication and a password is not available by other means such as a
 \&.pgpass
 file, the connection attempt will fail\&. This option can be useful in batch jobs and scripts where no user is present to enter a password\&.
 .RE
 .PP
-\fB\-W\fR, \fB\-\-password\fR
+\fB\-W\fR
+.br
+\fB\-\-password\fR
 .RS 4
 Force
 createdb
@@ -196,7 +221,11 @@ will be used\&.
 If set, the name of the database to create, unless overridden on the command line\&.
 .RE
 .PP
-\fBPGHOST\fR, \fBPGPORT\fR, \fBPGUSER\fR
+\fBPGHOST\fR
+.br
+\fBPGPORT\fR
+.br
+\fBPGUSER\fR
 .RS 4
 Default connection parameters\&.
 \fBPGUSER\fR

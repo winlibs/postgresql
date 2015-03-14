@@ -81,18 +81,31 @@ OPTIONS (format 'csv', filename '@abs_srcdir@/data/agg.bad', header 'true', deli
 -- per-column options tests
 CREATE FOREIGN TABLE text_csv (
     word1 text OPTIONS (force_not_null 'true'),
-    word2 text OPTIONS (force_not_null 'off')
+    word2 text OPTIONS (force_not_null 'off'),
+    word3 text OPTIONS (force_null 'true'),
+    word4 text OPTIONS (force_null 'off')
 ) SERVER file_server
 OPTIONS (format 'text', filename '@abs_srcdir@/data/text.csv', null 'NULL');
 SELECT * FROM text_csv; -- ERROR
 ALTER FOREIGN TABLE text_csv OPTIONS (SET format 'csv');
+\pset null _null_
 SELECT * FROM text_csv;
+
+-- force_not_null and force_null can be used together on the same column
+ALTER FOREIGN TABLE text_csv ALTER COLUMN word1 OPTIONS (force_null 'true');
+ALTER FOREIGN TABLE text_csv ALTER COLUMN word3 OPTIONS (force_not_null 'true');
 
 -- force_not_null is not allowed to be specified at any foreign object level:
 ALTER FOREIGN DATA WRAPPER file_fdw OPTIONS (ADD force_not_null '*'); -- ERROR
 ALTER SERVER file_server OPTIONS (ADD force_not_null '*'); -- ERROR
 CREATE USER MAPPING FOR public SERVER file_server OPTIONS (force_not_null '*'); -- ERROR
 CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (force_not_null '*'); -- ERROR
+
+-- force_null is not allowed to be specified at any foreign object level:
+ALTER FOREIGN DATA WRAPPER file_fdw OPTIONS (ADD force_null '*'); -- ERROR
+ALTER SERVER file_server OPTIONS (ADD force_null '*'); -- ERROR
+CREATE USER MAPPING FOR public SERVER file_server OPTIONS (force_null '*'); -- ERROR
+CREATE FOREIGN TABLE tbl () SERVER file_server OPTIONS (force_null '*'); -- ERROR
 
 -- basic query tests
 SELECT * FROM agg_text WHERE b > 10.0 ORDER BY a;
@@ -118,7 +131,6 @@ SELECT tableoid::regclass, b FROM agg_csv;
 INSERT INTO agg_csv VALUES(1,2.0);
 UPDATE agg_csv SET a = 1;
 DELETE FROM agg_csv WHERE a = 100;
-SELECT * FROM agg_csv FOR UPDATE OF agg_csv;
 -- but this should be ignored
 SELECT * FROM agg_csv FOR UPDATE;
 

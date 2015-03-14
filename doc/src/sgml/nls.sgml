@@ -1,13 +1,6 @@
 <!-- doc/src/sgml/nls.sgml -->
 
 <chapter id="nls">
- <chapterinfo>
-  <author>
-   <firstname>Peter</firstname>
-   <surname>Eisentraut</surname>
-  </author>
- </chapterinfo>
-
  <title>Native Language Support</title>
 
  <sect1 id="nls-translator">
@@ -160,7 +153,7 @@ msgstr "another translated"
     can also be named
     <filename><replaceable>language</replaceable>_<replaceable>region</replaceable>.po</filename>
     where <replaceable>region</replaceable> is the
-    <ulink url="http://www.iso.org/iso/english_country_names_and_code_elements">
+    <ulink url="http://www.iso.org/iso/country_names_and_code_elements">
     ISO 3166-1 two-letter country code (in upper case)</ulink>,
     e.g.,
     <filename>pt_BR.po</filename> for Portuguese in Brazil.  If you
@@ -172,7 +165,7 @@ msgstr "another translated"
     If you need to start a new translation effort, then first run the
     command:
 <programlisting>
-gmake init-po
+make init-po
 </programlisting>
     This will create a file
     <filename><replaceable>progname</replaceable>.pot</filename>.
@@ -195,7 +188,7 @@ AVAIL_LANGUAGES := de fr
     changed or added by the programmers.  In this case you do not need
     to start from scratch.  Instead, run the command:
 <programlisting>
-gmake update-po
+make update-po
 </programlisting>
     which will create a new blank message catalog file (the pot file
     you started with) and will merge it with the existing PO files.

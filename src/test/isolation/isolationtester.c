@@ -10,28 +10,16 @@
 #ifdef WIN32
 #include <windows.h>
 #endif
-
-#ifndef WIN32
 #include <sys/time.h>
-#include <unistd.h>
-
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
-#else
-int			getopt(int argc, char *const argv[], const char *optstring);
-#endif   /* ! WIN32 */
-
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
 
 #include "libpq-fe.h"
 #include "pqexpbuffer.h"
+#include "pg_getopt.h"
 
 #include "isolationtester.h"
-
-extern int	optind;
 
 #define PREP_WAITING "isolationtester_waiting"
 
@@ -46,16 +34,16 @@ static int	nconns = 0;
 /* In dry run only output permutations to be run by the tester. */
 static int	dry_run = false;
 
-static void run_testspec(TestSpec * testspec);
-static void run_all_permutations(TestSpec * testspec);
-static void run_all_permutations_recurse(TestSpec * testspec, int nsteps,
-							 Step ** steps);
-static void run_named_permutations(TestSpec * testspec);
-static void run_permutation(TestSpec * testspec, int nsteps, Step ** steps);
+static void run_testspec(TestSpec *testspec);
+static void run_all_permutations(TestSpec *testspec);
+static void run_all_permutations_recurse(TestSpec *testspec, int nsteps,
+							 Step **steps);
+static void run_named_permutations(TestSpec *testspec);
+static void run_permutation(TestSpec *testspec, int nsteps, Step **steps);
 
 #define STEP_NONBLOCK	0x1		/* return 0 as soon as cmd waits for a lock */
 #define STEP_RETRY		0x2		/* this is a retry of a previously-waiting cmd */
-static bool try_complete_step(Step * step, int flags);
+static bool try_complete_step(Step *step, int flags);
 
 static int	step_qsort_cmp(const void *a, const void *b);
 static int	step_bsearch_cmp(const void *a, const void *b);
@@ -83,18 +71,28 @@ main(int argc, char **argv)
 	PQExpBufferData wait_query;
 	int			opt;
 
-	while ((opt = getopt(argc, argv, "n")) != -1)
+	while ((opt = getopt(argc, argv, "nV")) != -1)
 	{
 		switch (opt)
 		{
 			case 'n':
 				dry_run = true;
 				break;
+			case 'V':
+				puts("isolationtester (PostgreSQL) " PG_VERSION);
+				exit(0);
 			default:
 				fprintf(stderr, "Usage: isolationtester [-n] [CONNINFO]\n");
 				return EXIT_FAILURE;
 		}
 	}
+
+	/*
+	 * Make stdout unbuffered to match stderr; and ensure stderr is unbuffered
+	 * too, which it should already be everywhere except sometimes in Windows.
+	 */
+	setbuf(stdout, NULL);
+	setbuf(stderr, NULL);
 
 	/*
 	 * If the user supplies a non-option parameter on the command line, use it
@@ -186,7 +184,7 @@ main(int argc, char **argv)
 
 	/*
 	 * Build the query we'll use to detect lock contention among sessions in
-	 * the test specification.	Most of the time, we could get away with
+	 * the test specification.  Most of the time, we could get away with
 	 * simply checking whether a session is waiting for *any* lock: we don't
 	 * exactly expect concurrent use of test tables.  However, autovacuum will
 	 * occasionally take AccessExclusiveLock to truncate a table, and we must
@@ -199,7 +197,7 @@ main(int argc, char **argv)
 						 "AND holder.granted "
 						 "AND holder.pid <> $1 AND holder.pid IN (");
 	/* The spec syntax requires at least one session; assume that here. */
-	appendPQExpBuffer(&wait_query, "%s", backend_pids[1]);
+	appendPQExpBufferStr(&wait_query, backend_pids[1]);
 	for (i = 2; i < nconns; i++)
 		appendPQExpBuffer(&wait_query, ", %s", backend_pids[i]);
 	appendPQExpBufferStr(&wait_query,
@@ -293,7 +291,7 @@ static int *piles;
  * explicitly specified.
  */
 static void
-run_testspec(TestSpec * testspec)
+run_testspec(TestSpec *testspec)
 {
 	if (testspec->permutations)
 		run_named_permutations(testspec);
@@ -305,7 +303,7 @@ run_testspec(TestSpec * testspec)
  * Run all permutations of the steps and sessions.
  */
 static void
-run_all_permutations(TestSpec * testspec)
+run_all_permutations(TestSpec *testspec)
 {
 	int			nsteps;
 	int			i;
@@ -335,7 +333,7 @@ run_all_permutations(TestSpec * testspec)
 }
 
 static void
-run_all_permutations_recurse(TestSpec * testspec, int nsteps, Step ** steps)
+run_all_permutations_recurse(TestSpec *testspec, int nsteps, Step **steps)
 {
 	int			i;
 	int			found = 0;
@@ -365,7 +363,7 @@ run_all_permutations_recurse(TestSpec * testspec, int nsteps, Step ** steps)
  * Run permutations given in the test spec
  */
 static void
-run_named_permutations(TestSpec * testspec)
+run_named_permutations(TestSpec *testspec)
 {
 	int			i,
 				j;
@@ -441,7 +439,7 @@ step_bsearch_cmp(const void *a, const void *b)
  * If a step caused an error to be reported, print it out and clear it.
  */
 static void
-report_error_message(Step * step)
+report_error_message(Step *step)
 {
 	if (step->errormsg)
 	{
@@ -458,12 +456,11 @@ report_error_message(Step * step)
  * one fails due to a timeout such as deadlock timeout.
  */
 static void
-report_two_error_messages(Step * step1, Step * step2)
+report_two_error_messages(Step *step1, Step *step2)
 {
 	char	   *prefix;
 
-	prefix = malloc(strlen(step1->name) + strlen(step2->name) + 2);
-	sprintf(prefix, "%s %s", step1->name, step2->name);
+	prefix = psprintf("%s %s", step1->name, step2->name);
 
 	if (step1->errormsg)
 	{
@@ -487,7 +484,7 @@ report_two_error_messages(Step * step1, Step * step2)
  * Run one permutation
  */
 static void
-run_permutation(TestSpec * testspec, int nsteps, Step ** steps)
+run_permutation(TestSpec *testspec, int nsteps, Step **steps)
 {
 	PGresult   *res;
 	int			i;
@@ -515,7 +512,11 @@ run_permutation(TestSpec * testspec, int nsteps, Step ** steps)
 	for (i = 0; i < testspec->nsetupsqls; i++)
 	{
 		res = PQexec(conns[0], testspec->setupsqls[i]);
-		if (PQresultStatus(res) != PGRES_COMMAND_OK)
+		if (PQresultStatus(res) == PGRES_TUPLES_OK)
+		{
+			printResultSet(res);
+		}
+		else if (PQresultStatus(res) != PGRES_COMMAND_OK)
 		{
 			fprintf(stderr, "setup failed: %s", PQerrorMessage(conns[0]));
 			exit_nicely();
@@ -572,7 +573,8 @@ run_permutation(TestSpec * testspec, int nsteps, Step ** steps)
 			{
 				char		buf[256];
 
-				PQcancel(cancel, buf, sizeof(buf));
+				if (!PQcancel(cancel, buf, sizeof(buf)))
+					fprintf(stderr, "PQcancel failed: %s\n", buf);
 
 				/* Be sure to consume the error message. */
 				while ((res = PQgetResult(conn)) != NULL)
@@ -641,7 +643,11 @@ teardown:
 		if (testspec->sessions[i]->teardownsql)
 		{
 			res = PQexec(conns[i + 1], testspec->sessions[i]->teardownsql);
-			if (PQresultStatus(res) != PGRES_COMMAND_OK)
+			if (PQresultStatus(res) == PGRES_TUPLES_OK)
+			{
+				printResultSet(res);
+			}
+			else if (PQresultStatus(res) != PGRES_COMMAND_OK)
 			{
 				fprintf(stderr, "teardown of session %s failed: %s",
 						testspec->sessions[i]->name,
@@ -665,7 +671,6 @@ teardown:
 			fprintf(stderr, "teardown failed: %s",
 					PQerrorMessage(conns[0]));
 			/* don't exit on teardown failure */
-
 		}
 		PQclear(res);
 	}
@@ -674,11 +679,11 @@ teardown:
 /*
  * Our caller already sent the query associated with this step.  Wait for it
  * to either complete or (if given the STEP_NONBLOCK flag) to block while
- * waiting for a lock.	We assume that any lock wait will persist until we
+ * waiting for a lock.  We assume that any lock wait will persist until we
  * have executed additional steps in the permutation.
  *
  * When calling this function on behalf of a given step for a second or later
- * time, pass the STEP_RETRY flag.	This only affects the messages printed.
+ * time, pass the STEP_RETRY flag.  This only affects the messages printed.
  *
  * If the connection returns an error, the message is saved in step->errormsg.
  * Caller should call report_error_message shortly after this, to have it
@@ -688,7 +693,7 @@ teardown:
  * a lock, returns true.  Otherwise, returns false.
  */
 static bool
-try_complete_step(Step * step, int flags)
+try_complete_step(Step *step, int flags)
 {
 	PGconn	   *conn = conns[1 + step->session];
 	fd_set		read_set;
@@ -708,6 +713,8 @@ try_complete_step(Step * step, int flags)
 		ret = select(sock + 1, &read_set, NULL, NULL, &timeout);
 		if (ret < 0)			/* error in select() */
 		{
+			if (errno == EINTR)
+				continue;
 			fprintf(stderr, "select failed: %s\n", strerror(errno));
 			exit_nicely();
 		}
@@ -764,14 +771,23 @@ try_complete_step(Step * step, int flags)
 					printf("WARNING: this step had a leftover error message\n");
 					printf("%s\n", step->errormsg);
 				}
-				/* Detail may contain xid values, so just show primary. */
-				step->errormsg = malloc(5 +
-						  strlen(PQresultErrorField(res, PG_DIAG_SEVERITY)) +
-										strlen(PQresultErrorField(res,
-												  PG_DIAG_MESSAGE_PRIMARY)));
-				sprintf(step->errormsg, "%s:  %s",
-						PQresultErrorField(res, PG_DIAG_SEVERITY),
-						PQresultErrorField(res, PG_DIAG_MESSAGE_PRIMARY));
+
+				/*
+				 * Detail may contain XID values, so we want to just show
+				 * primary.  Beware however that libpq-generated error results
+				 * may not contain subfields, only an old-style message.
+				 */
+				{
+					const char *sev = PQresultErrorField(res,
+														 PG_DIAG_SEVERITY);
+					const char *msg = PQresultErrorField(res,
+													PG_DIAG_MESSAGE_PRIMARY);
+
+					if (sev && msg)
+						step->errormsg = psprintf("%s:  %s", sev, msg);
+					else
+						step->errormsg = pg_strdup(PQresultErrorMessage(res));
+				}
 				break;
 			default:
 				printf("unexpected result status: %s\n",

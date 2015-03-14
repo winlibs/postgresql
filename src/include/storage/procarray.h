@@ -4,7 +4,7 @@
  *	  POSTGRES process array definitions.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/procarray.h
@@ -15,6 +15,7 @@
 #define PROCARRAY_H
 
 #include "storage/standby.h"
+#include "utils/relcache.h"
 #include "utils/snapshot.h"
 
 
@@ -26,6 +27,7 @@ extern void ProcArrayRemove(PGPROC *proc, TransactionId latestXid);
 extern void ProcArrayEndTransaction(PGPROC *proc, TransactionId latestXid);
 extern void ProcArrayClearTransaction(PGPROC *proc);
 
+extern void ProcArrayInitRecovery(TransactionId initializedUptoXID);
 extern void ProcArrayApplyRecoveryInfo(RunningTransactions running);
 extern void ProcArrayApplyXidAssignment(TransactionId topxid,
 							int nsubxids, TransactionId *subxids);
@@ -49,11 +51,12 @@ extern RunningTransactions GetRunningTransactionData(void);
 
 extern bool TransactionIdIsInProgress(TransactionId xid);
 extern bool TransactionIdIsActive(TransactionId xid);
-extern TransactionId GetOldestXmin(bool allDbs, bool ignoreVacuum);
+extern TransactionId GetOldestXmin(Relation rel, bool ignoreVacuum);
 extern TransactionId GetOldestActiveTransactionId(void);
+extern TransactionId GetOldestSafeDecodingTransactionId(void);
 
-extern int	GetTransactionsInCommit(TransactionId **xids_p);
-extern bool HaveTransactionsInCommit(TransactionId *xids, int nxids);
+extern VirtualTransactionId *GetVirtualXIDsDelayingChkpt(int *nvxids);
+extern bool HaveVirtualXIDsDelayingChkpt(VirtualTransactionId *vxids, int nvxids);
 
 extern PGPROC *BackendPidGetProc(int pid);
 extern int	BackendXidGetPid(TransactionId xid);
@@ -75,5 +78,11 @@ extern bool CountOtherDBBackends(Oid databaseId,
 extern void XidCacheRemoveRunningXids(TransactionId xid,
 						  int nxids, const TransactionId *xids,
 						  TransactionId latestXid);
+
+extern void ProcArraySetReplicationSlotXmin(TransactionId xmin,
+							TransactionId catalog_xmin, bool already_locked);
+
+extern void ProcArrayGetReplicationSlotXmin(TransactionId *xmin,
+								TransactionId *catalog_xmin);
 
 #endif   /* PROCARRAY_H */

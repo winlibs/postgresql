@@ -39,7 +39,7 @@ install-world:
 # build src/ before contrib/
 install-world-contrib-recurse: install-world-src-recurse
 
-$(call recurse,installdirs uninstall coverage,doc src config)
+$(call recurse,installdirs uninstall coverage init-po update-po,doc src config)
 
 $(call recurse,distprep,doc src config contrib)
 
@@ -61,16 +61,14 @@ distclean maintainer-clean:
 # Garbage from autoconf:
 	@rm -rf autom4te.cache/
 
-check: all
+check check-tests: all
 
-check installcheck installcheck-parallel:
+check check-tests installcheck installcheck-parallel installcheck-tests:
 	$(MAKE) -C src/test/regress $@
 
-$(call recurse,check-world,src/test src/pl src/interfaces/ecpg contrib,check)
+$(call recurse,check-world,src/test src/pl src/interfaces/ecpg contrib src/bin,check)
 
-$(call recurse,installcheck-world,src/test src/pl src/interfaces/ecpg contrib,installcheck)
-
-$(call recurse,maintainer-check,doc src config contrib)
+$(call recurse,installcheck-world,src/test src/pl src/interfaces/ecpg contrib src/bin,installcheck)
 
 GNUmakefile: GNUmakefile.in $(top_builddir)/config.status
 	./config.status $@
@@ -105,10 +103,8 @@ distdir:
 	  fi || exit; \
 	done
 	$(MAKE) -C $(distdir) distprep
-	$(MAKE) -C $(distdir)/doc/src/sgml/ HISTORY INSTALL regress_README
-	cp $(distdir)/doc/src/sgml/HISTORY $(distdir)/
+	$(MAKE) -C $(distdir)/doc/src/sgml/ INSTALL
 	cp $(distdir)/doc/src/sgml/INSTALL $(distdir)/
-	cp $(distdir)/doc/src/sgml/regress_README $(distdir)/src/test/regress/README
 	$(MAKE) -C $(distdir) distclean
 	rm -f $(distdir)/README.git
 

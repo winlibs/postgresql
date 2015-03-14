@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -416,6 +416,11 @@ HREF="functions-geometry.html"
 >Section 9.11</A
 > for the meaning of
    these operators.)
+   The GiST operator classes included in the standard distribution are
+   documented in <A
+HREF="gist-builtin-opclasses.html#GIST-BUILTIN-OPCLASSES-TABLE"
+>Table 56-1</A
+>.
    Many other GiST operator
    classes are available in the <TT
 CLASS="LITERAL"
@@ -423,7 +428,7 @@ CLASS="LITERAL"
 > collection or as separate
    projects.  For more information see <A
 HREF="gist.html"
->Chapter 53</A
+>Chapter 56</A
 >.
   </P
 ><P
@@ -438,6 +443,14 @@ CLASS="PROGRAMLISTING"
 ><P>
    which finds the ten places closest to a given target point.  The ability
    to do this is again dependent on the particular operator class being used.
+   In <A
+HREF="gist-builtin-opclasses.html#GIST-BUILTIN-OPCLASSES-TABLE"
+>Table 56-1</A
+>, operators that can be
+   used in this way are listed in the column <SPAN
+CLASS="QUOTE"
+>"Ordering Operators"</SPAN
+>.
   </P
 ><P
 >   
@@ -445,7 +458,7 @@ CLASS="PROGRAMLISTING"
    SP-GiST indexes, like GiST indexes, offer an infrastructure that supports
    various kinds of searches.  SP-GiST permits implementation of a wide range
    of different non-balanced disk-based data structures, such as quadtrees,
-   k-d trees, and suffix trees (tries).  As an example, the standard distribution of
+   k-d trees, and radix trees (tries).  As an example, the standard distribution of
    <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
@@ -511,9 +524,14 @@ HREF="functions-geometry.html"
 >Section 9.11</A
 > for the meaning of
    these operators.)
+   The SP-GiST operator classes included in the standard distribution are
+   documented in <A
+HREF="spgist-builtin-opclasses.html#SPGIST-BUILTIN-OPCLASSES-TABLE"
+>Table 57-1</A
+>.
    For more information see <A
 HREF="spgist.html"
->Chapter 54</A
+>Chapter 57</A
 >.
   </P
 ><P
@@ -576,6 +594,11 @@ HREF="functions-array.html"
 >Section 9.18</A
 > for the meaning of
    these operators.)
+   The GIN operator classes included in the standard distribution are
+   documented in <A
+HREF="gin-builtin-opclasses.html#GIN-BUILTIN-OPCLASSES-TABLE"
+>Table 58-1</A
+>.
    Many other GIN operator
    classes are available in the <TT
 CLASS="LITERAL"
@@ -583,7 +606,7 @@ CLASS="LITERAL"
 > collection or as separate
    projects.  For more information see <A
 HREF="gin.html"
->Chapter 55</A
+>Chapter 58</A
 >.
   </P
 ></DIV

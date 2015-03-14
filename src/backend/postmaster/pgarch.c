@@ -14,7 +14,7 @@
  *
  *	Initial author: Simon Riggs		simon@2ndquadrant.com
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -32,12 +32,15 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+#include "access/xlog.h"
 #include "access/xlog_internal.h"
 #include "libpq/pqsignal.h"
 #include "miscadmin.h"
+#include "pgstat.h"
 #include "postmaster/fork_process.h"
 #include "postmaster/pgarch.h"
 #include "postmaster/postmaster.h"
+#include "storage/dsm.h"
 #include "storage/fd.h"
 #include "storage/ipc.h"
 #include "storage/latch.h"
@@ -56,19 +59,6 @@
 										 * seconds. */
 #define PGARCH_RESTART_INTERVAL 10		/* How often to attempt to restart a
 										 * failed archiver; in seconds. */
-
-/* ----------
- * Archiver control info.
- *
- * We expect that archivable files within pg_xlog will have names between
- * MIN_XFN_CHARS and MAX_XFN_CHARS in length, consisting only of characters
- * appearing in VALID_XFN_CHARS.  The status files in archive_status have
- * corresponding names with ".ready" or ".done" appended.
- * ----------
- */
-#define MIN_XFN_CHARS	16
-#define MAX_XFN_CHARS	40
-#define VALID_XFN_CHARS "0123456789ABCDEF.history.backup"
 
 #define NUM_ARCHIVE_RETRIES 3
 
@@ -101,7 +91,7 @@ static Latch mainloop_latch;
 static pid_t pgarch_forkexec(void);
 #endif
 
-NON_EXEC_STATIC void PgArchiverMain(int argc, char *argv[]);
+NON_EXEC_STATIC void PgArchiverMain(int argc, char *argv[]) __attribute__((noreturn));
 static void pgarch_exit(SIGNAL_ARGS);
 static void ArchSigHupHandler(SIGNAL_ARGS);
 static void ArchSigTermHandler(SIGNAL_ARGS);
@@ -174,6 +164,7 @@ pgarch_start(void)
 			on_exit_reset();
 
 			/* Drop our connection to postmaster's shared memory, as well */
+			dsm_detach_all();
 			PGSharedMemoryDetach();
 
 			PgArchiverMain(0, NULL);
@@ -245,7 +236,7 @@ PgArchiverMain(int argc, char *argv[])
 		elog(FATAL, "setsid() failed: %m");
 #endif
 
-	InitializeLatchSupport();		/* needed for latch waits */
+	InitializeLatchSupport();	/* needed for latch waits */
 
 	InitLatch(&mainloop_latch); /* initialize latch used in main loop */
 
@@ -495,14 +486,27 @@ pgarch_ArchiverCopyLoop(void)
 			{
 				/* successful */
 				pgarch_archiveDone(xlog);
+
+				/*
+				 * Tell the collector about the WAL file that we successfully
+				 * archived
+				 */
+				pgstat_send_archiver(xlog, false);
+
 				break;			/* out of inner retry loop */
 			}
 			else
 			{
+				/*
+				 * Tell the collector about the WAL file that we failed to
+				 * archive
+				 */
+				pgstat_send_archiver(xlog, true);
+
 				if (++failures >= NUM_ARCHIVE_RETRIES)
 				{
 					ereport(WARNING,
-							(errmsg("transaction log file \"%s\" could not be archived: too many failures",
+							(errmsg("archiving transaction log file \"%s\" failed too many times, will try again later",
 									xlog)));
 					return;		/* give up archiving for now */
 				}
@@ -592,9 +596,9 @@ pgarch_archiveXlog(char *xlog)
 	{
 		/*
 		 * If either the shell itself, or a called command, died on a signal,
-		 * abort the archiver.	We do this because system() ignores SIGINT and
+		 * abort the archiver.  We do this because system() ignores SIGINT and
 		 * SIGQUIT while waiting; so a signal is very likely something that
-		 * should have interrupted us too.	If we overreact it's no big deal,
+		 * should have interrupted us too.  If we overreact it's no big deal,
 		 * the postmaster will just start the archiver again.
 		 *
 		 * Per the Single Unix Spec, shells report exit status > 128 when a

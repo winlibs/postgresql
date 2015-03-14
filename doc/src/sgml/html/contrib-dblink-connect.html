@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="dblink"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="CONTRIB-DBLINK-CONNECT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN138466"
+NAME="AEN155580"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN138466"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN138469"
+NAME="AEN155583"
 ></A
 ><H2
 >Synopsis</H2
@@ -115,7 +115,7 @@ dblink_connect(text connname, text connstr) returns text</PRE
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN138471"
+NAME="AEN155585"
 ></A
 ><H2
 >Description</H2
@@ -139,29 +139,26 @@ CLASS="APPLICATION"
    </P
 ><P
 >    The connection string may also be the name of an existing foreign
-    server.  It is recommended to use
-    the <CODE
-CLASS="FUNCTION"
->postgresql_fdw_validator</CODE
-> when defining
-    the corresponding foreign-data wrapper.  See the example below, as
-    well as the following:
+    server.  It is recommended to use the foreign-data wrapper
+    <TT
+CLASS="LITERAL"
+>dblink_fdw</TT
+> when defining the foreign
+    server.  See the example below, as well as
     <A
-HREF="sql-createforeigndatawrapper.html"
->CREATE FOREIGN DATA WRAPPER</A
->, <A
 HREF="sql-createserver.html"
 >CREATE SERVER</A
->, <A
+> and
+    <A
 HREF="sql-createusermapping.html"
 >CREATE USER MAPPING</A
->
+>.
    </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN138486"
+NAME="AEN155595"
 ></A
 ><H2
 >Arguments</H2
@@ -197,14 +194,11 @@ CLASS="LITERAL"
 >hostaddr=127.0.0.1 port=5432 dbname=mydb user=postgres
        password=mypasswd</TT
 >.
-       For details see <CODE
-CLASS="FUNCTION"
->PQconnectdb</CODE
-> in
-       <A
-HREF="libpq-connect.html"
->Section 31.1</A
+       For details see <A
+HREF="libpq-connect.html#LIBPQ-CONNSTRING"
+>Section 31.1.1</A
 >.
+       Alternatively, the name of a foreign server.
       </P
 ></DD
 ></DL
@@ -213,7 +207,7 @@ HREF="libpq-connect.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN138503"
+NAME="AEN155611"
 ></A
 ><H2
 >Return Value</H2
@@ -228,7 +222,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN138507"
+NAME="AEN155615"
 ></A
 ><H2
 >Notes</H2
@@ -255,7 +249,7 @@ CLASS="FILENAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN138514"
+NAME="AEN155622"
 ></A
 ><H2
 >Examples</H2
@@ -280,10 +274,10 @@ SELECT dblink_connect('myconn', 'dbname=postgres');
 --       ERROR:  password is required
 --       DETAIL:  Non-superuser cannot connect if the server does not request a password.
 --       HINT:  Target server's authentication method must be changed.
-CREATE USER dblink_regression_test WITH PASSWORD 'secret';
-CREATE FOREIGN DATA WRAPPER postgresql VALIDATOR postgresql_fdw_validator;
-CREATE SERVER fdtest FOREIGN DATA WRAPPER postgresql OPTIONS (hostaddr '127.0.0.1', dbname 'contrib_regression');
 
+CREATE SERVER fdtest FOREIGN DATA WRAPPER dblink_fdw OPTIONS (hostaddr '127.0.0.1', dbname 'contrib_regression');
+
+CREATE USER dblink_regression_test WITH PASSWORD 'secret';
 CREATE USER MAPPING FOR dblink_regression_test SERVER fdtest OPTIONS (user 'dblink_regression_test', password 'secret');
 GRANT USAGE ON FOREIGN SERVER fdtest TO dblink_regression_test;
 GRANT SELECT ON TABLE foo TO dblink_regression_test;
@@ -314,11 +308,10 @@ SELECT * FROM dblink('myconn','SELECT * FROM foo') AS t(a int, b text, c text[])
 
 \c - :ORIGINAL_USER
 REVOKE USAGE ON FOREIGN SERVER fdtest FROM dblink_regression_test;
-REVOKE SELECT ON TABLE foo FROM  dblink_regression_test;
+REVOKE SELECT ON TABLE foo FROM dblink_regression_test;
 DROP USER MAPPING FOR dblink_regression_test SERVER fdtest;
 DROP USER dblink_regression_test;
-DROP SERVER fdtest;
-DROP FOREIGN DATA WRAPPER postgresql;</PRE
+DROP SERVER fdtest;</PRE
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

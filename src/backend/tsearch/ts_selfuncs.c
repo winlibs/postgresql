@@ -3,7 +3,7 @@
  * ts_selfuncs.c
  *	  Selectivity estimation functions for text search operators.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -13,6 +13,7 @@
  */
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "catalog/pg_statistic.h"
 #include "catalog/pg_type.h"
 #include "miscadmin.h"

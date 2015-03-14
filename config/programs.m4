@@ -23,6 +23,14 @@ if test "$BISON"; then
 *** Bison version 1.875 or later is required, but this is $pgac_bison_version.])
     BISON=""
   fi
+  # Bison >=3.0 issues warnings about %name-prefix="base_yy", instead
+  # of the now preferred %name-prefix "base_yy", but the latter
+  # doesn't work with Bison 2.3 or less.  So for now we silence the
+  # deprecation warnings.
+  if echo "$pgac_bison_version" | $AWK '{ if ([$]4 >= 3) exit 0; else exit 1;}'
+  then
+    BISONFLAGS="$BISONFLAGS -Wno-deprecated"
+  fi
 fi
 
 if test -z "$BISON"; then
@@ -197,6 +205,11 @@ AC_DEFUN([PGAC_CHECK_GETTEXT],
   if test -z "$MSGFMT"; then
     AC_MSG_ERROR([msgfmt is required for NLS])
   fi
+  AC_CACHE_CHECK([for msgfmt flags], pgac_cv_msgfmt_flags,
+[if test x"$MSGFMT" != x"" && "$MSGFMT" --version 2>&1 | grep "GNU" >/dev/null; then
+    pgac_cv_msgfmt_flags=-c
+fi])
+  AC_SUBST(MSGFMT_FLAGS, $pgac_cv_msgfmt_flags)
   AC_CHECK_PROGS(MSGMERGE, msgmerge)
   AC_CHECK_PROGS(XGETTEXT, xgettext)
 ])# PGAC_CHECK_GETTEXT
@@ -218,9 +231,19 @@ AC_DEFUN([PGAC_CHECK_STRIP],
     STRIP_SHARED_LIB="$STRIP --strip-unneeded"
     AC_MSG_RESULT(yes)
   else
-    STRIP_STATIC_LIB=:
-    STRIP_SHARED_LIB=:
-    AC_MSG_RESULT(no)
+    case $host_os in
+      darwin*)
+        STRIP="$STRIP -x"
+        STRIP_STATIC_LIB=$STRIP
+        STRIP_SHARED_LIB=$STRIP
+        AC_MSG_RESULT(yes)
+        ;;
+      *)
+        STRIP_STATIC_LIB=:
+        STRIP_SHARED_LIB=:
+        AC_MSG_RESULT(no)
+        ;;
+    esac
   fi
   AC_SUBST(STRIP_STATIC_LIB)
   AC_SUBST(STRIP_SHARED_LIB)

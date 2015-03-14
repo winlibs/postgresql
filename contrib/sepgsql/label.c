@@ -4,13 +4,14 @@
  *
  * Routines to support SELinux labels (security context)
  *
- * Copyright (c) 2010-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2010-2014, PostgreSQL Global Development Group
  *
  * -------------------------------------------------------------------------
  */
 #include "postgres.h"
 
 #include "access/heapam.h"
+#include "access/htup_details.h"
 #include "access/genam.h"
 #include "access/xact.h"
 #include "catalog/catalog.h"
@@ -105,7 +106,7 @@ sepgsql_get_client_label(void)
  * sepgsql_set_client_label
  *
  * This routine tries to switch the current security label of the client, and
- * checks related permissions.	The supplied new label shall be added to the
+ * checks related permissions.  The supplied new label shall be added to the
  * client_label_pending list, then saved at transaction-commit time to ensure
  * transaction-awareness.
  */
@@ -160,7 +161,7 @@ sepgsql_set_client_label(const char *new_label)
 /*
  * sepgsql_xact_callback
  *
- * A callback routine of transaction commit/abort/prepare.	Commmit or abort
+ * A callback routine of transaction commit/abort/prepare.  Commmit or abort
  * changes in the client_label_pending list.
  */
 static void
@@ -302,7 +303,8 @@ sepgsql_needs_fmgr_hook(Oid functionId)
 	object.objectSubId = 0;
 	if (!sepgsql_avc_check_perms(&object,
 								 SEPG_CLASS_DB_PROCEDURE,
-								 SEPG_DB_PROCEDURE__EXECUTE,
+								 SEPG_DB_PROCEDURE__EXECUTE |
+								 SEPG_DB_PROCEDURE__ENTRYPOINT,
 								 SEPGSQL_AVC_NOAUDIT, false))
 		return true;
 
@@ -346,13 +348,30 @@ sepgsql_fmgr_hook(FmgrHookEventType event,
 				 * process:transition permission between old and new label,
 				 * when user tries to switch security label of the client on
 				 * execution of trusted procedure.
+				 *
+				 * Also, db_procedure:entrypoint permission should be checked
+				 * whether this procedure can perform as an entrypoint of the
+				 * trusted procedure, or not. Note that db_procedure:execute
+				 * permission shall be checked individually.
 				 */
 				if (stack->new_label)
+				{
+					ObjectAddress object;
+
+					object.classId = ProcedureRelationId;
+					object.objectId = flinfo->fn_oid;
+					object.objectSubId = 0;
+					sepgsql_avc_check_perms(&object,
+											SEPG_CLASS_DB_PROCEDURE,
+											SEPG_DB_PROCEDURE__ENTRYPOINT,
+											getObjectDescription(&object),
+											true);
+
 					sepgsql_avc_check_perms_label(stack->new_label,
 												  SEPG_CLASS_PROCESS,
 												  SEPG_PROCESS__TRANSITION,
 												  NULL, true);
-
+				}
 				*private = PointerGetDatum(stack);
 			}
 			Assert(!stack->old_label);
@@ -708,7 +727,7 @@ exec_object_restorecon(struct selabel_handle * sehnd, Oid catalogId)
 	rel = heap_open(catalogId, AccessShareLock);
 
 	sscan = systable_beginscan(rel, InvalidOid, false,
-							   SnapshotNow, 0, NULL);
+							   NULL, 0, NULL);
 	while (HeapTupleIsValid(tuple = systable_getnext(sscan)))
 	{
 		Form_pg_database datForm;

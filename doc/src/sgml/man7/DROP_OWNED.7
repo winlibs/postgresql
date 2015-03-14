@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP OWNED
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "DROP OWNED" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "DROP OWNED" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 DROP_OWNED \- remove database objects owned by a database role
-.\" DROP OWNED
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -39,7 +38,7 @@ DROP OWNED BY \fIname\fR [, \&.\&.\&.] [ CASCADE | RESTRICT ]
 .PP
 
 \fBDROP OWNED\fR
-drops all the objects in the current database that are owned by one of the specified roles\&. Any privileges granted to the given roles on objects in the current database will also be revoked\&.
+drops all the objects within the current database that are owned by one of the specified roles\&. Any privileges granted to the given roles on objects in the current database and on shared objects (databases, tablespaces) will also be revoked\&.
 .SH "PARAMETERS"
 .PP
 \fIname\fR
@@ -72,7 +71,7 @@ The
 REASSIGN OWNED (\fBREASSIGN_OWNED\fR(7))
 command is an alternative that reassigns the ownership of all the database objects owned by one or more roles\&.
 .PP
-Databases owned by the role(s) will not be removed\&.
+Databases and tablespaces owned by the role(s) will not be removed\&.
 .SH "COMPATIBILITY"
 .PP
 The

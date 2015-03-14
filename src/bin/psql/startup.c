@@ -1,7 +1,7 @@
 /*
  * psql - the PostgreSQL interactive terminal
  *
- * Copyright (c) 2000-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2014, PostgreSQL Global Development Group
  *
  * src/bin/psql/startup.c
  */
@@ -111,8 +111,6 @@ main(int argc, char *argv[])
 	setvbuf(stderr, NULL, _IONBF, 0);
 #endif
 
-	setup_cancel_handler();
-
 	pset.progname = get_progname(argv[0]);
 
 	pset.db = NULL;
@@ -120,6 +118,7 @@ main(int argc, char *argv[])
 	pset.encoding = PQenv2encoding();
 	pset.queryFout = stdout;
 	pset.queryFoutPipe = false;
+	pset.copyStream = NULL;
 	pset.cur_cmd_source = stdin;
 	pset.cur_cmd_interactive = false;
 
@@ -150,6 +149,24 @@ main(int argc, char *argv[])
 
 	parse_psql_options(argc, argv, &options);
 
+	/*
+	 * If no action was specified and we're in non-interactive mode, treat it
+	 * as if the user had specified "-f -".  This lets single-transaction mode
+	 * work in this case.
+	 */
+	if (options.action == ACT_NOTHING && pset.notty)
+	{
+		options.action = ACT_FILE;
+		options.action_string = NULL;
+	}
+
+	/* Bail out if -1 was specified but will be ignored. */
+	if (options.single_txn && options.action != ACT_FILE && options.action == ACT_NOTHING)
+	{
+		fprintf(stderr, _("%s: -1 can only be used in non-interactive mode\n"), pset.progname);
+		exit(EXIT_FAILURE);
+	}
+
 	if (!pset.popt.topt.fieldSep.separator &&
 		!pset.popt.topt.fieldSep.separator_zero)
 	{
@@ -166,12 +183,8 @@ main(int argc, char *argv[])
 	if (options.username == NULL)
 		password_prompt = pg_strdup(_("Password: "));
 	else
-	{
-		password_prompt = malloc(strlen(_("Password for user %s: ")) - 2 +
-								 strlen(options.username) + 1);
-		sprintf(password_prompt, _("Password for user %s: "),
-				options.username);
-	}
+		password_prompt = psprintf(_("Password for user %s: "),
+								   options.username);
 
 	if (pset.getPassword == TRI_YES)
 		password = simple_prompt(password_prompt, 100, false);
@@ -228,6 +241,8 @@ main(int argc, char *argv[])
 		exit(EXIT_BADCONN);
 	}
 
+	setup_cancel_handler();
+
 	PQsetNoticeProcessor(pset.db, NoticeProcessor, NULL);
 
 	SyncVariables();
@@ -239,7 +254,7 @@ main(int argc, char *argv[])
 		if (!options.no_psqlrc)
 			process_psqlrc(argv[0]);
 
-		success = listAllDbs(false);
+		success = listAllDbs(NULL, false);
 		PQfinish(pset.db);
 		exit(success ? EXIT_SUCCESS : EXIT_FAILURE);
 	}
@@ -309,11 +324,9 @@ main(int argc, char *argv[])
 			process_psqlrc(argv[0]);
 
 		connection_warnings(true);
-		if (!pset.quiet && !pset.notty)
+		if (!pset.quiet)
 			printf(_("Type \"help\" for help.\n\n"));
-		if (!pset.notty)
-			initializeInput(options.no_readline ? 0 : 1);
-
+		initializeInput(options.no_readline ? 0 : 1);
 		successResult = MainLoop(stdin);
 	}
 
@@ -374,8 +387,6 @@ parse_psql_options(int argc, char *argv[], struct adhoc_opts * options)
 	};
 
 	int			optindex;
-	extern char *optarg;
-	extern int	optind;
 	int			c;
 
 	memset(options, 0, sizeof *options);
@@ -392,7 +403,7 @@ parse_psql_options(int argc, char *argv[], struct adhoc_opts * options)
 				pset.popt.topt.format = PRINT_UNALIGNED;
 				break;
 			case 'c':
-				options->action_string = optarg;
+				options->action_string = pg_strdup(optarg);
 				if (optarg[0] == '\\')
 				{
 					options->action = ACT_SINGLE_SLASH;
@@ -402,7 +413,7 @@ parse_psql_options(int argc, char *argv[], struct adhoc_opts * options)
 					options->action = ACT_SINGLE_QUERY;
 				break;
 			case 'd':
-				options->dbname = optarg;
+				options->dbname = pg_strdup(optarg);
 				break;
 			case 'e':
 				SetVariable(pset.vars, "ECHO", "queries");
@@ -412,14 +423,14 @@ parse_psql_options(int argc, char *argv[], struct adhoc_opts * options)
 				break;
 			case 'f':
 				options->action = ACT_FILE;
-				options->action_string = optarg;
+				options->action_string = pg_strdup(optarg);
 				break;
 			case 'F':
 				pset.popt.topt.fieldSep.separator = pg_strdup(optarg);
 				pset.popt.topt.fieldSep.separator_zero = false;
 				break;
 			case 'h':
-				options->host = optarg;
+				options->host = pg_strdup(optarg);
 				break;
 			case 'H':
 				pset.popt.topt.format = PRINT_HTML;
@@ -428,7 +439,7 @@ parse_psql_options(int argc, char *argv[], struct adhoc_opts * options)
 				options->action = ACT_LIST_DB;
 				break;
 			case 'L':
-				options->logfilename = optarg;
+				options->logfilename = pg_strdup(optarg);
 				break;
 			case 'n':
 				options->no_readline = true;
@@ -437,7 +448,7 @@ parse_psql_options(int argc, char *argv[], struct adhoc_opts * options)
 				setQFout(optarg);
 				break;
 			case 'p':
-				options->port = optarg;
+				options->port = pg_strdup(optarg);
 				break;
 			case 'P':
 				{
@@ -484,7 +495,7 @@ parse_psql_options(int argc, char *argv[], struct adhoc_opts * options)
 				pset.popt.topt.tableAttr = pg_strdup(optarg);
 				break;
 			case 'U':
-				options->username = optarg;
+				options->username = pg_strdup(optarg);
 				break;
 			case 'v':
 				{
@@ -542,7 +553,7 @@ parse_psql_options(int argc, char *argv[], struct adhoc_opts * options)
 				break;
 			case '?':
 				/* Actual help option given */
-				if (strcmp(argv[optind - 1], "-?") == 0 || strcmp(argv[optind - 1], "--help") == 0)
+				if (strcmp(argv[optind - 1], "--help") == 0 || strcmp(argv[optind - 1], "-?") == 0)
 				{
 					usage();
 					exit(EXIT_SUCCESS);
@@ -591,20 +602,26 @@ process_psqlrc(char *argv0)
 	char		rc_file[MAXPGPATH];
 	char		my_exec_path[MAXPGPATH];
 	char		etc_path[MAXPGPATH];
-	char	   *envrc;
+	char	   *envrc = getenv("PSQLRC");
 
-	find_my_exec(argv0, my_exec_path);
+	if (find_my_exec(argv0, my_exec_path) < 0)
+	{
+		fprintf(stderr, _("%s: could not find own program executable\n"), argv0);
+		exit(EXIT_FAILURE);
+	}
+
 	get_etc_path(my_exec_path, etc_path);
 
 	snprintf(rc_file, MAXPGPATH, "%s/%s", etc_path, SYSPSQLRC);
 	process_psqlrc_file(rc_file);
 
-	envrc = getenv("PSQLRC");
-
 	if (envrc != NULL && strlen(envrc) > 0)
 	{
-		expand_tilde(&envrc);
-		process_psqlrc_file(envrc);
+		/* might need to free() this */
+		char	   *envrc_alloc = pstrdup(envrc);
+
+		expand_tilde(&envrc_alloc);
+		process_psqlrc_file(envrc_alloc);
 	}
 	else if (get_home_path(home))
 	{
@@ -625,10 +642,8 @@ process_psqlrc_file(char *filename)
 #define R_OK 4
 #endif
 
-	psqlrc_minor = pg_malloc(strlen(filename) + 1 + strlen(PG_VERSION) + 1);
-	sprintf(psqlrc_minor, "%s-%s", filename, PG_VERSION);
-	psqlrc_major = pg_malloc(strlen(filename) + 1 + strlen(PG_MAJORVERSION) + 1);
-	sprintf(psqlrc_major, "%s-%s", filename, PG_MAJORVERSION);
+	psqlrc_minor = psprintf("%s-%s", filename, PG_VERSION);
+	psqlrc_major = psprintf("%s-%s", filename, PG_MAJORVERSION);
 
 	/* check for minor version first, then major, then no version */
 	if (access(psqlrc_minor, R_OK) == 0)
@@ -665,31 +680,31 @@ showVersion(void)
 static void
 autocommit_hook(const char *newval)
 {
-	pset.autocommit = ParseVariableBool(newval);
+	pset.autocommit = ParseVariableBool(newval, "AUTOCOMMIT");
 }
 
 static void
 on_error_stop_hook(const char *newval)
 {
-	pset.on_error_stop = ParseVariableBool(newval);
+	pset.on_error_stop = ParseVariableBool(newval, "ON_ERROR_STOP");
 }
 
 static void
 quiet_hook(const char *newval)
 {
-	pset.quiet = ParseVariableBool(newval);
+	pset.quiet = ParseVariableBool(newval, "QUIET");
 }
 
 static void
 singleline_hook(const char *newval)
 {
-	pset.singleline = ParseVariableBool(newval);
+	pset.singleline = ParseVariableBool(newval, "SINGLELINE");
 }
 
 static void
 singlestep_hook(const char *newval)
 {
-	pset.singlestep = ParseVariableBool(newval);
+	pset.singlestep = ParseVariableBool(newval, "SINGLESTEP");
 }
 
 static void
@@ -703,12 +718,18 @@ echo_hook(const char *newval)
 {
 	if (newval == NULL)
 		pset.echo = PSQL_ECHO_NONE;
-	else if (strcmp(newval, "queries") == 0)
+	else if (pg_strcasecmp(newval, "queries") == 0)
 		pset.echo = PSQL_ECHO_QUERIES;
-	else if (strcmp(newval, "all") == 0)
+	else if (pg_strcasecmp(newval, "all") == 0)
 		pset.echo = PSQL_ECHO_ALL;
-	else
+	else if (pg_strcasecmp(newval, "none") == 0)
 		pset.echo = PSQL_ECHO_NONE;
+	else
+	{
+		psql_error("unrecognized value \"%s\" for \"%s\"; assuming \"%s\"\n",
+				   newval, "ECHO", "none");
+		pset.echo = PSQL_ECHO_NONE;
+	}
 }
 
 static void
@@ -716,12 +737,12 @@ echo_hidden_hook(const char *newval)
 {
 	if (newval == NULL)
 		pset.echo_hidden = PSQL_ECHO_HIDDEN_OFF;
-	else if (strcmp(newval, "noexec") == 0)
+	else if (pg_strcasecmp(newval, "noexec") == 0)
 		pset.echo_hidden = PSQL_ECHO_HIDDEN_NOEXEC;
-	else if (pg_strcasecmp(newval, "off") == 0)
-		pset.echo_hidden = PSQL_ECHO_HIDDEN_OFF;
-	else
+	else if (ParseVariableBool(newval, "ECHO_HIDDEN"))
 		pset.echo_hidden = PSQL_ECHO_HIDDEN_ON;
+	else	/* ParseVariableBool printed msg if needed */
+		pset.echo_hidden = PSQL_ECHO_HIDDEN_OFF;
 }
 
 static void
@@ -731,10 +752,31 @@ on_error_rollback_hook(const char *newval)
 		pset.on_error_rollback = PSQL_ERROR_ROLLBACK_OFF;
 	else if (pg_strcasecmp(newval, "interactive") == 0)
 		pset.on_error_rollback = PSQL_ERROR_ROLLBACK_INTERACTIVE;
-	else if (pg_strcasecmp(newval, "off") == 0)
-		pset.on_error_rollback = PSQL_ERROR_ROLLBACK_OFF;
-	else
+	else if (ParseVariableBool(newval, "ON_ERROR_ROLLBACK"))
 		pset.on_error_rollback = PSQL_ERROR_ROLLBACK_ON;
+	else	/* ParseVariableBool printed msg if needed */
+		pset.on_error_rollback = PSQL_ERROR_ROLLBACK_OFF;
+}
+
+static void
+comp_keyword_case_hook(const char *newval)
+{
+	if (newval == NULL)
+		pset.comp_case = PSQL_COMP_CASE_PRESERVE_UPPER;
+	else if (pg_strcasecmp(newval, "preserve-upper") == 0)
+		pset.comp_case = PSQL_COMP_CASE_PRESERVE_UPPER;
+	else if (pg_strcasecmp(newval, "preserve-lower") == 0)
+		pset.comp_case = PSQL_COMP_CASE_PRESERVE_LOWER;
+	else if (pg_strcasecmp(newval, "upper") == 0)
+		pset.comp_case = PSQL_COMP_CASE_UPPER;
+	else if (pg_strcasecmp(newval, "lower") == 0)
+		pset.comp_case = PSQL_COMP_CASE_LOWER;
+	else
+	{
+		psql_error("unrecognized value \"%s\" for \"%s\"; assuming \"%s\"\n",
+				   newval, "COMP_KEYWORD_CASE", "preserve-upper");
+		pset.comp_case = PSQL_COMP_CASE_PRESERVE_UPPER;
+	}
 }
 
 static void
@@ -742,14 +784,20 @@ histcontrol_hook(const char *newval)
 {
 	if (newval == NULL)
 		pset.histcontrol = hctl_none;
-	else if (strcmp(newval, "ignorespace") == 0)
+	else if (pg_strcasecmp(newval, "ignorespace") == 0)
 		pset.histcontrol = hctl_ignorespace;
-	else if (strcmp(newval, "ignoredups") == 0)
+	else if (pg_strcasecmp(newval, "ignoredups") == 0)
 		pset.histcontrol = hctl_ignoredups;
-	else if (strcmp(newval, "ignoreboth") == 0)
+	else if (pg_strcasecmp(newval, "ignoreboth") == 0)
 		pset.histcontrol = hctl_ignoreboth;
-	else
+	else if (pg_strcasecmp(newval, "none") == 0)
 		pset.histcontrol = hctl_none;
+	else
+	{
+		psql_error("unrecognized value \"%s\" for \"%s\"; assuming \"%s\"\n",
+				   newval, "HISTCONTROL", "none");
+		pset.histcontrol = hctl_none;
+	}
 }
 
 static void
@@ -775,14 +823,18 @@ verbosity_hook(const char *newval)
 {
 	if (newval == NULL)
 		pset.verbosity = PQERRORS_DEFAULT;
-	else if (strcmp(newval, "default") == 0)
+	else if (pg_strcasecmp(newval, "default") == 0)
 		pset.verbosity = PQERRORS_DEFAULT;
-	else if (strcmp(newval, "terse") == 0)
+	else if (pg_strcasecmp(newval, "terse") == 0)
 		pset.verbosity = PQERRORS_TERSE;
-	else if (strcmp(newval, "verbose") == 0)
+	else if (pg_strcasecmp(newval, "verbose") == 0)
 		pset.verbosity = PQERRORS_VERBOSE;
 	else
+	{
+		psql_error("unrecognized value \"%s\" for \"%s\"; assuming \"%s\"\n",
+				   newval, "VERBOSITY", "default");
 		pset.verbosity = PQERRORS_DEFAULT;
+	}
 
 	if (pset.db)
 		PQsetErrorVerbosity(pset.db, pset.verbosity);
@@ -803,6 +855,7 @@ EstablishVariableSpace(void)
 	SetVariableAssignHook(pset.vars, "ECHO", echo_hook);
 	SetVariableAssignHook(pset.vars, "ECHO_HIDDEN", echo_hidden_hook);
 	SetVariableAssignHook(pset.vars, "ON_ERROR_ROLLBACK", on_error_rollback_hook);
+	SetVariableAssignHook(pset.vars, "COMP_KEYWORD_CASE", comp_keyword_case_hook);
 	SetVariableAssignHook(pset.vars, "HISTCONTROL", histcontrol_hook);
 	SetVariableAssignHook(pset.vars, "PROMPT1", prompt1_hook);
 	SetVariableAssignHook(pset.vars, "PROMPT2", prompt2_hook);

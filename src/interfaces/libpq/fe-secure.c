@@ -6,7 +6,7 @@
  *	  message integrity and endpoint authentication.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -30,7 +30,6 @@
 
 #include "libpq-fe.h"
 #include "fe-auth.h"
-#include "pqsignal.h"
 #include "libpq-int.h"
 
 #ifdef WIN32
@@ -93,6 +92,12 @@ static void SSLerrfree(char *buf);
 
 static bool pq_init_ssl_lib = true;
 static bool pq_init_crypto_lib = true;
+
+/*
+ * SSL_context is currently shared between threads and therefore we need to be
+ * careful to lock around any usage of it when providing thread safety.
+ * ssl_config_mutex is the mutex that we use to protect it.
+ */
 static SSL_CTX *SSL_context = NULL;
 
 #ifdef ENABLE_THREAD_SAFETY
@@ -251,9 +256,21 @@ pqsecure_open_client(PGconn *conn)
 	/* First time through? */
 	if (conn->ssl == NULL)
 	{
+#ifdef ENABLE_THREAD_SAFETY
+		int			rc;
+#endif
+
 		/* We cannot use MSG_NOSIGNAL to block SIGPIPE when using SSL */
 		conn->sigpipe_flag = false;
 
+#ifdef ENABLE_THREAD_SAFETY
+		if ((rc = pthread_mutex_lock(&ssl_config_mutex)))
+		{
+			printfPQExpBuffer(&conn->errorMessage,
+			   libpq_gettext("could not acquire mutex: %s\n"), strerror(rc));
+			return PGRES_POLLING_FAILED;
+		}
+#endif
 		/* Create a connection-specific SSL object */
 		if (!(conn->ssl = SSL_new(SSL_context)) ||
 			!SSL_set_app_data(conn->ssl, conn) ||
@@ -265,9 +282,16 @@ pqsecure_open_client(PGconn *conn)
 				   libpq_gettext("could not establish SSL connection: %s\n"),
 							  err);
 			SSLerrfree(err);
+#ifdef ENABLE_THREAD_SAFETY
+			pthread_mutex_unlock(&ssl_config_mutex);
+#endif
 			close_SSL(conn);
+
 			return PGRES_POLLING_FAILED;
 		}
+#ifdef ENABLE_THREAD_SAFETY
+		pthread_mutex_unlock(&ssl_config_mutex);
+#endif
 
 		/*
 		 * Load client certificate, private key, and trusted CA certs.
@@ -943,7 +967,13 @@ init_ssl_system(PGconn *conn)
 			SSL_load_error_strings();
 		}
 
-		SSL_context = SSL_CTX_new(TLSv1_method());
+		/*
+		 * We use SSLv23_method() because it can negotiate use of the highest
+		 * mutually supported protocol version, while alternatives like
+		 * TLSv1_2_method() permit only one specific version.  Note that we
+		 * don't actually allow SSL v2 or v3, only TLS protocols (see below).
+		 */
+		SSL_context = SSL_CTX_new(SSLv23_method());
 		if (!SSL_context)
 		{
 			char	   *err = SSLerrmessage();
@@ -957,6 +987,9 @@ init_ssl_system(PGconn *conn)
 #endif
 			return -1;
 		}
+
+		/* Disable old protocol versions */
+		SSL_CTX_set_options(SSL_context, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
 
 		/*
 		 * Disable OpenSSL's moving-write-buffer sanity check, because it
@@ -1000,8 +1033,9 @@ destroy_ssl_system(void)
 		CRYPTO_set_id_callback(NULL);
 
 		/*
-		 * We don't free the lock array. If we get another connection in this
-		 * process, we will just re-use it with the existing mutexes.
+		 * We don't free the lock array or the SSL_context. If we get another
+		 * connection in this process, we will just re-use them with the
+		 * existing mutexes.
 		 *
 		 * This means we leak a little memory on repeated load/unload of the
 		 * library.
@@ -1016,7 +1050,7 @@ destroy_ssl_system(void)
  *	Initialize (potentially) per-connection SSL data, namely the
  *	client certificate, private key, and trusted CA certs.
  *
- *	conn->ssl must already be created.	It receives the connection's client
+ *	conn->ssl must already be created.  It receives the connection's client
  *	certificate and private key.  Note however that certificates also get
  *	loaded into the SSL_context object, and are therefore accessible to all
  *	connections in this process.  This should be OK as long as there aren't
@@ -1050,7 +1084,7 @@ initialize_SSL(PGconn *conn)
 
 	/* Read the client certificate file */
 	if (conn->sslcert && strlen(conn->sslcert) > 0)
-		strncpy(fnbuf, conn->sslcert, sizeof(fnbuf));
+		strlcpy(fnbuf, conn->sslcert, sizeof(fnbuf));
 	else if (have_homedir)
 		snprintf(fnbuf, sizeof(fnbuf), "%s/%s", homedir, USER_CERT_FILE);
 	else
@@ -1090,7 +1124,21 @@ initialize_SSL(PGconn *conn)
 		 * understands which subject cert to present, in case different
 		 * sslcert settings are used for different connections in the same
 		 * process.
+		 *
+		 * NOTE: This function may also modify our SSL_context and therefore
+		 * we have to lock around this call and any places where we use the
+		 * SSL_context struct.
 		 */
+#ifdef ENABLE_THREAD_SAFETY
+		int			rc;
+
+		if ((rc = pthread_mutex_lock(&ssl_config_mutex)))
+		{
+			printfPQExpBuffer(&conn->errorMessage,
+			   libpq_gettext("could not acquire mutex: %s\n"), strerror(rc));
+			return -1;
+		}
+#endif
 		if (SSL_CTX_use_certificate_chain_file(SSL_context, fnbuf) != 1)
 		{
 			char	   *err = SSLerrmessage();
@@ -1099,8 +1147,13 @@ initialize_SSL(PGconn *conn)
 			   libpq_gettext("could not read certificate file \"%s\": %s\n"),
 							  fnbuf, err);
 			SSLerrfree(err);
+
+#ifdef ENABLE_THREAD_SAFETY
+			pthread_mutex_unlock(&ssl_config_mutex);
+#endif
 			return -1;
 		}
+
 		if (SSL_use_certificate_file(conn->ssl, fnbuf, SSL_FILETYPE_PEM) != 1)
 		{
 			char	   *err = SSLerrmessage();
@@ -1109,10 +1162,18 @@ initialize_SSL(PGconn *conn)
 			   libpq_gettext("could not read certificate file \"%s\": %s\n"),
 							  fnbuf, err);
 			SSLerrfree(err);
+#ifdef ENABLE_THREAD_SAFETY
+			pthread_mutex_unlock(&ssl_config_mutex);
+#endif
 			return -1;
 		}
+
 		/* need to load the associated private key, too */
 		have_cert = true;
+
+#ifdef ENABLE_THREAD_SAFETY
+		pthread_mutex_unlock(&ssl_config_mutex);
+#endif
 	}
 
 	/*
@@ -1132,7 +1193,17 @@ initialize_SSL(PGconn *conn)
 		{
 			/* Colon, but not in second character, treat as engine:key */
 			char	   *engine_str = strdup(conn->sslkey);
-			char	   *engine_colon = strchr(engine_str, ':');
+			char	   *engine_colon;
+
+			if (engine_str == NULL)
+			{
+				printfPQExpBuffer(&conn->errorMessage,
+								  libpq_gettext("out of memory\n"));
+				return -1;
+			}
+
+			/* cannot return NULL because we already checked before strdup */
+			engine_colon = strchr(engine_str, ':');
 
 			*engine_colon = '\0';		/* engine_str now has engine name */
 			engine_colon++;		/* engine_colon now has key name */
@@ -1204,7 +1275,7 @@ initialize_SSL(PGconn *conn)
 #endif   /* USE_SSL_ENGINE */
 		{
 			/* PGSSLKEY is not an engine, treat it as a filename */
-			strncpy(fnbuf, conn->sslkey, sizeof(fnbuf));
+			strlcpy(fnbuf, conn->sslkey, sizeof(fnbuf));
 		}
 	}
 	else if (have_homedir)
@@ -1267,7 +1338,7 @@ initialize_SSL(PGconn *conn)
 	 * verification after the connection has been completed.
 	 */
 	if (conn->sslrootcert && strlen(conn->sslrootcert) > 0)
-		strncpy(fnbuf, conn->sslrootcert, sizeof(fnbuf));
+		strlcpy(fnbuf, conn->sslrootcert, sizeof(fnbuf));
 	else if (have_homedir)
 		snprintf(fnbuf, sizeof(fnbuf), "%s/%s", homedir, ROOT_CERT_FILE);
 	else
@@ -1278,6 +1349,16 @@ initialize_SSL(PGconn *conn)
 	{
 		X509_STORE *cvstore;
 
+#ifdef ENABLE_THREAD_SAFETY
+		int			rc;
+
+		if ((rc = pthread_mutex_lock(&ssl_config_mutex)))
+		{
+			printfPQExpBuffer(&conn->errorMessage,
+			   libpq_gettext("could not acquire mutex: %s\n"), strerror(rc));
+			return -1;
+		}
+#endif
 		if (SSL_CTX_load_verify_locations(SSL_context, fnbuf, NULL) != 1)
 		{
 			char	   *err = SSLerrmessage();
@@ -1286,13 +1367,16 @@ initialize_SSL(PGconn *conn)
 							  libpq_gettext("could not read root certificate file \"%s\": %s\n"),
 							  fnbuf, err);
 			SSLerrfree(err);
+#ifdef ENABLE_THREAD_SAFETY
+			pthread_mutex_unlock(&ssl_config_mutex);
+#endif
 			return -1;
 		}
 
 		if ((cvstore = SSL_CTX_get_cert_store(SSL_context)) != NULL)
 		{
 			if (conn->sslcrl && strlen(conn->sslcrl) > 0)
-				strncpy(fnbuf, conn->sslcrl, sizeof(fnbuf));
+				strlcpy(fnbuf, conn->sslcrl, sizeof(fnbuf));
 			else if (have_homedir)
 				snprintf(fnbuf, sizeof(fnbuf), "%s/%s", homedir, ROOT_CRL_FILE);
 			else
@@ -1313,11 +1397,17 @@ initialize_SSL(PGconn *conn)
 								  libpq_gettext("SSL library does not support CRL certificates (file \"%s\")\n"),
 								  fnbuf);
 				SSLerrfree(err);
+#ifdef ENABLE_THREAD_SAFETY
+				pthread_mutex_unlock(&ssl_config_mutex);
+#endif
 				return -1;
 #endif
 			}
 			/* if not found, silently ignore;  we do not require CRL */
 		}
+#ifdef ENABLE_THREAD_SAFETY
+		pthread_mutex_unlock(&ssl_config_mutex);
+#endif
 
 		SSL_set_verify(conn->ssl, SSL_VERIFY_PEER, verify_cb);
 	}
@@ -1325,7 +1415,7 @@ initialize_SSL(PGconn *conn)
 	{
 		/*
 		 * stat() failed; assume root file doesn't exist.  If sslmode is
-		 * verify-ca or verify-full, this is an error.	Otherwise, continue
+		 * verify-ca or verify-full, this is an error.  Otherwise, continue
 		 * without performing any server cert verification.
 		 */
 		if (conn->sslmode[0] == 'v')	/* "verify-ca" or "verify-full" */
@@ -1458,15 +1548,23 @@ open_client_SSL(PGconn *conn)
 static void
 close_SSL(PGconn *conn)
 {
+	bool		destroy_needed = false;
+
 	if (conn->ssl)
 	{
 		DECLARE_SIGPIPE_INFO(spinfo);
+
+		/*
+		 * We can't destroy everything SSL-related here due to the possible
+		 * later calls to OpenSSL routines which may need our thread
+		 * callbacks, so set a flag here and check at the end.
+		 */
+		destroy_needed = true;
 
 		DISABLE_SIGPIPE(conn, spinfo, (void) 0);
 		SSL_shutdown(conn->ssl);
 		SSL_free(conn->ssl);
 		conn->ssl = NULL;
-		pqsecure_destroy();
 		/* We have to assume we got EPIPE */
 		REMEMBER_EPIPE(spinfo, true);
 		RESTORE_SIGPIPE(conn, spinfo);
@@ -1486,6 +1584,17 @@ close_SSL(PGconn *conn)
 		conn->engine = NULL;
 	}
 #endif
+
+	/*
+	 * This will remove our SSL locking hooks, if this is the last SSL
+	 * connection, which means we must wait to call it until after all SSL
+	 * calls have been made, otherwise we can end up with a race condition and
+	 * possible deadlocks.
+	 *
+	 * See comments above destroy_ssl_system().
+	 */
+	if (destroy_needed)
+		pqsecure_destroy();
 }
 
 /*
@@ -1555,7 +1664,7 @@ PQgetssl(PGconn *conn)
 #if defined(ENABLE_THREAD_SAFETY) && !defined(WIN32)
 
 /*
- *	Block SIGPIPE for this thread.	This prevents send()/write() from exiting
+ *	Block SIGPIPE for this thread.  This prevents send()/write() from exiting
  *	the application.
  */
 int
@@ -1594,7 +1703,7 @@ pq_block_sigpipe(sigset_t *osigset, bool *sigpipe_pending)
  *	Discard any pending SIGPIPE and reset the signal mask.
  *
  * Note: we are effectively assuming here that the C library doesn't queue
- * up multiple SIGPIPE events.	If it did, then we'd accidentally leave
+ * up multiple SIGPIPE events.  If it did, then we'd accidentally leave
  * ours in the queue when an event was already pending and we got another.
  * As long as it doesn't queue multiple events, we're OK because the caller
  * can't tell the difference.
@@ -1605,7 +1714,7 @@ pq_block_sigpipe(sigset_t *osigset, bool *sigpipe_pending)
  * gotten one, pass got_epipe = TRUE.
  *
  * We do not want this to change errno, since if it did that could lose
- * the error code from a preceding send().	We essentially assume that if
+ * the error code from a preceding send().  We essentially assume that if
  * we were able to do pq_block_sigpipe(), this can't fail.
  */
 void

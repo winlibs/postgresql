@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
 REL="PREVIOUS"
-TITLE="ALTER DOMAIN"
-HREF="sql-alterdomain.html"><LINK
+TITLE="ALTER EVENT TRIGGER"
+HREF="sql-altereventtrigger.html"><LINK
 REL="NEXT"
 TITLE="ALTER FOREIGN DATA WRAPPER"
 HREF="sql-alterforeigndatawrapper.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="ALTER DOMAIN"
-HREF="sql-alterdomain.html"
+TITLE="ALTER EVENT TRIGGER"
+HREF="sql-altereventtrigger.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-ALTEREXTENSION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN62488"
+NAME="AEN67379"
 ></A
 ><H2
 >Name</H2
@@ -104,7 +104,7 @@ NAME="AEN62488"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN62493"
+NAME="AEN67382"
 ></A
 ><H2
 >Synopsis</H2
@@ -171,14 +171,14 @@ CLASS="REPLACEABLE"
   AGGREGATE <TT
 CLASS="REPLACEABLE"
 ><I
->agg_name</I
+>aggregate_name</I
 ></TT
-> (<TT
+> ( <TT
 CLASS="REPLACEABLE"
 ><I
->agg_type</I
+>aggregate_signature</I
 ></TT
-> [, ...] ) |
+> ) |
   CAST (<TT
 CLASS="REPLACEABLE"
 ><I
@@ -203,6 +203,12 @@ CLASS="REPLACEABLE"
 ></TT
 > |
   DOMAIN <TT
+CLASS="REPLACEABLE"
+><I
+>object_name</I
+></TT
+> |
+  EVENT TRIGGER <TT
 CLASS="REPLACEABLE"
 ><I
 >object_name</I
@@ -241,6 +247,12 @@ CLASS="REPLACEABLE"
 >argtype</I
 ></TT
 > [, ...] ] ) |
+  MATERIALIZED VIEW <TT
+CLASS="REPLACEABLE"
+><I
+>object_name</I
+></TT
+> |
   OPERATOR <TT
 CLASS="REPLACEABLE"
 ><I
@@ -344,12 +356,74 @@ CLASS="REPLACEABLE"
 ><I
 >object_name</I
 ></TT
-></PRE
+>
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>and <TT
+CLASS="REPLACEABLE"
+><I
+>aggregate_signature</I
+></TT
+> is:</SPAN
+></SPAN
+>
+
+* |
+[ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [ , ... ] |
+[ [ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [ , ... ] ] ORDER BY [ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [ , ... ]</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN62536"
+NAME="AEN67438"
 ></A
 ><H2
 >Description</H2
@@ -455,7 +529,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN62569"
+NAME="AEN67471"
 ></A
 ><H2
 >Parameters</H2
@@ -516,7 +590,7 @@ CLASS="REPLACEABLE"
 ><BR><TT
 CLASS="REPLACEABLE"
 ><I
->agg_name</I
+>aggregate_name</I
 ></TT
 ><BR><TT
 CLASS="REPLACEABLE"
@@ -536,23 +610,6 @@ CLASS="REPLACEABLE"
        aggregates, domains, foreign tables, functions, operators,
        operator classes, operator families, sequences, text search objects,
        types, and views can be schema-qualified.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->agg_type</I
-></TT
-></DT
-><DD
-><P
->       An input data type on which the aggregate function operates.
-       To reference a zero-argument aggregate function, write <TT
-CLASS="LITERAL"
->*</TT
->
-       in place of the list of input data types.
       </P
 ></DD
 ><DT
@@ -588,7 +645,8 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->       The mode of a function argument: <TT
+>       The mode of a function or aggregate
+       argument: <TT
 CLASS="LITERAL"
 >IN</TT
 >, <TT
@@ -637,7 +695,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->       The name of a function argument.
+>       The name of a function or aggregate argument.
        Note that <TT
 CLASS="COMMAND"
 >ALTER EXTENSION</TT
@@ -655,8 +713,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->       The data type(s) of the function's arguments (optionally
-       schema-qualified), if any.
+>       The data type of a function or aggregate argument.
       </P
 ></DD
 ><DT
@@ -699,7 +756,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN62655"
+NAME="AEN67551"
 ></A
 ><H2
 >Examples</H2
@@ -740,7 +797,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN62667"
+NAME="AEN67563"
 ></A
 ><H2
 >Compatibility</H2
@@ -785,7 +842,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="sql-alterdomain.html"
+HREF="sql-altereventtrigger.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -813,7 +870,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->ALTER DOMAIN</TD
+>ALTER EVENT TRIGGER</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/Perl - Perl Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 41. PL/Perl - Perl Procedural Language</TD
+>Chapter 42. PL/Perl - Perl Procedural Language</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPERL-FUNCS"
->41.1. PL/Perl Functions and Arguments</A
+>42.1. PL/Perl Functions and Arguments</A
 ></H1
 ><P
 >   To create a function in the PL/Perl language, use the standard
@@ -346,7 +346,10 @@ select returns_array();</PRE
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > arrays as a blessed
-   PostgreSQL::InServer::ARRAY object. This object may be treated as an array
+   <TT
+CLASS="TYPE"
+>PostgreSQL::InServer::ARRAY</TT
+> object. This object may be treated as an array
    reference or a string, allowing for backward compatibility with Perl
    code written for <SPAN
 CLASS="PRODUCTNAME"
@@ -382,7 +385,7 @@ CLASS="NOTE"
 ><P
 ><B
 >Note: </B
->    Multi-dimensional arrays are represented as references to
+>    Multidimensional arrays are represented as references to
     lower-dimensional arrays of references in a way common to every Perl
     programmer.
    </P
@@ -433,7 +436,7 @@ SELECT * FROM perl_row();</PRE
 ><P
 >    PL/Perl functions can also return sets of either scalar or
     composite types.  Usually you'll want to return rows one at a
-    time, both to speed up startup time and to keep from queueing up
+    time, both to speed up startup time and to keep from queuing up
     the entire result set in memory.  You can do this with
     <CODE
 CLASS="FUNCTION"

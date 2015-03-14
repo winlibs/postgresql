@@ -4,7 +4,7 @@
  *	  Virtual file descriptor definitions.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/fd.h
@@ -16,13 +16,13 @@
  * calls:
  *
  *	File {Close, Read, Write, Seek, Tell, Sync}
- *	{File Name Open, Allocate, Free} File
+ *	{Path Name Open, Allocate, Free} File
  *
  * These are NOT JUST RENAMINGS OF THE UNIX ROUTINES.
  * Use them for all file activity...
  *
  *	File fd;
- *	fd = FilePathOpenFile("foo", O_RDONLY, 0600);
+ *	fd = PathNameOpenFile("foo", O_RDONLY, 0600);
  *
  *	AllocateFile();
  *	FreeFile();
@@ -33,7 +33,8 @@
  * no way for them to share kernel file descriptors with other files.
  *
  * Likewise, use AllocateDir/FreeDir, not opendir/closedir, to allocate
- * open directories (DIR*).
+ * open directories (DIR*), and OpenTransientFile/CloseTransient File for an
+ * unbuffered file descriptor.
  */
 #ifndef FD_H
 #define FD_H
@@ -79,10 +80,18 @@ extern char *FilePathName(File file);
 extern FILE *AllocateFile(const char *name, const char *mode);
 extern int	FreeFile(FILE *file);
 
+/* Operations that allow use of pipe streams (popen/pclose) */
+extern FILE *OpenPipeStream(const char *command, const char *mode);
+extern int	ClosePipeStream(FILE *file);
+
 /* Operations to allow use of the <dirent.h> library routines */
 extern DIR *AllocateDir(const char *dirname);
 extern struct dirent *ReadDir(DIR *dir, const char *dirname);
 extern int	FreeDir(DIR *dir);
+
+/* Operations to allow use of a plain kernel FD, with automatic cleanup */
+extern int	OpenTransientFile(FileName fileName, int fileFlags, int fileMode);
+extern int	CloseTransientFile(int fd);
 
 /* If you've really really gotta have a plain kernel FD, use this */
 extern int	BasicOpenFile(FileName fileName, int fileFlags, int fileMode);
@@ -104,6 +113,7 @@ extern int	pg_fsync_no_writethrough(int fd);
 extern int	pg_fsync_writethrough(int fd);
 extern int	pg_fdatasync(int fd);
 extern int	pg_flush_data(int fd, off_t offset, off_t amount);
+extern void fsync_fname(char *fname, bool isdir);
 
 /* Filename components for OpenTemporaryFile */
 #define PG_TEMP_FILES_DIR "pgsql_tmp"

@@ -35,7 +35,7 @@ EOF
 
 	# We have to use this flag on 32 bit targets because the 32bit perls
 	# are built with it and sometimes crash if we don't.
-	my $use_32bit_time_t = 
+	my $use_32bit_time_t =
 	  $self->{platform} eq 'Win32' ? '_USE_32BIT_TIME_T;' : '';
 
 
@@ -190,6 +190,7 @@ EOF
 		StackReserveSize="4194304" DisableSpecificWarnings="$self->{disablewarnings}"
 		GenerateDebugInformation="TRUE" ProgramDatabaseFile=".\\$cfgname\\$self->{name}\\$self->{name}.pdb"
 		GenerateMapFile="FALSE" MapFileName=".\\$cfgname\\$self->{name}\\$self->{name}.map"
+		RandomizedBaseAddress="FALSE"
 		SubSystem="1" TargetMachine="$targetmachine"
 EOF
 	if ($self->{disablelinkerwarnings})

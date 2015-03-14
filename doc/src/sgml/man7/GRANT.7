@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: GRANT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "GRANT" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "GRANT" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 GRANT \- define access privileges
-.\" GRANT
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -240,7 +239,9 @@ Allows the user to connect to the specified database\&. This privilege is checke
 pg_hba\&.conf)\&.
 .RE
 .PP
-TEMPORARY, TEMP
+TEMPORARY
+.br
+TEMP
 .RS 4
 Allows temporary tables to be created while using the specified database\&.
 .RE
@@ -270,7 +271,7 @@ of the type, such as values of the type appearing in queries\&. It only prevents
 .sp
 For foreign\-data wrappers, this privilege enables the grantee to create new servers using that foreign\-data wrapper\&.
 .sp
-For servers, this privilege enables the grantee to create, alter, and drop his own user\*(Aqs user mappings associated with that server\&. Also, it enables the grantee to query the options of the server and associated user mappings\&.
+For servers, this privilege enables the grantee to create foreign tables using the server, and also to create, alter, or drop his own user\*(Aqs user mappings associated with that server\&.
 .RE
 .PP
 ALL PRIVILEGES
@@ -289,7 +290,9 @@ command grants membership in a role to one or more other roles\&. Membership in 
 .PP
 If
 WITH ADMIN OPTION
-is specified, the member can in turn grant membership in the role to others, and revoke membership in the role as well\&. Without the admin option, ordinary users cannot do that\&. However, database superusers can grant or revoke membership in any role to anyone\&. Roles having
+is specified, the member can in turn grant membership in the role to others, and revoke membership in the role as well\&. Without the admin option, ordinary users cannot do that\&. A role is not considered to hold
+WITH ADMIN OPTION
+on itself, but it may grant or revoke membership in itself from a database session where the session user matches the role\&. Database superusers can grant or revoke membership in any role to anyone\&. Roles having
 CREATEROLE
 privilege can grant or revoke membership in any role that is not a superuser\&.
 .PP

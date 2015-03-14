@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -113,7 +113,7 @@ NAME="FUNCTIONS-ADMIN-SET"
 ><P
 >    <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-SET-TABLE"
->Table 9-57</A
+>Table 9-63</A
 > shows the functions
     available to query and alter run-time configuration parameters.
    </P
@@ -124,7 +124,7 @@ NAME="FUNCTIONS-ADMIN-SET-TABLE"
 ></A
 ><P
 ><B
->Table 9-57. Configuration Settings Functions</B
+>Table 9-63. Configuration Settings Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -269,12 +269,12 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="FUNCTIONS-ADMIN-SIGNAL"
->9.26.2. Server Signalling Functions</A
+>9.26.2. Server Signaling Functions</A
 ></H2
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE"
->Table 9-58</A
+>Table 9-64</A
 > send control signals to
     other server processes.  Use of these functions is usually restricted
     to superusers, with noted exceptions.
@@ -286,7 +286,7 @@ NAME="FUNCTIONS-ADMIN-SIGNAL-TABLE"
 ></A
 ><P
 ><B
->Table 9-58. Server Signalling Functions</B
+>Table 9-64. Server Signaling Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -488,10 +488,17 @@ NAME="FUNCTIONS-ADMIN-BACKUP"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-59</A
+>Table 9-65</A
 > assist in making on-line backups.
     These functions cannot be executed during recovery (except
     <CODE
+CLASS="FUNCTION"
+>pg_is_in_backup</CODE
+>, <CODE
+CLASS="FUNCTION"
+>pg_backup_start_time</CODE
+>
+    and <CODE
 CLASS="FUNCTION"
 >pg_xlog_location_diff</CODE
 >).
@@ -503,7 +510,7 @@ NAME="FUNCTIONS-ADMIN-BACKUP-TABLE"
 ></A
 ><P
 ><B
->Table 9-59. Backup Control Functions</B
+>Table 9-65. Backup Control Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -538,7 +545,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Create a named point for performing restore (restricted to superusers)</TD
@@ -556,7 +563,7 @@ CLASS="FUNCTION"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Get current transaction log insert location</TD
@@ -574,7 +581,7 @@ CLASS="FUNCTION"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Get current transaction log write location</TD
@@ -607,7 +614,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Prepare for performing on-line backup (restricted to superusers or replication roles)</TD
@@ -625,10 +632,46 @@ CLASS="FUNCTION"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Finish performing on-line backup (restricted to superusers or replication roles)</TD
+></TR
+><TR
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_is_in_backup()</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>bool</TT
+></TD
+><TD
+>True if an on-line exclusive backup is still in progress.</TD
+></TR
+><TR
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_backup_start_time()</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>Get start time of an on-line exclusive backup in progress.</TD
 ></TR
 ><TR
 ><TD
@@ -643,7 +686,7 @@ CLASS="FUNCTION"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Force switch to a new transaction log file (restricted to superusers)</TD
@@ -659,7 +702,7 @@ CLASS="PARAMETER"
 >location</TT
 > <TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 >)</CODE
 ></TT
 >
@@ -683,7 +726,7 @@ CLASS="PARAMETER"
 >location</TT
 > <TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 >)</CODE
 ></TT
 >
@@ -710,13 +753,13 @@ CLASS="PARAMETER"
 >location</TT
 > <TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 >, <TT
 CLASS="PARAMETER"
 >location</TT
 > <TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 >)</CODE
 ></TT
 >
@@ -879,7 +922,7 @@ CLASS="STRUCTNAME"
 > or some functions shown in
     <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-59</A
+>Table 9-65</A
 > to get the replication lag.
    </P
 ><P
@@ -901,7 +944,7 @@ NAME="FUNCTIONS-RECOVERY-CONTROL"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-INFO-TABLE"
->Table 9-60</A
+>Table 9-66</A
 > provide information
     about the current status of the standby.
     These functions may be executed both during recovery and in normal running.
@@ -913,7 +956,7 @@ NAME="FUNCTIONS-RECOVERY-INFO-TABLE"
 ></A
 ><P
 ><B
->Table 9-60. Recovery Information Functions</B
+>Table 9-66. Recovery Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -961,7 +1004,7 @@ CLASS="FUNCTION"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Get last transaction log location received and synced to disk by
@@ -986,7 +1029,7 @@ CLASS="FUNCTION"
 ><TD
 ><TT
 CLASS="TYPE"
->text</TT
+>pg_lsn</TT
 ></TD
 ><TD
 >Get last transaction log location replayed during recovery.
@@ -1030,7 +1073,7 @@ CLASS="TYPE"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL-TABLE"
->Table 9-61</A
+>Table 9-67</A
 > control the progress of recovery.
     These functions may be executed only during recovery.
    </P
@@ -1041,7 +1084,7 @@ NAME="FUNCTIONS-RECOVERY-CONTROL-TABLE"
 ></A
 ><P
 ><B
->Table 9-61. Recovery Control Functions</B
+>Table 9-67. Recovery Control Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1092,7 +1135,7 @@ CLASS="TYPE"
 >void</TT
 ></TD
 ><TD
->Pauses recovery immediately.
+>Pauses recovery immediately (restricted to superusers).
        </TD
 ></TR
 ><TR
@@ -1111,7 +1154,7 @@ CLASS="TYPE"
 >void</TT
 ></TD
 ><TD
->Restarts recovery if it was paused.
+>Restarts recovery if it was paused (restricted to superusers).
        </TD
 ></TR
 ></TBODY
@@ -1186,7 +1229,7 @@ CLASS="FUNCTION"
 > function,
     shown in <A
 HREF="functions-admin.html#FUNCTIONS-SNAPSHOT-SYNCHRONIZATION-TABLE"
->Table 9-62</A
+>Table 9-68</A
 >, and
     imported with the <A
 HREF="sql-set-transaction.html"
@@ -1200,7 +1243,7 @@ NAME="FUNCTIONS-SNAPSHOT-SYNCHRONIZATION-TABLE"
 ></A
 ><P
 ><B
->Table 9-62. Snapshot Synchronization Functions</B
+>Table 9-68. Snapshot Synchronization Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1277,13 +1320,513 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
+NAME="FUNCTIONS-REPLICATION"
+>9.26.6. Replication Functions</A
+></H2
+><P
+>    The functions shown in <A
+HREF="functions-admin.html#FUNCTIONS-REPLICATION-TABLE"
+>Table 9-69</A
+> are
+    for controlling and interacting with replication features.
+    See <A
+HREF="warm-standby.html#STREAMING-REPLICATION"
+>Section 25.2.5</A
+>
+    and <A
+HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
+>Section 25.2.6</A
+> for information about the
+    underlying features.  Use of these functions is restricted to superusers.
+   </P
+><P
+>    Many of these functions have equivalent commands in the replication
+    protocol; see <A
+HREF="protocol-replication.html"
+>Section 49.3</A
+>.
+   </P
+><P
+>    The functions described in <A
+HREF="functions-admin.html#FUNCTIONS-SNAPSHOT-SYNCHRONIZATION"
+>Section 9.26.5</A
+>, <A
+HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL"
+>Section 9.26.4</A
+>, and <A
+HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP"
+>Section 9.26.3</A
+> are also relevant for replication.
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-REPLICATION-TABLE"
+></A
+><P
+><B
+>Table 9-69. Replication <ACRONYM
+CLASS="ACRONYM"
+>SQL</ACRONYM
+> Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Function</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_create_physical_replication_slot(<TT
+CLASS="PARAMETER"
+>slot_name</TT
+> <TT
+CLASS="TYPE"
+>name</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        (<TT
+CLASS="PARAMETER"
+>slot_name</TT
+> <TT
+CLASS="TYPE"
+>name</TT
+>, <TT
+CLASS="PARAMETER"
+>xlog_position</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>)
+       </TD
+><TD
+>        Creates a new physical replication slot named
+        <TT
+CLASS="PARAMETER"
+>slot_name</TT
+>. Streaming changes from a physical slot
+        is only possible with the streaming-replication protocol - see <A
+HREF="protocol-replication.html"
+>Section 49.3</A
+>. Corresponds to the replication protocol
+        command <TT
+CLASS="LITERAL"
+>CREATE_REPLICATION_SLOT ... PHYSICAL</TT
+>.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_drop_replication_slot(<TT
+CLASS="PARAMETER"
+>slot_name</TT
+> <TT
+CLASS="TYPE"
+>name</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        <TT
+CLASS="TYPE"
+>void</TT
+>
+       </TD
+><TD
+>        Drops the physical or logical replication slot
+        named <TT
+CLASS="PARAMETER"
+>slot_name</TT
+>. Same as replication protocol
+        command <TT
+CLASS="LITERAL"
+>DROP_REPLICATION_SLOT</TT
+>.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_create_logical_replication_slot(<TT
+CLASS="PARAMETER"
+>slot_name</TT
+> <TT
+CLASS="TYPE"
+>name</TT
+>, <TT
+CLASS="PARAMETER"
+>plugin</TT
+> <TT
+CLASS="TYPE"
+>name</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        (<TT
+CLASS="PARAMETER"
+>slot_name</TT
+> <TT
+CLASS="TYPE"
+>name</TT
+>, <TT
+CLASS="PARAMETER"
+>xlog_position</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>)
+       </TD
+><TD
+>        Creates a new logical (decoding) replication slot named
+        <TT
+CLASS="PARAMETER"
+>slot_name</TT
+> using the output plugin
+        <TT
+CLASS="PARAMETER"
+>plugin</TT
+>.  A call to this function has the same
+        effect as the replication protocol command
+        <TT
+CLASS="LITERAL"
+>CREATE_REPLICATION_SLOT ... LOGICAL</TT
+>.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_logical_slot_get_changes(<TT
+CLASS="PARAMETER"
+>slot_name</TT
+> <TT
+CLASS="TYPE"
+>name</TT
+>, <TT
+CLASS="PARAMETER"
+>upto_lsn</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>, <TT
+CLASS="PARAMETER"
+>upto_nchanges</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>, VARIADIC <TT
+CLASS="PARAMETER"
+>options</TT
+> <TT
+CLASS="TYPE"
+>text[]</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        (<TT
+CLASS="PARAMETER"
+>location</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>, <TT
+CLASS="PARAMETER"
+>xid</TT
+> <TT
+CLASS="TYPE"
+>xid</TT
+>, <TT
+CLASS="PARAMETER"
+>data</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)
+       </TD
+><TD
+>        Returns changes in the slot <TT
+CLASS="PARAMETER"
+>slot_name</TT
+>, starting
+        from the point at which since changes have been consumed last.  If
+        <TT
+CLASS="PARAMETER"
+>upto_lsn</TT
+> and <TT
+CLASS="PARAMETER"
+>upto_nchanges</TT
+> are NULL,
+        logical decoding will continue until end of WAL.  If
+        <TT
+CLASS="PARAMETER"
+>upto_lsn</TT
+> is non-NULL, decoding will include only
+        those transactions which commit prior to the specified LSN.  If
+        <TT
+CLASS="PARAMETER"
+>upto_nchanges</TT
+> is non-NULL, decoding will
+        stop when the number of rows produced by decoding exceeds
+        the specified value.  Note, however, that the actual number of
+        rows returned may be larger, since this limit is only checked after
+        adding the rows produced when decoding each new transaction commit.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_logical_slot_peek_changes(<TT
+CLASS="PARAMETER"
+>slot_name</TT
+> <TT
+CLASS="TYPE"
+>name</TT
+>, <TT
+CLASS="PARAMETER"
+>upto_lsn</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>, <TT
+CLASS="PARAMETER"
+>upto_nchanges</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>, VARIADIC <TT
+CLASS="PARAMETER"
+>options</TT
+> <TT
+CLASS="TYPE"
+>text[]</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        (<TT
+CLASS="PARAMETER"
+>location</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>xid</TT
+> <TT
+CLASS="TYPE"
+>xid</TT
+>, <TT
+CLASS="PARAMETER"
+>data</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)
+       </TD
+><TD
+>        Behaves just like
+        the <CODE
+CLASS="FUNCTION"
+>pg_logical_slot_get_changes()</CODE
+> function,
+        except that changes are not consumed; that is, they will be returned
+        again on future calls.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_logical_slot_get_binary_changes(<TT
+CLASS="PARAMETER"
+>slot_name</TT
+> <TT
+CLASS="TYPE"
+>name</TT
+>, <TT
+CLASS="PARAMETER"
+>upto_lsn</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>, <TT
+CLASS="PARAMETER"
+>upto_nchanges</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>, VARIADIC <TT
+CLASS="PARAMETER"
+>options</TT
+> <TT
+CLASS="TYPE"
+>text[]</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        (<TT
+CLASS="PARAMETER"
+>location</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>, <TT
+CLASS="PARAMETER"
+>xid</TT
+> <TT
+CLASS="TYPE"
+>xid</TT
+>, <TT
+CLASS="PARAMETER"
+>data</TT
+> <TT
+CLASS="TYPE"
+>bytea</TT
+>)
+       </TD
+><TD
+>        Behaves just like
+        the <CODE
+CLASS="FUNCTION"
+>pg_logical_slot_get_changes()</CODE
+> function,
+        except that changes are returned as <TT
+CLASS="TYPE"
+>bytea</TT
+>.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_logical_slot_peek_binary_changes(<TT
+CLASS="PARAMETER"
+>slot_name</TT
+> <TT
+CLASS="TYPE"
+>name</TT
+>, <TT
+CLASS="PARAMETER"
+>upto_lsn</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>, <TT
+CLASS="PARAMETER"
+>upto_nchanges</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>, VARIADIC <TT
+CLASS="PARAMETER"
+>options</TT
+> <TT
+CLASS="TYPE"
+>text[]</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        (<TT
+CLASS="PARAMETER"
+>location</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>, <TT
+CLASS="PARAMETER"
+>xid</TT
+> <TT
+CLASS="TYPE"
+>xid</TT
+>, <TT
+CLASS="PARAMETER"
+>data</TT
+> <TT
+CLASS="TYPE"
+>bytea</TT
+>)
+       </TD
+><TD
+>        Behaves just like
+        the <CODE
+CLASS="FUNCTION"
+>pg_logical_slot_get_changes()</CODE
+> function,
+        except that changes are returned as <TT
+CLASS="TYPE"
+>bytea</TT
+> and that
+        changes are not consumed; that is, they will be returned again
+        on future calls.
+       </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
 NAME="FUNCTIONS-ADMIN-DBOBJECT"
->9.26.6. Database Object Management Functions</A
+>9.26.7. Database Object Management Functions</A
 ></H2
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-DBSIZE"
->Table 9-63</A
+>Table 9-70</A
 > calculate
     the disk space usage of database objects.
    </P
@@ -1294,7 +1837,7 @@ NAME="FUNCTIONS-ADMIN-DBSIZE"
 ></A
 ><P
 ><B
->Table 9-63. Database Object Size Functions</B
+>Table 9-70. Database Object Size Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1429,9 +1972,12 @@ CLASS="LITERAL"
         <TT
 CLASS="LITERAL"
 >'fsm'</TT
-> or <TT
+>, <TT
 CLASS="LITERAL"
 >'vm'</TT
+>, or <TT
+CLASS="LITERAL"
+>'init'</TT
 >)
         of the specified table or index
        </TD
@@ -1655,45 +2201,90 @@ CLASS="FUNCTION"
 >pg_tablespace_size</CODE
 >
     accept the OID or name of a database or tablespace, and return the total
-    disk space used therein.
+    disk space used therein.  To use <CODE
+CLASS="FUNCTION"
+>pg_database_size</CODE
+>,
+    you must have <TT
+CLASS="LITERAL"
+>CONNECT</TT
+> permission on the specified database
+    (which is granted by default).  To use <CODE
+CLASS="FUNCTION"
+>pg_tablespace_size</CODE
+>,
+    you must have <TT
+CLASS="LITERAL"
+>CREATE</TT
+> permission on the specified tablespace,
+    unless it is the default tablespace for the current database.
    </P
 ><P
 >    <CODE
 CLASS="FUNCTION"
 >pg_relation_size</CODE
-> accepts the OID or name of a table, index or
-    toast table, and returns the on-disk size in bytes. Specifying
-    <TT
-CLASS="LITERAL"
->'main'</TT
-> or leaving out the second argument returns the
-    size of the main data fork of the relation. Specifying
-    <TT
-CLASS="LITERAL"
->'fsm'</TT
-> returns the size of the
-    Free Space Map (see <A
-HREF="storage-fsm.html"
->Section 56.3</A
->) associated with the
-    relation. Specifying <TT
-CLASS="LITERAL"
->'vm'</TT
-> returns the size of the
-    Visibility Map (see <A
-HREF="storage-vm.html"
->Section 56.4</A
->) associated with the
-    relation.  Note that this function shows the size of only one fork;
-    for most purposes it is more convenient to use the higher-level
-    functions <CODE
+> accepts the OID or name of a table, index
+    or toast table, and returns the on-disk size in bytes of one fork of
+    that relation.  (Note that for most purposes it is more convenient to
+    use the higher-level functions <CODE
 CLASS="FUNCTION"
 >pg_total_relation_size</CODE
-> or
-    <CODE
+>
+    or <CODE
 CLASS="FUNCTION"
 >pg_table_size</CODE
->.
+>, which sum the sizes of all forks.)
+    With one argument, it returns the size of the main data fork of the
+    relation.  The second argument can be provided to specify which fork
+    to examine:
+    <P
+></P
+></P><UL
+COMPACT="COMPACT"
+><LI
+><P
+>       <TT
+CLASS="LITERAL"
+>'main'</TT
+> returns the size of the main
+       data fork of the relation.
+      </P
+></LI
+><LI
+><P
+>       <TT
+CLASS="LITERAL"
+>'fsm'</TT
+> returns the size of the Free Space Map
+       (see <A
+HREF="storage-fsm.html"
+>Section 59.3</A
+>) associated with the relation.
+      </P
+></LI
+><LI
+><P
+>       <TT
+CLASS="LITERAL"
+>'vm'</TT
+> returns the size of the Visibility Map
+       (see <A
+HREF="storage-vm.html"
+>Section 59.4</A
+>) associated with the relation.
+      </P
+></LI
+><LI
+><P
+>       <TT
+CLASS="LITERAL"
+>'init'</TT
+> returns the size of the initialization
+       fork, if any, associated with the relation.
+      </P
+></LI
+></UL
+><P>
    </P
 ><P
 >    <CODE
@@ -1733,7 +2324,7 @@ CLASS="ACRONYM"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-DBLOCATION"
->Table 9-64</A
+>Table 9-71</A
 > assist
     in identifying the specific disk files associated with database objects.
    </P
@@ -1744,7 +2335,7 @@ NAME="FUNCTIONS-ADMIN-DBLOCATION"
 ></A
 ><P
 ><B
->Table 9-64. Database Object Location Functions</B
+>Table 9-71. Database Object Location Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1810,6 +2401,37 @@ CLASS="TYPE"
 >        File path name of the specified relation
        </TD
 ></TR
+><TR
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_filenode_relation(<TT
+CLASS="PARAMETER"
+>tablespace</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>filenode</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>regclass</TT
+></TD
+><TD
+>        Find the relation associated with a given tablespace and filenode
+       </TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -1825,7 +2447,7 @@ CLASS="QUOTE"
     currently assigned to it.  The filenode is the base component of the file
     name(s) used for the relation (see <A
 HREF="storage-file-layout.html"
->Section 56.1</A
+>Section 59.1</A
 >
     for more information).  For most tables the result is the same as
     <TT
@@ -1857,6 +2479,24 @@ CLASS="VARNAME"
 >) of
     the relation.
    </P
+><P
+>    <CODE
+CLASS="FUNCTION"
+>pg_filenode_relation</CODE
+> is the reverse of
+    <CODE
+CLASS="FUNCTION"
+>pg_relation_filenode</CODE
+>. Given a <SPAN
+CLASS="QUOTE"
+>"tablespace"</SPAN
+> OID and
+    a <SPAN
+CLASS="QUOTE"
+>"filenode"</SPAN
+>, it returns the associated relation's OID. For a table
+    in the database's default tablespace, the tablespace can be specified as 0.
+   </P
 ></DIV
 ><DIV
 CLASS="SECT2"
@@ -1864,12 +2504,12 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="FUNCTIONS-ADMIN-GENFILE"
->9.26.7. Generic File Access Functions</A
+>9.26.8. Generic File Access Functions</A
 ></H2
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-GENFILE-TABLE"
->Table 9-65</A
+>Table 9-72</A
 > provide native access to
     files on the machine hosting the server. Only files within the
     database cluster directory and the <TT
@@ -1890,7 +2530,7 @@ NAME="FUNCTIONS-ADMIN-GENFILE-TABLE"
 ></A
 ><P
 ><B
->Table 9-65. Generic File Access Functions</B
+>Table 9-72. Generic File Access Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2125,17 +2765,17 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="FUNCTIONS-ADVISORY-LOCKS"
->9.26.8. Advisory Lock Functions</A
+>9.26.9. Advisory Lock Functions</A
 ></H2
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADVISORY-LOCKS-TABLE"
->Table 9-66</A
+>Table 9-73</A
 >
     manage advisory locks.  For details about proper use of these functions,
     see <A
 HREF="explicit-locking.html#ADVISORY-LOCKS"
->Section 13.3.4</A
+>Section 13.3.5</A
 >.
    </P
 ><DIV
@@ -2145,7 +2785,7 @@ NAME="FUNCTIONS-ADVISORY-LOCKS-TABLE"
 ></A
 ><P
 ><B
->Table 9-66. Advisory Lock Functions</B
+>Table 9-73. Advisory Lock Functions</B
 ></P
 ><TABLE
 BORDER="1"

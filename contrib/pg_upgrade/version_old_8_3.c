@@ -3,11 +3,11 @@
  *
  *	Postgres-version-specific routines
  *
- *	Copyright (c) 2010-2012, PostgreSQL Global Development Group
+ *	Copyright (c) 2010-2014, PostgreSQL Global Development Group
  *	contrib/pg_upgrade/version_old_8_3.c
  */
 
-#include "postgres.h"
+#include "postgres_fe.h"
 
 #include "pg_upgrade.h"
 
@@ -61,7 +61,7 @@ old_8_3_check_for_name_data_type_usage(ClusterInfo *cluster)
 								"		a.atttypid = 'pg_catalog.name'::pg_catalog.regtype AND "
 								"		c.relnamespace = n.oid AND "
 		/* exclude possible orphaned temp tables */
-								"  		n.nspname !~ '^pg_temp_' AND "
+								"		n.nspname !~ '^pg_temp_' AND "
 						 "		n.nspname !~ '^pg_toast_temp_' AND "
 								"		n.nspname NOT IN ('pg_catalog', 'information_schema')");
 
@@ -73,7 +73,7 @@ old_8_3_check_for_name_data_type_usage(ClusterInfo *cluster)
 		{
 			found = true;
 			if (script == NULL && (script = fopen_priv(output_path, "w")) == NULL)
-				pg_log(PG_FATAL, "could not open file \"%s\": %s\n", output_path, getErrorText(errno));
+				pg_fatal("could not open file \"%s\": %s\n", output_path, getErrorText(errno));
 			if (!db_used)
 			{
 				fprintf(script, "Database: %s\n", active_db->db_name);
@@ -96,13 +96,12 @@ old_8_3_check_for_name_data_type_usage(ClusterInfo *cluster)
 	if (found)
 	{
 		pg_log(PG_REPORT, "fatal\n");
-		pg_log(PG_FATAL,
-			   "Your installation contains the \"name\" data type in user tables.  This\n"
+		pg_fatal("Your installation contains the \"name\" data type in user tables.  This\n"
 		"data type changed its internal alignment between your old and new\n"
-			   "clusters so this cluster cannot currently be upgraded.  You can remove\n"
+				 "clusters so this cluster cannot currently be upgraded.  You can remove\n"
 		"the problem tables and restart the upgrade.  A list of the problem\n"
-			   "columns is in the file:\n"
-			   "    %s\n\n", output_path);
+				 "columns is in the file:\n"
+				 "    %s\n\n", output_path);
 	}
 	else
 		check_ok();
@@ -145,13 +144,14 @@ old_8_3_check_for_tsquery_usage(ClusterInfo *cluster)
 								"FROM	pg_catalog.pg_class c, "
 								"		pg_catalog.pg_namespace n, "
 								"		pg_catalog.pg_attribute a "
+		/* materialized views didn't exist in 8.3, so no need to check 'm' */
 								"WHERE	c.relkind = 'r' AND "
 								"		c.oid = a.attrelid AND "
 								"		NOT a.attisdropped AND "
 								"		a.atttypid = 'pg_catalog.tsquery'::pg_catalog.regtype AND "
 								"		c.relnamespace = n.oid AND "
 		/* exclude possible orphaned temp tables */
-								"  		n.nspname !~ '^pg_temp_' AND "
+								"		n.nspname !~ '^pg_temp_' AND "
 						 "		n.nspname !~ '^pg_toast_temp_' AND "
 								"		n.nspname NOT IN ('pg_catalog', 'information_schema')");
 
@@ -163,7 +163,7 @@ old_8_3_check_for_tsquery_usage(ClusterInfo *cluster)
 		{
 			found = true;
 			if (script == NULL && (script = fopen_priv(output_path, "w")) == NULL)
-				pg_log(PG_FATAL, "could not open file \"%s\": %s\n", output_path, getErrorText(errno));
+				pg_fatal("could not open file \"%s\": %s\n", output_path, getErrorText(errno));
 			if (!db_used)
 			{
 				fprintf(script, "Database: %s\n", active_db->db_name);
@@ -186,13 +186,12 @@ old_8_3_check_for_tsquery_usage(ClusterInfo *cluster)
 	if (found)
 	{
 		pg_log(PG_REPORT, "fatal\n");
-		pg_log(PG_FATAL,
-			   "Your installation contains the \"tsquery\" data type.    This data type\n"
-			   "added a new internal field between your old and new clusters so this\n"
+		pg_fatal("Your installation contains the \"tsquery\" data type.    This data type\n"
+				 "added a new internal field between your old and new clusters so this\n"
 		"cluster cannot currently be upgraded.  You can remove the problem\n"
-			   "columns and restart the upgrade.  A list of the problem columns is in the\n"
-			   "file:\n"
-			   "    %s\n\n", output_path);
+				 "columns and restart the upgrade.  A list of the problem columns is in the\n"
+				 "file:\n"
+				 "    %s\n\n", output_path);
 	}
 	else
 		check_ok();
@@ -242,8 +241,8 @@ old_8_3_check_ltree_usage(ClusterInfo *cluster)
 		{
 			found = true;
 			if (script == NULL && (script = fopen_priv(output_path, "w")) == NULL)
-				pg_log(PG_FATAL, "Could not open file \"%s\": %s\n",
-					   output_path, getErrorText(errno));
+				pg_fatal("Could not open file \"%s\": %s\n",
+						 output_path, getErrorText(errno));
 			if (!db_used)
 			{
 				fprintf(script, "Database: %s\n", active_db->db_name);
@@ -265,14 +264,13 @@ old_8_3_check_ltree_usage(ClusterInfo *cluster)
 	if (found)
 	{
 		pg_log(PG_REPORT, "fatal\n");
-		pg_log(PG_FATAL,
-			   "Your installation contains the \"ltree\" data type.  This data type\n"
-			   "changed its internal storage format between your old and new clusters so this\n"
-			   "cluster cannot currently be upgraded.  You can manually upgrade databases\n"
-			   "that use \"contrib/ltree\" facilities and remove \"contrib/ltree\" from the old\n"
-			   "cluster and restart the upgrade.  A list of the problem functions is in the\n"
-			   "file:\n"
-			   "    %s\n\n", output_path);
+		pg_fatal("Your installation contains the \"ltree\" data type.  This data type\n"
+				 "changed its internal storage format between your old and new clusters so this\n"
+				 "cluster cannot currently be upgraded.  You can manually upgrade databases\n"
+				 "that use \"contrib/ltree\" facilities and remove \"contrib/ltree\" from the old\n"
+				 "cluster and restart the upgrade.  A list of the problem functions is in the\n"
+				 "file:\n"
+				 "    %s\n\n", output_path);
 	}
 	else
 		check_ok();
@@ -323,13 +321,16 @@ old_8_3_rebuild_tsvector_tables(ClusterInfo *cluster, bool check_mode)
 								"FROM	pg_catalog.pg_class c, "
 								"		pg_catalog.pg_namespace n, "
 								"		pg_catalog.pg_attribute a "
+		/* materialized views didn't exist in 8.3, so no need to check 'm' */
 								"WHERE	c.relkind = 'r' AND "
 								"		c.oid = a.attrelid AND "
 								"		NOT a.attisdropped AND "
+		/* child attribute changes are processed by the parent */
+								"		a.attinhcount = 0 AND "
 								"		a.atttypid = 'pg_catalog.tsvector'::pg_catalog.regtype AND "
 								"		c.relnamespace = n.oid AND "
 		/* exclude possible orphaned temp tables */
-								"  		n.nspname !~ '^pg_temp_' AND "
+								"		n.nspname !~ '^pg_temp_' AND "
 						 "		n.nspname !~ '^pg_toast_temp_' AND "
 								"		n.nspname NOT IN ('pg_catalog', 'information_schema')");
 
@@ -343,9 +344,12 @@ old_8_3_rebuild_tsvector_tables(ClusterInfo *cluster, bool check_mode)
 								"FROM	pg_catalog.pg_class c, "		\
 								"		pg_catalog.pg_namespace n, "	\
 								"		pg_catalog.pg_attribute a "		\
+		/* materialized views didn't exist in 8.3, so no need to check 'm' */ \
 								"WHERE	c.relkind = 'r' AND "			\
 								"		c.oid = a.attrelid AND "		\
 								"		NOT a.attisdropped AND "		\
+		/* child attribute changes are processed by the parent */		\
+								"		a.attinhcount = 0 AND "			\
 								"		a.atttypid = 'pg_catalog.tsvector'::pg_catalog.regtype AND " \
 								"		c.relnamespace = n.oid AND "	\
 								"       n.nspname !~ '^pg_' AND "		\
@@ -361,7 +365,7 @@ old_8_3_rebuild_tsvector_tables(ClusterInfo *cluster, bool check_mode)
 			if (!check_mode)
 			{
 				if (script == NULL && (script = fopen_priv(output_path, "w")) == NULL)
-					pg_log(PG_FATAL, "could not open file \"%s\": %s\n", output_path, getErrorText(errno));
+					pg_fatal("could not open file \"%s\": %s\n", output_path, getErrorText(errno));
 				if (!db_used)
 				{
 					fprintf(script, "\\connect %s\n\n",
@@ -430,7 +434,7 @@ old_8_3_rebuild_tsvector_tables(ClusterInfo *cluster, bool check_mode)
 /*
  * old_8_3_invalidate_hash_gin_indexes()
  *	8.3 -> 8.4
- *	Hash, Gin, and GiST index binary format has changes from 8.3->8.4
+ *	Hash and GIN index binary format changed from 8.3->8.4
  */
 void
 old_8_3_invalidate_hash_gin_indexes(ClusterInfo *cluster, bool check_mode)
@@ -477,7 +481,7 @@ old_8_3_invalidate_hash_gin_indexes(ClusterInfo *cluster, bool check_mode)
 			if (!check_mode)
 			{
 				if (script == NULL && (script = fopen_priv(output_path, "w")) == NULL)
-					pg_log(PG_FATAL, "could not open file \"%s\": %s\n", output_path, getErrorText(errno));
+					pg_fatal("could not open file \"%s\": %s\n", output_path, getErrorText(errno));
 				if (!db_used)
 				{
 					fprintf(script, "\\connect %s\n",
@@ -596,7 +600,7 @@ old_8_3_invalidate_bpchar_pattern_ops_indexes(ClusterInfo *cluster,
 			if (!check_mode)
 			{
 				if (script == NULL && (script = fopen_priv(output_path, "w")) == NULL)
-					pg_log(PG_FATAL, "could not open file \"%s\": %s\n", output_path, getErrorText(errno));
+					pg_fatal("could not open file \"%s\": %s\n", output_path, getErrorText(errno));
 				if (!db_used)
 				{
 					fprintf(script, "\\connect %s\n",
@@ -675,9 +679,9 @@ old_8_3_create_sequence_script(ClusterInfo *cluster)
 	int			dbnum;
 	FILE	   *script = NULL;
 	bool		found = false;
-	char	   *output_path = pg_malloc(MAXPGPATH);
+	char	   *output_path;
 
-	snprintf(output_path, MAXPGPATH, "adjust_sequences.sql");
+	output_path = pg_strdup("adjust_sequences.sql");
 
 	prep_status("Creating script to adjust sequences");
 
@@ -700,7 +704,7 @@ old_8_3_create_sequence_script(ClusterInfo *cluster)
 								"WHERE	c.relkind = 'S' AND "
 								"		c.relnamespace = n.oid AND "
 		/* exclude possible orphaned temp tables */
-								"  		n.nspname !~ '^pg_temp_' AND "
+								"		n.nspname !~ '^pg_temp_' AND "
 						 "		n.nspname !~ '^pg_toast_temp_' AND "
 								"		n.nspname NOT IN ('pg_catalog', 'information_schema')");
 
@@ -718,7 +722,7 @@ old_8_3_create_sequence_script(ClusterInfo *cluster)
 			found = true;
 
 			if (script == NULL && (script = fopen_priv(output_path, "w")) == NULL)
-				pg_log(PG_FATAL, "could not open file \"%s\": %s\n", output_path, getErrorText(errno));
+				pg_fatal("could not open file \"%s\": %s\n", output_path, getErrorText(errno));
 			if (!db_used)
 			{
 				fprintf(script, "\\connect %s\n\n",

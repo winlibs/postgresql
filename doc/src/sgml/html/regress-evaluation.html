@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Regression Tests"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -141,6 +141,27 @@ CLASS="FILENAME"
     <TT
 CLASS="FILENAME"
 >src/test/regress/regression.diffs</TT
+>.
+    (When running a test suite other than the core tests, these files
+    of course appear in the relevant subdirectory,
+    not <TT
+CLASS="FILENAME"
+>src/test/regress</TT
+>.)
+   </P
+><P
+>    If you don't
+    like the <TT
+CLASS="COMMAND"
+>diff</TT
+> options that are used by default, set the
+    environment variable <TT
+CLASS="ENVAR"
+>PG_REGRESS_DIFF_OPTS</TT
+>, for
+    instance <TT
+CLASS="LITERAL"
+>PG_REGRESS_DIFF_OPTS='-u'</TT
 >.  (Or you
     can run <TT
 CLASS="COMMAND"
@@ -165,7 +186,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37608"
+NAME="AEN40515"
 >30.2.1. Error Message Differences</A
 ></H2
 ><P
@@ -190,7 +211,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37613"
+NAME="AEN40520"
 >30.2.2. Locale Differences</A
 ></H2
 ><P
@@ -211,7 +232,7 @@ CLASS="COMMAND"
 > command line, for example:
 </P><PRE
 CLASS="PROGRAMLISTING"
->gmake check LANG=de_DE.utf8</PRE
+>make check LANG=de_DE.utf8</PRE
 ><P>
      (The regression test driver unsets <TT
 CLASS="ENVAR"
@@ -226,7 +247,7 @@ CLASS="LITERAL"
      special invocation:
 </P><PRE
 CLASS="PROGRAMLISTING"
->gmake check NO_LOCALE=1</PRE
+>make check NO_LOCALE=1</PRE
 ><P>
      When running the tests against an existing installation, the
      locale setup is determined by the existing installation.  To
@@ -238,7 +259,7 @@ CLASS="COMMAND"
 >.
     </P
 ><P
->     In general, it is nevertheless advisable to try to run the
+>     In general, it is advisable to try to run the
      regression tests in the locale setup that is wanted for
      production use, as this will exercise the locale- and
      encoding-related code portions that will actually be used in
@@ -253,7 +274,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37624"
+NAME="AEN40531"
 >30.2.3. Date and Time Differences</A
 ></H2
 ><P
@@ -280,7 +301,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37630"
+NAME="AEN40537"
 >30.2.4. Floating-Point Differences</A
 ></H2
 ><P
@@ -301,7 +322,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >geometry</TT
 > tests are particularly prone to small differences
-     across platforms, or even with different compiler optimization setting.
+     across platforms, or even with different compiler optimization settings.
      Human eyeball comparison is needed to determine the real
      significance of these differences which are usually 10 places to
      the right of the decimal point.
@@ -337,7 +358,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37644"
+NAME="AEN40551"
 >30.2.5. Row Ordering Differences</A
 ></H2
 ><P
@@ -396,7 +417,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37656"
+NAME="AEN40563"
 >30.2.6. Insufficient Stack Depth</A
 ></H2
 ><P
@@ -412,9 +433,7 @@ CLASS="LITERAL"
      <A
 HREF="runtime-config-resource.html#GUC-MAX-STACK-DEPTH"
 >max_stack_depth</A
->
-     
-     parameter indicates.  This
+> parameter indicates.  This
      can be fixed by running the server under a higher stack
      size limit (4MB is recommended with the default value of
      <TT
@@ -426,13 +445,25 @@ CLASS="VARNAME"
 >max_stack_depth</TT
 >.
     </P
+><P
+>     On platforms supporting <CODE
+CLASS="FUNCTION"
+>getrlimit()</CODE
+>, the server should
+     automatically choose a safe value of <TT
+CLASS="VARNAME"
+>max_stack_depth</TT
+>;
+     so unless you've manually overridden this setting, a failure of this
+     kind is a reportable bug.
+    </P
 ></DIV
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN37664"
+NAME="AEN40574"
 >30.2.7. The <SPAN
 CLASS="QUOTE"
 >"random"</SPAN
@@ -443,7 +474,7 @@ CLASS="QUOTE"
 CLASS="LITERAL"
 >random</TT
 > test script is intended to produce
-     random results.   In rare cases, this causes the random regression
+     random results.   In very rare cases, this causes that regression
      test to fail.  Typing:
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -451,6 +482,31 @@ CLASS="PROGRAMLISTING"
 ><P>
      should produce only one or a few lines of differences.  You need
      not worry unless the random test fails repeatedly.
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN40580"
+>30.2.8. Configuration Parameters</A
+></H2
+><P
+>     When running the tests against an existing installation, some non-default
+     parameter settings could cause the tests to fail.  For example, changing
+     parameters such as <TT
+CLASS="VARNAME"
+>enable_seqscan</TT
+> or
+     <TT
+CLASS="VARNAME"
+>enable_indexscan</TT
+> could cause plan changes that would
+     affect the results of tests that use <TT
+CLASS="COMMAND"
+>EXPLAIN</TT
+>.
     </P
 ></DIV
 ></DIV

@@ -1,7 +1,7 @@
 /*
  * psql - the PostgreSQL interactive terminal
  *
- * Copyright (c) 2000-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2014, PostgreSQL Global Development Group
  *
  * src/bin/psql/print.h
  */
@@ -19,6 +19,7 @@ enum printFormat
 	PRINT_WRAPPED,
 	PRINT_HTML,
 	PRINT_LATEX,
+	PRINT_LATEX_LONGTABLE,
 	PRINT_TROFF_MS
 	/* add your favourite output format here ... */
 };
@@ -145,6 +146,7 @@ typedef struct printQueryOpt
 	bool		translate_header;		/* do gettext on column headers */
 	const bool *translate_columns;		/* translate_columns[i-1] => do
 										 * gettext on col i */
+	int			n_translate_columns;	/* length of translate_columns[] */
 } printQueryOpt;
 
 

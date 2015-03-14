@@ -3,11 +3,11 @@
  *
  *	database server functions
  *
- *	Copyright (c) 2010-2012, PostgreSQL Global Development Group
+ *	Copyright (c) 2010-2014, PostgreSQL Global Development Group
  *	contrib/pg_upgrade/server.c
  */
 
-#include "postgres.h"
+#include "postgres_fe.h"
 
 #include "pg_upgrade.h"
 
@@ -79,7 +79,7 @@ get_db_conn(ClusterInfo *cluster, const char *db_name)
 char *
 cluster_conn_opts(ClusterInfo *cluster)
 {
-	static char	conn_opts[MAXPGPATH + NAMEDATALEN + 100];
+	static char conn_opts[MAXPGPATH + NAMEDATALEN + 100];
 
 	if (cluster->sockdir)
 		snprintf(conn_opts, sizeof(conn_opts),
@@ -149,12 +149,12 @@ get_major_server_version(ClusterInfo *cluster)
 	snprintf(ver_filename, sizeof(ver_filename), "%s/PG_VERSION",
 			 cluster->pgdata);
 	if ((version_fd = fopen(ver_filename, "r")) == NULL)
-		pg_log(PG_FATAL, "could not open version file: %s\n", ver_filename);
+		pg_fatal("could not open version file: %s\n", ver_filename);
 
 	if (fscanf(version_fd, "%63s", cluster->major_version_str) == 0 ||
 		sscanf(cluster->major_version_str, "%d.%d", &integer_version,
 			   &fractional_version) != 2)
-		pg_log(PG_FATAL, "could not get version from %s\n", cluster->pgdata);
+		pg_fatal("could not get version from %s\n", cluster->pgdata);
 
 	fclose(version_fd);
 
@@ -166,12 +166,11 @@ static void
 stop_postmaster_atexit(void)
 {
 	stop_postmaster(true);
-
 }
 
 
-void
-start_postmaster(ClusterInfo *cluster)
+bool
+start_postmaster(ClusterInfo *cluster, bool throw_error)
 {
 	char		cmd[MAXPGPATH * 4 + 1000];
 	PGconn	   *conn;
@@ -192,7 +191,7 @@ start_postmaster(ClusterInfo *cluster)
 	strcat(socket_string,
 		   " -c listen_addresses='' -c unix_socket_permissions=0700");
 
-	/* Have a sockdir?  Tell the postmaster. */
+	/* Have a sockdir?	Tell the postmaster. */
 	if (cluster->sockdir)
 		snprintf(socket_string + strlen(socket_string),
 				 sizeof(socket_string) - strlen(socket_string),
@@ -203,23 +202,27 @@ start_postmaster(ClusterInfo *cluster)
 #endif
 
 	/*
-	 * Using autovacuum=off disables cleanup vacuum and analyze, but freeze
-	 * vacuums can still happen, so we set autovacuum_freeze_max_age to its
-	 * maximum.  We assume all datfrozenxid and relfrozen values are less than
-	 * a gap of 2000000000 from the current xid counter, so autovacuum will
-	 * not touch them.
+	 * Since PG 9.1, we have used -b to disable autovacuum.  For earlier
+	 * releases, setting autovacuum=off disables cleanup vacuum and analyze,
+	 * but freeze vacuums can still happen, so we set autovacuum_freeze_max_age
+	 * to its maximum.  (autovacuum_multixact_freeze_max_age was introduced
+	 * after 9.1, so there is no need to set that.)  We assume all datfrozenxid
+	 * and relfrozenxid values are less than a gap of 2000000000 from the current
+	 * xid counter, so autovacuum will not touch them.
 	 *
-	 *	synchronous_commit=off improves object creation speed, and we only
-	 *	modify the new cluster, so only use it there.  If there is a crash,
-	 *	the new cluster has to be recreated anyway.
+	 * Turn off durability requirements to improve object creation speed, and
+	 * we only modify the new cluster, so only use it there.  If there is a
+	 * crash, the new cluster has to be recreated anyway.  fsync=off is a big
+	 * win on ext4.
 	 */
 	snprintf(cmd, sizeof(cmd),
-			 "\"%s/pg_ctl\" -w -l \"%s\" -D \"%s\" -o \"-p %d%s%s%s%s\" start",
+		  "\"%s/pg_ctl\" -w -l \"%s\" -D \"%s\" -o \"-p %d%s%s %s%s\" start",
 		  cluster->bindir, SERVER_LOG_FILE, cluster->pgconfig, cluster->port,
 			 (cluster->controldata.cat_ver >=
 			  BINARY_UPGRADE_SERVER_FLAG_CAT_VER) ? " -b" :
 			 " -c autovacuum=off -c autovacuum_freeze_max_age=2000000000",
-			 (cluster == &new_cluster) ? " -c synchronous_commit=off" : "",
+			 (cluster == &new_cluster) ?
+	  " -c synchronous_commit=off -c fsync=off -c full_page_writes=off" : "",
 			 cluster->pgopts ? cluster->pgopts : "", socket_string);
 
 	/*
@@ -227,14 +230,39 @@ start_postmaster(ClusterInfo *cluster)
 	 * it might supply a reason for the failure.
 	 */
 	pg_ctl_return = exec_prog(SERVER_START_LOG_FILE,
-							  /* pass both file names if they differ */
+	/* pass both file names if they differ */
 							  (strcmp(SERVER_LOG_FILE,
 									  SERVER_START_LOG_FILE) != 0) ?
 							  SERVER_LOG_FILE : NULL,
 							  false,
 							  "%s", cmd);
 
-	/* Check to see if we can connect to the server; if not, report it. */
+	/* Did it fail and we are just testing if the server could be started? */
+	if (!pg_ctl_return && !throw_error)
+		return false;
+
+	/*
+	 * We set this here to make sure atexit() shuts down the server, but only
+	 * if we started the server successfully.  We do it before checking for
+	 * connectivity in case the server started but there is a connectivity
+	 * failure.  If pg_ctl did not return success, we will exit below.
+	 *
+	 * Pre-9.1 servers do not have PQping(), so we could be leaving the server
+	 * running if authentication was misconfigured, so someday we might went
+	 * to be more aggressive about doing server shutdowns even if pg_ctl
+	 * fails, but now (2013-08-14) it seems prudent to be cautious.  We don't
+	 * want to shutdown a server that might have been accidentally started
+	 * during the upgrade.
+	 */
+	if (pg_ctl_return)
+		os_info.running_cluster = cluster;
+
+	/*
+	 * pg_ctl -w might have failed because the server couldn't be started, or
+	 * there might have been a connection problem in _checking_ if the server
+	 * has started.  Therefore, even if pg_ctl failed, we continue and test
+	 * for connectivity in case we get a connection reason for the failure.
+	 */
 	if ((conn = get_db_conn(cluster, "template1")) == NULL ||
 		PQstatus(conn) != CONNECTION_OK)
 	{
@@ -242,18 +270,22 @@ start_postmaster(ClusterInfo *cluster)
 			   PQerrorMessage(conn));
 		if (conn)
 			PQfinish(conn);
-		pg_log(PG_FATAL, "could not connect to %s postmaster started with the command:\n"
-			   "%s\n",
-			   CLUSTER_NAME(cluster), cmd);
+		pg_fatal("could not connect to %s postmaster started with the command:\n"
+				 "%s\n",
+				 CLUSTER_NAME(cluster), cmd);
 	}
 	PQfinish(conn);
 
-	/* If the connection didn't fail, fail now */
+	/*
+	 * If pg_ctl failed, and the connection didn't fail, and throw_error is
+	 * enabled, fail now.  This could happen if the server was already
+	 * running.
+	 */
 	if (!pg_ctl_return)
-		pg_log(PG_FATAL, "pg_ctl failed to start the %s server, or connection failed\n",
-			   CLUSTER_NAME(cluster));
+		pg_fatal("pg_ctl failed to start the %s server, or connection failed\n",
+				 CLUSTER_NAME(cluster));
 
-	os_info.running_cluster = cluster;
+	return true;
 }
 
 
@@ -294,6 +326,9 @@ check_pghost_envvar(void)
 
 	start = PQconndefaults();
 
+	if (!start)
+		pg_fatal("out of memory\n");
+
 	for (option = start; option->keyword != NULL; option++)
 	{
 		if (option->envvar && (strcmp(option->envvar, "PGHOST") == 0 ||
@@ -305,9 +340,8 @@ check_pghost_envvar(void)
 			/* check for 'local' host values */
 				(strcmp(value, "localhost") != 0 && strcmp(value, "127.0.0.1") != 0 &&
 				 strcmp(value, "::1") != 0 && value[0] != '/'))
-				pg_log(PG_FATAL,
-					   "libpq environment variable %s has a non-local server value: %s\n",
-					   option->envvar, value);
+				pg_fatal("libpq environment variable %s has a non-local server value: %s\n",
+						 option->envvar, value);
 		}
 	}
 

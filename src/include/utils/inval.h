@@ -4,7 +4,7 @@
  *	  POSTGRES cache invalidation dispatcher definitions.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/inval.h
@@ -15,6 +15,7 @@
 #define INVAL_H
 
 #include "access/htup.h"
+#include "storage/relfilenode.h"
 #include "utils/relcache.h"
 
 
@@ -63,7 +64,5 @@ extern void CacheRegisterRelcacheCallback(RelcacheCallbackFunction func,
 
 extern void CallSyscacheCallbacks(int cacheid, uint32 hashvalue);
 
-extern void inval_twophase_postcommit(TransactionId xid, uint16 info,
-						  void *recdata, uint32 len);
-
+extern void InvalidateSystemCaches(void);
 #endif   /* INVAL_H */

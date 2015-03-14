@@ -4,7 +4,7 @@
  * External declarations pertaining to backend/utils/misc/guc.c and
  * backend/utils/misc/guc-file.l
  *
- * Copyright (c) 2000-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2014, PostgreSQL Global Development Group
  * Written by Peter Eisentraut <peter_e@gmx.net>.
  *
  * src/include/utils/guc.h
@@ -17,6 +17,13 @@
 #include "tcop/dest.h"
 #include "utils/array.h"
 
+
+/*
+ * Automatic configuration file name for ALTER SYSTEM.
+ * This file will be used to store values of configuration parameters
+ * set by ALTER SYSTEM command.
+ */
+#define PG_AUTOCONF_FILENAME		"postgresql.auto.conf"
 
 /*
  * Certain options can only be set at certain times. The rules are
@@ -40,7 +47,7 @@
  * configuration file, or by client request in the connection startup
  * packet (e.g., from libpq's PGOPTIONS variable).  Furthermore, an
  * already-started backend will ignore changes to such an option in the
- * configuration file.	The idea is that these options are fixed for a
+ * configuration file.  The idea is that these options are fixed for a
  * given backend once it's started, but they can vary across backends.
  *
  * SUSET options can be set at postmaster startup, with the SIGHUP
@@ -72,11 +79,15 @@ typedef enum
  * dividing line between "interactive" and "non-interactive" sources for
  * error reporting purposes.
  *
- * PGC_S_TEST is used when testing values to be stored as per-database or
- * per-user defaults ("doit" will always be false, so this never gets stored
- * as the actual source of any value).	This is an interactive case, but
- * it needs its own source value because some assign hooks need to make
- * different validity checks in this case.
+ * PGC_S_TEST is used when testing values to be used later ("doit" will always
+ * be false, so this never gets stored as the actual source of any value).
+ * For example, ALTER DATABASE/ROLE tests proposed per-database or per-user
+ * defaults this way, and CREATE FUNCTION tests proposed function SET clauses
+ * this way.  This is an interactive case, but it needs its own source value
+ * because some assign hooks need to make different validity checks in this
+ * case.  In particular, references to nonexistent database objects generally
+ * shouldn't throw hard errors in this case, at most NOTICEs, since the
+ * objects might exist by the time the setting is used for real.
  *
  * NB: see GucSource_Names in guc.c if you change this.
  */
@@ -87,6 +98,7 @@ typedef enum
 	PGC_S_ENV_VAR,				/* postmaster environment variable */
 	PGC_S_FILE,					/* postgresql.conf */
 	PGC_S_ARGV,					/* postmaster command line */
+	PGC_S_GLOBAL,				/* global in-database setting */
 	PGC_S_DATABASE,				/* per-database setting */
 	PGC_S_USER,					/* per-user setting */
 	PGC_S_DATABASE_USER,		/* per-user-and-database setting */
@@ -116,6 +128,11 @@ extern bool ParseConfigFile(const char *config_file, const char *calling_file,
 extern bool ParseConfigFp(FILE *fp, const char *config_file,
 			  int depth, int elevel,
 			  ConfigVariable **head_p, ConfigVariable **tail_p);
+extern bool ParseConfigDirectory(const char *includedir,
+					 const char *calling_file,
+					 int depth, int elevel,
+					 ConfigVariable **head_p,
+					 ConfigVariable **tail_p);
 extern void FreeConfigVariables(ConfigVariable *list);
 
 /*
@@ -185,6 +202,7 @@ typedef enum
 #define GUC_UNIT_TIME			0x7000	/* mask for MS, S, MIN */
 
 #define GUC_NOT_WHILE_SEC_REST	0x8000	/* can't set if security restricted */
+#define GUC_DISALLOW_IN_AUTO_FILE	0x00010000	/* can't set in PG_AUTOCONF_FILENAME */
 
 /* GUC vars that are actually declared in guc.c, rather than elsewhere */
 extern bool log_duration;
@@ -316,6 +334,7 @@ extern bool parse_real(const char *value, double *result);
 extern int set_config_option(const char *name, const char *value,
 				  GucContext context, GucSource source,
 				  GucAction action, bool changeVal, int elevel);
+extern void AlterSystemSetConfigFile(AlterSystemStmt *setstmt);
 extern char *GetConfigOptionByName(const char *name, const char **varname);
 extern void GetConfigOptionByNum(int varnum, const char **values, bool *noshow);
 extern int	GetNumConfigOptions(void);
@@ -324,7 +343,7 @@ extern void SetPGVariable(const char *name, List *args, bool is_local);
 extern void GetPGVariable(const char *name, DestReceiver *dest);
 extern TupleDesc GetPGVariableResultDesc(const char *name);
 
-extern void ExecSetVariableStmt(VariableSetStmt *stmt);
+extern void ExecSetVariableStmt(VariableSetStmt *stmt, bool isTopLevel);
 extern char *ExtractSetVariableArgs(VariableSetStmt *stmt);
 
 extern void ProcessGUCArray(ArrayType *array,

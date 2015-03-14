@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETABLEAS"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN70687"
+NAME="AEN76412"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN70687"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN70692"
+NAME="AEN76415"
 ></A
 ><H2
 >Synopsis</H2
@@ -150,7 +150,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70700"
+NAME="AEN76423"
 ></A
 ><H2
 >Description</H2
@@ -190,7 +190,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70709"
+NAME="AEN76432"
 ></A
 ><H2
 >Parameters</H2
@@ -498,7 +498,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70816"
+NAME="AEN76539"
 ></A
 ><H2
 >Notes</H2
@@ -522,19 +522,7 @@ CLASS="COMMAND"
 >.
   </P
 ><P
->   Prior to <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.0, <TT
-CLASS="COMMAND"
->CREATE
-   TABLE AS</TT
-> always included OIDs in the table it
-   created.  As of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.0,
-   the <TT
+>   The <TT
 CLASS="COMMAND"
 >CREATE TABLE AS</TT
 > command allows the user to
@@ -544,27 +532,13 @@ CLASS="COMMAND"
 HREF="runtime-config-compatible.html#GUC-DEFAULT-WITH-OIDS"
 >default_with_oids</A
 > configuration variable is
-   used.  As of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.1,
-   this variable is false by default, so the default behavior is not
-   identical to pre-8.0 releases.  Applications that
-   require OIDs in the table created by <TT
-CLASS="COMMAND"
->CREATE TABLE
-   AS</TT
-> should explicitly specify <TT
-CLASS="LITERAL"
->WITH (OIDS)</TT
->
-   to ensure desired behavior.
+   used.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70832"
+NAME="AEN76549"
 ></A
 ><H2
 >Examples</H2
@@ -619,7 +593,7 @@ CREATE TEMP TABLE films_recent WITH (OIDS) ON COMMIT DROP AS
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70845"
+NAME="AEN76562"
 ></A
 ><H2
 >Compatibility</H2
@@ -701,11 +675,14 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70869"
+NAME="AEN76586"
 ></A
 ><H2
 >See Also</H2
 ><A
+HREF="sql-creatematerializedview.html"
+>CREATE MATERIALIZED VIEW</A
+>, <A
 HREF="sql-createtable.html"
 >CREATE TABLE</A
 >, <A

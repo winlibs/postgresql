@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="APP-CLUSTERDB">
+ <indexterm zone="app-clusterdb">
+  <primary>clusterdb</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle><application>clusterdb</application></refentrytitle>
   <manvolnum>1</manvolnum>
@@ -15,16 +19,22 @@ PostgreSQL documentation
   <refpurpose>cluster a <productname>PostgreSQL</productname> database</refpurpose>
  </refnamediv>
 
- <indexterm zone="app-clusterdb">
-  <primary>clusterdb</primary>
- </indexterm>
-
  <refsynopsisdiv>
   <cmdsynopsis>
    <command>clusterdb</command>
    <arg rep="repeat"><replaceable>connection-option</replaceable></arg>
    <group choice="opt"><arg choice="plain"><option>--verbose</option></arg><arg choice="plain"><option>-v</option></arg></group>
-   <arg choice="opt"><group choice="plain"><arg choice="plain"><option>--table</option></arg><arg choice="plain"><option>-t</option></arg></group> <replaceable>table</replaceable> </arg>
+
+   <arg choice="plain" rep="repeat">
+     <arg choice="opt">
+       <group choice="plain">
+         <arg choice="plain"><option>--table</option></arg>
+         <arg choice="plain"><option>-t</option></arg>
+       </group>
+       <replaceable>table</replaceable>
+     </arg>
+   </arg>
+
    <arg choice="opt"><replaceable>dbname</replaceable></arg>
   </cmdsynopsis>
 
@@ -117,6 +127,8 @@ PostgreSQL documentation
       <listitem>
        <para>
         Cluster <replaceable class="parameter">table</replaceable> only.
+        Multiple tables can be clustered by writing multiple
+        <option>-t</> switches.
        </para>
       </listitem>
      </varlistentry>

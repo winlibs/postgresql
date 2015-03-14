@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="High Availability, Load Balancing, and Replication"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -329,7 +329,12 @@ CLASS="VARNAME"
 >max_wal_senders</TT
 > is set
     to a sufficiently large value in the configuration file of the primary
-    server.
+    server. If replication slots will be used,
+    ensure that <TT
+CLASS="VARNAME"
+>max_replication_slots</TT
+> is set sufficiently
+    high as well.
    </P
 ><P
 >    Take a base backup as described in <A
@@ -479,32 +484,34 @@ NAME="STREAMING-REPLICATION"
     generated, without waiting for the WAL file to be filled.
    </P
 ><P
->    Streaming replication is asynchronous, so there is still a small delay
-    between committing a transaction in the primary and for the changes to
-    become visible in the standby. The delay is however much smaller than with
-    file-based log shipping, typically under one second assuming the standby
-    is powerful enough to keep up with the load. With streaming replication,
-    <TT
+>    Streaming replication is asynchronous by default
+    (see <A
+HREF="warm-standby.html#SYNCHRONOUS-REPLICATION"
+>Section 25.2.8</A
+>), in which case there is
+    a small delay between committing a transaction in the primary and the
+    changes becoming visible in the standby. This delay is however much
+    smaller than with file-based log shipping, typically under one second
+    assuming the standby is powerful enough to keep up with the load. With
+    streaming replication, <TT
 CLASS="VARNAME"
 >archive_timeout</TT
-> is not required to reduce the data loss
-    window.
+> is not required to
+    reduce the data loss window.
    </P
 ><P
 >    If you use streaming replication without file-based continuous
-    archiving, you have to set <TT
+    archiving, the server might recycle old WAL segments before the standby
+    has received them.  If this occurs, the standby will need to be
+    reinitialized from a new base backup.  You can avoid this by setting
+    <TT
 CLASS="VARNAME"
 >wal_keep_segments</TT
-> in the master
-    to a value high enough to ensure that old WAL segments are not recycled
-    too early, while the standby might still need them to catch up. If the
-    standby falls behind too much, it needs to be reinitialized from a new
-    base backup. If you set up a WAL archive that's accessible from the
-    standby, <TT
-CLASS="VARNAME"
->wal_keep_segments</TT
-> is not required as the standby can always
-    use the archive to catch up.
+> to a value large enough to ensure that
+    WAL segments are not recycled too early, or by configuring a replication
+    slot for the standby.  If you set up a WAL archive that's accessible from
+    the standby, these solutions are not required, since the standby can
+    always use the archive to catch up provided it retains enough segments.
    </P
 ><P
 >    To use streaming replication, set up a file-based log-shipping standby
@@ -715,11 +722,11 @@ CLASS="FUNCTION"
 > on the standby,
      respectively (see <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-59</A
+>Table 9-65</A
 > and
      <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-INFO-TABLE"
->Table 9-60</A
+>Table 9-66</A
 > for details).
      The last WAL receive location in the standby is also displayed in the
      process status of the WAL receiver process, displayed using the
@@ -765,8 +772,136 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
+NAME="STREAMING-REPLICATION-SLOTS"
+>25.2.6. Replication Slots</A
+></H2
+><P
+>    Replication slots provide an automated way to ensure that the master does
+    not remove WAL segments until they have been received by all standbys,
+    and that the master does not remove rows which could cause a
+    <A
+HREF="hot-standby.html#HOT-STANDBY-CONFLICT"
+>recovery conflict</A
+> even when the
+    standby is disconnected.
+   </P
+><P
+>    In lieu of using replication slots, it is possible to prevent the removal
+    of old WAL segments using <A
+HREF="runtime-config-replication.html#GUC-WAL-KEEP-SEGMENTS"
+>wal_keep_segments</A
+>, or by
+    storing the segments in an archive using
+    <A
+HREF="runtime-config-wal.html#GUC-ARCHIVE-COMMAND"
+>archive_command</A
+>.
+    However, these methods often result in retaining more WAL segments than
+    required, whereas replication slots retain only the number of segments
+    known to be needed.  An advantage of these methods is that they bound
+    the space requirement for <TT
+CLASS="LITERAL"
+>pg_xlog</TT
+>; there is currently no way
+    to do this using replication slots.
+   </P
+><P
+>    Similarly, <A
+HREF="runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK"
+>hot_standby_feedback</A
+>
+    and <A
+HREF="runtime-config-replication.html#GUC-VACUUM-DEFER-CLEANUP-AGE"
+>vacuum_defer_cleanup_age</A
+> provide protection against
+    relevant rows being removed by vacuum, but the former provides no
+    protection during any time period when the standby is not connected,
+    and the latter often needs to be set to a high value to provide adequate
+    protection.  Replication slots overcome these disadvantages.
+   </P
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="STREAMING-REPLICATION-SLOTS-MANIPULATION"
+>25.2.6.1. Querying and manipulating replication slots</A
+></H3
+><P
+>     Each replication slot has a name, which can contain lower-case letters,
+     numbers, and the underscore character.
+    </P
+><P
+>     Existing replication slots and their state can be seen in the
+     <A
+HREF="catalog-pg-replication-slots.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_replication_slots</TT
+></A
+>
+     view.
+    </P
+><P
+>     Slots can be created and dropped either via the streaming replication
+     protocol (see <A
+HREF="protocol-replication.html"
+>Section 49.3</A
+>) or via SQL
+     functions (see <A
+HREF="functions-admin.html#FUNCTIONS-REPLICATION"
+>Section 9.26.6</A
+>).
+    </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="STREAMING-REPLICATION-SLOTS-CONFIG"
+>25.2.6.2. Configuration Example</A
+></H3
+><P
+>     You can create a replication slot like this:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>postgres=# SELECT * FROM pg_create_physical_replication_slot('node_a_slot');
+  slot_name  | xlog_position
+-------------+---------------
+ node_a_slot |
+
+postgres=# SELECT * FROM pg_replication_slots;
+  slot_name  | slot_type | datoid | database | active | xmin | restart_lsn
+-------------+-----------+--------+----------+--------+------+-------------
+ node_a_slot | physical  |        |          | f      |      |
+(1 row)</PRE
+><P>
+     To configure the standby to use this slot, <TT
+CLASS="VARNAME"
+>primary_slot_name</TT
+>
+     should be configured in the standby's <TT
+CLASS="FILENAME"
+>recovery.conf</TT
+>.
+     Here is a simple example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>standby_mode = 'on'
+primary_conninfo = 'host=192.168.1.50 port=5432 user=foo password=foopass'
+primary_slot_name = 'node_a_slot'</PRE
+><P>
+    </P
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
 NAME="CASCADING-REPLICATION"
->25.2.6. Cascading Replication</A
+>25.2.7. Cascading Replication</A
 ></H2
 ><P
 >    The cascading replication feature allows a standby server to accept replication
@@ -793,7 +928,7 @@ NAME="CASCADING-REPLICATION"
 >    Cascading replication is currently asynchronous. Synchronous replication
     (see <A
 HREF="warm-standby.html#SYNCHRONOUS-REPLICATION"
->Section 25.2.7</A
+>Section 25.2.8</A
 >) settings have no effect on
     cascading replication at present.
    </P
@@ -801,10 +936,15 @@ HREF="warm-standby.html#SYNCHRONOUS-REPLICATION"
 >    Hot Standby feedback propagates upstream, whatever the cascaded arrangement.
    </P
 ><P
->    Promoting a cascading standby terminates the immediate downstream replication
-    connections which it serves. This is because the timeline becomes different
-    between standbys, and they can no longer continue replication.  The
-    affected standby(s) may reconnect to reestablish streaming replication.
+>    If an upstream standby server is promoted to become new master, downstream
+    servers will continue to stream from the new master if
+    <TT
+CLASS="VARNAME"
+>recovery_target_timeline</TT
+> is set to <TT
+CLASS="LITERAL"
+>'latest'</TT
+>.
    </P
 ><P
 >    To use cascading replication, set up the cascading standby so that it can
@@ -834,7 +974,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SYNCHRONOUS-REPLICATION"
->25.2.7. Synchronous Replication</A
+>25.2.8. Synchronous Replication</A
 ></H2
 ><P
 >    <SPAN
@@ -881,7 +1021,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="SYNCHRONOUS-REPLICATION-CONFIG"
->25.2.7.1. Basic Configuration</A
+>25.2.8.1. Basic Configuration</A
 ></H3
 ><P
 >    Once streaming replication has been configured, configuring synchronous
@@ -976,7 +1116,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="SYNCHRONOUS-REPLICATION-PERFORMANCE"
->25.2.7.2. Planning for Performance</A
+>25.2.8.2. Planning for Performance</A
 ></H3
 ><P
 >    Synchronous replication usually requires carefully planned and placed
@@ -1019,7 +1159,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="SYNCHRONOUS-REPLICATION-HA"
->25.2.7.3. Planning for High Availability</A
+>25.2.8.3. Planning for High Availability</A
 ></H3
 ><P
 >    Commits made when <TT

@@ -9,7 +9,7 @@
  * The Windows implementation uses Windows events that are inherited by
  * all postmaster child processes.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -20,6 +20,7 @@
 #include "postgres.h"
 
 #include <fcntl.h>
+#include <limits.h>
 #include <signal.h>
 #include <unistd.h>
 
@@ -130,7 +131,7 @@ WaitLatchOrSocket(volatile Latch *latch, int wakeEvents, pgsocket sock,
 	if (wakeEvents & WL_TIMEOUT)
 	{
 		INSTR_TIME_SET_CURRENT(start_time);
-		Assert(timeout >= 0);
+		Assert(timeout >= 0 && timeout <= INT_MAX);
 		cur_timeout = timeout;
 	}
 	else
@@ -245,7 +246,7 @@ WaitLatchOrSocket(volatile Latch *latch, int wakeEvents, pgsocket sock,
 				 rc == WAIT_OBJECT_0 + pmdeath_eventno)
 		{
 			/*
-			 * Postmaster apparently died.	Since the consequences of falsely
+			 * Postmaster apparently died.  Since the consequences of falsely
 			 * returning WL_POSTMASTER_DEATH could be pretty unpleasant, we
 			 * take the trouble to positively verify this with
 			 * PostmasterIsAlive(), even though there is no known reason to
@@ -278,6 +279,10 @@ WaitLatchOrSocket(volatile Latch *latch, int wakeEvents, pgsocket sock,
 	return result;
 }
 
+/*
+ * The comments above the unix implementation (unix_latch.c) of this function
+ * apply here as well.
+ */
 void
 SetLatch(volatile Latch *latch)
 {

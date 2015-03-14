@@ -3,7 +3,7 @@
  * genam.c
  *	  general index access method routines
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -22,11 +22,15 @@
 #include "access/relscan.h"
 #include "access/transam.h"
 #include "catalog/index.h"
+#include "lib/stringinfo.h"
 #include "miscadmin.h"
 #include "storage/bufmgr.h"
+#include "utils/acl.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
 #include "utils/rel.h"
+#include "utils/snapmgr.h"
+#include "utils/syscache.h"
 #include "utils/tqual.h"
 
 
@@ -43,7 +47,7 @@
  *
  *		At the end of a scan, the AM's endscan routine undoes the locking,
  *		but does *not* call IndexScanEnd --- the higher-level index_endscan
- *		routine does that.	(We can't do it in the AM because index_endscan
+ *		routine does that.  (We can't do it in the AM because index_endscan
  *		still needs to touch the IndexScanDesc after calling the AM.)
  *
  *		Because of this, the AM does not have a choice whether to call
@@ -77,7 +81,7 @@ RelationGetIndexScan(Relation indexRelation, int nkeys, int norderbys)
 
 	scan->heapRelation = NULL;	/* may be set later */
 	scan->indexRelation = indexRelation;
-	scan->xs_snapshot = SnapshotNow;	/* may be set later */
+	scan->xs_snapshot = InvalidSnapshot;		/* caller must initialize this */
 	scan->numberOfKeys = nkeys;
 	scan->numberOfOrderBys = norderbys;
 
@@ -152,6 +156,11 @@ IndexScanEnd(IndexScanDesc scan)
  * form "(key_name, ...)=(key_value, ...)".  This is currently used
  * for building unique-constraint and exclusion-constraint error messages.
  *
+ * Note that if the user does not have permissions to view all of the
+ * columns involved then a NULL is returned.  Returning a partial key seems
+ * unlikely to be useful and we have no way to know which of the columns the
+ * user provided (unlike in ExecBuildSlotValueDescription).
+ *
  * The passed-in values/nulls arrays are the "raw" input to the index AM,
  * e.g. results of FormIndexDatum --- this is not necessarily what is stored
  * in the index, but it's what the user perceives to be stored.
@@ -161,13 +170,67 @@ BuildIndexValueDescription(Relation indexRelation,
 						   Datum *values, bool *isnull)
 {
 	StringInfoData buf;
+	Form_pg_index idxrec;
+	HeapTuple	ht_idx;
 	int			natts = indexRelation->rd_rel->relnatts;
 	int			i;
+	int			keyno;
+	Oid			indexrelid = RelationGetRelid(indexRelation);
+	Oid			indrelid;
+	AclResult	aclresult;
+
+	/*
+	 * Check permissions- if the user does not have access to view all of the
+	 * key columns then return NULL to avoid leaking data.
+	 *
+	 * First we need to check table-level SELECT access and then, if
+	 * there is no access there, check column-level permissions.
+	 */
+
+	/*
+	 * Fetch the pg_index tuple by the Oid of the index
+	 */
+	ht_idx = SearchSysCache1(INDEXRELID, ObjectIdGetDatum(indexrelid));
+	if (!HeapTupleIsValid(ht_idx))
+		elog(ERROR, "cache lookup failed for index %u", indexrelid);
+	idxrec = (Form_pg_index) GETSTRUCT(ht_idx);
+
+	indrelid = idxrec->indrelid;
+	Assert(indexrelid == idxrec->indexrelid);
+
+	/* Table-level SELECT is enough, if the user has it */
+	aclresult = pg_class_aclcheck(indrelid, GetUserId(), ACL_SELECT);
+	if (aclresult != ACLCHECK_OK)
+	{
+		/*
+		 * No table-level access, so step through the columns in the
+		 * index and make sure the user has SELECT rights on all of them.
+		 */
+		for (keyno = 0; keyno < idxrec->indnatts; keyno++)
+		{
+			AttrNumber	attnum = idxrec->indkey.values[keyno];
+
+			/*
+			 * Note that if attnum == InvalidAttrNumber, then this is an
+			 * index based on an expression and we return no detail rather
+			 * than try to figure out what column(s) the expression includes
+			 * and if the user has SELECT rights on them.
+			 */
+			if (attnum == InvalidAttrNumber ||
+				pg_attribute_aclcheck(indrelid, attnum, GetUserId(),
+									  ACL_SELECT) != ACLCHECK_OK)
+			{
+				/* No access, so clean up and return */
+				ReleaseSysCache(ht_idx);
+				return NULL;
+			}
+		}
+	}
+	ReleaseSysCache(ht_idx);
 
 	initStringInfo(&buf);
 	appendStringInfo(&buf, "(%s)=(",
-					 pg_get_indexdef_columns(RelationGetRelid(indexRelation),
-											 true));
+					 pg_get_indexdef_columns(indexrelid, true));
 
 	for (i = 0; i < natts; i++)
 	{
@@ -186,7 +249,7 @@ BuildIndexValueDescription(Relation indexRelation,
 			 * at rd_opcintype not the index tupdesc.
 			 *
 			 * Note: this is a bit shaky for opclasses that have pseudotype
-			 * input types such as ANYARRAY or RECORD.	Currently, the
+			 * input types such as ANYARRAY or RECORD.  Currently, the
 			 * typoutput functions associated with the pseudotypes will work
 			 * okay, but we might have to try harder in future.
 			 */
@@ -230,7 +293,7 @@ BuildIndexValueDescription(Relation indexRelation,
  *	rel: catalog to scan, already opened and suitably locked
  *	indexId: OID of index to conditionally use
  *	indexOK: if false, forces a heap scan (see notes below)
- *	snapshot: time qual to use (usually should be SnapshotNow)
+ *	snapshot: time qual to use (NULL for a recent catalog snapshot)
  *	nkeys, key: scan keys
  *
  * The attribute numbers in the scan key should be set for the heap case.
@@ -264,6 +327,19 @@ systable_beginscan(Relation heapRelation,
 
 	sysscan->heap_rel = heapRelation;
 	sysscan->irel = irel;
+
+	if (snapshot == NULL)
+	{
+		Oid			relid = RelationGetRelid(heapRelation);
+
+		snapshot = RegisterSnapshot(GetCatalogSnapshot(relid));
+		sysscan->snapshot = snapshot;
+	}
+	else
+	{
+		/* Caller is responsible for any snapshot. */
+		sysscan->snapshot = NULL;
+	}
 
 	if (irel)
 	{
@@ -346,6 +422,10 @@ systable_getnext(SysScanDesc sysscan)
 /*
  * systable_recheck_tuple --- recheck visibility of most-recently-fetched tuple
  *
+ * In particular, determine if this tuple would be visible to a catalog scan
+ * that started now.  We don't handle the case of a non-MVCC scan snapshot,
+ * because no caller needs that yet.
+ *
  * This is useful to test whether an object was deleted while we waited to
  * acquire lock on it.
  *
@@ -355,30 +435,38 @@ systable_getnext(SysScanDesc sysscan)
 bool
 systable_recheck_tuple(SysScanDesc sysscan, HeapTuple tup)
 {
+	Snapshot	freshsnap;
 	bool		result;
+
+	/*
+	 * Trust that LockBuffer() and HeapTupleSatisfiesMVCC() do not themselves
+	 * acquire snapshots, so we need not register the snapshot.  Those
+	 * facilities are too low-level to have any business scanning tables.
+	 */
+	freshsnap = GetCatalogSnapshot(RelationGetRelid(sysscan->heap_rel));
 
 	if (sysscan->irel)
 	{
 		IndexScanDesc scan = sysscan->iscan;
 
+		Assert(IsMVCCSnapshot(scan->xs_snapshot));
 		Assert(tup == &scan->xs_ctup);
 		Assert(BufferIsValid(scan->xs_cbuf));
 		/* must hold a buffer lock to call HeapTupleSatisfiesVisibility */
 		LockBuffer(scan->xs_cbuf, BUFFER_LOCK_SHARE);
-		result = HeapTupleSatisfiesVisibility(tup, scan->xs_snapshot,
-											  scan->xs_cbuf);
+		result = HeapTupleSatisfiesVisibility(tup, freshsnap, scan->xs_cbuf);
 		LockBuffer(scan->xs_cbuf, BUFFER_LOCK_UNLOCK);
 	}
 	else
 	{
 		HeapScanDesc scan = sysscan->scan;
 
+		Assert(IsMVCCSnapshot(scan->rs_snapshot));
 		Assert(tup == &scan->rs_ctup);
 		Assert(BufferIsValid(scan->rs_cbuf));
 		/* must hold a buffer lock to call HeapTupleSatisfiesVisibility */
 		LockBuffer(scan->rs_cbuf, BUFFER_LOCK_SHARE);
-		result = HeapTupleSatisfiesVisibility(tup, scan->rs_snapshot,
-											  scan->rs_cbuf);
+		result = HeapTupleSatisfiesVisibility(tup, freshsnap, scan->rs_cbuf);
 		LockBuffer(scan->rs_cbuf, BUFFER_LOCK_UNLOCK);
 	}
 	return result;
@@ -400,6 +488,9 @@ systable_endscan(SysScanDesc sysscan)
 	else
 		heap_endscan(sysscan->scan);
 
+	if (sysscan->snapshot)
+		UnregisterSnapshot(sysscan->snapshot);
+
 	pfree(sysscan);
 }
 
@@ -412,7 +503,7 @@ systable_endscan(SysScanDesc sysscan)
  * index order.  Also, for largely historical reasons, the index to use
  * is opened and locked by the caller, not here.
  *
- * Currently we do not support non-index-based scans here.	(In principle
+ * Currently we do not support non-index-based scans here.  (In principle
  * we could do a heapscan and sort, but the uses are in places that
  * probably don't need to still work with corrupted catalog indexes.)
  * For the moment, therefore, these functions are merely the thinnest of
@@ -442,6 +533,19 @@ systable_beginscan_ordered(Relation heapRelation,
 
 	sysscan->heap_rel = heapRelation;
 	sysscan->irel = indexRelation;
+
+	if (snapshot == NULL)
+	{
+		Oid			relid = RelationGetRelid(heapRelation);
+
+		snapshot = RegisterSnapshot(GetCatalogSnapshot(relid));
+		sysscan->snapshot = snapshot;
+	}
+	else
+	{
+		/* Caller is responsible for any snapshot. */
+		sysscan->snapshot = NULL;
+	}
 
 	/* Change attribute numbers to be index column numbers. */
 	for (i = 0; i < nkeys; i++)
@@ -493,5 +597,7 @@ systable_endscan_ordered(SysScanDesc sysscan)
 {
 	Assert(sysscan->irel);
 	index_endscan(sysscan->iscan);
+	if (sysscan->snapshot)
+		UnregisterSnapshot(sysscan->snapshot);
 	pfree(sysscan);
 }

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="GIN Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 55. GIN Indexes</TD
+>Chapter 58. GIN Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="GIN-IMPLEMENTATION"
->55.3. Implementation</A
+>58.4. Implementation</A
 ></H1
 ><P
 >  Internally, a <ACRONYM
@@ -117,9 +117,9 @@ CLASS="QUOTE"
 >  As of <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> 9.1, NULL key values can be
-  included in the index.  Also, placeholder NULLs are included in the index
-  for indexed items that are NULL or contain no keys according to
+> 9.1, null key values can be
+  included in the index.  Also, placeholder nulls are included in the index
+  for indexed items that are null or contain no keys according to
   <CODE
 CLASS="FUNCTION"
 >extractValue</CODE
@@ -140,7 +140,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="GIN-FAST-UPDATE"
->55.3.1. GIN Fast Update Technique</A
+>58.4.1. GIN Fast Update Technique</A
 ></H2
 ><P
 >   Updating a <ACRONYM
@@ -210,7 +210,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="GIN-PARTIAL-MATCH"
->55.3.2. Partial Match Algorithm</A
+>58.4.2. Partial Match Algorithm</A
 ></H2
 ><P
 >   GIN can support <SPAN

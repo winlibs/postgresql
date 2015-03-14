@@ -4,7 +4,7 @@
  *	  postgres transaction system definitions
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/xact.h
@@ -28,7 +28,7 @@
 #define XACT_SERIALIZABLE		3
 
 extern int	DefaultXactIsoLevel;
-extern int	XactIsoLevel;
+extern PGDLLIMPORT int XactIsoLevel;
 
 /*
  * We implement three isolation levels internally.
@@ -76,7 +76,9 @@ typedef enum
 {
 	XACT_EVENT_COMMIT,
 	XACT_EVENT_ABORT,
-	XACT_EVENT_PREPARE
+	XACT_EVENT_PREPARE,
+	XACT_EVENT_PRE_COMMIT,
+	XACT_EVENT_PRE_PREPARE
 } XactEvent;
 
 typedef void (*XactCallback) (XactEvent event, void *arg);
@@ -85,7 +87,8 @@ typedef enum
 {
 	SUBXACT_EVENT_START_SUB,
 	SUBXACT_EVENT_COMMIT_SUB,
-	SUBXACT_EVENT_ABORT_SUB
+	SUBXACT_EVENT_ABORT_SUB,
+	SUBXACT_EVENT_PRE_COMMIT_SUB
 } SubXactEvent;
 
 typedef void (*SubXactCallback) (SubXactEvent event, SubTransactionId mySubid,
@@ -177,8 +180,7 @@ typedef struct xl_xact_abort
 /*
  * COMMIT_PREPARED and ABORT_PREPARED are identical to COMMIT/ABORT records
  * except that we have to store the XID of the prepared transaction explicitly
- * --- the XID in the record header will be for the transaction doing the
- * COMMIT PREPARED or ABORT PREPARED command.
+ * --- the XID in the record header will be invalid.
  */
 
 typedef struct xl_xact_commit_prepared
@@ -212,6 +214,8 @@ extern TransactionId GetCurrentTransactionId(void);
 extern TransactionId GetCurrentTransactionIdIfAny(void);
 extern TransactionId GetStableLatestTransactionId(void);
 extern SubTransactionId GetCurrentSubTransactionId(void);
+extern void MarkCurrentTransactionIdLoggedIfAny(void);
+extern bool SubTransactionIsActive(SubTransactionId subxid);
 extern CommandId GetCurrentCommandId(bool used);
 extern TimestampTz GetCurrentTransactionStartTimestamp(void);
 extern TimestampTz GetCurrentStatementStartTimestamp(void);
@@ -241,6 +245,7 @@ extern char TransactionBlockStatusCode(void);
 extern void AbortOutOfAnyTransaction(void);
 extern void PreventTransactionChain(bool isTopLevel, const char *stmtType);
 extern void RequireTransactionChain(bool isTopLevel, const char *stmtType);
+extern void WarnNoTransactionChain(bool isTopLevel, const char *stmtType);
 extern bool IsInTransactionChain(bool isTopLevel);
 extern void RegisterXactCallback(XactCallback callback, void *arg);
 extern void UnregisterXactCallback(XactCallback callback, void *arg);

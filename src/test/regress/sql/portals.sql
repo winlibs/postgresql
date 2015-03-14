@@ -447,6 +447,9 @@ BEGIN;
 DECLARE c1 CURSOR FOR SELECT * FROM uctest;
 DELETE FROM uctest WHERE CURRENT OF c1; -- fail, no current row
 ROLLBACK;
+BEGIN;
+DECLARE c1 CURSOR FOR SELECT MIN(f1) FROM uctest FOR UPDATE;
+ROLLBACK;
 
 -- WHERE CURRENT OF may someday work with views, but today is not that day.
 -- For now, just make sure it errors out cleanly.
@@ -470,3 +473,14 @@ UPDATE cursor SET a = 2;
 FETCH ALL FROM c1;
 COMMIT;
 DROP TABLE cursor;
+
+-- Check rewinding a cursor containing a stable function in LIMIT,
+-- per bug report in 8336843.9833.1399385291498.JavaMail.root@quick
+begin;
+create function nochange(int) returns int
+  as 'select $1 limit 1' language sql stable;
+declare c cursor for select * from int8_tbl limit nochange(3);
+fetch all from c;
+move backward all in c;
+fetch all from c;
+rollback;

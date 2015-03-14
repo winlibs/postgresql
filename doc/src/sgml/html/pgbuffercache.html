@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -123,7 +123,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN141405"
+NAME="AEN158717"
 >F.24.1. The <TT
 CLASS="STRUCTNAME"
 >pg_buffercache</TT
@@ -243,6 +243,26 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
+>relforknumber</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>smallint</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>Fork number within the relation;  see
+      <TT
+CLASS="FILENAME"
+>include/storage/relfilenode.h</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
 >relblocknumber</TT
 ></TD
 ><TD
@@ -254,22 +274,6 @@ CLASS="TYPE"
 >&nbsp;</TD
 ><TD
 >Page number within the relation</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->relforknumber</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->smallint</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Fork number within the relation</TD
 ></TR
 ><TR
 ><TD
@@ -301,7 +305,7 @@ CLASS="TYPE"
 ><TD
 >&nbsp;</TD
 ><TD
->Page LRU count</TD
+>Clock-sweep access count</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -349,7 +353,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN141489"
+NAME="AEN158802"
 >F.24.2. Sample Output</A
 ></H2
 ><PRE
@@ -382,7 +386,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN141492"
+NAME="AEN158805"
 >F.24.3. Authors</A
 ></H2
 ><P

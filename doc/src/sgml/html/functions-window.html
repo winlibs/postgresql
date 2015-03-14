@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -105,13 +105,17 @@ CLASS="FIRSTTERM"
 HREF="tutorial-window.html"
 >Section 3.5</A
 > for an introduction to this
-   feature.
+   feature, and <A
+HREF="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS"
+>Section 4.2.8</A
+> for syntax
+   details.
   </P
 ><P
 >   The built-in window functions are listed in
    <A
 HREF="functions-window.html#FUNCTIONS-WINDOW-TABLE"
->Table 9-47</A
+>Table 9-53</A
 >.  Note that these functions
    <SPAN
 CLASS="emphasis"
@@ -126,12 +130,13 @@ CLASS="LITERAL"
 > clause is required.
   </P
 ><P
->   In addition to these functions, any built-in or user-defined aggregate
-   function can be used as a window function (see
+>   In addition to these functions, any built-in or user-defined normal
+   aggregate function (but not ordered-set or hypothetical-set aggregates)
+   can be used as a window function; see
    <A
 HREF="functions-aggregate.html"
 >Section 9.20</A
-> for a list of the built-in aggregates).
+> for a list of the built-in aggregates.
    Aggregate functions act as window functions only when an <TT
 CLASS="LITERAL"
 >OVER</TT
@@ -145,7 +150,7 @@ NAME="FUNCTIONS-WINDOW-TABLE"
 ></A
 ><P
 ><B
->Table 9-47. General-Purpose Window Functions</B
+>Table 9-53. General-Purpose Window Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -597,7 +602,7 @@ CLASS="REPLACEABLE"
 >   All of the functions listed in
    <A
 HREF="functions-window.html#FUNCTIONS-WINDOW-TABLE"
->Table 9-47</A
+>Table 9-53</A
 > depend on the sort ordering
    specified by the <TT
 CLASS="LITERAL"

@@ -3,7 +3,7 @@
  *
  * PostgreSQL transaction log manager
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/xlog.h
@@ -31,24 +31,25 @@
  * where there can be zero to four backup blocks (as signaled by xl_info flag
  * bits).  XLogRecord structs always start on MAXALIGN boundaries in the WAL
  * files, and we round up SizeOfXLogRecord so that the rmgr data is also
- * guaranteed to begin on a MAXALIGN boundary.	However, no padding is added
+ * guaranteed to begin on a MAXALIGN boundary.  However, no padding is added
  * to align BkpBlock structs or backup block data.
  *
  * NOTE: xl_len counts only the rmgr data, not the XLogRecord header,
- * and also not any backup blocks.	xl_tot_len counts everything.  Neither
+ * and also not any backup blocks.  xl_tot_len counts everything.  Neither
  * length field is rounded up to an alignment boundary.
  */
 typedef struct XLogRecord
 {
-	pg_crc32	xl_crc;			/* CRC for this record */
-	XLogRecPtr	xl_prev;		/* ptr to previous record in log */
-	TransactionId xl_xid;		/* xact id */
 	uint32		xl_tot_len;		/* total len of entire record */
+	TransactionId xl_xid;		/* xact id */
 	uint32		xl_len;			/* total len of rmgr data */
 	uint8		xl_info;		/* flag bits, see below */
 	RmgrId		xl_rmid;		/* resource manager for this record */
+	/* 2 bytes of padding here, initialize to zero */
+	XLogRecPtr	xl_prev;		/* ptr to previous record in log */
+	pg_crc32	xl_crc;			/* CRC for this record */
 
-	/* Depending on MAXALIGN, there are either 2 or 6 wasted bytes here */
+	/* If MAXALIGN==8, there are 4 wasted bytes here */
 
 	/* ACTUAL LOG DATA FOLLOWS AT END OF STRUCT */
 
@@ -71,13 +72,6 @@ typedef struct XLogRecord
 #define XLR_BKP_BLOCK_MASK		0x0F	/* all info bits used for bkp blocks */
 #define XLR_MAX_BKP_BLOCKS		4
 #define XLR_BKP_BLOCK(iblk)		(0x08 >> (iblk))		/* iblk in 0..3 */
-
-/* These macros are deprecated and will be removed in 9.3; use XLR_BKP_BLOCK */
-#define XLR_SET_BKP_BLOCK(iblk) (0x08 >> (iblk))
-#define XLR_BKP_BLOCK_1			XLR_SET_BKP_BLOCK(0)	/* 0x08 */
-#define XLR_BKP_BLOCK_2			XLR_SET_BKP_BLOCK(1)	/* 0x04 */
-#define XLR_BKP_BLOCK_3			XLR_SET_BKP_BLOCK(2)	/* 0x02 */
-#define XLR_BKP_BLOCK_4			XLR_SET_BKP_BLOCK(3)	/* 0x01 */
 
 /* Sync methods */
 #define SYNC_METHOD_FSYNC		0
@@ -106,7 +100,7 @@ extern int	sync_method;
  * value (ignoring InvalidBuffer) appearing in the rdata chain.
  *
  * When buffer is valid, caller must set buffer_std to indicate whether the
- * page uses standard pd_lower/pd_upper header fields.	If this is true, then
+ * page uses standard pd_lower/pd_upper header fields.  If this is true, then
  * XLOG is allowed to omit the free space between pd_lower and pd_upper from
  * the backed-up page image.  Note that even when buffer_std is false, the
  * page MUST have an LSN field as its first eight bytes!
@@ -179,7 +173,8 @@ typedef enum
 	RECOVERY_TARGET_UNSET,
 	RECOVERY_TARGET_XID,
 	RECOVERY_TARGET_TIME,
-	RECOVERY_TARGET_NAME
+	RECOVERY_TARGET_NAME,
+	RECOVERY_TARGET_IMMEDIATE
 } RecoveryTargetType;
 
 extern XLogRecPtr XactLastRecEnd;
@@ -195,6 +190,7 @@ extern bool XLogArchiveMode;
 extern char *XLogArchiveCommand;
 extern bool EnableHotStandby;
 extern bool fullPageWrites;
+extern bool wal_log_hints;
 extern bool log_checkpoints;
 
 /* WAL levels */
@@ -202,7 +198,8 @@ typedef enum WalLevel
 {
 	WAL_LEVEL_MINIMAL = 0,
 	WAL_LEVEL_ARCHIVE,
-	WAL_LEVEL_HOT_STANDBY
+	WAL_LEVEL_HOT_STANDBY,
+	WAL_LEVEL_LOGICAL
 } WalLevel;
 extern int	wal_level;
 
@@ -215,8 +212,22 @@ extern int	wal_level;
  */
 #define XLogIsNeeded() (wal_level >= WAL_LEVEL_ARCHIVE)
 
-/* Do we need to WAL-log information required only for Hot Standby? */
+/*
+ * Is a full-page image needed for hint bit updates?
+ *
+ * Normally, we don't WAL-log hint bit updates, but if checksums are enabled,
+ * we have to protect them against torn page writes.  When you only set
+ * individual bits on a page, it's still consistent no matter what combination
+ * of the bits make it to disk, but the checksum wouldn't match.  Also WAL-log
+ * them if forced by wal_log_hints=on.
+ */
+#define XLogHintBitIsNeeded() (DataChecksumsEnabled() || wal_log_hints)
+
+/* Do we need to WAL-log information required only for Hot Standby and logical replication? */
 #define XLogStandbyInfoActive() (wal_level >= WAL_LEVEL_HOT_STANDBY)
+
+/* Do we need to WAL-log information required only for logical replication? */
+#define XLogLogicalInfoActive() (wal_level >= WAL_LEVEL_LOGICAL)
 
 #ifdef WAL_DEBUG
 extern bool XLOG_DEBUG;
@@ -240,6 +251,8 @@ extern bool XLOG_DEBUG;
 /* These indicate the cause of a checkpoint request */
 #define CHECKPOINT_CAUSE_XLOG	0x0020	/* XLOG consumption */
 #define CHECKPOINT_CAUSE_TIME	0x0040	/* Elapsed time */
+#define CHECKPOINT_FLUSH_ALL	0x0080	/* Flush all pages, including those
+										 * belonging to unlogged tables */
 
 /* Checkpoint statistics */
 typedef struct CheckpointStatsData
@@ -267,16 +280,19 @@ typedef struct CheckpointStatsData
 extern CheckpointStatsData CheckpointStats;
 
 extern XLogRecPtr XLogInsert(RmgrId rmid, uint8 info, XLogRecData *rdata);
+extern bool XLogCheckBufferNeedsBackup(Buffer buffer);
 extern void XLogFlush(XLogRecPtr RecPtr);
 extern bool XLogBackgroundFlush(void);
 extern bool XLogNeedsFlush(XLogRecPtr RecPtr);
-extern int XLogFileInit(uint32 log, uint32 seg,
-			 bool *use_existent, bool use_lock);
-extern int	XLogFileOpen(uint32 log, uint32 seg);
+extern int	XLogFileInit(XLogSegNo segno, bool *use_existent, bool use_lock);
+extern int	XLogFileOpen(XLogSegNo segno);
 
+extern XLogRecPtr XLogSaveBufferForHint(Buffer buffer, bool buffer_std);
 
-extern void XLogGetLastRemoved(uint32 *log, uint32 *seg);
+extern void CheckXLogRemoved(XLogSegNo segno, TimeLineID tli);
+extern XLogSegNo XLogGetLastRemovedSegno(void);
 extern void XLogSetAsyncXactLSN(XLogRecPtr record);
+extern void XLogSetReplicationSlotMinimumLSN(XLogRecPtr lsn);
 
 extern Buffer RestoreBackupBlock(XLogRecPtr lsn, XLogRecord *record,
 				   int block_index,
@@ -285,23 +301,26 @@ extern Buffer RestoreBackupBlock(XLogRecPtr lsn, XLogRecord *record,
 extern void xlog_redo(XLogRecPtr lsn, XLogRecord *record);
 extern void xlog_desc(StringInfo buf, uint8 xl_info, char *rec);
 
-extern void issue_xlog_fsync(int fd, uint32 log, uint32 seg);
+extern void issue_xlog_fsync(int fd, XLogSegNo segno);
 
 extern bool RecoveryInProgress(void);
 extern bool HotStandbyActive(void);
+extern bool HotStandbyActiveInReplay(void);
 extern bool XLogInsertAllowed(void);
 extern void GetXLogReceiptTime(TimestampTz *rtime, bool *fromStream);
-extern XLogRecPtr GetXLogReplayRecPtr(TimeLineID *targetTLI);
-extern XLogRecPtr GetStandbyFlushRecPtr(TimeLineID *targetTLI);
+extern XLogRecPtr GetXLogReplayRecPtr(TimeLineID *replayTLI);
 extern XLogRecPtr GetXLogInsertRecPtr(void);
 extern XLogRecPtr GetXLogWriteRecPtr(void);
 extern bool RecoveryIsPaused(void);
 extern void SetRecoveryPause(bool recoveryPause);
 extern TimestampTz GetLatestXTime(void);
 extern TimestampTz GetCurrentChunkReplayStartTime(void);
+extern char *XLogFileNameP(TimeLineID tli, XLogSegNo segno);
 
 extern void UpdateControlFile(void);
 extern uint64 GetSystemIdentifier(void);
+extern bool DataChecksumsEnabled(void);
+extern XLogRecPtr GetFakeLSNForUnloggedRel(void);
 extern Size XLOGShmemSize(void);
 extern void XLOGShmemInit(void);
 extern void BootStrapXLOG(void);
@@ -317,7 +336,6 @@ extern XLogRecPtr GetRedoRecPtr(void);
 extern XLogRecPtr GetInsertRecPtr(void);
 extern XLogRecPtr GetFlushRecPtr(void);
 extern void GetNextXidAndEpoch(TransactionId *xid, uint32 *epoch);
-extern TimeLineID GetRecoveryTargetTLI(void);
 
 extern bool CheckPromoteSignal(void);
 extern void WakeupRecovery(void);
@@ -326,8 +344,10 @@ extern void SetWalWriterSleeping(bool sleeping);
 /*
  * Starting/stopping a base backup
  */
-extern XLogRecPtr do_pg_start_backup(const char *backupidstr, bool fast, char **labelfile);
-extern XLogRecPtr do_pg_stop_backup(char *labelfile, bool waitforarchive);
+extern XLogRecPtr do_pg_start_backup(const char *backupidstr, bool fast,
+				   TimeLineID *starttli_p, char **labelfile);
+extern XLogRecPtr do_pg_stop_backup(char *labelfile, bool waitforarchive,
+				  TimeLineID *stoptli_p);
 extern void do_pg_abort_backup(void);
 
 /* File path names (all relative to $PGDATA) */

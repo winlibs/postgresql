@@ -2,7 +2,7 @@
  *
  * droplang
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/bin/scripts/droplang.c
@@ -64,13 +64,13 @@ main(int argc, char *argv[])
 				listlangs = true;
 				break;
 			case 'h':
-				host = optarg;
+				host = pg_strdup(optarg);
 				break;
 			case 'p':
-				port = optarg;
+				port = pg_strdup(optarg);
 				break;
 			case 'U':
-				username = optarg;
+				username = pg_strdup(optarg);
 				break;
 			case 'w':
 				prompt_password = TRI_NO;
@@ -79,7 +79,7 @@ main(int argc, char *argv[])
 				prompt_password = TRI_YES;
 				break;
 			case 'd':
-				dbname = optarg;
+				dbname = pg_strdup(optarg);
 				break;
 			case 'e':
 				echo = true;
@@ -126,7 +126,7 @@ main(int argc, char *argv[])
 		else if (getenv("PGUSER"))
 			dbname = getenv("PGUSER");
 		else
-			dbname = get_user_name(progname);
+			dbname = get_user_name_or_exit(progname);
 	}
 
 	initPQExpBuffer(&sql);
@@ -159,6 +159,8 @@ main(int argc, char *argv[])
 		popt.title = _("Procedural Languages");
 		popt.translate_header = true;
 		popt.translate_columns = translate_columns;
+		popt.n_translate_columns = lengthof(translate_columns);
+
 		printQuery(result, &popt, stdout, NULL);
 
 		PQfinish(conn);
@@ -209,10 +211,10 @@ main(int argc, char *argv[])
 	 * Attempt to drop the language.  We do not use CASCADE, so that the drop
 	 * will fail if there are any functions in the language.
 	 */
-	printfPQExpBuffer(&sql, "DROP EXTENSION \"%s\";\n", langname);
+	printfPQExpBuffer(&sql, "DROP EXTENSION \"%s\";", langname);
 
 	if (echo)
-		printf("%s", sql.data);
+		printf("%s\n", sql.data);
 	result = PQexec(conn, sql.data);
 	if (PQresultStatus(result) != PGRES_COMMAND_OK)
 	{

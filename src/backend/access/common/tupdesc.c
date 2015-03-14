@@ -3,7 +3,7 @@
  * tupdesc.c
  *	  POSTGRES tuple descriptor support code
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -19,12 +19,13 @@
 
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "catalog/pg_type.h"
 #include "miscadmin.h"
 #include "parser/parse_type.h"
 #include "utils/acl.h"
 #include "utils/builtins.h"
-#include "utils/resowner.h"
+#include "utils/resowner_private.h"
 #include "utils/syscache.h"
 
 
@@ -203,6 +204,7 @@ CreateTupleDescCopyConstr(TupleDesc tupdesc)
 				if (constr->check[i].ccbin)
 					cpy->check[i].ccbin = pstrdup(constr->check[i].ccbin);
 				cpy->check[i].ccvalid = constr->check[i].ccvalid;
+				cpy->check[i].ccnoinherit = constr->check[i].ccnoinherit;
 			}
 		}
 
@@ -213,6 +215,47 @@ CreateTupleDescCopyConstr(TupleDesc tupdesc)
 	desc->tdtypmod = tupdesc->tdtypmod;
 
 	return desc;
+}
+
+/*
+ * TupleDescCopyEntry
+ *		This function copies a single attribute structure from one tuple
+ *		descriptor to another.
+ *
+ * !!! Constraints and defaults are not copied !!!
+ */
+void
+TupleDescCopyEntry(TupleDesc dst, AttrNumber dstAttno,
+				   TupleDesc src, AttrNumber srcAttno)
+{
+	/*
+	 * sanity checks
+	 */
+	AssertArg(PointerIsValid(src));
+	AssertArg(PointerIsValid(dst));
+	AssertArg(srcAttno >= 1);
+	AssertArg(srcAttno <= src->natts);
+	AssertArg(dstAttno >= 1);
+	AssertArg(dstAttno <= dst->natts);
+
+	memcpy(dst->attrs[dstAttno - 1], src->attrs[srcAttno - 1],
+		   ATTRIBUTE_FIXED_PART_SIZE);
+
+	/*
+	 * Aside from updating the attno, we'd better reset attcacheoff.
+	 *
+	 * XXX Actually, to be entirely safe we'd need to reset the attcacheoff of
+	 * all following columns in dst as well.  Current usage scenarios don't
+	 * require that though, because all following columns will get initialized
+	 * by other uses of this function or TupleDescInitEntry.  So we cheat a
+	 * bit to avoid a useless O(N^2) penalty.
+	 */
+	dst->attrs[dstAttno - 1]->attnum = dstAttno;
+	dst->attrs[dstAttno - 1]->attcacheoff = -1;
+
+	/* since we're not copying constraints or defaults, clear these */
+	dst->attrs[dstAttno - 1]->attnotnull = false;
+	dst->attrs[dstAttno - 1]->atthasdef = false;
 }
 
 /*
@@ -416,7 +459,9 @@ equalTupleDescs(TupleDesc tupdesc1, TupleDesc tupdesc2)
 			for (j = 0; j < n; check2++, j++)
 			{
 				if (strcmp(check1->ccname, check2->ccname) == 0 &&
-					strcmp(check1->ccbin, check2->ccbin) == 0)
+					strcmp(check1->ccbin, check2->ccbin) == 0 &&
+					check1->ccvalid == check2->ccvalid &&
+					check1->ccnoinherit == check2->ccnoinherit)
 					break;
 			}
 			if (j >= n)
@@ -432,6 +477,12 @@ equalTupleDescs(TupleDesc tupdesc1, TupleDesc tupdesc2)
  * TupleDescInitEntry
  *		This function initializes a single attribute structure in
  *		a previously allocated tuple descriptor.
+ *
+ * If attributeName is NULL, the attname field is set to an empty string
+ * (this is for cases where we don't know or need a name for the field).
+ * Also, some callers use this function to change the datatype-related fields
+ * in an existing tupdesc; they pass attributeName = NameStr(att->attname)
+ * to indicate that the attname field shouldn't be modified.
  *
  * Note that attcollation is set to the default for the specified datatype.
  * If a nondefault collation is needed, insert it afterwards using
@@ -466,12 +517,12 @@ TupleDescInitEntry(TupleDesc desc,
 	/*
 	 * Note: attributeName can be NULL, because the planner doesn't always
 	 * fill in valid resname values in targetlists, particularly for resjunk
-	 * attributes.
+	 * attributes. Also, do nothing if caller wants to re-use the old attname.
 	 */
-	if (attributeName != NULL)
-		namestrcpy(&(att->attname), attributeName);
-	else
+	if (attributeName == NULL)
 		MemSet(NameStr(att->attname), 0, NAMEDATALEN);
+	else if (attributeName != NameStr(att->attname))
+		namestrcpy(&(att->attname), attributeName);
 
 	att->attstattarget = -1;
 	att->attcacheoff = -1;
@@ -530,7 +581,7 @@ TupleDescInitEntryCollation(TupleDesc desc,
  * Given a relation schema (list of ColumnDef nodes), build a TupleDesc.
  *
  * Note: the default assumption is no OIDs; caller may modify the returned
- * TupleDesc if it wants OIDs.	Also, tdtypeid will need to be filled in
+ * TupleDesc if it wants OIDs.  Also, tdtypeid will need to be filled in
  * later on.
  */
 TupleDesc

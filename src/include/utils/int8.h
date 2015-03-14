@@ -4,7 +4,7 @@
  *	  Declarations for operations on 64-bit integers.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/int8.h
@@ -74,8 +74,10 @@ extern Datum int8div(PG_FUNCTION_ARGS);
 extern Datum int8abs(PG_FUNCTION_ARGS);
 extern Datum int8mod(PG_FUNCTION_ARGS);
 extern Datum int8inc(PG_FUNCTION_ARGS);
+extern Datum int8dec(PG_FUNCTION_ARGS);
 extern Datum int8inc_any(PG_FUNCTION_ARGS);
 extern Datum int8inc_float8_float8(PG_FUNCTION_ARGS);
+extern Datum int8dec_any(PG_FUNCTION_ARGS);
 extern Datum int8larger(PG_FUNCTION_ARGS);
 extern Datum int8smaller(PG_FUNCTION_ARGS);
 

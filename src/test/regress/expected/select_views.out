@@ -1260,7 +1260,6 @@ CREATE TABLE customer (
        tel      text,
        passwd	text
 );
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "customer_pkey" for table "customer"
 CREATE TABLE credit_card (
        cid      int references customer(cid),
        cnum     text,
@@ -1281,7 +1280,7 @@ INSERT INTO credit_card
               (103, '9801-2345-6789-0123', 2000);
 INSERT INTO credit_usage
        VALUES (101, '2011-09-15', 120),
-       	      (101, '2011-10-05',  90),
+	      (101, '2011-10-05',  90),
 	      (101, '2011-10-18', 110),
 	      (101, '2011-10-21', 200),
 	      (101, '2011-11-10',  80),
@@ -1422,10 +1421,10 @@ EXPLAIN (COSTS OFF) SELECT * FROM my_credit_card_usage_normal
          ->  Subquery Scan on l
                Filter: f_leak(l.cnum)
                ->  Hash Join
-                     Hash Cond: (r.cid = l.cid)
-                     ->  Seq Scan on credit_card r
+                     Hash Cond: (r_1.cid = l_1.cid)
+                     ->  Seq Scan on credit_card r_1
                      ->  Hash
-                           ->  Seq Scan on customer l
+                           ->  Seq Scan on customer l_1
                                  Filter: (name = ("current_user"())::text)
 (13 rows)
 
@@ -1453,8 +1452,8 @@ EXPLAIN (COSTS OFF) SELECT * FROM my_credit_card_usage_secure
                Filter: ((ymd >= '10-01-2011'::date) AND (ymd < '11-01-2011'::date))
          ->  Materialize
                ->  Hash Join
-                     Hash Cond: (r.cid = l.cid)
-                     ->  Seq Scan on credit_card r
+                     Hash Cond: (r_1.cid = l.cid)
+                     ->  Seq Scan on credit_card r_1
                      ->  Hash
                            ->  Seq Scan on customer l
                                  Filter: (name = ("current_user"())::text)

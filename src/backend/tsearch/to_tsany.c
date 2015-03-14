@@ -3,7 +3,7 @@
  * to_tsany.c
  *		to_ts* function definitions
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -49,7 +49,7 @@ compareWORD(const void *a, const void *b)
 }
 
 static int
-uniqueWORD(ParsedWord *a, int4 l)
+uniqueWORD(ParsedWord *a, int32 l)
 {
 	ParsedWord *ptr,
 			   *res;
@@ -265,9 +265,9 @@ to_tsvector(PG_FUNCTION_ARGS)
  * and different variants are ORred together.
  */
 static void
-pushval_morph(Datum opaque, TSQueryParserState state, char *strval, int lenval, int2 weight, bool prefix)
+pushval_morph(Datum opaque, TSQueryParserState state, char *strval, int lenval, int16 weight, bool prefix)
 {
-	int4		count = 0;
+	int32		count = 0;
 	ParsedText	prs;
 	uint32		variant,
 				pos,
@@ -333,7 +333,7 @@ to_tsquery_byid(PG_FUNCTION_ARGS)
 	text	   *in = PG_GETARG_TEXT_P(1);
 	TSQuery		query;
 	QueryItem  *res;
-	int4		len;
+	int32		len;
 
 	query = parse_tsquery(text_to_cstring(in), pushval_morph, ObjectIdGetDatum(cfgid), false);
 
@@ -357,7 +357,7 @@ to_tsquery_byid(PG_FUNCTION_ARGS)
 	if (len != query->size)
 	{
 		char	   *oldoperand = GETOPERAND(query);
-		int4		lenoperand = VARSIZE(query) - (oldoperand - (char *) query);
+		int32		lenoperand = VARSIZE(query) - (oldoperand - (char *) query);
 
 		Assert(len < query->size);
 
@@ -389,13 +389,14 @@ plainto_tsquery_byid(PG_FUNCTION_ARGS)
 	text	   *in = PG_GETARG_TEXT_P(1);
 	TSQuery		query;
 	QueryItem  *res;
-	int4		len;
+	int32		len;
 
 	query = parse_tsquery(text_to_cstring(in), pushval_morph, ObjectIdGetDatum(cfgid), true);
 
 	if (query->size == 0)
 		PG_RETURN_TSQUERY(query);
 
+	/* clean out any stopword placeholders from the tree */
 	res = clean_fakeval(GETQUERY(query), &len);
 	if (!res)
 	{
@@ -405,15 +406,19 @@ plainto_tsquery_byid(PG_FUNCTION_ARGS)
 	}
 	memcpy((void *) GETQUERY(query), (void *) res, len * sizeof(QueryItem));
 
+	/*
+	 * Removing the stopword placeholders might've resulted in fewer
+	 * QueryItems. If so, move the operands up accordingly.
+	 */
 	if (len != query->size)
 	{
 		char	   *oldoperand = GETOPERAND(query);
-		int4		lenoperand = VARSIZE(query) - (oldoperand - (char *) query);
+		int32		lenoperand = VARSIZE(query) - (oldoperand - (char *) query);
 
 		Assert(len < query->size);
 
 		query->size = len;
-		memcpy((void *) GETOPERAND(query), oldoperand, lenoperand);
+		memmove((void *) GETOPERAND(query), oldoperand, lenoperand);
 		SET_VARSIZE(query, COMPUTESIZE(len, lenoperand));
 	}
 

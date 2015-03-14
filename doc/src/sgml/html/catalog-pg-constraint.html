@@ -9,24 +9,24 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
 HREF="catalogs.html"><LINK
 REL="PREVIOUS"
-TITLE="pg_class"
-HREF="catalog-pg-class.html"><LINK
-REL="NEXT"
 TITLE="pg_collation"
 HREF="catalog-pg-collation.html"><LINK
+REL="NEXT"
+TITLE="pg_conversion"
+HREF="catalog-pg-conversion.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="pg_class"
-HREF="catalog-pg-class.html"
+TITLE="pg_collation"
+HREF="catalog-pg-collation.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -71,14 +71,14 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 45. System Catalogs</TD
+>Chapter 48. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="pg_collation"
-HREF="catalog-pg-collation.html"
+TITLE="pg_conversion"
+HREF="catalog-pg-conversion.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOG-PG-CONSTRAINT"
->45.12. <TT
+>48.13. <TT
 CLASS="STRUCTNAME"
 >pg_constraint</TT
 ></A
@@ -125,11 +125,11 @@ CLASS="COMMAND"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN89275"
+NAME="AEN96514"
 ></A
 ><P
 ><B
->Table 45-12. <TT
+>Table 48-13. <TT
 CLASS="STRUCTNAME"
 >pg_constraint</TT
 > Columns</B
@@ -150,6 +150,22 @@ CLASS="CALSTABLE"
 ></TR
 ></THEAD
 ><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>oid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>Row identifier (hidden attribute; must be explicitly selected)</TD
+></TR
 ><TR
 ><TD
 ><TT
@@ -481,8 +497,8 @@ CLASS="LITERAL"
 > = partial,
             <TT
 CLASS="LITERAL"
->u</TT
-> = simple (unspecified)
+>s</TT
+> = simple
           </TD
 ></TR
 ><TR
@@ -803,7 +819,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="catalog-pg-class.html"
+HREF="catalog-pg-collation.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -821,7 +837,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="catalog-pg-collation.html"
+HREF="catalog-pg-conversion.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -833,7 +849,7 @@ ALIGN="left"
 VALIGN="top"
 ><TT
 CLASS="STRUCTNAME"
->pg_class</TT
+>pg_collation</TT
 ></TD
 ><TD
 WIDTH="34%"
@@ -850,7 +866,7 @@ ALIGN="right"
 VALIGN="top"
 ><TT
 CLASS="STRUCTNAME"
->pg_collation</TT
+>pg_conversion</TT
 ></TD
 ></TR
 ></TABLE

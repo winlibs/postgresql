@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Frontend/Backend Protocol"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 46. Frontend/Backend Protocol</TD
+>Chapter 49. Frontend/Backend Protocol</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,31 +93,70 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PROTOCOL-REPLICATION"
->46.3. Streaming Replication Protocol</A
+>49.3. Streaming Replication Protocol</A
 ></H1
 ><P
 >To initiate streaming replication, the frontend sends the
 <TT
 CLASS="LITERAL"
 >replication</TT
-> parameter in the startup message. This tells the
-backend to go into walsender mode, wherein a small set of replication commands
-can be issued instead of SQL statements. Only the simple query protocol can be
-used in walsender mode.
-
-The commands accepted in walsender mode are:
-
+> parameter in the startup message. A Boolean value
+of <TT
+CLASS="LITERAL"
+>true</TT
+> tells the backend to go into walsender mode, wherein a
+small set of replication commands can be issued instead of SQL statements. Only
+the simple query protocol can be used in walsender mode.
+Passing <TT
+CLASS="LITERAL"
+>database</TT
+> as the value instructs walsender to connect to
+the database specified in the <TT
+CLASS="LITERAL"
+>dbname</TT
+> parameter, which will allow
+the connection to be used for logical replication from that database.</P
+><P
+> For the purpose of testing replication commands, you can make a replication
+ connection via <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> or any other <TT
+CLASS="LITERAL"
+>libpq</TT
+>-using
+ tool with a connection string including the <TT
+CLASS="LITERAL"
+>replication</TT
+> option,
+ e.g.:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>psql "dbname=postgres replication=database" -c "IDENTIFY_SYSTEM;"</PRE
+><P>
+ However it is often more useful to use
+ <SPAN
+CLASS="APPLICATION"
+>pg_receivexlog</SPAN
+> (for physical replication) or
+ <SPAN
+CLASS="APPLICATION"
+>pg_recvlogical</SPAN
+> (for logical replication).</P
+><P
+>The commands accepted in walsender mode are:
 <P
 ></P
 ></P><DIV
 CLASS="VARIABLELIST"
 ><DL
 ><DT
->IDENTIFY_SYSTEM</DT
+>IDENTIFY_SYSTEM
+     </DT
 ><DD
 ><P
 >      Requests the server to identify itself. Server replies with a result
-      set of a single row, containing three fields:
+      set of a single row, containing four fields:
      </P
 ><P
 >      <P
@@ -150,48 +189,226 @@ CLASS="VARIABLELIST"
        transaction log where streaming can start.
       </P
 ></DD
+><DT
+>dbname</DT
+><DD
+><P
+>       Database connected to or NULL.
+      </P
+></DD
 ></DL
 ></DIV
 ><P>
      </P
 ></DD
 ><DT
->START_REPLICATION <TT
+>TIMELINE_HISTORY <TT
 CLASS="REPLACEABLE"
 ><I
->XXX</I
+>tli</I
 ></TT
->/<TT
+>
+     </DT
+><DD
+><P
+>      Requests the server to send over the timeline history file for timeline
+      <TT
 CLASS="REPLACEABLE"
 ><I
->XXX</I
+>tli</I
+></TT
+>.  Server replies with a
+      result set of a single row, containing two fields:
+     </P
+><P
+>      <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>filename</DT
+><DD
+><P
+>       Filename of the timeline history file, e.g <TT
+CLASS="FILENAME"
+>00000002.history</TT
+>.
+      </P
+></DD
+><DT
+>content</DT
+><DD
+><P
+>       Contents of the timeline history file.
+      </P
+></DD
+></DL
+></DIV
+><P>
+     </P
+></DD
+><DT
+>CREATE_REPLICATION_SLOT <TT
+CLASS="REPLACEABLE"
+><I
+>slot_name</I
+></TT
+> { <TT
+CLASS="LITERAL"
+>PHYSICAL</TT
+> | <TT
+CLASS="LITERAL"
+>LOGICAL</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>output_plugin</I
+></TT
+> }
+     </DT
+><DD
+><P
+>      Create a physical or logical replication
+      slot. See <A
+HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
+>Section 25.2.6</A
+> for more about
+      replication slots.
+     </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>slot_name</I
 ></TT
 ></DT
+><DD
+><P
+>          The name of the slot to create. Must be a valid replication slot
+          name (see <A
+HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS-MANIPULATION"
+>Section 25.2.6.1</A
+>).
+         </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>output_plugin</I
+></TT
+></DT
+><DD
+><P
+>          The name of the output plugin used for logical decoding
+          (see <A
+HREF="logicaldecoding-output-plugin.html"
+>Section 46.6</A
+>).
+         </P
+></DD
+></DL
+></DIV
+></DD
+><DT
+>START_REPLICATION [<TT
+CLASS="LITERAL"
+>SLOT</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>slot_name</I
+></TT
+>] [<TT
+CLASS="LITERAL"
+>PHYSICAL</TT
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>XXX/XXX</I
+></TT
+> [<TT
+CLASS="LITERAL"
+>TIMELINE</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>tli</I
+></TT
+>]
+     </DT
 ><DD
 ><P
 >      Instructs server to start streaming WAL, starting at
       WAL position <TT
 CLASS="REPLACEABLE"
 ><I
->XXX</I
-></TT
->/<TT
-CLASS="REPLACEABLE"
-><I
->XXX</I
+>XXX/XXX</I
 ></TT
 >.
-      The server can reply with an error, e.g. if the requested section of WAL
-      has already been recycled. On success, server responds with a
-      CopyBothResponse message, and then starts to stream WAL to the frontend.
-      WAL will continue to be streamed until the connection is broken;
-      no further commands will be accepted.
+      If <TT
+CLASS="LITERAL"
+>TIMELINE</TT
+> option is specified,
+      streaming starts on timeline <TT
+CLASS="REPLACEABLE"
+><I
+>tli</I
+></TT
+>;
+      otherwise, the server's current timeline is selected. The server can
+      reply with an error, e.g. if the requested section of WAL has already
+      been recycled. On success, server responds with a CopyBothResponse
+      message, and then starts to stream WAL to the frontend.
+     </P
+><P
+>      If a slot's name is provided
+      via <TT
+CLASS="REPLACEABLE"
+><I
+>slot_name</I
+></TT
+>, it will be updated
+      as replication progresses so that the server knows which WAL segments,
+      and if <TT
+CLASS="VARNAME"
+>hot_standby_feedback</TT
+> is on which transactions,
+      are still needed by the standby.
+     </P
+><P
+>      If the client requests a timeline that's not the latest, but is part of
+      the history of the server, the server will stream all the WAL on that
+      timeline starting from the requested startpoint, up to the point where
+      the server switched to another timeline. If the client requests
+      streaming at exactly the end of an old timeline, the server responds
+      immediately with CommandComplete without entering COPY mode.
+     </P
+><P
+>      After streaming all the WAL on a timeline that is not the latest one,
+      the server will end streaming by exiting the COPY mode. When the client
+      acknowledges this by also exiting COPY mode, the server sends a result
+      set with one row and two columns, indicating the next timeline in this
+      server's history. The first column is the next timeline's ID, and the
+      second column is the XLOG position where the switch happened. Usually,
+      the switch position is the end of the WAL that was streamed, but there
+      are corner cases where the server can send some WAL from the old
+      timeline that it has not itself replayed before promoting. Finally, the
+      server sends CommandComplete message, and is ready to accept a new
+      command.
      </P
 ><P
 >      WAL data is sent as a series of CopyData messages.  (This allows
       other information to be intermixed; in particular the server can send
       an ErrorResponse message if it encounters a failure after beginning
-      to stream.)  The payload in each CopyData message follows this format:
+      to stream.)  The payload of each CopyData message from server to the
+      client contains a message of one of the following formats:
      </P
 ><P
 >      <P
@@ -216,27 +433,25 @@ CLASS="VARIABLELIST"
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The starting point of the WAL data in this message, given in
-          XLogRecPtr format.
+>          The starting point of the WAL data in this message.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The current end of WAL on the server, given in
-          XLogRecPtr format.
+>          The current end of WAL on the server.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The server's system clock at the time of transmission,
-          given in TimestampTz format.
+>          The server's system clock at the time of transmission, as
+          microseconds since midnight on 2000-01-01.
       </P
 ></DD
 ><DT
@@ -250,49 +465,19 @@ CLASS="REPLACEABLE"
 ><P
 >          A section of the WAL data stream.
       </P
+><P
+>          A single WAL record is never split across two XLogData messages.
+          When a WAL record crosses a WAL page boundary, and is therefore
+          already split using continuation records, it can be split at the page
+          boundary. In other words, the first main WAL record and its
+          continuation records can be sent in different XLogData messages.
+      </P
 ></DD
 ></DL
 ></DIV
 ><P>
       </P
 ></DD
-></DL
-></DIV
-><P>
-     </P
-><P
->       A single WAL record is never split across two CopyData messages.
-       When a WAL record crosses a WAL page boundary, and is therefore
-       already split using continuation records, it can be split at the page
-       boundary. In other words, the first main WAL record and its
-       continuation records can be sent in different CopyData messages.
-     </P
-><P
->       Note that all fields within the WAL data and the above-described header
-       will be in the sending server's native format.  Endianness, and the
-       format for the timestamp, are unpredictable unless the receiver has
-       verified that the sender's system identifier matches its own
-       <TT
-CLASS="FILENAME"
->pg_control</TT
-> contents.
-     </P
-><P
->       If the WAL sender process is terminated normally (during postmaster
-       shutdown), it will send a CommandComplete message before exiting.
-       This might not happen during an abnormal shutdown, of course.
-     </P
-><P
->       The receiving process can send replies back to the sender at any time,
-       using one of the following message formats (also in the payload of a
-       CopyData message):
-     </P
-><P
->      <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
 ><DT
 >Primary keepalive message (B)</DT
 ><DD
@@ -310,19 +495,26 @@ CLASS="VARIABLELIST"
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The current end of WAL on the server, given in
-          XLogRecPtr format.
+>          The current end of WAL on the server.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The server's system clock at the time of transmission,
-          given in TimestampTz format.
+>          The server's system clock at the time of transmission, as
+          microseconds since midnight on 2000-01-01.
+      </P
+></DD
+><DT
+>Byte1</DT
+><DD
+><P
+>          1 means that the client should reply to this message as soon as
+          possible, to avoid a timeout disconnect. 0 otherwise.
       </P
 ></DD
 ></DL
@@ -333,6 +525,11 @@ CLASS="VARIABLELIST"
 ></DL
 ></DIV
 ><P>
+     </P
+><P
+>       The receiving process can send replies back to the sender at any time,
+       using one of the following message formats (also in the payload of a
+       CopyData message):
      </P
 ><P
 >      <P
@@ -357,35 +554,43 @@ CLASS="VARIABLELIST"
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
 >          The location of the last WAL byte + 1 received and written to disk
-          in the standby, in XLogRecPtr format.
+          in the standby.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
 >          The location of the last WAL byte + 1 flushed to disk in
-          the standby, in XLogRecPtr format.
+          the standby.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The location of the last WAL byte + 1 applied in the standby, in
-          XLogRecPtr format.
+>          The location of the last WAL byte + 1 applied in the standby.
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The server's system clock at the time of transmission,
-          given in TimestampTz format.
+>          The client's system clock at the time of transmission, as
+          microseconds since midnight on 2000-01-01.
+      </P
+></DD
+><DT
+>Byte1</DT
+><DD
+><P
+>          If 1, the client requests the server to reply to this message
+          immediately. This can be used to ping the server, to test if
+          the connection is still healthy.
       </P
 ></DD
 ></DL
@@ -420,22 +625,25 @@ CLASS="VARIABLELIST"
       </P
 ></DD
 ><DT
->Byte8</DT
+>Int64</DT
 ><DD
 ><P
->          The server's system clock at the time of transmission,
-          given in TimestampTz format.
+>          The client's system clock at the time of transmission, as
+          microseconds since midnight on 2000-01-01.
       </P
 ></DD
 ><DT
->Byte4</DT
+>Int32</DT
 ><DD
 ><P
->          The standby's current xmin.
+>          The standby's current xmin. This may be 0, if the standby is
+          sending notification that Hot Standby feedback will no longer
+          be sent on this connection. Later non-zero messages may
+          reinitiate the feedback mechanism.
       </P
 ></DD
 ><DT
->Byte4</DT
+>Int32</DT
 ><DD
 ><P
 >          The standby's current epoch.
@@ -450,6 +658,160 @@ CLASS="VARIABLELIST"
 ></DIV
 ><P>
      </P
+></DD
+><DT
+>START_REPLICATION <TT
+CLASS="LITERAL"
+>SLOT</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>slot_name</I
+></TT
+> <TT
+CLASS="LITERAL"
+>LOGICAL</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>XXX/XXX</I
+></TT
+> [ ( <TT
+CLASS="REPLACEABLE"
+><I
+>option_name</I
+></TT
+> [<TT
+CLASS="REPLACEABLE"
+><I
+>option_value</I
+></TT
+>] [, ... ] ) ]</DT
+><DD
+><P
+>      Instructs server to start streaming WAL for logical replication, starting
+      at WAL position <TT
+CLASS="REPLACEABLE"
+><I
+>XXX/XXX</I
+></TT
+>. The server can
+      reply with an error, e.g. if the requested section of WAL has already
+      been recycled. On success, server responds with a CopyBothResponse
+      message, and then starts to stream WAL to the frontend.
+     </P
+><P
+>      The messages inside the CopyBothResponse messages are of the same format
+      documented for <TT
+CLASS="LITERAL"
+>START_REPLICATION ... PHYSICAL</TT
+>.
+     </P
+><P
+>      The output plugin associated with the selected slot is used
+      to process the output for streaming.
+     </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>SLOT</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>slot_name</I
+></TT
+></DT
+><DD
+><P
+>          The name of the slot to stream changes from. This parameter is required,
+          and must correspond to an existing logical replication slot created
+          with <TT
+CLASS="LITERAL"
+>CREATE_REPLICATION_SLOT</TT
+> in
+          <TT
+CLASS="LITERAL"
+>LOGICAL</TT
+> mode.
+         </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>XXX/XXX</I
+></TT
+></DT
+><DD
+><P
+>         The WAL position to begin streaming at.
+        </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>option_name</I
+></TT
+></DT
+><DD
+><P
+>         The name of an option passed to the slot's logical decoding plugin.
+        </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>option_value</I
+></TT
+></DT
+><DD
+><P
+>         Optional value, in the form of a string constant, associated with the
+         specified option.
+        </P
+></DD
+></DL
+></DIV
+></DD
+><DT
+>DROP_REPLICATION_SLOT <TT
+CLASS="REPLACEABLE"
+><I
+>slot_name</I
+></TT
+>
+     </DT
+><DD
+><P
+>      Drops a replication slot, freeing any reserved server-side resources. If
+      the slot is currently in use by an active connection, this command fails.
+     </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>slot_name</I
+></TT
+></DT
+><DD
+><P
+>          The name of the slot to drop.
+         </P
+></DD
+></DL
+></DIV
 ></DD
 ><DT
 >BASE_BACKUP [<TT
@@ -472,7 +834,16 @@ CLASS="LITERAL"
 >] [<TT
 CLASS="LITERAL"
 >NOWAIT</TT
->]</DT
+>] [<TT
+CLASS="LITERAL"
+>MAX_RATE</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>rate</I
+></TT
+>]
+     </DT
 ><DD
 ><P
 >      Instructs the server to start streaming a base backup.
@@ -569,6 +940,26 @@ CLASS="LITERAL"
           ensuring the required log is available.
          </P
 ></DD
+><DT
+><TT
+CLASS="LITERAL"
+>MAX_RATE</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>rate</I
+></TT
+></DT
+><DD
+><P
+>          Limit (throttle) the maximum amount of data transferred from server
+          to client per unit of time.  The expected unit is kilobytes per second.
+          If this option is specified, the value must either be equal to zero
+          or it must fall within the range from 32 kB through 1 GB (inclusive).
+          If zero is passed or the option is not specified, no restriction is
+          imposed on the transfer.
+         </P
+></DD
 ></DL
 ></DIV
 ><P>
@@ -580,7 +971,9 @@ CLASS="LITERAL"
      </P
 ><P
 >      The first ordinary result set contains the starting position of the
-      backup, given in XLogRecPtr format as a single column in a single row.
+      backup, in a single row with two columns. The first column contains
+      the start position given in XLogRecPtr format, and the second column
+      contains the corresponding timeline ID.
      </P
 ><P
 >      The second ordinary result set has one row for each tablespace.
@@ -644,7 +1037,9 @@ CLASS="QUOTE"
 > specified in the POSIX 1003.1-2008
       standard) dump of the tablespace contents, except that the two trailing
       blocks of zeroes specified in the standard are omitted.
-      After the tar data is complete, a final ordinary result set will be sent.
+      After the tar data is complete, a final ordinary result set will be sent,
+      containing the WAL end position of the backup, in the same format as
+      the start position.
      </P
 ><P
 >      The tar archive for the data directory and each tablespace will contain
@@ -679,6 +1074,12 @@ CLASS="FILENAME"
 ><LI
 STYLE="list-style-type: disc"
 ><P
+>         various temporary files created during the operation of the PostgreSQL server
+        </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
 >         <TT
 CLASS="FILENAME"
 >pg_xlog</TT
@@ -689,6 +1090,26 @@ CLASS="FILENAME"
 > will be
          included, but it will only contain the files necessary for the
          backup to work, not the rest of the contents.
+        </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>         <TT
+CLASS="FILENAME"
+>pg_replslot</TT
+> is copied as an empty directory.
+        </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>         Files other than regular files and directories, such as symbolic
+         links and special device files, are skipped.  (Symbolic links
+         in <TT
+CLASS="FILENAME"
+>pg_tblspc</TT
+> are maintained.)
         </P
 ></LI
 ></UL

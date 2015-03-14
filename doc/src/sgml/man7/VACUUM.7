@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: VACUUM
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "VACUUM" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "VACUUM" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 VACUUM \- garbage\-collect and optionally analyze a database
-.\" VACUUM
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -94,7 +93,11 @@ is equivalent to performing
 \fBVACUUM\fR
 with the
 vacuum_freeze_min_age
-parameter set to zero\&.
+and
+vacuum_freeze_table_age
+parameters set to zero\&. Aggressive freezing is always performed when the table is rewritten, so this option is redundant when
+FULL
+is specified\&.
 .RE
 .PP
 VERBOSE
@@ -144,7 +147,7 @@ indexes,
 (in any form) also completes any pending index insertions, by moving pending index entries to the appropriate places in the main
 GIN
 index structure\&. See
-Section 55.3.1, \(lqGIN Fast Update Technique\(rq, in the documentation
+Section 58.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation
 for details\&.
 .PP
 We recommend that active production databases be vacuumed frequently (at least nightly), in order to remove dead rows\&. After adding or deleting a large number of rows, it might be a good idea to issue a

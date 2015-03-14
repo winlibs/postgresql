@@ -1,9 +1,9 @@
 /*-------------------------------------------------------------------------
  *
  * timestamp.h
- *	  Definitions for the SQL92 "timestamp" and "interval" types.
+ *	  Definitions for the SQL "timestamp" and "interval" types.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/timestamp.h
@@ -121,6 +121,10 @@ extern Datum timestamp_gt_timestamptz(PG_FUNCTION_ARGS);
 extern Datum timestamp_ge_timestamptz(PG_FUNCTION_ARGS);
 extern Datum timestamp_cmp_timestamptz(PG_FUNCTION_ARGS);
 
+extern Datum make_timestamp(PG_FUNCTION_ARGS);
+extern Datum make_timestamptz(PG_FUNCTION_ARGS);
+extern Datum make_timestamptz_at_timezone(PG_FUNCTION_ARGS);
+
 extern Datum timestamptz_eq_timestamp(PG_FUNCTION_ARGS);
 extern Datum timestamptz_ne_timestamp(PG_FUNCTION_ARGS);
 extern Datum timestamptz_lt_timestamp(PG_FUNCTION_ARGS);
@@ -151,6 +155,7 @@ extern Datum interval_larger(PG_FUNCTION_ARGS);
 extern Datum interval_justify_interval(PG_FUNCTION_ARGS);
 extern Datum interval_justify_hours(PG_FUNCTION_ARGS);
 extern Datum interval_justify_days(PG_FUNCTION_ARGS);
+extern Datum make_interval(PG_FUNCTION_ARGS);
 
 extern Datum timestamp_trunc(PG_FUNCTION_ARGS);
 extern Datum interval_trunc(PG_FUNCTION_ARGS);
@@ -179,6 +184,7 @@ extern Datum interval_mul(PG_FUNCTION_ARGS);
 extern Datum mul_d_interval(PG_FUNCTION_ARGS);
 extern Datum interval_div(PG_FUNCTION_ARGS);
 extern Datum interval_accum(PG_FUNCTION_ARGS);
+extern Datum interval_accum_inv(PG_FUNCTION_ARGS);
 extern Datum interval_avg(PG_FUNCTION_ARGS);
 
 extern Datum timestamp_mi(PG_FUNCTION_ARGS);
@@ -206,12 +212,23 @@ extern Datum generate_series_timestamptz(PG_FUNCTION_ARGS);
 /* Internal routines (not fmgr-callable) */
 
 extern TimestampTz GetCurrentTimestamp(void);
-
 extern void TimestampDifference(TimestampTz start_time, TimestampTz stop_time,
 					long *secs, int *microsecs);
 extern bool TimestampDifferenceExceeds(TimestampTz start_time,
 						   TimestampTz stop_time,
 						   int msec);
+
+/*
+ * Prototypes for functions to deal with integer timestamps, when the native
+ * format is float timestamps.
+ */
+#ifndef HAVE_INT64_TIMESTAMP
+extern int64 GetCurrentIntegerTimestamp(void);
+extern TimestampTz IntegerTimestampToTimestampTz(int64 timestamp);
+#else
+#define GetCurrentIntegerTimestamp()	GetCurrentTimestamp()
+#define IntegerTimestampToTimestampTz(timestamp) (timestamp)
+#endif
 
 extern TimestampTz time_t_to_timestamptz(pg_time_t tm);
 extern pg_time_t timestamptz_to_time_t(TimestampTz t);
@@ -236,7 +253,7 @@ extern int	timestamp_cmp_internal(Timestamp dt1, Timestamp dt2);
 
 extern int	isoweek2j(int year, int week);
 extern void isoweek2date(int woy, int *year, int *mon, int *mday);
-extern void isoweekdate2date(int isoweek, int isowday, int *year, int *mon, int *mday);
+extern void isoweekdate2date(int isoweek, int wday, int *year, int *mon, int *mday);
 extern int	date2isoweek(int year, int mon, int mday);
 extern int	date2isoyear(int year, int mon, int mday);
 extern int	date2isoyearday(int year, int mon, int mday);

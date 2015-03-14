@@ -32,10 +32,6 @@
 #endif   /* USE_LIBXSLT */
 
 
-/* externally accessible functions */
-
-Datum		xslt_process(PG_FUNCTION_ARGS);
-
 #ifdef USE_LIBXSLT
 
 /* declarations to come from xpath.c */
@@ -150,16 +146,16 @@ xslt_process(PG_FUNCTION_ARGS)
 	}
 	PG_CATCH();
 	{
-		if (stylesheet != NULL)
-			xsltFreeStylesheet(stylesheet);
 		if (restree != NULL)
 			xmlFreeDoc(restree);
-		if (doctree != NULL)
-			xmlFreeDoc(doctree);
-		if (xslt_sec_prefs != NULL)
-			xsltFreeSecurityPrefs(xslt_sec_prefs);
 		if (xslt_ctxt != NULL)
 			xsltFreeTransformContext(xslt_ctxt);
+		if (xslt_sec_prefs != NULL)
+			xsltFreeSecurityPrefs(xslt_sec_prefs);
+		if (stylesheet != NULL)
+			xsltFreeStylesheet(stylesheet);
+		if (doctree != NULL)
+			xmlFreeDoc(doctree);
 		xsltCleanupGlobals();
 
 		pg_xml_done(xmlerrcxt, true);
@@ -168,11 +164,11 @@ xslt_process(PG_FUNCTION_ARGS)
 	}
 	PG_END_TRY();
 
-	xsltFreeStylesheet(stylesheet);
 	xmlFreeDoc(restree);
-	xmlFreeDoc(doctree);
-	xsltFreeSecurityPrefs(xslt_sec_prefs);
 	xsltFreeTransformContext(xslt_ctxt);
+	xsltFreeSecurityPrefs(xslt_sec_prefs);
+	xsltFreeStylesheet(stylesheet);
+	xmlFreeDoc(doctree);
 	xsltCleanupGlobals();
 
 	pg_xml_done(xmlerrcxt, false);

@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="app-pgbasebackup">
+ <indexterm zone="app-pgbasebackup">
+  <primary>pg_basebackup</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle>pg_basebackup</refentrytitle>
   <manvolnum>1</manvolnum>
@@ -14,10 +18,6 @@ PostgreSQL documentation
   <refname>pg_basebackup</refname>
   <refpurpose>take a base backup of a <productname>PostgreSQL</productname> cluster</refpurpose>
  </refnamediv>
-
- <indexterm zone="app-pgbasebackup">
-  <primary>pg_basebackup</primary>
- </indexterm>
 
  <refsynopsisdiv>
   <cmdsynopsis>
@@ -41,9 +41,9 @@ PostgreSQL documentation
 
   <para>
    <application>pg_basebackup</application> makes a binary copy of the database
-   cluster files, while making sure the system is automatically put in and
+   cluster files, while making sure the system is put in and
    out of backup mode automatically. Backups are always taken of the entire
-   database cluster, it is not possible to back up individual databases or
+   database cluster; it is not possible to back up individual databases or
    database objects. For individual database backups, a tool such as
    <xref linkend="APP-PGDUMP"> must be used.
   </para>
@@ -100,7 +100,7 @@ PostgreSQL documentation
      <para>
       All WAL records required for the backup must contain sufficient full-page writes,
       which requires you to enable <varname>full_page_writes</> on the master and
-      not to use the tool like <application>pg_compresslog</> as
+      not to use a tool like <application>pg_compresslog</> as
       <varname>archive_command</> to remove full-page writes from WAL files.
      </para>
     </listitem>
@@ -185,6 +185,80 @@ PostgreSQL documentation
            </listitem>
          </varlistentry>
         </variablelist></para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><option>-r <replaceable class="parameter">rate</replaceable></option></term>
+      <term><option>--max-rate=<replaceable class="parameter">rate</replaceable></option></term>
+      <listitem>
+       <para>
+        The maximum transfer rate of data transferred from the server.  Values are
+        in kilobytes per second.  Use a suffix of <literal>M</> to indicate megabytes
+        per second.  A suffix of <literal>k</> is also accepted, and has no effect.
+        Valid values are between 32 kilobytes per second and 1024 megabytes per second.
+       </para>
+       <para>
+        The purpose is to limit the impact of <application>pg_basebackup</application>
+        on the running server.
+       </para>
+       <para>
+        This option always affects transfer of the data directory. Transfer of
+        WAL files is only affected if the collection method is <literal>fetch</literal>.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><option>-R</option></term>
+      <term><option>--write-recovery-conf</option></term>
+      <listitem>
+
+       <para>
+        Write a minimal <filename>recovery.conf</filename> in the output directory (or into
+        the base archive file when using tar format) to ease setting
+        up a standby server.
+       </para>
+
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><option>-T <replaceable class="parameter">olddir</replaceable>=<replaceable class="parameter">newdir</replaceable></option></term>
+      <term><option>--tablespace-mapping=<replaceable class="parameter">olddir</replaceable>=<replaceable class="parameter">newdir</replaceable></option></term>
+      <listitem>
+       <para>
+        Relocate the tablespace in directory <replaceable>olddir</replaceable>
+        to <replaceable>newdir</replaceable> during the backup.  To be
+        effective, <replaceable>olddir</replaceable> must exactly match the
+        path specification of the tablespace as it is currently defined.  (But
+        it is not an error if there is no tablespace
+        in <replaceable>olddir</replaceable> contained in the backup.)
+        Both <replaceable>olddir</replaceable>
+        and <replaceable>newdir</replaceable> must be absolute paths.  If a
+        path happens to contain a <literal>=</literal> sign, escape it with a
+        backslash.  This option can be specified multiple times for multiple
+        tablespaces.  See examples below.
+       </para>
+
+       <para>
+        If a tablespace is relocated in this way, the symbolic links inside
+        the main data directory are updated to point to the new location.  So
+        the new data directory is ready to be used for a new server instance
+        with all tablespaces in the updated locations.
+        </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
+      <term><option>--xlogdir=<replaceable class="parameter">xlogdir</replaceable></option></term>
+      <listitem>
+       <para>
+        Specifies the location for the transaction log directory.
+        <replaceable>xlogdir</replaceable> must be an absolute path.
+        The transaction log directory can only be specified when
+        the backup is in plain mode.
+       </para>
       </listitem>
      </varlistentry>
 
@@ -287,7 +361,7 @@ PostgreSQL documentation
       <term><option>--checkpoint=<replaceable class="parameter">fast|spread</replaceable></option></term>
       <listitem>
        <para>
-        Sets checkpoint mode to fast or spread (default).
+        Sets checkpoint mode to fast or spread (default) (see <xref linkend="backup-lowlevel-base-backup">).
        </para>
       </listitem>
      </varlistentry>
@@ -345,6 +419,23 @@ PostgreSQL documentation
 
     <variablelist>
      <varlistentry>
+      <term><option>-d <replaceable class="parameter">connstr</replaceable></option></term>
+      <term><option>--dbname=<replaceable class="parameter">connstr</replaceable></option></term>
+      <listitem>
+       <para>
+        Specifies parameters used to connect to the server, as a connection
+        string. See <xref linkend="libpq-connstring"> for more information.
+       </para>
+       <para>
+        The option is called <literal>--dbname</> for consistency with other
+        client applications, but because <application>pg_basebackup</application>
+        doesn't connect to any particular database in the cluster, database
+        name in the connection string will be ignored.
+       </para>
+      </listitem>
+     </varlistentry>
+
+     <varlistentry>
       <term><option>-h <replaceable class="parameter">host</replaceable></option></term>
       <term><option>--host=<replaceable class="parameter">host</replaceable></option></term>
       <listitem>
@@ -377,10 +468,10 @@ PostgreSQL documentation
       <listitem>
        <para>
         Specifies the number of seconds between status packets sent back to the
-        server. This is required when streaming the transaction log (using
-        <literal>--xlog=stream</literal>) if replication timeout is configured
-        on the server, and allows for easier monitoring. A value of zero disables
-        the status updates completely. The default value is 10 seconds.
+        server. This allows for easier monitoring of the progress from server.
+        A value of zero disables the periodic status updates completely,
+        although an update will still be sent when requested by the server, to
+        avoid timeout disconnect. The default value is 10 seconds.
        </para>
       </listitem>
      </varlistentry>
@@ -480,14 +571,26 @@ PostgreSQL documentation
   <para>
    The backup will include all files in the data directory and tablespaces,
    including the configuration files and any additional files placed in the
-   directory by third parties. Only regular files and directories are allowed
-   in the data directory, no symbolic links or special device files.
+   directory by third parties. But only regular files and directories are
+   copied.  Symbolic links (other than those used for tablespaces) and special
+   device files are skipped.  (See <xref linkend="protocol-replication"> for
+   the precise details.)
   </para>
 
   <para>
-   The way <productname>PostgreSQL</productname> manages tablespaces, the path
-   for all additional tablespaces must be identical whenever a backup is
-   restored. The main data directory, however, is relocatable to any location.
+   Tablespaces will in plain format by default be backed up to the same path
+   they have on the server, unless the
+   option <replaceable>--tablespace-mapping</replaceable> is used.  Without
+   this option, running a plain format base backup on the same host as the
+   server will not work if tablespaces are in use, because the backup would
+   have to be written to the same directory locations as the original
+   tablespaces.
+  </para>
+
+  <para>
+   <application>pg_basebackup</application> works with servers of the same
+   or an older major version, down to 9.1. However, WAL streaming mode (-X
+   stream) only works with server version 9.3 and later.
   </para>
  </refsect1>
 
@@ -520,6 +623,15 @@ PostgreSQL documentation
 </screen>
    (This command will fail if there are multiple tablespaces in the
    database.)
+  </para>
+
+  <para>
+   To create a backup of a local database where the tablespace in
+   <filename>/opt/ts</filename> is relocated
+   to <filename>./backup/ts</filename>:
+<screen>
+<prompt>$</prompt> <userinput>pg_basebackup -D backup/data -T /opt/ts=$(pwd)/backup/ts</userinput>
+</screen>
   </para>
  </refsect1>
 

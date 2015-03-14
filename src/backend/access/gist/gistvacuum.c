@@ -4,7 +4,7 @@
  *	  vacuuming routines for the postgres GiST index access method.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -49,7 +49,7 @@ gistvacuumcleanup(PG_FUNCTION_ARGS)
 		stats->estimated_count = info->estimated_count;
 
 		/*
-		 * XXX the above is wrong if index is partial.	Would it be OK to just
+		 * XXX the above is wrong if index is partial.  Would it be OK to just
 		 * return NULL, or is there work we must do below?
 		 */
 	}
@@ -114,7 +114,7 @@ pushStackIfSplited(Page page, GistBDItem *stack)
 	GISTPageOpaque opaque = GistPageGetOpaque(page);
 
 	if (stack->blkno != GIST_ROOT_BLKNO && !XLogRecPtrIsInvalid(stack->parentlsn) &&
-		(GistFollowRight(page) || XLByteLT(stack->parentlsn, opaque->nsn)) &&
+		(GistFollowRight(page) || stack->parentlsn < GistPageGetNSN(page)) &&
 		opaque->rightlink != InvalidBlockNumber /* sanity check */ )
 	{
 		/* split page detected, install right link to the stack */
@@ -235,10 +235,9 @@ gistbulkdelete(PG_FUNCTION_ARGS)
 											todelete, ntodelete,
 											NULL, 0, InvalidBuffer);
 					PageSetLSN(page, recptr);
-					PageSetTLI(page, ThisTimeLineID);
 				}
 				else
-					PageSetLSN(page, GetXLogRecPtrForTemp());
+					PageSetLSN(page, gistGetFakeLSN(rel));
 
 				END_CRIT_SECTION();
 			}

@@ -10,7 +10,7 @@
  * Information on using Double Metaphone can be found at
  *	 http://www.codeproject.com/string/dmetaphone1.asp
  * and the original article describing it can be found at
- *	 http://www.cuj.com/documents/s=8038/cuj0006philips/
+ *	 http://drdobbs.com/184401251
  *
  * For PostgreSQL we provide 2 functions - one for the primary and one for
  * the alternate. That way the functions are pure text->text mappings that
@@ -113,9 +113,6 @@ The remaining code is authored by Andrew Dunstan <amdunstan@ncshp.org> and
 #include <string.h>
 #include <stdarg.h>
 #include <assert.h>
-
-extern Datum dmetaphone(PG_FUNCTION_ARGS);
-extern Datum dmetaphone_alt(PG_FUNCTION_ARGS);
 
 /* prototype for the main function we got from the perl module */
 static void DoubleMetaphone(char *, char **);
@@ -362,7 +359,10 @@ StringAt(metastring *s, int start, int length,...)
 	{
 		test = va_arg(ap, char *);
 		if (*test && (strncmp(pos, test, length) == 0))
+		{
+			va_end(ap);
 			return 1;
+		}
 	}
 	while (strcmp(test, "") != 0);
 

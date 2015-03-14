@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="app-pg-ctl">
+ <indexterm zone="app-pg-ctl">
+  <primary>pg_ctl</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle><application>pg_ctl</application></refentrytitle>
   <manvolnum>1</manvolnum>
@@ -14,10 +18,6 @@ PostgreSQL documentation
   <refname>pg_ctl</refname>
   <refpurpose>initialize, start, stop, or control a <productname>PostgreSQL</productname> server</refpurpose>
  </refnamediv>
-
- <indexterm zone="app-pg-ctl">
-  <primary>pg_ctl</primary>
- </indexterm>
 
  <refsynopsisdiv>
   <cmdsynopsis>
@@ -188,7 +188,9 @@ PostgreSQL documentation
   <para>
    <option>restart</option> mode effectively executes a stop followed
    by a start.  This allows changing the <command>postgres</command>
-   command-line options.
+   command-line options.  <option>restart</option> might fail if
+   relative paths specified were specified on the command-line during
+   server start.
   </para>
 
   <para>
@@ -206,7 +208,8 @@ PostgreSQL documentation
    the specified data directory. If it is, the <acronym>PID</acronym>
    and the command line options that were used to invoke it are
    displayed.  If the server is not running, the process returns an
-   exit status of 3.
+   exit status of 3.  If an accessible data directory is not specified,
+   the process returns an exit status of 4.
   </para>
 
   <para>
@@ -261,7 +264,7 @@ PostgreSQL documentation
       <term><option>--pgdata <replaceable class="parameter">datadir</replaceable></option></term>
       <listitem>
        <para>
-        Specifies the file system location of the database files.  If
+        Specifies the file system location of the database configuration files.  If
         this is omitted, the environment variable
         <envar>PGDATA</envar> is used.
        </para>
@@ -383,6 +386,7 @@ PostgreSQL documentation
         attempts to connect to the server.
         When waiting for shutdown, <command>pg_ctl</command> waits for
         the server to remove its <acronym>PID</acronym> file.
+        This option allows the entry of an <acronym>SSL</> passphrase on startup.
         <command>pg_ctl</command> returns an exit code based on the
         success of the startup or shutdown.
        </para>

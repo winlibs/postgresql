@@ -22,7 +22,7 @@
  * process, SIGUSR1 is sent and the signal handler in the waiting process
  * writes the byte to the pipe on behalf of the signaling process.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -33,6 +33,7 @@
 #include "postgres.h"
 
 #include <fcntl.h>
+#include <limits.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -176,9 +177,10 @@ DisownLatch(volatile Latch *latch)
  * to wait for. If the latch is already set (and WL_LATCH_SET is given), the
  * function returns immediately.
  *
- * The 'timeout' is given in milliseconds. It must be >= 0 if WL_TIMEOUT flag
- * is given.  Note that some extra overhead is incurred when WL_TIMEOUT is
- * given, so avoid using a timeout if possible.
+ * The "timeout" is given in milliseconds. It must be >= 0 if WL_TIMEOUT flag
+ * is given.  Although it is declared as "long", we don't actually support
+ * timeouts longer than INT_MAX milliseconds.  Note that some extra overhead
+ * is incurred when WL_TIMEOUT is given, so avoid using a timeout if possible.
  *
  * The latch must be owned by the current process, ie. it must be a
  * backend-local latch initialized with InitLatch, or a shared latch
@@ -237,13 +239,13 @@ WaitLatchOrSocket(volatile Latch *latch, int wakeEvents, pgsocket sock,
 	/*
 	 * Initialize timeout if requested.  We must record the current time so
 	 * that we can determine the remaining timeout if the poll() or select()
-	 * is interrupted.	(On some platforms, select() will update the contents
+	 * is interrupted.  (On some platforms, select() will update the contents
 	 * of "tv" for us, but unfortunately we can't rely on that.)
 	 */
 	if (wakeEvents & WL_TIMEOUT)
 	{
 		INSTR_TIME_SET_CURRENT(start_time);
-		Assert(timeout >= 0);
+		Assert(timeout >= 0 && timeout <= INT_MAX);
 		cur_timeout = timeout;
 
 #ifndef HAVE_POLL
@@ -486,6 +488,9 @@ WaitLatchOrSocket(volatile Latch *latch, int wakeEvents, pgsocket sock,
  * NB: when calling this in a signal handler, be sure to save and restore
  * errno around it.  (That's standard practice in most signal handlers, of
  * course, but we used to omit it in handlers that only set a flag.)
+ *
+ * NB: this function is called from critical sections and signal handlers so
+ * throwing an error is not a good idea.
  */
 void
 SetLatch(volatile Latch *latch)
@@ -495,7 +500,7 @@ SetLatch(volatile Latch *latch)
 	/*
 	 * XXX there really ought to be a memory barrier operation right here, to
 	 * ensure that any flag variables we might have changed get flushed to
-	 * main memory before we check/set is_set.	Without that, we have to
+	 * main memory before we check/set is_set.  Without that, we have to
 	 * require that callers provide their own synchronization for machines
 	 * with weak memory ordering (see latch.h).
 	 */
@@ -554,7 +559,7 @@ ResetLatch(volatile Latch *latch)
 	/*
 	 * XXX there really ought to be a memory barrier operation right here, to
 	 * ensure that the write to is_set gets flushed to main memory before we
-	 * examine any flag variables.	Otherwise a concurrent SetLatch might
+	 * examine any flag variables.  Otherwise a concurrent SetLatch might
 	 * falsely conclude that it needn't signal us, even though we have missed
 	 * seeing some flag updates that SetLatch was supposed to inform us of.
 	 * For the moment, callers must supply their own synchronization of flag

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_test_fsync
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "PG_TEST_FSYNC" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PG_TEST_FSYNC" "1" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 pg_test_fsync \- determine fastest wal_sync_method for PostgreSQL
-.\" pg_test_fsync
 .SH "SYNOPSIS"
 .HP \w'\fBpg_test_fsync\fR\ 'u
 \fBpg_test_fsync\fR [\fIoption\fR...]
@@ -41,14 +40,20 @@ is intended to give you a reasonable idea of what the fastest
 wal_sync_method
 is on your specific system, as well as supplying diagnostic information in the event of an identified I/O problem\&. However, differences shown by
 pg_test_fsync
-might not make any difference in real database throughput, especially since many database servers are not speed\-limited by their transaction logs\&.
+might not make any significant difference in real database throughput, especially since many database servers are not speed\-limited by their transaction logs\&.
+pg_test_fsync
+reports average file sync operation time in microseconds for each
+wal_sync_method, which can also be used to inform efforts to optimize the value of
+commit_delay\&.
 .SH "OPTIONS"
 .PP
 
 pg_test_fsync
 accepts the following command\-line options:
 .PP
-\fB\-f\fR, \fB\-\-filename\fR
+\fB\-f\fR
+.br
+\fB\-\-filename\fR
 .RS 4
 Specifies the file name to write test data in\&. This file should be in the same file system that the
 pg_xlog
@@ -60,19 +65,25 @@ pg_test_fsync\&.out
 in the current directory\&.
 .RE
 .PP
-\fB\-s\fR, \fB\-\-secs\-per\-test\fR
+\fB\-s\fR
+.br
+\fB\-\-secs\-per\-test\fR
 .RS 4
-Specifies the number of seconds for each test\&. The more time per test, the greater the test\*(Aqs accuracy, but the longer it takes to run\&. The default is 2 seconds, which allows the program to complete in about 30 seconds\&.
+Specifies the number of seconds for each test\&. The more time per test, the greater the test\*(Aqs accuracy, but the longer it takes to run\&. The default is 5 seconds, which allows the program to complete in under 2 minutes\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 pg_test_fsync
 version and exit\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 pg_test_fsync

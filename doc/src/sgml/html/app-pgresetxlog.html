@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN86779"
+NAME="AEN93750"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN86785"
+NAME="AEN93754"
 ></A
 ><H2
 >Synopsis</H2
@@ -155,6 +155,11 @@ CLASS="REPLACEABLE"
 ><I
 >mxid</I
 ></TT
+>,<TT
+CLASS="REPLACEABLE"
+><I
+>mxid</I
+></TT
 >] [<TT
 CLASS="OPTION"
 >-O</TT
@@ -169,17 +174,7 @@ CLASS="OPTION"
 > <TT
 CLASS="REPLACEABLE"
 ><I
->timelineid</I
-></TT
->,<TT
-CLASS="REPLACEABLE"
-><I
->fileid</I
-></TT
->,<TT
-CLASS="REPLACEABLE"
-><I
->seg</I
+>xlogfile</I
 ></TT
 >]  <TT
 CLASS="REPLACEABLE"
@@ -287,7 +282,7 @@ CLASS="OPTION"
 >-l</TT
 >
    options allow the next OID, next transaction ID, next transaction ID's
-   epoch, next multitransaction ID, next multitransaction offset, and WAL
+   epoch, next and oldest multitransaction ID, next multitransaction offset, and WAL
    starting address values to be set manually.  These are only needed when
    <TT
 CLASS="COMMAND"
@@ -332,7 +327,7 @@ CLASS="LITERAL"
 ></LI
 ><LI
 ><P
->      A safe value for the next multitransaction ID (<TT
+>      A safe value for the next multitransaction ID (first part of <TT
 CLASS="OPTION"
 >-m</TT
 >)
@@ -341,9 +336,16 @@ CLASS="OPTION"
 CLASS="FILENAME"
 >pg_multixact/offsets</TT
 > under the
-      data directory, adding one, and then multiplying by 65536.  As above,
-      the file names are in hexadecimal, so the easiest way to do this is to
-      specify the option value in hexadecimal and add four zeroes.
+      data directory, adding one, and then multiplying by 65536.
+      Conversely, a safe value for the oldest multitransaction ID (second part of
+      <TT
+CLASS="OPTION"
+>-m</TT
+>)
+      can be determined by looking for the numerically smallest
+      file name in the same directory and multiplying by 65536.
+      As above, the file names are in hexadecimal, so the easiest way to do
+      this is to specify the option value in hexadecimal and append four zeroes.
      </P
 ></LI
 ><LI
@@ -357,9 +359,9 @@ CLASS="OPTION"
 CLASS="FILENAME"
 >pg_multixact/members</TT
 > under the
-      data directory, adding one, and then multiplying by 65536.  As above,
-      the file names are in hexadecimal, so the easiest way to do this is to
-      specify the option value in hexadecimal and add four zeroes.
+      data directory, adding one, and then multiplying by 52352.  As above,
+      the file names are in hexadecimal.  There is no simple recipe such as
+      the ones above of appending zeroes.
      </P
 ></LI
 ><LI
@@ -378,11 +380,6 @@ CLASS="FILENAME"
 CLASS="QUOTE"
 >"timeline ID"</SPAN
 > and should usually be kept the same.
-      Do not choose a value larger than 255 (<TT
-CLASS="LITERAL"
->0xFF</TT
->) for the third
-      part; instead increment the second part and reset the third part to 0.
       For example, if <TT
 CLASS="FILENAME"
 >00000001000000320000004A</TT
@@ -390,19 +387,10 @@ CLASS="FILENAME"
       largest entry in <TT
 CLASS="FILENAME"
 >pg_xlog</TT
->, <TT
+>, use <TT
 CLASS="LITERAL"
->-l 0x1,0x32,0x4B</TT
-> will
-      work; but if the largest entry is
-      <TT
-CLASS="FILENAME"
->000000010000003A000000FF</TT
->, choose <TT
-CLASS="LITERAL"
->-l 0x1,0x3B,0x0</TT
->
-      or more.
+>-l 00000001000000320000004B</TT
+> or higher.
      </P
 ><DIV
 CLASS="NOTE"
@@ -479,12 +467,13 @@ CLASS="COMMAND"
    <TT
 CLASS="FILENAME"
 >pg_control</TT
-> and then exit without modifying anything.
-   This is mainly a debugging tool, but can be useful as a sanity check
-   before allowing <TT
+> and values about to be changed, and then exit
+   without modifying anything. This is mainly a debugging tool, but can be
+   useful as a sanity check before allowing <TT
 CLASS="COMMAND"
 >pg_resetxlog</TT
-> to proceed for real.
+>
+   to proceed for real.
   </P
 ><P
 >   The <TT
@@ -511,7 +500,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86891"
+NAME="AEN93857"
 ></A
 ><H2
 >Notes</H2

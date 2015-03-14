@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="APP-PGBASEBACKUP"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN81080"
+NAME="AEN87323"
 ></A
 ><H2
 >Name</H2
@@ -106,7 +106,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN81086"
+NAME="AEN87327"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81091"
+NAME="AEN87332"
 ></A
 ><H2
 >   Description
@@ -154,9 +154,9 @@ HREF="warm-standby.html"
 CLASS="APPLICATION"
 >pg_basebackup</SPAN
 > makes a binary copy of the database
-   cluster files, while making sure the system is automatically put in and
+   cluster files, while making sure the system is put in and
    out of backup mode automatically. Backups are always taken of the entire
-   database cluster, it is not possible to back up individual databases or
+   database cluster; it is not possible to back up individual databases or
    database objects. For individual database backups, a tool such as
    <A
 HREF="app-pgdump.html"
@@ -253,7 +253,7 @@ CLASS="LITERAL"
 CLASS="VARNAME"
 >full_page_writes</TT
 > on the master and
-      not to use the tool like <SPAN
+      not to use a tool like <SPAN
 CLASS="APPLICATION"
 >pg_compresslog</SPAN
 > as
@@ -270,7 +270,7 @@ CLASS="VARNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81129"
+NAME="AEN87370"
 ></A
 ><H2
 >Options</H2
@@ -416,6 +416,175 @@ CLASS="PRODUCTNAME"
 ></DL
 ></DIV
 ><P></P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-r <TT
+CLASS="REPLACEABLE"
+><I
+>rate</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--max-rate=<TT
+CLASS="REPLACEABLE"
+><I
+>rate</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        The maximum transfer rate of data transferred from the server.  Values are
+        in kilobytes per second.  Use a suffix of <TT
+CLASS="LITERAL"
+>M</TT
+> to indicate megabytes
+        per second.  A suffix of <TT
+CLASS="LITERAL"
+>k</TT
+> is also accepted, and has no effect.
+        Valid values are between 32 kilobytes per second and 1024 megabytes per second.
+       </P
+><P
+>        The purpose is to limit the impact of <SPAN
+CLASS="APPLICATION"
+>pg_basebackup</SPAN
+>
+        on the running server.
+       </P
+><P
+>        This option always affects transfer of the data directory. Transfer of
+        WAL files is only affected if the collection method is <TT
+CLASS="LITERAL"
+>fetch</TT
+>.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-R</TT
+><BR><TT
+CLASS="OPTION"
+>--write-recovery-conf</TT
+></DT
+><DD
+><P
+>        Write a minimal <TT
+CLASS="FILENAME"
+>recovery.conf</TT
+> in the output directory (or into
+        the base archive file when using tar format) to ease setting
+        up a standby server.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-T <TT
+CLASS="REPLACEABLE"
+><I
+>olddir</I
+></TT
+>=<TT
+CLASS="REPLACEABLE"
+><I
+>newdir</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--tablespace-mapping=<TT
+CLASS="REPLACEABLE"
+><I
+>olddir</I
+></TT
+>=<TT
+CLASS="REPLACEABLE"
+><I
+>newdir</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        Relocate the tablespace in directory <TT
+CLASS="REPLACEABLE"
+><I
+>olddir</I
+></TT
+>
+        to <TT
+CLASS="REPLACEABLE"
+><I
+>newdir</I
+></TT
+> during the backup.  To be
+        effective, <TT
+CLASS="REPLACEABLE"
+><I
+>olddir</I
+></TT
+> must exactly match the
+        path specification of the tablespace as it is currently defined.  (But
+        it is not an error if there is no tablespace
+        in <TT
+CLASS="REPLACEABLE"
+><I
+>olddir</I
+></TT
+> contained in the backup.)
+        Both <TT
+CLASS="REPLACEABLE"
+><I
+>olddir</I
+></TT
+>
+        and <TT
+CLASS="REPLACEABLE"
+><I
+>newdir</I
+></TT
+> must be absolute paths.  If a
+        path happens to contain a <TT
+CLASS="LITERAL"
+>=</TT
+> sign, escape it with a
+        backslash.  This option can be specified multiple times for multiple
+        tablespaces.  See examples below.
+       </P
+><P
+>        If a tablespace is relocated in this way, the symbolic links inside
+        the main data directory are updated to point to the new location.  So
+        the new data directory is ready to be used for a new server instance
+        with all tablespaces in the updated locations.
+        </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--xlogdir=<TT
+CLASS="REPLACEABLE"
+><I
+>xlogdir</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        Specifies the location for the transaction log directory.
+        <TT
+CLASS="REPLACEABLE"
+><I
+>xlogdir</I
+></TT
+> must be an absolute path.
+        The transaction log directory can only be specified when
+        the backup is in plain mode.
+       </P
 ></DD
 ><DT
 ><TT
@@ -595,7 +764,10 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Sets checkpoint mode to fast or spread (default).
+>        Sets checkpoint mode to fast or spread (default) (see <A
+HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
+>Section 24.3.3</A
+>).
        </P
 ></DD
 ><DT
@@ -686,6 +858,45 @@ CLASS="VARIABLELIST"
 ><DT
 ><TT
 CLASS="OPTION"
+>-d <TT
+CLASS="REPLACEABLE"
+><I
+>connstr</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--dbname=<TT
+CLASS="REPLACEABLE"
+><I
+>connstr</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        Specifies parameters used to connect to the server, as a connection
+        string. See <A
+HREF="libpq-connect.html#LIBPQ-CONNSTRING"
+>Section 31.1.1</A
+> for more information.
+       </P
+><P
+>        The option is called <TT
+CLASS="LITERAL"
+>--dbname</TT
+> for consistency with other
+        client applications, but because <SPAN
+CLASS="APPLICATION"
+>pg_basebackup</SPAN
+>
+        doesn't connect to any particular database in the cluster, database
+        name in the connection string will be ignored.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-h <TT
 CLASS="REPLACEABLE"
 ><I
@@ -763,13 +974,10 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        Specifies the number of seconds between status packets sent back to the
-        server. This is required when streaming the transaction log (using
-        <TT
-CLASS="LITERAL"
->--xlog=stream</TT
->) if replication timeout is configured
-        on the server, and allows for easier monitoring. A value of zero disables
-        the status updates completely. The default value is 10 seconds.
+        server. This allows for easier monitoring of the progress from server.
+        A value of zero disables the periodic status updates completely,
+        although an update will still be sent when requested by the server, to
+        avoid timeout disconnect. The default value is 10 seconds.
        </P
 ></DD
 ><DT
@@ -904,7 +1112,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81346"
+NAME="AEN87649"
 ></A
 ><H2
 >Environment</H2
@@ -926,29 +1134,48 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81352"
+NAME="AEN87655"
 ></A
 ><H2
 >Notes</H2
 ><P
 >   The backup will include all files in the data directory and tablespaces,
    including the configuration files and any additional files placed in the
-   directory by third parties. Only regular files and directories are allowed
-   in the data directory, no symbolic links or special device files.
+   directory by third parties. But only regular files and directories are
+   copied.  Symbolic links (other than those used for tablespaces) and special
+   device files are skipped.  (See <A
+HREF="protocol-replication.html"
+>Section 49.3</A
+> for
+   the precise details.)
   </P
 ><P
->   The way <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> manages tablespaces, the path
-   for all additional tablespaces must be identical whenever a backup is
-   restored. The main data directory, however, is relocatable to any location.
+>   Tablespaces will in plain format by default be backed up to the same path
+   they have on the server, unless the
+   option <TT
+CLASS="REPLACEABLE"
+><I
+>--tablespace-mapping</I
+></TT
+> is used.  Without
+   this option, running a plain format base backup on the same host as the
+   server will not work if tablespaces are in use, because the backup would
+   have to be written to the same directory locations as the original
+   tablespaces.
+  </P
+><P
+>   <SPAN
+CLASS="APPLICATION"
+>pg_basebackup</SPAN
+> works with servers of the same
+   or an older major version, down to 9.1. However, WAL streaming mode (-X
+   stream) only works with server version 9.3 and later.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81357"
+NAME="AEN87663"
 ></A
 ><H2
 >Examples</H2
@@ -1010,11 +1237,32 @@ CLASS="USERINPUT"
    (This command will fail if there are multiple tablespaces in the
    database.)
   </P
+><P
+>   To create a backup of a local database where the tablespace in
+   <TT
+CLASS="FILENAME"
+>/opt/ts</TT
+> is relocated
+   to <TT
+CLASS="FILENAME"
+>./backup/ts</TT
+>:
+</P><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>$</SAMP
+> <KBD
+CLASS="USERINPUT"
+>pg_basebackup -D backup/data -T /opt/ts=$(pwd)/backup/ts</KBD
+></PRE
+><P>
+  </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81375"
+NAME="AEN87687"
 ></A
 ><H2
 >See Also</H2

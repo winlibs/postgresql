@@ -3,7 +3,7 @@
  * int.c
  *	  Functions for the built-in integer types (except int8).
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -40,7 +40,7 @@
 
 #define SAMESIGN(a,b)	(((a) < 0) == ((b) < 0))
 
-#define Int2VectorSize(n)	(offsetof(int2vector, values) + (n) * sizeof(int2))
+#define Int2VectorSize(n)	(offsetof(int2vector, values) + (n) * sizeof(int16))
 
 typedef struct
 {
@@ -109,14 +109,14 @@ int2send(PG_FUNCTION_ARGS)
  * If int2s is NULL then caller must fill values[] afterward
  */
 int2vector *
-buildint2vector(const int2 *int2s, int n)
+buildint2vector(const int16 *int2s, int n)
 {
 	int2vector *result;
 
 	result = (int2vector *) palloc0(Int2VectorSize(n));
 
 	if (n > 0 && int2s)
-		memcpy(result->values, int2s, n * sizeof(int2));
+		memcpy(result->values, int2s, n * sizeof(int16));
 
 	/*
 	 * Attach standard array header.  For historical reasons, we set the index
@@ -266,7 +266,7 @@ int2vectoreq(PG_FUNCTION_ARGS)
 
 	if (a->dim1 != b->dim1)
 		PG_RETURN_BOOL(false);
-	PG_RETURN_BOOL(memcmp(a->values, b->values, a->dim1 * sizeof(int2)) == 0);
+	PG_RETURN_BOOL(memcmp(a->values, b->values, a->dim1 * sizeof(int16)) == 0);
 }
 
 
@@ -642,7 +642,7 @@ int4pl(PG_FUNCTION_ARGS)
 	result = arg1 + arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of different signs then their sum
+	 * Overflow check.  If the inputs are of different signs then their sum
 	 * cannot overflow.  If the inputs are of the same sign, their sum had
 	 * better be that sign too.
 	 */
@@ -663,8 +663,8 @@ int4mi(PG_FUNCTION_ARGS)
 	result = arg1 - arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of the same sign then their
-	 * difference cannot overflow.	If they are of different signs then the
+	 * Overflow check.  If the inputs are of the same sign then their
+	 * difference cannot overflow.  If they are of different signs then the
 	 * result should be of the same sign as the first input.
 	 */
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
@@ -684,7 +684,7 @@ int4mul(PG_FUNCTION_ARGS)
 	result = arg1 * arg2;
 
 	/*
-	 * Overflow check.	We basically check to see if result / arg2 gives arg1
+	 * Overflow check.  We basically check to see if result / arg2 gives arg1
 	 * again.  There are two cases where this fails: arg2 = 0 (which cannot
 	 * overflow) and arg1 = INT_MIN, arg2 = -1 (where the division itself will
 	 * overflow and thus incorrectly match).
@@ -794,7 +794,7 @@ int2pl(PG_FUNCTION_ARGS)
 	result = arg1 + arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of different signs then their sum
+	 * Overflow check.  If the inputs are of different signs then their sum
 	 * cannot overflow.  If the inputs are of the same sign, their sum had
 	 * better be that sign too.
 	 */
@@ -815,8 +815,8 @@ int2mi(PG_FUNCTION_ARGS)
 	result = arg1 - arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of the same sign then their
-	 * difference cannot overflow.	If they are of different signs then the
+	 * Overflow check.  If the inputs are of the same sign then their
+	 * difference cannot overflow.  If they are of different signs then the
 	 * result should be of the same sign as the first input.
 	 */
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
@@ -897,7 +897,7 @@ int24pl(PG_FUNCTION_ARGS)
 	result = arg1 + arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of different signs then their sum
+	 * Overflow check.  If the inputs are of different signs then their sum
 	 * cannot overflow.  If the inputs are of the same sign, their sum had
 	 * better be that sign too.
 	 */
@@ -918,8 +918,8 @@ int24mi(PG_FUNCTION_ARGS)
 	result = arg1 - arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of the same sign then their
-	 * difference cannot overflow.	If they are of different signs then the
+	 * Overflow check.  If the inputs are of the same sign then their
+	 * difference cannot overflow.  If they are of different signs then the
 	 * result should be of the same sign as the first input.
 	 */
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
@@ -939,7 +939,7 @@ int24mul(PG_FUNCTION_ARGS)
 	result = arg1 * arg2;
 
 	/*
-	 * Overflow check.	We basically check to see if result / arg2 gives arg1
+	 * Overflow check.  We basically check to see if result / arg2 gives arg1
 	 * again.  There is one case where this fails: arg2 = 0 (which cannot
 	 * overflow).
 	 *
@@ -985,7 +985,7 @@ int42pl(PG_FUNCTION_ARGS)
 	result = arg1 + arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of different signs then their sum
+	 * Overflow check.  If the inputs are of different signs then their sum
 	 * cannot overflow.  If the inputs are of the same sign, their sum had
 	 * better be that sign too.
 	 */
@@ -1006,8 +1006,8 @@ int42mi(PG_FUNCTION_ARGS)
 	result = arg1 - arg2;
 
 	/*
-	 * Overflow check.	If the inputs are of the same sign then their
-	 * difference cannot overflow.	If they are of different signs then the
+	 * Overflow check.  If the inputs are of the same sign then their
+	 * difference cannot overflow.  If they are of different signs then the
 	 * result should be of the same sign as the first input.
 	 */
 	if (!SAMESIGN(arg1, arg2) && !SAMESIGN(result, arg1))
@@ -1027,7 +1027,7 @@ int42mul(PG_FUNCTION_ARGS)
 	result = arg1 * arg2;
 
 	/*
-	 * Overflow check.	We basically check to see if result / arg1 gives arg2
+	 * Overflow check.  We basically check to see if result / arg1 gives arg2
 	 * again.  There is one case where this fails: arg1 = 0 (which cannot
 	 * overflow).
 	 *

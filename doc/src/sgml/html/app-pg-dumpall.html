@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="pg_dump"
 HREF="app-pgdump.html"><LINK
 REL="NEXT"
-TITLE="pg_receivexlog"
-HREF="app-pgreceivexlog.html"><LINK
+TITLE="pg_isready"
+HREF="app-pg-isready.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="pg_receivexlog"
-HREF="app-pgreceivexlog.html"
+TITLE="pg_isready"
+HREF="app-pg-isready.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN82258"
+NAME="AEN88630"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN82264"
+NAME="AEN88634"
 ></A
 ><H2
 >Synopsis</H2
@@ -213,7 +213,7 @@ HREF="libpq-pgpass.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82290"
+NAME="AEN88660"
 ></A
 ><H2
 >Options</H2
@@ -412,7 +412,7 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        Specify the superuser user name to use when disabling triggers.
-        This is only relevant if <TT
+        This is relevant only if <TT
 CLASS="OPTION"
 >--disable-triggers</TT
 > is used.
@@ -556,7 +556,7 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->        This option is only relevant when creating a data-only dump.
+>        This option is relevant only when creating a data-only dump.
         It instructs <SPAN
 CLASS="APPLICATION"
 >pg_dumpall</SPAN
@@ -577,6 +577,24 @@ CLASS="OPTION"
 >-S</TT
 >, or preferably be careful to
         start the resulting script as a superuser.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--if-exists</TT
+></DT
+><DD
+><P
+>        Use conditional commands (i.e. add an <TT
+CLASS="LITERAL"
+>IF EXISTS</TT
+>
+        clause) to clean databases and other objects.  This option is not valid
+        unless <TT
+CLASS="OPTION"
+>--clean</TT
+> is also specified.
        </P
 ></DD
 ><DT
@@ -733,6 +751,50 @@ CLASS="APPLICATION"
 ></P><DIV
 CLASS="VARIABLELIST"
 ><DL
+><DT
+><TT
+CLASS="OPTION"
+>-d <TT
+CLASS="REPLACEABLE"
+><I
+>connstr</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--dbname=<TT
+CLASS="REPLACEABLE"
+><I
+>connstr</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        Specifies parameters used to connect to the server, as a connection
+        string. See <A
+HREF="libpq-connect.html#LIBPQ-CONNSTRING"
+>Section 31.1.1</A
+> for more information.
+       </P
+><P
+>        The option is called <TT
+CLASS="LITERAL"
+>--dbname</TT
+> for consistency with other
+        client applications, but because <SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+>
+        needs to connect to many databases, database name in the connection
+        string will be ignored. Use <TT
+CLASS="LITERAL"
+>-l</TT
+> option to specify
+        the name of the database used to dump global objects and to discover
+        what other databases should be dumped.
+       </P
+></DD
 ><DT
 ><TT
 CLASS="OPTION"
@@ -959,7 +1021,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82567"
+NAME="AEN88958"
 ></A
 ><H2
 >Environment</H2
@@ -1007,7 +1069,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82585"
+NAME="AEN88976"
 ></A
 ><H2
 >Notes</H2
@@ -1092,7 +1154,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82607"
+NAME="AEN88998"
 ></A
 ><H2
 >See Also</H2
@@ -1138,7 +1200,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="app-pgreceivexlog.html"
+HREF="app-pg-isready.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -1162,7 +1224,10 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->pg_receivexlog</TD
+><SPAN
+CLASS="APPLICATION"
+>pg_isready</SPAN
+></TD
 ></TR
 ></TABLE
 ></DIV

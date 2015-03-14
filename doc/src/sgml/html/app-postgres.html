@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN86902"
+NAME="AEN93870"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN86908"
+NAME="AEN93874"
 ></A
 ><H2
 >Synopsis</H2
@@ -127,7 +127,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86913"
+NAME="AEN93879"
 ></A
 ><H2
 >Description</H2
@@ -269,7 +269,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN86945"
+NAME="AEN93911"
 ></A
 ><H3
 >General Purpose</H3
@@ -434,8 +434,8 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Specifies the file system location of the data directory or
-        configuration file(s).  See
+>        Specifies the file system location of the database
+        configuration files.  See
         <A
 HREF="runtime-config-file-locations.html"
 >Section 18.2</A
@@ -574,11 +574,19 @@ CLASS="REPLACEABLE"
 CLASS="COMMAND"
 >postgres</TT
 > is to listen for
-        connections from client applications.  The default is normally
+        connections from client applications.  The value can also be a
+        comma-separated list of directories.  An empty value
+        specifies not listening on any Unix-domain sockets, in which case
+        only TCP/IP sockets can be used to connect to the server.
+        The default value is normally
         <TT
 CLASS="FILENAME"
 >/tmp</TT
->, but can be changed at build time.
+>, but that can be changed at build time.
+        Specifying this option is equivalent to setting the <A
+HREF="runtime-config-connection.html#GUC-UNIX-SOCKET-DIRECTORIES"
+>unix_socket_directories</A
+> configuration parameter.
        </P
 ></DD
 ><DT
@@ -817,7 +825,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87125"
+NAME="AEN94092"
 ></A
 ><H3
 >Semi-internal Options</H3
@@ -1027,7 +1035,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87190"
+NAME="AEN94157"
 ></A
 ><H3
 >Options for Single-User Mode</H3
@@ -1101,12 +1109,8 @@ CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
->.  In normal multiuser
-        mode, this option is ignored, and <SPAN
-CLASS="SYSTEMITEM"
->stderr</SPAN
-> is
-        used by all processes.
+>.  This option is only
+        honored when supplied as a command-line option.
        </P
 ></DD
 ></DL
@@ -1116,7 +1120,7 @@ CLASS="SYSTEMITEM"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87222"
+NAME="AEN94190"
 ></A
 ><H2
 >Environment</H2
@@ -1187,7 +1191,7 @@ CLASS="ENVAR"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87251"
+NAME="AEN94219"
 ></A
 ><H2
 >Diagnostics</H2
@@ -1273,7 +1277,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87271"
+NAME="AEN94239"
 ></A
 ><H2
 >Notes</H2
@@ -1356,7 +1360,23 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >SIGINT</TT
 > signal
-   to the process running that command.
+   to the process running that command. To terminate a backend process
+   cleanly, send <TT
+CLASS="LITERAL"
+>SIGTERM</TT
+> to that process. See
+   also <CODE
+CLASS="FUNCTION"
+>pg_cancel_backend</CODE
+> and <CODE
+CLASS="FUNCTION"
+>pg_terminate_backend</CODE
+>
+   in <A
+HREF="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL"
+>Section 9.26.2</A
+> for the SQL-callable equivalents
+   of these two actions.
   </P
 ><P
 >   The <TT
@@ -1364,14 +1384,11 @@ CLASS="COMMAND"
 >postgres</TT
 > server uses <TT
 CLASS="LITERAL"
->SIGTERM</TT
->
-   to tell subordinate server processes to quit normally and
-   <TT
-CLASS="LITERAL"
 >SIGQUIT</TT
-> to terminate without the normal cleanup.
-   These signals <SPAN
+>
+   to tell subordinate server processes to terminate without normal
+   cleanup.
+   This signal <SPAN
 CLASS="emphasis"
 ><I
 CLASS="EMPHASIS"
@@ -1422,7 +1439,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87307"
+NAME="AEN94278"
 ></A
 ><H2
 >Usage</H2
@@ -1619,7 +1636,7 @@ CLASS="FILENAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87359"
+NAME="AEN94330"
 ></A
 ><H2
 >See Also</H2

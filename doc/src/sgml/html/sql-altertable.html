@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
 REL="PREVIOUS"
-TITLE="ALTER SERVER"
-HREF="sql-alterserver.html"><LINK
+TITLE="ALTER SYSTEM"
+HREF="sql-altersystem.html"><LINK
 REL="NEXT"
 TITLE="ALTER TABLESPACE"
 HREF="sql-altertablespace.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="ALTER SERVER"
-HREF="sql-alterserver.html"
+TITLE="ALTER SYSTEM"
+HREF="sql-altersystem.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-ALTERTABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN64309"
+NAME="AEN69503"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN64309"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN64314"
+NAME="AEN69506"
 ></A
 ><H2
 >Synopsis</H2
@@ -179,6 +179,23 @@ CLASS="REPLACEABLE"
 >new_schema</I
 ></TT
 >
+ALTER TABLE ALL IN TABLESPACE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> [ OWNED BY <TT
+CLASS="REPLACEABLE"
+><I
+>role_name</I
+></TT
+> [, ... ] ]
+    SET TABLESPACE <TT
+CLASS="REPLACEABLE"
+><I
+>new_tablespace</I
+></TT
+> [ NOWAIT ]
 
 <SPAN
 CLASS="phrase"
@@ -320,6 +337,12 @@ CLASS="REPLACEABLE"
 >table_constraint_using_index</I
 ></TT
 >
+    ALTER CONSTRAINT <TT
+CLASS="REPLACEABLE"
+><I
+>constraint_name</I
+></TT
+> [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
     VALIDATE CONSTRAINT <TT
 CLASS="REPLACEABLE"
 ><I
@@ -437,6 +460,12 @@ CLASS="REPLACEABLE"
 >new_tablespace</I
 ></TT
 >
+    REPLICA IDENTITY {DEFAULT | USING INDEX <TT
+CLASS="REPLACEABLE"
+><I
+>index_name</I
+></TT
+> | FULL | NOTHING}
 
 <SPAN
 CLASS="phrase"
@@ -468,7 +497,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64376"
+NAME="AEN69573"
 ></A
 ><H2
 >Description</H2
@@ -477,7 +506,13 @@ NAME="AEN64376"
 CLASS="COMMAND"
 >ALTER TABLE</TT
 > changes the definition of an existing table.
-   There are several subforms:
+   There are several subforms described below. Note that the lock level required
+   may differ for each subform. An <TT
+CLASS="LITERAL"
+>ACCESS EXCLUSIVE</TT
+> lock is held
+   unless explicitly noted. When multiple subcommands are listed, the lock
+   held will be the strictest one required from any subcommand.
 
   <P
 ></P
@@ -574,20 +609,15 @@ CLASS="LITERAL"
 ><DD
 ><P
 >      These forms set or remove the default value for a column.
-      The default values only apply to subsequent <TT
+      Default values only apply in subsequent <TT
 CLASS="COMMAND"
 >INSERT</TT
 >
-      commands; they do not cause rows already in the table to change.
-      Defaults can also be created for views, in which case they are
-      inserted into <TT
+      or <TT
 CLASS="COMMAND"
->INSERT</TT
-> statements on the view before
-      the view's <TT
-CLASS="LITERAL"
->ON INSERT</TT
-> rule is applied.
+>UPDATE</TT
+> commands; they do not cause rows already in the
+      table to change.
      </P
 ></DD
 ><DT
@@ -636,6 +666,12 @@ CLASS="PRODUCTNAME"
 HREF="planner-stats.html"
 >Section 14.2</A
 >.
+     </P
+><P
+>      SET STATISTICS acquires a <TT
+CLASS="LITERAL"
+>SHARE UPDATE EXCLUSIVE</TT
+> lock.
      </P
 ></DD
 ><DT
@@ -714,12 +750,20 @@ HREF="planner-stats.html"
 >Section 14.2</A
 >.
      </P
+><P
+>      Changing per-attribute options acquires a
+      <TT
+CLASS="LITERAL"
+>SHARE UPDATE EXCLUSIVE</TT
+> lock.
+     </P
 ></DD
 ><DT
 ><TT
 CLASS="LITERAL"
 >SET STORAGE</TT
-></DT
+>
+     </DT
 ><DD
 ><P
 >      This form sets the storage mode for a column. This controls whether this
@@ -775,7 +819,7 @@ CLASS="LITERAL"
       it just sets the strategy to be pursued during future table updates.
       See <A
 HREF="storage-toast.html"
->Section 56.2</A
+>Section 59.2</A
 > for more information.
      </P
 ></DD
@@ -913,6 +957,17 @@ CLASS="COMMAND"
 ><DT
 ><TT
 CLASS="LITERAL"
+>ALTER CONSTRAINT</TT
+></DT
+><DD
+><P
+>      This form alters the attributes of a constraint that was previously
+      created. Currently only foreign key constraints may be altered.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
 >VALIDATE CONSTRAINT</TT
 ></DT
 ><DD
@@ -924,9 +979,25 @@ CLASS="LITERAL"
 >, by scanning the table to ensure there
       are no rows for which the constraint is not satisfied.
       Nothing happens if the constraint is already marked valid.
-      The value of separating validation from initial creation of the
-      constraint is that validation requires a lesser lock on the table
-      than constraint creation does.
+     </P
+><P
+>      Validation can be a long process on larger tables. The value of separating
+      validation from initial creation is that you can defer validation to less
+      busy times, or can be used to give additional time to correct pre-existing
+      errors while preventing new errors. Note also that validation on its own
+      does not prevent normal write commands against the table while it runs.
+     </P
+><P
+>      Validation acquires only a <TT
+CLASS="LITERAL"
+>SHARE UPDATE EXCLUSIVE</TT
+> lock
+      on the table being altered. If the constraint is a foreign key then
+      a <TT
+CLASS="LITERAL"
+>ROW SHARE</TT
+> lock is also required on
+      the table referenced by the constraint.
      </P
 ></DD
 ><DT
@@ -1029,6 +1100,12 @@ HREF="sql-cluster.html"
 >
       operations.  It does not actually re-cluster the table.
      </P
+><P
+>      Changing cluster options acquires a <TT
+CLASS="LITERAL"
+>SHARE UPDATE EXCLUSIVE</TT
+> lock.
+     </P
 ></DD
 ><DT
 ><TT
@@ -1044,6 +1121,12 @@ HREF="sql-cluster.html"
 >
       index specification from the table.  This affects
       future cluster operations that don't specify an index.
+     </P
+><P
+>      Changing cluster options acquires a <TT
+CLASS="LITERAL"
+>SHARE UPDATE EXCLUSIVE</TT
+> lock.
      </P
 ></DD
 ><DT
@@ -1319,8 +1402,8 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->      This form changes the owner of the table, sequence, or view to the
-      specified user.
+>      This form changes the owner of the table, sequence, view, materialized view,
+      or foreign table to the specified user.
      </P
 ></DD
 ><DT
@@ -1337,11 +1420,79 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >SET TABLESPACE</TT
 > commands.
+      All tables in the current database in a tablespace can be moved by using
+      the <TT
+CLASS="LITERAL"
+>ALL IN TABLESPACE</TT
+> form, which will lock all tables
+      to be moved first and then move each one.  This form also supports
+      <TT
+CLASS="LITERAL"
+>OWNED BY</TT
+>, which will only move tables owned by the
+      roles specified.  If the <TT
+CLASS="LITERAL"
+>NOWAIT</TT
+> option is specified
+      then the command will fail if it is unable to acquire all of the locks
+      required immediately.  Note that system catalogs are not moved by this
+      command, use <TT
+CLASS="COMMAND"
+>ALTER DATABASE</TT
+> or explicit
+      <TT
+CLASS="COMMAND"
+>ALTER TABLE</TT
+> invocations instead if desired.  The
+      <TT
+CLASS="LITERAL"
+>information_schema</TT
+> relations are not considered part
+      of the system catalogs and will be moved.
       See also
       <A
 HREF="sql-createtablespace.html"
 >CREATE TABLESPACE</A
 >.
+     </P
+></DD
+><DT
+><A
+NAME="SQL-CREATETABLE-REPLICA-IDENTITY"
+></A
+><TT
+CLASS="LITERAL"
+>REPLICA IDENTITY</TT
+></DT
+><DD
+><P
+>      This form changes the information which is written to the write-ahead log
+      to identify rows which are updated or deleted.  This option has no effect
+      except when logical replication is in use.  <TT
+CLASS="LITERAL"
+>DEFAULT</TT
+>
+      (the default for non-system tables) records the 
+      old values of the columns of the primary key, if any.  <TT
+CLASS="LITERAL"
+>USING INDEX</TT
+>
+      records the old values of the columns covered by the named index, which
+      must be unique, not partial, not deferrable, and include only columns marked
+      <TT
+CLASS="LITERAL"
+>NOT NULL</TT
+>.  <TT
+CLASS="LITERAL"
+>FULL</TT
+> records the old values of all columns
+      in the row.  <TT
+CLASS="LITERAL"
+>NOTHING</TT
+> records no information about the old row.
+      (This is the default for system tables.)
+      In all cases, no old values are logged unless at least one of the columns
+      that would be logged differs between the old and new versions of the row.
      </P
 ></DD
 ><DT
@@ -1355,8 +1506,9 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >RENAME</TT
 > forms change the name of a table
-      (or an index, sequence, or view), the name of an individual column in
-      a table, or the name of a constraint of the table. There is no effect on the stored data.
+      (or an index, sequence, view, materialized view, or foreign table), the name
+      of an individual column in a table, or the name of a constraint of the table.
+      There is no effect on the stored data.
      </P
 ></DD
 ><DT
@@ -1378,6 +1530,10 @@ CLASS="LITERAL"
 >   All the actions except <TT
 CLASS="LITERAL"
 >RENAME</TT
+>,
+   <TT
+CLASS="LITERAL"
+>SET TABLESPACE</TT
 > and <TT
 CLASS="LITERAL"
 >SET SCHEMA</TT
@@ -1393,11 +1549,11 @@ CLASS="LITERAL"
 CLASS="COMMAND"
 >ALTER TABLE</TT
 >.
-   To change the schema of a table, you must also have
+   To change the schema or tablespace of a table, you must also have
    <TT
 CLASS="LITERAL"
 >CREATE</TT
-> privilege on the new schema.
+> privilege on the new schema or tablespace.
    To add the table as a new child of a parent table, you must own the
    parent table as well.
    To alter the owner, you must also be a direct or indirect member of the new
@@ -1422,7 +1578,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64660"
+NAME="AEN69891"
 ></A
 ><H2
 >Parameters</H2
@@ -1497,7 +1653,7 @@ CLASS="REPLACEABLE"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->type</I
+>data_type</I
 ></TT
 ></DT
 ><DD
@@ -1527,7 +1683,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Name of an existing constraint to drop.
+>        Name of a new or existing constraint.
        </P
 ></DD
 ><DT
@@ -1600,7 +1756,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        The index name on which the table should be marked for clustering.
+>        The name of an existing index.
        </P
 ></DD
 ><DT
@@ -1682,7 +1838,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64761"
+NAME="AEN69992"
 ></A
 ><H2
 >Notes</H2
@@ -1702,16 +1858,26 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >DEFAULT</TT
 > clause is specified).
+    If there is no <TT
+CLASS="LITERAL"
+>DEFAULT</TT
+> clause, this is merely a metadata
+    change and does not require any immediate update of the table's data;
+    the added NULL values are supplied on readout, instead.
    </P
 ><P
->    Adding a column with a non-null default or changing the type of an
-    existing column will require the entire table and indexes to be rewritten.
-    As an exception, if the <TT
+>    Adding a column with a <TT
+CLASS="LITERAL"
+>DEFAULT</TT
+> clause or changing the type of
+    an existing column will require the entire table and its indexes to be
+    rewritten.  As an exception when changing the type of an existing column,
+    if the <TT
 CLASS="LITERAL"
 >USING</TT
 > clause does not change the column
     contents and the old type is either binary coercible to the new type or
-    an unconstrained domain over the new type, a table rewrite is not needed,
+    an unconstrained domain over the new type, a table rewrite is not needed;
     but any indexes on the affected columns must still be rebuilt.  Adding or
     removing a system <TT
 CLASS="LITERAL"
@@ -1887,7 +2053,7 @@ HREF="ddl.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64810"
+NAME="AEN70043"
 ></A
 ><H2
 >Examples</H2
@@ -2018,6 +2184,14 @@ CLASS="PROGRAMLISTING"
 ><P>
   </P
 ><P
+>   To add a foreign key constraint to a table with the least impact on other work:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ALTER TABLE distributors ADD CONSTRAINT distfk FOREIGN KEY (address) REFERENCES addresses (address) NOT VALID;
+ALTER TABLE distributors VALIDATE CONSTRAINT distfk;</PRE
+><P>
+  </P
+><P
 >   To add a (multicolumn) unique constraint to a table:
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -2059,7 +2233,7 @@ ALTER TABLE distributors DROP CONSTRAINT distributors_pkey,
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64854"
+NAME="AEN70089"
 ></A
 ><H2
 >Compatibility</H2
@@ -2108,7 +2282,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64867"
+NAME="AEN70102"
 ></A
 ><H2
 >See Also</H2
@@ -2132,7 +2306,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="sql-alterserver.html"
+HREF="sql-altersystem.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -2160,7 +2334,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->ALTER SERVER</TD
+>ALTER SYSTEM</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

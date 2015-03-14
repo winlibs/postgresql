@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
 HREF="reference-client.html"><LINK
 REL="PREVIOUS"
-TITLE="pg_receivexlog"
-HREF="app-pgreceivexlog.html"><LINK
+TITLE="pg_recvlogical"
+HREF="app-pgrecvlogical.html"><LINK
 REL="NEXT"
 TITLE="psql"
 HREF="app-psql.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="pg_receivexlog"
-HREF="app-pgreceivexlog.html"
+TITLE="pg_recvlogical"
+HREF="app-pgrecvlogical.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="APP-PGRESTORE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN82787"
+NAME="AEN89600"
 ></A
 ><H2
 >Name</H2
@@ -111,7 +111,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN82794"
+NAME="AEN89605"
 ></A
 ><H2
 >Synopsis</H2
@@ -279,7 +279,11 @@ CLASS="OPTION"
 ><DD
 ><P
 >        Clean (drop) database objects before recreating them.
-        (This might generate some harmless error messages, if any objects
+        (Unless <TT
+CLASS="OPTION"
+>--if-exists</TT
+> is used,
+        this might generate some harmless error messages, if any objects
         were not present in the destination database.)
        </P
 ></DD
@@ -504,7 +508,11 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Restore definition of named index only.
+>        Restore definition of named index only.  Multiple indexes
+        may be specified with multiple <TT
+CLASS="OPTION"
+>-I</TT
+> switches.
        </P
 ></DD
 ><DT
@@ -552,8 +560,9 @@ CLASS="APPLICATION"
         lead to decreased performance because of thrashing.
        </P
 ><P
->        Only the custom archive format is supported with this option.
-        The input file must be a regular file (not, for example, a
+>        Only the custom and directory archive formats are supported
+        with this option.
+        The input must be a regular file or directory (not, for example, a
         pipe).  This option is ignored when emitting a script rather
         than connecting directly to a database server.  Also, multiple
         jobs cannot be used together with the
@@ -669,7 +678,11 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Restore only objects that are in the named schema.  This can be
+>        Restore only objects that are in the named schema.  Multiple schemas
+        may be specified with multiple <TT
+CLASS="OPTION"
+>-n</TT
+> switches.  This can be
         combined with the <TT
 CLASS="OPTION"
 >-t</TT
@@ -734,7 +747,11 @@ CLASS="REPLACEABLE"
 ><P
 >        Restore the named function only.  Be careful to spell the function
         name and arguments exactly as they appear in the dump file's table
-        of contents.
+        of contents.  Multiple functions may be specified with multiple
+        <TT
+CLASS="OPTION"
+>-P</TT
+> switches.
        </P
 ></DD
 ><DT
@@ -808,7 +825,7 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        Specify the superuser user name to use when disabling triggers.
-        This is only relevant if <TT
+        This is relevant only if <TT
 CLASS="OPTION"
 >--disable-triggers</TT
 > is used.
@@ -834,7 +851,11 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Restore definition and/or data of named table only.  This can be
+>        Restore definition and/or data of named table only. Multiple tables
+        may be specified with multiple <TT
+CLASS="OPTION"
+>-t</TT
+> switches. This can be
         combined with the <TT
 CLASS="OPTION"
 >-n</TT
@@ -861,7 +882,11 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Restore named trigger only.
+>        Restore named trigger only.  Multiple triggers may be specified with
+        multiple <TT
+CLASS="OPTION"
+>-T</TT
+> switches.
        </P
 ></DD
 ><DT
@@ -942,7 +967,7 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->        This option is only relevant when performing a data-only restore.
+>        This option is relevant only when performing a data-only restore.
         It instructs <SPAN
 CLASS="APPLICATION"
 >pg_restore</SPAN
@@ -957,12 +982,12 @@ CLASS="APPLICATION"
         <TT
 CLASS="OPTION"
 >--disable-triggers</TT
-> must be done as superuser.  So, you
+> must be done as superuser.  So you
         should also specify a superuser name with <TT
 CLASS="OPTION"
 >-S</TT
->, or
-        preferably run <SPAN
+> or,
+        preferably, run <SPAN
 CLASS="APPLICATION"
 >pg_restore</SPAN
 > as a
@@ -970,6 +995,24 @@ CLASS="APPLICATION"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > superuser.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--if-exists</TT
+></DT
+><DD
+><P
+>        Use conditional commands (i.e. add an <TT
+CLASS="LITERAL"
+>IF EXISTS</TT
+>
+        clause) when cleaning database objects.  This option is not valid
+        unless <TT
+CLASS="OPTION"
+>--clean</TT
+> is also specified.
        </P
 ></DD
 ><DT
@@ -1296,7 +1339,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83208"
+NAME="AEN90032"
 ></A
 ><H2
 >Environment</H2
@@ -1338,7 +1381,11 @@ CLASS="APPLICATION"
    (see <A
 HREF="libpq-envars.html"
 >Section 31.14</A
->).
+>).  However, it does not read
+   <TT
+CLASS="ENVAR"
+>PGDATABASE</TT
+> when a database name is not supplied.
   </P
 ></DIV
 ><DIV
@@ -1657,7 +1704,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83301"
+NAME="AEN90126"
 ></A
 ><H2
 >See Also</H2
@@ -1693,7 +1740,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="app-pgreceivexlog.html"
+HREF="app-pgrecvlogical.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -1721,7 +1768,10 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->pg_receivexlog</TD
+><SPAN
+CLASS="APPLICATION"
+>pg_recvlogical</SPAN
+></TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

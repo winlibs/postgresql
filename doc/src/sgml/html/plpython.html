@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Programming"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="CHAPTER"
 ><A
 NAME="PLPYTHON"
 ></A
->Chapter 42. PL/Python - Python Procedural Language</H1
+>Chapter 43. PL/Python - Python Procedural Language</H1
 ><DIV
 CLASS="TOC"
 ><DL
@@ -102,109 +102,109 @@ CLASS="TOC"
 >Table of Contents</B
 ></DT
 ><DT
->42.1. <A
+>43.1. <A
 HREF="plpython-python23.html"
 >Python 2 vs. Python 3</A
 ></DT
 ><DT
->42.2. <A
+>43.2. <A
 HREF="plpython-funcs.html"
 >PL/Python Functions</A
 ></DT
 ><DT
->42.3. <A
+>43.3. <A
 HREF="plpython-data.html"
 >Data Values</A
 ></DT
 ><DD
 ><DL
 ><DT
->42.3.1. <A
-HREF="plpython-data.html#AEN58937"
+>43.3.1. <A
+HREF="plpython-data.html#AEN63311"
 >Data Type Mapping</A
 ></DT
 ><DT
->42.3.2. <A
-HREF="plpython-data.html#AEN58987"
+>43.3.2. <A
+HREF="plpython-data.html#AEN63370"
 >Null, None</A
 ></DT
 ><DT
->42.3.3. <A
+>43.3.3. <A
 HREF="plpython-data.html#PLPYTHON-ARRAYS"
 >Arrays, Lists</A
 ></DT
 ><DT
->42.3.4. <A
-HREF="plpython-data.html#AEN59005"
+>43.3.4. <A
+HREF="plpython-data.html#AEN63388"
 >Composite Types</A
 ></DT
 ><DT
->42.3.5. <A
-HREF="plpython-data.html#AEN59034"
+>43.3.5. <A
+HREF="plpython-data.html#AEN63417"
 >Set-returning Functions</A
 ></DT
 ></DL
 ></DD
 ><DT
->42.4. <A
+>43.4. <A
 HREF="plpython-sharing.html"
 >Sharing Data</A
 ></DT
 ><DT
->42.5. <A
+>43.5. <A
 HREF="plpython-do.html"
 >Anonymous Code Blocks</A
 ></DT
 ><DT
->42.6. <A
+>43.6. <A
 HREF="plpython-trigger.html"
 >Trigger Functions</A
 ></DT
 ><DT
->42.7. <A
+>43.7. <A
 HREF="plpython-database.html"
 >Database Access</A
 ></DT
 ><DD
 ><DL
 ><DT
->42.7.1. <A
-HREF="plpython-database.html#AEN59171"
+>43.7.1. <A
+HREF="plpython-database.html#AEN63554"
 >Database Access Functions</A
 ></DT
 ><DT
->42.7.2. <A
+>43.7.2. <A
 HREF="plpython-database.html#PLPYTHON-TRAPPING"
 >Trapping Errors</A
 ></DT
 ></DL
 ></DD
 ><DT
->42.8. <A
+>43.8. <A
 HREF="plpython-subtransaction.html"
 >Explicit Subtransactions</A
 ></DT
 ><DD
 ><DL
 ><DT
->42.8.1. <A
-HREF="plpython-subtransaction.html#AEN59322"
+>43.8.1. <A
+HREF="plpython-subtransaction.html#AEN63713"
 >Subtransaction Context Managers</A
 ></DT
 ><DT
->42.8.2. <A
-HREF="plpython-subtransaction.html#AEN59337"
+>43.8.2. <A
+HREF="plpython-subtransaction.html#AEN63728"
 >Older Python Versions</A
 ></DT
 ></DL
 ></DD
 ><DT
->42.9. <A
+>43.9. <A
 HREF="plpython-util.html"
 >Utility Functions</A
 ></DT
 ><DT
->42.10. <A
+>43.10. <A
 HREF="plpython-envar.html"
 >Environment Variables</A
 ></DT
@@ -242,7 +242,7 @@ CLASS="REPLACEABLE"
 > (but
   see also <A
 HREF="plpython-python23.html"
->Section 42.1</A
+>Section 43.1</A
 >).
  </P
 ><DIV
@@ -261,24 +261,20 @@ CLASS="LITERAL"
 ></BLOCKQUOTE
 ></DIV
 ><P
->  As of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 7.4, PL/Python is only
-  available as an <SPAN
+>  PL/Python is only available as an <SPAN
 CLASS="QUOTE"
 >"untrusted"</SPAN
-> language, meaning it does not
-  offer any way of restricting what users can do in it.  It has
-  therefore been renamed to <TT
+> language, meaning
+  it does not offer any way of restricting what users can do in it and
+  is therefore named <TT
 CLASS="LITERAL"
 >plpythonu</TT
->.  The trusted
+>.  A trusted
   variant <TT
 CLASS="LITERAL"
 >plpython</TT
-> might become available again in future,
-  if a new secure execution mechanism is developed in Python.  The
+> might become available in the future
+  if a secure execution mechanism is developed in Python.  The
   writer of a function in untrusted PL/Python must take care that the
   function cannot be used to do anything unwanted, since it will be
   able to do anything that could be done by a user logged in as the

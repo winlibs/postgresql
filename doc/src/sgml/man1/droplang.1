@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: droplang
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "DROPLANG" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "DROPLANG" "1" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 droplang \- remove a PostgreSQL procedural language
-.\" droplang
 .SH "SYNOPSIS"
 .HP \w'\fBdroplang\fR\ 'u
 \fBdroplang\fR [\fIconnection\-option\fR...] \fIlangname\fR [\fIdbname\fR]
@@ -81,29 +80,39 @@ accepts the following command line arguments:
 Specifies the name of the procedural language to be removed\&. (This name is lower\-cased\&.)
 .RE
 .PP
-\fB[\-d]\fR\fB \fR\fB\fIdbname\fR\fR, \fB[\-\-dbname=]\fR\fB\fIdbname\fR\fR
+\fB[\-d]\fR\fB \fR\fB\fIdbname\fR\fR
+.br
+\fB[\-\-dbname=]\fR\fB\fIdbname\fR\fR
 .RS 4
 Specifies from which database the language should be removed\&. The default is to use the database with the same name as the current system user\&.
 .RE
 .PP
-\fB\-e\fR, \fB\-\-echo\fR
+\fB\-e\fR
+.br
+\fB\-\-echo\fR
 .RS 4
 Display SQL commands as they are executed\&.
 .RE
 .PP
-\fB\-l\fR, \fB\-\-list\fR
+\fB\-l\fR
+.br
+\fB\-\-list\fR
 .RS 4
 Show a list of already installed languages in the target database\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 droplang
 version and exit\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 droplang
@@ -114,29 +123,39 @@ command line arguments, and exit\&.
 droplang
 also accepts the following command line arguments for connection parameters:
 .PP
-\fB\-h \fR\fB\fIhost\fR\fR, \fB\-\-host=\fR\fB\fIhost\fR\fR
+\fB\-h \fR\fB\fIhost\fR\fR
+.br
+\fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
 Specifies the host name of the machine on which the server is running\&. If host begins with a slash, it is used as the directory for the Unix domain socket\&.
 .RE
 .PP
-\fB\-p \fR\fB\fIport\fR\fR, \fB\-\-port=\fR\fB\fIport\fR\fR
+\fB\-p \fR\fB\fIport\fR\fR
+.br
+\fB\-\-port=\fR\fB\fIport\fR\fR
 .RS 4
 Specifies the Internet TCP/IP port or local Unix domain socket file extension on which the server is listening for connections\&.
 .RE
 .PP
-\fB\-U \fR\fB\fIusername\fR\fR, \fB\-\-username=\fR\fB\fIusername\fR\fR
+\fB\-U \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-username=\fR\fB\fIusername\fR\fR
 .RS 4
 User name to connect as\&.
 .RE
 .PP
-\fB\-w\fR, \fB\-\-no\-password\fR
+\fB\-w\fR
+.br
+\fB\-\-no\-password\fR
 .RS 4
 Never issue a password prompt\&. If the server requires password authentication and a password is not available by other means such as a
 \&.pgpass
 file, the connection attempt will fail\&. This option can be useful in batch jobs and scripts where no user is present to enter a password\&.
 .RE
 .PP
-\fB\-W\fR, \fB\-\-password\fR
+\fB\-W\fR
+.br
+\fB\-\-password\fR
 .RS 4
 Force
 droplang
@@ -152,7 +171,13 @@ to avoid the extra connection attempt\&.
 .RE
 .SH "ENVIRONMENT"
 .PP
-\fBPGDATABASE\fR, \fBPGHOST\fR, \fBPGPORT\fR, \fBPGUSER\fR
+\fBPGDATABASE\fR
+.br
+\fBPGHOST\fR
+.br
+\fBPGPORT\fR
+.br
+\fBPGUSER\fR
 .RS 4
 Default connection parameters
 .RE

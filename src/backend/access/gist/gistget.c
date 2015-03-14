@@ -4,7 +4,7 @@
  *	  fetch tuples from a GiST scan.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -31,7 +31,7 @@
  *
  * On success return for a heap tuple, *recheck_p is set to indicate
  * whether recheck is needed.  We recheck if any of the consistent() functions
- * request it.	recheck is not interesting when examining a non-leaf entry,
+ * request it.  recheck is not interesting when examining a non-leaf entry,
  * since we must visit the lower index page if there's any doubt.
  *
  * If we are doing an ordered scan, so->distances[] is filled with distance
@@ -62,7 +62,7 @@ gistindex_keytest(IndexScanDesc scan,
 
 	/*
 	 * If it's a leftover invalid tuple from pre-9.1, treat it as a match with
-	 * minimum possible distances.	This means we'll always follow it to the
+	 * minimum possible distances.  This means we'll always follow it to the
 	 * referenced page.
 	 */
 	if (GistTupleIsInvalid(tuple))
@@ -224,7 +224,7 @@ gistindex_keytest(IndexScanDesc scan,
  * ntids: if not NULL, gistgetbitmap's output tuple counter
  *
  * If tbm/ntids aren't NULL, we are doing an amgetbitmap scan, and heap
- * tuples should be reported directly into the bitmap.	If they are NULL,
+ * tuples should be reported directly into the bitmap.  If they are NULL,
  * we're doing a plain or ordered indexscan.  For a plain indexscan, heap
  * tuple TIDs are returned into so->pageData[].  For an ordered indexscan,
  * heap tuple TIDs are pushed into individual search queue items.
@@ -263,7 +263,7 @@ gistScanPage(IndexScanDesc scan, GISTSearchItem *pageItem, double *myDistances,
 	 */
 	if (!XLogRecPtrIsInvalid(pageItem->data.parentlsn) &&
 		(GistFollowRight(page) ||
-		 XLByteLT(pageItem->data.parentlsn, opaque->nsn)) &&
+		 pageItem->data.parentlsn < GistPageGetNSN(page)) &&
 		opaque->rightlink != InvalidBlockNumber /* sanity check */ )
 	{
 		/* There was a page split, follow right link to add pages */
@@ -362,8 +362,13 @@ gistScanPage(IndexScanDesc scan, GISTSearchItem *pageItem, double *myDistances,
 			{
 				/* Creating index-page GISTSearchItem */
 				item->blkno = ItemPointerGetBlockNumber(&it->t_tid);
-				/* lsn of current page is lsn of parent page for child */
-				item->data.parentlsn = PageGetLSN(page);
+
+				/*
+				 * LSN of current page is lsn of parent page for child. We
+				 * only have a shared lock, so we need to get the LSN
+				 * atomically.
+				 */
+				item->data.parentlsn = BufferGetLSNAtomic(buffer);
 			}
 
 			/* Insert it into the queue using new distance data */
@@ -535,8 +540,6 @@ gistgettuple(PG_FUNCTION_ARGS)
 			} while (so->nPageData == 0);
 		}
 	}
-
-	PG_RETURN_BOOL(false);		/* keep compiler quiet */
 }
 
 /*

@@ -3,7 +3,7 @@
  * storage.c
  *	  code to create and destroy physical storage for relations
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -24,6 +24,7 @@
 #include "access/xlogutils.h"
 #include "catalog/catalog.h"
 #include "catalog/storage.h"
+#include "catalog/storage_xlog.h"
 #include "storage/freespace.h"
 #include "storage/smgr.h"
 #include "utils/memutils.h"
@@ -34,7 +35,7 @@
  * that have been created or deleted in the current transaction.  When
  * a relation is created, we create the physical file immediately, but
  * remember it so that we can delete the file again if the current
- * transaction is aborted.	Conversely, a deletion request is NOT
+ * transaction is aborted.  Conversely, a deletion request is NOT
  * executed immediately, but is just entered in the list.  When and if
  * the transaction commits, we can delete the physical file.
  *
@@ -59,30 +60,6 @@ typedef struct PendingRelDelete
 } PendingRelDelete;
 
 static PendingRelDelete *pendingDeletes = NULL; /* head of linked list */
-
-/*
- * Declarations for smgr-related XLOG records
- *
- * Note: we log file creation and truncation here, but logging of deletion
- * actions is handled by xact.c, because it is part of transaction commit.
- */
-
-/* XLOG gives us high 4 bits */
-#define XLOG_SMGR_CREATE	0x10
-#define XLOG_SMGR_TRUNCATE	0x20
-
-typedef struct xl_smgr_create
-{
-	RelFileNode rnode;
-	ForkNumber	forkNum;
-} xl_smgr_create;
-
-typedef struct xl_smgr_truncate
-{
-	BlockNumber blkno;
-	RelFileNode rnode;
-} xl_smgr_truncate;
-
 
 /*
  * RelationCreateStorage
@@ -335,6 +312,10 @@ smgrDoPendingDeletes(bool isCommit)
 	PendingRelDelete *pending;
 	PendingRelDelete *prev;
 	PendingRelDelete *next;
+	int			nrels = 0,
+				i = 0,
+				maxrels = 0;
+	SMgrRelation *srels = NULL;
 
 	prev = NULL;
 	for (pending = pendingDeletes; pending != NULL; pending = next)
@@ -358,13 +339,35 @@ smgrDoPendingDeletes(bool isCommit)
 				SMgrRelation srel;
 
 				srel = smgropen(pending->relnode, pending->backend);
-				smgrdounlink(srel, false);
-				smgrclose(srel);
+
+				/* allocate the initial array, or extend it, if needed */
+				if (maxrels == 0)
+				{
+					maxrels = 8;
+					srels = palloc(sizeof(SMgrRelation) * maxrels);
+				}
+				else if (maxrels <= nrels)
+				{
+					maxrels *= 2;
+					srels = repalloc(srels, sizeof(SMgrRelation) * maxrels);
+				}
+
+				srels[nrels++] = srel;
 			}
 			/* must explicitly free the list entry */
 			pfree(pending);
 			/* prev does not change */
 		}
+	}
+
+	if (nrels > 0)
+	{
+		smgrdounlinkall(srels, nrels, false);
+
+		for (i = 0; i < nrels; i++)
+			smgrclose(srels[i]);
+
+		pfree(srels);
 	}
 }
 
@@ -375,7 +378,7 @@ smgrDoPendingDeletes(bool isCommit)
  * *ptr is set to point to a freshly-palloc'd array of RelFileNodes.
  * If there are no relations to be deleted, *ptr is set to NULL.
  *
- * Only non-temporary relations are included in the returned list.	This is OK
+ * Only non-temporary relations are included in the returned list.  This is OK
  * because the list is used only in contexts where temporary relations don't
  * matter: we're either writing to the two-phase state file (and transactions
  * that have touched temp tables can't be prepared) or we're writing to xlog
@@ -505,6 +508,23 @@ smgr_redo(XLogRecPtr lsn, XLogRecord *record)
 		 */
 		smgrcreate(reln, MAIN_FORKNUM, true);
 
+		/*
+		 * Before we perform the truncation, update minimum recovery point to
+		 * cover this WAL record. Once the relation is truncated, there's no
+		 * going back. The buffer manager enforces the WAL-first rule for
+		 * normal updates to relation files, so that the minimum recovery
+		 * point is always updated before the corresponding change in the data
+		 * file is flushed to disk. We have to do the same manually here.
+		 *
+		 * Doing this before the truncation means that if the truncation fails
+		 * for some reason, you cannot start up the system even after restart,
+		 * until you fix the underlying situation so that the truncation will
+		 * succeed. Alternatively, we could update the minimum recovery point
+		 * after truncation, but that would leave a small window where the
+		 * WAL-first rule could be violated.
+		 */
+		XLogFlush(lsn);
+
 		smgrtruncate(reln, MAIN_FORKNUM, xlrec->blkno);
 
 		/* Also tell xlogutils.c about it */
@@ -522,30 +542,4 @@ smgr_redo(XLogRecPtr lsn, XLogRecord *record)
 	}
 	else
 		elog(PANIC, "smgr_redo: unknown op code %u", info);
-}
-
-void
-smgr_desc(StringInfo buf, uint8 xl_info, char *rec)
-{
-	uint8		info = xl_info & ~XLR_INFO_MASK;
-
-	if (info == XLOG_SMGR_CREATE)
-	{
-		xl_smgr_create *xlrec = (xl_smgr_create *) rec;
-		char	   *path = relpathperm(xlrec->rnode, xlrec->forkNum);
-
-		appendStringInfo(buf, "file create: %s", path);
-		pfree(path);
-	}
-	else if (info == XLOG_SMGR_TRUNCATE)
-	{
-		xl_smgr_truncate *xlrec = (xl_smgr_truncate *) rec;
-		char	   *path = relpathperm(xlrec->rnode, MAIN_FORKNUM);
-
-		appendStringInfo(buf, "file truncate: %s to %u blocks", path,
-						 xlrec->blkno);
-		pfree(path);
-	}
-	else
-		appendStringInfo(buf, "UNKNOWN");
 }

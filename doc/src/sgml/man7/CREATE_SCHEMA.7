@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE SCHEMA
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "CREATE SCHEMA" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE SCHEMA" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,12 +29,13 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_SCHEMA \- define a new schema
-.\" CREATE SCHEMA
 .SH "SYNOPSIS"
 .sp
 .nf
 CREATE SCHEMA \fIschema_name\fR [ AUTHORIZATION \fIuser_name\fR ] [ \fIschema_element\fR [ \&.\&.\&. ] ]
 CREATE SCHEMA AUTHORIZATION \fIuser_name\fR [ \fIschema_element\fR [ \&.\&.\&. ] ]
+CREATE SCHEMA IF NOT EXISTS \fIschema_name\fR [ AUTHORIZATION \fIuser_name\fR ]
+CREATE SCHEMA IF NOT EXISTS AUTHORIZATION \fIuser_name\fR
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -82,6 +83,13 @@ and
 are accepted as clauses within
 \fBCREATE SCHEMA\fR\&. Other kinds of objects may be created in separate commands after the schema is created\&.
 .RE
+.PP
+IF NOT EXISTS
+.RS 4
+Do nothing (except issuing a notice) if a schema with the same name already exists\&.
+\fIschema_element\fR
+subcommands cannot be included when this option is used\&.
+.RE
 .SH "NOTES"
 .PP
 To create a schema, the invoking user must have the
@@ -110,6 +118,24 @@ joe:
 .\}
 .nf
 CREATE SCHEMA AUTHORIZATION joe;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Create a schema named
+test
+that will be owned by user
+joe, unless there already is a schema named
+test\&. (It does not matter whether
+joe
+owns the pre\-existing schema\&.)
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE SCHEMA IF NOT EXISTS test AUTHORIZATION joe;
 .fi
 .if n \{\
 .RE
@@ -165,5 +191,11 @@ PostgreSQL
 allows schemas to contain objects owned by users other than the schema owner\&. This can happen only if the schema owner grants the
 CREATE
 privilege on his schema to someone else, or a superuser chooses to create objects in it\&.
+.PP
+The
+IF NOT EXISTS
+option is a
+PostgreSQL
+extension\&.
 .SH "SEE ALSO"
 ALTER SCHEMA (\fBALTER_SCHEMA\fR(7)), DROP SCHEMA (\fBDROP_SCHEMA\fR(7))

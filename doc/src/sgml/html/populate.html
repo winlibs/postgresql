@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Performance Tips"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -625,6 +625,24 @@ CLASS="VARNAME"
 ></LI
 ><LI
 ><P
+>       Experiment with the parallel dump and restore modes of both
+       <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> and <SPAN
+CLASS="APPLICATION"
+>pg_restore</SPAN
+> and find the
+       optimal number of concurrent jobs to use. Dumping and restoring in
+       parallel by means of the <TT
+CLASS="OPTION"
+>-j</TT
+> option should give you a
+       significantly higher performance over the serial mode.
+      </P
+></LI
+><LI
+><P
 >       Consider whether the whole dump should be restored as a single
        transaction.  To do that, pass the <TT
 CLASS="OPTION"
@@ -684,8 +702,8 @@ CLASS="COMMAND"
     keys.
 
      <A
-NAME="AEN24090"
-HREF="#FTN.AEN24090"
+NAME="AEN26377"
+HREF="#FTN.AEN26377"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN
@@ -732,8 +750,8 @@ ALIGN="LEFT"
 VALIGN="TOP"
 WIDTH="5%"
 ><A
-NAME="FTN.AEN24090"
-HREF="populate.html#AEN24090"
+NAME="FTN.AEN26377"
+HREF="populate.html#AEN26377"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN

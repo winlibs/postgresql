@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ROLLBACK
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "ROLLBACK" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "ROLLBACK" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 ROLLBACK \- abort the current transaction
-.\" ROLLBACK
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -42,7 +41,9 @@ ROLLBACK [ WORK | TRANSACTION ]
 rolls back the current transaction and causes all the updates made by the transaction to be discarded\&.
 .SH "PARAMETERS"
 .PP
-WORK, TRANSACTION
+WORK
+.br
+TRANSACTION
 .RS 4
 Optional key words\&. They have no effect\&.
 .RE
@@ -54,7 +55,7 @@ to successfully terminate a transaction\&.
 .PP
 Issuing
 \fBROLLBACK\fR
-when not inside a transaction does no harm, but it will provoke a warning message\&.
+outside of a transaction block emits a warning and otherwise has no effect\&.
 .SH "EXAMPLES"
 .PP
 To abort all changes:

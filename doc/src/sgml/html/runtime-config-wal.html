@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -96,11 +96,11 @@ NAME="RUNTIME-CONFIG-WAL"
 >18.5. Write Ahead Log</A
 ></H1
 ><P
->    See also <A
+>    For additional information on tuning these settings,
+    see <A
 HREF="wal-configuration.html"
 >Section 29.4</A
-> for details on WAL
-    and checkpoint tuning.
+>.
    </P
 ><DIV
 CLASS="SECT2"
@@ -125,7 +125,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        <TT
@@ -140,13 +141,18 @@ CLASS="LITERAL"
         shutdown. <TT
 CLASS="LITERAL"
 >archive</TT
-> adds logging required for WAL archiving,
-        and <TT
+> adds logging required for WAL archiving;
+        <TT
 CLASS="LITERAL"
 >hot_standby</TT
 > further adds information required to run
-        read-only queries on a standby server.
-        This parameter can only be set at server start.
+        read-only queries on a standby server; and, finally
+        <TT
+CLASS="LITERAL"
+>logical</TT
+> adds information necessary to support logical
+        decoding.  Each level includes the information logged at all lower
+        levels.  This parameter can only be set at server start.
        </P
 ><P
 >        In <TT
@@ -198,21 +204,16 @@ CLASS="COMMAND"
 ><P
 ></P
 >
-        But minimal WAL does not contain
-        enough information to reconstruct the data from a base backup and the
-        WAL logs, so either <TT
+        But minimal WAL does not contain enough information to reconstruct the
+        data from a base backup and the WAL logs, so <TT
 CLASS="LITERAL"
 >archive</TT
-> or <TT
-CLASS="LITERAL"
->hot_standby</TT
->
-        level must be used to enable
-        WAL archiving (<A
+> or
+        higher must be used to enable WAL archiving
+        (<A
 HREF="runtime-config-wal.html#GUC-ARCHIVE-MODE"
 >archive_mode</A
->) and streaming
-        replication.
+>) and streaming replication.
        </P
 ><P
 >        In <TT
@@ -231,21 +232,47 @@ CLASS="VARNAME"
         <TT
 CLASS="LITERAL"
 >hot_standby</TT
-> on the primary, and
+> or higher on the primary, and
         <A
 HREF="runtime-config-replication.html#GUC-HOT-STANDBY"
 >hot_standby</A
 > must be enabled in the standby. It is
-        thought that there is
-        little measurable difference in performance between using
-        <TT
+        thought that there is little measurable difference in performance
+        between using <TT
 CLASS="LITERAL"
 >hot_standby</TT
 > and <TT
 CLASS="LITERAL"
 >archive</TT
-> levels, so feedback
-        is welcome if any production impacts are noticeable.
+> levels,
+        so feedback is welcome if any production impacts are noticeable.
+       </P
+><P
+>        In <TT
+CLASS="LITERAL"
+>logical</TT
+> level, the same information is logged as
+        with <TT
+CLASS="LITERAL"
+>hot_standby</TT
+>, plus information needed to allow
+        extracting logical changesets from the WAL. Using a level of
+        <TT
+CLASS="LITERAL"
+>logical</TT
+> will increase the WAL volume, particularly if many
+        tables are configured for <TT
+CLASS="LITERAL"
+>REPLICA IDENTITY FULL</TT
+> and
+        many <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> and <TT
+CLASS="COMMAND"
+>DELETE</TT
+> statements are
+        executed.
        </P
 ></DD
 ><DT
@@ -258,7 +285,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        If this parameter is on, the <SPAN
@@ -309,6 +337,23 @@ CLASS="VARNAME"
 >.
        </P
 ><P
+>        For reliable recovery when changing <TT
+CLASS="VARNAME"
+>fsync</TT
+>
+        off to on, it is necessary to force all modified buffers in the
+        kernel to durable storage.  This can be done while the cluster
+        is shutdown or while fsync is on by running <TT
+CLASS="COMMAND"
+>initdb
+        --sync-only</TT
+>, running <TT
+CLASS="COMMAND"
+>sync</TT
+>, unmounting the
+        file system, or rebooting the server.
+       </P
+><P
 >        In many situations, turning off <A
 HREF="runtime-config-wal.html#GUC-SYNCHRONOUS-COMMIT"
 >synchronous_commit</A
@@ -346,7 +391,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies whether transaction commit will wait for WAL records
@@ -485,7 +531,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Method used for forcing WAL updates out to disk.
@@ -600,7 +647,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When this parameter is on, the <SPAN
@@ -654,6 +702,44 @@ CLASS="LITERAL"
 ></DD
 ><DT
 ><A
+NAME="GUC-WAL-LOG-HINTS"
+></A
+><TT
+CLASS="VARNAME"
+>wal_log_hints</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)
+      </DT
+><DD
+><P
+>        When this parameter is <TT
+CLASS="LITERAL"
+>on</TT
+>, the <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        server writes the entire content of each disk page to WAL during the
+        first modification of that page after a checkpoint, even for
+        non-critical modifications of so-called hint bits.
+       </P
+><P
+>        If data checksums are enabled, hint bit updates are always WAL-logged
+        and this setting is ignored. You can use this setting to test how much
+        extra WAL-logging would occur if your database had data checksums
+        enabled.
+       </P
+><P
+>        This parameter can only be set at server start. The default value is <TT
+CLASS="LITERAL"
+>off</TT
+>.
+       </P
+></DD
+><DT
+><A
 NAME="GUC-WAL-BUFFERS"
 ></A
 ><TT
@@ -662,7 +748,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        The amount of shared memory used for WAL data that has not yet been
@@ -699,22 +786,6 @@ CLASS="LITERAL"
         selected by the default setting of -1 should give reasonable
         results in most cases.
        </P
-><P
->        Increasing this parameter might cause <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
-        to request more <SPAN
-CLASS="SYSTEMITEM"
->System V</SPAN
-> shared
-        memory than your operating system's default configuration
-        allows. See <A
-HREF="kernel-resources.html#SYSVIPC"
->Section 17.4.1</A
-> for information on how to
-        adjust those parameters, if necessary.
-       </P
 ></DD
 ><DT
 ><A
@@ -726,7 +797,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the delay between activity rounds for the WAL writer.
@@ -762,35 +834,58 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
->        When the commit data for a transaction is flushed to disk, any
-        additional commits ready at that time are also flushed out.
+>        <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> adds a time delay, measured in
+        microseconds, before a WAL flush is initiated.  This can improve
+        group commit throughput by allowing a larger number of transactions
+        to commit via a single WAL flush, if system load is high enough
+        that additional transactions become ready to commit within the
+        given interval.  However, it also increases latency by up to
         <TT
 CLASS="VARNAME"
 >commit_delay</TT
-> adds a time delay, set in
-        microseconds, before a transaction attempts to
-        flush the WAL buffer out to disk.  A nonzero delay can allow more
-        transactions to be committed with only one flush operation, if
-        system load is high enough that additional transactions become
-        ready to commit within the given interval. But the delay is
-        just wasted if no other transactions become ready to
-        commit. Therefore, the delay is only performed if at least
+> microseconds for each WAL
+        flush.  Because the delay is just wasted if no other transactions
+        become ready to commit, a delay is only performed if at least
         <TT
 CLASS="VARNAME"
 >commit_siblings</TT
-> other transactions are
-        active at the instant that a server process has written its
-        commit record.
+> other transactions are active
+        when a flush is about to be initiated.  Also, no delays are
+        performed if <TT
+CLASS="VARNAME"
+>fsync</TT
+> is disabled.
         The default <TT
 CLASS="VARNAME"
 >commit_delay</TT
 > is zero (no delay).
-        Since all pending commit data will be written at every flush
-        regardless of this setting, it is rare that adding delay
-        by increasing this parameter will actually improve performance.
+        Only superusers can change this setting.
+       </P
+><P
+>        In <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> releases prior to 9.3,
+        <TT
+CLASS="VARNAME"
+>commit_delay</TT
+> behaved differently and was much
+        less effective: it affected only commits, rather than all WAL flushes,
+        and waited for the entire configured delay even if the WAL flush
+        was completed sooner.  Beginning in <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.3,
+        the first process that becomes ready to flush waits for the configured
+        interval, while subsequent processes wait only until the leader
+        completes the flush operation.
        </P
 ></DD
 ><DT
@@ -803,7 +898,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Minimum number of concurrent open transactions to require
@@ -842,7 +938,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Maximum number of log file segments between automatic WAL
@@ -866,7 +963,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Maximum time between automatic WAL checkpoints, in
@@ -893,7 +991,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >floating point</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the target of checkpoint completion, as a fraction of
@@ -916,7 +1015,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Write a message to the server log if checkpoints caused by
@@ -930,6 +1030,14 @@ CLASS="VARNAME"
 CLASS="LITERAL"
 >30s</TT
 >).  Zero disables the warning.
+        No warnings will be generated if <TT
+CLASS="VARNAME"
+>checkpoint_timeout</TT
+>
+        is less than <TT
+CLASS="VARNAME"
+>checkpoint_warning</TT
+>.
         This parameter can only be set in the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
@@ -963,7 +1071,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When <TT
@@ -1011,10 +1120,11 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
->        The shell command to execute to archive a completed WAL file
+>        The local shell command to execute to archive a completed WAL file
         segment.  Any <TT
 CLASS="LITERAL"
 >%p</TT
@@ -1086,7 +1196,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        The <A

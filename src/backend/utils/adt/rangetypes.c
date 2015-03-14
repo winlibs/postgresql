@@ -19,7 +19,7 @@
  * value; we must detoast it first.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -393,7 +393,7 @@ range_constructor3(PG_FUNCTION_ARGS)
 	if (PG_ARGISNULL(2))
 		ereport(ERROR,
 				(errcode(ERRCODE_DATA_EXCEPTION),
-			   errmsg("range constructor flags argument must not be NULL")));
+			   errmsg("range constructor flags argument must not be null")));
 
 	flags = range_parse_flags(text_to_cstring(PG_GETARG_TEXT_P(2)));
 
@@ -709,6 +709,64 @@ range_after(PG_FUNCTION_ARGS)
 	PG_RETURN_BOOL(range_after_internal(typcache, r1, r2));
 }
 
+/*
+ * Check if two bounds A and B are "adjacent", where A is an upper bound and B
+ * is a lower bound. For the bounds to be adjacent, each subtype value must
+ * satisfy strictly one of the bounds: there are no values which satisfy both
+ * bounds (i.e. less than A and greater than B); and there are no values which
+ * satisfy neither bound (i.e. greater than A and less than B).
+ *
+ * For discrete ranges, we rely on the canonicalization function to see if A..B
+ * normalizes to empty. (If there is no canonicalization function, it's
+ * impossible for such a range to normalize to empty, so we needn't bother to
+ * try.)
+ *
+ * If A == B, the ranges are adjacent only if the bounds have different
+ * inclusive flags (i.e., exactly one of the ranges includes the common
+ * boundary point).
+ *
+ * And if A > B then the ranges are not adjacent in this order.
+ */
+bool
+bounds_adjacent(TypeCacheEntry *typcache, RangeBound boundA, RangeBound boundB)
+{
+	int			cmp;
+
+	Assert(!boundA.lower && boundB.lower);
+
+	cmp = range_cmp_bound_values(typcache, &boundA, &boundB);
+	if (cmp < 0)
+	{
+		RangeType  *r;
+
+		/*
+		 * Bounds do not overlap; see if there are points in between.
+		 */
+
+		/* in a continuous subtype, there are assumed to be points between */
+		if (!OidIsValid(typcache->rng_canonical_finfo.fn_oid))
+			return false;
+
+		/*
+		 * The bounds are of a discrete range type; so make a range A..B and
+		 * see if it's empty.
+		 */
+
+		/* flip the inclusion flags */
+		boundA.inclusive = !boundA.inclusive;
+		boundB.inclusive = !boundB.inclusive;
+		/* change upper/lower labels to avoid Assert failures */
+		boundA.lower = true;
+		boundB.lower = false;
+		r = make_range(typcache, &boundA, &boundB, false);
+		return RangeIsEmpty(r);
+	}
+	else if (cmp == 0)
+		return boundA.inclusive != boundB.inclusive;
+	else
+		return false;			/* bounds overlap */
+}
+
 /* adjacent to (but not overlapping)? (internal version) */
 bool
 range_adjacent_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2)
@@ -719,8 +777,6 @@ range_adjacent_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2)
 				upper2;
 	bool		empty1,
 				empty2;
-	RangeType  *r3;
-	int			cmp;
 
 	/* Different types should be prevented by ANYRANGE matching rules */
 	if (RangeTypeGetOid(r1) != RangeTypeGetOid(r2))
@@ -734,62 +790,11 @@ range_adjacent_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2)
 		return false;
 
 	/*
-	 * Given two ranges A..B and C..D, where B < C, the ranges are adjacent if
-	 * and only if the range B..C is empty, where inclusivity of these two
-	 * bounds is inverted compared to the original bounds.	For discrete
-	 * ranges, we have to rely on the canonicalization function to normalize
-	 * B..C to empty if it contains no elements of the subtype.  (If there is
-	 * no canonicalization function, it's impossible for such a range to
-	 * normalize to empty, so we needn't bother to try.)
-	 *
-	 * If B == C, the ranges are adjacent only if these bounds have different
-	 * inclusive flags (i.e., exactly one of the ranges includes the common
-	 * boundary point).
-	 *
-	 * And if B > C then the ranges cannot be adjacent in this order, but we
-	 * must consider the other order (i.e., check D <= A).
+	 * Given two ranges A..B and C..D, the ranges are adjacent if and only if
+	 * B is adjacent to C, or D is adjacent to A.
 	 */
-	cmp = range_cmp_bound_values(typcache, &upper1, &lower2);
-	if (cmp < 0)
-	{
-		/* in a continuous subtype, there are assumed to be points between */
-		if (!OidIsValid(typcache->rng_canonical_finfo.fn_oid))
-			return (false);
-		/* flip the inclusion flags */
-		upper1.inclusive = !upper1.inclusive;
-		lower2.inclusive = !lower2.inclusive;
-		/* change upper/lower labels to avoid Assert failures */
-		upper1.lower = true;
-		lower2.lower = false;
-		r3 = make_range(typcache, &upper1, &lower2, false);
-		return RangeIsEmpty(r3);
-	}
-	if (cmp == 0)
-	{
-		return (upper1.inclusive != lower2.inclusive);
-	}
-
-	cmp = range_cmp_bound_values(typcache, &upper2, &lower1);
-	if (cmp < 0)
-	{
-		/* in a continuous subtype, there are assumed to be points between */
-		if (!OidIsValid(typcache->rng_canonical_finfo.fn_oid))
-			return (false);
-		/* flip the inclusion flags */
-		upper2.inclusive = !upper2.inclusive;
-		lower1.inclusive = !lower1.inclusive;
-		/* change upper/lower labels to avoid Assert failures */
-		upper2.lower = true;
-		lower1.lower = false;
-		r3 = make_range(typcache, &upper2, &lower1, false);
-		return RangeIsEmpty(r3);
-	}
-	if (cmp == 0)
-	{
-		return (upper2.inclusive != lower1.inclusive);
-	}
-
-	return false;
+	return (bounds_adjacent(typcache, upper1, lower2) ||
+			bounds_adjacent(typcache, upper2, lower1));
 }
 
 /* adjacent to (but not overlapping)? */
@@ -912,12 +917,12 @@ range_overright_internal(TypeCacheEntry *typcache, RangeType *r1, RangeType *r2)
 
 	/* An empty range is neither before nor after any other range */
 	if (empty1 || empty2)
-		PG_RETURN_BOOL(false);
+		return false;
 
 	if (range_cmp_bounds(typcache, &lower1, &lower2) >= 0)
-		PG_RETURN_BOOL(true);
+		return true;
 
-	PG_RETURN_BOOL(false);
+	return false;
 }
 
 /* does not extend to left of? */
@@ -1120,16 +1125,22 @@ range_cmp(PG_FUNCTION_ARGS)
 
 	/* For b-tree use, empty ranges sort before all else */
 	if (empty1 && empty2)
-		PG_RETURN_INT32(0);
+		cmp = 0;
 	else if (empty1)
-		PG_RETURN_INT32(-1);
+		cmp = -1;
 	else if (empty2)
-		PG_RETURN_INT32(1);
+		cmp = 1;
+	else
+	{
+		cmp = range_cmp_bounds(typcache, &lower1, &lower2);
+		if (cmp == 0)
+			cmp = range_cmp_bounds(typcache, &upper1, &upper2);
+	}
 
-	if ((cmp = range_cmp_bounds(typcache, &lower1, &lower2)) != 0)
-		PG_RETURN_INT32(cmp);
+	PG_FREE_IF_COPY(r1, 0);
+	PG_FREE_IF_COPY(r2, 1);
 
-	PG_RETURN_INT32(range_cmp_bounds(typcache, &upper1, &upper2));
+	PG_RETURN_INT32(cmp);
 }
 
 /* inequality operators using the range_cmp function */
@@ -1227,23 +1238,6 @@ hash_range(PG_FUNCTION_ARGS)
 
 	PG_RETURN_INT32(result);
 }
-
-/* ANALYZE support */
-
-/* typanalyze function for range datatypes */
-Datum
-range_typanalyze(PG_FUNCTION_ARGS)
-{
-	/*
-	 * For the moment, just punt and don't analyze range columns.  If we get
-	 * close to release without having a better answer, we could consider
-	 * letting std_typanalyze do what it can ... but those stats are probably
-	 * next door to useless for most activity with range columns, so it's not
-	 * clear it's worth gathering them.
-	 */
-	PG_RETURN_BOOL(false);
-}
-
 
 /*
  *----------------------------------------------------------
@@ -1447,7 +1441,7 @@ tstzrange_subdiff(PG_FUNCTION_ARGS)
  *
  * This is for use by range-related functions that follow the convention
  * of using the fn_extra field as a pointer to the type cache entry for
- * the range type.	Functions that need to cache more information than
+ * the range type.  Functions that need to cache more information than
  * that must fend for themselves.
  */
 TypeCacheEntry *
@@ -1471,7 +1465,7 @@ range_get_typcache(FunctionCallInfo fcinfo, Oid rngtypid)
  * range_serialize: construct a range value from bounds and empty-flag
  *
  * This does not force canonicalization of the range value.  In most cases,
- * external callers should only be canonicalization functions.	Note that
+ * external callers should only be canonicalization functions.  Note that
  * we perform some datatype-independent canonicalization checks anyway.
  */
 RangeType *
@@ -1808,7 +1802,7 @@ range_cmp_bounds(TypeCacheEntry *typcache, RangeBound *b1, RangeBound *b2)
  * Compare two range boundary point values, returning <0, 0, or >0 according
  * to whether b1 is less than, equal to, or greater than b2.
  *
- * This is similar to but simpler than range_cmp_bounds().	We just compare
+ * This is similar to but simpler than range_cmp_bounds().  We just compare
  * the values held in b1 and b2, ignoring inclusive/exclusive flags.  The
  * lower/upper flags only matter for infinities, where they tell us if the
  * infinity is plus or minus.
@@ -1889,7 +1883,7 @@ range_parse_flags(const char *flags_str)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
 				 errmsg("invalid range bound flags"),
-				 errhint("Valid values are \"[]\", \"[)\", \"(]\", and \"()\".")));
+		   errhint("Valid values are \"[]\", \"[)\", \"(]\", and \"()\".")));
 
 	switch (flags_str[0])
 	{
@@ -1902,7 +1896,7 @@ range_parse_flags(const char *flags_str)
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
 					 errmsg("invalid range bound flags"),
-				 errhint("Valid values are \"[]\", \"[)\", \"(]\", and \"()\".")));
+			errhint("Valid values are \"[]\", \"[)\", \"(]\", and \"()\".")));
 	}
 
 	switch (flags_str[1])
@@ -1916,7 +1910,7 @@ range_parse_flags(const char *flags_str)
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
 					 errmsg("invalid range bound flags"),
-				 errhint("Valid values are \"[]\", \"[)\", \"(]\", and \"()\".")));
+			errhint("Valid values are \"[]\", \"[)\", \"(]\", and \"()\".")));
 	}
 
 	return flags;
@@ -1983,7 +1977,7 @@ range_parse(const char *string, char *flags, char **lbound_str,
 					(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
 					 errmsg("malformed range literal: \"%s\"",
 							string),
-					 errdetail("Junk after \"empty\" keyword.")));
+					 errdetail("Junk after \"empty\" key word.")));
 
 		return;
 	}
@@ -2289,7 +2283,7 @@ range_contains_elem_internal(TypeCacheEntry *typcache, RangeType *r, Datum val)
 
 /*
  * datum_compute_size() and datum_write() are used to insert the bound
- * values into a range object.	They are modeled after heaptuple.c's
+ * values into a range object.  They are modeled after heaptuple.c's
  * heap_compute_data_size() and heap_fill_tuple(), but we need not handle
  * null values here.  TYPE_IS_PACKABLE must test the same conditions as
  * heaptuple.c's ATT_IS_PACKABLE macro.

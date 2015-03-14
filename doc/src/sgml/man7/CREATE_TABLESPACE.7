@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TABLESPACE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "CREATE TABLESPACE" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE TABLESPACE" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,11 +29,13 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_TABLESPACE \- define a new tablespace
-.\" CREATE TABLESPACE
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE TABLESPACE \fItablespace_name\fR [ OWNER \fIuser_name\fR ] LOCATION \*(Aq\fIdirectory\fR\*(Aq
+CREATE TABLESPACE \fItablespace_name\fR
+    [ OWNER \fIuser_name\fR ]
+    LOCATION \*(Aq\fIdirectory\fR\*(Aq
+    [ WITH ( \fItablespace_option\fR = \fIvalue\fR [, \&.\&.\&. ] ) ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -52,6 +54,23 @@ to
 or
 \fBADD CONSTRAINT\fR
 to have the data files for these objects stored within the specified tablespace\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBWarning\fR
+.ps -1
+.br
+.PP
+A tablespace cannot be used independently of the cluster in which it is defined; see
+Section 21.6, \(lqTablespaces\(rq, in the documentation>\&.
+.sp .5v
+.RE
 .SH "PARAMETERS"
 .PP
 \fItablespace_name\fR
@@ -70,6 +89,16 @@ The name of the user who will own the tablespace\&. If omitted, defaults to the 
 The directory that will be used for the tablespace\&. The directory should be empty and must be owned by the
 PostgreSQL
 system user\&. The directory must be specified by an absolute path name\&.
+.RE
+.PP
+\fItablespace_option\fR
+.RS 4
+A tablespace parameter to be set or reset\&. Currently, the only available parameters are
+\fIseq_page_cost\fR
+and
+\fIrandom_page_cost\fR\&. Setting either value for a particular tablespace will override the planner\*(Aqs usual estimate of the cost of reading pages from tables in that tablespace, as established by the configuration parameters of the same name (see
+seq_page_cost,
+random_page_cost)\&. This may be useful if one tablespace is located on a disk which is faster or slower than the remainder of the I/O subsystem\&.
 .RE
 .SH "NOTES"
 .PP

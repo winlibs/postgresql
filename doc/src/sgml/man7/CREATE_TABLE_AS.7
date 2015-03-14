@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TABLE AS
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "CREATE TABLE AS" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE TABLE AS" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_TABLE_AS \- define a new table from the results of a query
-.\" CREATE TABLE AS
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -105,7 +104,9 @@ CREATE TABLE (\fBCREATE_TABLE\fR(7))
 for more information\&.
 .RE
 .PP
-WITH OIDS, WITHOUT OIDS
+WITH OIDS
+.br
+WITHOUT OIDS
 .RS 4
 These are obsolescent syntaxes equivalent to
 WITH (OIDS)
@@ -180,23 +181,11 @@ syntax\&. Furthermore,
 offers a superset of the functionality offered by
 \fBSELECT INTO\fR\&.
 .PP
-Prior to
-PostgreSQL
-8\&.0,
-\fBCREATE TABLE AS\fR
-always included OIDs in the table it created\&. As of
-PostgreSQL
-8\&.0, the
+The
 \fBCREATE TABLE AS\fR
 command allows the user to explicitly specify whether OIDs should be included\&. If the presence of OIDs is not explicitly specified, the
 default_with_oids
-configuration variable is used\&. As of
-PostgreSQL
-8\&.1, this variable is false by default, so the default behavior is not identical to pre\-8\&.0 releases\&. Applications that require OIDs in the table created by
-\fBCREATE TABLE AS\fR
-should explicitly specify
-WITH (OIDS)
-to ensure desired behavior\&.
+configuration variable is used\&.
 .SH "EXAMPLES"
 .PP
 Create a new table
@@ -323,4 +312,4 @@ TABLESPACE
 is an extension\&.
 .RE
 .SH "SEE ALSO"
-CREATE TABLE (\fBCREATE_TABLE\fR(7)), \fBEXECUTE\fR(7), \fBSELECT\fR(7), SELECT INTO (\fBSELECT_INTO\fR(7)), \fBVALUES\fR(7)
+CREATE MATERIALIZED VIEW (\fBCREATE_MATERIALIZED_VIEW\fR(7)), CREATE TABLE (\fBCREATE_TABLE\fR(7)), \fBEXECUTE\fR(7), \fBSELECT\fR(7), SELECT INTO (\fBSELECT_INTO\fR(7)), \fBVALUES\fR(7)

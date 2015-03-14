@@ -15,12 +15,14 @@ sub _new
 	my $classname = shift;
 	my $options   = shift;
 	my $self      = {
-		projects => {},
-		options  => $options,
-		numver   => '',
-		strver   => '',
-		vcver    => undef,
-		platform => undef, };
+		projects                   => {},
+		options                    => $options,
+		numver                     => '',
+		strver                     => '',
+		VisualStudioVersion        => undef,
+		MinimumVisualStudioVersion => undef,
+		vcver                      => undef,
+		platform                   => undef, };
 	bless($self, $classname);
 
 	# integer_datetimes is now the default
@@ -59,17 +61,21 @@ sub _new
 	return $self;
 }
 
+sub GetAdditionalHeaders
+{
+	return '';
+}
+
 sub DeterminePlatform
 {
 	my $self = shift;
 
-	# Determine if we are in 32 or 64-bit mode. Do this by seeing if CL has
-	# 64-bit only parameters.
+	# Examine CL help output to determine if we are in 32 or 64-bit mode.
 	$self->{platform} = 'Win32';
-	open(P, "cl /? 2>NUL|") || die "cl command not found";
+	open(P, "cl /? 2>&1 |") || die "cl command not found";
 	while (<P>)
 	{
-		if (/^\/favor:</)
+		if (/^\/favor:<.+AMD64/)
 		{
 			$self->{platform} = 'x64';
 			last;
@@ -208,6 +214,7 @@ s{PG_VERSION_STR "[^"]+"}{__STRINGIFY(x) #x\n#define __STRINGIFY2(z) __STRINGIFY
 
 		if ($self->{options}->{uuid})
 		{
+			print O "#define HAVE_UUID_OSSP\n";
 			print O "#define HAVE_UUID_H\n";
 		}
 		if ($self->{options}->{xml})
@@ -220,12 +227,8 @@ s{PG_VERSION_STR "[^"]+"}{__STRINGIFY(x) #x\n#define __STRINGIFY2(z) __STRINGIFY
 			print O "#define HAVE_LIBXSLT\n";
 			print O "#define USE_LIBXSLT\n";
 		}
-		if ($self->{options}->{krb5})
+		if ($self->{options}->{gss})
 		{
-			print O "#define KRB5 1\n";
-			print O "#define HAVE_KRB5_ERROR_TEXT_DATA 1\n";
-			print O "#define HAVE_KRB5_TICKET_ENC_PART2 1\n";
-			print O "#define HAVE_KRB5_FREE_UNPARSED_NAME 1\n";
 			print O "#define ENABLE_GSS 1\n";
 		}
 		if (my $port = $self->{options}->{"--with-pgport"})
@@ -240,6 +243,16 @@ s{PG_VERSION_STR "[^"]+"}{__STRINGIFY(x) #x\n#define __STRINGIFY2(z) __STRINGIFY
 		print O "#endif /* IGNORE_CONFIGURED_SETTINGS */\n";
 		close(O);
 		close(I);
+	}
+
+	if (IsNewer(
+			"src\\include\\pg_config_ext.h",
+			"src\\include\\pg_config_ext.h.win32"))
+	{
+		print "Copying pg_config_ext.h...\n";
+		copyFile(
+			"src\\include\\pg_config_ext.h.win32",
+			"src\\include\\pg_config_ext.h");
 	}
 
 	$self->GenerateDefFile(
@@ -267,6 +280,11 @@ s{PG_VERSION_STR "[^"]+"}{__STRINGIFY(x) #x\n#define __STRINGIFY2(z) __STRINGIFY
 		system(
 "perl -I ../catalog Gen_fmgrtab.pl ../../../src/include/catalog/pg_proc.h");
 		chdir('..\..\..');
+	}
+	if (IsNewer(
+			'src\include\utils\fmgroids.h',
+			'src\backend\utils\fmgroids.h'))
+	{
 		copyFile('src\backend\utils\fmgroids.h',
 			'src\include\utils\fmgroids.h');
 	}
@@ -484,14 +502,12 @@ sub AddProject
 		$proj->AddIncludeDir($self->{options}->{nls} . '\include');
 		$proj->AddLibrary($self->{options}->{nls} . '\lib\libintl.lib');
 	}
-	if ($self->{options}->{krb5})
+	if ($self->{options}->{gss})
 	{
-		$proj->AddIncludeDir($self->{options}->{krb5} . '\inc\krb5');
-		$proj->AddLibrary($self->{options}->{krb5} . '\lib\i386\krb5_32.lib');
-		$proj->AddLibrary(
-			$self->{options}->{krb5} . '\lib\i386\comerr32.lib');
-		$proj->AddLibrary(
-			$self->{options}->{krb5} . '\lib\i386\gssapi32.lib');
+		$proj->AddIncludeDir($self->{options}->{gss} . '\inc\krb5');
+		$proj->AddLibrary($self->{options}->{gss} . '\lib\i386\krb5_32.lib');
+		$proj->AddLibrary($self->{options}->{gss} . '\lib\i386\comerr32.lib');
+		$proj->AddLibrary($self->{options}->{gss} . '\lib\i386\gssapi32.lib');
 	}
 	if ($self->{options}->{iconv})
 	{
@@ -530,6 +546,8 @@ sub Save
 Microsoft Visual Studio Solution File, Format Version $self->{solutionFileVersion}
 # $self->{visualStudioName}
 EOF
+
+	print SLN $self->GetAdditionalHeaders();
 
 	foreach my $fld (keys %{ $self->{projects} })
 	{
@@ -611,7 +629,7 @@ sub GetFakeConfigure
 	$cfg .= ' --with-ossp-uuid' if ($self->{options}->{uuid});
 	$cfg .= ' --with-libxml'    if ($self->{options}->{xml});
 	$cfg .= ' --with-libxslt'   if ($self->{options}->{xslt});
-	$cfg .= ' --with-krb5'      if ($self->{options}->{krb5});
+	$cfg .= ' --with-gssapi'    if ($self->{options}->{gss});
 	$cfg .= ' --with-tcl'       if ($self->{options}->{tcl});
 	$cfg .= ' --with-perl'      if ($self->{options}->{perl});
 	$cfg .= ' --with-python'    if ($self->{options}->{python});
@@ -687,6 +705,65 @@ sub new
 	$self->{visualStudioName}    = 'Visual Studio 2010';
 
 	return $self;
+}
+
+package VS2012Solution;
+
+#
+# Package that encapsulates a Visual Studio 2012 solution file
+#
+
+use Carp;
+use strict;
+use warnings;
+use base qw(Solution);
+
+sub new
+{
+	my $classname = shift;
+	my $self      = $classname->SUPER::_new(@_);
+	bless($self, $classname);
+
+	$self->{solutionFileVersion} = '12.00';
+	$self->{vcver}               = '11.00';
+	$self->{visualStudioName}    = 'Visual Studio 2012';
+
+	return $self;
+}
+
+package VS2013Solution;
+
+#
+# Package that encapsulates a Visual Studio 2013 solution file
+#
+
+use Carp;
+use strict;
+use warnings;
+use base qw(Solution);
+
+sub new
+{
+	my $classname = shift;
+	my $self      = $classname->SUPER::_new(@_);
+	bless($self, $classname);
+
+	$self->{solutionFileVersion}        = '12.00';
+	$self->{vcver}                      = '12.00';
+	$self->{visualStudioName}           = 'Visual Studio 2013';
+	$self->{VisualStudioVersion}        = '12.0.21005.1';
+	$self->{MinimumVisualStudioVersion} = '10.0.40219.1';
+
+	return $self;
+}
+
+sub GetAdditionalHeaders
+{
+	my ($self, $f) = @_;
+
+	return qq|VisualStudioVersion = $self->{VisualStudioVersion}
+MinimumVisualStudioVersion = $self->{MinimumVisualStudioVersion}
+|;
 }
 
 1;

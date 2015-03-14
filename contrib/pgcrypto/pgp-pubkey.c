@@ -17,7 +17,7 @@
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.	IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
@@ -77,7 +77,7 @@ pgp_key_free(PGP_PubKey *pk)
 			pgp_mpi_free(pk->sec.dsa.x);
 			break;
 	}
-	memset(pk, 0, sizeof(*pk));
+	px_memset(pk, 0, sizeof(*pk));
 	px_free(pk);
 }
 
@@ -150,7 +150,7 @@ calc_key_id(PGP_PubKey *pk)
 	px_md_free(md);
 
 	memcpy(pk->key_id, hash + 12, 8);
-	memset(hash, 0, 20);
+	px_memset(hash, 0, 20);
 
 	return 0;
 }
@@ -291,8 +291,8 @@ check_key_sha1(PullFilter *src, PGP_PubKey *pk)
 		res = PXE_PGP_KEYPKT_CORRUPT;
 	}
 err:
-	memset(got_sha1, 0, 20);
-	memset(my_sha1, 0, 20);
+	px_memset(got_sha1, 0, 20);
+	px_memset(my_sha1, 0, 20);
 	return res;
 }
 
@@ -408,16 +408,16 @@ process_secret_key(PullFilter *pkt, PGP_PubKey **pk_p,
 		case PGP_PUB_RSA_SIGN:
 		case PGP_PUB_RSA_ENCRYPT:
 		case PGP_PUB_RSA_ENCRYPT_SIGN:
-			res = pgp_mpi_read(pkt, &pk->sec.rsa.d);
+			res = pgp_mpi_read(pf_key, &pk->sec.rsa.d);
 			if (res < 0)
 				break;
-			res = pgp_mpi_read(pkt, &pk->sec.rsa.p);
+			res = pgp_mpi_read(pf_key, &pk->sec.rsa.p);
 			if (res < 0)
 				break;
-			res = pgp_mpi_read(pkt, &pk->sec.rsa.q);
+			res = pgp_mpi_read(pf_key, &pk->sec.rsa.q);
 			if (res < 0)
 				break;
-			res = pgp_mpi_read(pkt, &pk->sec.rsa.u);
+			res = pgp_mpi_read(pf_key, &pk->sec.rsa.u);
 			if (res < 0)
 				break;
 			break;

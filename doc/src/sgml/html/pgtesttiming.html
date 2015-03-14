@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN145539"
+NAME="AEN163551"
 ></A
 ><H2
 >Name</H2
@@ -106,7 +106,7 @@ NAME="AEN145539"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN145544"
+NAME="AEN163554"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145549"
+NAME="AEN163559"
 ></A
 ><H2
 >Description</H2
@@ -144,7 +144,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145554"
+NAME="AEN163564"
 ></A
 ><H2
 >Options</H2
@@ -227,14 +227,14 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145584"
+NAME="AEN163594"
 ></A
 ><H2
 >Usage</H2
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN145586"
+NAME="AEN163596"
 ></A
 ><H3
 >Interpreting results</H3
@@ -249,12 +249,12 @@ CLASS="SCREEN"
 >Testing timing overhead for 3 seconds.
 Per loop time including overhead: 35.96 nsec
 Histogram of timing durations:
-   &#60; usec:      count   percent
-       16:          2  0.00000%
-        8:         13  0.00002%
-        4:        126  0.00015%
-        2:    2999652  3.59518%
-        1:   80435604 96.40465%</PRE
+&#60; usec   % of total      count
+     1     96.40465   80435604 
+     2      3.59518    2999652  
+     4      0.00015        126  
+     8      0.00002         13  
+    16      0.00000          2  </PRE
 ><P>
   </P
 ><P
@@ -267,7 +267,7 @@ Histogram of timing durations:
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN145591"
+NAME="AEN163601"
 ></A
 ><H3
 >Measuring executor timing overhead</H3
@@ -307,7 +307,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN145599"
+NAME="AEN163609"
 ></A
 ><H3
 >Changing time sources</H3
@@ -325,12 +325,12 @@ tsc hpet acpi_pm
 # pg_test_timing
 Per loop time including overhead: 722.92 nsec
 Histogram of timing durations:
-   &#60; usec:      count   percent
-       16:          3  0.00007%
-        8:        563  0.01357%
-        4:       3241  0.07810%
-        2:    2990371 72.05956%
-        1:    1155682 27.84870%</PRE
+&#60; usec   % of total      count
+     1     27.84870    1155682 
+     2     72.05956    2990371 
+     4      0.07810       3241  
+     8      0.01357        563  
+    16      0.00007          3  </PRE
 ><P>
   </P
 ><P
@@ -354,8 +354,13 @@ CLASS="COMMAND"
 
 </P><PRE
 CLASS="SCREEN"
->dmesg | grep "Timecounter"
-sysctl kern.timecounter.hardware=TSC</PRE
+># dmesg | grep "Timecounter"
+Timecounter "ACPI-fast" frequency 3579545 Hz quality 900
+Timecounter "i8254" frequency 1193182 Hz quality 0
+Timecounters tick every 10.000 msec
+Timecounter "TSC" frequency 2531787134 Hz quality 800
+# sysctl kern.timecounter.hardware=TSC
+kern.timecounter.hardware: ACPI-fast -&#62; TSC</PRE
 ><P>
   </P
 ><P
@@ -377,19 +382,19 @@ $ pg_test_timing
 Testing timing overhead for 3 seconds.
 Per timing duration including loop overhead: 97.75 ns
 Histogram of timing durations:
-   &#60; usec:      count   percent
-       32:          1  0.00000%
-       16:          1  0.00000%
-        8:         22  0.00007%
-        4:       3010  0.00981%
-        2:    2993204  9.75277%
-        1:   27694571 90.23734%</PRE
+&#60; usec   % of total      count
+     1     90.23734   27694571 
+     2      9.75277    2993204  
+     4      0.00981       3010  
+     8      0.00007         22  
+    16      0.00000          1  
+    32      0.00000          1  </PRE
 ><P></P
 ></DIV
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN145610"
+NAME="AEN163620"
 ></A
 ><H3
 >Clock hardware and timing accuracy</H3
@@ -444,7 +449,7 @@ NAME="AEN145610"
    derived from acpi_pm will at best provide 300 nanosecond resolution.
   </P
 ><P
->   Timers used on older PC hardware including the 8254 Programmable Interval
+>   Timers used on older PC hardware include the 8254 Programmable Interval
    Timer (PIT), the real-time clock (RTC), the Advanced Programmable Interrupt
    Controller (APIC) timer, and the Cyclone timer.  These timers aim for
    millisecond resolution.
@@ -454,7 +459,7 @@ NAME="AEN145610"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145619"
+NAME="AEN163629"
 ></A
 ><H2
 >Author</H2
@@ -471,7 +476,7 @@ HREF="mailto:ants.aasma@eesti.ee"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN145623"
+NAME="AEN163633"
 ></A
 ><H2
 >See Also</H2

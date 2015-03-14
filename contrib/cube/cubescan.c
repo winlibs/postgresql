@@ -505,7 +505,13 @@ char *cube_yytext;
 
 /* Avoid exit() on fatal scanner errors (a bit ugly -- see yy_fatal_error) */
 #undef fprintf
-#define fprintf(file, fmt, msg)  ereport(ERROR, (errmsg_internal("%s", msg)))
+#define fprintf(file, fmt, msg)  fprintf_to_ereport(fmt, msg)
+
+static void
+fprintf_to_ereport(const char *fmt, const char *msg)
+{
+	ereport(ERROR, (errmsg_internal("%s", msg)));
+}
 
 /* Handles to the buffer that the lexer uses internally */
 static YY_BUFFER_STATE scanbufhandle;
@@ -519,7 +525,7 @@ int cube_yylex(void);
 void cube_scanner_init(const char *str);
 void cube_scanner_finish(void);
 #define YY_NO_INPUT 1
-#line 523 "cubescan.c"
+#line 529 "cubescan.c"
 
 #define INITIAL 0
 
@@ -704,10 +710,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 44 "cubescan.l"
+#line 50 "cubescan.l"
 
 
-#line 711 "cubescan.c"
+#line 717 "cubescan.c"
 
 	if ( !(yy_init) )
 		{
@@ -788,51 +794,51 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 46 "cubescan.l"
+#line 52 "cubescan.l"
 yylval = cube_yytext; return CUBEFLOAT;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 47 "cubescan.l"
+#line 53 "cubescan.l"
 yylval = "("; return O_BRACKET;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 48 "cubescan.l"
+#line 54 "cubescan.l"
 yylval = ")"; return C_BRACKET;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 49 "cubescan.l"
+#line 55 "cubescan.l"
 yylval = "("; return O_PAREN;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 50 "cubescan.l"
+#line 56 "cubescan.l"
 yylval = ")"; return C_PAREN;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 51 "cubescan.l"
+#line 57 "cubescan.l"
 yylval = ")"; return COMMA;
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 52 "cubescan.l"
+#line 58 "cubescan.l"
 /* discard spaces */
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 53 "cubescan.l"
+#line 59 "cubescan.l"
 return cube_yytext[0]; /* alert parser of the garbage */
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 55 "cubescan.l"
+#line 61 "cubescan.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 836 "cubescan.c"
+#line 842 "cubescan.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1790,12 +1796,12 @@ void cube_yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 55 "cubescan.l"
+#line 61 "cubescan.l"
 
 
 
-void
-yyerror(const char *message)
+void __attribute__((noreturn))
+yyerror(NDBOX **result, const char *message)
 {
 	if (*cube_yytext == YY_END_OF_BUFFER_CHAR)
 	{

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Documentation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -109,7 +109,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146505"
+NAME="AEN164674"
 >J.3.1. HTML</A
 ></H2
 ><P
@@ -124,7 +124,7 @@ CLASS="PROMPT"
 >doc/src/sgml$ </SAMP
 ><KBD
 CLASS="USERINPUT"
->gmake html</KBD
+>make html</KBD
 ></PRE
 ><P>
     This is also the default target.  The output appears in the
@@ -147,7 +147,7 @@ CLASS="PROMPT"
 >doc/src/sgml$ </SAMP
 ><KBD
 CLASS="USERINPUT"
->gmake draft</KBD
+>make draft</KBD
 ></PRE
 ><P>
    </P
@@ -160,7 +160,7 @@ CLASS="PROMPT"
 >doc/src/sgml$ </SAMP
 ><KBD
 CLASS="USERINPUT"
->gmake postgres.html</KBD
+>make postgres.html</KBD
 ></PRE
 ><P>
    </P
@@ -170,7 +170,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146522"
+NAME="AEN164691"
 >J.3.2. Manpages</A
 ></H2
 ><P
@@ -192,7 +192,7 @@ CLASS="ACRONYM"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >cd doc/src/sgml
-gmake man</PRE
+make man</PRE
 ><P>
   </P
 ></DIV
@@ -201,7 +201,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146529"
+NAME="AEN164698"
 >J.3.3. Print Output via <SPAN
 CLASS="APPLICATION"
 >JadeTeX</SPAN
@@ -231,7 +231,7 @@ CLASS="PROMPT"
 >doc/src/sgml$ </SAMP
 ><KBD
 CLASS="USERINPUT"
->gmake postgres-A4.ps</KBD
+>make postgres-A4.ps</KBD
 ></PRE
 ><P>
        In U.S. letter format:
@@ -242,7 +242,7 @@ CLASS="PROMPT"
 >doc/src/sgml$ </SAMP
 ><KBD
 CLASS="USERINPUT"
->gmake postgres-US.ps</KBD
+>make postgres-US.ps</KBD
 ></PRE
 ><P>
       </P
@@ -260,7 +260,7 @@ CLASS="PROMPT"
 >doc/src/sgml$ </SAMP
 ><KBD
 CLASS="USERINPUT"
->gmake postgres-A4.pdf</KBD
+>make postgres-A4.pdf</KBD
 ></PRE
 ><P>
        or:
@@ -271,7 +271,7 @@ CLASS="PROMPT"
 >doc/src/sgml$ </SAMP
 ><KBD
 CLASS="USERINPUT"
->gmake postgres-US.pdf</KBD
+>make postgres-US.pdf</KBD
 ></PRE
 ><P>
        (Of course you can also make a <ACRONYM
@@ -316,7 +316,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146558"
+NAME="AEN164727"
 >J.3.4. Overflow Text</A
 ></H2
 ><P
@@ -361,7 +361,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146568"
+NAME="AEN164737"
 >J.3.5. Print Output via <ACRONYM
 CLASS="ACRONYM"
 >RTF</ACRONYM
@@ -451,7 +451,7 @@ CLASS="PROMPT"
 >doc/src/sgml$ </SAMP
 ><KBD
 CLASS="USERINPUT"
->gmake postgres.rtf</KBD
+>make postgres.rtf</KBD
 ></PRE
 ><P>
      </P
@@ -595,7 +595,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN146631"
+NAME="AEN164800"
 ></A
 ><TABLE
 BORDER="1"
@@ -794,12 +794,13 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146696"
+NAME="AEN164865"
 >J.3.6. Plain Text Files</A
 ></H2
 ><P
->    Several files are distributed as plain text, for reading during
-    the installation process. The <TT
+>    The installation instructions are also distributed as plain text,
+    in case they are needed in a situation where better reading tools
+    are not available.  The <TT
 CLASS="FILENAME"
 >INSTALL</TT
 > file
@@ -814,51 +815,13 @@ CLASS="FILENAME"
 >
     and enter <KBD
 CLASS="USERINPUT"
->gmake INSTALL</KBD
->.  This will create
-    a file <TT
-CLASS="FILENAME"
->INSTALL.html</TT
-> that can be saved as text
-    with <SPAN
-CLASS="PRODUCTNAME"
->Netscape Navigator</SPAN
-> and put into
-    the place of the existing file.
-    <SPAN
-CLASS="PRODUCTNAME"
->Netscape</SPAN
-> seems to offer the best
-    quality for <ACRONYM
-CLASS="ACRONYM"
->HTML</ACRONYM
-> to text conversions (over
-    <SPAN
-CLASS="APPLICATION"
->lynx</SPAN
-> and
-    <SPAN
-CLASS="APPLICATION"
->w3m</SPAN
->).
+>make INSTALL</KBD
+>.
    </P
 ><P
->    The file <TT
-CLASS="FILENAME"
->HISTORY</TT
-> can be created similarly,
-    using the command <KBD
-CLASS="USERINPUT"
->gmake HISTORY</KBD
->.  For the
-    file <TT
-CLASS="FILENAME"
->src/test/regress/README</TT
-> the command is
-    <KBD
-CLASS="USERINPUT"
->gmake regress_README</KBD
->.
+>    In the past, the release notes and regression testing instructions
+    were also distributed as plain text, but this practice has been
+    discontinued.
    </P
 ></DIV
 ><DIV
@@ -866,7 +829,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN146714"
+NAME="AEN164873"
 >J.3.7. Syntax Check</A
 ></H2
 ><P
@@ -880,7 +843,7 @@ CLASS="PROMPT"
 >doc/src/sgml$ </SAMP
 ><KBD
 CLASS="USERINPUT"
->gmake check</KBD
+>make check</KBD
 ></PRE
 ><P>
    </P

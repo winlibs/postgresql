@@ -1,16 +1,13 @@
 /*
  * psql - the PostgreSQL interactive terminal
  *
- * Copyright (c) 2000-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2014, PostgreSQL Global Development Group
  *
  * src/bin/psql/help.c
  */
 #include "postgres_fe.h"
 
 #ifndef WIN32
-#ifdef HAVE_PWD_H
-#include <pwd.h>				/* for getpwuid() */
-#endif
 #include <sys/types.h>			/* (ditto) */
 #include <unistd.h>				/* for geteuid() */
 #else
@@ -26,6 +23,7 @@
 #endif
 
 #include "common.h"
+#include "common/username.h"
 #include "help.h"
 #include "input.h"
 #include "settings.h"
@@ -52,31 +50,18 @@ usage(void)
 {
 	const char *env;
 	const char *user;
-
-#ifndef WIN32
-	struct passwd *pw = NULL;
-#endif
+	char	   *errstr;
 
 	/* Find default user, in case we need it. */
 	user = getenv("PGUSER");
 	if (!user)
 	{
-#if !defined(WIN32) && !defined(__OS2__)
-		pw = getpwuid(geteuid());
-		if (pw)
-			user = pw->pw_name;
-		else
+		user = get_user_name(&errstr);
+		if (!user)
 		{
-			psql_error("could not get current user name: %s\n", strerror(errno));
+			psql_error("%s\n", errstr);
 			exit(EXIT_FAILURE);
 		}
-#else							/* WIN32 */
-		char		buf[128];
-		DWORD		bufsize = sizeof(buf) - 1;
-
-		if (GetUserName(buf, &bufsize))
-			user = buf;
-#endif   /* WIN32 */
 	}
 
 	printf(_("psql is the PostgreSQL interactive terminal.\n\n"));
@@ -97,7 +82,7 @@ usage(void)
 	printf(_("  -V, --version            output version information, then exit\n"));
 	printf(_("  -X, --no-psqlrc          do not read startup file (~/.psqlrc)\n"));
 	printf(_("  -1 (\"one\"), --single-transaction\n"
-			 "                           execute command file as a single transaction\n"));
+			 "                           execute as a single transaction (if non-interactive)\n"));
 	printf(_("  -?, --help               show this help, then exit\n"));
 
 	printf(_("\nInput and output options:\n"));
@@ -114,19 +99,19 @@ usage(void)
 	printf(_("\nOutput format options:\n"));
 	printf(_("  -A, --no-align           unaligned table output mode\n"));
 	printf(_("  -F, --field-separator=STRING\n"
-	   "                           set field separator (default: \"%s\")\n"),
+			 "                           field separator for unaligned output (default: \"%s\")\n"),
 		   DEFAULT_FIELD_SEP);
 	printf(_("  -H, --html               HTML table output mode\n"));
 	printf(_("  -P, --pset=VAR[=ARG]     set printing option VAR to ARG (see \\pset command)\n"));
 	printf(_("  -R, --record-separator=STRING\n"
-	"                           set record separator (default: newline)\n"));
+			 "                           record separator for unaligned output (default: newline)\n"));
 	printf(_("  -t, --tuples-only        print rows only\n"));
 	printf(_("  -T, --table-attr=TEXT    set HTML table tag attributes (e.g., width, border)\n"));
 	printf(_("  -x, --expanded           turn on expanded table output\n"));
 	printf(_("  -z, --field-separator-zero\n"
-		   "                           set field separator to zero byte\n"));
+			 "                           set field separator for unaligned output to zero byte\n"));
 	printf(_("  -0, --record-separator-zero\n"
-		  "                           set record separator to zero byte\n"));
+			 "                           set record separator for unaligned output to zero byte\n"));
 
 	printf(_("\nConnection options:\n"));
 	/* Display default host */
@@ -161,16 +146,21 @@ void
 slashUsage(unsigned short int pager)
 {
 	FILE	   *output;
+	char	   *currdb;
 
-	output = PageOutput(94, pager);
+	currdb = PQdb(pset.db);
+
+	output = PageOutput(103, pager);
 
 	/* if you add/remove a line here, change the row count above */
 
 	fprintf(output, _("General\n"));
 	fprintf(output, _("  \\copyright             show PostgreSQL usage and distribution terms\n"));
 	fprintf(output, _("  \\g [FILE] or ;         execute query (and send results to file or |pipe)\n"));
+	fprintf(output, _("  \\gset [PREFIX]         execute query and store results in psql variables\n"));
 	fprintf(output, _("  \\h [NAME]              help on syntax of SQL commands, * for all commands\n"));
 	fprintf(output, _("  \\q                     quit psql\n"));
+	fprintf(output, _("  \\watch [SEC]           execute query every SEC seconds\n"));
 	fprintf(output, "\n");
 
 	fprintf(output, _("Query Buffer\n"));
@@ -217,6 +207,7 @@ slashUsage(unsigned short int pager)
 	fprintf(output, _("  \\di[S+] [PATTERN]      list indexes\n"));
 	fprintf(output, _("  \\dl                    list large objects, same as \\lo_list\n"));
 	fprintf(output, _("  \\dL[S+] [PATTERN]      list procedural languages\n"));
+	fprintf(output, _("  \\dm[S+] [PATTERN]      list materialized views\n"));
 	fprintf(output, _("  \\dn[S+] [PATTERN]      list schemas\n"));
 	fprintf(output, _("  \\do[S]  [PATTERN]      list operators\n"));
 	fprintf(output, _("  \\dO[S+] [PATTERN]      list collations\n"));
@@ -229,7 +220,8 @@ slashUsage(unsigned short int pager)
 	fprintf(output, _("  \\dv[S+] [PATTERN]      list views\n"));
 	fprintf(output, _("  \\dE[S+] [PATTERN]      list foreign tables\n"));
 	fprintf(output, _("  \\dx[+]  [PATTERN]      list extensions\n"));
-	fprintf(output, _("  \\l[+]                  list all databases\n"));
+	fprintf(output, _("  \\dy     [PATTERN]      list event triggers\n"));
+	fprintf(output, _("  \\l[+]   [PATTERN]      list databases\n"));
 	fprintf(output, _("  \\sf[+] FUNCNAME        show a function's definition\n"));
 	fprintf(output, _("  \\z      [PATTERN]      same as \\dp\n"));
 	fprintf(output, "\n");
@@ -240,7 +232,7 @@ slashUsage(unsigned short int pager)
 	fprintf(output, _("  \\f [STRING]            show or set field separator for unaligned query output\n"));
 	fprintf(output, _("  \\H                     toggle HTML output mode (currently %s)\n"),
 			ON(pset.popt.topt.format == PRINT_HTML));
-	fprintf(output, _("  \\pset NAME [VALUE]     set table output option\n"
+	fprintf(output, _("  \\pset [NAME [VALUE]]   set table output option\n"
 					  "                         (NAME := {format|border|expanded|fieldsep|fieldsep_zero|footer|null|\n"
 					  "                         numericlocale|recordsep|recordsep_zero|tuples_only|title|tableattr|pager})\n"));
 	fprintf(output, _("  \\t [on|off]            show only rows (currently %s)\n"),
@@ -251,9 +243,13 @@ slashUsage(unsigned short int pager)
 	fprintf(output, "\n");
 
 	fprintf(output, _("Connection\n"));
-	fprintf(output, _("  \\c[onnect] [DBNAME|- USER|- HOST|- PORT|-]\n"
-	"                         connect to new database (currently \"%s\")\n"),
-			PQdb(pset.db));
+	if (currdb)
+		fprintf(output, _("  \\c[onnect] [DBNAME|- USER|- HOST|- PORT|-]\n"
+						  "                         connect to new database (currently \"%s\")\n"),
+				currdb);
+	else
+		fprintf(output, _("  \\c[onnect] [DBNAME|- USER|- HOST|- PORT|-]\n"
+						  "                         connect to new database (currently no connection)\n"));
 	fprintf(output, _("  \\encoding [ENCODING]   show or set client encoding\n"));
 	fprintf(output, _("  \\password [USERNAME]   securely change the password for a user\n"));
 	fprintf(output, _("  \\conninfo              display information about current connection\n"));
@@ -435,7 +431,7 @@ print_copyright(void)
 	puts(
 		 "PostgreSQL Database Management System\n"
 		 "(formerly known as Postgres, then as Postgres95)\n\n"
-		 "Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group\n\n"
+		 "Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group\n\n"
 		 "Portions Copyright (c) 1994, The Regents of the University of California\n\n"
 	"Permission to use, copy, modify, and distribute this software and its\n"
 		 "documentation for any purpose, without fee, and without a written agreement\n"

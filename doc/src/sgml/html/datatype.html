@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="The SQL Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -149,7 +149,7 @@ HREF="datatype-binary.html"
 ><DL
 ><DT
 >8.4.1. <A
-HREF="datatype-binary.html#AEN5246"
+HREF="datatype-binary.html#AEN5497"
 ><TT
 CLASS="TYPE"
 >bytea</TT
@@ -157,7 +157,7 @@ CLASS="TYPE"
 ></DT
 ><DT
 >8.4.2. <A
-HREF="datatype-binary.html#AEN5255"
+HREF="datatype-binary.html#AEN5506"
 ><TT
 CLASS="TYPE"
 >bytea</TT
@@ -213,22 +213,22 @@ HREF="datatype-enum.html"
 ><DL
 ><DT
 >8.7.1. <A
-HREF="datatype-enum.html#AEN6381"
+HREF="datatype-enum.html#AEN6638"
 >Declaration of Enumerated Types</A
 ></DT
 ><DT
 >8.7.2. <A
-HREF="datatype-enum.html#AEN6387"
+HREF="datatype-enum.html#AEN6644"
 >Ordering</A
 ></DT
 ><DT
 >8.7.3. <A
-HREF="datatype-enum.html#AEN6391"
+HREF="datatype-enum.html#AEN6648"
 >Type Safety</A
 ></DT
 ><DT
 >8.7.4. <A
-HREF="datatype-enum.html#AEN6397"
+HREF="datatype-enum.html#AEN6654"
 >Implementation Details</A
 ></DT
 ></DL
@@ -242,32 +242,37 @@ HREF="datatype-geometric.html"
 ><DL
 ><DT
 >8.8.1. <A
-HREF="datatype-geometric.html#AEN6473"
+HREF="datatype-geometric.html#AEN6730"
 >Points</A
 ></DT
 ><DT
 >8.8.2. <A
-HREF="datatype-geometric.html#AEN6487"
->Line Segments</A
+HREF="datatype-geometric.html#DATATYPE-LINE"
+>Lines</A
 ></DT
 ><DT
 >8.8.3. <A
-HREF="datatype-geometric.html#AEN6520"
->Boxes</A
+HREF="datatype-geometric.html#DATATYPE-LSEG"
+>Line Segments</A
 ></DT
 ><DT
 >8.8.4. <A
-HREF="datatype-geometric.html#AEN6549"
->Paths</A
+HREF="datatype-geometric.html#AEN6814"
+>Boxes</A
 ></DT
 ><DT
 >8.8.5. <A
-HREF="datatype-geometric.html#AEN6582"
->Polygons</A
+HREF="datatype-geometric.html#AEN6843"
+>Paths</A
 ></DT
 ><DT
 >8.8.6. <A
-HREF="datatype-geometric.html#AEN6607"
+HREF="datatype-geometric.html#DATATYPE-POLYGON"
+>Polygons</A
+></DT
+><DT
+>8.8.7. <A
+HREF="datatype-geometric.html#DATATYPE-CIRCLE"
 >Circles</A
 ></DT
 ></DL
@@ -366,17 +371,17 @@ CLASS="ACRONYM"
 ><DL
 ><DT
 >8.13.1. <A
-HREF="datatype-xml.html#AEN6971"
+HREF="datatype-xml.html#AEN7266"
 >Creating XML Values</A
 ></DT
 ><DT
 >8.13.2. <A
-HREF="datatype-xml.html#AEN7015"
+HREF="datatype-xml.html#AEN7310"
 >Encoding Handling</A
 ></DT
 ><DT
 >8.13.3. <A
-HREF="datatype-xml.html#AEN7027"
+HREF="datatype-xml.html#AEN7322"
 >Accessing XML Values</A
 ></DT
 ></DL
@@ -387,8 +392,38 @@ HREF="datatype-json.html"
 ><ACRONYM
 CLASS="ACRONYM"
 >JSON</ACRONYM
-> Type</A
+> Types</A
 ></DT
+><DD
+><DL
+><DT
+>8.14.1. <A
+HREF="datatype-json.html#JSON-KEYS-ELEMENTS"
+>JSON Input and Output Syntax</A
+></DT
+><DT
+>8.14.2. <A
+HREF="datatype-json.html#JSON-DOC-DESIGN"
+>Designing JSON documents effectively</A
+></DT
+><DT
+>8.14.3. <A
+HREF="datatype-json.html#JSON-CONTAINMENT"
+><TT
+CLASS="TYPE"
+>jsonb</TT
+> Containment and Existence</A
+></DT
+><DT
+>8.14.4. <A
+HREF="datatype-json.html#JSON-INDEXING"
+><TT
+CLASS="TYPE"
+>jsonb</TT
+> Indexing</A
+></DT
+></DL
+></DD
 ><DT
 >8.15. <A
 HREF="arrays.html"
@@ -437,22 +472,22 @@ HREF="rowtypes.html"
 ><DL
 ><DT
 >8.16.1. <A
-HREF="rowtypes.html#AEN7268"
+HREF="rowtypes.html#AEN7800"
 >Declaration of Composite Types</A
 ></DT
 ><DT
 >8.16.2. <A
-HREF="rowtypes.html#AEN7283"
+HREF="rowtypes.html#AEN7815"
 >Composite Value Input</A
 ></DT
 ><DT
 >8.16.3. <A
-HREF="rowtypes.html#AEN7304"
+HREF="rowtypes.html#AEN7836"
 >Accessing Composite Types</A
 ></DT
 ><DT
 >8.16.4. <A
-HREF="rowtypes.html#AEN7316"
+HREF="rowtypes.html#AEN7848"
 >Modifying Composite Types</A
 ></DT
 ><DT
@@ -511,7 +546,7 @@ HREF="rangetypes.html#RANGETYPES-DEFINING"
 ></DT
 ><DT
 >8.17.9. <A
-HREF="rangetypes.html#RANGETYPES-GIST"
+HREF="rangetypes.html#RANGETYPES-INDEXING"
 >Indexing</A
 ></DT
 ><DT
@@ -528,6 +563,14 @@ HREF="datatype-oid.html"
 ></DT
 ><DT
 >8.19. <A
+HREF="datatype-pg-lsn.html"
+><ACRONYM
+CLASS="ACRONYM"
+>pg_lsn Type</ACRONYM
+></A
+></DT
+><DT
+>8.20. <A
 HREF="datatype-pseudo.html"
 >Pseudo-Types</A
 ></DT
@@ -693,30 +736,6 @@ CLASS="QUOTE"
 ><TD
 ><TT
 CLASS="TYPE"
->character varying [ (<TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
->) ]</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->varchar [ (<TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
->) ]</TT
-></TD
-><TD
->variable-length character string</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="TYPE"
 >character [ (<TT
 CLASS="REPLACEABLE"
 ><I
@@ -736,6 +755,30 @@ CLASS="REPLACEABLE"
 ></TD
 ><TD
 >fixed-length character string</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>character varying [ (<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>) ]</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>varchar [ (<TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>) ]</TT
+></TD
+><TD
+>variable-length character string</TD
 ></TR
 ><TR
 ><TD
@@ -837,6 +880,28 @@ CLASS="REPLACEABLE"
 ><TD
 ><TT
 CLASS="TYPE"
+>json</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>textual JSON data</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>jsonb</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>binary JSON data, decomposed</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
 >line</TT
 ></TD
 ><TD
@@ -923,6 +988,20 @@ CLASS="TYPE"
 >&nbsp;</TD
 ><TD
 >geometric path on a plane</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+><SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> Log Sequence Number</TD
 ></TR
 ><TR
 ><TD
@@ -1137,17 +1216,6 @@ CLASS="TYPE"
 >&nbsp;</TD
 ><TD
 >XML data</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="TYPE"
->json</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->JSON data</TD
 ></TR
 ></TBODY
 ></TABLE

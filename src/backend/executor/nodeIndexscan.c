@@ -3,7 +3,7 @@
  * nodeIndexscan.c
  *	  Routines to support indexed scans of relations
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -216,7 +216,7 @@ ExecIndexEvalRuntimeKeys(ExprContext *econtext,
 
 		/*
 		 * For each run-time key, extract the run-time expression and evaluate
-		 * it with respect to the current context.	We then stick the result
+		 * it with respect to the current context.  We then stick the result
 		 * into the proper scan key.
 		 *
 		 * Note: the result of the eval could be a pass-by-ref value that's
@@ -349,7 +349,7 @@ ExecIndexAdvanceArrayKeys(IndexArrayKeyInfo *arrayKeys, int numArrayKeys)
 	/*
 	 * Note we advance the rightmost array key most quickly, since it will
 	 * correspond to the lowest-order index column among the available
-	 * qualifications.	This is hypothesized to result in better locality of
+	 * qualifications.  This is hypothesized to result in better locality of
 	 * access in the index.
 	 */
 	for (j = numArrayKeys - 1; j >= 0; j--)
@@ -511,7 +511,7 @@ ExecInitIndexScan(IndexScan *node, EState *estate, int eflags)
 	/*
 	 * open the base relation and acquire appropriate lock on it.
 	 */
-	currentRelation = ExecOpenScanRelation(estate, node->scan.scanrelid);
+	currentRelation = ExecOpenScanRelation(estate, node->scan.scanrelid, eflags);
 
 	indexstate->ss.ss_currentRelation = currentRelation;
 	indexstate->ss.ss_currentScanDesc = NULL;	/* no heap scan here */

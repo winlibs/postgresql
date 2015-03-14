@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -411,43 +411,6 @@ CLASS="LITERAL"
 > is reported only when a query
        has been sent to the server and not yet completed.
       </P
-><DIV
-CLASS="CAUTION"
-><P
-></P
-><TABLE
-CLASS="CAUTION"
-BORDER="1"
-WIDTH="90%"
-><TR
-><TD
-ALIGN="CENTER"
-><B
->Caution</B
-></TD
-></TR
-><TR
-><TD
-ALIGN="LEFT"
-><P
->        <CODE
-CLASS="FUNCTION"
->PQtransactionStatus</CODE
-> will give incorrect results when using
-        a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 7.3 server that has the parameter <TT
-CLASS="LITERAL"
->autocommit</TT
->
-        set to off.  The server-side autocommit feature has been
-        deprecated and does not exist in later server versions.
-       </P
-></TD
-></TR
-></TABLE
-></DIV
 ></DD
 ><DT
 ><A
@@ -876,7 +839,7 @@ CLASS="FUNCTION"
 
 </P><PRE
 CLASS="SYNOPSIS"
->SSL *PQgetssl(const PGconn *conn);</PRE
+>void *PQgetssl(const PGconn *conn);</PRE
 ><P>
       </P
 ><P
@@ -888,19 +851,42 @@ CLASS="PRODUCTNAME"
        documentation for information about this structure.
       </P
 ><P
->       You must define <TT
-CLASS="SYMBOL"
->USE_SSL</TT
-> in order to get the
-       correct prototype for this function. Doing so will also
-       automatically include <TT
-CLASS="FILENAME"
->ssl.h</TT
-> from
-       <SPAN
+>       The actual return value is of type <TT
+CLASS="TYPE"
+>SSL *</TT
+>,
+       where <TT
+CLASS="TYPE"
+>SSL</TT
+> is a type defined by
+       the <SPAN
 CLASS="PRODUCTNAME"
 >OpenSSL</SPAN
->.
+> library, but it is not declared
+       this way to avoid requiring the <SPAN
+CLASS="PRODUCTNAME"
+>OpenSSL</SPAN
+>
+       header files.  To use this function, code along the following lines
+       could be used:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>#include &#60;libpq-fe.h&#62;
+#include &#60;openssl/ssl.h&#62;
+
+...
+
+    SSL *ssl;
+
+    dbconn = PQconnectdb(...);
+    ...
+
+    ssl = PQgetssl(dbconn);
+    if (ssl)
+    {
+        /* use OpenSSL functions to access ssl */
+    }</PRE
+><P>
       </P
 ></DD
 ></DL

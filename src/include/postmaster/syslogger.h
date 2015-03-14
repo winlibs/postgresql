@@ -3,7 +3,7 @@
  * syslogger.h
  *	  Exports from postmaster/syslogger.c.
  *
- * Copyright (c) 2004-2012, PostgreSQL Global Development Group
+ * Copyright (c) 2004-2014, PostgreSQL Global Development Group
  *
  * src/include/postmaster/syslogger.h
  *
@@ -20,7 +20,7 @@
  * here is to divide long messages into chunks that are not more than
  * PIPE_BUF bytes long, which according to POSIX spec must be written into
  * the pipe atomically.  The pipe reader then uses the protocol headers to
- * reassemble the parts of a message into a single string.	The reader can
+ * reassemble the parts of a message into a single string.  The reader can
  * also cope with non-protocol data coming down the pipe, though we cannot
  * guarantee long strings won't get split apart.
  *
@@ -84,7 +84,7 @@ extern int	SysLogger_Start(void);
 extern void write_syslogger_file(const char *buffer, int count, int dest);
 
 #ifdef EXEC_BACKEND
-extern void SysLoggerMain(int argc, char *argv[]);
+extern void SysLoggerMain(int argc, char *argv[]) __attribute__((noreturn));
 #endif
 
 #endif   /* _SYSLOGGER_H */

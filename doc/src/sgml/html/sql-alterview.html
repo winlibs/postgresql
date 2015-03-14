@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERVIEW"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN65602"
+NAME="AEN70841"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN65602"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN65607"
+NAME="AEN70844"
 ></A
 ><H2
 >Synopsis</H2
@@ -200,7 +200,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65625"
+NAME="AEN70862"
 ></A
 ><H2
 >Description</H2
@@ -238,7 +238,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65634"
+NAME="AEN70871"
 ></A
 ><H2
 >Parameters</H2
@@ -281,19 +281,17 @@ CLASS="LITERAL"
 ><DD
 ><P
 >      These forms set or remove the default value for a column.
-      A default value associated with a view column is
-      inserted into <TT
+      A view column's default value is substituted into any
+      <TT
 CLASS="COMMAND"
 >INSERT</TT
-> statements on the view before
-      the view's <TT
-CLASS="LITERAL"
->ON INSERT</TT
-> rule is applied, if
-      the <TT
+> or <TT
 CLASS="COMMAND"
->INSERT</TT
-> does not specify a value for the column.
+>UPDATE</TT
+> command whose target is the
+      view, before applying any rules or triggers for the view.  The view's
+      default will therefore take precedence over any default values from
+      underlying relations.
      </P
 ></DD
 ><DT
@@ -334,26 +332,79 @@ CLASS="REPLACEABLE"
 ></DD
 ><DT
 ><TT
+CLASS="LITERAL"
+>SET ( <TT
 CLASS="REPLACEABLE"
 ><I
 >view_option_name</I
 ></TT
+> [= <TT
+CLASS="REPLACEABLE"
+><I
+>view_option_value</I
+></TT
+>] [, ... ] )</TT
+><BR><TT
+CLASS="LITERAL"
+>RESET ( <TT
+CLASS="REPLACEABLE"
+><I
+>view_option_name</I
+></TT
+> [, ... ] )</TT
 ></DT
 ><DD
 ><P
->      The name of a view option to be set or reset.
-     </P
+>      Sets or resets a view option.  Currently supported options are:
+      <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>check_option</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)</DT
+><DD
+><P
+>          Changes the check option of the view.  The value must
+          be <TT
+CLASS="LITERAL"
+>local</TT
+> or <TT
+CLASS="LITERAL"
+>cascaded</TT
+>.
+         </P
 ></DD
 ><DT
 ><TT
-CLASS="REPLACEABLE"
-><I
->view_option_name</I
-></TT
-></DT
+CLASS="LITERAL"
+>security_barrier</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</DT
 ><DD
 ><P
->      The new value for a view option.
+>          Changes the security-barrier property of the view.  The value must
+          be Boolean value, such as <TT
+CLASS="LITERAL"
+>true</TT
+>
+          or <TT
+CLASS="LITERAL"
+>false</TT
+>.
+         </P
+></DD
+></DL
+></DIV
+><P>
      </P
 ></DD
 ></DL
@@ -362,7 +413,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65681"
+NAME="AEN70934"
 ></A
 ><H2
 >Notes</H2
@@ -381,7 +432,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65686"
+NAME="AEN70939"
 ></A
 ><H2
 >Examples</H2
@@ -397,12 +448,23 @@ CLASS="LITERAL"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >ALTER VIEW foo RENAME TO bar;</PRE
+><P>
+  </P
+><P
+>   To attach a default column value to an updatable view:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TABLE base_table (id int, ts timestamptz);
+CREATE VIEW a_view AS SELECT * FROM base_table;
+ALTER VIEW a_view ALTER COLUMN ts SET DEFAULT now();
+INSERT INTO base_table(id) VALUES(1);  -- ts will receive a NULL
+INSERT INTO a_view(id) VALUES(2);  -- ts will receive the current time</PRE
 ><P></P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65692"
+NAME="AEN70947"
 ></A
 ><H2
 >Compatibility</H2
@@ -420,7 +482,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65697"
+NAME="AEN70952"
 ></A
 ><H2
 >See Also</H2

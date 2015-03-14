@@ -6,11 +6,11 @@
  * This module handles sorting of heap tuples, index tuples, or single
  * Datums (and could easily support other kinds of sortable objects,
  * if necessary).  It works efficiently for both small and large amounts
- * of data.  Small amounts are sorted in-memory using qsort().	Large
+ * of data.  Small amounts are sorted in-memory using qsort().  Large
  * amounts are sorted using temporary files and a standard external sort
  * algorithm.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/tuplesort.h
@@ -41,9 +41,9 @@ typedef struct Tuplesortstate Tuplesortstate;
  * The "heap" API actually stores/sorts MinimalTuples, which means it doesn't
  * preserve the system columns (tuple identity and transaction visibility
  * info).  The sort keys are specified by column numbers within the tuples
- * and sort operator OIDs.	We save some cycles by passing and returning the
+ * and sort operator OIDs.  We save some cycles by passing and returning the
  * tuples in TupleTableSlots, rather than forming actual HeapTuples (which'd
- * have to be converted to MinimalTuples).	This API works well for sorts
+ * have to be converted to MinimalTuples).  This API works well for sorts
  * executed as parts of plan trees.
  *
  * The "cluster" API stores/sorts full HeapTuples including all visibility
@@ -52,7 +52,7 @@ typedef struct Tuplesortstate Tuplesortstate;
  * go with this API, not the "begin_heap" one!
  *
  * The "index_btree" API stores/sorts IndexTuples (preserving all their
- * header fields).	The sort keys are specified by a btree index definition.
+ * header fields).  The sort keys are specified by a btree index definition.
  *
  * The "index_hash" API is similar to index_btree, but the tuples are
  * actually sorted by their hash codes not the raw data.
@@ -66,10 +66,12 @@ extern Tuplesortstate *tuplesort_begin_heap(TupleDesc tupDesc,
 extern Tuplesortstate *tuplesort_begin_cluster(TupleDesc tupDesc,
 						Relation indexRel,
 						int workMem, bool randomAccess);
-extern Tuplesortstate *tuplesort_begin_index_btree(Relation indexRel,
+extern Tuplesortstate *tuplesort_begin_index_btree(Relation heapRel,
+							Relation indexRel,
 							bool enforceUnique,
 							int workMem, bool randomAccess);
-extern Tuplesortstate *tuplesort_begin_index_hash(Relation indexRel,
+extern Tuplesortstate *tuplesort_begin_index_hash(Relation heapRel,
+						   Relation indexRel,
 						   uint32 hash_mask,
 						   int workMem, bool randomAccess);
 extern Tuplesortstate *tuplesort_begin_datum(Oid datumType,
@@ -97,6 +99,9 @@ extern IndexTuple tuplesort_getindextuple(Tuplesortstate *state, bool forward,
 extern bool tuplesort_getdatum(Tuplesortstate *state, bool forward,
 				   Datum *val, bool *isNull);
 
+extern bool tuplesort_skiptuples(Tuplesortstate *state, int64 ntuples,
+					 bool forward);
+
 extern void tuplesort_end(Tuplesortstate *state);
 
 extern void tuplesort_get_stats(Tuplesortstate *state,
@@ -104,7 +109,7 @@ extern void tuplesort_get_stats(Tuplesortstate *state,
 					const char **spaceType,
 					long *spaceUsed);
 
-extern int	tuplesort_merge_order(long allowedMem);
+extern int	tuplesort_merge_order(int64 allowedMem);
 
 /*
  * These routines may only be called if randomAccess was specified 'true'.

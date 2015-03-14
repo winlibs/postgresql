@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Reliability and the Write-Ahead Log"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -292,19 +292,15 @@ CLASS="VARNAME"
 CLASS="VARNAME"
 >commit_delay</TT
 > causes a delay
-   just before a synchronous commit attempts to flush
-   <ACRONYM
+   just before a transaction flushes <ACRONYM
 CLASS="ACRONYM"
 >WAL</ACRONYM
-> to disk, in the hope that a single flush
-   executed by one such transaction can also serve other transactions
-   committing at about the same time.  Setting <TT
-CLASS="VARNAME"
->commit_delay</TT
->
-   can only help when there are many concurrently committing transactions,
-   and it is difficult to tune it to a value that actually helps rather
-   than hurts throughput.
+> to disk, in
+   the hope that a single flush executed by one such transaction can also
+   serve other transactions committing at about the same time.  The
+   setting can be thought of as a way of increasing the time window in
+   which transactions can join a group about to participate in a single
+   flush, to amortize the cost of the flush among multiple transactions.
   </P
 ></DIV
 ><DIV

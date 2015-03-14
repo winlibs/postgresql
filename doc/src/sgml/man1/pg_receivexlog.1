@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_receivexlog
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "PG_RECEIVEXLOG" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PG_RECEIVEXLOG" "1" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -28,8 +28,7 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-pg_receivexlog \- streams transaction logs from a PostgreSQL cluster
-.\" pg_receivexlog
+pg_receivexlog \- stream transaction logs from a PostgreSQL server
 .SH "SYNOPSIS"
 .HP \w'\fBpg_receivexlog\fR\ 'u
 \fBpg_receivexlog\fR [\fIoption\fR...]
@@ -69,61 +68,105 @@ will retry the connection indefinitely, and reestablish streaming as soon as pos
 parameter\&.
 .SH "OPTIONS"
 .PP
-The following command\-line options control the location and format of the output\&.
-.PP
-\fB\-D \fR\fB\fIdirectory\fR\fR, \fB\-\-directory=\fR\fB\fIdirectory\fR\fR
+\fB\-D \fR\fB\fIdirectory\fR\fR
+.br
+\fB\-\-directory=\fR\fB\fIdirectory\fR\fR
 .RS 4
 Directory to write the output to\&.
 .sp
 This parameter is required\&.
 .RE
 .PP
-The following command\-line options control the running of the program\&.
-.PP
-\fB\-n\fR, \fB\-\-no\-loop\fR
+\fB\-n\fR
+.br
+\fB\-\-no\-loop\fR
 .RS 4
 Don\*(Aqt loop on connection errors\&. Instead, exit right away with an error\&.
 .RE
 .PP
-\fB\-v\fR, \fB\-\-verbose\fR
+\fB\-s \fR\fB\fIinterval\fR\fR
+.br
+\fB\-\-status\-interval=\fR\fB\fIinterval\fR\fR
+.RS 4
+Specifies the number of seconds between status packets sent back to the server\&. This allows for easier monitoring of the progress from server\&. A value of zero disables the periodic status updates completely, although an update will still be sent when requested by the server, to avoid timeout disconnect\&. The default value is 10 seconds\&.
+.RE
+.PP
+\fB\-S \fR\fB\fIslotname\fR\fR
+.br
+\fB\-\-slot=\fR\fB\fIslotname\fR\fR
+.RS 4
+Require
+pg_receivexlog
+to use an existing replication slot (see
+Section 25.2.6, \(lqReplication Slots\(rq, in the documentation)\&. When this option is used,
+pg_receivexlog
+will report a flush position to the server, indicating when each segment has been synchronized to disk so that the server can remove that segment if it is not otherwise needed\&. When using this parameter, it is important to make sure that
+pg_receivexlog
+cannot become the synchronous standby through an incautious setting of
+synchronous_standby_names; it does not flush data frequently enough for this to work correctly\&.
+.RE
+.PP
+\fB\-v\fR
+.br
+\fB\-\-verbose\fR
 .RS 4
 Enables verbose mode\&.
 .RE
 .PP
 The following command\-line options control the database connection parameters\&.
 .PP
-\fB\-h \fR\fB\fIhost\fR\fR, \fB\-\-host=\fR\fB\fIhost\fR\fR
+\fB\-d \fR\fB\fIconnstr\fR\fR
+.br
+\fB\-\-dbname=\fR\fB\fIconnstr\fR\fR
+.RS 4
+Specifies parameters used to connect to the server, as a connection string\&. See
+Section 31.1.1, \(lqConnection Strings\(rq, in the documentation
+for more information\&.
+.sp
+The option is called
+\-\-dbname
+for consistency with other client applications, but because
+pg_receivexlog
+doesn\*(Aqt connect to any particular database in the cluster, database name in the connection string will be ignored\&.
+.RE
+.PP
+\fB\-h \fR\fB\fIhost\fR\fR
+.br
+\fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
 Specifies the host name of the machine on which the server is running\&. If the value begins with a slash, it is used as the directory for the Unix domain socket\&. The default is taken from the
 \fBPGHOST\fR
 environment variable, if set, else a Unix domain socket connection is attempted\&.
 .RE
 .PP
-\fB\-p \fR\fB\fIport\fR\fR, \fB\-\-port=\fR\fB\fIport\fR\fR
+\fB\-p \fR\fB\fIport\fR\fR
+.br
+\fB\-\-port=\fR\fB\fIport\fR\fR
 .RS 4
 Specifies the TCP port or local Unix domain socket file extension on which the server is listening for connections\&. Defaults to the
 \fBPGPORT\fR
 environment variable, if set, or a compiled\-in default\&.
 .RE
 .PP
-\fB\-s \fR\fB\fIinterval\fR\fR, \fB\-\-status\-interval=\fR\fB\fIinterval\fR\fR
-.RS 4
-Specifies the number of seconds between status packets sent back to the server\&. This is required if replication timeout is configured on the server, and allows for easier monitoring\&. A value of zero disables the status updates completely\&. The default value is 10 seconds\&.
-.RE
-.PP
-\fB\-U \fR\fB\fIusername\fR\fR, \fB\-\-username=\fR\fB\fIusername\fR\fR
+\fB\-U \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-username=\fR\fB\fIusername\fR\fR
 .RS 4
 User name to connect as\&.
 .RE
 .PP
-\fB\-w\fR, \fB\-\-no\-password\fR
+\fB\-w\fR
+.br
+\fB\-\-no\-password\fR
 .RS 4
 Never issue a password prompt\&. If the server requires password authentication and a password is not available by other means such as a
 \&.pgpass
 file, the connection attempt will fail\&. This option can be useful in batch jobs and scripts where no user is present to enter a password\&.
 .RE
 .PP
-\fB\-W\fR, \fB\-\-password\fR
+\fB\-W\fR
+.br
+\fB\-\-password\fR
 .RS 4
 Force
 pg_receivexlog
@@ -140,14 +183,18 @@ to avoid the extra connection attempt\&.
 .PP
 Other options are also available:
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 pg_receivexlog
 version and exit\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 pg_receivexlog
@@ -166,23 +213,10 @@ Section 31.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
 When using
 pg_receivexlog
 instead of
-archive_command, the server will continue to recycle transaction log files even if the backups are not properly archived, since there is no command that fails\&. This can be worked around by having an
 archive_command
-that fails when the file has not been properly archived yet, for example:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-archive_command = \*(Aqsleep 5 && test \-f /mnt/server/archivedir/%f\*(Aq
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-The initial timeout is necessary because
-pg_receivexlog
-works using asynchronous replication and can therefore be slightly behind the master\&.
+as the main WAL backup method, it is strongly recommended to use replication slots\&. Otherwise, the server is free to recycle or remove transaction log files before they are backed up, because it does not have any information, either from
+archive_command
+or the replication slots, about how far the WAL stream has been archived\&. Note, however, that a replication slot will fill up the server\*(Aqs disk space if the receiver does not keep up with fetching the WAL data\&.
 .SH "EXAMPLES"
 .PP
 To stream the transaction log from the server at

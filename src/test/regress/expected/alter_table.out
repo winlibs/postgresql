@@ -140,7 +140,6 @@ ALTER INDEX tmp_onek_unique1 RENAME TO onek_unique1;
 CREATE VIEW tmp_view (unique1) AS SELECT unique1 FROM tenk1;
 ALTER TABLE tmp_view RENAME TO tmp_view_new;
 -- hack to ensure we get an indexscan here
-ANALYZE tenk1;
 set enable_seqscan to off;
 set enable_bitmapscan to off;
 -- 5 values, sorted
@@ -162,7 +161,6 @@ alter table stud_emp rename to pg_toast_stud_emp;
 alter table pg_toast_stud_emp rename to stud_emp;
 -- renaming index should rename constraint as well
 ALTER TABLE onek ADD CONSTRAINT onek_unique1_constraint UNIQUE (unique1);
-NOTICE:  ALTER TABLE / ADD UNIQUE will create implicit index "onek_unique1_constraint" for table "onek"
 ALTER INDEX onek_unique1_constraint RENAME TO onek_unique1_constraint_foo;
 ALTER TABLE onek DROP CONSTRAINT onek_unique1_constraint_foo;
 -- renaming constraint
@@ -171,7 +169,6 @@ ALTER TABLE onek RENAME CONSTRAINT onek_check_constraint TO onek_check_constrain
 ALTER TABLE onek DROP CONSTRAINT onek_check_constraint_foo;
 -- renaming constraint should rename index as well
 ALTER TABLE onek ADD CONSTRAINT onek_unique1_constraint UNIQUE (unique1);
-NOTICE:  ALTER TABLE / ADD UNIQUE will create implicit index "onek_unique1_constraint" for table "onek"
 DROP INDEX onek_unique1_constraint;  -- to see whether it's there
 ERROR:  cannot drop index onek_unique1_constraint because constraint onek_unique1_constraint on table onek requires it
 HINT:  You can drop constraint onek_unique1_constraint on table onek instead.
@@ -263,7 +260,6 @@ Check constraints:
 Inherits: constraint_rename_test
 
 ALTER TABLE constraint_rename_test ADD CONSTRAINT con3 PRIMARY KEY (a);
-NOTICE:  ALTER TABLE / ADD PRIMARY KEY will create implicit index "con3" for table "constraint_rename_test"
 ALTER TABLE constraint_rename_test RENAME CONSTRAINT con3 TO con3foo; -- ok
 \d constraint_rename_test
 Table "public.constraint_rename_test"
@@ -297,10 +293,8 @@ ALTER TABLE IF EXISTS constraint_rename_test ADD CONSTRAINT con4 UNIQUE (a);
 NOTICE:  relation "constraint_rename_test" does not exist, skipping
 -- FOREIGN KEY CONSTRAINT adding TEST
 CREATE TABLE tmp2 (a int primary key);
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "tmp2_pkey" for table "tmp2"
 CREATE TABLE tmp3 (a int, b int);
 CREATE TABLE tmp4 (a int, b int, unique(a,b));
-NOTICE:  CREATE TABLE / UNIQUE will create implicit index "tmp4_a_b_key" for table "tmp4"
 CREATE TABLE tmp5 (a int, b int);
 -- Insert rows into tmp2 (pktable)
 INSERT INTO tmp2 values (1);
@@ -390,67 +384,62 @@ create table nv_child_2011 () inherits (nv_parent);
 alter table nv_child_2010 add check (d between '2010-01-01'::date and '2010-12-31'::date) not valid;
 alter table nv_child_2011 add check (d between '2011-01-01'::date and '2011-12-31'::date) not valid;
 explain (costs off) select * from nv_parent where d between '2011-08-01' and '2011-08-31';
-                                   QUERY PLAN                                    
----------------------------------------------------------------------------------
- Result
-   ->  Append
-         ->  Seq Scan on nv_parent
-               Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
-         ->  Seq Scan on nv_child_2010 nv_parent
-               Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
-         ->  Seq Scan on nv_child_2011 nv_parent
-               Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
-(8 rows)
+                                QUERY PLAN                                 
+---------------------------------------------------------------------------
+ Append
+   ->  Seq Scan on nv_parent
+         Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
+   ->  Seq Scan on nv_child_2010
+         Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
+   ->  Seq Scan on nv_child_2011
+         Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
+(7 rows)
 
 create table nv_child_2009 (check (d between '2009-01-01'::date and '2009-12-31'::date)) inherits (nv_parent);
 explain (costs off) select * from nv_parent where d between '2011-08-01'::date and '2011-08-31'::date;
-                                   QUERY PLAN                                    
----------------------------------------------------------------------------------
- Result
-   ->  Append
-         ->  Seq Scan on nv_parent
-               Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
-         ->  Seq Scan on nv_child_2010 nv_parent
-               Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
-         ->  Seq Scan on nv_child_2011 nv_parent
-               Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
-(8 rows)
+                                QUERY PLAN                                 
+---------------------------------------------------------------------------
+ Append
+   ->  Seq Scan on nv_parent
+         Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
+   ->  Seq Scan on nv_child_2010
+         Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
+   ->  Seq Scan on nv_child_2011
+         Filter: ((d >= '08-01-2011'::date) AND (d <= '08-31-2011'::date))
+(7 rows)
 
 explain (costs off) select * from nv_parent where d between '2009-08-01'::date and '2009-08-31'::date;
-                                   QUERY PLAN                                    
----------------------------------------------------------------------------------
- Result
-   ->  Append
-         ->  Seq Scan on nv_parent
-               Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
-         ->  Seq Scan on nv_child_2010 nv_parent
-               Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
-         ->  Seq Scan on nv_child_2011 nv_parent
-               Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
-         ->  Seq Scan on nv_child_2009 nv_parent
-               Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
-(10 rows)
+                                QUERY PLAN                                 
+---------------------------------------------------------------------------
+ Append
+   ->  Seq Scan on nv_parent
+         Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
+   ->  Seq Scan on nv_child_2010
+         Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
+   ->  Seq Scan on nv_child_2011
+         Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
+   ->  Seq Scan on nv_child_2009
+         Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
+(9 rows)
 
 -- after validation, the constraint should be used
 alter table nv_child_2011 VALIDATE CONSTRAINT nv_child_2011_d_check;
 explain (costs off) select * from nv_parent where d between '2009-08-01'::date and '2009-08-31'::date;
-                                   QUERY PLAN                                    
----------------------------------------------------------------------------------
- Result
-   ->  Append
-         ->  Seq Scan on nv_parent
-               Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
-         ->  Seq Scan on nv_child_2010 nv_parent
-               Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
-         ->  Seq Scan on nv_child_2009 nv_parent
-               Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
-(8 rows)
+                                QUERY PLAN                                 
+---------------------------------------------------------------------------
+ Append
+   ->  Seq Scan on nv_parent
+         Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
+   ->  Seq Scan on nv_child_2010
+         Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
+   ->  Seq Scan on nv_child_2009
+         Filter: ((d >= '08-01-2009'::date) AND (d <= '08-31-2009'::date))
+(7 rows)
 
 -- Foreign key adding test with mixed types
 -- Note: these tables are TEMP to avoid name conflicts when this test
 -- is run in parallel with foreign_key.sql.
 CREATE TEMP TABLE PKTABLE (ptest1 int PRIMARY KEY);
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "pktable_pkey" for table "pktable"
 INSERT INTO PKTABLE VALUES(42);
 CREATE TEMP TABLE FKTABLE (ftest1 inet);
 -- This next should fail, because int=inet does not exist
@@ -485,7 +474,6 @@ DROP TABLE PKTABLE;
 -- On the other hand, this should work because int implicitly promotes to
 -- numeric, and we allow promotion on the FK side
 CREATE TEMP TABLE PKTABLE (ptest1 numeric PRIMARY KEY);
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "pktable_pkey" for table "pktable"
 INSERT INTO PKTABLE VALUES(42);
 CREATE TEMP TABLE FKTABLE (ftest1 int);
 ALTER TABLE FKTABLE ADD FOREIGN KEY(ftest1) references pktable;
@@ -498,7 +486,6 @@ DROP TABLE FKTABLE;
 DROP TABLE PKTABLE;
 CREATE TEMP TABLE PKTABLE (ptest1 int, ptest2 inet,
                            PRIMARY KEY(ptest1, ptest2));
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "pktable_pkey" for table "pktable"
 -- This should fail, because we just chose really odd types
 CREATE TEMP TABLE FKTABLE (ftest1 cidr, ftest2 timestamp);
 ALTER TABLE FKTABLE ADD FOREIGN KEY(ftest1, ftest2) references pktable;
@@ -660,7 +647,6 @@ drop table atacc1;
 create table atacc1 ( test int ) with oids;
 -- add a unique constraint
 alter table atacc1 add constraint atacc_test1 unique (test);
-NOTICE:  ALTER TABLE / ADD UNIQUE will create implicit index "atacc_test1" for table "atacc1"
 -- insert first value
 insert into atacc1 (test) values (2);
 -- should fail
@@ -671,7 +657,6 @@ DETAIL:  Key (test)=(2) already exists.
 insert into atacc1 (test) values (4);
 -- try adding a unique oid constraint
 alter table atacc1 add constraint atacc_oid1 unique(oid);
-NOTICE:  ALTER TABLE / ADD UNIQUE will create implicit index "atacc_oid1" for table "atacc1"
 -- try to create duplicates via alter table using - should fail
 alter table atacc1 alter column test type integer using 0;
 ERROR:  could not create unique index "atacc_test1"
@@ -684,7 +669,6 @@ insert into atacc1 (test) values (2);
 insert into atacc1 (test) values (2);
 -- add a unique constraint (fails)
 alter table atacc1 add constraint atacc_test1 unique (test);
-NOTICE:  ALTER TABLE / ADD UNIQUE will create implicit index "atacc_test1" for table "atacc1"
 ERROR:  could not create unique index "atacc_test1"
 DETAIL:  Key (test)=(2) is duplicated.
 insert into atacc1 (test) values (3);
@@ -700,7 +684,6 @@ drop table atacc1;
 create table atacc1 ( test int, test2 int);
 -- add a unique constraint
 alter table atacc1 add constraint atacc_test1 unique (test, test2);
-NOTICE:  ALTER TABLE / ADD UNIQUE will create implicit index "atacc_test1" for table "atacc1"
 -- insert initial value
 insert into atacc1 (test,test2) values (4,4);
 -- should fail
@@ -714,9 +697,7 @@ insert into atacc1 (test,test2) values (5,5);
 drop table atacc1;
 -- lets do some naming tests
 create table atacc1 (test int, test2 int, unique(test));
-NOTICE:  CREATE TABLE / UNIQUE will create implicit index "atacc1_test_key" for table "atacc1"
 alter table atacc1 add unique (test2);
-NOTICE:  ALTER TABLE / ADD UNIQUE will create implicit index "atacc1_test2_key" for table "atacc1"
 -- should fail for @@ second one @@
 insert into atacc1 (test2, test) values (3, 3);
 insert into atacc1 (test2, test) values (2, 3);
@@ -727,7 +708,6 @@ drop table atacc1;
 create table atacc1 ( test int ) with oids;
 -- add a primary key constraint
 alter table atacc1 add constraint atacc_test1 primary key (test);
-NOTICE:  ALTER TABLE / ADD PRIMARY KEY will create implicit index "atacc_test1" for table "atacc1"
 -- insert first value
 insert into atacc1 (test) values (2);
 -- should fail
@@ -747,7 +727,6 @@ ERROR:  multiple primary keys for table "atacc1" are not allowed
 alter table atacc1 drop constraint atacc_test1 restrict;
 -- try adding a primary key on oid (should succeed)
 alter table atacc1 add constraint atacc_oid1 primary key(oid);
-NOTICE:  ALTER TABLE / ADD PRIMARY KEY will create implicit index "atacc_oid1" for table "atacc1"
 drop table atacc1;
 -- let's do one where the primary key constraint fails when added
 create table atacc1 ( test int );
@@ -756,7 +735,6 @@ insert into atacc1 (test) values (2);
 insert into atacc1 (test) values (2);
 -- add a primary key (fails)
 alter table atacc1 add constraint atacc_test1 primary key (test);
-NOTICE:  ALTER TABLE / ADD PRIMARY KEY will create implicit index "atacc_test1" for table "atacc1"
 ERROR:  could not create unique index "atacc_test1"
 DETAIL:  Key (test)=(2) is duplicated.
 insert into atacc1 (test) values (3);
@@ -783,17 +761,14 @@ create table atacc1 ( test int );
 insert into atacc1 (test) values (0);
 -- add a primary key column without a default (fails).
 alter table atacc1 add column test2 int primary key;
-NOTICE:  ALTER TABLE / ADD PRIMARY KEY will create implicit index "atacc1_pkey" for table "atacc1"
 ERROR:  column "test2" contains null values
 -- now add a primary key column with a default (succeeds).
 alter table atacc1 add column test2 int default 0 primary key;
-NOTICE:  ALTER TABLE / ADD PRIMARY KEY will create implicit index "atacc1_pkey" for table "atacc1"
 drop table atacc1;
 -- something a little more complicated
 create table atacc1 ( test int, test2 int);
 -- add a primary key constraint
 alter table atacc1 add constraint atacc_test1 primary key (test, test2);
-NOTICE:  ALTER TABLE / ADD PRIMARY KEY will create implicit index "atacc_test1" for table "atacc1"
 -- try adding a second primary key - should fail
 alter table atacc1 add constraint atacc_test2 primary key (test);
 ERROR:  multiple primary keys for table "atacc1" are not allowed
@@ -819,7 +794,6 @@ insert into atacc1 (test,test2) values (5,5);
 drop table atacc1;
 -- lets do some naming tests
 create table atacc1 (test int, test2 int, primary key(test));
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "atacc1_pkey" for table "atacc1"
 -- only first should succeed
 insert into atacc1 (test2, test) values (3, 3);
 insert into atacc1 (test2, test) values (2, 3);
@@ -844,7 +818,6 @@ ERROR:  relation "non_existent" does not exist
 -- test checking for null values and primary key
 create table atacc1 (test int not null) with oids;
 alter table atacc1 add constraint "atacc1_pkey" primary key (test);
-NOTICE:  ALTER TABLE / ADD PRIMARY KEY will create implicit index "atacc1_pkey" for table "atacc1"
 alter table atacc1 alter column test drop not null;
 ERROR:  column "test" is in a primary key
 alter table atacc1 drop constraint "atacc1_pkey";
@@ -1183,7 +1156,6 @@ ERROR:  column "a" does not exist
 alter table atacc1 add check ("........pg.dropped.1........" > 3);
 ERROR:  column "........pg.dropped.1........" does not exist
 create table atacc2 (id int4 unique);
-NOTICE:  CREATE TABLE / UNIQUE will create implicit index "atacc2_id_key" for table "atacc2"
 alter table atacc1 add foreign key (a) references atacc2(id);
 ERROR:  column "a" referenced in foreign key constraint does not exist
 alter table atacc1 add foreign key ("........pg.dropped.1........") references atacc2(id);
@@ -1223,6 +1195,20 @@ select * from atacc1;
 --
 (1 row)
 
+drop table atacc1;
+-- test constraint error reporting in presence of dropped columns
+create table atacc1 (id serial primary key, value int check (value < 10));
+insert into atacc1(value) values (100);
+ERROR:  new row for relation "atacc1" violates check constraint "atacc1_value_check"
+DETAIL:  Failing row contains (1, 100).
+alter table atacc1 drop column value;
+alter table atacc1 add column value int check (value < 10);
+insert into atacc1(value) values (100);
+ERROR:  new row for relation "atacc1" violates check constraint "atacc1_value_check"
+DETAIL:  Failing row contains (2, 100).
+insert into atacc1(id, value) values (null, 0);
+ERROR:  null value in column "id" violates not-null constraint
+DETAIL:  Failing row contains (null, 0).
 drop table atacc1;
 -- test inheritance
 create table parent (a int, b int, c int);
@@ -1678,7 +1664,6 @@ HINT:  Specify a USING expression to perform the conversion.
 alter table foo alter f1 TYPE varchar(10);
 create table anothertab (atcol1 serial8, atcol2 boolean,
 	constraint anothertab_chk check (atcol1 <= 3));
-NOTICE:  CREATE TABLE will create implicit sequence "anothertab_atcol1_seq" for serial column "anothertab.atcol1"
 insert into anothertab (atcol1, atcol2) values (default, true);
 insert into anothertab (atcol1, atcol2) values (default, false);
 select * from anothertab;
@@ -1826,6 +1811,23 @@ Check constraints:
     "test_inh_check_a_check" CHECK (a::double precision > 10.2::double precision)
 Inherits: test_inh_check
 
+-- check for rollback of ANALYZE corrupting table property flags (bug #11638)
+CREATE TABLE check_fk_presence_1 (id int PRIMARY KEY, t text);
+CREATE TABLE check_fk_presence_2 (id int REFERENCES check_fk_presence_1, t text);
+BEGIN;
+ALTER TABLE check_fk_presence_2 DROP CONSTRAINT check_fk_presence_2_id_fkey;
+ANALYZE check_fk_presence_2;
+ROLLBACK;
+\d check_fk_presence_2
+Table "public.check_fk_presence_2"
+ Column |  Type   | Modifiers 
+--------+---------+-----------
+ id     | integer | 
+ t      | text    | 
+Foreign-key constraints:
+    "check_fk_presence_2_id_fkey" FOREIGN KEY (id) REFERENCES check_fk_presence_1(id)
+
+DROP TABLE check_fk_presence_1, check_fk_presence_2;
 --
 -- lock levels
 --
@@ -1855,29 +1857,31 @@ and relnamespace != (select oid from pg_namespace where nspname = 'pg_catalog')
 and c.relname != 'my_locks'
 group by c.relname;
 create table alterlock (f1 int primary key, f2 text);
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "alterlock_pkey" for table "alterlock"
+insert into alterlock values (1, 'foo');
+create table alterlock2 (f3 int primary key, f1 int);
+insert into alterlock2 values (1, 1);
 begin; alter table alterlock alter column f2 set statistics 150;
 select * from my_locks order by 1;
-  relname  |    max_lockmode     
------------+---------------------
- alterlock | AccessExclusiveLock
+  relname  |       max_lockmode       
+-----------+--------------------------
+ alterlock | ShareUpdateExclusiveLock
 (1 row)
 
 rollback;
 begin; alter table alterlock cluster on alterlock_pkey;
 select * from my_locks order by 1;
-    relname     |    max_lockmode     
-----------------+---------------------
- alterlock      | AccessExclusiveLock
- alterlock_pkey | AccessExclusiveLock
+    relname     |       max_lockmode       
+----------------+--------------------------
+ alterlock      | ShareUpdateExclusiveLock
+ alterlock_pkey | ShareUpdateExclusiveLock
 (2 rows)
 
 commit;
 begin; alter table alterlock set without cluster;
 select * from my_locks order by 1;
-  relname  |    max_lockmode     
------------+---------------------
- alterlock | AccessExclusiveLock
+  relname  |       max_lockmode       
+-----------+--------------------------
+ alterlock | ShareUpdateExclusiveLock
 (1 row)
 
 commit;
@@ -1919,9 +1923,9 @@ select * from my_locks order by 1;
 commit;
 begin; alter table alterlock alter column f2 set (n_distinct = 1);
 select * from my_locks order by 1;
-  relname  |    max_lockmode     
------------+---------------------
- alterlock | AccessExclusiveLock
+  relname  |       max_lockmode       
+-----------+--------------------------
+ alterlock | ShareUpdateExclusiveLock
 (1 row)
 
 rollback;
@@ -1941,7 +1945,61 @@ select * from my_locks order by 1;
 (1 row)
 
 rollback;
+begin;
+create trigger ttdummy
+	before delete or update on alterlock
+	for each row
+	execute procedure
+	ttdummy (1, 1);
+select * from my_locks order by 1;
+  relname  |    max_lockmode     
+-----------+---------------------
+ alterlock | AccessExclusiveLock
+(1 row)
+
+rollback;
+begin;
+select * from my_locks order by 1;
+ relname | max_lockmode 
+---------+--------------
+(0 rows)
+
+alter table alterlock2 add foreign key (f1) references alterlock (f1);
+select * from my_locks order by 1;
+     relname     |    max_lockmode     
+-----------------+---------------------
+ alterlock       | AccessExclusiveLock
+ alterlock2      | AccessExclusiveLock
+ alterlock2_pkey | AccessShareLock
+ alterlock_pkey  | AccessShareLock
+(4 rows)
+
+rollback;
+begin;
+alter table alterlock2
+add constraint alterlock2nv foreign key (f1) references alterlock (f1) NOT VALID;
+select * from my_locks order by 1;
+  relname   |    max_lockmode     
+------------+---------------------
+ alterlock  | AccessExclusiveLock
+ alterlock2 | AccessExclusiveLock
+(2 rows)
+
+commit;
+begin;
+alter table alterlock2 validate constraint alterlock2nv;
+select * from my_locks order by 1;
+     relname     |       max_lockmode       
+-----------------+--------------------------
+ alterlock       | RowShareLock
+ alterlock2      | ShareUpdateExclusiveLock
+ alterlock2_pkey | AccessShareLock
+ alterlock_pkey  | AccessShareLock
+(4 rows)
+
+rollback;
 -- cleanup
+drop table alterlock2;
 drop table alterlock;
 drop view my_locks;
 drop type lockmodes;
@@ -1986,8 +2044,6 @@ select non_strict(NULL);
 create schema alter1;
 create schema alter2;
 create table alter1.t1(f1 serial primary key, f2 int check (f2 > 0));
-NOTICE:  CREATE TABLE will create implicit sequence "t1_f1_seq" for serial column "t1.f1"
-NOTICE:  CREATE TABLE / PRIMARY KEY will create implicit index "t1_pkey" for table "t1"
 create view alter1.v1 as select * from alter1.t1;
 create function alter1.plus1(int) returns int as 'select $1+1' language sql;
 create domain alter1.posint integer check (value > 0);
@@ -2319,7 +2375,6 @@ CREATE TABLE tt8(a int);
 CREATE SCHEMA alter2;
 ALTER TABLE IF EXISTS tt8 ADD COLUMN f int;
 ALTER TABLE IF EXISTS tt8 ADD CONSTRAINT xxx PRIMARY KEY(f);
-NOTICE:  ALTER TABLE / ADD PRIMARY KEY will create implicit index "xxx" for table "tt8"
 ALTER TABLE IF EXISTS tt8 ADD CHECK (f BETWEEN 0 AND 10);
 ALTER TABLE IF EXISTS tt8 ALTER COLUMN f SET DEFAULT 0;
 ALTER TABLE IF EXISTS tt8 RENAME COLUMN f TO f1;
@@ -2337,3 +2392,54 @@ Check constraints:
 
 DROP TABLE alter2.tt8;
 DROP SCHEMA alter2;
+-- Check that we map relation oids to filenodes and back correctly.  Only
+-- display bad mappings so the test output doesn't change all the time.  A
+-- filenode function call can return NULL for a relation dropped concurrently
+-- with the call's surrounding query, so ignore a NULL mapped_oid for
+-- relations that no longer exist after all calls finish.
+CREATE TEMP TABLE filenode_mapping AS
+SELECT
+    oid, mapped_oid, reltablespace, relfilenode, relname
+FROM pg_class,
+    pg_filenode_relation(reltablespace, pg_relation_filenode(oid)) AS mapped_oid
+WHERE relkind IN ('r', 'i', 'S', 't', 'm') AND mapped_oid IS DISTINCT FROM oid;
+SELECT m.* FROM filenode_mapping m LEFT JOIN pg_class c ON c.oid = m.oid
+WHERE c.oid IS NOT NULL OR m.mapped_oid IS NOT NULL;
+ oid | mapped_oid | reltablespace | relfilenode | relname 
+-----+------------+---------------+-------------+---------
+(0 rows)
+
+-- Checks on creating and manipulation of user defined relations in
+-- pg_catalog.
+--
+-- XXX: It would be useful to add checks around trying to manipulate
+-- catalog tables, but that might have ugly consequences when run
+-- against an existing server with allow_system_table_mods = on.
+SHOW allow_system_table_mods;
+ allow_system_table_mods 
+-------------------------
+ off
+(1 row)
+
+-- disallowed because of search_path issues with pg_dump
+CREATE TABLE pg_catalog.new_system_table();
+ERROR:  permission denied to create "pg_catalog.new_system_table"
+DETAIL:  System catalog modifications are currently disallowed.
+-- instead create in public first, move to catalog
+CREATE TABLE new_system_table(id serial primary key, othercol text);
+ALTER TABLE new_system_table SET SCHEMA pg_catalog;
+-- XXX: it's currently impossible to move relations out of pg_catalog
+ALTER TABLE new_system_table SET SCHEMA public;
+ERROR:  cannot remove dependency on schema pg_catalog because it is a system object
+-- move back, will currently error out, already there
+ALTER TABLE new_system_table SET SCHEMA pg_catalog;
+ERROR:  table new_system_table is already in schema "pg_catalog"
+ALTER TABLE new_system_table RENAME TO old_system_table;
+CREATE INDEX old_system_table__othercol ON old_system_table (othercol);
+INSERT INTO old_system_table(othercol) VALUES ('somedata'), ('otherdata');
+UPDATE old_system_table SET id = -id;
+DELETE FROM old_system_table WHERE othercol = 'somedata';
+TRUNCATE old_system_table;
+ALTER TABLE old_system_table DROP CONSTRAINT new_system_table_pkey;
+ALTER TABLE old_system_table DROP COLUMN othercol;
+DROP TABLE old_system_table;

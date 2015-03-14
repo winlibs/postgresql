@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -137,8 +137,15 @@ CLASS="PRODUCTNAME"
 >, the
    internal data storage format is subject to change, thus complicating
    upgrades.  The traditional method for moving data to a new major version
-   is to dump and reload the database.  Other methods are available,
-   as discussed below.
+   is to dump and reload the database, though this can be slow.  A
+   faster method is <A
+HREF="pgupgrade.html"
+><SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+></A
+>.  Replication methods are
+   also available, as discussed below.
   </P
 ><P
 >   New major versions also typically introduce some user-visible
@@ -216,20 +223,28 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="UPGRADE-METHODS-PGDUMP"
+NAME="UPGRADING-VIA-PGDUMPALL"
 >17.6.1. Upgrading Data via <SPAN
 CLASS="APPLICATION"
->pg_dump</SPAN
+>pg_dumpall</SPAN
 ></A
 ></H2
 ><P
->    To dump data from one major version of <SPAN
+>    One upgrade method is to dump data from one major version of
+    <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> and
-    reload it in another, you must use <SPAN
+> and reload it in another &mdash;  to do
+    this, you must use a <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>logical</I
+></SPAN
+> backup tool like
+    <SPAN
 CLASS="APPLICATION"
->pg_dump</SPAN
+>pg_dumpall</SPAN
 >; file system
     level backup methods will not work. (There are checks in place that prevent
     you from using a data directory with an incompatible version of
@@ -247,7 +262,14 @@ CLASS="APPLICATION"
     <SPAN
 CLASS="APPLICATION"
 >pg_dumpall</SPAN
-> programs from the newer version of
+> programs from the <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>newer</I
+></SPAN
+>
+    version of
     <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
@@ -304,22 +326,16 @@ CLASS="REPLACEABLE"
 ></KBD
 ></PRE
 ><P>
-      If you need to preserve OIDs (such as when using them as
-      foreign keys), then use the <TT
-CLASS="OPTION"
->-o</TT
-> option when running
-      <SPAN
-CLASS="APPLICATION"
->pg_dumpall</SPAN
->.
      </P
 ><P
 >      To make the backup, you can use the <SPAN
 CLASS="APPLICATION"
 >pg_dumpall</SPAN
 >
-      command from the version you are currently running.  For best
+      command from the version you are currently running;  see <A
+HREF="backup-dump.html#BACKUP-DUMP-ALL"
+>Section 24.1.2</A
+> for more details.  For best
       results, however, try to use the <SPAN
 CLASS="APPLICATION"
 >pg_dumpall</SPAN
@@ -327,7 +343,7 @@ CLASS="APPLICATION"
       command from <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> 9.2.2,
+> 9.4.1,
       since this version contains bug fixes and improvements over older
       versions.  While this advice might seem idiosyncratic since you
       haven't installed the new version yet, it is advisable to follow
@@ -376,7 +392,8 @@ HREF="runtime.html"
 CLASS="STEP"
 ><P
 >      If restoring from backup, rename or delete the old installation
-      directory.  It is a good idea to rename the directory, rather than
+      directory if it is not version-specific.  It is a good idea to
+      rename the directory, rather than
       delete it, in case you have trouble and need to revert to it.  Keep
       in mind the directory might consume significant disk space.  To rename
       the directory, use a command like this:
@@ -494,21 +511,53 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="UPGRADING-METHODS-OTHER"
->17.6.2. Non-Dump Upgrade Methods</A
+NAME="UPGRADING-VIA-PG-UPGRADE"
+>17.6.2. Upgrading Data via <SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+></A
 ></H2
 ><P
 >    The <A
 HREF="pgupgrade.html"
->pg_upgrade</A
-> module allows an
-    installation to be migrated in-place from one major
-    <SPAN
+><SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+></A
+> module allows an installation to
+    be migrated in-place from one major <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> version to the next.  Upgrades can be
-    performed in minutes.
+>
+    version to another.  Upgrades can be performed in minutes,
+    particularly with <TT
+CLASS="OPTION"
+>--link</TT
+> mode.  It requires steps similar to
+    <SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+> above, e.g.  starting/stopping the server,
+    running <SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+>.  The <SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+> <A
+HREF="pgupgrade.html"
+>documentation</A
+> outlines the necessary steps.
    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="UPGRADING-VIA-REPLICATION"
+>17.6.3. Upgrading Data via Replication</A
+></H2
 ><P
 >    It is also possible to use certain replication methods, such as
     <SPAN

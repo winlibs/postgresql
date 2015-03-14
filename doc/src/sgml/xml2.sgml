@@ -21,11 +21,11 @@
    That functionality covers XML syntax checking and XPath queries,
    which is what this module does, and more, but the API is
    not at all compatible.  It is planned that this module will be
-   removed in PostgreSQL 8.4 in favor of the newer standard API, so
+   removed in a future version of PostgreSQL in favor of the newer standard API, so
    you are encouraged to try converting your applications.  If you
    find that some of the functionality of this module is not
    available in an adequate form with the newer API, please explain
-   your issue to pgsql-hackers@postgresql.org so that the deficiency
+   your issue to <email>pgsql-hackers@postgresql.org</email> so that the deficiency
    can be addressed.
   </para>
  </sect2>
@@ -154,7 +154,7 @@
       </entry>
       <entry>
        <para>
-        Like <function>xpath_nodeset(document, query, toptag, itemtag)</> but result omits toptag.
+        Like <function>xpath_nodeset(document, query, toptag, itemtag)</> but result omits <literal>toptag</literal>.
        </para>
       </entry>
      </row>
@@ -196,6 +196,10 @@
 
  <sect2>
   <title><literal>xpath_table</literal></title>
+
+  <indexterm>
+   <primary>xpath_table</primary>
+  </indexterm>
 
 <synopsis>
 xpath_table(text key, text document, text relation, text xpaths, text criteria) returns setof record
@@ -321,7 +325,7 @@ AS t(article_id integer, author text, page_count integer, title text);
 
   <para>
    The calling <command>SELECT</> statement doesn't necessarily have be
-   be just <literal>SELECT *</> &mdash; it can reference the output
+   just <literal>SELECT *</> &mdash; it can reference the output
    columns by name or join them to other tables. The function produces a
    virtual table with which you can perform any operation you wish (e.g.
    aggregation, joining, sorting etc). So we could also have:
@@ -423,6 +427,10 @@ ORDER BY doc_num, line_num;
   <sect3>
    <title><literal>xslt_process</literal></title>
 
+  <indexterm>
+   <primary>xslt_process</primary>
+  </indexterm>
+
 <synopsis>
 xslt_process(text document, text stylesheet, text paramlist) returns text
 </synopsis>
@@ -452,7 +460,7 @@ xslt_process(text document, text stylesheet, text paramlist) returns text
 
   <para>
    Development of this module was sponsored by Torchbox Ltd. (www.torchbox.com).
-   It has the same BSD licence as PostgreSQL.
+   It has the same BSD license as PostgreSQL.
   </para>
  </sect2>
 

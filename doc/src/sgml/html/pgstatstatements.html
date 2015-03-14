@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PGSTATSTATEMENTS"
->F.28. pg_stat_statements</A
+>F.29. pg_stat_statements</A
 ></H1
 ><P
 >  The <TT
@@ -108,7 +108,7 @@ CLASS="LITERAL"
 >pg_stat_statements</TT
 > to
   <A
-HREF="runtime-config-resource.html#GUC-SHARED-PRELOAD-LIBRARIES"
+HREF="runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES"
 >shared_preload_libraries</A
 > in
   <TT
@@ -122,21 +122,22 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142314"
->F.28.1. The <TT
+NAME="AEN159718"
+>F.29.1. The <TT
 CLASS="STRUCTNAME"
 >pg_stat_statements</TT
 > View</A
 ></H2
 ><P
->   The statistics gathered by the module are made available via a system view
-   named <TT
+>   The statistics gathered by the module are made available via a
+   system view named <TT
 CLASS="STRUCTNAME"
 >pg_stat_statements</TT
->.  This view contains one row for
-   each distinct query, database ID, and user ID (up to the maximum
-   number of distinct statements that the module can track).  The columns
-   of the view are shown in <A
+>.  This view
+   contains one row for each distinct database ID, user ID and query
+   ID (up to the maximum number of distinct statements that the module
+   can track).  The columns of the view are shown in
+   <A
 HREF="pgstatstatements.html#PGSTATSTATEMENTS-COLUMNS"
 >Table F-20</A
 >.
@@ -223,6 +224,22 @@ CLASS="STRUCTNAME"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
+>queryid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>Internal hash code, computed from the statement's parse tree</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
 >query</TT
 ></TD
 ><TD
@@ -233,10 +250,7 @@ CLASS="TYPE"
 ><TD
 >&nbsp;</TD
 ><TD
->Text of a representative statement (up to <A
-HREF="runtime-config-statistics.html#GUC-TRACK-ACTIVITY-QUERY-SIZE"
->track_activity_query_size</A
-> bytes)</TD
+>Text of a representative statement</TD
 ></TR
 ><TR
 ><TD
@@ -492,12 +506,16 @@ HREF="runtime-config-statistics.html#GUC-TRACK-IO-TIMING"
 ></TABLE
 ></DIV
 ><P
->   This view, and the function <CODE
+>   This view, and the functions <CODE
 CLASS="FUNCTION"
 >pg_stat_statements_reset</CODE
->,
-   are available only in databases they have been specifically installed into
-   by installing the <TT
+>
+   and <CODE
+CLASS="FUNCTION"
+>pg_stat_statements</CODE
+>, are available only in
+   databases they have been specifically installed into by installing
+   the <TT
 CLASS="LITERAL"
 >pg_stat_statements</TT
 > extension.
@@ -509,9 +527,13 @@ CLASS="FILENAME"
    into the server, regardless of presence of the view.
   </P
 ><P
->   For security reasons, non-superusers are not allowed to see the text of
-   queries executed by other users.  They can see the statistics, however,
-   if the view has been installed in their database.
+>   For security reasons, non-superusers are not allowed to see the SQL
+   text or <TT
+CLASS="STRUCTFIELD"
+>queryid</TT
+> of queries executed by other users.  They can see
+   the statistics, however, if the view has been installed in their
+   database.
   </P
 ><P
 >   Plannable queries (that is, <TT
@@ -548,8 +570,12 @@ CLASS="LITERAL"
 CLASS="STRUCTNAME"
 >pg_stat_statements</TT
 > display.  The rest of the query
-   text is that of the first query that had the particular hash value
-   associated with the <TT
+   text is that of the first query that had the particular
+   <TT
+CLASS="STRUCTFIELD"
+>queryid</TT
+> hash value associated with the
+   <TT
 CLASS="STRUCTNAME"
 >pg_stat_statements</TT
 > entry.
@@ -566,13 +592,80 @@ CLASS="STRUCTNAME"
    however.)
   </P
 ><P
->   Since the hash value is computed on the post-parse-analysis representation
-   of the queries, the opposite is also possible: queries with identical texts
-   might appear as separate entries, if they have different meanings as a
-   result of factors such as different <TT
+>   Since the <TT
+CLASS="STRUCTFIELD"
+>queryid</TT
+> hash value is computed on the
+   post-parse-analysis representation of the queries, the opposite is
+   also possible: queries with identical texts might appear as
+   separate entries, if they have different meanings as a result of
+   factors such as different <TT
 CLASS="VARNAME"
 >search_path</TT
 > settings.
+  </P
+><P
+>   Consumers of <TT
+CLASS="LITERAL"
+>pg_stat_statements</TT
+> may wish to use
+   <TT
+CLASS="STRUCTFIELD"
+>queryid</TT
+> (perhaps in combination with
+   <TT
+CLASS="STRUCTFIELD"
+>dbid</TT
+> and <TT
+CLASS="STRUCTFIELD"
+>userid</TT
+>) as a more stable
+   and reliable identifier for each entry than its query text.
+   However, it is important to understand that there are only limited
+   guarantees around the stability of the <TT
+CLASS="STRUCTFIELD"
+>queryid</TT
+> hash
+   value.  Since the identifier is derived from the
+   post-parse-analysis tree, its value is a function of, among other
+   things, the internal object identifiers appearing in this representation.
+   This has some counterintuitive implications.  For example,
+   <TT
+CLASS="LITERAL"
+>pg_stat_statements</TT
+> will consider two apparently-identical
+   queries to be distinct, if they reference a table that was dropped
+   and recreated between the executions of the two queries.
+   The hashing process is also sensitive to differences in
+   machine architecture and other facets of the platform.
+   Furthermore, it is not safe to assume that <TT
+CLASS="STRUCTFIELD"
+>queryid</TT
+>
+   will be stable across major versions of <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>.
+  </P
+><P
+>   As a rule of thumb, <TT
+CLASS="STRUCTFIELD"
+>queryid</TT
+> values can be assumed to be
+   stable and comparable only so long as the underlying server version and
+   catalog metadata details stay exactly the same.  Two servers
+   participating in replication based on physical WAL replay can be expected
+   to have identical <TT
+CLASS="STRUCTFIELD"
+>queryid</TT
+> values for the same query.
+   However, logical replication schemes do not promise to keep replicas
+   identical in all relevant details, so <TT
+CLASS="STRUCTFIELD"
+>queryid</TT
+> will
+   not be a useful identifier for accumulating costs across a set of logical
+   replicas.  If in doubt, direct testing is recommended.
   </P
 ></DIV
 ><DIV
@@ -580,8 +673,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142485"
->F.28.2. Functions</A
+NAME="AEN159912"
+>F.29.2. Functions</A
 ></H2
 ><P
 ></P
@@ -592,7 +685,8 @@ CLASS="VARIABLELIST"
 ><CODE
 CLASS="FUNCTION"
 >pg_stat_statements_reset() returns void</CODE
-></DT
+>
+     </DT
 ><DD
 ><P
 >      <CODE
@@ -606,6 +700,55 @@ CLASS="FILENAME"
       By default, this function can only be executed by superusers.
      </P
 ></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>pg_stat_statements(showtext boolean) returns setof record</CODE
+>
+     </DT
+><DD
+><P
+>      The <TT
+CLASS="STRUCTNAME"
+>pg_stat_statements</TT
+> view is defined in
+      terms of a function also named <CODE
+CLASS="FUNCTION"
+>pg_stat_statements</CODE
+>.
+      It is possible for clients to call
+      the <CODE
+CLASS="FUNCTION"
+>pg_stat_statements</CODE
+> function directly, and by
+      specifying <TT
+CLASS="LITERAL"
+>showtext := false</TT
+> have query text be
+      omitted (that is, the <TT
+CLASS="LITERAL"
+>OUT</TT
+> argument that corresponds
+      to the view's <TT
+CLASS="STRUCTFIELD"
+>query</TT
+> column will return nulls).  This
+      feature is intended to support external tools that might wish to avoid
+      the overhead of repeatedly retrieving query texts of indeterminate
+      length.  Such tools can instead cache the first query text observed
+      for each entry themselves, since that is
+      all <TT
+CLASS="FILENAME"
+>pg_stat_statements</TT
+> itself does, and then retrieve
+      query texts only as needed.  Since the server stores query texts in a
+      file, this approach may reduce physical I/O for repeated examination
+      of the <TT
+CLASS="STRUCTNAME"
+>pg_stat_statements</TT
+> data.
+     </P
+></DD
 ></DL
 ></DIV
 ></DIV
@@ -614,8 +757,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142495"
->F.28.3. Configuration Parameters</A
+NAME="AEN159940"
+>F.29.3. Configuration Parameters</A
 ></H2
 ><P
 ></P
@@ -643,7 +786,7 @@ CLASS="STRUCTNAME"
 > view).  If more distinct
       statements than that are observed, information about the least-executed
       statements is discarded.
-      The default value is 1000.
+      The default value is 5000.
       This parameter can only be set at server start.
      </P
 ></DD
@@ -752,18 +895,11 @@ CLASS="FILENAME"
 ></DL
 ></DIV
 ><P
->   The module requires additional shared memory amounting to about
+>   The module requires additional shared memory proportional to
    <TT
 CLASS="VARNAME"
 >pg_stat_statements.max</TT
-> <TT
-CLASS="LITERAL"
->*</TT
->
-   <A
-HREF="runtime-config-statistics.html#GUC-TRACK-ACTIVITY-QUERY-SIZE"
->track_activity_query_size</A
-> bytes.  Note that this
+>.  Note that this
    memory is consumed whenever the module is loaded, even if
    <TT
 CLASS="VARNAME"
@@ -795,8 +931,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142548"
->F.28.4. Sample Output</A
+NAME="AEN159991"
+>F.29.4. Sample Output</A
 ></H2
 ><PRE
 CLASS="SCREEN"
@@ -845,8 +981,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN142551"
->F.28.5. Authors</A
+NAME="AEN159994"
+>F.29.5. Authors</A
 ></H2
 ><P
 >   Takahiro Itagaki <CODE

@@ -23,14 +23,6 @@ PG_FUNCTION_INFO_V1(gbt_int2_distance);
 PG_FUNCTION_INFO_V1(gbt_int2_penalty);
 PG_FUNCTION_INFO_V1(gbt_int2_same);
 
-Datum		gbt_int2_compress(PG_FUNCTION_ARGS);
-Datum		gbt_int2_union(PG_FUNCTION_ARGS);
-Datum		gbt_int2_picksplit(PG_FUNCTION_ARGS);
-Datum		gbt_int2_consistent(PG_FUNCTION_ARGS);
-Datum		gbt_int2_distance(PG_FUNCTION_ARGS);
-Datum		gbt_int2_penalty(PG_FUNCTION_ARGS);
-Datum		gbt_int2_same(PG_FUNCTION_ARGS);
-
 static bool
 gbt_int2gt(const void *a, const void *b)
 {
@@ -77,7 +69,7 @@ gbt_int2key_cmp(const void *a, const void *b)
 static float8
 gbt_int2_dist(const void *a, const void *b)
 {
-	return GET_FLOAT_DISTANCE(int2, a, b);
+	return GET_FLOAT_DISTANCE(int16, a, b);
 }
 
 
@@ -85,6 +77,7 @@ static const gbtree_ninfo tinfo =
 {
 	gbt_t_int2,
 	sizeof(int16),
+	4,							/* sizeof(gbtreekey4) */
 	gbt_int2gt,
 	gbt_int2ge,
 	gbt_int2eq,
@@ -96,14 +89,13 @@ static const gbtree_ninfo tinfo =
 
 
 PG_FUNCTION_INFO_V1(int2_dist);
-Datum		int2_dist(PG_FUNCTION_ARGS);
 Datum
 int2_dist(PG_FUNCTION_ARGS)
 {
-	int2		a = PG_GETARG_INT16(0);
-	int2		b = PG_GETARG_INT16(1);
-	int2		r;
-	int2		ra;
+	int16		a = PG_GETARG_INT16(0);
+	int16		b = PG_GETARG_INT16(1);
+	int16		r;
+	int16		ra;
 
 	r = a - b;
 	ra = Abs(r);

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Interface Functions"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SPI-SPI-PREPARE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN59910"
+NAME="AEN64321"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN59910"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN59915"
+NAME="AEN64324"
 ></A
 ><H2
 >Synopsis</H2
@@ -123,7 +123,7 @@ CLASS="PARAMETER"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN59920"
+NAME="AEN64329"
 ></A
 ><H2
 >Description</H2
@@ -193,7 +193,7 @@ CLASS="FUNCTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN59936"
+NAME="AEN64345"
 ></A
 ><H2
 >Arguments</H2
@@ -257,7 +257,7 @@ CLASS="ACRONYM"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN59960"
+NAME="AEN64369"
 ></A
 ><H2
 >Return Value</H2
@@ -312,7 +312,7 @@ CLASS="SYMBOL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN59975"
+NAME="AEN64384"
 ></A
 ><H2
 >Notes</H2
@@ -348,6 +348,33 @@ CLASS="FUNCTION"
 >SPI_prepare_cursor</CODE
 >, to force use of generic or custom
    plans respectively.
+  </P
+><P
+>   Although the main point of a prepared statement is to avoid repeated parse
+   analysis and planning of the statement, <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> will
+   force re-analysis and re-planning of the statement before using it
+   whenever database objects used in the statement have undergone
+   definitional (DDL) changes since the previous use of the prepared
+   statement.  Also, if the value of <A
+HREF="runtime-config-client.html#GUC-SEARCH-PATH"
+>search_path</A
+> changes
+   from one use to the next, the statement will be re-parsed using the new
+   <TT
+CLASS="VARNAME"
+>search_path</TT
+>.  (This latter behavior is new as of
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.3.)  See <A
+HREF="sql-prepare.html"
+>PREPARE</A
+> for more information about the behavior of prepared
+   statements.
   </P
 ><P
 >   This function should only be called from a connected procedure.

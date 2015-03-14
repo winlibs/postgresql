@@ -3,7 +3,7 @@
  * parse_target.c
  *	  handle target lists
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -57,14 +57,14 @@ static Node *transformAssignmentSubscripts(ParseState *pstate,
 							  Node *rhs,
 							  int location);
 static List *ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
-					bool targetlist);
+					bool make_target_entry);
 static List *ExpandAllTables(ParseState *pstate, int location);
 static List *ExpandIndirectionStar(ParseState *pstate, A_Indirection *ind,
-					  bool targetlist);
+					  bool make_target_entry, ParseExprKind exprKind);
 static List *ExpandSingleTable(ParseState *pstate, RangeTblEntry *rte,
-				  int location, bool targetlist);
+				  int location, bool make_target_entry);
 static List *ExpandRowReference(ParseState *pstate, Node *expr,
-				   bool targetlist);
+				   bool make_target_entry);
 static int	FigureColnameInternal(Node *node, char **name);
 
 
@@ -76,6 +76,7 @@ static int	FigureColnameInternal(Node *node, char **name);
  *
  * node		the (untransformed) parse tree for the value expression.
  * expr		the transformed expression, or NULL if caller didn't do it yet.
+ * exprKind expression kind (EXPR_KIND_SELECT_TARGET, etc)
  * colname	the column name to be assigned, or NULL if none yet set.
  * resjunk	true if the target should be marked resjunk, ie, it is not
  *			wanted in the final projected tuple.
@@ -84,12 +85,13 @@ TargetEntry *
 transformTargetEntry(ParseState *pstate,
 					 Node *node,
 					 Node *expr,
+					 ParseExprKind exprKind,
 					 char *colname,
 					 bool resjunk)
 {
 	/* Transform the node if caller didn't do it already */
 	if (expr == NULL)
-		expr = transformExpr(pstate, node);
+		expr = transformExpr(pstate, node, exprKind);
 
 	if (colname == NULL && !resjunk)
 	{
@@ -111,11 +113,13 @@ transformTargetEntry(ParseState *pstate,
  * transformTargetList()
  * Turns a list of ResTarget's into a list of TargetEntry's.
  *
- * At this point, we don't care whether we are doing SELECT, INSERT,
- * or UPDATE; we just transform the given expressions (the "val" fields).
+ * At this point, we don't care whether we are doing SELECT, UPDATE,
+ * or RETURNING; we just transform the given expressions (the "val" fields).
+ * However, our subroutines care, so we need the exprKind parameter.
  */
 List *
-transformTargetList(ParseState *pstate, List *targetlist)
+transformTargetList(ParseState *pstate, List *targetlist,
+					ParseExprKind exprKind)
 {
 	List	   *p_target = NIL;
 	ListCell   *o_target;
@@ -151,7 +155,7 @@ transformTargetList(ParseState *pstate, List *targetlist)
 				/* It is something.*, expand into multiple items */
 				p_target = list_concat(p_target,
 									   ExpandIndirectionStar(pstate, ind,
-															 true));
+															 true, exprKind));
 				continue;
 			}
 		}
@@ -163,6 +167,7 @@ transformTargetList(ParseState *pstate, List *targetlist)
 						   transformTargetEntry(pstate,
 												res->val,
 												NULL,
+												exprKind,
 												res->name,
 												false));
 	}
@@ -177,10 +182,11 @@ transformTargetList(ParseState *pstate, List *targetlist)
  * This is the identical transformation to transformTargetList, except that
  * the input list elements are bare expressions without ResTarget decoration,
  * and the output elements are likewise just expressions without TargetEntry
- * decoration.	We use this for ROW() and VALUES() constructs.
+ * decoration.  We use this for ROW() and VALUES() constructs.
  */
 List *
-transformExpressionList(ParseState *pstate, List *exprlist)
+transformExpressionList(ParseState *pstate, List *exprlist,
+						ParseExprKind exprKind)
 {
 	List	   *result = NIL;
 	ListCell   *lc;
@@ -216,7 +222,7 @@ transformExpressionList(ParseState *pstate, List *exprlist)
 				/* It is something.*, expand into multiple items */
 				result = list_concat(result,
 									 ExpandIndirectionStar(pstate, ind,
-														   false));
+														   false, exprKind));
 				continue;
 			}
 		}
@@ -225,7 +231,7 @@ transformExpressionList(ParseState *pstate, List *exprlist)
 		 * Not "something.*", so transform as a single expression
 		 */
 		result = lappend(result,
-						 transformExpr(pstate, e));
+						 transformExpr(pstate, e, exprKind));
 	}
 
 	return result;
@@ -305,6 +311,7 @@ markTargetListOrigin(ParseState *pstate, TargetEntry *tle,
 
 				Assert(attnum > 0 && attnum <= list_length(rte->joinaliasvars));
 				aliasvar = (Var *) list_nth(rte->joinaliasvars, attnum - 1);
+				/* We intentionally don't strip implicit coercions here */
 				markTargetListOrigin(pstate, tle, aliasvar, netlevelsup);
 			}
 			break;
@@ -341,7 +348,7 @@ markTargetListOrigin(ParseState *pstate, TargetEntry *tle,
 
 /*
  * transformAssignedExpr()
- *	This is used in INSERT and UPDATE statements only.	It prepares an
+ *	This is used in INSERT and UPDATE statements only.  It prepares an
  *	expression for assignment to a column of the target table.
  *	This includes coercing the given value to the target column's type
  *	(if necessary), and dealing with any subfield names or subscripts
@@ -350,6 +357,7 @@ markTargetListOrigin(ParseState *pstate, TargetEntry *tle,
  *
  * pstate		parse state
  * expr			expression to be modified
+ * exprKind		indicates which type of statement we're dealing with
  * colname		target column name (ie, name of attribute to be assigned to)
  * attrno		target attribute number
  * indirection	subscripts/field names for target column, if any
@@ -359,22 +367,33 @@ markTargetListOrigin(ParseState *pstate, TargetEntry *tle,
  *
  * Note: location points at the target column name (SET target or INSERT
  * column name list entry), and must therefore be -1 in an INSERT that
- * omits the column name list.	So we should usually prefer to use
+ * omits the column name list.  So we should usually prefer to use
  * exprLocation(expr) for errors that can happen in a default INSERT.
  */
 Expr *
 transformAssignedExpr(ParseState *pstate,
 					  Expr *expr,
+					  ParseExprKind exprKind,
 					  char *colname,
 					  int attrno,
 					  List *indirection,
 					  int location)
 {
+	Relation	rd = pstate->p_target_relation;
 	Oid			type_id;		/* type of value provided */
 	Oid			attrtype;		/* type of target column */
 	int32		attrtypmod;
 	Oid			attrcollation;	/* collation of target column */
-	Relation	rd = pstate->p_target_relation;
+	ParseExprKind sv_expr_kind;
+
+	/*
+	 * Save and restore identity of expression type we're parsing.  We must
+	 * set p_expr_kind here because we can parse subscripts without going
+	 * through transformExpr().
+	 */
+	Assert(exprKind != EXPR_KIND_NONE);
+	sv_expr_kind = pstate->p_expr_kind;
+	pstate->p_expr_kind = exprKind;
 
 	Assert(rd != NULL);
 	if (attrno <= 0)
@@ -423,7 +442,7 @@ transformAssignedExpr(ParseState *pstate,
 
 	/*
 	 * If there is indirection on the target column, prepare an array or
-	 * subfield assignment expression.	This will generate a new column value
+	 * subfield assignment expression.  This will generate a new column value
 	 * that the source value has been inserted into, which can then be placed
 	 * in the new tuple constructed by INSERT or UPDATE.
 	 */
@@ -491,6 +510,8 @@ transformAssignedExpr(ParseState *pstate,
 					 parser_errposition(pstate, exprLocation(orig_expr))));
 	}
 
+	pstate->p_expr_kind = sv_expr_kind;
+
 	return expr;
 }
 
@@ -521,6 +542,7 @@ updateTargetListEntry(ParseState *pstate,
 	/* Fix up expression as needed */
 	tle->expr = transformAssignedExpr(pstate,
 									  tle->expr,
+									  EXPR_KIND_UPDATE_TARGET,
 									  colname,
 									  attrno,
 									  indirection,
@@ -528,7 +550,7 @@ updateTargetListEntry(ParseState *pstate,
 
 	/*
 	 * Set the resno to identify the target column --- the rewriter and
-	 * planner depend on this.	We also set the resname to identify the target
+	 * planner depend on this.  We also set the resname to identify the target
 	 * column, but this is only for debugging purposes; it should not be
 	 * relied on.  (In particular, it might be out of date in a stored rule.)
 	 */
@@ -817,18 +839,20 @@ transformAssignmentSubscripts(ParseState *pstate,
 	/* If target was a domain over array, need to coerce up to the domain */
 	if (arrayType != targetTypeId)
 	{
+		Oid			resulttype = exprType(result);
+
 		result = coerce_to_target_type(pstate,
-									   result, exprType(result),
+									   result, resulttype,
 									   targetTypeId, targetTypMod,
 									   COERCION_ASSIGNMENT,
 									   COERCE_IMPLICIT_CAST,
 									   -1);
-		/* probably shouldn't fail, but check */
+		/* can fail if we had int2vector/oidvector, but not for true domains */
 		if (result == NULL)
 			ereport(ERROR,
 					(errcode(ERRCODE_CANNOT_COERCE),
 					 errmsg("cannot cast type %s to %s",
-							format_type_be(exprType(result)),
+							format_type_be(resulttype),
 							format_type_be(targetTypeId)),
 					 parser_errposition(pstate, location)));
 	}
@@ -947,7 +971,7 @@ checkInsertTargets(ParseState *pstate, List *cols, List **attrnos)
  */
 static List *
 ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
-					bool targetlist)
+					bool make_target_entry)
 {
 	List	   *fields = cref->fields;
 	int			numnames = list_length(fields);
@@ -960,9 +984,9 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		 * (e.g., SELECT * FROM emp, dept)
 		 *
 		 * Since the grammar only accepts bare '*' at top level of SELECT, we
-		 * need not handle the targetlist==false case here.
+		 * need not handle the make_target_entry==false case here.
 		 */
-		Assert(targetlist);
+		Assert(make_target_entry);
 		return ExpandAllTables(pstate, cref->location);
 	}
 	else
@@ -974,7 +998,7 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		 *
 		 * Note: this code is a lot like transformColumnRef; it's tempting to
 		 * call that instead and then replace the resulting whole-row Var with
-		 * a list of Vars.	However, that would leave us with the RTE's
+		 * a list of Vars.  However, that would leave us with the RTE's
 		 * selectedCols bitmap showing the whole row as needing select
 		 * permission, as well as the individual columns.  That would be
 		 * incorrect (since columns added later shouldn't need select
@@ -993,7 +1017,7 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		}			crserr = CRSERR_NO_RTE;
 
 		/*
-		 * Give the PreParseColumnRefHook, if any, first shot.	If it returns
+		 * Give the PreParseColumnRefHook, if any, first shot.  If it returns
 		 * non-null then we should use that expression.
 		 */
 		if (pstate->p_pre_columnref_hook != NULL)
@@ -1002,7 +1026,7 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 
 			node = (*pstate->p_pre_columnref_hook) (pstate, cref);
 			if (node != NULL)
-				return ExpandRowReference(pstate, node, targetlist);
+				return ExpandRowReference(pstate, node, make_target_entry);
 		}
 
 		switch (numnames)
@@ -1065,7 +1089,7 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 							 errmsg("column reference \"%s\" is ambiguous",
 									NameListToString(cref->fields)),
 							 parser_errposition(pstate, cref->location)));
-				return ExpandRowReference(pstate, node, targetlist);
+				return ExpandRowReference(pstate, node, make_target_entry);
 			}
 		}
 
@@ -1100,7 +1124,7 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		/*
 		 * OK, expand the RTE into fields.
 		 */
-		return ExpandSingleTable(pstate, rte, cref->location, targetlist);
+		return ExpandSingleTable(pstate, rte, cref->location, make_target_entry);
 	}
 }
 
@@ -1108,9 +1132,10 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
  * ExpandAllTables()
  *		Transforms '*' (in the target list) into a list of targetlist entries.
  *
- * tlist entries are generated for each relation appearing in the query's
- * varnamespace.  We do not consider relnamespace because that would include
- * input tables of aliasless JOINs, NEW/OLD pseudo-entries, etc.
+ * tlist entries are generated for each relation visible for unqualified
+ * column name access.  We do not consider qualified-name-only entries because
+ * that would include input tables of aliasless JOINs, NEW/OLD pseudo-entries,
+ * etc.
  *
  * The referenced relations/columns are marked as requiring SELECT access.
  */
@@ -1118,24 +1143,41 @@ static List *
 ExpandAllTables(ParseState *pstate, int location)
 {
 	List	   *target = NIL;
+	bool		found_table = false;
 	ListCell   *l;
 
-	/* Check for SELECT *; */
-	if (!pstate->p_varnamespace)
+	foreach(l, pstate->p_namespace)
+	{
+		ParseNamespaceItem *nsitem = (ParseNamespaceItem *) lfirst(l);
+		RangeTblEntry *rte = nsitem->p_rte;
+
+		/* Ignore table-only items */
+		if (!nsitem->p_cols_visible)
+			continue;
+		/* Should not have any lateral-only items when parsing targetlist */
+		Assert(!nsitem->p_lateral_only);
+		/* Remember we found a p_cols_visible item */
+		found_table = true;
+
+		target = list_concat(target,
+							 expandRelAttrs(pstate,
+											rte,
+											RTERangeTablePosn(pstate, rte,
+															  NULL),
+											0,
+											location));
+	}
+
+	/*
+	 * Check for "SELECT *;".  We do it this way, rather than checking for
+	 * target == NIL, because we want to allow SELECT * FROM a zero_column
+	 * table.
+	 */
+	if (!found_table)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
 				 errmsg("SELECT * with no tables specified is not valid"),
 				 parser_errposition(pstate, location)));
-
-	foreach(l, pstate->p_varnamespace)
-	{
-		RangeTblEntry *rte = (RangeTblEntry *) lfirst(l);
-		int			rtindex = RTERangeTablePosn(pstate, rte, NULL);
-
-		target = list_concat(target,
-							 expandRelAttrs(pstate, rte, rtindex, 0,
-											location));
-	}
 
 	return target;
 }
@@ -1148,10 +1190,12 @@ ExpandAllTables(ParseState *pstate, int location)
  * The code is shared between the case of foo.* at the top level in a SELECT
  * target list (where we want TargetEntry nodes in the result) and foo.* in
  * a ROW() or VALUES() construct (where we want just bare expressions).
+ * For robustness, we use a separate "make_target_entry" flag to control
+ * this rather than relying on exprKind.
  */
 static List *
 ExpandIndirectionStar(ParseState *pstate, A_Indirection *ind,
-					  bool targetlist)
+					  bool make_target_entry, ParseExprKind exprKind)
 {
 	Node	   *expr;
 
@@ -1161,10 +1205,10 @@ ExpandIndirectionStar(ParseState *pstate, A_Indirection *ind,
 									 list_length(ind->indirection) - 1);
 
 	/* And transform that */
-	expr = transformExpr(pstate, (Node *) ind);
+	expr = transformExpr(pstate, (Node *) ind, exprKind);
 
 	/* Expand the rowtype expression into individual fields */
-	return ExpandRowReference(pstate, expr, targetlist);
+	return ExpandRowReference(pstate, expr, make_target_entry);
 }
 
 /*
@@ -1178,14 +1222,14 @@ ExpandIndirectionStar(ParseState *pstate, A_Indirection *ind,
  */
 static List *
 ExpandSingleTable(ParseState *pstate, RangeTblEntry *rte,
-				  int location, bool targetlist)
+				  int location, bool make_target_entry)
 {
 	int			sublevels_up;
 	int			rtindex;
 
 	rtindex = RTERangeTablePosn(pstate, rte, &sublevels_up);
 
-	if (targetlist)
+	if (make_target_entry)
 	{
 		/* expandRelAttrs handles permissions marking */
 		return expandRelAttrs(pstate, rte, rtindex, sublevels_up,
@@ -1227,7 +1271,7 @@ ExpandSingleTable(ParseState *pstate, RangeTblEntry *rte,
  */
 static List *
 ExpandRowReference(ParseState *pstate, Node *expr,
-				   bool targetlist)
+				   bool make_target_entry)
 {
 	List	   *result = NIL;
 	TupleDesc	tupleDesc;
@@ -1236,7 +1280,7 @@ ExpandRowReference(ParseState *pstate, Node *expr,
 
 	/*
 	 * If the rowtype expression is a whole-row Var, we can expand the fields
-	 * as simple Vars.	Note: if the RTE is a relation, this case leaves us
+	 * as simple Vars.  Note: if the RTE is a relation, this case leaves us
 	 * with the RTE's selectedCols bitmap showing the whole row as needing
 	 * select permission, as well as the individual columns.  However, we can
 	 * only get here for weird notations like (table.*).*, so it's not worth
@@ -1250,7 +1294,7 @@ ExpandRowReference(ParseState *pstate, Node *expr,
 		RangeTblEntry *rte;
 
 		rte = GetRTEByRangeTablePosn(pstate, var->varno, var->varlevelsup);
-		return ExpandSingleTable(pstate, rte, var->location, targetlist);
+		return ExpandSingleTable(pstate, rte, var->location, make_target_entry);
 	}
 
 	/*
@@ -1295,7 +1339,7 @@ ExpandRowReference(ParseState *pstate, Node *expr,
 		/* save attribute's collation for parse_collate.c */
 		fselect->resultcollid = att->attcollation;
 
-		if (targetlist)
+		if (make_target_entry)
 		{
 			/* add TargetEntry decoration */
 			TargetEntry *te;
@@ -1318,7 +1362,7 @@ ExpandRowReference(ParseState *pstate, Node *expr,
  *		Get the tuple descriptor for a Var of type RECORD, if possible.
  *
  * Since no actual table or view column is allowed to have type RECORD, such
- * a Var must refer to a JOIN or FUNCTION RTE or to a subquery output.	We
+ * a Var must refer to a JOIN or FUNCTION RTE or to a subquery output.  We
  * drill down to find the ultimate defining expression and attempt to infer
  * the tupdesc from it.  We ereport if we can't determine the tupdesc.
  *
@@ -1401,7 +1445,7 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 				{
 					/*
 					 * Recurse into the sub-select to see what its Var refers
-					 * to.	We have to build an additional level of ParseState
+					 * to.  We have to build an additional level of ParseState
 					 * to keep in step with varlevelsup in the subselect.
 					 */
 					ParseState	mypstate;
@@ -1420,6 +1464,8 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 			/* Join RTE --- recursively inspect the alias variable */
 			Assert(attnum > 0 && attnum <= list_length(rte->joinaliasvars));
 			expr = (Node *) list_nth(rte->joinaliasvars, attnum - 1);
+			Assert(expr != NULL);
+			/* We intentionally don't strip implicit coercions here */
 			if (IsA(expr, Var))
 				return expandRecordVariable(pstate, (Var *) expr, netlevelsup);
 			/* else fall through to inspect the expression */
@@ -1473,7 +1519,7 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 
 	/*
 	 * We now have an expression we can't expand any more, so see if
-	 * get_expr_result_type() can do anything with it.	If not, pass to
+	 * get_expr_result_type() can do anything with it.  If not, pass to
 	 * lookup_rowtype_tupdesc() which will probably fail, but will give an
 	 * appropriate error message while failing.
 	 */

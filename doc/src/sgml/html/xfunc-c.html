@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -444,6 +444,47 @@ CLASS="PROGRAMLISTING"
 >/* 4-byte integer, passed by value */
 typedef int int4;</PRE
 ><P>
+
+     (The actual PostgreSQL C code calls this type <TT
+CLASS="TYPE"
+>int32</TT
+>, because
+     it is a convention in C that <TT
+CLASS="TYPE"
+>int<TT
+CLASS="REPLACEABLE"
+><I
+>XX</I
+></TT
+></TT
+>
+     means <TT
+CLASS="REPLACEABLE"
+><I
+>XX</I
+></TT
+> <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>bits</I
+></SPAN
+>.  Note
+     therefore also that the C type <TT
+CLASS="TYPE"
+>int8</TT
+> is 1 byte in size.  The
+     SQL type <TT
+CLASS="TYPE"
+>int8</TT
+> is called <TT
+CLASS="TYPE"
+>int64</TT
+> in C.  See also
+     <A
+HREF="xfunc-c.html#XFUNC-C-TYPE-TABLE"
+>Table 35-1</A
+>.)
     </P
 ><P
 >     On  the  other hand, fixed-length types of any size can
@@ -550,7 +591,7 @@ CLASS="TYPE"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >typedef struct {
-    int4 length;
+    int32 length;
     char data[1];
 } text;</PRE
 ><P>
@@ -810,9 +851,6 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="TYPE"
->int2</TT
-> or <TT
-CLASS="TYPE"
 >int16</TT
 ></TD
 ><TD
@@ -849,9 +887,6 @@ CLASS="TYPE"
 >)</TD
 ><TD
 ><TT
-CLASS="TYPE"
->int4</TT
-> or <TT
 CLASS="TYPE"
 >int32</TT
 ></TD
@@ -1203,7 +1238,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN52592"
+NAME="AEN55752"
 >35.9.3. Version 0 Calling Conventions</A
 ></H2
 ><P
@@ -1422,7 +1457,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN52619"
+NAME="AEN55779"
 >35.9.4. Version 1 Calling Conventions</A
 ></H2
 ><P
@@ -1773,7 +1808,7 @@ HREF="triggers.html"
 >) and
      procedural-language call handlers (<A
 HREF="plhandler.html"
->Chapter 49</A
+>Chapter 52</A
 >).  Version-1 code is also more
      portable than version-0, because it does not break restrictions
      on function call protocol in the C standard.  For more details
@@ -1789,7 +1824,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN52677"
+NAME="AEN55837"
 >35.9.5. Writing Code</A
 ></H2
 ><P
@@ -2064,7 +2099,8 @@ CLASS="VARIABLELIST"
 ><SPAN
 CLASS="SYSTEMITEM"
 >FreeBSD</SPAN
-></DT
+>
+     </DT
 ><DD
 ><P
 >      The compiler flag to create <ACRONYM
@@ -2095,7 +2131,8 @@ CLASS="SYSTEMITEM"
 ><SPAN
 CLASS="SYSTEMITEM"
 >HP-UX</SPAN
-></DT
+>
+     </DT
 ><DD
 ><P
 >      The compiler flag of the system compiler to create
@@ -2145,31 +2182,9 @@ CLASS="FILENAME"
 ><DT
 ><SPAN
 CLASS="SYSTEMITEM"
->IRIX</SPAN
-></DT
-><DD
-><P
->      <ACRONYM
-CLASS="ACRONYM"
->PIC</ACRONYM
-> is the default, no special compiler
-      options are necessary.  The linker option to produce shared
-      libraries is <TT
-CLASS="OPTION"
->-shared</TT
->.
-</P><PRE
-CLASS="PROGRAMLISTING"
->cc -c foo.c
-ld -shared -o foo.so foo.o</PRE
-><P>
-     </P
-></DD
-><DT
-><SPAN
-CLASS="SYSTEMITEM"
 >Linux</SPAN
-></DT
+>
+     </DT
 ><DD
 ><P
 >      The compiler flag to create <ACRONYM
@@ -2203,8 +2218,9 @@ cc -shared -o foo.so foo.o</PRE
 ><DT
 ><SPAN
 CLASS="SYSTEMITEM"
->Mac OS X</SPAN
-></DT
+>OS X</SPAN
+>
+     </DT
 ><DD
 ><P
 >      Here is an example.  It assumes the developer tools are installed.
@@ -2219,7 +2235,8 @@ cc -bundle -flat_namespace -undefined suppress -o foo.so foo.o</PRE
 ><SPAN
 CLASS="SYSTEMITEM"
 >NetBSD</SPAN
-></DT
+>
+     </DT
 ><DD
 ><P
 >      The compiler flag to create <ACRONYM
@@ -2253,7 +2270,8 @@ gcc -shared -o foo.so foo.o</PRE
 ><SPAN
 CLASS="SYSTEMITEM"
 >OpenBSD</SPAN
-></DT
+>
+     </DT
 ><DD
 ><P
 >      The compiler flag to create <ACRONYM
@@ -2279,7 +2297,8 @@ ld -Bshareable -o foo.so foo.o</PRE
 ><SPAN
 CLASS="SYSTEMITEM"
 >Solaris</SPAN
-></DT
+>
+     </DT
 ><DD
 ><P
 >      The compiler flag to create <ACRONYM
@@ -2326,7 +2345,9 @@ gcc -G -o foo.so foo.o</PRE
 ><SPAN
 CLASS="SYSTEMITEM"
 >Tru64 UNIX</SPAN
-></DT
+>
+     
+     </DT
 ><DD
 ><P
 >      <ACRONYM
@@ -2351,7 +2372,8 @@ ld -shared -expect_unresolved '*' -o foo.so foo.o</PRE
 ><SPAN
 CLASS="SYSTEMITEM"
 >UnixWare</SPAN
-></DT
+>
+     </DT
 ><DD
 ><P
 >      The compiler flag to create <ACRONYM
@@ -2454,7 +2476,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN52903"
+NAME="AEN56052"
 >35.9.7. Composite-type Arguments</A
 ></H2
 ><P
@@ -2614,7 +2636,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN52927"
+NAME="AEN56076"
 >35.9.8. Returning Rows (Composite Types)</A
 ></H2
 ><P
@@ -3360,7 +3382,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN53050"
+NAME="AEN56199"
 >35.9.10. Polymorphic Arguments and Return Types</A
 ></H2
 ><P
@@ -3428,6 +3450,17 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >get_fn_expr_rettype</CODE
 >.
+     There is also <CODE
+CLASS="FUNCTION"
+>get_fn_expr_variadic</CODE
+>, which can be used to
+     find out whether variadic arguments have been merged into an array.
+     This is primarily useful for <TT
+CLASS="LITERAL"
+>VARIADIC "any"</TT
+> functions,
+     since such merging will always have occurred for variadic functions
+     taking ordinary array types.
     </P
 ><P
 >     For example, suppose we want to write a function to accept a single
@@ -3532,7 +3565,21 @@ CLASS="FUNCTION"
 >PG_NARGS()</CODE
 > macro and the
      methods described above must be used to determine the number of actual
-     arguments and their types when using this feature.
+     arguments and their types when using this feature.  Also, users of such
+     a function might wish to use the <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> keyword in their
+     function call, with the expectation that the function would treat the
+     array elements as separate arguments.  The function itself must implement
+     that behavior if wanted, after using <CODE
+CLASS="FUNCTION"
+>get_fn_expr_variadic</CODE
+> to
+     detect that the actual argument was marked with <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+>.
     </P
 ></DIV
 ><DIV
@@ -3609,7 +3656,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN53096"
+NAME="AEN56250"
 >35.9.12. Shared Memory and LWLocks</A
 ></H2
 ><P
@@ -3617,7 +3664,7 @@ NAME="AEN53096"
      startup.  The add-in's shared library must be preloaded by specifying
      it in
      <A
-HREF="runtime-config-resource.html#GUC-SHARED-PRELOAD-LIBRARIES"
+HREF="runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES"
 >shared_preload_libraries</A
 >.
      Shared memory is reserved by calling:

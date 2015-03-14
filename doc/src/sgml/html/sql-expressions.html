@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Syntax"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -743,7 +743,12 @@ CLASS="REPLACEABLE"
 ><I
 >order_by_clause</I
 ></TT
-> ] )
+> ] ) [ FILTER ( WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>filter_clause</I
+></TT
+> ) ]
 <TT
 CLASS="REPLACEABLE"
 ><I
@@ -759,7 +764,12 @@ CLASS="REPLACEABLE"
 ><I
 >order_by_clause</I
 ></TT
-> ] )
+> ] ) [ FILTER ( WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>filter_clause</I
+></TT
+> ) ]
 <TT
 CLASS="REPLACEABLE"
 ><I
@@ -775,13 +785,44 @@ CLASS="REPLACEABLE"
 ><I
 >order_by_clause</I
 ></TT
-> ] )
+> ] ) [ FILTER ( WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>filter_clause</I
+></TT
+> ) ]
 <TT
 CLASS="REPLACEABLE"
 ><I
 >aggregate_name</I
 ></TT
-> ( * )</PRE
+> ( * ) [ FILTER ( WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>filter_clause</I
+></TT
+> ) ]
+<TT
+CLASS="REPLACEABLE"
+><I
+>aggregate_name</I
+></TT
+> ( [ <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> [ , ... ] ] ) WITHIN GROUP ( <TT
+CLASS="REPLACEABLE"
+><I
+>order_by_clause</I
+></TT
+> ) [ FILTER ( WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>filter_clause</I
+></TT
+> ) ]</PRE
 ><P>
 
     where <TT
@@ -790,7 +831,7 @@ CLASS="REPLACEABLE"
 >aggregate_name</I
 ></TT
 > is a previously
-    defined aggregate (possibly qualified with a schema name),
+    defined aggregate (possibly qualified with a schema name) and
     <TT
 CLASS="REPLACEABLE"
 ><I
@@ -798,17 +839,19 @@ CLASS="REPLACEABLE"
 ></TT
 > is
     any value expression that does not itself contain an aggregate
-    expression or a window function call, and
+    expression or a window function call.  The optional
     <TT
 CLASS="REPLACEABLE"
 ><I
 >order_by_clause</I
 ></TT
-> is a optional
+> and
     <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clause as described below.
+CLASS="REPLACEABLE"
+><I
+>filter_clause</I
+></TT
+> are described below.
    </P
 ><P
 >    The first form of aggregate expression invokes the aggregate
@@ -821,12 +864,17 @@ CLASS="LITERAL"
     The third form invokes the aggregate once for each distinct value
     of the expression (or distinct set of values, for multiple expressions)
     found in the input rows.
-    The last form invokes the aggregate once for each input row; since no
+    The fourth form invokes the aggregate once for each input row; since no
     particular input value is specified, it is generally only useful
     for the <CODE
 CLASS="FUNCTION"
 >count(*)</CODE
 > aggregate function.
+    The last form is used with <I
+CLASS="FIRSTTERM"
+>ordered-set</I
+> aggregate
+    functions, which are described below.
    </P
 ><P
 >    Most aggregate functions ignore null inputs, so that rows in which
@@ -969,6 +1017,160 @@ CLASS="PRODUCTNAME"
 ></BLOCKQUOTE
 ></DIV
 ><P
+>    Placing <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> within the aggregate's regular argument
+    list, as described so far, is used when ordering the input rows for
+    a <SPAN
+CLASS="QUOTE"
+>"normal"</SPAN
+> aggregate for which ordering is optional.  There is a
+    subclass of aggregate functions called <I
+CLASS="FIRSTTERM"
+>ordered-set
+    aggregates</I
+> for which an <TT
+CLASS="REPLACEABLE"
+><I
+>order_by_clause</I
+></TT
+>
+    is <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>required</I
+></SPAN
+>, usually because the aggregate's computation is
+    only sensible in terms of a specific ordering of its input rows.
+    Typical examples of ordered-set aggregates include rank and percentile
+    calculations.  For an ordered-set aggregate,
+    the <TT
+CLASS="REPLACEABLE"
+><I
+>order_by_clause</I
+></TT
+> is written
+    inside <TT
+CLASS="LITERAL"
+>WITHIN GROUP (...)</TT
+>, as shown in the final syntax
+    alternative above.  The expressions in
+    the <TT
+CLASS="REPLACEABLE"
+><I
+>order_by_clause</I
+></TT
+> are evaluated once per
+    input row just like normal aggregate arguments, sorted as per
+    the <TT
+CLASS="REPLACEABLE"
+><I
+>order_by_clause</I
+></TT
+>'s requirements, and fed
+    to the aggregate function as input arguments.  (This is unlike the case
+    for a non-<TT
+CLASS="LITERAL"
+>WITHIN GROUP</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>order_by_clause</I
+></TT
+>,
+    which is not treated as argument(s) to the aggregate function.)  The
+    argument expressions preceding <TT
+CLASS="LITERAL"
+>WITHIN GROUP</TT
+>, if any, are
+    called <I
+CLASS="FIRSTTERM"
+>direct arguments</I
+> to distinguish them from
+    the <I
+CLASS="FIRSTTERM"
+>aggregated arguments</I
+> listed in
+    the <TT
+CLASS="REPLACEABLE"
+><I
+>order_by_clause</I
+></TT
+>.  Unlike normal aggregate
+    arguments, direct arguments are evaluated only once per aggregate call,
+    not once per input row.  This means that they can contain variables only
+    if those variables are grouped by <TT
+CLASS="LITERAL"
+>GROUP BY</TT
+>; this restriction
+    is the same as if the direct arguments were not inside an aggregate
+    expression at all.  Direct arguments are typically used for things like
+    percentile fractions, which only make sense as a single value per
+    aggregation calculation.  The direct argument list can be empty; in this
+    case, write just <TT
+CLASS="LITERAL"
+>()</TT
+> not <TT
+CLASS="LITERAL"
+>(*)</TT
+>.
+    (<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> will actually accept either spelling, but
+    only the first way conforms to the SQL standard.)
+    An example of an ordered-set aggregate call is:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT percentile_disc(0.5) WITHIN GROUP (ORDER BY income) FROM households;
+ percentile_disc
+-----------------
+           50489</PRE
+><P>
+
+   which obtains the 50th percentile, or median, value of
+   the <TT
+CLASS="STRUCTFIELD"
+>income</TT
+> column from table <TT
+CLASS="STRUCTNAME"
+>households</TT
+>.
+   Here, <TT
+CLASS="LITERAL"
+>0.5</TT
+> is a direct argument; it would make no sense
+   for the percentile fraction to be a value varying across rows.
+   </P
+><P
+>    If <TT
+CLASS="LITERAL"
+>FILTER</TT
+> is specified, then only the input
+    rows for which the <TT
+CLASS="REPLACEABLE"
+><I
+>filter_clause</I
+></TT
+>
+    evaluates to true are fed to the aggregate function; other rows
+    are discarded.  For example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT
+    count(*) AS unfiltered,
+    count(*) FILTER (WHERE i &#60; 5) AS filtered
+FROM generate_series(1,10) AS s(i);
+ unfiltered | filtered
+------------+----------
+         10 |        4
+(1 row)</PRE
+><P>
+   </P
+><P
 >    The predefined aggregate functions are described in <A
 HREF="functions-aggregate.html"
 >Section 9.20</A
@@ -1002,7 +1204,13 @@ HREF="functions-subquery.html"
 >Section 9.22</A
 >), the aggregate is normally
     evaluated over the rows of the subquery.  But an exception occurs
-    if the aggregate's arguments contain only outer-level variables:
+    if the aggregate's arguments (and <TT
+CLASS="REPLACEABLE"
+><I
+>filter_clause</I
+></TT
+>
+    if any) contain only outer-level variables:
     the aggregate then belongs to the nearest such outer level, and is
     evaluated over the rows of that query.  The aggregate expression
     as a whole is then an outer reference for the subquery it appears in,
@@ -1063,12 +1271,17 @@ CLASS="REPLACEABLE"
 ></TT
 > ... </SPAN
 >]</SPAN
->]) OVER ( <TT
+>]) [ FILTER ( WHERE <TT
 CLASS="REPLACEABLE"
 ><I
->window_definition</I
+>filter_clause</I
 ></TT
-> )
+> ) ] OVER <TT
+CLASS="REPLACEABLE"
+><I
+>window_name</I
+></TT
+>
 <TT
 CLASS="REPLACEABLE"
 ><I
@@ -1090,18 +1303,12 @@ CLASS="REPLACEABLE"
 ></TT
 > ... </SPAN
 >]</SPAN
->]) OVER <TT
+>]) [ FILTER ( WHERE <TT
 CLASS="REPLACEABLE"
 ><I
->window_name</I
+>filter_clause</I
 ></TT
->
-<TT
-CLASS="REPLACEABLE"
-><I
->function_name</I
-></TT
-> ( * ) OVER ( <TT
+> ) ] OVER ( <TT
 CLASS="REPLACEABLE"
 ><I
 >window_definition</I
@@ -1112,12 +1319,33 @@ CLASS="REPLACEABLE"
 ><I
 >function_name</I
 ></TT
-> ( * ) OVER <TT
+> ( * ) [ FILTER ( WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>filter_clause</I
+></TT
+> ) ] OVER <TT
 CLASS="REPLACEABLE"
 ><I
 >window_name</I
 ></TT
-></PRE
+>
+<TT
+CLASS="REPLACEABLE"
+><I
+>function_name</I
+></TT
+> ( * ) [ FILTER ( WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>filter_clause</I
+></TT
+> ) ] OVER ( <TT
+CLASS="REPLACEABLE"
+><I
+>window_definition</I
+></TT
+> )</PRE
 ><P>
     where <TT
 CLASS="REPLACEABLE"
@@ -1224,24 +1452,9 @@ CLASS="REPLACEABLE"
 ></TT
 > represents any value
     expression that does not itself contain window function calls.
-    The <TT
-CLASS="LITERAL"
->PARTITION BY</TT
-> and <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> lists have
-    essentially the same syntax and semantics as <TT
-CLASS="LITERAL"
->GROUP BY</TT
->
-    and <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clauses of the whole query, except that their
-    expressions are always just expressions and cannot be output-column
-    names or numbers.
-    <TT
+   </P
+><P
+>    <TT
 CLASS="REPLACEABLE"
 ><I
 >window_name</I
@@ -1251,29 +1464,69 @@ CLASS="REPLACEABLE"
 CLASS="LITERAL"
 >WINDOW</TT
 > clause.
-    Named window specifications are usually referenced with just
-    <TT
-CLASS="LITERAL"
->OVER</TT
-> <TT
+    Alternatively, a full <TT
 CLASS="REPLACEABLE"
 ><I
->window_name</I
+>window_definition</I
 ></TT
->, but it is
-    also possible to write a window name inside the parentheses and then
-    optionally supply an ordering clause and/or frame clause (the referenced
-    window must lack these clauses, if they are supplied here).
-    This latter syntax follows the same rules as modifying an existing
-    window name within the <TT
+> can
+    be given within parentheses, using the same syntax as for defining a
+    named window in the <TT
 CLASS="LITERAL"
 >WINDOW</TT
 > clause; see the
     <A
 HREF="sql-select.html"
 >SELECT</A
-> reference
-    page for details.
+> reference page for details.  It's worth
+    pointing out that <TT
+CLASS="LITERAL"
+>OVER wname</TT
+> is not exactly equivalent to
+    <TT
+CLASS="LITERAL"
+>OVER (wname)</TT
+>; the latter implies copying and modifying the
+    window definition, and will be rejected if the referenced window
+    specification includes a frame clause.
+   </P
+><P
+>    The <TT
+CLASS="LITERAL"
+>PARTITION BY</TT
+> option groups the rows of the query into
+    <I
+CLASS="FIRSTTERM"
+>partitions</I
+>, which are processed separately by the window
+    function.  <TT
+CLASS="LITERAL"
+>PARTITION BY</TT
+> works similarly to a query-level
+    <TT
+CLASS="LITERAL"
+>GROUP BY</TT
+> clause, except that its expressions are always just
+    expressions and cannot be output-column names or numbers.
+    Without <TT
+CLASS="LITERAL"
+>PARTITION BY</TT
+>, all rows produced by the query are
+    treated as a single partition.
+    The <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> option determines the order in which the rows
+    of a partition are processed by the window function.  It works similarly
+    to a query-level <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> clause, but likewise cannot use
+    output-column names or numbers.  Without <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>, rows are
+    processed in an unspecified order.
    </P
 ><P
 >    The <TT
@@ -1285,18 +1538,163 @@ CLASS="REPLACEABLE"
     the set of rows constituting the <I
 CLASS="FIRSTTERM"
 >window frame</I
->, for those
-    window functions that act on the frame instead of the whole partition.
-    If <TT
+>, which is a
+    subset of the current partition, for those window functions that act on
+    the frame instead of the whole partition.  The frame can be specified in
+    either <TT
+CLASS="LITERAL"
+>RANGE</TT
+> or <TT
+CLASS="LITERAL"
+>ROWS</TT
+> mode; in either case, it
+    runs from the <TT
+CLASS="REPLACEABLE"
+><I
+>frame_start</I
+></TT
+> to the
+    <TT
 CLASS="REPLACEABLE"
 ><I
 >frame_end</I
 ></TT
-> is omitted it defaults to <TT
+>.  If <TT
+CLASS="REPLACEABLE"
+><I
+>frame_end</I
+></TT
+> is omitted,
+    it defaults to <TT
 CLASS="LITERAL"
->CURRENT
-    ROW</TT
->.  Restrictions are that
+>CURRENT ROW</TT
+>.
+   </P
+><P
+>    A <TT
+CLASS="REPLACEABLE"
+><I
+>frame_start</I
+></TT
+> of <TT
+CLASS="LITERAL"
+>UNBOUNDED PRECEDING</TT
+> means
+    that the frame starts with the first row of the partition, and similarly
+    a <TT
+CLASS="REPLACEABLE"
+><I
+>frame_end</I
+></TT
+> of <TT
+CLASS="LITERAL"
+>UNBOUNDED FOLLOWING</TT
+> means
+    that the frame ends with the last row of the partition.
+   </P
+><P
+>    In <TT
+CLASS="LITERAL"
+>RANGE</TT
+> mode, a <TT
+CLASS="REPLACEABLE"
+><I
+>frame_start</I
+></TT
+> of
+    <TT
+CLASS="LITERAL"
+>CURRENT ROW</TT
+> means the frame starts with the current row's
+    first <I
+CLASS="FIRSTTERM"
+>peer</I
+> row (a row that <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> considers
+    equivalent to the current row), while a <TT
+CLASS="REPLACEABLE"
+><I
+>frame_end</I
+></TT
+> of
+    <TT
+CLASS="LITERAL"
+>CURRENT ROW</TT
+> means the frame ends with the last equivalent
+    <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> peer.  In <TT
+CLASS="LITERAL"
+>ROWS</TT
+> mode, <TT
+CLASS="LITERAL"
+>CURRENT ROW</TT
+> simply means
+    the current row.
+   </P
+><P
+>    The <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> <TT
+CLASS="LITERAL"
+>PRECEDING</TT
+> and
+    <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> <TT
+CLASS="LITERAL"
+>FOLLOWING</TT
+> cases are currently only
+    allowed in <TT
+CLASS="LITERAL"
+>ROWS</TT
+> mode.  They indicate that the frame starts
+    or ends the specified number of rows before or after the current row.
+    <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+> must be an integer expression not
+    containing any variables, aggregate functions, or window functions.
+    The value must not be null or negative; but it can be zero, which
+    just selects the current row.
+   </P
+><P
+>    The default framing option is <TT
+CLASS="LITERAL"
+>RANGE UNBOUNDED PRECEDING</TT
+>,
+    which is the same as <TT
+CLASS="LITERAL"
+>RANGE BETWEEN UNBOUNDED PRECEDING AND
+    CURRENT ROW</TT
+>.  With <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>, this sets the frame to be
+    all rows from the partition start up through the current row's last
+    <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> peer.  Without <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>, all rows of the partition are
+    included in the window frame, since all rows become peers of the current
+    row.
+   </P
+><P
+>    Restrictions are that
     <TT
 CLASS="REPLACEABLE"
 ><I
@@ -1337,95 +1735,33 @@ CLASS="REPLACEABLE"
 >
     PRECEDING</TT
 > is not allowed.
-    The default framing option is <TT
+   </P
+><P
+>    If <TT
 CLASS="LITERAL"
->RANGE UNBOUNDED PRECEDING</TT
->,
-    which is the same as <TT
-CLASS="LITERAL"
->RANGE BETWEEN UNBOUNDED PRECEDING AND
-    CURRENT ROW</TT
->; it sets the frame to be all rows from the partition start
-    up through the current row's last peer in the <TT
-CLASS="LITERAL"
->ORDER BY</TT
->
-    ordering (which means all rows if there is no <TT
-CLASS="LITERAL"
->ORDER BY</TT
->).
-    In general, <TT
-CLASS="LITERAL"
->UNBOUNDED PRECEDING</TT
-> means that the frame
-    starts with the first row of the partition, and similarly
-    <TT
-CLASS="LITERAL"
->UNBOUNDED FOLLOWING</TT
-> means that the frame ends with the last
-    row of the partition (regardless of <TT
-CLASS="LITERAL"
->RANGE</TT
-> or <TT
-CLASS="LITERAL"
->ROWS</TT
->
-    mode).  In <TT
-CLASS="LITERAL"
->ROWS</TT
-> mode, <TT
-CLASS="LITERAL"
->CURRENT ROW</TT
->
-    means that the frame starts or ends with the current row; but in
-    <TT
-CLASS="LITERAL"
->RANGE</TT
-> mode it means that the frame starts or ends with
-    the current row's first or last peer in the <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> ordering.
-    The <TT
+>FILTER</TT
+> is specified, then only the input
+    rows for which the <TT
 CLASS="REPLACEABLE"
 ><I
->value</I
+>filter_clause</I
 ></TT
-> <TT
+>
+    evaluates to true are fed to the window function; other rows
+    are discarded.  Only window functions that are aggregates accept
+    a <TT
 CLASS="LITERAL"
->PRECEDING</TT
-> and
-    <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-> <TT
-CLASS="LITERAL"
->FOLLOWING</TT
-> cases are currently only
-    allowed in <TT
-CLASS="LITERAL"
->ROWS</TT
-> mode.  They indicate that the frame starts
-    or ends with the row that many rows before or after the current row.
-    <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-> must be an integer expression not
-    containing any variables, aggregate functions, or window functions.
-    The value must not be null or negative; but it can be zero, which
-    selects the current row itself.
+>FILTER</TT
+> clause.
    </P
 ><P
 >    The built-in window functions are described in <A
 HREF="functions-window.html#FUNCTIONS-WINDOW-TABLE"
->Table 9-47</A
+>Table 9-53</A
 >.  Other window functions can be added by
-    the user.  Also, any built-in or user-defined aggregate function can be
-    used as a window function.
+    the user.  Also, any built-in or user-defined normal aggregate function
+    can be used as a window function.  Ordered-set aggregates presently
+    cannot be used as window functions, however.
    </P
 ><P
 >    The syntaxes using <TT
@@ -1470,7 +1806,7 @@ HREF="tutorial-window.html"
     <A
 HREF="functions-window.html"
 >Section 9.21</A
->,
+>, and
     <A
 HREF="queries-table-expressions.html#QUERIES-WINDOW"
 >Section 7.2.4</A
@@ -2206,6 +2542,111 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >y &gt; 1.5*x</TT
 > instead.)
+   </P
+><P
+>    <TT
+CLASS="LITERAL"
+>CASE</TT
+> is not a cure-all for such issues, however.
+    One limitation of the technique illustrated above is that it does not
+    prevent early evaluation of constant subexpressions.
+    As described in <A
+HREF="xfunc-volatility.html"
+>Section 35.6</A
+>, functions and
+    operators marked <TT
+CLASS="LITERAL"
+>IMMUTABLE</TT
+> can be evaluated when
+    the query is planned rather than when it is executed.  Thus for example
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT CASE WHEN x &gt; 0 THEN x ELSE 1/0 END FROM tab;</PRE
+><P>
+    is likely to result in a division-by-zero failure due to the planner
+    trying to simplify the constant subexpression,
+    even if every row in the table has <TT
+CLASS="LITERAL"
+>x &gt; 0</TT
+> so that the
+    <TT
+CLASS="LITERAL"
+>ELSE</TT
+> arm would never be entered at run time.
+   </P
+><P
+>    While that particular example might seem silly, related cases that don't
+    obviously involve constants can occur in queries executed within
+    functions, since the values of function arguments and local variables
+    can be inserted into queries as constants for planning purposes.
+    Within <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> functions, for example, using an
+    <TT
+CLASS="LITERAL"
+>IF</TT
+>-<TT
+CLASS="LITERAL"
+>THEN</TT
+>-<TT
+CLASS="LITERAL"
+>ELSE</TT
+> statement to protect
+    a risky computation is much safer than just nesting it in a
+    <TT
+CLASS="LITERAL"
+>CASE</TT
+> expression.
+   </P
+><P
+>    Another limitation of the same kind is that a <TT
+CLASS="LITERAL"
+>CASE</TT
+> cannot
+    prevent evaluation of an aggregate expression contained within it,
+    because aggregate expressions are computed before other
+    expressions in a <TT
+CLASS="LITERAL"
+>SELECT</TT
+> list or <TT
+CLASS="LITERAL"
+>HAVING</TT
+> clause
+    are considered.  For example, the following query can cause a
+    division-by-zero error despite seemingly having protected against it:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT CASE WHEN min(employees) &#62; 0
+            THEN avg(expenses / employees)
+       END
+    FROM departments;</PRE
+><P>
+    The <CODE
+CLASS="FUNCTION"
+>min()</CODE
+> and <CODE
+CLASS="FUNCTION"
+>avg()</CODE
+> aggregates are computed
+    concurrently over all the input rows, so if any row
+    has <TT
+CLASS="STRUCTFIELD"
+>employees</TT
+> equal to zero, the division-by-zero error
+    will occur before there is any opportunity to test the result of
+    <CODE
+CLASS="FUNCTION"
+>min()</CODE
+>.  Instead, use a <TT
+CLASS="LITERAL"
+>WHERE</TT
+>
+    or <TT
+CLASS="LITERAL"
+>FILTER</TT
+> clause to prevent problematic input rows from
+    reaching an aggregate function in the first place.
    </P
 ></DIV
 ></DIV

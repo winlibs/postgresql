@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Queries"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -183,13 +183,21 @@ CLASS="OPTIONAL"
 ><P>
 
     A table reference can be a table name (possibly schema-qualified),
-    or a derived table such as a subquery, a table join, or complex
-    combinations of these.  If more than one table reference is listed
-    in the <TT
+    or a derived table such as a subquery, a <TT
+CLASS="LITERAL"
+>JOIN</TT
+> construct, or
+    complex combinations of these.  If more than one table reference is
+    listed in the <TT
 CLASS="LITERAL"
 >FROM</TT
-> clause they are cross-joined (see below)
-    to form the intermediate virtual table that can then be subject to
+> clause, the tables are cross-joined
+    (that is, the Cartesian product of their rows is formed; see below).
+    The result of the <TT
+CLASS="LITERAL"
+>FROM</TT
+> list is an intermediate virtual
+    table that can then be subject to
     transformations by the <TT
 CLASS="LITERAL"
 >WHERE</TT
@@ -249,6 +257,56 @@ NAME="QUERIES-JOIN"
 >     A joined table is a table derived from two other (real or
      derived) tables according to the rules of the particular join
      type.  Inner, outer, and cross-joins are available.
+     The general syntax of a joined table is
+</P><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>join_type</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>T2</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+> <TT
+CLASS="REPLACEABLE"
+><I
+>join_condition</I
+></TT
+> </SPAN
+>]</PRE
+><P>
+     Joins of all types can be chained together, or nested: either or
+     both <TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+> and
+     <TT
+CLASS="REPLACEABLE"
+><I
+>T2</I
+></TT
+> can be joined tables.  Parentheses
+     can be used around <TT
+CLASS="LITERAL"
+>JOIN</TT
+> clauses to control the join
+     order.  In the absence of parentheses, <TT
+CLASS="LITERAL"
+>JOIN</TT
+> clauses
+     nest left-to-right.
     </P
 ><P
 ></P
@@ -260,7 +318,10 @@ CLASS="VARIABLELIST"
 ></P
 ><DL
 ><DT
->Cross join</DT
+>Cross join
+      
+
+      </DT
 ><DD
 ><PRE
 CLASS="SYNOPSIS"
@@ -328,21 +389,6 @@ CLASS="REPLACEABLE"
 ><I
 >T1</I
 ></TT
->,
-        <TT
-CLASS="REPLACEABLE"
-><I
->T2</I
-></TT
-></TT
->.  It is also equivalent to
-        <TT
-CLASS="LITERAL"
->FROM <TT
-CLASS="REPLACEABLE"
-><I
->T1</I
-></TT
 > INNER JOIN
         <TT
 CLASS="REPLACEABLE"
@@ -351,10 +397,112 @@ CLASS="REPLACEABLE"
 ></TT
 > ON TRUE</TT
 > (see below).
+        It is also equivalent to
+        <TT
+CLASS="LITERAL"
+>FROM <TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+>,
+        <TT
+CLASS="REPLACEABLE"
+><I
+>T2</I
+></TT
+></TT
+>.
+        </P><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>         This latter equivalence does not hold exactly when more than two
+         tables appear, because <TT
+CLASS="LITERAL"
+>JOIN</TT
+> binds more tightly than
+         comma.  For example
+         <TT
+CLASS="LITERAL"
+>FROM <TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+> CROSS JOIN
+         <TT
+CLASS="REPLACEABLE"
+><I
+>T2</I
+></TT
+> INNER JOIN <TT
+CLASS="REPLACEABLE"
+><I
+>T3</I
+></TT
+>
+         ON <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+></TT
+>
+         is not the same as
+         <TT
+CLASS="LITERAL"
+>FROM <TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+>,
+         <TT
+CLASS="REPLACEABLE"
+><I
+>T2</I
+></TT
+> INNER JOIN <TT
+CLASS="REPLACEABLE"
+><I
+>T3</I
+></TT
+>
+         ON <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+></TT
+>
+         because the <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> can
+         reference <TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+> in the first case but not
+         the second.
+        </P
+></BLOCKQUOTE
+></DIV
+><P>
        </P
 ></DD
 ><DT
->Qualified joins</DT
+>Qualified joins
+      
+
+      </DT
 ><DD
 ><PRE
 CLASS="SYNOPSIS"
@@ -467,106 +615,6 @@ CLASS="QUOTE"
 >, as explained in detail below.
        </P
 ><P
->        The <TT
-CLASS="LITERAL"
->ON</TT
-> clause is the most general kind of join
-        condition: it takes a Boolean value expression of the same
-        kind as is used in a <TT
-CLASS="LITERAL"
->WHERE</TT
-> clause.  A pair of rows
-        from <TT
-CLASS="REPLACEABLE"
-><I
->T1</I
-></TT
-> and <TT
-CLASS="REPLACEABLE"
-><I
->T2</I
-></TT
-> match if the
-        <TT
-CLASS="LITERAL"
->ON</TT
-> expression evaluates to true for them.
-       </P
-><P
->        <TT
-CLASS="LITERAL"
->USING</TT
-> is a shorthand notation: it takes a
-        comma-separated list of column names, which the joined tables
-        must have in common, and forms a join condition specifying
-        equality of each of these pairs of columns.  Furthermore, the
-        output of <TT
-CLASS="LITERAL"
->JOIN USING</TT
-> has one column for each of
-        the equated pairs of input columns, followed by the
-        remaining columns from each table.  Thus, <TT
-CLASS="LITERAL"
->USING (a, b,
-        c)</TT
-> is equivalent to <TT
-CLASS="LITERAL"
->ON (t1.a = t2.a AND
-        t1.b = t2.b AND t1.c = t2.c)</TT
-> with the exception that
-        if <TT
-CLASS="LITERAL"
->ON</TT
-> is used there will be two columns
-        <TT
-CLASS="LITERAL"
->a</TT
->, <TT
-CLASS="LITERAL"
->b</TT
->, and <TT
-CLASS="LITERAL"
->c</TT
-> in the result,
-        whereas with <TT
-CLASS="LITERAL"
->USING</TT
-> there will be only one of each
-        (and they will appear first if <TT
-CLASS="COMMAND"
->SELECT *</TT
-> is used).
-       </P
-><P
->        
-        
-        Finally, <TT
-CLASS="LITERAL"
->NATURAL</TT
-> is a shorthand form of
-        <TT
-CLASS="LITERAL"
->USING</TT
->: it forms a <TT
-CLASS="LITERAL"
->USING</TT
-> list
-        consisting of all column names that appear in both
-        input tables.  As with <TT
-CLASS="LITERAL"
->USING</TT
->, these columns appear
-        only once in the output table.  If there are no common
-        columns, <TT
-CLASS="LITERAL"
->NATURAL</TT
-> behaves like
-        <TT
-CLASS="LITERAL"
->CROSS JOIN</TT
->.
-       </P
-><P
 >        The possible types of qualified join are:
 
        <P
@@ -589,7 +637,10 @@ CLASS="LITERAL"
 ><TT
 CLASS="LITERAL"
 >LEFT OUTER JOIN</TT
-></DT
+>
+         
+
+         </DT
 ><DD
 ><P
 >           First, an inner join is performed.  Then, for each row in
@@ -603,7 +654,10 @@ CLASS="LITERAL"
 ><TT
 CLASS="LITERAL"
 >RIGHT OUTER JOIN</TT
-></DT
+>
+         
+
+         </DT
 ><DD
 ><P
 >           First, an inner join is performed.  Then, for each row in
@@ -632,33 +686,176 @@ CLASS="LITERAL"
 ></DIV
 ><P>
        </P
-></DD
-></DL
-></DIV
 ><P
->     Joins of all types can be chained together or nested: either or
-     both <TT
+>        The <TT
+CLASS="LITERAL"
+>ON</TT
+> clause is the most general kind of join
+        condition: it takes a Boolean value expression of the same
+        kind as is used in a <TT
+CLASS="LITERAL"
+>WHERE</TT
+> clause.  A pair of rows
+        from <TT
 CLASS="REPLACEABLE"
 ><I
 >T1</I
 ></TT
-> and
-     <TT
+> and <TT
 CLASS="REPLACEABLE"
 ><I
 >T2</I
 ></TT
-> can be joined tables.  Parentheses
-     can be used around <TT
+> match if the
+        <TT
 CLASS="LITERAL"
->JOIN</TT
-> clauses to control the join
-     order.  In the absence of parentheses, <TT
+>ON</TT
+> expression evaluates to true.
+       </P
+><P
+>        The <TT
 CLASS="LITERAL"
->JOIN</TT
-> clauses
-     nest left-to-right.
-    </P
+>USING</TT
+> clause is a shorthand that allows you to take
+        advantage of the specific situation where both sides of the join use
+        the same name for the joining column(s).  It takes a
+        comma-separated list of the shared column names
+        and forms a join condition that includes an equality comparison
+        for each one.  For example, joining <TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+>
+        and <TT
+CLASS="REPLACEABLE"
+><I
+>T2</I
+></TT
+> with <TT
+CLASS="LITERAL"
+>USING (a, b)</TT
+> produces
+        the join condition <TT
+CLASS="LITERAL"
+>ON <TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+>.a
+        = <TT
+CLASS="REPLACEABLE"
+><I
+>T2</I
+></TT
+>.a AND <TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+>.b
+        = <TT
+CLASS="REPLACEABLE"
+><I
+>T2</I
+></TT
+>.b</TT
+>.
+       </P
+><P
+>        Furthermore, the output of <TT
+CLASS="LITERAL"
+>JOIN USING</TT
+> suppresses
+        redundant columns: there is no need to print both of the matched
+        columns, since they must have equal values.  While <TT
+CLASS="LITERAL"
+>JOIN
+        ON</TT
+> produces all columns from <TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+> followed by all
+        columns from <TT
+CLASS="REPLACEABLE"
+><I
+>T2</I
+></TT
+>, <TT
+CLASS="LITERAL"
+>JOIN USING</TT
+> produces one
+        output column for each of the listed column pairs (in the listed
+        order), followed by any remaining columns from <TT
+CLASS="REPLACEABLE"
+><I
+>T1</I
+></TT
+>,
+        followed by any remaining columns from <TT
+CLASS="REPLACEABLE"
+><I
+>T2</I
+></TT
+>.
+       </P
+><P
+>        
+        
+        Finally, <TT
+CLASS="LITERAL"
+>NATURAL</TT
+> is a shorthand form of
+        <TT
+CLASS="LITERAL"
+>USING</TT
+>: it forms a <TT
+CLASS="LITERAL"
+>USING</TT
+> list
+        consisting of all column names that appear in both
+        input tables.  As with <TT
+CLASS="LITERAL"
+>USING</TT
+>, these columns appear
+        only once in the output table.  If there are no common
+        column names, <TT
+CLASS="LITERAL"
+>NATURAL</TT
+> behaves like
+        <TT
+CLASS="LITERAL"
+>CROSS JOIN</TT
+>.
+       </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>         <TT
+CLASS="LITERAL"
+>USING</TT
+> is reasonably safe from column changes
+         in the joined relations since only the listed columns
+         are combined.  <TT
+CLASS="LITERAL"
+>NATURAL</TT
+> is considerably more risky since
+         any schema changes to either relation that cause a new matching
+         column name to be present will cause the join to combine that new
+         column as well.
+        </P
+></BLOCKQUOTE
+></DIV
+></DD
+></DL
+></DIV
 ><P
 >     To put this together, assume we have tables <TT
 CLASS="LITERAL"
@@ -869,6 +1066,8 @@ CLASS="EMPHASIS"
 >after</I
 ></SPAN
 > the join.
+     That does not matter with inner joins, but it matters a lot with outer
+     joins.
     </P
 ></DIV
 ><DIV
@@ -1065,10 +1264,10 @@ CLASS="EMPHASIS"
 >must</I
 ></SPAN
 > be assigned a table
-     alias name.  (See <A
+     alias name (as in <A
 HREF="queries-table-expressions.html#QUERIES-TABLE-ALIASES"
 >Section 7.2.1.2</A
->.)  For
+>).  For
      example:
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -1132,25 +1331,182 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >WHERE</TT
 > clauses in the same manner
-     as a table, view, or subquery column.
+     as columns of a table, view, or subquery.
     </P
 ><P
->     If a table function returns a base data type, the single result
-     column name matches the function name. If the function returns a
-     composite type, the result columns get the same names as the
-     individual attributes of the type.
+>     Table functions may also be combined using the <TT
+CLASS="LITERAL"
+>ROWS FROM</TT
+>
+     syntax, with the results returned in parallel columns; the number of
+     result rows in this case is that of the largest function result, with
+     smaller results padded with null values to match.
+    </P
+><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>function_call</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>WITH ORDINALITY</SPAN
+>] [<SPAN
+CLASS="OPTIONAL"
+>[<SPAN
+CLASS="OPTIONAL"
+>AS</SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>table_alias</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>column_alias</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ... </SPAN
+>])</SPAN
+>]</SPAN
+>]
+ROWS FROM( <TT
+CLASS="REPLACEABLE"
+><I
+>function_call</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ... </SPAN
+>] ) [<SPAN
+CLASS="OPTIONAL"
+>WITH ORDINALITY</SPAN
+>] [<SPAN
+CLASS="OPTIONAL"
+>[<SPAN
+CLASS="OPTIONAL"
+>AS</SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>table_alias</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>column_alias</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ... </SPAN
+>])</SPAN
+>]</SPAN
+>]</PRE
+><P
+>     If the <TT
+CLASS="LITERAL"
+>WITH ORDINALITY</TT
+> clause is specified, an
+     additional column of type <TT
+CLASS="TYPE"
+>bigint</TT
+> will be added to the
+     function result columns.  This column numbers the rows of the function
+     result set, starting from 1. (This is a generalization of the
+     SQL-standard syntax for <TT
+CLASS="LITERAL"
+>UNNEST ... WITH ORDINALITY</TT
+>.)
+     By default, the ordinal column is called <TT
+CLASS="LITERAL"
+>ordinality</TT
+>, but
+     a different column name can be assigned to it using
+     an <TT
+CLASS="LITERAL"
+>AS</TT
+> clause.
     </P
 ><P
->     A table function can be aliased in the <TT
+>     The special table function <TT
 CLASS="LITERAL"
->FROM</TT
-> clause,
-     but it also can be left unaliased. If a function is used in the
-     <TT
+>UNNEST</TT
+> may be called with
+     any number of array parameters, and it returns a corresponding number of
+     columns, as if <TT
 CLASS="LITERAL"
->FROM</TT
-> clause with no alias, the function name is used
-     as the resulting table name.
+>UNNEST</TT
+>
+     (<A
+HREF="functions-array.html"
+>Section 9.18</A
+>) had been called on each parameter
+     separately and combined using the <TT
+CLASS="LITERAL"
+>ROWS FROM</TT
+> construct.
+    </P
+><PRE
+CLASS="SYNOPSIS"
+>UNNEST( <TT
+CLASS="REPLACEABLE"
+><I
+>array_expression</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ... </SPAN
+>] ) [<SPAN
+CLASS="OPTIONAL"
+>WITH ORDINALITY</SPAN
+>] [<SPAN
+CLASS="OPTIONAL"
+>[<SPAN
+CLASS="OPTIONAL"
+>AS</SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>table_alias</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>column_alias</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ... </SPAN
+>])</SPAN
+>]</SPAN
+>]</PRE
+><P
+>     If no <TT
+CLASS="REPLACEABLE"
+><I
+>table_alias</I
+></TT
+> is specified, the function
+     name is used as the table name; in the case of a <TT
+CLASS="LITERAL"
+>ROWS FROM()</TT
+>
+     construct, the first function's name is used.
+    </P
+><P
+>     If column aliases are not supplied, then for a function returning a base
+     data type, the column name is also the same as the function name.  For a
+     function returning a composite type, the result columns get the names
+     of the individual attributes of the type.
     </P
 ><P
 >     Some examples:
@@ -1186,7 +1542,115 @@ CLASS="TYPE"
 >.  When such a function is used in
      a query, the expected row structure must be specified in the
      query itself, so that the system can know how to parse and plan
-     the query.  Consider this example:
+     the query.  This syntax looks like:
+    </P
+><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>function_call</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>AS</SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>alias</I
+></TT
+> (<TT
+CLASS="REPLACEABLE"
+><I
+>column_definition</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ... </SPAN
+>])
+<TT
+CLASS="REPLACEABLE"
+><I
+>function_call</I
+></TT
+> AS [<SPAN
+CLASS="OPTIONAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>alias</I
+></TT
+></SPAN
+>] (<TT
+CLASS="REPLACEABLE"
+><I
+>column_definition</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ... </SPAN
+>])
+ROWS FROM( ... <TT
+CLASS="REPLACEABLE"
+><I
+>function_call</I
+></TT
+> AS (<TT
+CLASS="REPLACEABLE"
+><I
+>column_definition</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, ... </SPAN
+>]) [<SPAN
+CLASS="OPTIONAL"
+>, ... </SPAN
+>] )</PRE
+><P
+>     When not using the <TT
+CLASS="LITERAL"
+>ROWS FROM()</TT
+> syntax,
+     the <TT
+CLASS="REPLACEABLE"
+><I
+>column_definition</I
+></TT
+> list replaces the column
+     alias list that could otherwise be attached to the <TT
+CLASS="LITERAL"
+>FROM</TT
+>
+     item; the names in the column definitions serve as column aliases.
+     When using the <TT
+CLASS="LITERAL"
+>ROWS FROM()</TT
+> syntax,
+     a <TT
+CLASS="REPLACEABLE"
+><I
+>column_definition</I
+></TT
+> list can be attached to
+     each member function separately; or if there is only one member function
+     and no <TT
+CLASS="LITERAL"
+>WITH ORDINALITY</TT
+> clause,
+     a <TT
+CLASS="REPLACEABLE"
+><I
+>column_definition</I
+></TT
+> list can be written in
+     place of a column alias list following <TT
+CLASS="LITERAL"
+>ROWS FROM()</TT
+>.
+    </P
+><P
+>     Consider this example:
 </P><PRE
 CLASS="PROGRAMLISTING"
 >SELECT *
@@ -1201,7 +1665,7 @@ HREF="contrib-dblink-function.html"
      (part of the <A
 HREF="dblink.html"
 >dblink</A
-> module&#62;) executes
+> module) executes
      a remote query.  It is declared to return
      <TT
 CLASS="TYPE"
@@ -1213,6 +1677,176 @@ CLASS="LITERAL"
 >*</TT
 > should
      expand to.
+    </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="QUERIES-LATERAL"
+>7.2.1.5. <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> Subqueries</A
+></H3
+><P
+>     Subqueries appearing in <TT
+CLASS="LITERAL"
+>FROM</TT
+> can be
+     preceded by the key word <TT
+CLASS="LITERAL"
+>LATERAL</TT
+>.  This allows them to
+     reference columns provided by preceding <TT
+CLASS="LITERAL"
+>FROM</TT
+> items.
+     (Without <TT
+CLASS="LITERAL"
+>LATERAL</TT
+>, each subquery is
+     evaluated independently and so cannot cross-reference any other
+     <TT
+CLASS="LITERAL"
+>FROM</TT
+> item.)
+    </P
+><P
+>     Table functions appearing in <TT
+CLASS="LITERAL"
+>FROM</TT
+> can also be
+     preceded by the key word <TT
+CLASS="LITERAL"
+>LATERAL</TT
+>, but for functions the
+     key word is optional; the function's arguments can contain references
+     to columns provided by preceding <TT
+CLASS="LITERAL"
+>FROM</TT
+> items in any case.
+    </P
+><P
+>     A <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> item can appear at top level in the
+     <TT
+CLASS="LITERAL"
+>FROM</TT
+> list, or within a <TT
+CLASS="LITERAL"
+>JOIN</TT
+> tree.  In the latter
+     case it can also refer to any items that are on the left-hand side of a
+     <TT
+CLASS="LITERAL"
+>JOIN</TT
+> that it is on the right-hand side of.
+    </P
+><P
+>     When a <TT
+CLASS="LITERAL"
+>FROM</TT
+> item contains <TT
+CLASS="LITERAL"
+>LATERAL</TT
+>
+     cross-references, evaluation proceeds as follows: for each row of the
+     <TT
+CLASS="LITERAL"
+>FROM</TT
+> item providing the cross-referenced column(s), or
+     set of rows of multiple <TT
+CLASS="LITERAL"
+>FROM</TT
+> items providing the
+     columns, the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> item is evaluated using that
+     row or row set's values of the columns.  The resulting row(s) are
+     joined as usual with the rows they were computed from.  This is
+     repeated for each row or set of rows from the column source table(s).
+    </P
+><P
+>     A trivial example of <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> is
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM foo, LATERAL (SELECT * FROM bar WHERE bar.id = foo.bar_id) ss;</PRE
+><P>
+     This is not especially useful since it has exactly the same result as
+     the more conventional
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM foo, bar WHERE bar.id = foo.bar_id;</PRE
+><P>
+     <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> is primarily useful when the cross-referenced
+     column is necessary for computing the row(s) to be joined.  A common
+     application is providing an argument value for a set-returning function.
+     For example, supposing that <CODE
+CLASS="FUNCTION"
+>vertices(polygon)</CODE
+> returns the
+     set of vertices of a polygon, we could identify close-together vertices
+     of polygons stored in a table with:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT p1.id, p2.id, v1, v2
+FROM polygons p1, polygons p2,
+     LATERAL vertices(p1.poly) v1,
+     LATERAL vertices(p2.poly) v2
+WHERE (v1 &lt;-&gt; v2) &lt; 10 AND p1.id != p2.id;</PRE
+><P>
+     This query could also be written
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT p1.id, p2.id, v1, v2
+FROM polygons p1 CROSS JOIN LATERAL vertices(p1.poly) v1,
+     polygons p2 CROSS JOIN LATERAL vertices(p2.poly) v2
+WHERE (v1 &lt;-&gt; v2) &lt; 10 AND p1.id != p2.id;</PRE
+><P>
+     or in several other equivalent formulations.  (As already mentioned,
+     the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> key word is unnecessary in this example, but
+     we use it for clarity.)
+    </P
+><P
+>     It is often particularly handy to <TT
+CLASS="LITERAL"
+>LEFT JOIN</TT
+> to a
+     <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> subquery, so that source rows will appear in
+     the result even if the <TT
+CLASS="LITERAL"
+>LATERAL</TT
+> subquery produces no
+     rows for them.  For example, if <CODE
+CLASS="FUNCTION"
+>get_product_names()</CODE
+> returns
+     the names of products made by a manufacturer, but some manufacturers in
+     our table currently produce no products, we could find out which ones
+     those are like this:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT m.name
+FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true
+WHERE pname IS NULL;</PRE
+><P>
     </P
 ></DIV
 ></DIV

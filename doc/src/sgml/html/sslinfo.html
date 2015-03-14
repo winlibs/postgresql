@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="SSLINFO"
->F.34. sslinfo</A
+>F.36. sslinfo</A
 ></H1
 ><P
 >  The <TT
@@ -119,8 +119,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN143512"
->F.34.1. Functions Provided</A
+NAME="AEN161264"
+>F.36.1. Functions Provided</A
 ></H2
 ><P
 ></P
@@ -130,9 +130,9 @@ CLASS="VARIABLELIST"
 ><DT
 ><CODE
 CLASS="FUNCTION"
->ssl_is_used() returns boolean
-    </CODE
-></DT
+>ssl_is_used() returns boolean</CODE
+>
+     </DT
 ><DD
 ><P
 >     Returns TRUE if current connection to server uses SSL, and FALSE
@@ -142,9 +142,9 @@ CLASS="FUNCTION"
 ><DT
 ><CODE
 CLASS="FUNCTION"
->ssl_version() returns text
-    </CODE
-></DT
+>ssl_version() returns text</CODE
+>
+     </DT
 ><DD
 ><P
 >     Returns the name of the protocol used for the SSL connection (e.g. SSLv2,
@@ -154,9 +154,9 @@ CLASS="FUNCTION"
 ><DT
 ><CODE
 CLASS="FUNCTION"
->ssl_cipher() returns text
-    </CODE
-></DT
+>ssl_cipher() returns text</CODE
+>
+     </DT
 ><DD
 ><P
 >     Returns the name of the cipher used for the SSL connection
@@ -166,9 +166,9 @@ CLASS="FUNCTION"
 ><DT
 ><CODE
 CLASS="FUNCTION"
->ssl_client_cert_present() returns boolean
-    </CODE
-></DT
+>ssl_client_cert_present() returns boolean</CODE
+>
+     </DT
 ><DD
 ><P
 >     Returns TRUE if current client has presented a valid SSL client
@@ -179,9 +179,9 @@ CLASS="FUNCTION"
 ><DT
 ><CODE
 CLASS="FUNCTION"
->ssl_client_serial() returns numeric
-    </CODE
-></DT
+>ssl_client_serial() returns numeric</CODE
+>
+     </DT
 ><DD
 ><P
 >     Returns serial number of current client certificate.  The combination of
@@ -199,9 +199,9 @@ CLASS="FUNCTION"
 ><DT
 ><CODE
 CLASS="FUNCTION"
->ssl_client_dn() returns text
-    </CODE
-></DT
+>ssl_client_dn() returns text</CODE
+>
+     </DT
 ><DD
 ><P
 >     Returns the full subject of the current client certificate, converting
@@ -221,9 +221,9 @@ CLASS="LITERAL"
 ><DT
 ><CODE
 CLASS="FUNCTION"
->ssl_issuer_dn() returns text
-    </CODE
-></DT
+>ssl_issuer_dn() returns text</CODE
+>
+     </DT
 ><DD
 ><P
 >     Returns the full issuer name of the current client certificate, converting
@@ -249,9 +249,9 @@ CLASS="FILENAME"
 ><DT
 ><CODE
 CLASS="FUNCTION"
->ssl_client_dn_field(fieldname text) returns text
-    </CODE
-></DT
+>ssl_client_dn_field(fieldname text) returns text</CODE
+>
+     </DT
 ><DD
 ><P
 >     This function returns the value of the specified field in the
@@ -298,9 +298,9 @@ CLASS="STRUCTFIELD"
 ><DT
 ><CODE
 CLASS="FUNCTION"
->ssl_issuer_field(fieldname text) returns text
-    </CODE
-></DT
+>ssl_issuer_field(fieldname text) returns text</CODE
+>
+     </DT
 ><DD
 ><P
 >     Same as <CODE
@@ -318,8 +318,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN143571"
->F.34.2. Author</A
+NAME="AEN161341"
+>F.36.2. Author</A
 ></H2
 ><P
 >   Victor Wagner <CODE

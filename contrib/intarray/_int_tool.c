@@ -184,19 +184,19 @@ rt__int_size(ArrayType *a, float *size)
 	*size = (float) ARRNELEMS(a);
 }
 
-/* Sort the given data (len >= 2).	Return true if any duplicates found */
+/* Sort the given data (len >= 2).  Return true if any duplicates found */
 bool
-isort(int4 *a, int len)
+isort(int32 *a, int len)
 {
-	int4		cur,
+	int32		cur,
 				prev;
-	int4	   *pcur,
+	int32	   *pcur,
 			   *pprev,
 			   *end;
 	bool		r = FALSE;
 
 	/*
-	 * We use a simple insertion sort.	While this is O(N^2) in the worst
+	 * We use a simple insertion sort.  While this is O(N^2) in the worst
 	 * case, it's quite fast if the input is already sorted or nearly so.
 	 * Also, for not-too-large inputs it's faster than more complex methods
 	 * anyhow.
@@ -246,6 +246,13 @@ resize_intArrayType(ArrayType *a, int num)
 	int			nbytes = ARR_DATA_OFFSET(a) + sizeof(int) * num;
 	int			i;
 
+	/* if no elements, return a zero-dimensional array */
+	if (num == 0)
+	{
+		ARR_NDIM(a) = 0;
+		return a;
+	}
+
 	if (num == ARRNELEMS(a))
 		return a;
 
@@ -268,7 +275,7 @@ copy_intArrayType(ArrayType *a)
 	int			n = ARRNELEMS(a);
 
 	r = new_intArrayType(n);
-	memcpy(ARRPTR(r), ARRPTR(a), n * sizeof(int4));
+	memcpy(ARRPTR(r), ARRPTR(a), n * sizeof(int32));
 	return r;
 }
 
@@ -389,15 +396,15 @@ int_to_intset(int32 n)
 int
 compASC(const void *a, const void *b)
 {
-	if (*(const int4 *) a == *(const int4 *) b)
+	if (*(const int32 *) a == *(const int32 *) b)
 		return 0;
-	return (*(const int4 *) a > *(const int4 *) b) ? 1 : -1;
+	return (*(const int32 *) a > *(const int32 *) b) ? 1 : -1;
 }
 
 int
 compDESC(const void *a, const void *b)
 {
-	if (*(const int4 *) a == *(const int4 *) b)
+	if (*(const int32 *) a == *(const int32 *) b)
 		return 0;
-	return (*(const int4 *) a < *(const int4 *) b) ? 1 : -1;
+	return (*(const int32 *) a < *(const int32 *) b) ? 1 : -1;
 }

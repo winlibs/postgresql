@@ -30,7 +30,7 @@ static char *get_source_line(const char *src, int lineno);
 /*
  * Emit a PG error or notice, together with any available info about
  * the current Python error, previously set by PLy_exception_set().
- * This should be used to propagate Python errors into PG.	If fmt is
+ * This should be used to propagate Python errors into PG.  If fmt is
  * NULL, the Python error becomes the primary error message, otherwise
  * it becomes the detail.  If there is a Python traceback, it is put
  * in the context.
@@ -70,14 +70,14 @@ PLy_elog(int elevel, const char *fmt,...)
 		for (;;)
 		{
 			va_list		ap;
-			bool		success;
+			int			needed;
 
 			va_start(ap, fmt);
-			success = appendStringInfoVA(&emsg, dgettext(TEXTDOMAIN, fmt), ap);
+			needed = appendStringInfoVA(&emsg, dgettext(TEXTDOMAIN, fmt), ap);
 			va_end(ap);
-			if (success)
+			if (needed == 0)
 				break;
-			enlargeStringInfo(&emsg, emsg.maxlen);
+			enlargeStringInfo(&emsg, needed);
 		}
 		primary = emsg.data;
 
@@ -337,6 +337,31 @@ PLy_traceback(char **xmsg, char **tbmsg, int *tb_depth)
 }
 
 /*
+ * Extract error code from SPIError's sqlstate attribute.
+ */
+static void
+PLy_get_spi_sqlerrcode(PyObject *exc, int *sqlerrcode)
+{
+	PyObject   *sqlstate;
+	char	   *buffer;
+
+	sqlstate = PyObject_GetAttrString(exc, "sqlstate");
+	if (sqlstate == NULL)
+		return;
+
+	buffer = PyString_AsString(sqlstate);
+	if (strlen(buffer) == 5 &&
+		strspn(buffer, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ") == 5)
+	{
+		*sqlerrcode = MAKE_SQLSTATE(buffer[0], buffer[1], buffer[2],
+									buffer[3], buffer[4]);
+	}
+
+	Py_DECREF(sqlstate);
+}
+
+
+/*
  * Extract the error data from a SPIError
  */
 static void
@@ -345,13 +370,20 @@ PLy_get_spi_error_data(PyObject *exc, int *sqlerrcode, char **detail, char **hin
 	PyObject   *spidata = NULL;
 
 	spidata = PyObject_GetAttrString(exc, "spidata");
-	if (!spidata)
-		goto cleanup;
 
-	if (!PyArg_ParseTuple(spidata, "izzzi", sqlerrcode, detail, hint, query, position))
-		goto cleanup;
+	if (spidata != NULL)
+	{
+		PyArg_ParseTuple(spidata, "izzzi", sqlerrcode, detail, hint, query, position);
+	}
+	else
+	{
+		/*
+		 * If there's no spidata, at least set the sqlerrcode. This can happen
+		 * if someone explicitly raises a SPI exception from Python code.
+		 */
+		PLy_get_spi_sqlerrcode(exc, sqlerrcode);
+	}
 
-cleanup:
 	PyErr_Clear();
 	/* no elog here, we simply won't report the errhint, errposition etc */
 	Py_XDECREF(spidata);

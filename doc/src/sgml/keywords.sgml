@@ -1645,6 +1645,13 @@
     <entry>reserved</entry>
    </row>
    <row>
+    <entry><token>EVENT</token></entry>
+    <entry>non-reserved</entry>
+    <entry></entry>
+    <entry></entry>
+    <entry></entry>
+   </row>
+   <row>
     <entry><token>EVERY</token></entry>
     <entry></entry>
     <entry>reserved</entry>
@@ -1779,7 +1786,7 @@
    </row>
    <row>
     <entry><token>FILTER</token></entry>
-    <entry></entry>
+    <entry>non-reserved</entry>
     <entry>reserved</entry>
     <entry>reserved</entry>
     <entry></entry>
@@ -2444,7 +2451,7 @@
    </row>
    <row>
     <entry><token>LATERAL</token></entry>
-    <entry></entry>
+    <entry>reserved</entry>
     <entry>reserved</entry>
     <entry>reserved</entry>
     <entry></entry>
@@ -2650,6 +2657,13 @@
     <entry></entry>
     <entry>non-reserved</entry>
     <entry>non-reserved</entry>
+    <entry></entry>
+   </row>
+   <row>
+    <entry><token>MATERIALIZED</token></entry>
+    <entry>non-reserved</entry>
+    <entry></entry>
+    <entry></entry>
     <entry></entry>
    </row>
    <row>
@@ -3151,7 +3165,7 @@
    </row>
    <row>
     <entry><token>ORDINALITY</token></entry>
-    <entry></entry>
+    <entry>non-reserved</entry>
     <entry>non-reserved</entry>
     <entry>non-reserved</entry>
     <entry></entry>
@@ -3186,7 +3200,7 @@
    </row>
    <row>
     <entry><token>OVER</token></entry>
-    <entry>reserved (can be function or type)</entry>
+    <entry>non-reserved</entry>
     <entry>reserved</entry>
     <entry>reserved</entry>
     <entry></entry>
@@ -3514,6 +3528,13 @@
     <entry>reserved</entry>
    </row>
    <row>
+    <entry><token>PROGRAM</token></entry>
+    <entry>non-reserved</entry>
+    <entry></entry>
+    <entry></entry>
+    <entry></entry>
+   </row>
+   <row>
     <entry><token>PUBLIC</token></entry>
     <entry></entry>
     <entry>non-reserved</entry>
@@ -3609,6 +3630,13 @@
     <entry></entry>
     <entry>reserved</entry>
     <entry>reserved</entry>
+    <entry></entry>
+   </row>
+   <row>
+    <entry><token>REFRESH</token></entry>
+    <entry>non-reserved</entry>
+    <entry></entry>
+    <entry></entry>
     <entry></entry>
    </row>
    <row>
@@ -5019,6 +5047,13 @@
     <entry>reserved</entry>
    </row>
    <row>
+    <entry><token>VIEWS</token></entry>
+    <entry>non-reserved</entry>
+    <entry></entry>
+    <entry></entry>
+    <entry></entry>
+   </row>
+   <row>
     <entry><token>VOLATILE</token></entry>
     <entry>non-reserved</entry>
     <entry></entry>
@@ -5076,7 +5111,7 @@
    </row>
    <row>
     <entry><token>WITHIN</token></entry>
-    <entry></entry>
+    <entry>non-reserved</entry>
     <entry>reserved</entry>
     <entry>reserved</entry>
     <entry></entry>

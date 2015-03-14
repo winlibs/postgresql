@@ -2,7 +2,7 @@
  *
  * dropdb
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/bin/scripts/dropdb.c
@@ -64,13 +64,13 @@ main(int argc, char *argv[])
 		switch (c)
 		{
 			case 'h':
-				host = optarg;
+				host = pg_strdup(optarg);
 				break;
 			case 'p':
-				port = optarg;
+				port = pg_strdup(optarg);
 				break;
 			case 'U':
-				username = optarg;
+				username = pg_strdup(optarg);
 				break;
 			case 'w':
 				prompt_password = TRI_NO;
@@ -88,7 +88,7 @@ main(int argc, char *argv[])
 				/* this covers the long options */
 				break;
 			case 2:
-				maintenance_db = optarg;
+				maintenance_db = pg_strdup(optarg);
 				break;
 			default:
 				fprintf(stderr, _("Try \"%s --help\" for more information.\n"), progname);
@@ -121,7 +121,7 @@ main(int argc, char *argv[])
 
 	initPQExpBuffer(&sql);
 
-	appendPQExpBuffer(&sql, "DROP DATABASE %s%s;\n",
+	appendPQExpBuffer(&sql, "DROP DATABASE %s%s;",
 					  (if_exists ? "IF EXISTS " : ""), fmtId(dbname));
 
 	/* Avoid trying to drop postgres db while we are connected to it. */
@@ -132,7 +132,7 @@ main(int argc, char *argv[])
 							host, port, username, prompt_password, progname);
 
 	if (echo)
-		printf("%s", sql.data);
+		printf("%s\n", sql.data);
 	result = PQexec(conn, sql.data);
 	if (PQresultStatus(result) != PGRES_COMMAND_OK)
 	{

@@ -17,7 +17,7 @@
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.	IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
@@ -104,6 +104,12 @@ px_strerror(int err)
 	return "Bad error code";
 }
 
+/* memset that must not be optimized away */
+void
+px_memset(void *ptr, int c, size_t len)
+{
+	memset(ptr, c, len);
+}
 
 const char *
 px_resolve_alias(const PX_Alias *list, const char *name)
@@ -327,7 +333,7 @@ combo_free(PX_Combo *cx)
 {
 	if (cx->cipher)
 		px_cipher_free(cx->cipher);
-	memset(cx, 0, sizeof(*cx));
+	px_memset(cx, 0, sizeof(*cx));
 	px_free(cx);
 }
 

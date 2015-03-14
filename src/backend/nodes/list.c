@@ -4,7 +4,7 @@
  *	  implementation for PostgreSQL generic linked list package
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -14,6 +14,9 @@
  *-------------------------------------------------------------------------
  */
 #include "postgres.h"
+
+/* see pg_list.h */
+#define PG_LIST_INCLUDE_DEFINITIONS
 
 #include "nodes/pg_list.h"
 
@@ -793,7 +796,7 @@ list_union_oid(const List *list1, const List *list2)
  * "intersection" if list1 is known unique beforehand.
  *
  * This variant works on lists of pointers, and determines list
- * membership via equal().	Note that the list1 member will be pointed
+ * membership via equal().  Note that the list1 member will be pointed
  * to in the result.
  */
 List *
@@ -985,7 +988,7 @@ list_append_unique_oid(List *list, Oid datum)
  * via equal().
  *
  * This is almost the same functionality as list_union(), but list1 is
- * modified in-place rather than being copied.	Note also that list2's cells
+ * modified in-place rather than being copied.  Note also that list2's cells
  * are not inserted in list1, so the analogy to list_concat() isn't perfect.
  */
 List *
@@ -1222,31 +1225,6 @@ list_copy_tail(const List *oldlist, int nskip)
 	check_list_invariants(newlist);
 	return newlist;
 }
-
-/*
- * pg_list.h defines inline versions of these functions if allowed by the
- * compiler; in which case the definitions below are skipped.
- */
-#ifndef USE_INLINE
-
-ListCell *
-list_head(const List *l)
-{
-	return l ? l->head : NULL;
-}
-
-ListCell *
-list_tail(List *l)
-{
-	return l ? l->tail : NULL;
-}
-
-int
-list_length(const List *l)
-{
-	return l ? l->length : 0;
-}
-#endif   /* ! USE_INLINE */
 
 /*
  * Temporary compatibility functions

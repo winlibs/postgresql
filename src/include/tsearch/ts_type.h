@@ -3,7 +3,7 @@
  * ts_type.h
  *	  Definitions for the tsvector and tsquery types
  *
- * Copyright (c) 1998-2012, PostgreSQL Global Development Group
+ * Copyright (c) 1998-2014, PostgreSQL Global Development Group
  *
  * src/include/tsearch/ts_type.h
  *
@@ -13,6 +13,7 @@
 #define _PG_TSTYPE_H_
 
 #include "fmgr.h"
+#include "utils/memutils.h"
 #include "utils/pg_crc.h"
 
 
@@ -21,7 +22,7 @@
  *
  * Structure of tsvector datatype:
  * 1) standard varlena header
- * 2) int4		size - number of lexemes (WordEntry array entries)
+ * 2) int32		size - number of lexemes (WordEntry array entries)
  * 3) Array of WordEntry - one per lexeme; must be sorted according to
  *				tsCompareString() (ie, memcmp of lexeme strings).
  *				WordEntry->pos gives the number of bytes from end of WordEntry
@@ -232,18 +233,20 @@ typedef union
 typedef struct
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int4		size;			/* number of QueryItems */
+	int32		size;			/* number of QueryItems */
 	char		data[1];		/* data starts here */
 } TSQueryData;
 
 typedef TSQueryData *TSQuery;
 
-#define HDRSIZETQ	( VARHDRSZ + sizeof(int4) )
+#define HDRSIZETQ	( VARHDRSZ + sizeof(int32) )
 
 /* Computes the size of header and all QueryItems. size is the number of
  * QueryItems, and lenofoperand is the total length of all operands
  */
 #define COMPUTESIZE(size, lenofoperand) ( HDRSIZETQ + (size) * sizeof(QueryItem) + (lenofoperand) )
+#define TSQUERY_TOO_BIG(size, lenofoperand) \
+	((size) > (MaxAllocSize - HDRSIZETQ - (lenofoperand)) / sizeof(QueryItem))
 
 /* Returns a pointer to the first QueryItem in a TSQuery */
 #define GETQUERY(x)  ((QueryItem*)( (char*)(x)+HDRSIZETQ ))

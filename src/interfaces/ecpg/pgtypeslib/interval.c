@@ -160,7 +160,7 @@ DecodeISO8601Interval(char *str,
 			return dterr;
 
 		/*
-		 * Note: we could step off the end of the string here.	Code below
+		 * Note: we could step off the end of the string here.  Code below
 		 * *must* exit the loop if unit == '\0'.
 		 */
 		unit = *str++;
@@ -801,7 +801,6 @@ AppendSeconds(char *cp, int sec, fsec_t fsec, int precision, bool fillzeros)
 int
 EncodeInterval(struct /* pg_ */ tm * tm, fsec_t fsec, int style, char *str)
 {
-
 	char	   *cp = str;
 	int			year = tm->tm_year;
 	int			mon = tm->tm_mon;
@@ -1037,6 +1036,9 @@ recalc:
 static int
 tm2interval(struct tm * tm, fsec_t fsec, interval * span)
 {
+	if ((double) tm->tm_year * MONTHS_PER_YEAR + tm->tm_mon > INT_MAX ||
+		(double) tm->tm_year * MONTHS_PER_YEAR + tm->tm_mon < INT_MIN)
+		return -1;
 	span->month = tm->tm_year * MONTHS_PER_YEAR + tm->tm_mon;
 #ifdef HAVE_INT64_TIMESTAMP
 	span->time = (((((((tm->tm_mday * INT64CONST(24)) +
@@ -1092,7 +1094,7 @@ PGTYPESinterval_from_asc(char *str, char **endptr)
 	tm->tm_sec = 0;
 	fsec = 0;
 
-	if (strlen(str) >= sizeof(lowstr))
+	if (strlen(str) > MAXDATELEN)
 	{
 		errno = PGTYPES_INTVL_BAD_INTERVAL;
 		return NULL;

@@ -2,7 +2,7 @@
  *
  * checkpointer.c
  *
- * The checkpointer is new as of Postgres 9.2.	It handles all checkpoints.
+ * The checkpointer is new as of Postgres 9.2.  It handles all checkpoints.
  * Checkpoints are automatically dispatched after a certain amount of time has
  * elapsed since the last one, and it can be signaled to perform requested
  * checkpoints as well.  (The GUC parameter that mandates a checkpoint every
@@ -14,7 +14,7 @@
  * subprocess finishes, or as soon as recovery begins if we are doing archive
  * recovery.  It remains alive until the postmaster commands it to terminate.
  * Normal termination is by SIGUSR2, which instructs the checkpointer to
- * execute a shutdown checkpoint and then exit(0).	(All backends must be
+ * execute a shutdown checkpoint and then exit(0).  (All backends must be
  * stopped before SIGUSR2 is issued!)  Emergency termination is by SIGQUIT;
  * like any backend, the checkpointer will simply abort and exit on SIGQUIT.
  *
@@ -26,7 +26,7 @@
  * restart needs to be forced.)
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -41,6 +41,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "access/xlog.h"
 #include "access/xlog_internal.h"
 #include "libpq/pqsignal.h"
 #include "miscadmin.h"
@@ -48,6 +49,7 @@
 #include "postmaster/bgwriter.h"
 #include "replication/syncrep.h"
 #include "storage/bufmgr.h"
+#include "storage/fd.h"
 #include "storage/ipc.h"
 #include "storage/lwlock.h"
 #include "storage/proc.h"
@@ -105,7 +107,7 @@
  */
 typedef struct
 {
-	RelFileNode	rnode;
+	RelFileNode rnode;
 	ForkNumber	forknum;
 	BlockNumber segno;			/* see md.c for special values */
 	/* might add a real request-type field later; not needed yet */
@@ -196,7 +198,7 @@ CheckpointerMain(void)
 
 	/*
 	 * If possible, make this process a group leader, so that the postmaster
-	 * can signal any child processes too.	(checkpointer probably never has
+	 * can signal any child processes too.  (checkpointer probably never has
 	 * any child processes, but for consistency we make all postmaster child
 	 * processes do this.)
 	 */
@@ -209,7 +211,7 @@ CheckpointerMain(void)
 	 * Properly accept or ignore signals the postmaster might send us
 	 *
 	 * Note: we deliberately ignore SIGTERM, because during a standard Unix
-	 * system shutdown cycle, init will SIGTERM all processes at once.	We
+	 * system shutdown cycle, init will SIGTERM all processes at once.  We
 	 * want to wait for the backends to exit, whereupon the postmaster will
 	 * tell us it's okay to shut down (via SIGUSR2).
 	 */
@@ -277,7 +279,7 @@ CheckpointerMain(void)
 
 		/*
 		 * These operations are really just a minimal subset of
-		 * AbortTransaction().	We don't have very many resources to worry
+		 * AbortTransaction().  We don't have very many resources to worry
 		 * about in checkpointer, but we do have LWLocks, buffers, and temp
 		 * files.
 		 */
@@ -343,12 +345,6 @@ CheckpointerMain(void)
 	 * Unblock signals (they were blocked when the postmaster forked us)
 	 */
 	PG_SETMASK(&UnBlockSig);
-
-	/*
-	 * Use the recovery target timeline ID during recovery
-	 */
-	if (RecoveryInProgress())
-		ThisTimeLineID = GetRecoveryTargetTLI();
 
 	/*
 	 * Ensure all shared memory values are set correctly for the config. Doing
@@ -510,7 +506,7 @@ CheckpointerMain(void)
 				ckpt_performed = CreateRestartPoint(flags);
 
 			/*
-			 * After any checkpoint, close all smgr files.	This is so we
+			 * After any checkpoint, close all smgr files.  This is so we
 			 * won't hang onto smgr references to deleted files indefinitely.
 			 */
 			smgrcloseall();
@@ -629,7 +625,7 @@ CheckArchiveTimeout(void)
 		 * If the returned pointer points exactly to a segment boundary,
 		 * assume nothing happened.
 		 */
-		if ((switchpoint.xrecoff % XLogSegSize) != 0)
+		if ((switchpoint % XLogSegSize) != 0)
 			ereport(DEBUG1,
 				(errmsg("transaction log switch forced (archive_timeout=%d)",
 						XLogArchiveTimeout)));
@@ -643,7 +639,7 @@ CheckArchiveTimeout(void)
 }
 
 /*
- * Returns true if an immediate checkpoint request is pending.	(Note that
+ * Returns true if an immediate checkpoint request is pending.  (Note that
  * this does not check the *current* checkpoint's IMMEDIATE flag, but whether
  * there is one pending behind it.)
  */
@@ -776,10 +772,7 @@ IsCheckpointOnSchedule(double progress)
 	if (!RecoveryInProgress())
 	{
 		recptr = GetInsertRecPtr();
-		elapsed_xlogs =
-			(((double) (int32) (recptr.xlogid - ckpt_start_recptr.xlogid)) * XLogSegsPerFile +
-			 ((double) recptr.xrecoff - (double) ckpt_start_recptr.xrecoff) / XLogSegSize) /
-			CheckPointSegments;
+		elapsed_xlogs = (((double) (recptr - ckpt_start_recptr)) / XLogSegSize) / CheckPointSegments;
 
 		if (progress < elapsed_xlogs)
 		{
@@ -833,7 +826,7 @@ chkpt_quickdie(SIGNAL_ARGS)
 	on_exit_reset();
 
 	/*
-	 * Note we do exit(2) not exit(0).	This is to force the postmaster into a
+	 * Note we do exit(2) not exit(0).  This is to force the postmaster into a
 	 * system reset cycle if some idiot DBA sends a manual SIGQUIT to a random
 	 * backend.  This is necessary precisely because we don't clean up our
 	 * shared memory state.  (The "dead man switch" mechanism in pmsignal.c
@@ -937,8 +930,8 @@ CheckpointerShmemInit(void)
 	{
 		/*
 		 * First time through, so initialize.  Note that we zero the whole
-		 * requests array; this is so that CompactCheckpointerRequestQueue
-		 * can assume that any pad bytes in the request structs are zeroes.
+		 * requests array; this is so that CompactCheckpointerRequestQueue can
+		 * assume that any pad bytes in the request structs are zeroes.
 		 */
 		MemSet(CheckpointerShmem, 0, size);
 		SpinLockInit(&CheckpointerShmem->ckpt_lck);
@@ -984,7 +977,7 @@ RequestCheckpoint(int flags)
 		CreateCheckPoint(flags | CHECKPOINT_IMMEDIATE);
 
 		/*
-		 * After any checkpoint, close all smgr files.	This is so we won't
+		 * After any checkpoint, close all smgr files.  This is so we won't
 		 * hang onto smgr references to deleted files indefinitely.
 		 */
 		smgrcloseall();
@@ -1115,7 +1108,7 @@ RequestCheckpoint(int flags)
  * to the requests[] queue without checking for duplicates.  The checkpointer
  * will have to eliminate dups internally anyway.  However, if we discover
  * that the queue is full, we make a pass over the entire queue to compact
- * it.	This is somewhat expensive, but the alternative is for the backend
+ * it.  This is somewhat expensive, but the alternative is for the backend
  * to perform its own fsync, which is far more expensive in practice.  It
  * is theoretically possible a backend fsync might still be necessary, if
  * the queue is full and contains no duplicate entries.  In that case, we
@@ -1141,7 +1134,7 @@ ForwardFsyncRequest(RelFileNode rnode, ForkNumber forknum, BlockNumber segno)
 
 	/*
 	 * If the checkpointer isn't running or the request queue is full, the
-	 * backend will have to perform its own fsync request.	But before forcing
+	 * backend will have to perform its own fsync request.  But before forcing
 	 * that to happen, we can try to compact the request queue.
 	 */
 	if (CheckpointerShmem->checkpointer_pid == 0 ||
@@ -1185,7 +1178,7 @@ ForwardFsyncRequest(RelFileNode rnode, ForkNumber forknum, BlockNumber segno)
  * Although a full fsync request queue is not common, it can lead to severe
  * performance problems when it does happen.  So far, this situation has
  * only been observed to occur when the system is under heavy write load,
- * and especially during the "sync" phase of a checkpoint.	Without this
+ * and especially during the "sync" phase of a checkpoint.  Without this
  * logic, each backend begins doing an fsync for every block written, which
  * gets very expensive and can slow down the whole system.
  *

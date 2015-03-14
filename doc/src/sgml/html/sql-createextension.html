@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
 REL="PREVIOUS"
-TITLE="CREATE DOMAIN"
-HREF="sql-createdomain.html"><LINK
+TITLE="CREATE EVENT TRIGGER"
+HREF="sql-createeventtrigger.html"><LINK
 REL="NEXT"
 TITLE="CREATE FOREIGN DATA WRAPPER"
 HREF="sql-createforeigndatawrapper.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="CREATE DOMAIN"
-HREF="sql-createdomain.html"
+TITLE="CREATE EVENT TRIGGER"
+HREF="sql-createeventtrigger.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-CREATEEXTENSION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN67619"
+NAME="AEN73155"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN67619"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN67624"
+NAME="AEN73158"
 ></A
 ><H2
 >Synopsis</H2
@@ -137,7 +137,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67630"
+NAME="AEN73164"
 ></A
 ><H2
 >Description</H2
@@ -180,7 +180,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67640"
+NAME="AEN73174"
 ></A
 ><H2
 >Parameters</H2
@@ -245,6 +245,12 @@ CLASS="REPLACEABLE"
         relocated.  The named schema must already exist.
         If not specified, and the extension's control file does not specify a
         schema either, the current default object creation schema is used.
+       </P
+><P
+>        Remember that the extension itself is not considered to be within any
+        schema: extensions have unqualified names that must be unique
+        database-wide.  But objects belonging to the extension can be within
+        schemas.
        </P
 ></DD
 ><DT
@@ -328,7 +334,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67682"
+NAME="AEN73217"
 ></A
 ><H2
 >Notes</H2
@@ -378,7 +384,7 @@ HREF="extend-extensions.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67695"
+NAME="AEN73230"
 ></A
 ><H2
 >Examples</H2
@@ -413,7 +419,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67704"
+NAME="AEN73239"
 ></A
 ><H2
 >Compatibility</H2
@@ -431,7 +437,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67709"
+NAME="AEN73244"
 ></A
 ><H2
 >See Also</H2
@@ -458,7 +464,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="sql-createdomain.html"
+HREF="sql-createeventtrigger.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -486,7 +492,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->CREATE DOMAIN</TD
+>CREATE EVENT TRIGGER</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

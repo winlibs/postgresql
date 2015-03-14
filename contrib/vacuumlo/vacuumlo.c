@@ -3,7 +3,7 @@
  * vacuumlo.c
  *	  This removes orphaned large objects from a database.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -22,14 +22,11 @@
 #endif
 
 #include "libpq-fe.h"
+#include "pg_getopt.h"
 
 #define atooid(x)  ((Oid) strtoul((x), NULL, 10))
 
 #define BUFSIZE			1024
-
-extern char *optarg;
-extern int	optind,
-			opterr;
 
 enum trivalue
 {
@@ -44,6 +41,7 @@ struct _param
 	enum trivalue pg_prompt;
 	char	   *pg_port;
 	char	   *pg_host;
+	const char *progname;
 	int			verbose;
 	int			dry_run;
 	long		transaction_limit;
@@ -81,15 +79,28 @@ vacuumlo(const char *database, const struct _param * param)
 	 */
 	do
 	{
-		new_pass = false;
+#define PARAMS_ARRAY_SIZE	   7
 
-		conn = PQsetdbLogin(param->pg_host,
-							param->pg_port,
-							NULL,
-							NULL,
-							database,
-							param->pg_user,
-							password);
+		const char *keywords[PARAMS_ARRAY_SIZE];
+		const char *values[PARAMS_ARRAY_SIZE];
+
+		keywords[0] = "host";
+		values[0] = param->pg_host;
+		keywords[1] = "port";
+		values[1] = param->pg_port;
+		keywords[2] = "user";
+		values[2] = param->pg_user;
+		keywords[3] = "password";
+		values[3] = password;
+		keywords[4] = "dbname";
+		values[4] = database;
+		keywords[5] = "fallback_application_name";
+		values[5] = param->progname;
+		keywords[6] = NULL;
+		values[6] = NULL;
+
+		new_pass = false;
+		conn = PQconnectdbParams(keywords, values, true);
 		if (!conn)
 		{
 			fprintf(stderr, "Connection to database \"%s\" failed\n",
@@ -195,7 +206,7 @@ vacuumlo(const char *database, const struct _param * param)
 	strcat(buf, "      AND a.atttypid = t.oid ");
 	strcat(buf, "      AND c.relnamespace = s.oid ");
 	strcat(buf, "      AND t.typname in ('oid', 'lo') ");
-	strcat(buf, "      AND c.relkind = 'r'");
+	strcat(buf, "      AND c.relkind in ('r', 'm')");
 	strcat(buf, "      AND s.nspname !~ '^pg_'");
 	res = PQexec(conn, buf);
 	if (PQresultStatus(res) != PGRES_TUPLES_OK)
@@ -276,74 +287,101 @@ vacuumlo(const char *database, const struct _param * param)
 	PQclear(res);
 
 	buf[0] = '\0';
-	strcat(buf, "SELECT lo FROM vacuum_l");
+	strcat(buf,
+		   "DECLARE myportal CURSOR WITH HOLD FOR SELECT lo FROM vacuum_l");
 	res = PQexec(conn, buf);
-	if (PQresultStatus(res) != PGRES_TUPLES_OK)
+	if (PQresultStatus(res) != PGRES_COMMAND_OK)
 	{
-		fprintf(stderr, "Failed to read temp table:\n");
-		fprintf(stderr, "%s", PQerrorMessage(conn));
+		fprintf(stderr, "DECLARE CURSOR failed: %s", PQerrorMessage(conn));
 		PQclear(res);
 		PQfinish(conn);
 		return -1;
 	}
+	PQclear(res);
 
-	matched = PQntuples(res);
+	snprintf(buf, BUFSIZE, "FETCH FORWARD %ld IN myportal",
+			 param->transaction_limit > 0 ? param->transaction_limit : 1000L);
+
 	deleted = 0;
-	for (i = 0; i < matched; i++)
-	{
-		Oid			lo = atooid(PQgetvalue(res, i, 0));
 
-		if (param->verbose)
+	while (1)
+	{
+		res = PQexec(conn, buf);
+		if (PQresultStatus(res) != PGRES_TUPLES_OK)
 		{
-			fprintf(stdout, "\rRemoving lo %6u   ", lo);
-			fflush(stdout);
+			fprintf(stderr, "FETCH FORWARD failed: %s", PQerrorMessage(conn));
+			PQclear(res);
+			PQfinish(conn);
+			return -1;
 		}
 
-		if (param->dry_run == 0)
+		matched = PQntuples(res);
+		if (matched <= 0)
 		{
-			if (lo_unlink(conn, lo) < 0)
+			/* at end of resultset */
+			PQclear(res);
+			break;
+		}
+
+		for (i = 0; i < matched; i++)
+		{
+			Oid			lo = atooid(PQgetvalue(res, i, 0));
+
+			if (param->verbose)
 			{
-				fprintf(stderr, "\nFailed to remove lo %u: ", lo);
-				fprintf(stderr, "%s", PQerrorMessage(conn));
-				if (PQtransactionStatus(conn) == PQTRANS_INERROR)
+				fprintf(stdout, "\rRemoving lo %6u   ", lo);
+				fflush(stdout);
+			}
+
+			if (param->dry_run == 0)
+			{
+				if (lo_unlink(conn, lo) < 0)
 				{
-					success = false;
-					break;
+					fprintf(stderr, "\nFailed to remove lo %u: ", lo);
+					fprintf(stderr, "%s", PQerrorMessage(conn));
+					if (PQtransactionStatus(conn) == PQTRANS_INERROR)
+					{
+						success = false;
+						PQclear(res);
+						break;
+					}
 				}
+				else
+					deleted++;
 			}
 			else
 				deleted++;
-		}
-		else
-			deleted++;
-		if (param->transaction_limit > 0 &&
-			(deleted % param->transaction_limit) == 0)
-		{
-			res2 = PQexec(conn, "commit");
-			if (PQresultStatus(res2) != PGRES_COMMAND_OK)
+
+			if (param->transaction_limit > 0 &&
+				(deleted % param->transaction_limit) == 0)
 			{
-				fprintf(stderr, "Failed to commit transaction:\n");
-				fprintf(stderr, "%s", PQerrorMessage(conn));
+				res2 = PQexec(conn, "commit");
+				if (PQresultStatus(res2) != PGRES_COMMAND_OK)
+				{
+					fprintf(stderr, "Failed to commit transaction:\n");
+					fprintf(stderr, "%s", PQerrorMessage(conn));
+					PQclear(res2);
+					PQclear(res);
+					PQfinish(conn);
+					return -1;
+				}
 				PQclear(res2);
-				PQclear(res);
-				PQfinish(conn);
-				return -1;
-			}
-			PQclear(res2);
-			res2 = PQexec(conn, "begin");
-			if (PQresultStatus(res2) != PGRES_COMMAND_OK)
-			{
-				fprintf(stderr, "Failed to start transaction:\n");
-				fprintf(stderr, "%s", PQerrorMessage(conn));
+				res2 = PQexec(conn, "begin");
+				if (PQresultStatus(res2) != PGRES_COMMAND_OK)
+				{
+					fprintf(stderr, "Failed to start transaction:\n");
+					fprintf(stderr, "%s", PQerrorMessage(conn));
+					PQclear(res2);
+					PQclear(res);
+					PQfinish(conn);
+					return -1;
+				}
 				PQclear(res2);
-				PQclear(res);
-				PQfinish(conn);
-				return -1;
 			}
-			PQclear(res2);
 		}
+
+		PQclear(res);
 	}
-	PQclear(res);
 
 	/*
 	 * That's all folks!
@@ -416,6 +454,7 @@ main(int argc, char **argv)
 	param.pg_prompt = TRI_DEFAULT;
 	param.pg_host = NULL;
 	param.pg_port = NULL;
+	param.progname = progname;
 	param.verbose = 0;
 	param.dry_run = 0;
 	param.transaction_limit = 1000;

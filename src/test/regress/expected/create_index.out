@@ -72,13 +72,13 @@ INSERT INTO quad_point_tbl VALUES (NULL), (NULL), (NULL);
 CREATE INDEX sp_quad_ind ON quad_point_tbl USING spgist (p);
 CREATE TABLE kd_point_tbl AS SELECT * FROM quad_point_tbl;
 CREATE INDEX sp_kd_ind ON kd_point_tbl USING spgist (p kd_point_ops);
-CREATE TABLE suffix_text_tbl AS
+CREATE TABLE radix_text_tbl AS
     SELECT name AS t FROM road WHERE name !~ '^[0-9]';
-INSERT INTO suffix_text_tbl
+INSERT INTO radix_text_tbl
     SELECT 'P0123456789abcdef' FROM generate_series(1,1000);
-INSERT INTO suffix_text_tbl VALUES ('P0123456789abcde');
-INSERT INTO suffix_text_tbl VALUES ('P0123456789abcdefF');
-CREATE INDEX sp_suff_ind ON suffix_text_tbl USING spgist (t);
+INSERT INTO radix_text_tbl VALUES ('P0123456789abcde');
+INSERT INTO radix_text_tbl VALUES ('P0123456789abcdefF');
+CREATE INDEX sp_radix_ind ON radix_text_tbl USING spgist (t);
 --
 -- Test GiST and SP-GiST indexes
 --
@@ -288,79 +288,79 @@ SELECT count(*) FROM quad_point_tbl WHERE p ~= '(4585, 365)';
      1
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcdef';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcdef';
  count 
 -------
   1000
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcde';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcde';
  count 
 -------
      1
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcdefF';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcdefF';
  count 
 -------
      1
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t <    'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t <    'Aztec                         Ct  ';
  count 
 -------
    272
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~<~  'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~<~  'Aztec                         Ct  ';
  count 
 -------
    272
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t <=   'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t <=   'Aztec                         Ct  ';
  count 
 -------
    273
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~<=~ 'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~<=~ 'Aztec                         Ct  ';
  count 
 -------
    273
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t =    'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t =    'Aztec                         Ct  ';
  count 
 -------
      1
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t =    'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t =    'Worth                         St  ';
  count 
 -------
      2
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t >=   'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t >=   'Worth                         St  ';
  count 
 -------
     50
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~>=~ 'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~>=~ 'Worth                         St  ';
  count 
 -------
     50
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t >    'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t >    'Worth                         St  ';
  count 
 -------
     48
 (1 row)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~>~  'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~>~  'Worth                         St  ';
  count 
 -------
     48
@@ -952,195 +952,195 @@ SELECT count(*) FROM kd_point_tbl WHERE p ~= '(4585, 365)';
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcdef';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcdef';
                          QUERY PLAN                         
 ------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t = 'P0123456789abcdef'::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcdef';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcdef';
  count 
 -------
   1000
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcde';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcde';
                          QUERY PLAN                         
 ------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t = 'P0123456789abcde'::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcde';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcde';
  count 
 -------
      1
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcdefF';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcdefF';
                          QUERY PLAN                         
 ------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t = 'P0123456789abcdefF'::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcdefF';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcdefF';
  count 
 -------
      1
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t <    'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t <    'Aztec                         Ct  ';
                               QUERY PLAN                              
 ----------------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t < 'Aztec                         Ct  '::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t <    'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t <    'Aztec                         Ct  ';
  count 
 -------
    272
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t ~<~  'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~<~  'Aztec                         Ct  ';
                                QUERY PLAN                               
 ------------------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t ~<~ 'Aztec                         Ct  '::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~<~  'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~<~  'Aztec                         Ct  ';
  count 
 -------
    272
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t <=   'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t <=   'Aztec                         Ct  ';
                               QUERY PLAN                               
 -----------------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t <= 'Aztec                         Ct  '::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t <=   'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t <=   'Aztec                         Ct  ';
  count 
 -------
    273
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t ~<=~ 'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~<=~ 'Aztec                         Ct  ';
                                QUERY PLAN                                
 -------------------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t ~<=~ 'Aztec                         Ct  '::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~<=~ 'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~<=~ 'Aztec                         Ct  ';
  count 
 -------
    273
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t =    'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t =    'Aztec                         Ct  ';
                               QUERY PLAN                              
 ----------------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t = 'Aztec                         Ct  '::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t =    'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t =    'Aztec                         Ct  ';
  count 
 -------
      1
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t =    'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t =    'Worth                         St  ';
                               QUERY PLAN                              
 ----------------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t = 'Worth                         St  '::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t =    'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t =    'Worth                         St  ';
  count 
 -------
      2
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t >=   'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t >=   'Worth                         St  ';
                               QUERY PLAN                               
 -----------------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t >= 'Worth                         St  '::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t >=   'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t >=   'Worth                         St  ';
  count 
 -------
     50
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t ~>=~ 'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~>=~ 'Worth                         St  ';
                                QUERY PLAN                                
 -------------------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t ~>=~ 'Worth                         St  '::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~>=~ 'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~>=~ 'Worth                         St  ';
  count 
 -------
     50
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t >    'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t >    'Worth                         St  ';
                               QUERY PLAN                              
 ----------------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t > 'Worth                         St  '::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t >    'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t >    'Worth                         St  ';
  count 
 -------
     48
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t ~>~  'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~>~  'Worth                         St  ';
                                QUERY PLAN                               
 ------------------------------------------------------------------------
  Aggregate
-   ->  Index Only Scan using sp_suff_ind on suffix_text_tbl
+   ->  Index Only Scan using sp_radix_ind on radix_text_tbl
          Index Cond: (t ~>~ 'Worth                         St  '::text)
 (3 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~>~  'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~>~  'Worth                         St  ';
  count 
 -------
     48
@@ -1459,221 +1459,221 @@ SELECT count(*) FROM kd_point_tbl WHERE p ~= '(4585, 365)';
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcdef';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcdef';
                         QUERY PLAN                         
 -----------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t = 'P0123456789abcdef'::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t = 'P0123456789abcdef'::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcdef';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcdef';
  count 
 -------
   1000
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcde';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcde';
                         QUERY PLAN                        
 ----------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t = 'P0123456789abcde'::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t = 'P0123456789abcde'::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcde';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcde';
  count 
 -------
      1
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcdefF';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcdefF';
                          QUERY PLAN                         
 ------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t = 'P0123456789abcdefF'::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t = 'P0123456789abcdefF'::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t = 'P0123456789abcdefF';
+SELECT count(*) FROM radix_text_tbl WHERE t = 'P0123456789abcdefF';
  count 
 -------
      1
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t <    'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t <    'Aztec                         Ct  ';
                                  QUERY PLAN                                 
 ----------------------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t < 'Aztec                         Ct  '::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t < 'Aztec                         Ct  '::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t <    'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t <    'Aztec                         Ct  ';
  count 
 -------
    272
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t ~<~  'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~<~  'Aztec                         Ct  ';
                                   QUERY PLAN                                  
 ------------------------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t ~<~ 'Aztec                         Ct  '::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t ~<~ 'Aztec                         Ct  '::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~<~  'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~<~  'Aztec                         Ct  ';
  count 
 -------
    272
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t <=   'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t <=   'Aztec                         Ct  ';
                                  QUERY PLAN                                  
 -----------------------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t <= 'Aztec                         Ct  '::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t <= 'Aztec                         Ct  '::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t <=   'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t <=   'Aztec                         Ct  ';
  count 
 -------
    273
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t ~<=~ 'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~<=~ 'Aztec                         Ct  ';
                                   QUERY PLAN                                   
 -------------------------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t ~<=~ 'Aztec                         Ct  '::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t ~<=~ 'Aztec                         Ct  '::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~<=~ 'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~<=~ 'Aztec                         Ct  ';
  count 
 -------
    273
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t =    'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t =    'Aztec                         Ct  ';
                                  QUERY PLAN                                 
 ----------------------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t = 'Aztec                         Ct  '::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t = 'Aztec                         Ct  '::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t =    'Aztec                         Ct  ';
+SELECT count(*) FROM radix_text_tbl WHERE t =    'Aztec                         Ct  ';
  count 
 -------
      1
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t =    'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t =    'Worth                         St  ';
                                  QUERY PLAN                                 
 ----------------------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t = 'Worth                         St  '::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t = 'Worth                         St  '::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t =    'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t =    'Worth                         St  ';
  count 
 -------
      2
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t >=   'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t >=   'Worth                         St  ';
                                  QUERY PLAN                                  
 -----------------------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t >= 'Worth                         St  '::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t >= 'Worth                         St  '::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t >=   'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t >=   'Worth                         St  ';
  count 
 -------
     50
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t ~>=~ 'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~>=~ 'Worth                         St  ';
                                   QUERY PLAN                                   
 -------------------------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t ~>=~ 'Worth                         St  '::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t ~>=~ 'Worth                         St  '::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~>=~ 'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~>=~ 'Worth                         St  ';
  count 
 -------
     50
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t >    'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t >    'Worth                         St  ';
                                  QUERY PLAN                                 
 ----------------------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t > 'Worth                         St  '::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t > 'Worth                         St  '::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t >    'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t >    'Worth                         St  ';
  count 
 -------
     48
 (1 row)
 
 EXPLAIN (COSTS OFF)
-SELECT count(*) FROM suffix_text_tbl WHERE t ~>~  'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~>~  'Worth                         St  ';
                                   QUERY PLAN                                  
 ------------------------------------------------------------------------------
  Aggregate
-   ->  Bitmap Heap Scan on suffix_text_tbl
+   ->  Bitmap Heap Scan on radix_text_tbl
          Recheck Cond: (t ~>~ 'Worth                         St  '::text)
-         ->  Bitmap Index Scan on sp_suff_ind
+         ->  Bitmap Index Scan on sp_radix_ind
                Index Cond: (t ~>~ 'Worth                         St  '::text)
 (5 rows)
 
-SELECT count(*) FROM suffix_text_tbl WHERE t ~>~  'Worth                         St  ';
+SELECT count(*) FROM radix_text_tbl WHERE t ~>~  'Worth                         St  ';
  count 
 -------
     48
@@ -2221,6 +2221,20 @@ RESET enable_seqscan;
 RESET enable_indexscan;
 RESET enable_bitmapscan;
 --
+-- Try a GIN index with a lot of items with same key. (GIN creates a posting
+-- tree when there are enough duplicates)
+--
+CREATE TABLE array_gin_test (a int[]);
+INSERT INTO array_gin_test SELECT ARRAY[1, g%5, g] FROM generate_series(1, 10000) g;
+CREATE INDEX array_gin_test_idx ON array_gin_test USING gin (a);
+SELECT COUNT(*) FROM array_gin_test WHERE a @> '{2}';
+ count 
+-------
+  2000
+(1 row)
+
+DROP TABLE array_gin_test;
+--
 -- HASH
 --
 CREATE INDEX hash_i4_index ON hash_i4_heap USING hash (random int4_ops);
@@ -2298,9 +2312,13 @@ COMMIT;
 BEGIN;
 CREATE INDEX std_index on concur_heap(f2);
 COMMIT;
--- check to make sure that the failed indexes were cleaned up properly and the
--- successful indexes are created properly. Notably that they do NOT have the
--- "invalid" flag set.
+-- Failed builds are left invalid by VACUUM FULL, fixed by REINDEX
+VACUUM FULL concur_heap;
+REINDEX TABLE concur_heap;
+ERROR:  could not create unique index "concur_index3"
+DETAIL:  Key (f2)=(b) is duplicated.
+DELETE FROM concur_heap WHERE f1 = 'b';
+VACUUM FULL concur_heap;
 \d concur_heap
 Table "public.concur_heap"
  Column | Type | Modifiers 
@@ -2310,6 +2328,22 @@ Table "public.concur_heap"
 Indexes:
     "concur_index2" UNIQUE, btree (f1)
     "concur_index3" UNIQUE, btree (f2) INVALID
+    "concur_heap_expr_idx" btree ((f2 || f1))
+    "concur_index1" btree (f2, f1)
+    "concur_index4" btree (f2) WHERE f1 = 'a'::text
+    "concur_index5" btree (f2) WHERE f1 = 'x'::text
+    "std_index" btree (f2)
+
+REINDEX TABLE concur_heap;
+\d concur_heap
+Table "public.concur_heap"
+ Column | Type | Modifiers 
+--------+------+-----------
+ f1     | text | 
+ f2     | text | 
+Indexes:
+    "concur_index2" UNIQUE, btree (f1)
+    "concur_index3" UNIQUE, btree (f2)
     "concur_heap_expr_idx" btree ((f2 || f1))
     "concur_index1" btree (f2, f1)
     "concur_index4" btree (f2) WHERE f1 = 'a'::text
@@ -2363,6 +2397,14 @@ ALTER TABLE cwi_test ADD primary key USING INDEX cwi_uniq_idx;
 Indexes:
     "cwi_uniq_idx" PRIMARY KEY, btree (a, b)
 
+\d cwi_uniq_idx
+         Index "public.cwi_uniq_idx"
+ Column |         Type          | Definition 
+--------+-----------------------+------------
+ a      | integer               | a
+ b      | character varying(10) | b
+primary key, btree, for table "public.cwi_test"
+
 CREATE UNIQUE INDEX cwi_uniq2_idx ON cwi_test(b , a);
 ALTER TABLE cwi_test DROP CONSTRAINT cwi_uniq_idx,
 	ADD CONSTRAINT cwi_replaced_pkey PRIMARY KEY
@@ -2377,6 +2419,14 @@ NOTICE:  ALTER TABLE / ADD CONSTRAINT USING INDEX will rename index "cwi_uniq2_i
  c      | character(1)          | 
 Indexes:
     "cwi_replaced_pkey" PRIMARY KEY, btree (b, a)
+
+\d cwi_replaced_pkey
+      Index "public.cwi_replaced_pkey"
+ Column |         Type          | Definition 
+--------+-----------------------+------------
+ b      | character varying(10) | b
+ a      | integer               | a
+primary key, btree, for table "public.cwi_test"
 
 DROP INDEX cwi_replaced_pkey;	-- Should fail; a constraint depends on it
 ERROR:  cannot drop index cwi_replaced_pkey because constraint cwi_replaced_pkey on table cwi_test requires it
@@ -2659,18 +2709,18 @@ CREATE INDEX dupindexcols_i ON dupindexcols (f1, id, f1 text_pattern_ops);
 ANALYZE dupindexcols;
 EXPLAIN (COSTS OFF)
   SELECT count(*) FROM dupindexcols
-    WHERE f1 > 'WA' and id < 1000 and f1 ~<~ 'YX';
-                                      QUERY PLAN                                       
----------------------------------------------------------------------------------------
+    WHERE f1 BETWEEN 'WA' AND 'ZZZ' and id < 1000 and f1 ~<~ 'YX';
+                                                   QUERY PLAN                                                   
+----------------------------------------------------------------------------------------------------------------
  Aggregate
    ->  Bitmap Heap Scan on dupindexcols
-         Recheck Cond: ((f1 > 'WA'::text) AND (id < 1000) AND (f1 ~<~ 'YX'::text))
+         Recheck Cond: ((f1 >= 'WA'::text) AND (f1 <= 'ZZZ'::text) AND (id < 1000) AND (f1 ~<~ 'YX'::text))
          ->  Bitmap Index Scan on dupindexcols_i
-               Index Cond: ((f1 > 'WA'::text) AND (id < 1000) AND (f1 ~<~ 'YX'::text))
+               Index Cond: ((f1 >= 'WA'::text) AND (f1 <= 'ZZZ'::text) AND (id < 1000) AND (f1 ~<~ 'YX'::text))
 (5 rows)
 
 SELECT count(*) FROM dupindexcols
-  WHERE f1 > 'WA' and id < 1000 and f1 ~<~ 'YX';
+  WHERE f1 BETWEEN 'WA' AND 'ZZZ' and id < 1000 and f1 ~<~ 'YX';
  count 
 -------
     97
@@ -2679,7 +2729,7 @@ SELECT count(*) FROM dupindexcols
 --
 -- Check ordering of =ANY indexqual results (bug in 9.2.0)
 --
-vacuum analyze tenk1;		-- ensure we get consistent plans here
+vacuum tenk1;		-- ensure we get consistent plans here
 explain (costs off)
 SELECT unique1 FROM tenk1
 WHERE unique1 IN (1,42,7)
@@ -2704,11 +2754,32 @@ explain (costs off)
 SELECT thousand, tenthous FROM tenk1
 WHERE thousand < 2 AND tenthous IN (1001,3000)
 ORDER BY thousand;
+                      QUERY PLAN                       
+-------------------------------------------------------
+ Index Only Scan using tenk1_thous_tenthous on tenk1
+   Index Cond: (thousand < 2)
+   Filter: (tenthous = ANY ('{1001,3000}'::integer[]))
+(3 rows)
+
+SELECT thousand, tenthous FROM tenk1
+WHERE thousand < 2 AND tenthous IN (1001,3000)
+ORDER BY thousand;
+ thousand | tenthous 
+----------+----------
+        0 |     3000
+        1 |     1001
+(2 rows)
+
+SET enable_indexonlyscan = OFF;
+explain (costs off)
+SELECT thousand, tenthous FROM tenk1
+WHERE thousand < 2 AND tenthous IN (1001,3000)
+ORDER BY thousand;
                                       QUERY PLAN                                      
 --------------------------------------------------------------------------------------
  Sort
    Sort Key: thousand
-   ->  Index Only Scan using tenk1_thous_tenthous on tenk1
+   ->  Index Scan using tenk1_thous_tenthous on tenk1
          Index Cond: ((thousand < 2) AND (tenthous = ANY ('{1001,3000}'::integer[])))
 (4 rows)
 
@@ -2719,5 +2790,17 @@ ORDER BY thousand;
 ----------+----------
         0 |     3000
         1 |     1001
+(2 rows)
+
+RESET enable_indexscan;
+--
+-- Check elimination of constant-NULL subexpressions
+--
+explain (costs off)
+  select * from tenk1 where (thousand, tenthous) in ((1,1001), (null,null));
+                      QUERY PLAN                      
+------------------------------------------------------
+ Index Scan using tenk1_thous_tenthous on tenk1
+   Index Cond: ((thousand = 1) AND (tenthous = 1001))
 (2 rows)
 

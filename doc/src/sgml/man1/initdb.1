@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: initdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "INITDB" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "INITDB" "1" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 initdb \- create a new PostgreSQL database cluster
-.\" initdb
 .SH "SYNOPSIS"
 .HP \w'\fBinitdb\fR\ 'u
 \fBinitdb\fR [\fIoption\fR...] [\fB\-\-pgdata\fR | \fB\-D\fR]\fI directory\fR
@@ -101,7 +100,9 @@ Section 22.3, \(lqCharacter Set Support\(rq, in the documentation\&.
 .SH "OPTIONS"
 .PP
 .PP
-\fB\-A \fR\fB\fIauthmethod\fR\fR, \fB\-\-auth=\fR\fB\fIauthmethod\fR\fR
+\fB\-A \fR\fB\fIauthmethod\fR\fR
+.br
+\fB\-\-auth=\fR\fB\fIauthmethod\fR\fR
 .RS 4
 This option specifies the authentication method for local users used in
 pg_hba\&.conf
@@ -131,7 +132,9 @@ pg_hba\&.conf
 lines)\&.
 .RE
 .PP
-\fB\-D \fR\fB\fIdirectory\fR\fR, \fB\-\-pgdata=\fR\fB\fIdirectory\fR\fR
+\fB\-D \fR\fB\fIdirectory\fR\fR
+.br
+\fB\-\-pgdata=\fR\fB\fIdirectory\fR\fR
 .RS 4
 This option specifies the directory where the database cluster should be stored\&. This is the only information required by
 \fBinitdb\fR, but you can avoid writing it by setting the
@@ -139,7 +142,9 @@ This option specifies the directory where the database cluster should be stored\
 environment variable, which can be convenient since the database server (\fBpostgres\fR) can find the database directory later by the same variable\&.
 .RE
 .PP
-\fB\-E \fR\fB\fIencoding\fR\fR, \fB\-\-encoding=\fR\fB\fIencoding\fR\fR
+\fB\-E \fR\fB\fIencoding\fR\fR
+.br
+\fB\-\-encoding=\fR\fB\fIencoding\fR\fR
 .RS 4
 Selects the encoding of the template database\&. This will also be the default encoding of any database you create later, unless you override it there\&. The default is derived from the locale, or
 SQL_ASCII
@@ -147,6 +152,13 @@ if that does not work\&. The character sets supported by the
 PostgreSQL
 server are described in
 Section 22.3.1, \(lqSupported Character Sets\(rq, in the documentation\&.
+.RE
+.PP
+\fB\-k\fR
+.br
+\fB\-\-data\-checksums\fR
+.RS 4
+Use checksums on data pages to help detect corruption by the I/O system that would otherwise be silent\&. Enabling checksums may incur a noticeable performance penalty\&. This option can only be set during initialization, and cannot be changed later\&. If set, checksums are calculated for all objects, in all databases\&.
 .RE
 .PP
 \fB\-\-locale=\fR\fB\fIlocale\fR\fR
@@ -157,7 +169,17 @@ runs in\&. Locale support is described in
 Section 22.1, \(lqLocale Support\(rq, in the documentation\&.
 .RE
 .PP
-\fB\-\-lc\-collate=\fR\fB\fIlocale\fR\fR, \fB\-\-lc\-ctype=\fR\fB\fIlocale\fR\fR, \fB\-\-lc\-messages=\fR\fB\fIlocale\fR\fR, \fB\-\-lc\-monetary=\fR\fB\fIlocale\fR\fR, \fB\-\-lc\-numeric=\fR\fB\fIlocale\fR\fR, \fB\-\-lc\-time=\fR\fB\fIlocale\fR\fR
+\fB\-\-lc\-collate=\fR\fB\fIlocale\fR\fR
+.br
+\fB\-\-lc\-ctype=\fR\fB\fIlocale\fR\fR
+.br
+\fB\-\-lc\-messages=\fR\fB\fIlocale\fR\fR
+.br
+\fB\-\-lc\-monetary=\fR\fB\fIlocale\fR\fR
+.br
+\fB\-\-lc\-numeric=\fR\fB\fIlocale\fR\fR
+.br
+\fB\-\-lc\-time=\fR\fB\fIlocale\fR\fR
 .RS 4
 Like
 \fB\-\-locale\fR, but only sets the locale in the specified category\&.
@@ -169,6 +191,17 @@ Equivalent to
 \fB\-\-locale=C\fR\&.
 .RE
 .PP
+\fB\-N\fR
+.br
+\fB\-\-nosync\fR
+.RS 4
+By default,
+\fBinitdb\fR
+will wait for all files to be written safely to disk\&. This option causes
+\fBinitdb\fR
+to return without waiting, which is faster, but means that a subsequent operating system crash can leave the data directory corrupt\&. Generally, this option is useful for testing, but should not be used when creating a production installation\&.
+.RE
+.PP
 \fB\-\-pwfile=\fR\fB\fIfilename\fR\fR
 .RS 4
 Makes
@@ -176,35 +209,54 @@ Makes
 read the database superuser\*(Aqs password from a file\&. The first line of the file is taken as the password\&.
 .RE
 .PP
-\fB\-T \fR\fB\fICFG\fR\fR, \fB\-\-text\-search\-config=\fR\fB\fICFG\fR\fR
+\fB\-S\fR
+.br
+\fB\-\-sync\-only\fR
+.RS 4
+Safely write all database files to disk and exit\&. This does not perform any of the normal
+initdb
+operations\&.
+.RE
+.PP
+\fB\-T \fR\fB\fICFG\fR\fR
+.br
+\fB\-\-text\-search\-config=\fR\fB\fICFG\fR\fR
 .RS 4
 Sets the default text search configuration\&. See
 default_text_search_config
 for further information\&.
 .RE
 .PP
-\fB\-U \fR\fB\fIusername\fR\fR, \fB\-\-username=\fR\fB\fIusername\fR\fR
+\fB\-U \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-username=\fR\fB\fIusername\fR\fR
 .RS 4
 Selects the user name of the database superuser\&. This defaults to the name of the effective user running
 \fBinitdb\fR\&. It is really not important what the superuser\*(Aqs name is, but one might choose to keep the customary name
 postgres, even if the operating system user\*(Aqs name is different\&.
 .RE
 .PP
-\fB\-W\fR, \fB\-\-pwprompt\fR
+\fB\-W\fR
+.br
+\fB\-\-pwprompt\fR
 .RS 4
 Makes
 \fBinitdb\fR
 prompt for a password to give the database superuser\&. If you don\*(Aqt plan on using password authentication, this is not important\&. Otherwise you won\*(Aqt be able to use password authentication until you have a password set up\&.
 .RE
 .PP
-\fB\-X \fR\fB\fIdirectory\fR\fR, \fB\-\-xlogdir=\fR\fB\fIdirectory\fR\fR
+\fB\-X \fR\fB\fIdirectory\fR\fR
+.br
+\fB\-\-xlogdir=\fR\fB\fIdirectory\fR\fR
 .RS 4
 This option specifies the directory where the transaction log should be stored\&.
 .RE
 .PP
 Other, less commonly used, options are also available:
 .PP
-\fB\-d\fR, \fB\-\-debug\fR
+\fB\-d\fR
+.br
+\fB\-\-debug\fR
 .RS 4
 Print debugging output from the bootstrap backend and a few other messages of lesser interest for the general public\&. The bootstrap backend is the program
 \fBinitdb\fR
@@ -218,7 +270,9 @@ Specifies where
 should find its input files to initialize the database cluster\&. This is normally not necessary\&. You will be told if you need to specify their location explicitly\&.
 .RE
 .PP
-\fB\-n\fR, \fB\-\-noclean\fR
+\fB\-n\fR
+.br
+\fB\-\-noclean\fR
 .RS 4
 By default, when
 \fBinitdb\fR
@@ -227,14 +281,18 @@ determines that an error prevented it from completely creating the database clus
 .PP
 Other options:
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 initdb
 version and exit\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 initdb
@@ -247,6 +305,12 @@ command line arguments, and exit\&.
 Specifies the directory where the database cluster is to be stored; can be overridden using the
 \fB\-D\fR
 option\&.
+.RE
+.PP
+\fBTZ\fR
+.RS 4
+Specifies the default time zone of the created database cluster\&. The value should be a full time zone name (see
+Section 8.5.3, \(lqTime Zones\(rq, in the documentation)\&.
 .RE
 .PP
 This utility, like most other

@@ -6,12 +6,12 @@
  * A pseudo-type isn't really a type and never has any operations, but
  * we do need to supply input and output functions to satisfy the links
  * in the pseudo-type's entry in pg_type.  In most cases the functions
- * just throw an error if invoked.	(XXX the error messages here cover
+ * just throw an error if invoked.  (XXX the error messages here cover
  * the most common case, but might be confusing in some contexts.  Can
  * we do better?)
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -139,7 +139,7 @@ anyarray_out(PG_FUNCTION_ARGS)
  * anyarray_recv		- binary input routine for pseudo-type ANYARRAY.
  *
  * XXX this could actually be made to work, since the incoming array
- * data will contain the element type OID.	Need to think through
+ * data will contain the element type OID.  Need to think through
  * type-safety issues before allowing it, however.
  */
 Datum
@@ -216,7 +216,7 @@ anyrange_out(PG_FUNCTION_ARGS)
  * void_in		- input routine for pseudo-type VOID.
  *
  * We allow this so that PL functions can return VOID without any special
- * hack in the PL handler.	Whatever value the PL thinks it's returning
+ * hack in the PL handler.  Whatever value the PL thinks it's returning
  * will just be ignored.
  */
 Datum
@@ -287,6 +287,33 @@ trigger_out(PG_FUNCTION_ARGS)
 	ereport(ERROR,
 			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 			 errmsg("cannot display a value of type trigger")));
+
+	PG_RETURN_VOID();			/* keep compiler quiet */
+}
+
+
+/*
+ * event_trigger_in - input routine for pseudo-type event_trigger.
+ */
+Datum
+event_trigger_in(PG_FUNCTION_ARGS)
+{
+	ereport(ERROR,
+			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+			 errmsg("cannot accept a value of type event_trigger")));
+
+	PG_RETURN_VOID();			/* keep compiler quiet */
+}
+
+/*
+ * event_trigger_out - output routine for pseudo-type event_trigger.
+ */
+Datum
+event_trigger_out(PG_FUNCTION_ARGS)
+{
+	ereport(ERROR,
+			(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+			 errmsg("cannot display a value of type event_trigger")));
 
 	PG_RETURN_VOID();			/* keep compiler quiet */
 }

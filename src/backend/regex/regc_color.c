@@ -2,7 +2,7 @@
  * colorings of characters
  * This file is #included by regcomp.c.
  *
- * Copyright (c) 1998, 1999 Henry Spencer.	All rights reserved.
+ * Copyright (c) 1998, 1999 Henry Spencer.  All rights reserved.
  *
  * Development of this software was funded, in part, by Cray Research Inc.,
  * UUNET Communications Services Inc., Sun Microsystems Inc., and Scriptics
@@ -247,7 +247,15 @@ newcolor(struct colormap * cm)
 		/* oops, must allocate more */
 		struct colordesc *newCd;
 
+		if (cm->max == MAX_COLOR)
+		{
+			CERR(REG_ECOLORS);
+			return COLORLESS;	/* too many colors */
+		}
+
 		n = cm->ncds * 2;
+		if (n > MAX_COLOR + 1)
+			n = MAX_COLOR + 1;
 		if (cm->cd == cm->cdspace)
 		{
 			newCd = (struct colordesc *) MALLOC(n * sizeof(struct colordesc));

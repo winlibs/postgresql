@@ -12,15 +12,10 @@ ifeq ($(perl_useshrplib),yes)
 shared_libperl = yes
 endif
 
-# If we don't have a shared library and the platform doesn't allow it
-# to work without, we have to skip it.
-ifneq (,$(findstring yes, $(shared_libperl)$(allow_nonpic_in_shlib)))
+# If we don't have a shared library, we have to skip it.
+ifeq ($(shared_libperl),yes)
 
 ifeq ($(PORTNAME), win32)
-perl_archlibexp := $(subst \,/,$(perl_archlibexp))
-perl_privlibexp := $(subst \,/,$(perl_privlibexp))
-perl_lib := $(basename $(notdir $(wildcard $(perl_archlibexp)/CORE/perl[5-9]*.lib)))
-perl_embed_ldflags = -L$(perl_archlibexp)/CORE -l$(perl_lib)
 override CPPFLAGS += -DPLPERL_HAVE_UID_GID
 # Perl on win32 contains /* within comment all over the header file,
 # so disable this warning.
@@ -40,6 +35,27 @@ DATA = plperl.control plperl--1.0.sql plperl--unpackaged--1.0.sql \
        plperlu.control plperlu--1.0.sql plperlu--unpackaged--1.0.sql
 
 PERLCHUNKS = plc_perlboot.pl plc_trusted.pl
+
+# Perl on win32 ships with import libraries only for Microsoft Visual C++,
+# which are not compatible with mingw gcc. Therefore we need to build a
+# new import library to link with.
+ifeq ($(PORTNAME), win32)
+
+perlwithver := $(subst -l,,$(filter -l%, $(perl_embed_ldflags)))
+PERLDLL := $(dir $(subst ',,$(PERL)))$(perlwithver).dll
+# we no longer want to include the original -l spec in SHLIB_LINK
+override perl_embed_ldflags :=
+
+OBJS += lib$(perlwithver).a
+
+lib$(perlwithver).a: $(perlwithver).def
+	dlltool --dllname $(perlwithver).dll --def $(perlwithver).def --output-lib lib$(perlwithver).a
+
+$(perlwithver).def: $(PERLDLL)
+	pexports $^ > $@
+
+endif # win32
+
 
 SHLIB_LINK = $(perl_embed_ldflags)
 
@@ -110,6 +126,9 @@ submake:
 clean distclean maintainer-clean: clean-lib
 	rm -f SPI.c Util.c $(OBJS) perlchunks.h plperl_opmask.h
 	rm -rf $(pg_regress_clean_files)
+ifeq ($(PORTNAME), win32)
+	rm -f $(perlwithver).def
+endif
 
 else # can't build
 

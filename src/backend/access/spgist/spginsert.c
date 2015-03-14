@@ -5,7 +5,7 @@
  *
  * All the actual insertion logic is in spgdoinsert.c.
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -17,12 +17,14 @@
 #include "postgres.h"
 
 #include "access/genam.h"
+#include "access/heapam_xlog.h"
 #include "access/spgist_private.h"
 #include "catalog/index.h"
 #include "miscadmin.h"
 #include "storage/bufmgr.h"
 #include "storage/smgr.h"
 #include "utils/memutils.h"
+#include "utils/rel.h"
 
 
 typedef struct
@@ -43,7 +45,17 @@ spgistBuildCallback(Relation index, HeapTuple htup, Datum *values,
 	/* Work in temp context, and reset it after each tuple */
 	oldCtx = MemoryContextSwitchTo(buildstate->tmpCtx);
 
-	spgdoinsert(index, &buildstate->spgstate, &htup->t_self, *values, *isnull);
+	/*
+	 * Even though no concurrent insertions can be happening, we still might
+	 * get a buffer-locking failure due to bgwriter or checkpointer taking a
+	 * lock on some buffer.  So we need to be willing to retry.  We can flush
+	 * any temp data when retrying.
+	 */
+	while (!spgdoinsert(index, &buildstate->spgstate, &htup->t_self,
+						*values, *isnull))
+	{
+		MemoryContextReset(buildstate->tmpCtx);
+	}
 
 	MemoryContextSwitchTo(oldCtx);
 	MemoryContextReset(buildstate->tmpCtx);
@@ -103,11 +115,8 @@ spgbuild(PG_FUNCTION_ARGS)
 		recptr = XLogInsert(RM_SPGIST_ID, XLOG_SPGIST_CREATE_INDEX, &rdata);
 
 		PageSetLSN(BufferGetPage(metabuffer), recptr);
-		PageSetTLI(BufferGetPage(metabuffer), ThisTimeLineID);
 		PageSetLSN(BufferGetPage(rootbuffer), recptr);
-		PageSetTLI(BufferGetPage(rootbuffer), ThisTimeLineID);
 		PageSetLSN(BufferGetPage(nullbuffer), recptr);
-		PageSetTLI(BufferGetPage(nullbuffer), ThisTimeLineID);
 	}
 
 	END_CRIT_SECTION();
@@ -154,30 +163,33 @@ spgbuildempty(PG_FUNCTION_ARGS)
 	page = (Page) palloc(BLCKSZ);
 	SpGistInitMetapage(page);
 
-	/* Write the page.	If archiving/streaming, XLOG it. */
+	/* Write the page.  If archiving/streaming, XLOG it. */
+	PageSetChecksumInplace(page, SPGIST_METAPAGE_BLKNO);
 	smgrwrite(index->rd_smgr, INIT_FORKNUM, SPGIST_METAPAGE_BLKNO,
 			  (char *) page, true);
 	if (XLogIsNeeded())
 		log_newpage(&index->rd_smgr->smgr_rnode.node, INIT_FORKNUM,
-					SPGIST_METAPAGE_BLKNO, page);
+					SPGIST_METAPAGE_BLKNO, page, false);
 
 	/* Likewise for the root page. */
 	SpGistInitPage(page, SPGIST_LEAF);
 
+	PageSetChecksumInplace(page, SPGIST_ROOT_BLKNO);
 	smgrwrite(index->rd_smgr, INIT_FORKNUM, SPGIST_ROOT_BLKNO,
 			  (char *) page, true);
 	if (XLogIsNeeded())
 		log_newpage(&index->rd_smgr->smgr_rnode.node, INIT_FORKNUM,
-					SPGIST_ROOT_BLKNO, page);
+					SPGIST_ROOT_BLKNO, page, true);
 
 	/* Likewise for the null-tuples root page. */
 	SpGistInitPage(page, SPGIST_LEAF | SPGIST_NULLS);
 
+	PageSetChecksumInplace(page, SPGIST_NULL_BLKNO);
 	smgrwrite(index->rd_smgr, INIT_FORKNUM, SPGIST_NULL_BLKNO,
 			  (char *) page, true);
 	if (XLogIsNeeded())
 		log_newpage(&index->rd_smgr->smgr_rnode.node, INIT_FORKNUM,
-					SPGIST_NULL_BLKNO, page);
+					SPGIST_NULL_BLKNO, page, true);
 
 	/*
 	 * An immediate sync is required even if we xlog'd the pages, because the
@@ -217,7 +229,17 @@ spginsert(PG_FUNCTION_ARGS)
 
 	initSpGistState(&spgstate, index);
 
-	spgdoinsert(index, &spgstate, ht_ctid, *values, *isnull);
+	/*
+	 * We might have to repeat spgdoinsert() multiple times, if conflicts
+	 * occur with concurrent insertions.  If so, reset the insertCtx each time
+	 * to avoid cumulative memory consumption.  That means we also have to
+	 * redo initSpGistState(), but it's cheap enough not to matter.
+	 */
+	while (!spgdoinsert(index, &spgstate, ht_ctid, *values, *isnull))
+	{
+		MemoryContextReset(insertCtx);
+		initSpGistState(&spgstate, index);
+	}
 
 	SpGistUpdateMetaPage(index);
 

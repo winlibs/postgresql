@@ -437,15 +437,18 @@ critical section.)
 
 4. Mark the shared buffer(s) as dirty with MarkBufferDirty().  (This must
 happen before the WAL record is inserted; see notes in SyncOneBuffer().)
+Note that marking a buffer dirty with MarkBufferDirty() should only
+happen iff you write a WAL record; see Writing Hints below.
 
 5. If the relation requires WAL-logging, build a WAL log record and pass it
-to XLogInsert(); then update the page's LSN and TLI using the returned XLOG
+to XLogInsert(); then update the page's LSN using the returned XLOG
 location.  For instance,
 
 		recptr = XLogInsert(rmgr_id, info, rdata);
 
 		PageSetLSN(dp, recptr);
-		PageSetTLI(dp, ThisTimeLineID);
+		// Note that we no longer do PageSetTLI() from 9.3 onwards
+		// since that field on a page has now changed its meaning.
 
 6. END_CRIT_SECTION()
 
@@ -489,7 +492,6 @@ standard replay-routine pattern for this case is
 	... initialize the page ...
 
 	PageSetLSN(page, lsn);
-	PageSetTLI(page, ThisTimeLineID);
 	MarkBufferDirty(buffer);
 	UnlockReleaseBuffer(buffer);
 
@@ -523,7 +525,6 @@ The standard replay-routine pattern for this case is
 	... apply the change ...
 
 	PageSetLSN(page, lsn);
-	PageSetTLI(page, ThisTimeLineID);
 	MarkBufferDirty(buffer);
 	UnlockReleaseBuffer(buffer);
 
@@ -564,18 +565,51 @@ something like
 	if (BufferIsValid(buffer0))
 		UnlockReleaseBuffer(buffer0);
 
+Note that we must only use PageSetLSN/PageGetLSN() when we know the action
+is serialised. Only Startup process may modify data blocks during recovery,
+so Startup process may execute PageGetLSN() without fear of serialisation
+problems. All other processes must only call PageSet/GetLSN when holding
+either an exclusive buffer lock or a shared lock plus buffer header lock,
+or be writing the data block directly rather than through shared buffers
+while holding AccessExclusiveLock on the relation.
+
 Due to all these constraints, complex changes (such as a multilevel index
 insertion) normally need to be described by a series of atomic-action WAL
-records.  What do you do if the intermediate states are not self-consistent?
-The answer is that the WAL replay logic has to be able to fix things up.
-In btree indexes, for example, a page split requires insertion of a new key in
-the parent btree level, but for locking reasons this has to be reflected by
-two separate WAL records.  The replay code has to remember "unfinished" split
-operations, and match them up to subsequent insertions in the parent level.
-If no matching insert has been found by the time the WAL replay ends, the
-replay code has to do the insertion on its own to restore the index to
-consistency.  Such insertions occur after WAL is operational, so they can
-and should write WAL records for the additional generated actions.
+records. The intermediate states must be self-consistent, so that if the
+replay is interrupted between any two actions, the system is fully
+functional. In btree indexes, for example, a page split requires a new page
+to be allocated, and an insertion of a new key in the parent btree level,
+but for locking reasons this has to be reflected by two separate WAL
+records. Replaying the first record, to allocate the new page and move
+tuples to it, sets a flag on the page to indicate that the key has not been
+inserted to the parent yet. Replaying the second record clears the flag.
+This intermediate state is never seen by other backends during normal
+operation, because the lock on the child page is held across the two
+actions, but will be seen if the operation is interrupted before writing
+the second WAL record. The search algorithm works with the intermediate
+state as normal, but if an insertion encounters a page with the
+incomplete-split flag set, it will finish the interrupted split by
+inserting the key to the parent, before proceeding.
+
+Writing Hints
+-------------
+
+In some cases, we write additional information to data blocks without
+writing a preceding WAL record. This should only happen iff the data can
+be reconstructed later following a crash and the action is simply a way
+of optimising for performance. When a hint is written we use
+MarkBufferDirtyHint() to mark the block dirty.
+
+If the buffer is clean and checksums are in use then
+MarkBufferDirtyHint() inserts an XLOG_HINT record to ensure that we
+take a full page image that includes the hint. We do this to avoid
+a partial page write, when we write the dirtied page. WAL is not
+written during recovery, so we simply skip dirtying blocks because
+of hints when in recovery.
+
+If you do decide to optimise away a WAL record, then any calls to
+MarkBufferDirty() must be replaced by MarkBufferDirtyHint(),
+otherwise you will expose the risk of partial page writes.
 
 
 Write-Ahead Logging for Filesystem Actions
@@ -783,10 +817,7 @@ parent transaction to complete.
 
 Not all transactional behaviour is emulated, for example we do not insert
 a transaction entry into the lock table, nor do we maintain the transaction
-stack in memory. Clog entries are made normally. Multitrans is not maintained
-because its purpose is to record tuple level locks that an application has
-requested to prevent write locks. Since write locks cannot be obtained at all,
-there is never any conflict and so there is no reason to update multitrans.
+stack in memory. Clog and multixact entries are made normally.
 Subtrans is maintained during recovery but the details of the transaction
 tree are ignored and all subtransactions reference the top-level TransactionId
 directly. Since commit is atomic this provides correct lock wait behaviour

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="  Installation from Source Code"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -99,34 +99,48 @@ NAME="INSTALL-GETSOURCE"
 >   The <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> 9.2.2 sources can be obtained by
-   anonymous FTP from <A
-HREF="ftp://ftp.postgresql.org/pub/source/v9.2.2/postgresql-9.2.2.tar.gz"
-TARGET="_top"
->ftp://ftp.postgresql.org/pub/source/v9.2.2/postgresql-9.2.2.tar.gz</A
->.
-   Other download options can be found on our website:
-   <A
+> 9.4.1 sources can be obtained from the
+   download section of our
+   website: <A
 HREF="http://www.postgresql.org/download/"
 TARGET="_top"
 >http://www.postgresql.org/download/</A
->. After you
-   have obtained the file, unpack it:
+>.  You
+   should get a file named <TT
+CLASS="FILENAME"
+>postgresql-9.4.1.tar.gz</TT
+>
+   or <TT
+CLASS="FILENAME"
+>postgresql-9.4.1.tar.bz2</TT
+>. After
+   you have obtained the file, unpack it:
 </P><PRE
 CLASS="SCREEN"
 ><KBD
 CLASS="USERINPUT"
->gunzip postgresql-9.2.2.tar.gz</KBD
+>gunzip postgresql-9.4.1.tar.gz</KBD
 >
 <KBD
 CLASS="USERINPUT"
->tar xf postgresql-9.2.2.tar</KBD
+>tar xf postgresql-9.4.1.tar</KBD
 ></PRE
 ><P>
+   (Use <TT
+CLASS="COMMAND"
+>bunzip2</TT
+> instead of <TT
+CLASS="COMMAND"
+>gunzip</TT
+> if you
+   have the <TT
+CLASS="FILENAME"
+>.bz2</TT
+> file.)
    This will create a directory
    <TT
 CLASS="FILENAME"
->postgresql-9.2.2</TT
+>postgresql-9.4.1</TT
 > under the current directory
    with the <SPAN
 CLASS="PRODUCTNAME"

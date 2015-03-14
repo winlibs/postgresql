@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE FOREIGN DATA WRAPPER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "CREATE FOREIGN DATA WRAPPER" "7" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "CREATE FOREIGN DATA WRAPPER" "7" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_FOREIGN_DATA_WRAPPER \- define a new foreign\-data wrapper
-.\" CREATE FOREIGN DATA WRAPPER
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -66,7 +65,7 @@ It is possible to create a foreign\-data wrapper with no handler function, but f
 VALIDATOR \fIvalidator_function\fR
 .RS 4
 \fIvalidator_function\fR
-is the name of a previously registered function that will be called to check the generic options given to the foreign\-data wrapper, as well as options for foreign servers and user mappings using the foreign\-data wrapper\&. If no validator function or
+is the name of a previously registered function that will be called to check the generic options given to the foreign\-data wrapper, as well as options for foreign servers, user mappings and foreign tables using the foreign\-data wrapper\&. If no validator function or
 NO VALIDATOR
 is specified, then options will not be checked at creation time\&. (Foreign\-data wrappers will possibly ignore or reject invalid option specifications at run time, depending on the implementation\&.) The validator function must take two arguments: one of type
 text[], which will contain the array of options as stored in the system catalogs, and one of type
@@ -81,12 +80,8 @@ This clause specifies options for the new foreign\-data wrapper\&. The allowed o
 .RE
 .SH "NOTES"
 .PP
-At the moment, the foreign\-data wrapper functionality is rudimentary\&. There is no support for updating a foreign table, and optimization of queries is primitive (and mostly left to the wrapper, too)\&.
-.PP
-There is one built\-in foreign\-data wrapper validator function provided:
-postgresql_fdw_validator, which accepts options corresponding to
-libpq
-connection parameters\&.
+
+PostgreSQL\*(Aqs foreign\-data functionality is still under active development\&. Optimization of queries is primitive (and mostly left to the wrapper, too)\&. Thus, there is considerable room for future performance improvements\&.
 .SH "EXAMPLES"
 .PP
 Create a useless foreign\-data wrapper
@@ -143,8 +138,9 @@ clauses are extensions and the standard clauses
 LIBRARY
 and
 LANGUAGE
-are not implemented in PostgreSQL\&.
+are not implemented in
+PostgreSQL\&.
 .PP
 Note, however, that the SQL/MED functionality as a whole is not yet conforming\&.
 .SH "SEE ALSO"
-ALTER FOREIGN DATA WRAPPER (\fBALTER_FOREIGN_DATA_WRAPPER\fR(7)), DROP FOREIGN DATA WRAPPER (\fBDROP_FOREIGN_DATA_WRAPPER\fR(7)), CREATE SERVER (\fBCREATE_SERVER\fR(7)), CREATE USER MAPPING (\fBCREATE_USER_MAPPING\fR(7))
+ALTER FOREIGN DATA WRAPPER (\fBALTER_FOREIGN_DATA_WRAPPER\fR(7)), DROP FOREIGN DATA WRAPPER (\fBDROP_FOREIGN_DATA_WRAPPER\fR(7)), CREATE SERVER (\fBCREATE_SERVER\fR(7)), CREATE USER MAPPING (\fBCREATE_USER_MAPPING\fR(7)), CREATE FOREIGN TABLE (\fBCREATE_FOREIGN_TABLE\fR(7))

@@ -4,7 +4,7 @@
  *	  exported definitions for utils/hash/dynahash.c; see notes therein
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/hsearch.h
@@ -30,7 +30,7 @@ typedef int (*HashCompareFunc) (const void *key1, const void *key2,
 											Size keysize);
 
 /*
- * Key copying functions must have this signature.	The return value is not
+ * Key copying functions must have this signature.  The return value is not
  * used.  (The definition is set up to allow memcpy() and strncpy() to be
  * used directly.)
  */
@@ -128,6 +128,8 @@ extern uint32 get_hash_value(HTAB *hashp, const void *keyPtr);
 extern void *hash_search_with_hash_value(HTAB *hashp, const void *keyPtr,
 							uint32 hashvalue, HASHACTION action,
 							bool *foundPtr);
+extern bool hash_update_hash_key(HTAB *hashp, void *existingEntry,
+					 const void *newKeyPtr);
 extern long hash_get_num_entries(HTAB *hashp);
 extern void hash_seq_init(HASH_SEQ_STATUS *status, HTAB *hashp);
 extern void *hash_seq_search(HASH_SEQ_STATUS *status);

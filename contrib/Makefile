@@ -32,6 +32,7 @@ SUBDIRS = \
 		pg_archivecleanup \
 		pg_buffercache	\
 		pg_freespacemap \
+		pg_prewarm	\
 		pg_standby	\
 		pg_stat_statements \
 		pg_test_fsync	\
@@ -43,14 +44,19 @@ SUBDIRS = \
 		pgcrypto	\
 		pgrowlocks	\
 		pgstattuple	\
+		pg_xlogdump	\
+		postgres_fdw	\
 		seg		\
 		spi		\
 		tablefunc	\
 		tcn		\
+		test_decoding	\
 		test_parser	\
+		test_shm_mq	\
 		tsearch2	\
 		unaccent	\
-		vacuumlo
+		vacuumlo	\
+		worker_spi
 
 ifeq ($(with_openssl),yes)
 SUBDIRS += sslinfo
@@ -58,7 +64,7 @@ else
 ALWAYS_SUBDIRS += sslinfo
 endif
 
-ifeq ($(with_ossp_uuid),yes)
+ifneq ($(with_uuid),no)
 SUBDIRS += uuid-ossp
 else
 ALWAYS_SUBDIRS += uuid-ossp

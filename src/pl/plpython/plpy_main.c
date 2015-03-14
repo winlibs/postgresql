@@ -6,6 +6,7 @@
 
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "catalog/pg_proc.h"
 #include "catalog/pg_type.h"
 #include "commands/trigger.h"
@@ -13,6 +14,7 @@
 #include "miscadmin.h"
 #include "utils/guc.h"
 #include "utils/memutils.h"
+#include "utils/rel.h"
 #include "utils/syscache.h"
 
 #include "plpython.h"
@@ -38,16 +40,6 @@
 #endif
 
 extern void _PG_init(void);
-extern Datum plpython_validator(PG_FUNCTION_ARGS);
-extern Datum plpython_call_handler(PG_FUNCTION_ARGS);
-extern Datum plpython_inline_handler(PG_FUNCTION_ARGS);
-
-#if PY_MAJOR_VERSION < 3
-/* Define aliases plpython2_call_handler etc */
-extern Datum plpython2_validator(PG_FUNCTION_ARGS);
-extern Datum plpython2_call_handler(PG_FUNCTION_ARGS);
-extern Datum plpython2_inline_handler(PG_FUNCTION_ARGS);
-#endif
 
 PG_MODULE_MAGIC;
 
@@ -56,6 +48,7 @@ PG_FUNCTION_INFO_V1(plpython_call_handler);
 PG_FUNCTION_INFO_V1(plpython_inline_handler);
 
 #if PY_MAJOR_VERSION < 3
+/* Define aliases plpython2_call_handler etc */
 PG_FUNCTION_INFO_V1(plpython2_validator);
 PG_FUNCTION_INFO_V1(plpython2_call_handler);
 PG_FUNCTION_INFO_V1(plpython2_inline_handler);
@@ -130,7 +123,7 @@ _PG_init(void)
  * This should only be called once from _PG_init. Initialize the Python
  * interpreter and global data.
  */
-void
+static void
 PLy_init_interp(void)
 {
 	static PyObject *PLy_interp_safe_globals = NULL;
@@ -158,6 +151,9 @@ plpython_validator(PG_FUNCTION_ARGS)
 	Form_pg_proc procStruct;
 	bool		is_trigger;
 
+	if (!CheckFunctionValidatorAccess(fcinfo->flinfo->fn_oid, funcoid))
+		PG_RETURN_VOID();
+
 	if (!check_function_bodies)
 	{
 		PG_RETURN_VOID();
@@ -173,7 +169,8 @@ plpython_validator(PG_FUNCTION_ARGS)
 
 	ReleaseSysCache(tuple);
 
-	PLy_procedure_get(funcoid, is_trigger);
+	/* We can't validate triggers against any particular table ... */
+	PLy_procedure_get(funcoid, InvalidOid, is_trigger);
 
 	PG_RETURN_VOID();
 }
@@ -182,6 +179,7 @@ plpython_validator(PG_FUNCTION_ARGS)
 Datum
 plpython2_validator(PG_FUNCTION_ARGS)
 {
+	/* call plpython validator with our fcinfo so it gets our oid */
 	return plpython_validator(fcinfo);
 }
 #endif   /* PY_MAJOR_VERSION < 3 */
@@ -214,20 +212,22 @@ plpython_call_handler(PG_FUNCTION_ARGS)
 
 	PG_TRY();
 	{
+		Oid			funcoid = fcinfo->flinfo->fn_oid;
 		PLyProcedure *proc;
 
 		if (CALLED_AS_TRIGGER(fcinfo))
 		{
+			Relation	tgrel = ((TriggerData *) fcinfo->context)->tg_relation;
 			HeapTuple	trv;
 
-			proc = PLy_procedure_get(fcinfo->flinfo->fn_oid, true);
+			proc = PLy_procedure_get(funcoid, RelationGetRelid(tgrel), true);
 			exec_ctx->curr_proc = proc;
 			trv = PLy_exec_trigger(fcinfo, proc);
 			retval = PointerGetDatum(trv);
 		}
 		else
 		{
-			proc = PLy_procedure_get(fcinfo->flinfo->fn_oid, false);
+			proc = PLy_procedure_get(funcoid, InvalidOid, false);
 			exec_ctx->curr_proc = proc;
 			retval = PLy_exec_function(fcinfo, proc);
 		}

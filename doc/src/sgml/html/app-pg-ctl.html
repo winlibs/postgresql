@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN86305"
+NAME="AEN93274"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN86311"
+NAME="AEN93278"
 ></A
 ><H2
 >Synopsis</H2
@@ -599,7 +599,12 @@ CLASS="OPTION"
 CLASS="COMMAND"
 >postgres</TT
 >
-   command-line options.
+   command-line options.  <TT
+CLASS="OPTION"
+>restart</TT
+> might fail if
+   relative paths specified were specified on the command-line during
+   server start.
   </P
 ><P
 >   <TT
@@ -636,7 +641,8 @@ CLASS="ACRONYM"
 >
    and the command line options that were used to invoke it are
    displayed.  If the server is not running, the process returns an
-   exit status of 3.
+   exit status of 3.  If an accessible data directory is not specified,
+   the process returns an exit status of 4.
   </P
 ><P
 >   In <TT
@@ -750,7 +756,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Specifies the file system location of the database files.  If
+>        Specifies the file system location of the database configuration files.  If
         this is omitted, the environment variable
         <TT
 CLASS="ENVAR"
@@ -989,6 +995,10 @@ CLASS="COMMAND"
 CLASS="ACRONYM"
 >PID</ACRONYM
 > file.
+        This option allows the entry of an <ACRONYM
+CLASS="ACRONYM"
+>SSL</ACRONYM
+> passphrase on startup.
         <TT
 CLASS="COMMAND"
 >pg_ctl</TT
@@ -1122,7 +1132,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86681"
+NAME="AEN93650"
 ></A
 ><H2
 >Environment</H2
@@ -1172,7 +1182,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86695"
+NAME="AEN93664"
 ></A
 ><H2
 >Files</H2
@@ -1420,7 +1430,7 @@ CLASS="COMPUTEROUTPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86766"
+NAME="AEN93735"
 ></A
 ><H2
 >See Also</H2

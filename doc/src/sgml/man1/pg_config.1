@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_config
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "PG_CONFIG" "1" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "PG_CONFIG" "1" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 pg_config \- retrieve information about the installed version of PostgreSQL
-.\" pg_config
 .SH "SYNOPSIS"
 .HP \w'\fBpg_config\fR\ 'u
 \fBpg_config\fR [\fIoption\fR...]
@@ -201,7 +200,9 @@ Print the version of
 PostgreSQL\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 pg_config
@@ -209,13 +210,6 @@ command line arguments, and exit\&.
 .RE
 If more than one option is given, the information is printed in that order, one item per line\&. If no options are given, all available information is printed, with labels\&.
 .SH "NOTES"
-.PP
-The option
-\fB\-\-includedir\-server\fR
-was added in
-PostgreSQL
-7\&.2\&. In prior releases, the server include files were installed in the same location as the client headers, which could be queried with the option
-\fB\-\-includedir\fR\&. To make your package handle both cases, try the newer option first and test the exit status to see whether it succeeded\&.
 .PP
 The options
 \fB\-\-docdir\fR,
@@ -242,12 +236,6 @@ PostgreSQL
 was added in
 PostgreSQL
 9\&.0\&.
-.PP
-In releases prior to
-PostgreSQL
-7\&.1, before
-\fBpg_config\fR
-came to be, a method for finding the equivalent configuration information did not exist\&.
 .SH "EXAMPLE"
 .PP
 To reproduce the build configuration of the current PostgreSQL installation, run the following command:

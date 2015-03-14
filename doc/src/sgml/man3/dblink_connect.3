@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dblink_connect
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.75.2 <http://docbook.sf.net/>
-.\"      Date: 2012-12-03
-.\"    Manual: PostgreSQL 9.2.2 Documentation
-.\"    Source: PostgreSQL 9.2.2
+.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.1 Documentation
+.\"    Source: PostgreSQL 9.4.1
 .\"  Language: English
 .\"
-.TH "DBLINK_CONNECT" "3" "2012-12-03" "PostgreSQL 9.2.2" "PostgreSQL 9.2.2 Documentation"
+.TH "DBLINK_CONNECT" "3" "2015" "PostgreSQL 9.4.1" "PostgreSQL 9.4.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -45,10 +45,12 @@ database\&. The server and database to be contacted are identified through a sta
 libpq
 connection string\&. Optionally, a name can be assigned to the connection\&. Multiple named connections can be open at once, but only one unnamed connection is permitted at a time\&. The connection will persist until closed or until the database session is ended\&.
 .PP
-The connection string may also be the name of an existing foreign server\&. It is recommended to use the
-\fBpostgresql_fdw_validator\fR
-when defining the corresponding foreign\-data wrapper\&. See the example below, as well as the following:
-CREATE FOREIGN DATA WRAPPER (\fBCREATE_FOREIGN_DATA_WRAPPER\fR(7)), CREATE SERVER (\fBCREATE_SERVER\fR(7)), CREATE USER MAPPING (\fBCREATE_USER_MAPPING\fR(7))
+The connection string may also be the name of an existing foreign server\&. It is recommended to use the foreign\-data wrapper
+dblink_fdw
+when defining the foreign server\&. See the example below, as well as
+CREATE SERVER (\fBCREATE_SERVER\fR(7))
+and
+CREATE USER MAPPING (\fBCREATE_USER_MAPPING\fR(7))\&.
 .SH "ARGUMENTS"
 .PP
 \fIconname\fR
@@ -60,9 +62,7 @@ The name to use for this connection; if omitted, an unnamed connection is opened
 .RS 4
 libpq\-style connection info string, for example
 hostaddr=127\&.0\&.0\&.1 port=5432 dbname=mydb user=postgres password=mypasswd\&. For details see
-\fBPQconnectdb\fR
-in
-Section 31.1, \(lqDatabase Connection Control Functions\(rq, in the documentation\&.
+Section 31.1.1, \(lqConnection Strings\(rq, in the documentation\&. Alternatively, the name of a foreign server\&.
 .RE
 .SH "RETURN VALUE"
 .PP
@@ -105,10 +105,10 @@ SELECT dblink_connect(\*(Aqmyconn\*(Aq, \*(Aqdbname=postgres\*(Aq);
 \-\-       ERROR:  password is required
 \-\-       DETAIL:  Non\-superuser cannot connect if the server does not request a password\&.
 \-\-       HINT:  Target server\*(Aqs authentication method must be changed\&.
-CREATE USER dblink_regression_test WITH PASSWORD \*(Aqsecret\*(Aq;
-CREATE FOREIGN DATA WRAPPER postgresql VALIDATOR postgresql_fdw_validator;
-CREATE SERVER fdtest FOREIGN DATA WRAPPER postgresql OPTIONS (hostaddr \*(Aq127\&.0\&.0\&.1\*(Aq, dbname \*(Aqcontrib_regression\*(Aq);
 
+CREATE SERVER fdtest FOREIGN DATA WRAPPER dblink_fdw OPTIONS (hostaddr \*(Aq127\&.0\&.0\&.1\*(Aq, dbname \*(Aqcontrib_regression\*(Aq);
+
+CREATE USER dblink_regression_test WITH PASSWORD \*(Aqsecret\*(Aq;
 CREATE USER MAPPING FOR dblink_regression_test SERVER fdtest OPTIONS (user \*(Aqdblink_regression_test\*(Aq, password \*(Aqsecret\*(Aq);
 GRANT USAGE ON FOREIGN SERVER fdtest TO dblink_regression_test;
 GRANT SELECT ON TABLE foo TO dblink_regression_test;
@@ -139,11 +139,10 @@ SELECT * FROM dblink(\*(Aqmyconn\*(Aq,\*(AqSELECT * FROM foo\*(Aq) AS t(a int, b
 
 \ec \- :ORIGINAL_USER
 REVOKE USAGE ON FOREIGN SERVER fdtest FROM dblink_regression_test;
-REVOKE SELECT ON TABLE foo FROM  dblink_regression_test;
+REVOKE SELECT ON TABLE foo FROM dblink_regression_test;
 DROP USER MAPPING FOR dblink_regression_test SERVER fdtest;
 DROP USER dblink_regression_test;
 DROP SERVER fdtest;
-DROP FOREIGN DATA WRAPPER postgresql;
 .fi
 .if n \{\
 .RE

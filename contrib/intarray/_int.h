@@ -5,12 +5,13 @@
 #define ___INT_H__
 
 #include "utils/array.h"
+#include "utils/memutils.h"
 
 /* number ranges for compression */
 #define MAXNUMRANGE 100
 
 /* useful macros for accessing int4 arrays */
-#define ARRPTR(x)  ( (int4 *) ARR_DATA_PTR(x) )
+#define ARRPTR(x)  ( (int32 *) ARR_DATA_PTR(x) )
 #define ARRNELEMS(x)  ArrayGetNItems(ARR_NDIM(x), ARR_DIMS(x))
 
 /* reject arrays we can't handle; to wit, those containing nulls */
@@ -71,7 +72,7 @@ typedef char *BITVECP;
 typedef struct
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int4		flag;
+	int32		flag;
 	char		data[1];
 } GISTTYPE;
 
@@ -79,7 +80,7 @@ typedef struct
 
 #define ISALLTRUE(x)	( ((GISTTYPE*)x)->flag & ALLISTRUE )
 
-#define GTHDRSIZE		(VARHDRSZ + sizeof(int4))
+#define GTHDRSIZE		(VARHDRSZ + sizeof(int32))
 #define CALCGTSIZE(flag) ( GTHDRSIZE+(((flag) & ALLISTRUE) ? 0 : SIGLEN) )
 
 #define GETSIGN(x)		( (BITVECP)( (char*)x+GTHDRSIZE ) )
@@ -93,7 +94,7 @@ typedef void (*formfloat) (ArrayType *, float *);
 /*
  * useful functions
  */
-bool		isort(int4 *a, int len);
+bool		isort(int32 *a, int len);
 ArrayType  *new_intArrayType(int num);
 ArrayType  *copy_intArrayType(ArrayType *a);
 ArrayType  *resize_intArrayType(ArrayType *a, int num);
@@ -123,20 +124,21 @@ void		gensign(BITVEC sign, int *a, int len);
  */
 typedef struct ITEM
 {
-	int2		type;
-	int2		left;
-	int4		val;
+	int16		type;
+	int16		left;
+	int32		val;
 } ITEM;
 
 typedef struct QUERYTYPE
 {
 	int32		vl_len_;		/* varlena header (do not touch directly!) */
-	int4		size;			/* number of ITEMs */
+	int32		size;			/* number of ITEMs */
 	ITEM		items[1];		/* variable length array */
 } QUERYTYPE;
 
 #define HDRSIZEQT	offsetof(QUERYTYPE, items)
 #define COMPUTESIZE(size)	( HDRSIZEQT + (size) * sizeof(ITEM) )
+#define QUERYTYPEMAXITEMS	((MaxAllocSize - HDRSIZEQT) / sizeof(ITEM))
 #define GETQUERY(x)  ( (x)->items )
 
 /* "type" codes for ITEM */
@@ -167,7 +169,7 @@ int			compDESC(const void *a, const void *b);
 	do { \
 		int		_nelems_ = ARRNELEMS(a); \
 		if (_nelems_ > 1) \
-			qsort((void*) ARRPTR(a), _nelems_, sizeof(int4), \
+			qsort((void*) ARRPTR(a), _nelems_, sizeof(int32), \
 				  (direction) ? compASC : compDESC ); \
 	} while(0)
 

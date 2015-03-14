@@ -3,7 +3,7 @@
  * joinrels.c
  *	  Routines to determine which relations should be joined
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -213,7 +213,7 @@ join_search_one_level(PlannerInfo *root, int level)
 
 		/*----------
 		 * When special joins are involved, there may be no legal way
-		 * to make an N-way join for some values of N.	For example consider
+		 * to make an N-way join for some values of N.  For example consider
 		 *
 		 * SELECT ... FROM t1 WHERE
 		 *	 x IN (SELECT ... FROM t2,t3 WHERE ...) AND
@@ -224,11 +224,14 @@ join_search_one_level(PlannerInfo *root, int level)
 		 * to accept failure at level 4 and go on to discover a workable
 		 * bushy plan at level 5.
 		 *
-		 * However, if there are no special joins then join_is_legal() should
-		 * never fail, and so the following sanity check is useful.
+		 * However, if there are no special joins and no lateral references
+		 * then join_is_legal() should never fail, and so the following sanity
+		 * check is useful.
 		 *----------
 		 */
-		if (joinrels[level] == NIL && root->join_info_list == NIL)
+		if (joinrels[level] == NIL &&
+			root->join_info_list == NIL &&
+			root->lateral_info_list == NIL)
 			elog(ERROR, "failed to build any %d-way joins", level);
 	}
 }
@@ -329,10 +332,12 @@ join_is_legal(PlannerInfo *root, RelOptInfo *rel1, RelOptInfo *rel2,
 	bool		reversed;
 	bool		unique_ified;
 	bool		is_valid_inner;
+	bool		lateral_fwd;
+	bool		lateral_rev;
 	ListCell   *l;
 
 	/*
-	 * Ensure output params are set on failure return.	This is just to
+	 * Ensure output params are set on failure return.  This is just to
 	 * suppress uninitialized-variable warnings from overly anal compilers.
 	 */
 	*sjinfo_p = NULL;
@@ -340,7 +345,7 @@ join_is_legal(PlannerInfo *root, RelOptInfo *rel1, RelOptInfo *rel2,
 
 	/*
 	 * If we have any special joins, the proposed join might be illegal; and
-	 * in any case we have to determine its join type.	Scan the join info
+	 * in any case we have to determine its join type.  Scan the join info
 	 * list for conflicts.
 	 */
 	match_sjinfo = NULL;
@@ -508,6 +513,47 @@ join_is_legal(PlannerInfo *root, RelOptInfo *rel1, RelOptInfo *rel2,
 		(match_sjinfo == NULL || unique_ified))
 		return false;			/* invalid join path */
 
+	/*
+	 * We also have to check for constraints imposed by LATERAL references.
+	 * The proposed rels could each contain lateral references to the other,
+	 * in which case the join is impossible.  If there are lateral references
+	 * in just one direction, then the join has to be done with a nestloop
+	 * with the lateral referencer on the inside.  If the join matches an SJ
+	 * that cannot be implemented by such a nestloop, the join is impossible.
+	 */
+	lateral_fwd = lateral_rev = false;
+	foreach(l, root->lateral_info_list)
+	{
+		LateralJoinInfo *ljinfo = (LateralJoinInfo *) lfirst(l);
+
+		if (bms_is_subset(ljinfo->lateral_rhs, rel2->relids) &&
+			bms_overlap(ljinfo->lateral_lhs, rel1->relids))
+		{
+			/* has to be implemented as nestloop with rel1 on left */
+			if (lateral_rev)
+				return false;	/* have lateral refs in both directions */
+			lateral_fwd = true;
+			if (!bms_is_subset(ljinfo->lateral_lhs, rel1->relids))
+				return false;	/* rel1 can't compute the required parameter */
+			if (match_sjinfo &&
+				(reversed || match_sjinfo->jointype == JOIN_FULL))
+				return false;	/* not implementable as nestloop */
+		}
+		if (bms_is_subset(ljinfo->lateral_rhs, rel1->relids) &&
+			bms_overlap(ljinfo->lateral_lhs, rel2->relids))
+		{
+			/* has to be implemented as nestloop with rel2 on left */
+			if (lateral_fwd)
+				return false;	/* have lateral refs in both directions */
+			lateral_rev = true;
+			if (!bms_is_subset(ljinfo->lateral_lhs, rel2->relids))
+				return false;	/* rel2 can't compute the required parameter */
+			if (match_sjinfo &&
+				(!reversed || match_sjinfo->jointype == JOIN_FULL))
+				return false;	/* not implementable as nestloop */
+		}
+	}
+
 	/* Otherwise, it's a valid join */
 	*sjinfo_p = match_sjinfo;
 	*reversed_p = reversed;
@@ -563,7 +609,7 @@ make_join_rel(PlannerInfo *root, RelOptInfo *rel1, RelOptInfo *rel2)
 
 	/*
 	 * If it's a plain inner join, then we won't have found anything in
-	 * join_info_list.	Make up a SpecialJoinInfo so that selectivity
+	 * join_info_list.  Make up a SpecialJoinInfo so that selectivity
 	 * estimation functions will know what's being joined.
 	 */
 	if (sjinfo == NULL)
@@ -752,12 +798,14 @@ make_join_rel(PlannerInfo *root, RelOptInfo *rel1, RelOptInfo *rel2)
 /*
  * have_join_order_restriction
  *		Detect whether the two relations should be joined to satisfy
- *		a join-order restriction arising from special joins.
+ *		a join-order restriction arising from special or lateral joins.
  *
  * In practice this is always used with have_relevant_joinclause(), and so
  * could be merged with that function, but it seems clearer to separate the
  * two concerns.  We need this test because there are degenerate cases where
  * a clauseless join must be performed to satisfy join-order restrictions.
+ * Also, if one rel has a lateral reference to the other, we should consider
+ * joining them even if the join would be clauseless.
  *
  * Note: this is only a problem if one side of a degenerate outer join
  * contains multiple rels, or a clauseless join is required within an
@@ -772,6 +820,22 @@ have_join_order_restriction(PlannerInfo *root,
 {
 	bool		result = false;
 	ListCell   *l;
+
+	/*
+	 * If either side has a lateral reference to the other, attempt the join
+	 * regardless of outer-join considerations.
+	 */
+	foreach(l, root->lateral_info_list)
+	{
+		LateralJoinInfo *ljinfo = (LateralJoinInfo *) lfirst(l);
+
+		if (bms_is_subset(ljinfo->lateral_rhs, rel2->relids) &&
+			bms_overlap(ljinfo->lateral_lhs, rel1->relids))
+			return true;
+		if (bms_is_subset(ljinfo->lateral_rhs, rel1->relids) &&
+			bms_overlap(ljinfo->lateral_lhs, rel2->relids))
+			return true;
+	}
 
 	/*
 	 * It's possible that the rels correspond to the left and right sides of a
@@ -846,18 +910,28 @@ have_join_order_restriction(PlannerInfo *root,
 
 /*
  * has_join_restriction
- *		Detect whether the specified relation has join-order restrictions
- *		due to being inside an outer join or an IN (sub-SELECT).
+ *		Detect whether the specified relation has join-order restrictions,
+ *		due to being inside an outer join or an IN (sub-SELECT),
+ *		or participating in any LATERAL references.
  *
  * Essentially, this tests whether have_join_order_restriction() could
  * succeed with this rel and some other one.  It's OK if we sometimes
- * say "true" incorrectly.	(Therefore, we don't bother with the relatively
+ * say "true" incorrectly.  (Therefore, we don't bother with the relatively
  * expensive has_legal_joinclause test.)
  */
 static bool
 has_join_restriction(PlannerInfo *root, RelOptInfo *rel)
 {
 	ListCell   *l;
+
+	foreach(l, root->lateral_info_list)
+	{
+		LateralJoinInfo *ljinfo = (LateralJoinInfo *) lfirst(l);
+
+		if (bms_is_subset(ljinfo->lateral_rhs, rel->relids) ||
+			bms_overlap(ljinfo->lateral_lhs, rel->relids))
+			return true;
+	}
 
 	foreach(l, root->join_info_list)
 	{
@@ -953,7 +1027,7 @@ is_dummy_rel(RelOptInfo *rel)
  * dummy.
  *
  * Also, when called during GEQO join planning, we are in a short-lived
- * memory context.	We must make sure that the dummy path attached to a
+ * memory context.  We must make sure that the dummy path attached to a
  * baserel survives the GEQO cycle, else the baserel is trashed for future
  * GEQO cycles.  On the other hand, when we are marking a joinrel during GEQO,
  * we don't want the dummy path to clutter the main planning context.  Upshot

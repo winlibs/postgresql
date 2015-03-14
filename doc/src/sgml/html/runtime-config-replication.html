@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -109,7 +109,7 @@ HREF="warm-standby.html#STREAMING-REPLICATION"
      are always receivers of replicated data.  When cascading replication
      (see <A
 HREF="warm-standby.html#CASCADING-REPLICATION"
->Section 25.2.6</A
+>Section 25.2.7</A
 >) is used, Standby server(s)
      can also be senders, as well as receivers.
      Parameters are mainly for Sending and Standby servers, though some
@@ -147,7 +147,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+       </DT
 ><DD
 ><P
 >        Specifies the maximum number of concurrent connections from
@@ -159,20 +160,54 @@ CLASS="TYPE"
         <A
 HREF="runtime-config-connection.html#GUC-MAX-CONNECTIONS"
 >max_connections</A
->.  This parameter can only
+>.  Abrupt streaming client
+        disconnection might cause an orphaned connection slot until
+        a timeout is reached, so this parameter should be set slightly
+        higher than the maximum number of expected clients so disconnected
+        clients can immediately reconnect.  This parameter can only
         be set at server start. <TT
 CLASS="VARNAME"
 >wal_level</TT
-> must be set
-        to <TT
+> must be set to
+        <TT
 CLASS="LITERAL"
 >archive</TT
-> or <TT
-CLASS="LITERAL"
->hot_standby</TT
-> to allow
-        connections from standby servers.
+> or higher to allow connections from standby
+        servers.
        </P
+></DD
+><DT
+><A
+NAME="GUC-MAX-REPLICATION-SLOTS"
+></A
+><TT
+CLASS="VARNAME"
+>max_replication_slots</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+       </DT
+><DD
+><P
+>         Specifies the maximum number of replication slots
+         (see <A
+HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
+>Section 25.2.6</A
+>) that the server
+         can support. The default is zero.  This parameter can only be set at
+         server start.
+         <TT
+CLASS="VARNAME"
+>wal_level</TT
+> must be set
+         to <TT
+CLASS="LITERAL"
+>archive</TT
+> or higher to allow replication slots to
+         be used. Setting it to a lower value than the number of currently
+         existing replication slots will prevent the server from starting.
+        </P
 ></DD
 ><DT
 ><A
@@ -184,7 +219,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+       </DT
 ><DD
 ><P
 >        Specifies the minimum number of past log file segments kept in the
@@ -229,15 +265,16 @@ CLASS="FILENAME"
 ></DD
 ><DT
 ><A
-NAME="GUC-REPLICATION-TIMEOUT"
+NAME="GUC-WAL-SENDER-TIMEOUT"
 ></A
 ><TT
 CLASS="VARNAME"
->replication_timeout</TT
+>wal_sender_timeout</TT
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Terminate replication connections that are inactive longer
@@ -250,18 +287,6 @@ CLASS="FILENAME"
 >postgresql.conf</TT
 > file or on the server command line.
         The default value is 60 seconds.
-       </P
-><P
->        To prevent connections from being terminated prematurely,
-        <A
-HREF="runtime-config-replication.html#GUC-WAL-RECEIVER-STATUS-INTERVAL"
->wal_receiver_status_interval</A
->
-        must be enabled on the standby, and its value must be less than the
-        value of <TT
-CLASS="VARNAME"
->replication_timeout</TT
->.
        </P
 ></DD
 ></DL
@@ -307,7 +332,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies a comma-separated list of standby names that can support
@@ -317,7 +343,7 @@ CLASS="FIRSTTERM"
 >, as described in
         <A
 HREF="warm-standby.html#SYNCHRONOUS-REPLICATION"
->Section 25.2.7</A
+>Section 25.2.8</A
 >.
         At any one time there will be at most one active synchronous standby;
         transactions waiting for commit will be allowed to proceed after
@@ -350,7 +376,7 @@ CLASS="VARNAME"
         <TT
 CLASS="VARNAME"
 >primary_conninfo</TT
-> of the standby's walreceiver.  There is
+> of the standby's WAL receiver.  There is
         no mechanism to enforce uniqueness. In case of duplicates one of the
         matching standbys will be chosen to be the synchronous standby, though
         exactly which one is indeterminate.
@@ -403,7 +429,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the number of transactions by which <TT
@@ -472,7 +499,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies whether or not you can connect and run queries during
@@ -498,7 +526,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When Hot Standby is active, this parameter determines how long the
@@ -544,7 +573,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When Hot Standby is active, this parameter determines how long the
@@ -591,7 +621,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >       Specifies the minimum frequency for the WAL receiver
@@ -618,20 +649,6 @@ CLASS="FILENAME"
 > file or on the server command line.
        The default value is 10 seconds.
       </P
-><P
->       When <A
-HREF="runtime-config-replication.html#GUC-REPLICATION-TIMEOUT"
->replication_timeout</A
-> is enabled on a sending server,
-       <TT
-CLASS="VARNAME"
->wal_receiver_status_interval</TT
-> must be enabled, and its value
-       must be less than the value of <TT
-CLASS="VARNAME"
->replication_timeout</TT
->.
-      </P
 ></DD
 ><DT
 ><A
@@ -643,7 +660,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies whether or not a hot standby will send feedback to the primary
@@ -669,6 +687,33 @@ CLASS="FILENAME"
 >        If cascaded replication is in use the feedback is passed upstream
         until it eventually reaches the primary.  Standbys make no other use
         of feedback they receive other than to pass upstream.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-WAL-RECEIVER-TIMEOUT"
+></A
+><TT
+CLASS="VARNAME"
+>wal_receiver_timeout</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        Terminate replication connections that are inactive longer
+        than the specified number of milliseconds. This is useful for
+        the receiving standby server to detect a primary node crash or network
+        outage.
+        A value of zero disables the timeout mechanism.  This parameter
+        can only be set in
+        the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file or on the server command line.
+        The default value is 60 seconds.
        </P
 ></DD
 ></DL

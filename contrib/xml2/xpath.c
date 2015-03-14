@@ -6,6 +6,7 @@
  */
 #include "postgres.h"
 
+#include "access/htup_details.h"
 #include "executor/spi.h"
 #include "fmgr.h"
 #include "funcapi.h"
@@ -24,17 +25,6 @@
 
 
 PG_MODULE_MAGIC;
-
-/* externally accessible functions */
-
-Datum		xml_is_well_formed(PG_FUNCTION_ARGS);
-Datum		xml_encode_special_chars(PG_FUNCTION_ARGS);
-Datum		xpath_nodeset(PG_FUNCTION_ARGS);
-Datum		xpath_string(PG_FUNCTION_ARGS);
-Datum		xpath_number(PG_FUNCTION_ARGS);
-Datum		xpath_bool(PG_FUNCTION_ARGS);
-Datum		xpath_list(PG_FUNCTION_ARGS);
-Datum		xpath_table(PG_FUNCTION_ARGS);
 
 /* exported for use by xslt_proc.c */
 
@@ -719,7 +709,7 @@ xpath_table(PG_FUNCTION_ARGS)
 
 			/*
 			 * Clear the values array, so that not-well-formed documents
-			 * return NULL in all columns.	Note that this also means that
+			 * return NULL in all columns.  Note that this also means that
 			 * spare columns will be NULL.
 			 */
 			for (j = 0; j < ret_tupdesc->natts; j++)

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 39. <SPAN
+>Chapter 40. <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > - <ACRONYM
@@ -99,7 +99,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPGSQL-CURSORS"
->39.7. Cursors</A
+>40.7. Cursors</A
 ></H1
 ><P
 >    Rather than executing a whole query at once, it is possible to set
@@ -128,7 +128,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-CURSOR-DECLARATIONS"
->39.7.1. Declaring Cursor Variables</A
+>40.7.1. Declaring Cursor Variables</A
 ></H2
 ><P
 >     All access to cursors in <SPAN
@@ -260,7 +260,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-CURSOR-OPENING"
->39.7.2. Opening Cursors</A
+>40.7.2. Opening Cursors</A
 ></H2
 ><P
 >     Before a cursor can be used to retrieve rows, it must be
@@ -295,7 +295,7 @@ CLASS="COMMAND"
 > statement described in
       <A
 HREF="plpgsql-cursors.html#PLPGSQL-CURSOR-FOR-LOOP"
->Section 39.7.4</A
+>Section 40.7.4</A
 >.
      </P
 ></BLOCKQUOTE
@@ -305,8 +305,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN56881"
->39.7.2.1. <TT
+NAME="AEN61130"
+>40.7.2.1. <TT
 CLASS="COMMAND"
 >OPEN FOR</TT
 > <TT
@@ -393,8 +393,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN56902"
->39.7.2.2. <TT
+NAME="AEN61151"
+>40.7.2.2. <TT
 CLASS="COMMAND"
 >OPEN FOR EXECUTE</TT
 ></A
@@ -445,7 +445,7 @@ CLASS="COMMAND"
           command.  As usual, this gives flexibility so the query plan can vary
           from one run to the next (see <A
 HREF="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING"
->Section 39.10.2</A
+>Section 40.10.2</A
 >),
           and it also means that variable substitution is not done on the
           command string. As with <TT
@@ -494,7 +494,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="PLPGSQL-OPEN-BOUND-CURSOR"
->39.7.2.3. Opening a Bound Cursor</A
+>40.7.2.3. Opening a Bound Cursor</A
 ></H3
 ><PRE
 CLASS="SYNOPSIS"
@@ -622,7 +622,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-CURSOR-USING"
->39.7.3. Using Cursors</A
+>40.7.3. Using Cursors</A
 ></H2
 ><P
 >     Once a cursor has been opened, it can be manipulated with the
@@ -659,8 +659,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN56964"
->39.7.3.1. <TT
+NAME="AEN61213"
+>40.7.3.1. <TT
 CLASS="LITERAL"
 >FETCH</TT
 ></A
@@ -812,8 +812,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN56999"
->39.7.3.2. <TT
+NAME="AEN61248"
+>40.7.3.2. <TT
 CLASS="LITERAL"
 >MOVE</TT
 ></A
@@ -975,8 +975,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN57038"
->39.7.3.3. <TT
+NAME="AEN61287"
+>40.7.3.3. <TT
 CLASS="LITERAL"
 >UPDATE/DELETE WHERE CURRENT OF</TT
 ></A
@@ -1033,8 +1033,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN57051"
->39.7.3.4. <TT
+NAME="AEN61300"
+>40.7.3.4. <TT
 CLASS="LITERAL"
 >CLOSE</TT
 ></A
@@ -1068,8 +1068,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN57060"
->39.7.3.5. Returning Cursors</A
+NAME="AEN61309"
+>40.7.3.5. Returning Cursors</A
 ></H3
 ><P
 >        <SPAN
@@ -1211,7 +1211,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-CURSOR-FOR-LOOP"
->39.7.4. Looping Through a Cursor's Result</A
+>40.7.4. Looping Through a Cursor's Result</A
 ></H2
 ><P
 >     There is a variant of the <TT
@@ -1298,7 +1298,7 @@ CLASS="COMMAND"
 >OPEN</TT
 > (see <A
 HREF="plpgsql-cursors.html#PLPGSQL-OPEN-BOUND-CURSOR"
->Section 39.7.2.3</A
+>Section 40.7.2.3</A
 >).
    </P
 ><P

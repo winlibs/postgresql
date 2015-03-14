@@ -4,7 +4,7 @@
  *		Querytree manipulation subroutines for query rewriter.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/rewrite/rewriteManip.h
@@ -31,6 +31,13 @@ struct replace_rte_variables_context
 	bool		inserted_sublink;		/* have we inserted a SubLink? */
 };
 
+typedef enum ReplaceVarsNoMatchOption
+{
+	REPLACEVARS_REPORT_ERROR,	/* throw error if no match */
+	REPLACEVARS_CHANGE_VARNO,	/* change the Var's varno, nothing else */
+	REPLACEVARS_SUBSTITUTE_NULL /* replace with a NULL Const */
+} ReplaceVarsNoMatchOption;
+
 
 extern void OffsetVarNodes(Node *node, int offset, int sublevels_up);
 extern void ChangeVarNodes(Node *node, int old_varno, int new_varno,
@@ -42,8 +49,6 @@ extern void IncrementVarSublevelsUp_rtable(List *rtable,
 
 extern bool rangeTableEntry_used(Node *node, int rt_index,
 					 int sublevels_up);
-extern bool attribute_used(Node *node, int rt_index, int attno,
-			   int sublevels_up);
 
 extern Query *getInsertSelectQuery(Query *parsetree, Query ***subquery_ptr);
 
@@ -52,9 +57,8 @@ extern void AddInvertedQual(Query *parsetree, Node *qual);
 
 extern bool contain_aggs_of_level(Node *node, int levelsup);
 extern int	locate_agg_of_level(Node *node, int levelsup);
+extern bool contain_windowfuncs(Node *node);
 extern int	locate_windowfunc(Node *node);
-extern bool checkExprHasAggs(Node *node);
-extern bool checkExprHasWindowFuncs(Node *node);
 extern bool checkExprHasSubLink(Node *node);
 
 extern Node *replace_rte_variables(Node *node,
@@ -70,9 +74,12 @@ extern Node *map_variable_attnos(Node *node,
 					const AttrNumber *attno_map, int map_length,
 					bool *found_whole_row);
 
-extern Node *ResolveNew(Node *node, int target_varno, int sublevels_up,
-		   RangeTblEntry *target_rte,
-		   List *targetlist, int event, int update_varno,
-		   bool *outer_hasSubLinks);
+extern Node *ReplaceVarsFromTargetList(Node *node,
+						  int target_varno, int sublevels_up,
+						  RangeTblEntry *target_rte,
+						  List *targetlist,
+						  ReplaceVarsNoMatchOption nomatch_option,
+						  int nomatch_varno,
+						  bool *outer_hasSubLinks);
 
 #endif   /* REWRITEMANIP_H */

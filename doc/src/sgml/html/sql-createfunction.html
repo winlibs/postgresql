@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.2.2 Documentation"
+TITLE="PostgreSQL 9.4.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2012-12-03T20:31:27"></HEAD
+CONTENT="2015-02-02T20:51:01"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.2.2 Documentation</A
+>PostgreSQL 9.4.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEFUNCTION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN67920"
+NAME="AEN73475"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN67920"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN67925"
+NAME="AEN73478"
 ></A
 ><H2
 >Synopsis</H2
@@ -312,7 +312,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67966"
+NAME="AEN73519"
 ></A
 ><H2
 >Parameters</H2
@@ -389,8 +389,8 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->       The name of an argument. Some languages (currently only PL/pgSQL) let
-       you use the name in the function body.  For other languages the
+>       The name of an argument. Some languages (including SQL and PL/pgSQL)
+       let you use the name in the function body.  For other languages the
        name of an input argument is just extra documentation, so far as
        the function itself is concerned; but you can use input argument names
        when calling a function to improve readability (see <A
@@ -591,19 +591,22 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >       The name of the language that the function is implemented in.
-       Can be <TT
+       It can be <TT
 CLASS="LITERAL"
->SQL</TT
+>sql</TT
 >, <TT
 CLASS="LITERAL"
->C</TT
+>c</TT
 >,
        <TT
 CLASS="LITERAL"
 >internal</TT
 >, or the name of a user-defined
-       procedural language.  For backward compatibility,
-       the name can be enclosed by single quotes.
+       procedural language, e.g. <TT
+CLASS="LITERAL"
+>plpgsql</TT
+>.  Enclosing the
+       name in single quotes is deprecated and requires matching case.
       </P
 ></DD
 ><DT
@@ -741,7 +744,7 @@ HREF="sql-createview.html"
 >CREATE VIEW</A
 > and <A
 HREF="rules-privileges.html"
->Section 37.4</A
+>Section 38.5</A
 >.
        This option can only be set by the superuser.
       </P
@@ -1133,18 +1136,25 @@ NAME="SQL-CREATEFUNCTION-NOTES"
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > type syntax is allowed for
-    input arguments and return value. However, some details of the
-    type specification (e.g., the precision field for
+    declaring a function's arguments and return value.  However,
+    parenthesized type modifiers (e.g., the precision field for
     type <TT
 CLASS="TYPE"
 >numeric</TT
->) are the responsibility of the
-    underlying function implementation and are silently swallowed
-    (i.e., not recognized or
-    enforced) by the <TT
+>) are discarded by <TT
 CLASS="COMMAND"
 >CREATE FUNCTION</TT
-> command.
+>.
+    Thus for example
+    <TT
+CLASS="LITERAL"
+>CREATE FUNCTION foo (varchar(10)) ...</TT
+>
+    is exactly the same as
+    <TT
+CLASS="LITERAL"
+>CREATE FUNCTION foo (varchar) ...</TT
+>.
    </P
 ><P
 >    When replacing an existing function with <TT
@@ -1400,23 +1410,21 @@ CLASS="REPLACEABLE"
    But only the first way is standard-compliant.
   </P
 ><P
->   The SQL standard does not specify parameter defaults.  The syntax
-   with the <TT
+>   For parameter defaults, the SQL standard specifies only the syntax with
+   the <TT
 CLASS="LITERAL"
 >DEFAULT</TT
-> key word is from Oracle, and it
-   is somewhat in the spirit of the standard: SQL/PSM uses it for
-   variable default values.  The syntax with <TT
+> key word.  The syntax
+   with <TT
 CLASS="LITERAL"
 >=</TT
-> is
-   used in T-SQL and Firebird.
+> is used in T-SQL and Firebird.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68262"
+NAME="AEN73825"
 ></A
 ><H2
 >See Also</H2

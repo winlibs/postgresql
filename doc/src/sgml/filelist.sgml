@@ -22,6 +22,7 @@
 <!ENTITY dml        SYSTEM "dml.sgml">
 <!ENTITY func       SYSTEM "func.sgml">
 <!ENTITY indices    SYSTEM "indices.sgml">
+<!ENTITY json       SYSTEM "json.sgml">
 <!ENTITY mvcc       SYSTEM "mvcc.sgml">
 <!ENTITY perform    SYSTEM "perform.sgml">
 <!ENTITY queries    SYSTEM "queries.sgml">
@@ -50,6 +51,7 @@
 <!ENTITY wal           SYSTEM "wal.sgml">
 
 <!-- programmer's guide -->
+<!ENTITY bgworker   SYSTEM "bgworker.sgml">
 <!ENTITY dfunc      SYSTEM "dfunc.sgml">
 <!ENTITY ecpg       SYSTEM "ecpg.sgml">
 <!ENTITY extend     SYSTEM "extend.sgml">
@@ -61,6 +63,7 @@
 <!ENTITY rules      SYSTEM "rules.sgml">
 <!ENTITY spi        SYSTEM "spi.sgml">
 <!ENTITY trigger    SYSTEM "trigger.sgml">
+<!ENTITY event-trigger SYSTEM "event-trigger.sgml">
 <!ENTITY xaggr      SYSTEM "xaggr.sgml">
 <!ENTITY xfunc      SYSTEM "xfunc.sgml">
 <!ENTITY xindex     SYSTEM "xindex.sgml">
@@ -89,6 +92,7 @@
 <!ENTITY nls        SYSTEM "nls.sgml">
 <!ENTITY plhandler  SYSTEM "plhandler.sgml">
 <!ENTITY fdwhandler SYSTEM "fdwhandler.sgml">
+<!ENTITY logicaldecoding SYSTEM "logicaldecoding.sgml">
 <!ENTITY protocol   SYSTEM "protocol.sgml">
 <!ENTITY sources    SYSTEM "sources.sgml">
 <!ENTITY storage    SYSTEM "storage.sgml">
@@ -124,6 +128,7 @@
 <!ENTITY pgbuffercache   SYSTEM "pgbuffercache.sgml">
 <!ENTITY pgcrypto        SYSTEM "pgcrypto.sgml">
 <!ENTITY pgfreespacemap  SYSTEM "pgfreespacemap.sgml">
+<!ENTITY pgprewarm       SYSTEM "pgprewarm.sgml">
 <!ENTITY pgrowlocks      SYSTEM "pgrowlocks.sgml">
 <!ENTITY pgstandby       SYSTEM "pgstandby.sgml">
 <!ENTITY pgstatstatements SYSTEM "pgstatstatements.sgml">
@@ -132,13 +137,17 @@
 <!ENTITY pgtesttiming    SYSTEM "pgtesttiming.sgml">
 <!ENTITY pgtrgm          SYSTEM "pgtrgm.sgml">
 <!ENTITY pgupgrade       SYSTEM "pgupgrade.sgml">
+<!ENTITY pgxlogdump      SYSTEM "pg_xlogdump.sgml">
+<!ENTITY postgres-fdw    SYSTEM "postgres-fdw.sgml">
 <!ENTITY seg             SYSTEM "seg.sgml">
 <!ENTITY contrib-spi     SYSTEM "contrib-spi.sgml">
 <!ENTITY sepgsql         SYSTEM "sepgsql.sgml">
 <!ENTITY sslinfo         SYSTEM "sslinfo.sgml">
 <!ENTITY tablefunc       SYSTEM "tablefunc.sgml">
 <!ENTITY tcn             SYSTEM "tcn.sgml">
+<!ENTITY test-decoding   SYSTEM "test-decoding.sgml">
 <!ENTITY test-parser     SYSTEM "test-parser.sgml">
+<!ENTITY test-shm-mq     SYSTEM "test-shm-mq.sgml">
 <!ENTITY tsearch2        SYSTEM "tsearch2.sgml">
 <!ENTITY unaccent      SYSTEM "unaccent.sgml">
 <!ENTITY uuid-ossp       SYSTEM "uuid-ossp.sgml">
@@ -155,6 +164,8 @@
 <!ENTITY sourcerepo SYSTEM "sourcerepo.sgml">
 
 <!ENTITY release    SYSTEM "release.sgml">
+<!ENTITY release-9.4    SYSTEM "release-9.4.sgml">
+<!ENTITY release-9.3    SYSTEM "release-9.3.sgml">
 <!ENTITY release-9.2    SYSTEM "release-9.2.sgml">
 <!ENTITY release-9.1    SYSTEM "release-9.1.sgml">
 <!ENTITY release-9.0    SYSTEM "release-9.0.sgml">
@@ -191,3 +202,8 @@
  to include it.
  -->
 <!ENTITY % include-index "IGNORE">
+
+<!--
+ Create empty index element for processing by XSLT stylesheet.
+ -->
+<!ENTITY % include-xslt-index "IGNORE">

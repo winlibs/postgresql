@@ -4,7 +4,7 @@
  *	  POSTGRES buffer manager definitions.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/bufmgr.h
@@ -36,9 +36,16 @@ typedef enum BufferAccessStrategyType
 typedef enum
 {
 	RBM_NORMAL,					/* Normal read */
-	RBM_ZERO,					/* Don't read from disk, caller will
-								 * initialize */
-	RBM_ZERO_ON_ERROR			/* Read, but return an all-zeros page on error */
+	RBM_DO_NOT_USE,				/* This used to be RBM_ZERO. Only kept for
+								 * binary compatibility with 3rd party
+								 * extensions. */
+	RBM_ZERO_ON_ERROR,			/* Read, but return an all-zeros page on error */
+	RBM_NORMAL_NO_LOG,			/* Don't log page as invalid during WAL
+								 * replay; otherwise same as RBM_NORMAL */
+	RBM_ZERO_AND_LOCK,			/* Don't read from disk, caller will
+								 * initialize. Also locks the page. */
+	RBM_ZERO_AND_CLEANUP_LOCK	/* Like RBM_ZERO_AND_LOCK, but locks the page
+								 * in "cleanup" mode */
 } ReadBufferMode;
 
 /* in globals.c ... this duplicates miscadmin.h */
@@ -188,13 +195,14 @@ extern void FlushRelationBuffers(Relation rel);
 extern void FlushDatabaseBuffers(Oid dbid);
 extern void DropRelFileNodeBuffers(RelFileNodeBackend rnode,
 					   ForkNumber forkNum, BlockNumber firstDelBlock);
-extern void DropRelFileNodeAllBuffers(RelFileNodeBackend rnode);
+extern void DropRelFileNodesAllBuffers(RelFileNodeBackend *rnodes, int nnodes);
 extern void DropDatabaseBuffers(Oid dbid);
 
 #define RelationGetNumberOfBlocks(reln) \
 	RelationGetNumberOfBlocksInFork(reln, MAIN_FORKNUM)
 
 extern bool BufferIsPermanent(Buffer buffer);
+extern XLogRecPtr BufferGetLSNAtomic(Buffer buffer);
 
 #ifdef NOT_USED
 extern void PrintPinnedBufs(void);
@@ -203,7 +211,7 @@ extern Size BufferShmemSize(void);
 extern void BufferGetTag(Buffer buffer, RelFileNode *rnode,
 			 ForkNumber *forknum, BlockNumber *blknum);
 
-extern void SetBufferCommitInfoNeedsSave(Buffer buffer);
+extern void MarkBufferDirtyHint(Buffer buffer, bool buffer_std);
 
 extern void UnlockBuffers(void);
 extern void LockBuffer(Buffer buffer, int mode);

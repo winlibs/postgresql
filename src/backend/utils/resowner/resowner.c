@@ -9,7 +9,7 @@
  * See utils/resowner/README for more info.
  *
  *
- * Portions Copyright (c) 1996-2012, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -25,8 +25,26 @@
 #include "storage/proc.h"
 #include "utils/memutils.h"
 #include "utils/rel.h"
+#include "utils/resowner_private.h"
 #include "utils/snapmgr.h"
 
+/*
+ * To speed up bulk releasing or reassigning locks from a resource owner to
+ * its parent, each resource owner has a small cache of locks it owns. The
+ * lock manager has the same information in its local lock hash table, and
+ * we fall back on that if cache overflows, but traversing the hash table
+ * is slower when there are a lot of locks belonging to other resource owners.
+ *
+ * MAX_RESOWNER_LOCKS is the size of the per-resource owner cache. It's
+ * chosen based on some testing with pg_dump with a large schema. When the
+ * tests were done (on 9.2), resource owners in a pg_dump run contained up
+ * to 9 locks, regardless of the schema size, except for the top resource
+ * owner which contained much more (overflowing the cache). 15 seems like a
+ * nice round number that's somewhat higher than what pg_dump needs. Note that
+ * making this number larger is not free - the bigger the cache, the slower
+ * it is to release locks (in retail), when a resource owner holds many locks.
+ */
+#define MAX_RESOWNER_LOCKS 15
 
 /*
  * ResourceOwner objects look like this
@@ -42,6 +60,10 @@ typedef struct ResourceOwnerData
 	int			nbuffers;		/* number of owned buffer pins */
 	Buffer	   *buffers;		/* dynamically allocated array */
 	int			maxbuffers;		/* currently allocated array size */
+
+	/* We can remember up to MAX_RESOWNER_LOCKS references to local locks. */
+	int			nlocks;			/* number of owned locks */
+	LOCALLOCK  *locks[MAX_RESOWNER_LOCKS];		/* list of owned locks */
 
 	/* We have built-in support for remembering catcache references */
 	int			ncatrefs;		/* number of owned catcache pins */
@@ -76,6 +98,11 @@ typedef struct ResourceOwnerData
 	int			nfiles;			/* number of owned temporary files */
 	File	   *files;			/* dynamically allocated array */
 	int			maxfiles;		/* currently allocated array size */
+
+	/* We have built-in support for remembering dynamic shmem segments */
+	int			ndsms;			/* number of owned shmem segments */
+	dsm_segment **dsms;			/* dynamically allocated array */
+	int			maxdsms;		/* currently allocated array size */
 }	ResourceOwnerData;
 
 
@@ -110,6 +137,7 @@ static void PrintPlanCacheLeakWarning(CachedPlan *plan);
 static void PrintTupleDescLeakWarning(TupleDesc tupdesc);
 static void PrintSnapshotLeakWarning(Snapshot snapshot);
 static void PrintFileLeakWarning(File file);
+static void PrintDSMLeakWarning(dsm_segment *seg);
 
 
 /*****************************************************************************
@@ -149,7 +177,7 @@ ResourceOwnerCreate(ResourceOwner parent, const char *name)
  *		but don't delete the owner objects themselves.
  *
  * Note that this executes just one phase of release, and so typically
- * must be called three times.	We do it this way because (a) we want to
+ * must be called three times.  We do it this way because (a) we want to
  * do all the recursion separately for each phase, thereby preserving
  * the needed order of operations; and (b) xact.c may have other operations
  * to do between the phases.
@@ -223,7 +251,7 @@ ResourceOwnerReleaseInternal(ResourceOwner owner,
 		 *
 		 * During a commit, there shouldn't be any remaining pins --- that
 		 * would indicate failure to clean up the executor correctly --- so
-		 * issue warnings.	In the abort case, just clean up quietly.
+		 * issue warnings.  In the abort case, just clean up quietly.
 		 *
 		 * We are careful to do the releasing back-to-front, so as to avoid
 		 * O(N^2) behavior in ResourceOwnerForgetBuffer().
@@ -249,6 +277,21 @@ ResourceOwnerReleaseInternal(ResourceOwner owner,
 				PrintRelCacheLeakWarning(owner->relrefs[owner->nrelrefs - 1]);
 			RelationClose(owner->relrefs[owner->nrelrefs - 1]);
 		}
+
+		/*
+		 * Release dynamic shared memory segments.  Note that dsm_detach()
+		 * will remove the segment from my list, so I just have to iterate
+		 * until there are none.
+		 *
+		 * As in the preceding cases, warn if there are leftover at commit
+		 * time.
+		 */
+		while (owner->ndsms > 0)
+		{
+			if (isCommit)
+				PrintDSMLeakWarning(owner->dsms[owner->ndsms - 1]);
+			dsm_detach(owner->dsms[owner->ndsms - 1]);
+		}
 	}
 	else if (phase == RESOURCE_RELEASE_LOCKS)
 	{
@@ -272,11 +315,30 @@ ResourceOwnerReleaseInternal(ResourceOwner owner,
 			 * subtransaction, we do NOT release its locks yet, but transfer
 			 * them to the parent.
 			 */
+			LOCALLOCK **locks;
+			int			nlocks;
+
 			Assert(owner->parent != NULL);
-			if (isCommit)
-				LockReassignCurrentOwner();
+
+			/*
+			 * Pass the list of locks owned by this resource owner to the lock
+			 * manager, unless it has overflowed.
+			 */
+			if (owner->nlocks > MAX_RESOWNER_LOCKS)
+			{
+				locks = NULL;
+				nlocks = 0;
+			}
 			else
-				LockReleaseCurrentOwner();
+			{
+				locks = owner->locks;
+				nlocks = owner->nlocks;
+			}
+
+			if (isCommit)
+				LockReassignCurrentOwner(locks, nlocks);
+			else
+				LockReleaseCurrentOwner(locks, nlocks);
 		}
 	}
 	else if (phase == RESOURCE_RELEASE_AFTER_LOCKS)
@@ -357,9 +419,11 @@ ResourceOwnerDelete(ResourceOwner owner)
 
 	/* And it better not own any resources, either */
 	Assert(owner->nbuffers == 0);
+	Assert(owner->nlocks == 0 || owner->nlocks == MAX_RESOWNER_LOCKS + 1);
 	Assert(owner->ncatrefs == 0);
 	Assert(owner->ncatlistrefs == 0);
 	Assert(owner->nrelrefs == 0);
+	Assert(owner->ndsms == 0);
 	Assert(owner->nplanrefs == 0);
 	Assert(owner->ntupdescs == 0);
 	Assert(owner->nsnapshots == 0);
@@ -375,7 +439,7 @@ ResourceOwnerDelete(ResourceOwner owner)
 	/*
 	 * We delink the owner from its parent before deleting it, so that if
 	 * there's an error we won't have deleted/busted owners still attached to
-	 * the owner tree.	Better a leak than a crash.
+	 * the owner tree.  Better a leak than a crash.
 	 */
 	ResourceOwnerNewParent(owner, NULL);
 
@@ -396,6 +460,8 @@ ResourceOwnerDelete(ResourceOwner owner)
 		pfree(owner->snapshots);
 	if (owner->files)
 		pfree(owner->files);
+	if (owner->dsms)
+		pfree(owner->dsms);
 
 	pfree(owner);
 }
@@ -567,7 +633,7 @@ ResourceOwnerForgetBuffer(ResourceOwner owner, Buffer buffer)
 
 		/*
 		 * Scan back-to-front because it's more likely we are releasing a
-		 * recently pinned buffer.	This isn't always the case of course, but
+		 * recently pinned buffer.  This isn't always the case of course, but
 		 * it's the way to bet.
 		 */
 		for (i = nb1; i >= 0; i--)
@@ -586,6 +652,56 @@ ResourceOwnerForgetBuffer(ResourceOwner owner, Buffer buffer)
 		elog(ERROR, "buffer %d is not owned by resource owner %s",
 			 buffer, owner->name);
 	}
+}
+
+/*
+ * Remember that a Local Lock is owned by a ResourceOwner
+ *
+ * This is different from the other Remember functions in that the list of
+ * locks is only a lossy cache. It can hold up to MAX_RESOWNER_LOCKS entries,
+ * and when it overflows, we stop tracking locks. The point of only remembering
+ * only up to MAX_RESOWNER_LOCKS entries is that if a lot of locks are held,
+ * ResourceOwnerForgetLock doesn't need to scan through a large array to find
+ * the entry.
+ */
+void
+ResourceOwnerRememberLock(ResourceOwner owner, LOCALLOCK *locallock)
+{
+	if (owner->nlocks > MAX_RESOWNER_LOCKS)
+		return;					/* we have already overflowed */
+
+	if (owner->nlocks < MAX_RESOWNER_LOCKS)
+		owner->locks[owner->nlocks] = locallock;
+	else
+	{
+		/* overflowed */
+	}
+	owner->nlocks++;
+}
+
+/*
+ * Forget that a Local Lock is owned by a ResourceOwner
+ */
+void
+ResourceOwnerForgetLock(ResourceOwner owner, LOCALLOCK *locallock)
+{
+	int			i;
+
+	if (owner->nlocks > MAX_RESOWNER_LOCKS)
+		return;					/* we have overflowed */
+
+	Assert(owner->nlocks > 0);
+	for (i = owner->nlocks - 1; i >= 0; i--)
+	{
+		if (locallock == owner->locks[i])
+		{
+			owner->locks[i] = owner->locks[owner->nlocks - 1];
+			owner->nlocks--;
+			return;
+		}
+	}
+	elog(ERROR, "lock reference %p is not owned by resource owner %s",
+		 locallock, owner->name);
 }
 
 /*
@@ -1137,4 +1253,89 @@ PrintFileLeakWarning(File file)
 	elog(WARNING,
 		 "temporary file leak: File %d still referenced",
 		 file);
+}
+
+/*
+ * Make sure there is room for at least one more entry in a ResourceOwner's
+ * dynamic shmem segment reference array.
+ *
+ * This is separate from actually inserting an entry because if we run out
+ * of memory, it's critical to do so *before* acquiring the resource.
+ */
+void
+ResourceOwnerEnlargeDSMs(ResourceOwner owner)
+{
+	int			newmax;
+
+	if (owner->ndsms < owner->maxdsms)
+		return;					/* nothing to do */
+
+	if (owner->dsms == NULL)
+	{
+		newmax = 16;
+		owner->dsms = (dsm_segment **)
+			MemoryContextAlloc(TopMemoryContext,
+							   newmax * sizeof(dsm_segment *));
+		owner->maxdsms = newmax;
+	}
+	else
+	{
+		newmax = owner->maxdsms * 2;
+		owner->dsms = (dsm_segment **)
+			repalloc(owner->dsms, newmax * sizeof(dsm_segment *));
+		owner->maxdsms = newmax;
+	}
+}
+
+/*
+ * Remember that a dynamic shmem segment is owned by a ResourceOwner
+ *
+ * Caller must have previously done ResourceOwnerEnlargeDSMs()
+ */
+void
+ResourceOwnerRememberDSM(ResourceOwner owner, dsm_segment *seg)
+{
+	Assert(owner->ndsms < owner->maxdsms);
+	owner->dsms[owner->ndsms] = seg;
+	owner->ndsms++;
+}
+
+/*
+ * Forget that a dynamic shmem segment is owned by a ResourceOwner
+ */
+void
+ResourceOwnerForgetDSM(ResourceOwner owner, dsm_segment *seg)
+{
+	dsm_segment **dsms = owner->dsms;
+	int			ns1 = owner->ndsms - 1;
+	int			i;
+
+	for (i = ns1; i >= 0; i--)
+	{
+		if (dsms[i] == seg)
+		{
+			while (i < ns1)
+			{
+				dsms[i] = dsms[i + 1];
+				i++;
+			}
+			owner->ndsms = ns1;
+			return;
+		}
+	}
+	elog(ERROR,
+		 "dynamic shared memory segment %u is not owned by resource owner %s",
+		 dsm_segment_handle(seg), owner->name);
+}
+
+
+/*
+ * Debugging subroutine
+ */
+static void
+PrintDSMLeakWarning(dsm_segment *seg)
+{
+	elog(WARNING,
+		 "dynamic shared memory leak: segment %u still referenced",
+		 dsm_segment_handle(seg));
 }

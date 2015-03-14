@@ -124,22 +124,25 @@ PGconn *PQconnectdbParams(const char * const *keywords,
       <para>
        When <literal>expand_dbname</literal> is non-zero, the
        <parameter>dbname</parameter> key word value is allowed to be recognized
-       as a connection string. More details on the possible formats appear in
+       as a connection string. Only the first occurrence of
+       <parameter>dbname</parameter> is expanded this way, any subsequent
+       <parameter>dbname</parameter> value is processed as plain database name. More
+       details on the possible connection string formats appear in
        <xref linkend="libpq-connstring">.
       </para>
 
       <para>
        The passed arrays can be empty to use all default parameters, or can
        contain one or more parameter settings. They should be matched in length.
-       Processing will stop with the last non-<symbol>NULL</symbol> element
-       of the <literal>keywords</literal> array.
+       Processing will stop at the first <symbol>NULL</symbol> element
+       in the <literal>keywords</literal> array.
       </para>
 
       <para>
-       If  any  parameter is unspecified, then the corresponding
-       environment variable (see <xref linkend="libpq-envars">)
-       is checked. If the  environment  variable is not set either,
-       then the indicated built-in defaults are used.
+       If  any  parameter is <symbol>NULL</symbol> or an emptry string, the corresponding
+       environment variable (see <xref linkend="libpq-envars">) is checked.
+       If the  environment  variable is not set either, then the indicated
+       built-in defaults are used.
       </para>
 
       <para>
@@ -483,7 +486,8 @@ typedef struct
        with an entry having a null <structfield>keyword</> pointer.  The
        null pointer is returned if memory could not be allocated. Note that
        the current default values (<structfield>val</structfield> fields)
-       will depend on environment variables and other context.  Callers
+       will depend on environment variables and other context.  A
+       missing or invalid service file will be silently ignored.  Callers
        must treat the connection options data as read-only.
       </para>
 
@@ -495,6 +499,30 @@ typedef struct
 
      </listitem>
     </varlistentry>
+
+    <varlistentry id="libpq-pqconninfo">
+     <term><function>PQconninfo</function><indexterm><primary>PQconninfo</></></term>
+     <listitem>
+      <para>
+       Returns the connection options used by a live connection.
+<synopsis>
+PQconninfoOption *PQconninfo(PGconn *conn);
+</synopsis>
+      </para>
+
+      <para>
+       Returns a connection options array.  This can be used to determine
+       all possible <function>PQconnectdb</function> options and the
+       values that were used to connect to the server. The return
+       value points to an array of <structname>PQconninfoOption</structname>
+       structures, which ends with an entry having a null <structfield>keyword</>
+       pointer. All notes above for <function>PQconndefaults</function> also
+       apply to the result of <function>PQconninfo</function>.
+      </para>
+
+     </listitem>
+    </varlistentry>
+
 
     <varlistentry id="libpq-pqconninfoparse">
      <term><function>PQconninfoParse</function><indexterm><primary>PQconninfoParse</></></term>
@@ -624,9 +652,10 @@ PostgresPollingStatusType PQresetPoll(PGconn *conn);
       <para>
        <function>PQpingParams</function> reports the status of the
        server.  It accepts connection parameters identical to those of
-       <function>PQconnectdbParams</>, described above.  It is not, however,
+       <function>PQconnectdbParams</>, described above.  It is not
        necessary to supply correct user name, password, or database name
-       values to obtain the server status.
+       values to obtain the server status; however, if incorrect values
+       are provided, the server will log a failed connection attempt.
 
 <synopsis>
 PGPing PQpingParams(const char * const *keywords,
@@ -692,9 +721,10 @@ PGPing PQpingParams(const char * const *keywords,
       <para>
        <function>PQping</function> reports the status of the
        server.  It accepts connection parameters identical to those of
-       <function>PQconnectdb</>, described above.  It is not, however,
+       <function>PQconnectdb</>, described above.  It is not
        necessary to supply correct user name, password, or database name
-       values to obtain the server status.
+       values to obtain the server status; however, if incorrect values
+       are provided, the server will log a failed connection attempt.
 
 <synopsis>
 PGPing PQping(const char *conninfo);
@@ -869,7 +899,7 @@ postgresql://%2Fvar%2Flib%2Fpostgresql/dbname
         Using <literal>hostaddr</> instead of <literal>host</> allows the
         application to avoid a host name look-up, which might be important
         in applications with time constraints. However, a host name is
-        required for Kerberos, GSSAPI, or SSPI authentication
+        required for GSSAPI or SSPI authentication
         methods, as well as for <literal>verify-full</> SSL
         certificate verification.  The following rules are used:
         <itemizedlist>
@@ -1304,11 +1334,10 @@ postgresql://%2Fvar%2Flib%2Fpostgresql/dbname
       <term><literal>krbsrvname</literal></term>
       <listitem>
        <para>
-        Kerberos service name to use when authenticating with Kerberos 5
-        or GSSAPI.
+        Kerberos service name to use when authenticating with GSSAPI.
         This must match the service name specified in the server
         configuration for Kerberos authentication to succeed. (See also
-        <xref linkend="kerberos-auth"> and <xref linkend="gssapi-auth">.)
+        <xref linkend="gssapi-auth">.)
        </para>
       </listitem>
      </varlistentry>
@@ -1567,15 +1596,6 @@ PGTransactionStatusType PQtransactionStatus(const PGconn *conn);
        <literal>PQTRANS_ACTIVE</literal> is reported only when a query
        has been sent to the server and not yet completed.
       </para>
-
-      <caution>
-       <para>
-        <function>PQtransactionStatus</> will give incorrect results when using
-        a <productname>PostgreSQL</> 7.3 server that has the parameter <literal>autocommit</>
-        set to off.  The server-side autocommit feature has been
-        deprecated and does not exist in later server versions.
-       </para>
-      </caution>
      </listitem>
     </varlistentry>
 
@@ -1838,7 +1858,7 @@ int PQconnectionUsedPassword(const PGconn *conn);
        if SSL is not in use.
 
 <synopsis>
-SSL *PQgetssl(const PGconn *conn);
+void *PQgetssl(const PGconn *conn);
 </synopsis>
       </para>
 
@@ -1849,10 +1869,29 @@ SSL *PQgetssl(const PGconn *conn);
       </para>
 
       <para>
-       You must define <symbol>USE_SSL</symbol> in order to get the
-       correct prototype for this function. Doing so will also
-       automatically include <filename>ssl.h</filename> from
-       <productname>OpenSSL</productname>.
+       The actual return value is of type <type>SSL *</type>,
+       where <type>SSL</type> is a type defined by
+       the <productname>OpenSSL</productname> library, but it is not declared
+       this way to avoid requiring the <productname>OpenSSL</productname>
+       header files.  To use this function, code along the following lines
+       could be used:
+<programlisting><![CDATA[
+#include <libpq-fe.h>
+#include <openssl/ssl.h>
+
+...
+
+    SSL *ssl;
+
+    dbconn = PQconnectdb(...);
+    ...
+
+    ssl = PQgetssl(dbconn);
+    if (ssl)
+    {
+        /* use OpenSSL functions to access ssl */
+    }
+]]></programlisting>
       </para>
      </listitem>
     </varlistentry>
@@ -2445,7 +2484,8 @@ ExecStatusType PQresultStatus(const PGresult *res);
         command that happens to retrieve zero rows still shows
         <literal>PGRES_TUPLES_OK</literal>.
         <literal>PGRES_COMMAND_OK</literal> is for commands that can never
-        return rows (<command>INSERT</command>, <command>UPDATE</command>,
+        return rows (<command>INSERT</command> or <command>UPDATE</command>
+        without a <literal>RETURNING</literal> clause,
         etc.). A response of <literal>PGRES_EMPTY_QUERY</literal> might
         indicate a bug in the client software.
        </para>
@@ -2554,11 +2594,13 @@ char *PQresultErrorField(const PGresult *res, int fieldcode);
          </varlistentry>
 
          <varlistentry id="libpq-pg-diag-sqlstate">
+          <term>
+           <symbol>PG_DIAG_SQLSTATE</>
           <indexterm>
            <primary>error codes</primary>
            <secondary>libpq</secondary>
           </indexterm>
-          <term><symbol>PG_DIAG_SQLSTATE</></term>
+          </term>
           <listitem>
            <para>
             The SQLSTATE code for the error. The SQLSTATE code identifies
@@ -2652,6 +2694,62 @@ char *PQresultErrorField(const PGresult *res, int fieldcode);
           </listitem>
          </varlistentry>
 
+         <varlistentry id="libpq-pg-diag-schema-name">
+          <term><symbol>PG_DIAG_SCHEMA_NAME</></term>
+          <listitem>
+           <para>
+            If the error was associated with a specific database object,
+            the name of the schema containing that object, if any.
+           </para>
+          </listitem>
+         </varlistentry>
+
+         <varlistentry id="libpq-pg-diag-table-name">
+          <term><symbol>PG_DIAG_TABLE_NAME</></term>
+          <listitem>
+           <para>
+            If the error was associated with a specific table, the name of the
+            table.  (Refer to the schema name field for the name of the
+            table's schema.)
+           </para>
+          </listitem>
+         </varlistentry>
+
+         <varlistentry id="libpq-pg-diag-column-name">
+          <term><symbol>PG_DIAG_COLUMN_NAME</></term>
+          <listitem>
+           <para>
+            If the error was associated with a specific table column, the name
+            of the column.  (Refer to the schema and table name fields to
+            identify the table.)
+           </para>
+          </listitem>
+         </varlistentry>
+
+         <varlistentry id="libpq-pg-diag-datatype-name">
+          <term><symbol>PG_DIAG_DATATYPE_NAME</></term>
+          <listitem>
+           <para>
+            If the error was associated with a specific data type, the name of
+            the data type.  (Refer to the schema name field for the name of
+            the data type's schema.)
+           </para>
+          </listitem>
+         </varlistentry>
+
+         <varlistentry id="libpq-pg-diag-constraint-name">
+          <term><symbol>PG_DIAG_CONSTRAINT_NAME</></term>
+          <listitem>
+           <para>
+            If the error was associated with a specific constraint, the name
+            of the constraint.  Refer to fields listed above for the
+            associated table or domain.  (For this purpose, indexes are
+            treated as constraints, even if they weren't created with
+            constraint syntax.)
+           </para>
+          </listitem>
+         </varlistentry>
+
          <varlistentry id="libpq-pg-diag-source-file">
           <term><symbol>PG_DIAG_SOURCE_FILE</></term>
           <listitem>
@@ -2682,6 +2780,19 @@ char *PQresultErrorField(const PGresult *res, int fieldcode);
          </varlistentry>
         </variablelist>
        </para>
+
+       <note>
+        <para>
+         The fields for schema name, table name, column name, data type name,
+         and constraint name are supplied only for a limited number of error
+         types; see <xref linkend="errcodes-appendix">.  Do not assume that
+         the presence of any of these fields guarantees the presence of
+         another field.  Core error sources observe the interrelationships
+         noted above, but user-defined functions may use these fields in other
+         ways.  In the same vein, do not assume that these fields denote
+         contemporary objects in the current database.
+        </para>
+       </note>
 
        <para>
         The client is responsible for formatting displayed information to meet
@@ -5253,7 +5364,8 @@ int PQclientEncoding(const PGconn *<replaceable>conn</replaceable>);
 </synopsis>
 
       Note that it returns the encoding ID, not a symbolic string
-      such as <literal>EUC_JP</literal>. To convert an encoding ID to an encoding name, you
+      such as <literal>EUC_JP</literal>. If unsuccessful, it returns -1.
+      To convert an encoding ID to an encoding name, you
       can use:
 
 <synopsis>
@@ -6536,7 +6648,7 @@ myEventProc(PGEventId evtId, void *evtInfo, void *passThrough)
       <application>libpq</application> applications will attempt
       authentication  with  servers for this realm and use separate ticket
       files to avoid conflicts with local ticket files.   This
-      environment  variable is only used if Kerberos authentication is
+      environment  variable is only used if GSSAPI authentication is
       selected by the server.
      </para>
     </listitem>
@@ -6840,7 +6952,7 @@ myEventProc(PGEventId evtId, void *evtInfo, void *passThrough)
    at <filename>~/.pg_service.conf</filename> or the location
    specified by the environment variable <envar>PGSERVICEFILE</envar>,
    or it can be a system-wide file
-   at <filename>etc/pg_service.conf</filename> or in the directory
+   at <filename>`pg_config --sysconfdir`/pg_service.conf</filename> or in the directory
    specified by the environment variable
    <envar>PGSYSCONFDIR</envar>.  If service definitions with the same
    name exist in the user and the system file, the user file takes
@@ -6850,7 +6962,7 @@ myEventProc(PGEventId evtId, void *evtInfo, void *passThrough)
   <para>
    The file uses an <quote>INI file</quote> format where the section
    name is the service name and the parameters are connection
-   parameters; see <xref linkend="libpq-connect"> for a list.  For
+   parameters; see <xref linkend="libpq-paramkeywords"> for a list.  For
    example:
 <programlisting>
 # comment
@@ -6916,17 +7028,17 @@ version:1
 dn:cn=mydatabase,dc=mycompany,dc=com
 changetype:add
 objectclass:top
-objectclass:groupOfUniqueNames
+objectclass:device
 cn:mydatabase
-uniqueMember:host=dbserver.mycompany.com
-uniqueMember:port=5439
-uniqueMember:dbname=mydb
-uniqueMember:user=mydb_user
-uniqueMember:sslmode=require
+description:host=dbserver.mycompany.com
+description:port=5439
+description:dbname=mydb
+description:user=mydb_user
+description:sslmode=require
 </programlisting>
    might be queried with the following LDAP URL:
 <programlisting>
-ldap://ldap.mycompany.com/dc=mycompany,dc=com?uniqueMember?one?(cn=mydatabase)
+ldap://ldap.mycompany.com/dc=mycompany,dc=com?description?one?(cn=mydatabase)
 </programlisting>
   </para>
 
@@ -7006,7 +7118,9 @@ ldap://ldap.acme.com/cn=dbserver,cn=hosts?pgconnectinfo?base?(objectclass=*)
    To allow server certificate verification, the certificate(s) of one or more
    trusted <acronym>CA</>s must be
    placed in the file <filename>~/.postgresql/root.crt</> in the user's home
-   directory. (On Microsoft Windows the file is named
+   directory. If intermediate <acronym>CA</>s appear in
+   <filename>root.crt</filename>, the file must also contain certificate
+   chains to their root <acronym>CA</>s. (On Microsoft Windows the file is named
    <filename>%APPDATA%\postgresql\root.crt</filename>.)
   </para>
 
@@ -7029,7 +7143,7 @@ ldap://ldap.acme.com/cn=dbserver,cn=hosts?pgconnectinfo?base?(objectclass=*)
     For backwards compatibility with earlier versions of PostgreSQL, if a
     root CA file exists, the behavior of
     <literal>sslmode</literal>=<literal>require</literal> will be the same
-    as that of <literal>verify-ca</literal>, meaning the sever certificate
+    as that of <literal>verify-ca</literal>, meaning the server certificate
     is validated against the CA. Relying on this behavior is discouraged,
     and applications that need certificate validation should always use
     <literal>verify-ca</literal> or <literal>verify-full</literal>.
@@ -7064,15 +7178,15 @@ ldap://ldap.acme.com/cn=dbserver,cn=hosts?pgconnectinfo?base?(objectclass=*)
    <quote>intermediate</> certificate authority, rather than one that is
    directly trusted by the server.  To use such a certificate, append the
    certificate of the signing authority to the <filename>postgresql.crt</>
-   file, then its parent authority's certificate, and so on up to a
-   <quote>root</> authority that is trusted by the server.  The root
-   certificate should be included in every case where
-   <filename>postgresql.crt</> contains more than one certificate.
+   file, then its parent authority's certificate, and so on up to a certificate
+   authority, <quote>root</> or <quote>intermediate</>, that is trusted by
+   the server, i.e. signed by a certificate in the server's
+   <filename>root.crt</filename> file.
   </para>
 
   <para>
-   Note that <filename>root.crt</filename> lists the top-level CAs that are
-   considered trusted for signing server certificates.  In principle it need
+   Note that the client's <filename>~/.postgresql/root.crt</> lists the top-level CAs
+   that are considered trusted for signing server certificates.  In principle it need
    not list the CA that signed the client's certificate, though in most cases
    that CA would also be trusted for server certificates.
   </para>
@@ -7550,6 +7664,18 @@ CPPFLAGS += -I/usr/local/pgsql/include
      </para>
 
      <para>
+      If you
+      have <command>pkg-config</command><indexterm><primary>pkg-config</primary><secondary sortas="libpq">with
+      libpq</secondary></indexterm> installed, you can run instead:
+<screen>
+<prompt>$</prompt> pkg-config --cflags libpq
+<computeroutput>-I/usr/local/include</computeroutput>
+</screen>
+      Note that this will already include the <option>-I</option> in front of
+      the path.
+     </para>
+
+     <para>
       Failure to specify the correct option to the compiler will
       result in an error message such as:
 <screen>
@@ -7581,6 +7707,15 @@ cc -o testprog testprog1.o testprog2.o -L/usr/local/pgsql/lib -lpq
 <prompt>$</prompt> pg_config --libdir
 <computeroutput>/usr/local/pgsql/lib</computeroutput>
 </screen>
+     </para>
+
+     <para>
+      Or again use <command>pkg-config</command>:
+<screen>
+<prompt>$</prompt> pkg-config --libs libpq
+<computeroutput>-L/usr/local/pgsql/lib -lpq</computeroutput>
+</screen>
+      Note again that this prints the full options, not only the path.
      </para>
 
      <para>
@@ -7770,12 +7905,17 @@ main(int argc, char **argv)
  *
  *   INSERT INTO TBL1 VALUES (10);
  */
+
+#ifdef WIN32
+#include <windows.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <sys/time.h>
-#include <libpq-fe.h>
+#include <sys/types.h>
+#include "libpq-fe.h"
 
 static void
 exit_nicely(PGconn *conn)
@@ -7909,11 +8049,17 @@ main(int argc, char **argv)
  *  t = (8 bytes) 'ho there'
  *  b = (5 bytes) \004\003\002\001\000
  */
+
+#ifdef WIN32
+#include <windows.h>
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <sys/types.h>
-#include <libpq-fe.h>
+#include "libpq-fe.h"
 
 /* for ntohl/htonl */
 #include <netinet/in.h>
@@ -8024,10 +8170,10 @@ main(int argc, char **argv)
      * out-of-line parameters, as well as binary transmission of data.
      *
      * This first example transmits the parameters as text, but receives the
-     * results in binary format.  By using out-of-line parameters we can
-     * avoid a lot of tedious mucking about with quoting and escaping, even
-     * though the data is text.  Notice how we don't have to do anything
-     * special with the quote mark in the parameter value.
+     * results in binary format.  By using out-of-line parameters we can avoid
+     * a lot of tedious mucking about with quoting and escaping, even though
+     * the data is text.  Notice how we don't have to do anything special with
+     * the quote mark in the parameter value.
      */
 
     /* Here is our out-of-line parameter value */
@@ -8054,8 +8200,8 @@ main(int argc, char **argv)
     PQclear(res);
 
     /*
-     * In this second example we transmit an integer parameter in binary
-     * form, and again retrieve the results in binary form.
+     * In this second example we transmit an integer parameter in binary form,
+     * and again retrieve the results in binary form.
      *
      * Although we tell PQexecParams we are letting the backend deduce
      * parameter type, we really force the decision by casting the parameter

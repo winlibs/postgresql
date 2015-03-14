@@ -214,7 +214,7 @@ LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib shell32.lib wsock32.lib ws2_32
  /out:"$(OUTDIR)\$(OUTFILENAME).dll"\
  /implib:"$(OUTDIR)\$(OUTFILENAME)dll.lib"  \
  /libpath:"$(SSL_LIB_PATH)" /libpath:"$(KFW_LIB_PATH)" \
- /def:$(OUTFILENAME)dll.def
+ /def:libpqdll.def
 LINK32_OBJS= \
 	"$(OUTDIR)\$(OUTFILENAME).lib" \
 	"$(OUTDIR)\libpq.res"

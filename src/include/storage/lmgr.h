@@ -4,7 +4,7 @@
  *	  POSTGRES lock manager definitions.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/storage/lmgr.h
@@ -19,6 +19,20 @@
 #include "storage/lock.h"
 #include "utils/rel.h"
 
+
+/* XactLockTableWait operations */
+typedef enum XLTW_Oper
+{
+	XLTW_None,
+	XLTW_Update,
+	XLTW_Delete,
+	XLTW_Lock,
+	XLTW_LockUpdated,
+	XLTW_InsertIndex,
+	XLTW_InsertIndexUnique,
+	XLTW_FetchUpdated,
+	XLTW_RecheckExclusionConstr
+} XLTW_Oper;
 
 extern void RelationInitLockInfo(Relation relation);
 
@@ -54,8 +68,13 @@ extern void UnlockTuple(Relation relation, ItemPointer tid, LOCKMODE lockmode);
 /* Lock an XID (used to wait for a transaction to finish) */
 extern void XactLockTableInsert(TransactionId xid);
 extern void XactLockTableDelete(TransactionId xid);
-extern void XactLockTableWait(TransactionId xid);
+extern void XactLockTableWait(TransactionId xid, Relation rel,
+				  ItemPointer ctid, XLTW_Oper oper);
 extern bool ConditionalXactLockTableWait(TransactionId xid);
+
+/* Lock VXIDs, specified by conflicting locktags */
+extern void WaitForLockers(LOCKTAG heaplocktag, LOCKMODE lockmode);
+extern void WaitForLockersMultiple(List *locktags, LOCKMODE lockmode);
 
 /* Lock a general object (other than a relation) of the current database */
 extern void LockDatabaseObject(Oid classid, Oid objid, uint16 objsubid,

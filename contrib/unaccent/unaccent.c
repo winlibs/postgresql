@@ -3,7 +3,7 @@
  * unaccent.c
  *	  Text search unaccent dictionary
  *
- * Copyright (c) 2009-2013, PostgreSQL Global Development Group
+ * Copyright (c) 2009-2014, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  contrib/unaccent/unaccent.c
@@ -15,6 +15,7 @@
 
 #include "catalog/namespace.h"
 #include "commands/defrem.h"
+#include "lib/stringinfo.h"
 #include "tsearch/ts_cache.h"
 #include "tsearch/ts_locale.h"
 #include "tsearch/ts_public.h"
@@ -216,7 +217,6 @@ findReplaceTo(TrieChar *node, unsigned char *src, int srclen)
 }
 
 PG_FUNCTION_INFO_V1(unaccent_init);
-Datum		unaccent_init(PG_FUNCTION_ARGS);
 Datum
 unaccent_init(PG_FUNCTION_ARGS)
 {
@@ -258,53 +258,54 @@ unaccent_init(PG_FUNCTION_ARGS)
 }
 
 PG_FUNCTION_INFO_V1(unaccent_lexize);
-Datum		unaccent_lexize(PG_FUNCTION_ARGS);
 Datum
 unaccent_lexize(PG_FUNCTION_ARGS)
 {
 	TrieChar   *rootTrie = (TrieChar *) PG_GETARG_POINTER(0);
 	char	   *srcchar = (char *) PG_GETARG_POINTER(1);
 	int32		len = PG_GETARG_INT32(2);
-	char	   *srcstart,
-			   *trgchar = NULL;
-	int			charlen;
-	TSLexeme   *res = NULL;
-	TrieChar   *node;
+	char	   *srcstart = srcchar;
+	TSLexeme   *res;
+	StringInfoData buf;
 
-	srcstart = srcchar;
+	/* we allocate storage for the buffer only if needed */
+	buf.data = NULL;
+
 	while (srcchar - srcstart < len)
 	{
+		TrieChar   *node;
+		int			charlen;
+
 		charlen = pg_mblen(srcchar);
 
 		node = findReplaceTo(rootTrie, (unsigned char *) srcchar, charlen);
 		if (node && node->replaceTo)
 		{
-			if (!res)
+			if (buf.data == NULL)
 			{
-				/* allocate res only if it's needed */
-				res = palloc0(sizeof(TSLexeme) * 2);
-				res->lexeme = trgchar = palloc(len * pg_database_encoding_max_length() + 1 /* \0 */ );
-				res->flags = TSL_FILTER;
+				/* initialize buffer */
+				initStringInfo(&buf);
+				/* insert any data we already skipped over */
 				if (srcchar != srcstart)
-				{
-					memcpy(trgchar, srcstart, srcchar - srcstart);
-					trgchar += (srcchar - srcstart);
-				}
+					appendBinaryStringInfo(&buf, srcstart, srcchar - srcstart);
 			}
-			memcpy(trgchar, node->replaceTo, node->replacelen);
-			trgchar += node->replacelen;
+			appendBinaryStringInfo(&buf, node->replaceTo, node->replacelen);
 		}
-		else if (res)
-		{
-			memcpy(trgchar, srcchar, charlen);
-			trgchar += charlen;
-		}
+		else if (buf.data != NULL)
+			appendBinaryStringInfo(&buf, srcchar, charlen);
 
 		srcchar += charlen;
 	}
 
-	if (res)
-		*trgchar = '\0';
+	/* return a result only if we made at least one substitution */
+	if (buf.data != NULL)
+	{
+		res = (TSLexeme *) palloc0(sizeof(TSLexeme) * 2);
+		res->lexeme = buf.data;
+		res->flags = TSL_FILTER;
+	}
+	else
+		res = NULL;
 
 	PG_RETURN_POINTER(res);
 }
@@ -313,7 +314,6 @@ unaccent_lexize(PG_FUNCTION_ARGS)
  * Function-like wrapper for dictionary
  */
 PG_FUNCTION_INFO_V1(unaccent_dict);
-Datum		unaccent_dict(PG_FUNCTION_ARGS);
 Datum
 unaccent_dict(PG_FUNCTION_ARGS)
 {

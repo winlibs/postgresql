@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-SET"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN80953"
+NAME="AEN84353"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN80953"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN80958"
+NAME="AEN84356"
 ></A
 ><H2
 >Synopsis</H2
@@ -135,7 +135,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80964"
+NAME="AEN84362"
 ></A
 ><H2
 >Description</H2
@@ -280,7 +280,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80999"
+NAME="AEN84397"
 ></A
 ><H2
 >Parameters</H2
@@ -322,16 +322,9 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >ROLLBACK</TT
 >,
-      the session-level setting takes effect again.  Note that
-      <TT
-CLASS="COMMAND"
->SET LOCAL</TT
-> will appear to have no effect if it is
-      executed outside a <TT
-CLASS="COMMAND"
->BEGIN</TT
-> block, since the
-      transaction will end immediately.
+      the session-level setting takes effect again.  Issuing this
+      outside of a transaction block emits a warning and otherwise has
+      no effect.
      </P
 ></DD
 ><DT
@@ -579,8 +572,24 @@ CLASS="VARNAME"
 ></DL
 ></DIV
 ><P>
-
-       See <A
+      </P
+><P
+>       Timezone settings given as numbers or intervals are internally
+       translated to POSIX timezone syntax.  For example, after
+       <TT
+CLASS="LITERAL"
+>SET TIME ZONE -7</TT
+>, <TT
+CLASS="COMMAND"
+>SHOW TIME ZONE</TT
+> would
+       report <TT
+CLASS="LITERAL"
+>&lt;-07&gt;+07</TT
+>.
+      </P
+><P
+>       See <A
 HREF="datatype-datetime.html#DATATYPE-TIMEZONES"
 >Section 8.5.3</A
 > for more information
@@ -595,7 +604,7 @@ HREF="datatype-datetime.html#DATATYPE-TIMEZONES"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81104"
+NAME="AEN84505"
 ></A
 ><H2
 >Notes</H2
@@ -625,7 +634,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81112"
+NAME="AEN84513"
 ></A
 ><H2
 >Examples</H2
@@ -668,7 +677,7 @@ CLASS="SCREEN"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81124"
+NAME="AEN84525"
 ></A
 ><H2
 >Compatibility</H2
@@ -695,7 +704,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81131"
+NAME="AEN84532"
 ></A
 ><H2
 >See Also</H2

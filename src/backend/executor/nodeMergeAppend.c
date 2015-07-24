@@ -3,7 +3,7 @@
  * nodeMergeAppend.c
  *	  routines to handle MergeAppend nodes.
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -32,7 +32,7 @@
  *				   /
  *				MergeAppend---+------+------+--- nil
  *				/	\		  |		 |		|
- *			  nil	nil		 ...	...    ...
+ *			  nil	nil		 ...    ...    ...
  *								 subplans
  */
 

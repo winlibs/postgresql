@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="app-pg-isready">
+ <indexterm zone="app-pg-isready">
+  <primary>pg_isready</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle><application>pg_isready</application></refentrytitle>
   <manvolnum>1</manvolnum>
@@ -14,10 +18,6 @@ PostgreSQL documentation
   <refname>pg_isready</refname>
   <refpurpose>check the connection status of a <productname>PostgreSQL</productname> server</refpurpose>
  </refnamediv>
-
- <indexterm zone="app-pg-isready">
-  <primary>pg_isready</primary>
- </indexterm>
 
  <refsynopsisdiv>
   <cmdsynopsis>
@@ -170,8 +170,9 @@ PostgreSQL documentation
   <title>Notes</title>
 
   <para>
-   The options <option>--dbname</> and <option>--username</> can be used to avoid gratuitous
-   error messages in the logs, but are not necessary for proper functionality.
+   It is not necessary to supply correct user name, password, or database
+   name values to obtain the server status; however, if incorrect values
+   are provided, the server will log a failed connection attempt.
   </para>
  </refsect1>
 

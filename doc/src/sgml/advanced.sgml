@@ -389,7 +389,9 @@ SELECT depname, empno, salary, avg(salary) OVER (PARTITION BY depname) FROM emps
     order in which the rows are output.)  Here is an example:
 
 <programlisting>
-SELECT depname, empno, salary, rank() OVER (PARTITION BY depname ORDER BY salary DESC) FROM empsalary;
+SELECT depname, empno, salary,
+       rank() OVER (PARTITION BY depname ORDER BY salary DESC)
+FROM empsalary;
 </programlisting>
 
 <screen>
@@ -659,7 +661,7 @@ SELECT name, altitude
    <para>
     On the other hand, the  following  query  finds
     all  the cities that are not state capitals and
-    are situated at an altitude of 500 feet or higher:
+    are situated at an altitude over 500 feet:
 
 <programlisting>
 SELECT name, altitude

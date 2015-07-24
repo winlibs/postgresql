@@ -4,7 +4,7 @@
  *	 Routines for archivers to write an uncompressed or compressed data
  *	 stream.
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * This file includes two APIs for dealing with compressed data. The first
@@ -86,14 +86,14 @@ static void InitCompressorZlib(CompressorState *cs, int level);
 static void DeflateCompressorZlib(ArchiveHandle *AH, CompressorState *cs,
 					  bool flush);
 static void ReadDataFromArchiveZlib(ArchiveHandle *AH, ReadFunc readF);
-static size_t WriteDataToArchiveZlib(ArchiveHandle *AH, CompressorState *cs,
+static void WriteDataToArchiveZlib(ArchiveHandle *AH, CompressorState *cs,
 					   const char *data, size_t dLen);
 static void EndCompressorZlib(ArchiveHandle *AH, CompressorState *cs);
 #endif
 
 /* Routines that support uncompressed data I/O */
 static void ReadDataFromArchiveNone(ArchiveHandle *AH, ReadFunc readF);
-static size_t WriteDataToArchiveNone(ArchiveHandle *AH, CompressorState *cs,
+static void WriteDataToArchiveNone(ArchiveHandle *AH, CompressorState *cs,
 					   const char *data, size_t dLen);
 
 /*
@@ -179,7 +179,7 @@ ReadDataFromArchive(ArchiveHandle *AH, int compression, ReadFunc readF)
 /*
  * Compress and write data to the output stream (via writeF).
  */
-size_t
+void
 WriteDataToArchive(ArchiveHandle *AH, CompressorState *cs,
 				   const void *data, size_t dLen)
 {
@@ -190,14 +190,16 @@ WriteDataToArchive(ArchiveHandle *AH, CompressorState *cs,
 	{
 		case COMPR_ALG_LIBZ:
 #ifdef HAVE_LIBZ
-			return WriteDataToArchiveZlib(AH, cs, data, dLen);
+			WriteDataToArchiveZlib(AH, cs, data, dLen);
 #else
 			exit_horribly(modulename, "not built with zlib support\n");
 #endif
+			break;
 		case COMPR_ALG_NONE:
-			return WriteDataToArchiveNone(AH, cs, data, dLen);
+			WriteDataToArchiveNone(AH, cs, data, dLen);
+			break;
 	}
-	return 0;					/* keep compiler quiet */
+	return;
 }
 
 /*
@@ -298,10 +300,7 @@ DeflateCompressorZlib(ArchiveHandle *AH, CompressorState *cs, bool flush)
 				 */
 				size_t		len = cs->zlibOutSize - zp->avail_out;
 
-				if (cs->writeF(AH, out, len) != len)
-					exit_horribly(modulename,
-								  "could not write to output file: %s\n",
-								  strerror(errno));
+				cs->writeF(AH, out, len);
 			}
 			zp->next_out = (void *) out;
 			zp->avail_out = cs->zlibOutSize;
@@ -312,7 +311,7 @@ DeflateCompressorZlib(ArchiveHandle *AH, CompressorState *cs, bool flush)
 	}
 }
 
-static size_t
+static void
 WriteDataToArchiveZlib(ArchiveHandle *AH, CompressorState *cs,
 					   const char *data, size_t dLen)
 {
@@ -320,11 +319,7 @@ WriteDataToArchiveZlib(ArchiveHandle *AH, CompressorState *cs,
 	cs->zp->avail_in = dLen;
 	DeflateCompressorZlib(AH, cs, false);
 
-	/*
-	 * we have either succeeded in writing dLen bytes or we have called
-	 * exit_horribly()
-	 */
-	return dLen;
+	return;
 }
 
 static void
@@ -427,19 +422,12 @@ ReadDataFromArchiveNone(ArchiveHandle *AH, ReadFunc readF)
 	free(buf);
 }
 
-static size_t
+static void
 WriteDataToArchiveNone(ArchiveHandle *AH, CompressorState *cs,
 					   const char *data, size_t dLen)
 {
-	/*
-	 * Any write function should do its own error checking but to make sure we
-	 * do a check here as well...
-	 */
-	if (cs->writeF(AH, data, dLen) != dLen)
-		exit_horribly(modulename,
-					  "could not write to output file: %s\n",
-					  strerror(errno));
-	return dLen;
+	cs->writeF(AH, data, dLen);
+	return;
 }
 
 
@@ -464,6 +452,16 @@ struct cfp
 static int	hasSuffix(const char *filename, const char *suffix);
 #endif
 
+/* free() without changing errno; useful in several places below */
+static void
+free_keep_errno(void *p)
+{
+	int			save_errno = errno;
+
+	free(p);
+	errno = save_errno;
+}
+
 /*
  * Open a file for reading. 'path' is the file to open, and 'mode' should
  * be either "r" or "rb".
@@ -471,6 +469,8 @@ static int	hasSuffix(const char *filename, const char *suffix);
  * If the file at 'path' does not exist, we append the ".gz" suffix (if 'path'
  * doesn't already have it) and try again. So if you pass "foo" as 'path',
  * this will open either "foo" or "foo.gz".
+ *
+ * On failure, return NULL with an error code in errno.
  */
 cfp *
 cfopen_read(const char *path, const char *mode)
@@ -487,12 +487,11 @@ cfopen_read(const char *path, const char *mode)
 #ifdef HAVE_LIBZ
 		if (fp == NULL)
 		{
-			int			fnamelen = strlen(path) + 4;
-			char	   *fname = pg_malloc(fnamelen);
+			char	   *fname;
 
-			snprintf(fname, fnamelen, "%s%s", path, ".gz");
+			fname = psprintf("%s.gz", path);
 			fp = cfopen(fname, mode, 1);
-			free(fname);
+			free_keep_errno(fname);
 		}
 #endif
 	}
@@ -505,8 +504,10 @@ cfopen_read(const char *path, const char *mode)
  * ("w", "wb", "a", or "ab").
  *
  * If 'compression' is non-zero, a gzip compressed stream is opened, and
- * and 'compression' indicates the compression level used. The ".gz" suffix
+ * 'compression' indicates the compression level used. The ".gz" suffix
  * is automatically added to 'path' in that case.
+ *
+ * On failure, return NULL with an error code in errno.
  */
 cfp *
 cfopen_write(const char *path, const char *mode, int compression)
@@ -518,12 +519,11 @@ cfopen_write(const char *path, const char *mode, int compression)
 	else
 	{
 #ifdef HAVE_LIBZ
-		int			fnamelen = strlen(path) + 4;
-		char	   *fname = pg_malloc(fnamelen);
+		char	   *fname;
 
-		snprintf(fname, fnamelen, "%s%s", path, ".gz");
-		fp = cfopen(fname, mode, 1);
-		free(fname);
+		fname = psprintf("%s.gz", path);
+		fp = cfopen(fname, mode, compression);
+		free_keep_errno(fname);
 #else
 		exit_horribly(modulename, "not built with zlib support\n");
 		fp = NULL;				/* keep compiler quiet */
@@ -534,7 +534,9 @@ cfopen_write(const char *path, const char *mode, int compression)
 
 /*
  * Opens file 'path' in 'mode'. If 'compression' is non-zero, the file
- * is opened with libz gzopen(), otherwise with plain fopen()
+ * is opened with libz gzopen(), otherwise with plain fopen().
+ *
+ * On failure, return NULL with an error code in errno.
  */
 cfp *
 cfopen(const char *path, const char *mode, int compression)
@@ -544,11 +546,15 @@ cfopen(const char *path, const char *mode, int compression)
 	if (compression != 0)
 	{
 #ifdef HAVE_LIBZ
-		fp->compressedfp = gzopen(path, mode);
+		char		mode_compression[32];
+
+		snprintf(mode_compression, sizeof(mode_compression), "%s%d",
+				 mode, compression);
+		fp->compressedfp = gzopen(path, mode_compression);
 		fp->uncompressedfp = NULL;
 		if (fp->compressedfp == NULL)
 		{
-			free(fp);
+			free_keep_errno(fp);
 			fp = NULL;
 		}
 #else
@@ -563,7 +569,7 @@ cfopen(const char *path, const char *mode, int compression)
 		fp->uncompressedfp = fopen(path, mode);
 		if (fp->uncompressedfp == NULL)
 		{
-			free(fp);
+			free_keep_errno(fp);
 			fp = NULL;
 		}
 	}
@@ -575,12 +581,27 @@ cfopen(const char *path, const char *mode, int compression)
 int
 cfread(void *ptr, int size, cfp *fp)
 {
+	int			ret;
+
+	if (size == 0)
+		return 0;
+
 #ifdef HAVE_LIBZ
 	if (fp->compressedfp)
-		return gzread(fp->compressedfp, ptr, size);
+	{
+		ret = gzread(fp->compressedfp, ptr, size);
+		if (ret != size && !gzeof(fp->compressedfp))
+			exit_horribly(modulename,
+					"could not read from input file: %s\n", strerror(errno));
+	}
 	else
 #endif
-		return fread(ptr, 1, size, fp->uncompressedfp);
+	{
+		ret = fread(ptr, 1, size, fp->uncompressedfp);
+		if (ret != size && !feof(fp->uncompressedfp))
+			READ_ERROR_EXIT(fp->uncompressedfp);
+	}
+	return ret;
 }
 
 int
@@ -597,12 +618,31 @@ cfwrite(const void *ptr, int size, cfp *fp)
 int
 cfgetc(cfp *fp)
 {
+	int			ret;
+
 #ifdef HAVE_LIBZ
 	if (fp->compressedfp)
-		return gzgetc(fp->compressedfp);
+	{
+		ret = gzgetc(fp->compressedfp);
+		if (ret == EOF)
+		{
+			if (!gzeof(fp->compressedfp))
+				exit_horribly(modulename,
+					"could not read from input file: %s\n", strerror(errno));
+			else
+				exit_horribly(modulename,
+							"could not read from input file: end of file\n");
+		}
+	}
 	else
 #endif
-		return fgetc(fp->uncompressedfp);
+	{
+		ret = fgetc(fp->uncompressedfp);
+		if (ret == EOF)
+			READ_ERROR_EXIT(fp->uncompressedfp);
+	}
+
+	return ret;
 }
 
 char *
@@ -638,7 +678,7 @@ cfclose(cfp *fp)
 		result = fclose(fp->uncompressedfp);
 		fp->uncompressedfp = NULL;
 	}
-	free(fp);
+	free_keep_errno(fp);
 
 	return result;
 }

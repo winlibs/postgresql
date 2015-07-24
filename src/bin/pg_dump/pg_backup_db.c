@@ -60,7 +60,7 @@ _check_database_version(ArchiveHandle *AH)
 /*
  * Reconnect to the server.  If dbname is not NULL, use that database,
  * else the one associated with the archive handle.  If username is
- * not NULL, use that user name, else the one from the handle.	If
+ * not NULL, use that user name, else the one from the handle.  If
  * both the database and the user match the existing connection already,
  * nothing will be done.
  *
@@ -101,7 +101,7 @@ ReconnectToServer(ArchiveHandle *AH, const char *dbname, const char *username)
  *
  * Note: it's not really all that sensible to use a single-entry password
  * cache if the username keeps changing.  In current usage, however, the
- * username never does change, so one savedPassword is sufficient.	We do
+ * username never does change, so one savedPassword is sufficient.  We do
  * update the cache on the off chance that the password has changed since the
  * start of the run.
  */
@@ -428,9 +428,14 @@ ExecuteSqlCommand(ArchiveHandle *AH, const char *qry, const char *desc)
  * identifiers, so that we can recognize statement-terminating semicolons.
  * We assume that INSERT data will not contain SQL comments, E'' literals,
  * or dollar-quoted strings, so this is much simpler than a full SQL lexer.
+ *
+ * Note: when restoring from a pre-9.0 dump file, this code is also used to
+ * process BLOB COMMENTS data, which has the same problem of containing
+ * multiple SQL commands that might be split across bufferloads.  Fortunately,
+ * that data won't contain anything complicated to lex either.
  */
 static void
-ExecuteInsertCommands(ArchiveHandle *AH, const char *buf, size_t bufLen)
+ExecuteSimpleCommands(ArchiveHandle *AH, const char *buf, size_t bufLen)
 {
 	const char *qry = buf;
 	const char *eos = buf + bufLen;
@@ -514,9 +519,10 @@ ExecuteSqlCommandBuf(ArchiveHandle *AH, const char *buf, size_t bufLen)
 	else if (AH->outputKind == OUTPUT_OTHERDATA)
 	{
 		/*
-		 * Table data expressed as INSERT commands.
+		 * Table data expressed as INSERT commands; or, in old dump files,
+		 * BLOB COMMENTS data (which is expressed as COMMENT ON commands).
 		 */
-		ExecuteInsertCommands(AH, buf, bufLen);
+		ExecuteSimpleCommands(AH, buf, bufLen);
 	}
 	else
 	{
@@ -540,7 +546,7 @@ ExecuteSqlCommandBuf(ArchiveHandle *AH, const char *buf, size_t bufLen)
 		}
 	}
 
-	return 1;
+	return bufLen;
 }
 
 /*

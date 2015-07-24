@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ NAME="FUNCTIONS-ARRAY"
 ><P
 >   <A
 HREF="functions-array.html#ARRAY-OPERATORS-TABLE"
->Table 9-42</A
+>Table 9-45</A
 > shows the operators
    available for array types.
   </P
@@ -109,7 +109,7 @@ NAME="ARRAY-OPERATORS-TABLE"
 ></A
 ><P
 ><B
->Table 9-42. Array Operators</B
+>Table 9-45. Array Operators</B
 ></P
 ><TABLE
 BORDER="1"
@@ -406,7 +406,7 @@ HREF="indexes-types.html"
 ><P
 >   <A
 HREF="functions-array.html#ARRAY-FUNCTIONS-TABLE"
->Table 9-43</A
+>Table 9-46</A
 > shows the functions
    available for use with array types. See <A
 HREF="arrays.html"
@@ -421,7 +421,7 @@ NAME="ARRAY-FUNCTIONS-TABLE"
 ></A
 ><P
 ><B
->Table 9-43. Array Functions</B
+>Table 9-46. Array Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -880,6 +880,38 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >          <CODE
 CLASS="FUNCTION"
+>cardinality</CODE
+>(<TT
+CLASS="TYPE"
+>anyarray</TT
+>)
+         </TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>int</TT
+></TD
+><TD
+>returns the total number of elements in the array, or 0 if the array is empty</TD
+><TD
+><TT
+CLASS="LITERAL"
+>cardinality(ARRAY[[1,2],[3,4]])</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>4</TT
+></TD
+></TR
+><TR
+><TD
+>         <TT
+CLASS="LITERAL"
+>          <CODE
+CLASS="FUNCTION"
 >string_to_array</CODE
 >(<TT
 CLASS="TYPE"
@@ -948,6 +980,48 @@ CLASS="LITERALLAYOUT"
 >1
 2</PRE
 >(2 rows)</TD
+></TR
+><TR
+><TD
+>         <TT
+CLASS="LITERAL"
+>          <CODE
+CLASS="FUNCTION"
+>unnest</CODE
+>(<TT
+CLASS="TYPE"
+>anyarray</TT
+>, <TT
+CLASS="TYPE"
+>anyarray</TT
+> [, ...])
+         </TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>setof anyelement, anyelement [, ...]</TT
+></TD
+><TD
+>expand multiple arrays (possibly of different types) to a set
+         of rows.  This is only allowed in the FROM clause; see
+         <A
+HREF="queries-table-expressions.html#QUERIES-TABLEFUNCTIONS"
+>Section 7.2.1.4</A
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>unnest(ARRAY[1,2],ARRAY['foo','bar','baz'])</TT
+></TD
+><TD
+><PRE
+CLASS="LITERALLAYOUT"
+>1    foo
+2    bar
+NULL baz</PRE
+>(3 rows)</TD
 ></TR
 ></TBODY
 ></TABLE

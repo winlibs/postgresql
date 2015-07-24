@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="pg_isready"
 HREF="app-pg-isready.html"><LINK
 REL="NEXT"
-TITLE="pg_restore"
-HREF="app-pgrestore.html"><LINK
+TITLE="pg_recvlogical"
+HREF="app-pgrecvlogical.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="pg_restore"
-HREF="app-pgrestore.html"
+TITLE="pg_recvlogical"
+HREF="app-pgrecvlogical.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -95,18 +95,18 @@ NAME="APP-PGRECEIVEXLOG"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN85717"
+NAME="AEN89185"
 ></A
 ><H2
 >Name</H2
->pg_receivexlog&nbsp;--&nbsp;streams transaction logs from a <SPAN
+>pg_receivexlog&nbsp;--&nbsp;stream transaction logs from a <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> cluster</DIV
+> server</DIV
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN85723"
+NAME="AEN89189"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85728"
+NAME="AEN89194"
 ></A
 ><H2
 >   Description
@@ -208,17 +208,13 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85748"
+NAME="AEN89214"
 ></A
 ><H2
 >Options</H2
 ><P
->    The following command-line options control the location and format of the
-    output.
-
-    <P
 ></P
-></P><DIV
+><DIV
 CLASS="VARIABLELIST"
 ><DL
 ><DT
@@ -247,18 +243,6 @@ CLASS="REPLACEABLE"
 >        This parameter is required.
        </P
 ></DD
-></DL
-></DIV
-><P>
-   </P
-><P
->    The following command-line options control the running of the program.
-
-    <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
 ><DT
 ><TT
 CLASS="OPTION"
@@ -276,6 +260,80 @@ CLASS="OPTION"
 ><DT
 ><TT
 CLASS="OPTION"
+>-s <TT
+CLASS="REPLACEABLE"
+><I
+>interval</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--status-interval=<TT
+CLASS="REPLACEABLE"
+><I
+>interval</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        Specifies the number of seconds between status packets sent back to the
+        server. This allows for easier monitoring of the progress from server.
+        A value of zero disables the periodic status updates completely,
+        although an update will still be sent when requested by the server, to
+        avoid timeout disconnect. The default value is 10 seconds.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-S <TT
+CLASS="REPLACEABLE"
+><I
+>slotname</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--slot=<TT
+CLASS="REPLACEABLE"
+><I
+>slotname</I
+></TT
+></TT
+></DT
+><DD
+><P
+>         Require <SPAN
+CLASS="APPLICATION"
+>pg_receivexlog</SPAN
+> to use an existing
+         replication slot (see <A
+HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
+>Section 25.2.6</A
+>).
+         When this option is used, <SPAN
+CLASS="APPLICATION"
+>pg_receivexlog</SPAN
+> will report
+         a flush position to the server, indicating when each segment has been
+         synchronized to disk so that the server can remove that segment if it
+         is not otherwise needed.  When using this parameter, it is important
+         to make sure that <SPAN
+CLASS="APPLICATION"
+>pg_receivexlog</SPAN
+> cannot become the
+         synchronous standby through an incautious setting of
+         <A
+HREF="runtime-config-replication.html#GUC-SYNCHRONOUS-STANDBY-NAMES"
+>synchronous_standby_names</A
+>; it does not flush
+         data frequently enough for this to work correctly.
+        </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-v</TT
 ><BR><TT
 CLASS="OPTION"
@@ -288,8 +346,6 @@ CLASS="OPTION"
 ></DD
 ></DL
 ></DIV
-><P>
-   </P
 ><P
 >    The following command-line options control the database connection parameters.
 
@@ -394,33 +450,6 @@ CLASS="ENVAR"
 >PGPORT</TT
 > environment variable, if
         set, or a compiled-in default.
-       </P
-></DD
-><DT
-><TT
-CLASS="OPTION"
->-s <TT
-CLASS="REPLACEABLE"
-><I
->interval</I
-></TT
-></TT
-><BR><TT
-CLASS="OPTION"
->--status-interval=<TT
-CLASS="REPLACEABLE"
-><I
->interval</I
-></TT
-></TT
-></DT
-><DD
-><P
->        Specifies the number of seconds between status packets sent back to the
-        server. This allows for easier monitoring of the progress from server.
-        A value of zero disables the periodic status updates completely,
-        although an update will still be sent when requested by the server, to
-        avoid timeout disconnect. The default value is 10 seconds.
        </P
 ></DD
 ><DT
@@ -555,7 +584,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85869"
+NAME="AEN89346"
 ></A
 ><H2
 >Environment</H2
@@ -577,7 +606,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85875"
+NAME="AEN89352"
 ></A
 ><H2
 >Notes</H2
@@ -589,30 +618,23 @@ CLASS="APPLICATION"
    <A
 HREF="runtime-config-wal.html#GUC-ARCHIVE-COMMAND"
 >archive_command</A
->, the server will continue to
-   recycle transaction log files even if the backups are not properly
-   archived, since there is no command that fails. This can be worked
-   around by having an <A
+> as the main WAL backup method, it is
+   strongly recommended to use replication slots.  Otherwise, the server is
+   free to recycle or remove transaction log files before they are backed up,
+   because it does not have any information, either
+   from <A
 HREF="runtime-config-wal.html#GUC-ARCHIVE-COMMAND"
 >archive_command</A
-> that fails
-   when the file has not been properly archived yet, for example:
-</P><PRE
-CLASS="PROGRAMLISTING"
->archive_command = 'sleep 5 &amp;&amp; test -f /mnt/server/archivedir/%f'</PRE
-><P>
-   The initial timeout is necessary because
-   <SPAN
-CLASS="APPLICATION"
->pg_receivexlog</SPAN
-> works using asynchronous
-   replication and can therefore be slightly behind the master.
+> or the replication slots, about
+   how far the WAL stream has been archived.  Note, however, that a
+   replication slot will fill up the server's disk space if the receiver does
+   not keep up with fetching the WAL data.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85883"
+NAME="AEN89358"
 ></A
 ><H2
 >Examples</H2
@@ -640,7 +662,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85891"
+NAME="AEN89366"
 ></A
 ><H2
 >See Also</H2
@@ -682,7 +704,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="app-pgrestore.html"
+HREF="app-pgrecvlogical.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -709,7 +731,10 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->pg_restore</TD
+><SPAN
+CLASS="APPLICATION"
+>pg_recvlogical</SPAN
+></TD
 ></TR
 ></TABLE
 ></DIV

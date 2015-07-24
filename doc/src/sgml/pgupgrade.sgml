@@ -1,6 +1,10 @@
 <!-- doc/src/sgml/pgupgrade.sgml -->
 
 <refentry id="pgupgrade">
+ <indexterm zone="pgupgrade">
+  <primary>pg_upgrade</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle><application>pg_upgrade</application></refentrytitle>
   <manvolnum>1</manvolnum>
@@ -11,10 +15,6 @@
   <refname>pg_upgrade</refname>
   <refpurpose>upgrade a <productname>PostgreSQL</productname> server instance</refpurpose>
  </refnamediv>
-
- <indexterm zone="pgupgrade">
-  <primary>pg_upgrade</primary>
- </indexterm>
 
  <refsynopsisdiv>
   <cmdsynopsis>
@@ -79,15 +79,15 @@
     <variablelist>
 
      <varlistentry>
-      <term><option>-b</option> <replaceable>old_bindir</></term>
-      <term><option>--old-bindir=</option><replaceable>old_bindir</></term>
+      <term><option>-b</option> <replaceable>bindir</></term>
+      <term><option>--old-bindir=</option><replaceable>bindir</></term>
       <listitem><para>the old PostgreSQL executable directory;
       environment variable <envar>PGBINOLD</></para></listitem>
      </varlistentry>
 
      <varlistentry>
-      <term><option>-B</option> <replaceable>new_bindir</></term>
-      <term><option>--new-bindir=</option><replaceable>new_bindir</></term>
+      <term><option>-B</option> <replaceable>bindir</></term>
+      <term><option>--new-bindir=</option><replaceable>bindir</></term>
       <listitem><para>the new PostgreSQL executable directory;
       environment variable <envar>PGBINNEW</></para></listitem>
      </varlistentry>
@@ -99,15 +99,15 @@
      </varlistentry>
 
      <varlistentry>
-      <term><option>-d</option> <replaceable>old_datadir</></term>
-      <term><option>--old-datadir=</option><replaceable>old_datadir</></term>
+      <term><option>-d</option> <replaceable>datadir</></term>
+      <term><option>--old-datadir=</option><replaceable>datadir</></term>
       <listitem><para>the old cluster data directory; environment
       variable <envar>PGDATAOLD</></para></listitem>
      </varlistentry>
 
      <varlistentry>
-      <term><option>-D</option> <replaceable>new_datadir</></term>
-      <term><option>--new-datadir=</option><replaceable>new_datadir</></term>
+      <term><option>-D</option> <replaceable>datadir</></term>
+      <term><option>--new-datadir=</option><replaceable>datadir</></term>
       <listitem><para>the new cluster data directory; environment
       variable <envar>PGDATANEW</></para></listitem>
      </varlistentry>
@@ -141,15 +141,15 @@
      </varlistentry>
 
      <varlistentry>
-      <term><option>-p</option> <replaceable>old_port_number</></term>
-      <term><option>--old-port=</option><replaceable>old_portnum</></term>
+      <term><option>-p</option> <replaceable>port</></term>
+      <term><option>--old-port=</option><replaceable>port</></term>
       <listitem><para>the old cluster port number; environment
       variable <envar>PGPORTOLD</></para></listitem>
      </varlistentry>
 
      <varlistentry>
-      <term><option>-P</option> <replaceable>new_port_number</></term>
-      <term><option>--new-port=</option><replaceable>new_portnum</></term>
+      <term><option>-P</option> <replaceable>port</></term>
+      <term><option>--new-port=</option><replaceable>port</></term>
       <listitem><para>the new cluster port number; environment
       variable <envar>PGPORTNEW</></para></listitem>
      </varlistentry>
@@ -162,8 +162,8 @@
      </varlistentry>
 
      <varlistentry>
-      <term><option>-u</option> <replaceable>user_name</></term>
-      <term><option>--user=</option><replaceable>user_name</></term>
+      <term><option>-U</option> <replaceable>username</></term>
+      <term><option>--username=</option><replaceable>username</></term>
       <listitem><para>cluster's super user name; environment
       variable <envar>PGUSER</></para></listitem>
      </varlistentry>
@@ -182,7 +182,6 @@
 
      <varlistentry>
       <term><option>-?</option></term>
-      <term><option>-h</option></term>
       <term><option>--help</option></term>
       <listitem><para>show help, then exit</para></listitem>
      </varlistentry>
@@ -247,7 +246,7 @@ mv /usr/local/pgsql /usr/local/pgsql.old
      location, use the <literal>prefix</literal> variable:
 
 <programlisting>
-gmake prefix=/usr/local/pgsql.new install
+make prefix=/usr/local/pgsql.new install
 </programlisting></para>
    </step>
 
@@ -282,6 +281,8 @@ gmake prefix=/usr/local/pgsql.new install
      whether they are from <filename>contrib</filename>
      or some other source. Do not install the schema definitions, e.g.
      <filename>pgcrypto.sql</>, because these will be upgraded from the old cluster.
+     Also, any custom full text search files (dictionary, synonym,
+     thesaurus, stop words) must also be copied to the new cluster.
     </para>
    </step>
 
@@ -289,10 +290,9 @@ gmake prefix=/usr/local/pgsql.new install
     <title>Adjust authentication</title>
 
     <para>
-     <command>pg_upgrade</> will connect to the old and new servers several times,
-     so you might want to set authentication to <literal>trust</>
-     or <literal>peer</> in <filename>pg_hba.conf</>, or if using
-     <literal>md5</> authentication, use a <filename>~/.pgpass</> file
+     <command>pg_upgrade</> will connect to the old and new servers several
+     times, so you might want to set authentication to <literal>peer</>
+     in <filename>pg_hba.conf</> or use a <filename>~/.pgpass</> file
      (see <xref linkend="libpq-pgpass">).
     </para>
    </step>
@@ -407,10 +407,9 @@ pg_upgrade.exe
     <title>Restore <filename>pg_hba.conf</></title>
 
     <para>
-     If you modified <filename>pg_hba.conf</> to use <literal>trust</>,
-     restore its original authentication settings.  It might also be
-     necessary to adjust other configurations files in the new cluster to
-     match the old cluster, e.g. <filename>postgresql.conf</>.
+     If you modified <filename>pg_hba.conf</>, restore its original settings.
+     It might also be necessary to adjust other configuration files in the new
+     cluster to match the old cluster, e.g. <filename>postgresql.conf</>.
     </para>
    </step>
 
@@ -459,8 +458,9 @@ psql --username postgres --file script.sql postgres
     <para>
      Once you are satisfied with the upgrade, you can delete the old
      cluster's data directories by running the script mentioned when
-     <command>pg_upgrade</command> completes. You can also delete the
-     old installation directories
+     <command>pg_upgrade</command> completes. (Automatic deletion is not
+     possible if you have user-defined tablespaces inside the old data
+     directory.)  You can also delete the old installation directories
      (e.g. <filename>bin</>, <filename>share</>).
     </para>
    </step>
@@ -570,7 +570,11 @@ psql --username postgres --file script.sql postgres
    the old server and run <command>rsync</> again to update the copy with any
    changes to make it consistent.  You might want to exclude some
    files, e.g. <filename>postmaster.pid</>, as documented in <xref
-   linkend="backup-lowlevel-base-backup">.
+   linkend="backup-lowlevel-base-backup">.  If your file system supports
+   file system snapshots or copy-on-write file copies, you can use that
+   to make a backup of the old cluster and tablespaces, though the snapshot
+   and copies must be created simultaneously or while the database server
+   is down.
   </para>
 
  <refsect2>

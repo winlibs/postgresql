@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -388,16 +388,27 @@ CLASS="NOTE"
 ><B
 >Note: </B
 >     As described in <A
-HREF="xfunc-volatility.html"
->Section 35.6</A
->, functions and
-     operators marked <TT
+HREF="sql-expressions.html#SYNTAX-EXPRESS-EVAL"
+>Section 4.2.14</A
+>, there are various
+     situations in which subexpressions of an expression are evaluated at
+     different times, so that the principle that <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="TOKEN"
+>CASE</TT
+>
+     evaluates only necessary subexpressions"</SPAN
+> is not ironclad.  For
+     example a constant <TT
 CLASS="LITERAL"
->IMMUTABLE</TT
-> can be evaluated when
-     the query is planned rather than when it is executed.  This means
-     that constant parts of a subexpression that is not evaluated during
-     query execution might still be evaluated during query planning.
+>1/0</TT
+> subexpression will usually result in
+     a division-by-zero failure at planning time, even if it's within
+     a <TT
+CLASS="TOKEN"
+>CASE</TT
+> arm that would never be entered at run time.
     </P
 ></BLOCKQUOTE
 ></DIV

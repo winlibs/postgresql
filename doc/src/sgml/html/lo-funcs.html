@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Large Objects"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -96,11 +96,189 @@ NAME="LO-FUNCS"
 >32.4. Server-side Functions</A
 ></H1
 ><P
->   There are server-side functions callable from SQL that correspond to
-   each of the client-side functions described above; indeed, for the
-   most part the client-side functions are simply interfaces to the
-   equivalent server-side functions.  The ones that are actually useful
-   to call via SQL commands are
+>   Server-side functions tailored for manipulating large objects from SQL are
+   listed in <A
+HREF="lo-funcs.html#LO-FUNCS-TABLE"
+>Table 32-1</A
+>.
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="LO-FUNCS-TABLE"
+></A
+><P
+><B
+>Table 32-1. SQL-oriented Large Object Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><COL><COL><THEAD
+><TR
+><TH
+>Function</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+><TH
+>Example</TH
+><TH
+>Result</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>       
+       <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>lo_from_bytea(<TT
+CLASS="PARAMETER"
+>loid</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>string</TT
+> <TT
+CLASS="TYPE"
+>bytea</TT
+>)</CODE
+></TT
+>
+      </TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD
+>       Create a large object and store data there, returning its OID.
+       Pass <TT
+CLASS="LITERAL"
+>0</TT
+> to have the system choose an OID.
+      </TD
+><TD
+><TT
+CLASS="LITERAL"
+>lo_from_bytea(0, E'\\xffffff00')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>24528</TT
+></TD
+></TR
+><TR
+><TD
+>       
+       <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>lo_put(<TT
+CLASS="PARAMETER"
+>loid</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>offset</TT
+> <TT
+CLASS="TYPE"
+>bigint</TT
+>, <TT
+CLASS="PARAMETER"
+>str</TT
+> <TT
+CLASS="TYPE"
+>bytea</TT
+>)</CODE
+></TT
+>
+      </TD
+><TD
+><TT
+CLASS="TYPE"
+>void</TT
+></TD
+><TD
+>       Write data at the given offset.
+      </TD
+><TD
+><TT
+CLASS="LITERAL"
+>lo_put(24528, 1, E'\\xaa')</TT
+></TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+>       
+       <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>lo_get(<TT
+CLASS="PARAMETER"
+>loid</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, <TT
+CLASS="PARAMETER"
+>from</TT
+> <TT
+CLASS="TYPE"
+>bigint</TT
+>, <TT
+CLASS="PARAMETER"
+>for</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+></SPAN
+>])</CODE
+></TT
+>
+      </TD
+><TD
+><TT
+CLASS="TYPE"
+>bytea</TT
+></TD
+><TD
+>       Extract contents or a substring thereof.
+      </TD
+><TD
+><TT
+CLASS="LITERAL"
+>lo_get(24528, 0, 3)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>\xffaaff</TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   There are additional server-side functions corresponding to each of the
+   client-side functions described earlier; indeed, for the most part the
+   client-side functions are simply interfaces to the equivalent server-side
+   functions.  The ones just as convenient to call via SQL commands are
    <CODE
 CLASS="FUNCTION"
 >lo_creat</CODE

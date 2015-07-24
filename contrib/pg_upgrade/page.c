@@ -3,7 +3,7 @@
  *
  *	per-page conversion operations
  *
- *	Copyright (c) 2010-2013, PostgreSQL Global Development Group
+ *	Copyright (c) 2010-2014, PostgreSQL Global Development Group
  *	contrib/pg_upgrade/page.c
  */
 
@@ -30,7 +30,7 @@ static pageCnvCtx *loadConverterPlugin(
  *	the PageLayoutVersion of the new cluster.  If the versions differ, this
  *	function loads a converter plugin and returns a pointer to a pageCnvCtx
  *	object (in *result) that knows how to convert pages from the old format
- *	to the new format.	If the versions are identical, this function just
+ *	to the new format.  If the versions are identical, this function just
  *	returns a NULL pageCnvCtx pointer to indicate that page-by-page conversion
  *	is not required.
  */
@@ -65,7 +65,7 @@ setupPageConverter(void)
 		 */
 
 		if ((converter = loadConverterPlugin(newPageVersion, oldPageVersion)) == NULL)
-			pg_log(PG_FATAL, "could not find plugin to convert from old page layout to new page layout\n");
+			pg_fatal("could not find plugin to convert from old page layout to new page layout\n");
 
 		return converter;
 	}
@@ -91,10 +91,10 @@ getPageVersion(uint16 *version, const char *pathName)
 	ssize_t		bytesRead;
 
 	if ((relfd = open(pathName, O_RDONLY, 0)) < 0)
-		pg_log(PG_FATAL, "could not open relation %s\n", pathName);
+		pg_fatal("could not open relation %s\n", pathName);
 
 	if ((bytesRead = read(relfd, &page, sizeof(page))) != sizeof(page))
-		pg_log(PG_FATAL, "could not read page header of %s\n", pathName);
+		pg_fatal("could not read page header of %s\n", pathName);
 
 	*version = PageGetPageLayoutVersion(&page);
 
@@ -110,7 +110,7 @@ getPageVersion(uint16 *version, const char *pathName)
  *	This function loads a page-converter plugin library and grabs a
  *	pointer to each of the (interesting) functions provided by that
  *	plugin.  The name of the plugin library is derived from the given
- *	newPageVersion and oldPageVersion.	If a plugin is found, this
+ *	newPageVersion and oldPageVersion.  If a plugin is found, this
  *	function returns a pointer to a pageCnvCtx object (which will contain
  *	a collection of plugin function pointers). If the required plugin
  *	is not found, this function returns NULL.

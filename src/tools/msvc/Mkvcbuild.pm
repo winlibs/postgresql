@@ -67,14 +67,16 @@ sub mkvcbuild
 	our @pgportfiles = qw(
 	  chklocale.c crypt.c fls.c fseeko.c getrusage.c inet_aton.c random.c
 	  srandom.c getaddrinfo.c gettimeofday.c inet_net_ntop.c kill.c open.c
-	  erand48.c snprintf.c strlcat.c strlcpy.c dirmod.c exec.c noblock.c path.c
+	  erand48.c snprintf.c strlcat.c strlcpy.c dirmod.c noblock.c path.c
 	  pgcheckdir.c pg_crc.c pgmkdirp.c pgsleep.c pgstrcasecmp.c pqsignal.c
-	  qsort.c qsort_arg.c quotes.c
-	  sprompt.c tar.c thread.c wait_error.c getopt.c getopt_long.c dirent.c rint.c win32env.c
-	  win32error.c win32setlocale.c);
+	  mkdtemp.c qsort.c qsort_arg.c quotes.c system.c
+	  sprompt.c tar.c thread.c getopt.c getopt_long.c dirent.c
+	  win32env.c win32error.c win32setlocale.c);
+
+	push(@pgportfiles, 'rint.c') if ($vsVersion < '12.00');
 
 	our @pgcommonallfiles = qw(
-	  relpath.c);
+	  exec.c pgfnames.c psprintf.c relpath.c rmtree.c string.c username.c wait_error.c);
 
 	our @pgcommonfrontendfiles = (@pgcommonallfiles, qw(fe_memutils.c));
 
@@ -304,6 +306,7 @@ sub mkvcbuild
 	my $libecpgcompat = $solution->AddProject(
 		'libecpg_compat', 'dll',
 		'interfaces',     'src\interfaces\ecpg\compatlib');
+	$libecpgcompat->AddDefine('FRONTEND');
 	$libecpgcompat->AddIncludeDir('src\interfaces\ecpg\include');
 	$libecpgcompat->AddIncludeDir('src\interfaces\libpq');
 	$libecpgcompat->UseDef('src\interfaces\ecpg\compatlib\compatlib.def');
@@ -316,10 +319,10 @@ sub mkvcbuild
 	$ecpg->AddPrefixInclude('src\interfaces\ecpg\preproc');
 	$ecpg->AddFiles('src\interfaces\ecpg\preproc', 'pgc.l', 'preproc.y');
 	$ecpg->AddDefine('MAJOR_VERSION=4');
-	$ecpg->AddDefine('MINOR_VERSION=9');
+	$ecpg->AddDefine('MINOR_VERSION=10');
 	$ecpg->AddDefine('PATCHLEVEL=0');
 	$ecpg->AddDefine('ECPG_COMPILE');
-	$ecpg->AddReference($libpgport, $libpgcommon);
+	$ecpg->AddReference($libpgcommon, $libpgport);
 
 	my $pgregress_ecpg =
 	  $solution->AddProject('pg_regress_ecpg', 'exe', 'misc');
@@ -329,7 +332,8 @@ sub mkvcbuild
 	$pgregress_ecpg->AddIncludeDir('src\test\regress');
 	$pgregress_ecpg->AddDefine('HOST_TUPLE="i686-pc-win32vc"');
 	$pgregress_ecpg->AddDefine('FRONTEND');
-	$pgregress_ecpg->AddReference($libpgport, $libpgcommon);
+	$pgregress_ecpg->AddLibrary('ws2_32.lib');
+	$pgregress_ecpg->AddReference($libpgcommon, $libpgport);
 
 	my $isolation_tester =
 	  $solution->AddProject('isolationtester', 'exe', 'misc');
@@ -344,7 +348,7 @@ sub mkvcbuild
 	$isolation_tester->AddDefine('HOST_TUPLE="i686-pc-win32vc"');
 	$isolation_tester->AddDefine('FRONTEND');
 	$isolation_tester->AddLibrary('wsock32.lib');
-	$isolation_tester->AddReference($libpq, $libpgport);
+	$isolation_tester->AddReference($libpq, $libpgcommon, $libpgport);
 
 	my $pgregress_isolation =
 	  $solution->AddProject('pg_isolation_regress', 'exe', 'misc');
@@ -354,7 +358,8 @@ sub mkvcbuild
 	$pgregress_isolation->AddIncludeDir('src\test\regress');
 	$pgregress_isolation->AddDefine('HOST_TUPLE="i686-pc-win32vc"');
 	$pgregress_isolation->AddDefine('FRONTEND');
-	$pgregress_isolation->AddReference($libpgport, $libpgcommon);
+	$pgregress_isolation->AddLibrary('ws2_32.lib');
+	$pgregress_isolation->AddReference($libpgcommon, $libpgport);
 
 	# src/bin
 	my $initdb = AddSimpleFrontend('initdb');
@@ -372,6 +377,11 @@ sub mkvcbuild
 	$pgreceivexlog->{name} = 'pg_receivexlog';
 	$pgreceivexlog->AddFile('src\bin\pg_basebackup\pg_receivexlog.c');
 	$pgreceivexlog->AddLibrary('ws2_32.lib');
+
+	my $pgrecvlogical = AddSimpleFrontend('pg_basebackup', 1);
+	$pgrecvlogical->{name} = 'pg_recvlogical';
+	$pgrecvlogical->AddFile('src\bin\pg_basebackup\pg_recvlogical.c');
+	$pgrecvlogical->AddLibrary('ws2_32.lib');
 
 	my $pgconfig = AddSimpleFrontend('pg_config');
 
@@ -432,7 +442,7 @@ sub mkvcbuild
 	my $zic = $solution->AddProject('zic', 'exe', 'utils');
 	$zic->AddFiles('src\timezone', 'zic.c', 'ialloc.c', 'scheck.c',
 		'localtime.c');
-	$zic->AddReference($libpgport, $libpgcommon);
+	$zic->AddReference($libpgcommon, $libpgport);
 
 	if ($solution->{options}->{xml})
 	{
@@ -572,7 +582,7 @@ sub mkvcbuild
 		$proj->AddIncludeDir('src\interfaces\libpq');
 		$proj->AddIncludeDir('src\bin\pg_dump');
 		$proj->AddIncludeDir('src\bin\psql');
-		$proj->AddReference($libpq, $libpgport, $libpgcommon);
+		$proj->AddReference($libpq, $libpgcommon, $libpgport);
 		$proj->AddResourceFile('src\bin\scripts', 'PostgreSQL Utility');
 		$proj->AddLibrary('ws2_32.lib');
 	}
@@ -587,7 +597,9 @@ sub mkvcbuild
 	$pgregress->AddFile('src\test\regress\pg_regress_main.c');
 	$pgregress->AddIncludeDir('src\port');
 	$pgregress->AddDefine('HOST_TUPLE="i686-pc-win32vc"');
-	$pgregress->AddReference($libpgport, $libpgcommon);
+	$pgregress->AddDefine('FRONTEND');
+	$pgregress->AddLibrary('ws2_32.lib');
+	$pgregress->AddReference($libpgcommon, $libpgport);
 
 	# fix up pg_xlogdump once it's been set up
 	# files symlinked on Unix are copied on windows
@@ -621,7 +633,7 @@ sub AddSimpleFrontend
 
 	my $p = $solution->AddProject($n, 'exe', 'bin');
 	$p->AddDir('src\bin\\' . $n);
-	$p->AddReference($libpgport, $libpgcommon);
+	$p->AddReference($libpgcommon, $libpgport);
 	if ($uselibpq)
 	{
 		$p->AddIncludeDir('src\interfaces\libpq');

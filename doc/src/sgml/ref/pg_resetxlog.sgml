@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="APP-PGRESETXLOG">
+ <indexterm zone="app-pgresetxlog">
+  <primary>pg_resetxlog</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle><application>pg_resetxlog</application></refentrytitle>
   <manvolnum>1</manvolnum>
@@ -14,10 +18,6 @@ PostgreSQL documentation
   <refname>pg_resetxlog</refname>
   <refpurpose>reset the write-ahead log and other control information of a <productname>PostgreSQL</productname> database cluster</refpurpose>
  </refnamediv>
-
- <indexterm zone="app-pgresetxlog">
-  <primary>pg_resetxlog</primary>
- </indexterm>
 
  <refsynopsisdiv>
   <cmdsynopsis>
@@ -177,9 +177,10 @@ PostgreSQL documentation
   <para>
    The <option>-n</> (no operation) option instructs
    <command>pg_resetxlog</command> to print the values reconstructed from
-   <filename>pg_control</> and then exit without modifying anything.
-   This is mainly a debugging tool, but can be useful as a sanity check
-   before allowing <command>pg_resetxlog</command> to proceed for real.
+   <filename>pg_control</> and values about to be changed, and then exit
+   without modifying anything. This is mainly a debugging tool, but can be
+   useful as a sanity check before allowing <command>pg_resetxlog</command>
+   to proceed for real.
   </para>
 
   <para>

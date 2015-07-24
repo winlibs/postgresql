@@ -2,12 +2,12 @@
 .\"     Title: DROP CAST
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "DROP CAST" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "DROP CAST" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 DROP_CAST \- remove a cast
-.\" DROP CAST
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -59,7 +58,9 @@ The name of the source data type of the cast\&.
 The name of the target data type of the cast\&.
 .RE
 .PP
-CASCADE, RESTRICT
+CASCADE
+.br
+RESTRICT
 .RS 4
 These key words do not have any effect, since there are no dependencies on casts\&.
 .RE

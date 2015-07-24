@@ -4,7 +4,7 @@
  *	  solution to the query optimization problem
  *	  by means of a Genetic Algorithm (GA)
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/backend/optimizer/geqo/geqo_main.c
@@ -260,6 +260,9 @@ geqo(PlannerInfo *root, int number_of_rels, List *initial_rels)
 	best_tour = (Gene *) pool->data[0].string;
 
 	best_rel = gimme_tree(root, best_tour, pool->string_length);
+
+	if (best_rel == NULL)
+		elog(ERROR, "geqo failed to make a valid plan");
 
 	/* DBG: show the query plan */
 #ifdef NOT_USED

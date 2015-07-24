@@ -4,7 +4,7 @@
  *	  This file contains routines to support creation of toast tables
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -16,6 +16,7 @@
 
 #include "access/tuptoaster.h"
 #include "access/xact.h"
+#include "catalog/binary_upgrade.h"
 #include "catalog/dependency.h"
 #include "catalog/heap.h"
 #include "catalog/index.h"
@@ -26,22 +27,23 @@
 #include "catalog/toasting.h"
 #include "miscadmin.h"
 #include "nodes/makefuncs.h"
+#include "storage/lock.h"
 #include "utils/builtins.h"
 #include "utils/rel.h"
 #include "utils/syscache.h"
 
 /* Potentially set by contrib/pg_upgrade_support functions */
-extern Oid	binary_upgrade_next_toast_pg_class_oid;
-
 Oid			binary_upgrade_next_toast_pg_type_oid = InvalidOid;
 
+static void CheckAndCreateToastTable(Oid relOid, Datum reloptions,
+						 LOCKMODE lockmode, bool check);
 static bool create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid,
-				   Datum reloptions);
+				   Datum reloptions, LOCKMODE lockmode, bool check);
 static bool needs_toast_table(Relation rel);
 
 
 /*
- * AlterTableCreateToastTable
+ * CreateToastTable variants
  *		If the table needs a toast table, and doesn't already have one,
  *		then create a toast table for it.
  *
@@ -53,21 +55,32 @@ static bool needs_toast_table(Relation rel);
  * to end with CommandCounterIncrement if it makes any changes.
  */
 void
-AlterTableCreateToastTable(Oid relOid, Datum reloptions)
+AlterTableCreateToastTable(Oid relOid, Datum reloptions, LOCKMODE lockmode)
+{
+	CheckAndCreateToastTable(relOid, reloptions, lockmode, true);
+}
+
+void
+NewHeapCreateToastTable(Oid relOid, Datum reloptions, LOCKMODE lockmode)
+{
+	CheckAndCreateToastTable(relOid, reloptions, lockmode, false);
+}
+
+void
+NewRelationCreateToastTable(Oid relOid, Datum reloptions)
+{
+	CheckAndCreateToastTable(relOid, reloptions, AccessExclusiveLock, false);
+}
+
+static void
+CheckAndCreateToastTable(Oid relOid, Datum reloptions, LOCKMODE lockmode, bool check)
 {
 	Relation	rel;
 
-	/*
-	 * Grab an exclusive lock on the target table, since we'll update its
-	 * pg_class tuple. This is redundant for all present uses, since caller
-	 * will have such a lock already.  But the lock is needed to ensure that
-	 * concurrent readers of the pg_class tuple won't have visibility issues,
-	 * so let's be safe.
-	 */
-	rel = heap_open(relOid, AccessExclusiveLock);
+	rel = heap_open(relOid, lockmode);
 
 	/* create_toast_table does all the work */
-	(void) create_toast_table(rel, InvalidOid, InvalidOid, reloptions);
+	(void) create_toast_table(rel, InvalidOid, InvalidOid, reloptions, lockmode, check);
 
 	heap_close(rel, NoLock);
 }
@@ -92,7 +105,8 @@ BootstrapToastTable(char *relName, Oid toastOid, Oid toastIndexOid)
 						relName)));
 
 	/* create_toast_table does all the work */
-	if (!create_toast_table(rel, toastOid, toastIndexOid, (Datum) 0))
+	if (!create_toast_table(rel, toastOid, toastIndexOid, (Datum) 0,
+							AccessExclusiveLock, false))
 		elog(ERROR, "\"%s\" does not require a toast table",
 			 relName);
 
@@ -108,7 +122,8 @@ BootstrapToastTable(char *relName, Oid toastOid, Oid toastIndexOid)
  * bootstrap they can be nonzero to specify hand-assigned OIDs
  */
 static bool
-create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid, Datum reloptions)
+create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid,
+				   Datum reloptions, LOCKMODE lockmode, bool check)
 {
 	Oid			relOid = RelationGetRelid(rel);
 	HeapTuple	reltup;
@@ -150,16 +165,58 @@ create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid, Datum reloptio
 	if (rel->rd_rel->reltoastrelid != InvalidOid)
 		return false;
 
+	if (!IsBinaryUpgrade)
+	{
+		if (!needs_toast_table(rel))
+			return false;
+	}
+	else
+	{
+		/*
+		 * Check to see whether the table needs a TOAST table.
+		 *
+		 * If an update-in-place TOAST relfilenode is specified, force TOAST file
+		 * creation even if it seems not to need one.  This handles the case
+		 * where the old cluster needed a TOAST table but the new cluster
+		 * would not normally create one.
+		 */
+
+		/*
+		 * If a TOAST oid is not specified, skip TOAST creation as we will do
+		 * it later so we don't create a TOAST table whose OID later conflicts
+		 * with a user-supplied OID.  This handles cases where the old cluster
+		 * didn't need a TOAST table, but the new cluster does.
+		 */
+		if (!OidIsValid(binary_upgrade_next_toast_pg_class_oid))
+			return false;
+
+		/*
+		 * If a special TOAST value has been passed in, it means we are in
+		 * cleanup mode --- we are creating needed TOAST tables after all user
+		 * tables with specified OIDs have been created.  We let the system
+		 * assign a TOAST oid for us.  The tables are empty so the missing
+		 * TOAST tables were not a problem.
+		 */
+		if (binary_upgrade_next_toast_pg_class_oid == OPTIONALLY_CREATE_TOAST_OID)
+		{
+			/* clear as it is not to be used; it is just a flag */
+			binary_upgrade_next_toast_pg_class_oid = InvalidOid;
+
+			if (!needs_toast_table(rel))
+				return false;
+		}
+
+		/* both should be set, or not set */
+		Assert(OidIsValid(binary_upgrade_next_toast_pg_class_oid) ==
+			   OidIsValid(binary_upgrade_next_toast_pg_type_oid));
+	}
+
 	/*
-	 * Check to see whether the table actually needs a TOAST table.
-	 *
-	 * If an update-in-place toast relfilenode is specified, force toast file
-	 * creation even if it seems not to need one.
+	 * If requested check lockmode is sufficient. This is a cross check in
+	 * case of errors or conflicting decisions in earlier code.
 	 */
-	if (!needs_toast_table(rel) &&
-		(!IsBinaryUpgrade ||
-		 !OidIsValid(binary_upgrade_next_toast_pg_class_oid)))
-		return false;
+	if (check && lockmode != AccessExclusiveLock)
+		elog(ERROR, "AccessExclusiveLock required to add toast table.");
 
 	/*
 	 * Create the toast table and its index
@@ -340,7 +397,7 @@ create_toast_table(Relation rel, Oid toastOid, Oid toastIndexOid, Datum reloptio
 }
 
 /*
- * Check to see whether the table needs a TOAST table.	It does only if
+ * Check to see whether the table needs a TOAST table.  It does only if
  * (1) there are any toastable attributes, and (2) the maximum length
  * of a tuple could exceed TOAST_TUPLE_THRESHOLD.  (We don't want to
  * create a toast table for something like "f1 varchar(20)".)

@@ -81,7 +81,7 @@
  * specparse.y
  *	  bison grammar for the isolation test file format
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *-------------------------------------------------------------------------
@@ -125,7 +125,7 @@ TestSpec		parseresult;			/* result of parsing is left here */
       know about them.  */
    enum yytokentype {
      sqlblock = 258,
-     string = 259,
+     string_literal = 259,
      PERMUTATION = 260,
      SESSION = 261,
      SETUP = 262,
@@ -473,11 +473,11 @@ static const yytype_uint8 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "sqlblock", "string", "PERMUTATION",
-  "SESSION", "SETUP", "STEP", "TEARDOWN", "TEST", "$accept", "TestSpec",
-  "setup_list", "opt_setup", "setup", "opt_teardown", "session_list",
-  "session", "step_list", "step", "opt_permutation_list",
-  "permutation_list", "permutation", "string_list", 0
+  "$end", "error", "$undefined", "sqlblock", "string_literal",
+  "PERMUTATION", "SESSION", "SETUP", "STEP", "TEARDOWN", "TEST", "$accept",
+  "TestSpec", "setup_list", "opt_setup", "setup", "opt_teardown",
+  "session_list", "session", "step_list", "step", "opt_permutation_list",
+  "permutation_list", "permutation", "string_literal_list", 0
 };
 #endif
 

@@ -6,7 +6,7 @@
  *	  message integrity and endpoint authentication.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -30,13 +30,13 @@
  *	  impersonations.
  *
  *	  Another benefit of EDH is that it allows the backend and
- *	  clients to use DSA keys.	DSA keys can only provide digital
+ *	  clients to use DSA keys.  DSA keys can only provide digital
  *	  signatures, not encryption, and are often acceptable in
  *	  jurisdictions where RSA keys are unacceptable.
  *
  *	  The downside to EDH is that it makes it impossible to
  *	  use ssldump(1) if there's a problem establishing an SSL
- *	  session.	In this case you'll need to temporarily disable
+ *	  session.  In this case you'll need to temporarily disable
  *	  EDH by commenting out the callback.
  *
  *	  ...
@@ -68,6 +68,9 @@
 #include <openssl/dh.h>
 #if SSLEAY_VERSION_NUMBER >= 0x0907000L
 #include <openssl/conf.h>
+#endif
+#if (OPENSSL_VERSION_NUMBER >= 0x0090800fL) && !defined(OPENSSL_NO_ECDH)
+#include <openssl/ec.h>
 #endif
 #endif   /* USE_SSL */
 
@@ -102,12 +105,21 @@ char	   *ssl_crl_file;
 int			ssl_renegotiation_limit;
 
 #ifdef USE_SSL
+/* are we in the middle of a renegotiation? */
+static bool in_ssl_renegotiation = false;
+
 static SSL_CTX *SSL_context = NULL;
 static bool ssl_loaded_verify_locations = false;
 #endif
 
 /* GUC variable controlling SSL cipher list */
 char	   *SSLCipherSuites = NULL;
+
+/* GUC variable for default ECHD curve. */
+char	   *SSLECDHCurve;
+
+/* GUC variable: if false, prefer client ciphers */
+bool		SSLPreferServerCiphers;
 
 /* ------------------------------------------------------------ */
 /*						 Hardcoded values						*/
@@ -292,6 +304,7 @@ rloop:
 						(errcode(ERRCODE_PROTOCOL_VIOLATION),
 						 errmsg("unrecognized SSL error code: %d",
 								err)));
+				errno = ECONNRESET;
 				n = -1;
 				break;
 		}
@@ -322,29 +335,55 @@ secure_write(Port *port, void *ptr, size_t len)
 	{
 		int			err;
 
-		if (ssl_renegotiation_limit && port->count > ssl_renegotiation_limit * 1024L)
+		/*
+		 * If SSL renegotiations are enabled and we're getting close to the
+		 * limit, start one now; but avoid it if there's one already in
+		 * progress.  Request the renegotiation 1kB before the limit has
+		 * actually expired.
+		 */
+		if (ssl_renegotiation_limit && !in_ssl_renegotiation &&
+			port->count > (ssl_renegotiation_limit - 1) * 1024L)
 		{
+			in_ssl_renegotiation = true;
+
+			/*
+			 * The way we determine that a renegotiation has completed is by
+			 * observing OpenSSL's internal renegotiation counter.  Make sure
+			 * we start out at zero, and assume that the renegotiation is
+			 * complete when the counter advances.
+			 *
+			 * OpenSSL provides SSL_renegotiation_pending(), but this doesn't
+			 * seem to work in testing.
+			 */
+			SSL_clear_num_renegotiations(port->ssl);
+
 			SSL_set_session_id_context(port->ssl, (void *) &SSL_context,
 									   sizeof(SSL_context));
 			if (SSL_renegotiate(port->ssl) <= 0)
 				ereport(COMMERROR,
 						(errcode(ERRCODE_PROTOCOL_VIOLATION),
-						 errmsg("SSL renegotiation failure")));
-			if (SSL_do_handshake(port->ssl) <= 0)
-				ereport(COMMERROR,
-						(errcode(ERRCODE_PROTOCOL_VIOLATION),
-						 errmsg("SSL renegotiation failure")));
-			if (port->ssl->state != SSL_ST_OK)
-				ereport(COMMERROR,
-						(errcode(ERRCODE_PROTOCOL_VIOLATION),
-						 errmsg("SSL failed to send renegotiation request")));
-			port->ssl->state |= SSL_ST_ACCEPT;
-			SSL_do_handshake(port->ssl);
-			if (port->ssl->state != SSL_ST_OK)
-				ereport(COMMERROR,
-						(errcode(ERRCODE_PROTOCOL_VIOLATION),
-						 errmsg("SSL renegotiation failure")));
-			port->count = 0;
+						 errmsg("SSL failure during renegotiation start")));
+			else
+			{
+				int			retries;
+
+				/*
+				 * A handshake can fail, so be prepared to retry it, but only
+				 * a few times.
+				 */
+				for (retries = 0;; retries++)
+				{
+					if (SSL_do_handshake(port->ssl) > 0)
+						break;	/* done */
+					ereport(COMMERROR,
+							(errcode(ERRCODE_PROTOCOL_VIOLATION),
+							 errmsg("SSL handshake failure on renegotiation, retrying")));
+					if (retries >= 20)
+						ereport(FATAL,
+								(errcode(ERRCODE_PROTOCOL_VIOLATION),
+								 errmsg("could not complete SSL handshake on renegotiation, too many failures")));
+				}
+			}
 		}
 
 wloop:
@@ -387,8 +426,31 @@ wloop:
 						(errcode(ERRCODE_PROTOCOL_VIOLATION),
 						 errmsg("unrecognized SSL error code: %d",
 								err)));
+				errno = ECONNRESET;
 				n = -1;
 				break;
+		}
+
+		if (n >= 0)
+		{
+			/* is renegotiation complete? */
+			if (in_ssl_renegotiation &&
+				SSL_num_renegotiations(port->ssl) >= 1)
+			{
+				in_ssl_renegotiation = false;
+				port->count = 0;
+			}
+
+			/*
+			 * if renegotiation is still ongoing, and we've gone beyond the
+			 * limit, kill the connection now -- continuing to use it can be
+			 * considered a security problem.
+			 */
+			if (in_ssl_renegotiation &&
+				port->count > ssl_renegotiation_limit * 1024L)
+				ereport(FATAL,
+						(errcode(ERRCODE_PROTOCOL_VIOLATION),
+						 errmsg("SSL failed to renegotiate connection before limit expired")));
 		}
 	}
 	else
@@ -411,7 +473,10 @@ wloop:
  * non-reentrant libc facilities. We also need to call send() and recv()
  * directly so it gets passed through the socket/signals layer on Win32.
  *
- * They are closely modelled on the original socket implementations in OpenSSL.
+ * These functions are closely modelled on the standard socket BIO in OpenSSL;
+ * see sock_read() and sock_write() in OpenSSL's crypto/bio/bss_sock.c.
+ * XXX OpenSSL 1.0.1e considers many more errcodes than just EINTR as reasons
+ * to retry; do we need to adopt their logic for that?
  */
 
 static bool my_bio_initialized = false;
@@ -449,6 +514,7 @@ my_sock_write(BIO *h, const char *buf, int size)
 	int			res = 0;
 
 	res = send(h->num, buf, size, 0);
+	BIO_clear_retry_flags(h);
 	if (res <= 0)
 	{
 		if (errno == EINTR)
@@ -714,6 +780,31 @@ info_cb(const SSL *ssl, int type, int args)
 	}
 }
 
+#if (OPENSSL_VERSION_NUMBER >= 0x0090800fL) && !defined(OPENSSL_NO_ECDH)
+static void
+initialize_ecdh(void)
+{
+	EC_KEY	   *ecdh;
+	int			nid;
+
+	nid = OBJ_sn2nid(SSLECDHCurve);
+	if (!nid)
+		ereport(FATAL,
+				(errmsg("ECDH: unrecognized curve name: %s", SSLECDHCurve)));
+
+	ecdh = EC_KEY_new_by_curve_name(nid);
+	if (!ecdh)
+		ereport(FATAL,
+				(errmsg("ECDH: could not create key")));
+
+	SSL_CTX_set_options(SSL_context, SSL_OP_SINGLE_ECDH_USE);
+	SSL_CTX_set_tmp_ecdh(SSL_context, ecdh);
+	EC_KEY_free(ecdh);
+}
+#else
+#define initialize_ecdh()
+#endif
+
 /*
  *	Initialize global SSL context.
  */
@@ -731,6 +822,13 @@ initialize_SSL(void)
 #endif
 		SSL_library_init();
 		SSL_load_error_strings();
+
+		/*
+		 * We use SSLv23_method() because it can negotiate use of the highest
+		 * mutually supported protocol version, while alternatives like
+		 * TLSv1_2_method() permit only one specific version.  Note that we
+		 * don't actually allow SSL v2 or v3, only TLS protocols (see below).
+		 */
 		SSL_context = SSL_CTX_new(SSLv23_method());
 		if (!SSL_context)
 			ereport(FATAL,
@@ -789,13 +887,22 @@ initialize_SSL(void)
 							SSLerrmessage())));
 	}
 
-	/* set up ephemeral DH keys, and disallow SSL v2 while at it */
+	/* set up ephemeral DH keys, and disallow SSL v2/v3 while at it */
 	SSL_CTX_set_tmp_dh_callback(SSL_context, tmp_dh_cb);
-	SSL_CTX_set_options(SSL_context, SSL_OP_SINGLE_DH_USE | SSL_OP_NO_SSLv2);
+	SSL_CTX_set_options(SSL_context,
+						SSL_OP_SINGLE_DH_USE |
+						SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3);
+
+	/* set up ephemeral ECDH keys */
+	initialize_ecdh();
 
 	/* set up the allowed cipher list */
 	if (SSL_CTX_set_cipher_list(SSL_context, SSLCipherSuites) != 1)
 		elog(FATAL, "could not set the cipher list (no valid ciphers available)");
+
+	/* Let server choose order */
+	if (SSLPreferServerCiphers)
+		SSL_CTX_set_options(SSL_context, SSL_OP_CIPHER_SERVER_PREFERENCE);
 
 	/*
 	 * Load CA store, so we can verify client certificates if needed.
@@ -883,7 +990,6 @@ open_server_SSL(Port *port)
 				(errcode(ERRCODE_PROTOCOL_VIOLATION),
 				 errmsg("could not initialize SSL connection: %s",
 						SSLerrmessage())));
-		close_SSL(port);
 		return -1;
 	}
 	if (!my_SSL_set_fd(port->ssl, port->sock))
@@ -892,7 +998,6 @@ open_server_SSL(Port *port)
 				(errcode(ERRCODE_PROTOCOL_VIOLATION),
 				 errmsg("could not set SSL socket: %s",
 						SSLerrmessage())));
-		close_SSL(port);
 		return -1;
 	}
 
@@ -940,7 +1045,6 @@ aloop:
 								err)));
 				break;
 		}
-		close_SSL(port);
 		return -1;
 	}
 
@@ -969,7 +1073,6 @@ aloop:
 			{
 				/* shouldn't happen */
 				pfree(peer_cn);
-				close_SSL(port);
 				return -1;
 			}
 
@@ -983,7 +1086,6 @@ aloop:
 						(errcode(ERRCODE_PROTOCOL_VIOLATION),
 						 errmsg("SSL certificate's common name contains embedded null")));
 				pfree(peer_cn);
-				close_SSL(port);
 				return -1;
 			}
 

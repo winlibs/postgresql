@@ -700,3 +700,124 @@ explain (verbose, costs off)
                  One-Time Filter: ("*VALUES*".column1 = "*VALUES*".column1)
 (8 rows)
 
+--
+-- Check we behave sanely in corner case of empty SELECT list (bug #8648)
+--
+create temp table nocolumns();
+select exists(select * from nocolumns);
+ exists 
+--------
+ f
+(1 row)
+
+--
+-- Check sane behavior with nested IN SubLinks
+--
+explain (verbose, costs off)
+select * from int4_tbl where
+  (case when f1 in (select unique1 from tenk1 a) then f1 else null end) in
+  (select ten from tenk1 b);
+                                                                                      QUERY PLAN                                                                                       
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ Nested Loop Semi Join
+   Output: int4_tbl.f1
+   Join Filter: (CASE WHEN (hashed SubPlan 1) THEN int4_tbl.f1 ELSE NULL::integer END = b.ten)
+   ->  Seq Scan on public.int4_tbl
+         Output: int4_tbl.f1
+   ->  Seq Scan on public.tenk1 b
+         Output: b.unique1, b.unique2, b.two, b.four, b.ten, b.twenty, b.hundred, b.thousand, b.twothousand, b.fivethous, b.tenthous, b.odd, b.even, b.stringu1, b.stringu2, b.string4
+   SubPlan 1
+     ->  Index Only Scan using tenk1_unique1 on public.tenk1 a
+           Output: a.unique1
+(10 rows)
+
+select * from int4_tbl where
+  (case when f1 in (select unique1 from tenk1 a) then f1 else null end) in
+  (select ten from tenk1 b);
+ f1 
+----
+  0
+(1 row)
+
+--
+-- Check for incorrect optimization when IN subquery contains a SRF
+--
+explain (verbose, costs off)
+select * from int4_tbl o where (f1, f1) in
+  (select f1, generate_series(1,2) / 10 g from int4_tbl i group by f1);
+                              QUERY PLAN                              
+----------------------------------------------------------------------
+ Hash Join
+   Output: o.f1
+   Hash Cond: (o.f1 = "ANY_subquery".f1)
+   ->  Seq Scan on public.int4_tbl o
+         Output: o.f1
+   ->  Hash
+         Output: "ANY_subquery".f1, "ANY_subquery".g
+         ->  HashAggregate
+               Output: "ANY_subquery".f1, "ANY_subquery".g
+               Group Key: "ANY_subquery".f1, "ANY_subquery".g
+               ->  Subquery Scan on "ANY_subquery"
+                     Output: "ANY_subquery".f1, "ANY_subquery".g
+                     Filter: ("ANY_subquery".f1 = "ANY_subquery".g)
+                     ->  HashAggregate
+                           Output: i.f1, (generate_series(1, 2) / 10)
+                           Group Key: i.f1
+                           ->  Seq Scan on public.int4_tbl i
+                                 Output: i.f1
+(18 rows)
+
+select * from int4_tbl o where (f1, f1) in
+  (select f1, generate_series(1,2) / 10 g from int4_tbl i group by f1);
+ f1 
+----
+  0
+(1 row)
+
+--
+-- check for over-optimization of whole-row Var referencing an Append plan
+--
+select (select q from
+         (select 1,2,3 where f1 > 0
+          union all
+          select 4,5,6.0 where f1 <= 0
+         ) q )
+from int4_tbl;
+     q     
+-----------
+ (4,5,6.0)
+ (1,2,3)
+ (4,5,6.0)
+ (1,2,3)
+ (4,5,6.0)
+(5 rows)
+
+--
+-- Check that volatile quals aren't pushed down past a DISTINCT:
+-- nextval() should not be called more than the nominal number of times
+--
+create temp sequence ts1;
+select * from
+  (select distinct ten from tenk1) ss
+  where ten < 10 + nextval('ts1')
+  order by 1;
+ ten 
+-----
+   0
+   1
+   2
+   3
+   4
+   5
+   6
+   7
+   8
+   9
+(10 rows)
+
+select nextval('ts1');
+ nextval 
+---------
+      11
+(1 row)
+

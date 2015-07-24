@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -169,8 +169,8 @@ CLASS="PARAMETER"
 CLASS="PARAMETER"
 >u.integer</TT
 > value is sent
-   to the server as an integer of the indicated length (this must be 1,
-   2, or 4 bytes); proper byte-swapping occurs.  When <TT
+   to the server as an integer of the indicated length (this must be
+   2 or 4 bytes); proper byte-swapping occurs.  When <TT
 CLASS="PARAMETER"
 >isint</TT
 >
@@ -180,17 +180,29 @@ CLASS="PARAMETER"
 > are
    sent with no processing; the data must be in the format expected by
    the server for binary transmission of the function's argument data
-   type.  <TT
+   type.  (The declaration of <TT
+CLASS="PARAMETER"
+>u.ptr</TT
+> as being of
+   type <TT
+CLASS="TYPE"
+>int *</TT
+> is historical; it would be better to consider
+   it <TT
+CLASS="TYPE"
+>void *</TT
+>.)
+   <TT
 CLASS="PARAMETER"
 >result_buf</TT
-> is the buffer in which to
-   place the return value.  The caller must  have  allocated sufficient
+> points to the buffer in which to place
+   the function's return value.  The caller must have allocated sufficient
    space to store the return value.  (There is no check!) The actual result
-   length will be returned in the integer pointed to  by
+   length in bytes will be returned in the integer pointed to by
    <TT
 CLASS="PARAMETER"
 >result_len</TT
->.  If a 1, 2, or 4-byte integer result
+>.  If a 2- or 4-byte integer result
    is expected, set <TT
 CLASS="PARAMETER"
 >result_is_int</TT
@@ -206,12 +218,25 @@ CLASS="APPLICATION"
    is delivered as a proper <TT
 CLASS="TYPE"
 >int</TT
-> value for the client machine.
+> value for the client machine;
+   note that a 4-byte integer is delivered into <TT
+CLASS="PARAMETER"
+>*result_buf</TT
+>
+   for either allowed result size.
    When <TT
 CLASS="PARAMETER"
 >result_is_int</TT
 > is 0, the binary-format byte string
-   sent by the server is returned unmodified.
+   sent by the server is returned unmodified. (In this case it's better
+   to consider <TT
+CLASS="PARAMETER"
+>result_buf</TT
+> as being of
+   type <TT
+CLASS="TYPE"
+>void *</TT
+>.)
   </P
 ><P
 >   <CODE

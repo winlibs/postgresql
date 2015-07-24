@@ -84,7 +84,7 @@
  *	when using the SysV semaphore code.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *	  src/include/storage/s_lock.h
@@ -94,10 +94,7 @@
 #ifndef S_LOCK_H
 #define S_LOCK_H
 
-#include "storage/pg_sema.h"
-
 #ifdef HAVE_SPINLOCKS	/* skip spinlocks if requested */
-
 
 #if defined(__GNUC__) || defined(__INTEL_COMPILER)
 /*************************************************************************
@@ -145,6 +142,12 @@ tas(volatile slock_t *lock)
 	 * Use a non-locking test before asserting the bus lock.  Note that the
 	 * extra test appears to be a small loss on some x86 platforms and a small
 	 * win on others; it's by no means clear that we should keep it.
+	 *
+	 * When this was last tested, we didn't have separate TAS() and TAS_SPIN()
+	 * macros.  Nowadays it probably would be better to do a non-locking test
+	 * in TAS_SPIN() but not in TAS(), like on x86_64, but no-one's done the
+	 * testing to verify that.  Without some empirical evidence, better to
+	 * leave it alone.
 	 */
 	__asm__ __volatile__(
 		"	cmpb	$0,%1	\n"
@@ -200,16 +203,22 @@ typedef unsigned char slock_t;
 
 #define TAS(lock) tas(lock)
 
+/*
+ * On Intel EM64T, it's a win to use a non-locking test before the xchg proper,
+ * but only when spinning.
+ *
+ * See also Implementing Scalable Atomic Locks for Multi-Core Intel(tm) EM64T
+ * and IA32, by Michael Chynoweth and Mary R. Lee. As of this writing, it is
+ * available at:
+ * http://software.intel.com/en-us/articles/implementing-scalable-atomic-locks-for-multi-core-intel-em64t-and-ia32-architectures
+ */
+#define TAS_SPIN(lock)    (*(lock) ? 1 : TAS(lock))
+
 static __inline__ int
 tas(volatile slock_t *lock)
 {
 	register slock_t _res = 1;
 
-	/*
-	 * On Opteron, using a non-locking test before the locking instruction
-	 * is a huge loss.  On EM64T, it appears to be a wash or small loss,
-	 * so we needn't bother to try to distinguish the sub-architectures.
-	 */
 	__asm__ __volatile__(
 		"	lock			\n"
 		"	xchgb	%0,%1	\n"
@@ -384,6 +393,12 @@ tas(volatile slock_t *lock)
 
 
 #if defined(__sparc__)		/* Sparc */
+/*
+ * Solaris has always run sparc processors in TSO (total store) mode, but
+ * linux didn't use to and the *BSDs still don't. So, be careful about
+ * acquire/release semantics. The CPU will treat superflous membars as NOPs,
+ * so it's just code space.
+ */
 #define HAS_TEST_AND_SET
 
 typedef unsigned char slock_t;
@@ -405,8 +420,50 @@ tas(volatile slock_t *lock)
 :		"=r"(_res), "+m"(*lock)
 :		"r"(lock)
 :		"memory");
+#if defined(__sparcv7)
+	/*
+	 * No stbar or membar available, luckily no actually produced hardware
+	 * requires a barrier.
+	 */
+#elif defined(__sparcv8)
+	/* stbar is available (and required for both PSO, RMO), membar isn't */
+	__asm__ __volatile__ ("stbar	 \n":::"memory");
+#else
+	/*
+	 * #LoadStore (RMO) | #LoadLoad (RMO) together are the appropriate acquire
+	 * barrier for sparcv8+ upwards.
+	 */
+	__asm__ __volatile__ ("membar #LoadStore | #LoadLoad \n":::"memory");
+#endif
 	return (int) _res;
 }
+
+#if defined(__sparcv7)
+/*
+ * No stbar or membar available, luckily no actually produced hardware
+ * requires a barrier.
+ */
+#define S_UNLOCK(lock)		(*((volatile slock_t *) (lock)) = 0)
+#elif defined(__sparcv8)
+/* stbar is available (and required for both PSO, RMO), membar isn't */
+#define S_UNLOCK(lock)	\
+do \
+{ \
+	__asm__ __volatile__ ("stbar	 \n":::"memory"); \
+	*((volatile slock_t *) (lock)) = 0; \
+} while (0)
+#else
+/*
+ * #LoadStore (RMO) | #StoreStore (RMO, PSO) together are the appropriate
+ * release barrier for sparcv8+ upwards.
+ */
+#define S_UNLOCK(lock)	\
+do \
+{ \
+	__asm__ __volatile__ ("membar #LoadStore | #StoreStore \n":::"memory"); \
+	*((volatile slock_t *) (lock)) = 0; \
+} while (0)
+#endif
 
 #endif	 /* __sparc__ */
 
@@ -538,31 +595,6 @@ tas(volatile slock_t *lock)
 }
 
 #endif	 /* __vax__ */
-
-
-#if defined(__ns32k__)		/* National Semiconductor 32K */
-#define HAS_TEST_AND_SET
-
-typedef unsigned char slock_t;
-
-#define TAS(lock) tas(lock)
-
-static __inline__ int
-tas(volatile slock_t *lock)
-{
-	register int	_res;
-
-	__asm__ __volatile__(
-		"	sbitb	0, %1	\n"
-		"	sfsd	%0		\n"
-:		"=r"(_res), "+m"(*lock)
-:
-:		"memory");
-	return _res;
-}
-
-#endif	 /* __ns32k__ */
-
 
 #if defined(__alpha) || defined(__alpha__)	/* Alpha */
 /*
@@ -849,50 +881,6 @@ typedef unsigned int slock_t;
 
 #endif	/* HPUX on IA64, non gcc */
 
-
-#if defined(__sgi)	/* SGI compiler */
-/*
- * SGI IRIX 5
- * slock_t is defined as a unsigned long. We use the standard SGI
- * mutex API.
- *
- * The following comment is left for historical reasons, but is probably
- * not a good idea since the mutex ABI is supported.
- *
- * This stuff may be supplemented in the future with Masato Kataoka's MIPS-II
- * assembly from his NECEWS SVR4 port, but we probably ought to retain this
- * for the R3000 chips out there.
- */
-#define HAS_TEST_AND_SET
-
-typedef unsigned long slock_t;
-
-#include "mutex.h"
-#define TAS(lock)	(test_and_set(lock,1))
-#define S_UNLOCK(lock)	(test_then_and(lock,0))
-#define S_INIT_LOCK(lock)	(test_then_and(lock,0))
-#define S_LOCK_FREE(lock)	(test_then_add(lock,0) == 0)
-#endif	 /* __sgi */
-
-
-#if defined(sinix)		/* Sinix */
-/*
- * SINIX / Reliant UNIX
- * slock_t is defined as a struct abilock_t, which has a single unsigned long
- * member. (Basically same as SGI)
- */
-#define HAS_TEST_AND_SET
-
-#include "abi_mutex.h"
-typedef abilock_t slock_t;
-
-#define TAS(lock)	(!acquire_lock(lock))
-#define S_UNLOCK(lock)	release_lock(lock)
-#define S_INIT_LOCK(lock)	init_lock(lock)
-#define S_LOCK_FREE(lock)	(stat_lock(lock) == UNLOCKED)
-#endif	 /* sinix */
-
-
 #if defined(_AIX)	/* AIX */
 /*
  * AIX (POWER)
@@ -908,15 +896,7 @@ typedef int slock_t;
 #endif	 /* _AIX */
 
 
-/* These are in s_lock.c */
-
-
-#if defined(sun3)		/* Sun3 */
-#define HAS_TEST_AND_SET
-
-typedef unsigned char slock_t;
-#endif
-
+/* These are in sunstudio_(sparc|x86).s */
 
 #if defined(__SUNPRO_C) && (defined(__i386) || defined(__x86_64__) || defined(__sparc__) || defined(__sparc))
 #define HAS_TEST_AND_SET
@@ -980,7 +960,7 @@ spin_delay(void)
  * to fall foul of kernel limits on number of semaphores, so don't use this
  * unless you must!  The subroutines appear in spin.c.
  */
-typedef PGSemaphoreData slock_t;
+typedef int slock_t;
 
 extern bool s_lock_free_sema(volatile slock_t *lock);
 extern void s_unlock_sema(volatile slock_t *lock);

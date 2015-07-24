@@ -297,9 +297,6 @@ planner()
   handle UNION/INTERSECT/EXCEPT, GROUP BY, HAVING, aggregates,
 	ORDER BY, DISTINCT, LIMIT
 --query_planner()
-   pull out constant quals, which can be used to gate execution of the
-	whole plan (if any are found, we make a top-level Result node
-	to do the gating)
    make list of base relations used in query
    split up the qual into restrictions (a=1) and joins (b=c)
    find qual clauses that enable merge and hash joins
@@ -318,11 +315,11 @@ planner()
       Back at standard_join_search(), apply set_cheapest() to extract the
       cheapest path for each newly constructed joinrel.
       Loop back if this wasn't the top join level.
-   Back at query_planner:
-    put back any constant quals by adding a Result node
  Back at grouping_planner:
+ convert Path tree returned by query_planner into a Plan tree
  do grouping(GROUP)
  do aggregates
+ do window functions
  make unique(DISTINCT)
  make sort(ORDER BY)
  make limit(LIMIT/OFFSET)
@@ -372,10 +369,10 @@ generated during the optimization process are marked with their sort order
 
 It is also possible to avoid an explicit sort step to implement a user's
 ORDER BY clause if the final path has the right ordering already, so the
-sort ordering is of interest even at the top level.  query_planner() will
+sort ordering is of interest even at the top level.  grouping_planner() will
 look for the cheapest path with a sort order matching the desired order,
-and grouping_planner() will compare its cost to the cost of using the
-cheapest-overall path and doing an explicit sort.
+then compare its cost to the cost of using the cheapest-overall path and
+doing an explicit sort on that.
 
 When we are generating paths for a particular RelOptInfo, we discard a path
 if it is more expensive than another known path that has the same or better
@@ -705,17 +702,37 @@ intermediate layers of joins, for example:
 			-> Index Scan using C_Z_IDX on C
 				Index Condition: C.Z = A.X
 
-If all joins are plain inner joins then this is unnecessary, because
-it's always possible to reorder the joins so that a parameter is used
+If all joins are plain inner joins then this is usually unnecessary,
+because it's possible to reorder the joins so that a parameter is used
 immediately below the nestloop node that provides it.  But in the
-presence of outer joins, join reordering may not be possible, and then
-this option can be critical.  Before version 9.2, Postgres used ad-hoc
-methods for planning and executing such queries, and those methods could
-not handle passing parameters down through multiple join levels.
+presence of outer joins, such join reordering may not be possible.
+
+Also, the bottom-level scan might require parameters from more than one
+other relation.  In principle we could join the other relations first
+so that all the parameters are supplied from a single nestloop level.
+But if those other relations have no join clause in common (which is
+common in star-schema queries for instance), the planner won't consider
+joining them directly to each other.  In such a case we need to be able
+to create a plan like
+
+    NestLoop
+        -> Seq Scan on SmallTable1 A
+        NestLoop
+            -> Seq Scan on SmallTable2 B
+            NestLoop
+                -> Index Scan using XYIndex on LargeTable C
+                      Index Condition: C.X = A.AID and C.Y = B.BID
+
+so we should be willing to pass down A.AID through a join even though
+there is no join order constraint forcing the plan to look like this.
+
+Before version 9.2, Postgres used ad-hoc methods for planning and
+executing nestloop queries of this kind, and those methods could not
+handle passing parameters down through multiple join levels.
 
 To plan such queries, we now use a notion of a "parameterized path",
 which is a path that makes use of a join clause to a relation that's not
-scanned by the path.  In the example just above, we would construct a
+scanned by the path.  In the example two above, we would construct a
 path representing the possibility of doing this:
 
 	-> Index Scan using C_Z_IDX on C
@@ -778,7 +795,7 @@ a nestloop that provides parameters to the lower join's inputs).  While we
 do not ignore merge joins entirely, joinpath.c does not fully explore the
 space of potential merge joins with parameterized inputs.  Also, add_path
 treats parameterized paths as having no pathkeys, so that they compete
-only on total cost and rowcount; they don't get preference for producing a
+only on cost and rowcount; they don't get preference for producing a
 special sort order.  This creates additional bias against merge joins,
 since we might discard a path that could have been useful for performing
 a merge without an explicit sort step.  Since a parameterized path must
@@ -786,6 +803,13 @@ ultimately be used on the inside of a nestloop, where its sort order is
 uninteresting, these choices do not affect any requirement for the final
 output order of a query --- they only make it harder to use a merge join
 at a lower level.  The savings in planning work justifies that.
+
+Similarly, parameterized paths do not normally get preference in add_path
+for having cheap startup cost; that's seldom of much value when on the
+inside of a nestloop, so it seems not worth keeping extra paths solely for
+that.  An exception occurs for parameterized paths for the RHS relation of
+a SEMI or ANTI join: in those cases, we can stop the inner scan after the
+first match, so it's primarily startup not total cost that we care about.
 
 
 LATERAL subqueries

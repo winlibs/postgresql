@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Performance Tips"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -680,7 +680,7 @@ CLASS="QUOTE"
     means that the <TT
 CLASS="LITERAL"
 >t2</TT
-> indexscan will be done just once, even
+> index scan will be done just once, even
     though the nested-loop join node needs to read that data ten times, once
     for each row from the outer relation.  The Materialize node saves the data
     in memory as it's read, and then returns the data from memory on each
@@ -867,7 +867,8 @@ WHERE t1.unique1 &lt; 10 AND t1.unique2 = t2.unique2;
                Index Cond: (unique1 &lt; 10)
    -&gt;  Index Scan using tenk2_unique2 on tenk2 t2  (cost=0.29..7.91 rows=1 width=244) (actual time=0.021..0.022 rows=1 loops=10)
          Index Cond: (unique2 = t1.unique2)
- Total runtime: 0.501 ms</PRE
+ Planning time: 0.181 ms
+ Execution time: 0.501 ms</PRE
 ><P>
 
     Note that the <SPAN
@@ -932,7 +933,8 @@ WHERE t1.unique1 &lt; 100 AND t1.unique2 = t2.unique2 ORDER BY t1.fivethous;
                      Recheck Cond: (unique1 &lt; 100)
                      -&gt;  Bitmap Index Scan on tenk1_unique1  (cost=0.00..5.04 rows=101 width=0) (actual time=0.049..0.049 rows=100 loops=1)
                            Index Cond: (unique1 &lt; 100)
- Total runtime: 8.008 ms</PRE
+ Planning time: 0.194 ms
+ Execution time: 8.008 ms</PRE
 ><P>
 
     The Sort node shows the sort method used (in particular, whether the sort
@@ -955,7 +957,8 @@ CLASS="SCREEN"
  Seq Scan on tenk1  (cost=0.00..483.00 rows=7000 width=244) (actual time=0.016..5.107 rows=7000 loops=1)
    Filter: (ten &lt; 7)
    Rows Removed by Filter: 3000
- Total runtime: 5.905 ms</PRE
+ Planning time: 0.083 ms
+ Execution time: 5.905 ms</PRE
 ><P>
 
     These counts can be particularly valuable for filter conditions applied at
@@ -983,7 +986,8 @@ CLASS="SCREEN"
  Seq Scan on polygon_tbl  (cost=0.00..1.05 rows=1 width=32) (actual time=0.044..0.044 rows=0 loops=1)
    Filter: (f1 @&gt; '((0.5,2))'::polygon)
    Rows Removed by Filter: 4
- Total runtime: 0.083 ms</PRE
+ Planning time: 0.040 ms
+ Execution time: 0.083 ms</PRE
 ><P>
 
     The planner thinks (quite correctly) that this sample table is too small
@@ -1002,7 +1006,8 @@ EXPLAIN ANALYZE SELECT * FROM polygon_tbl WHERE f1 @&gt; polygon '(0.5,2.0)';
  Index Scan using gpolygonind on polygon_tbl  (cost=0.13..8.15 rows=1 width=32) (actual time=0.062..0.062 rows=0 loops=1)
    Index Cond: (f1 @&gt; '((0.5,2))'::polygon)
    Rows Removed by Index Recheck: 1
- Total runtime: 0.144 ms</PRE
+ Planning time: 0.034 ms
+ Execution time: 0.144 ms</PRE
 ><P>
 
     Here we can see that the index returned one candidate row, which was
@@ -1044,7 +1049,8 @@ CLASS="SCREEN"
          -&gt;  Bitmap Index Scan on tenk1_unique2  (cost=0.00..19.78 rows=999 width=0) (actual time=0.227..0.227 rows=999 loops=1)
                Index Cond: (unique2 &gt; 9000)
                Buffers: shared hit=5
- Total runtime: 0.423 ms</PRE
+ Planning time: 0.088 ms
+ Execution time: 0.423 ms</PRE
 ><P>
 
     The numbers provided by <TT
@@ -1080,7 +1086,8 @@ EXPLAIN ANALYZE UPDATE tenk1 SET hundred = hundred + 1 WHERE unique1 &lt; 100;
          Recheck Cond: (unique1 &lt; 100)
          -&gt;  Bitmap Index Scan on tenk1_unique1  (cost=0.00..5.04 rows=101 width=0) (actual time=0.043..0.043 rows=100 loops=1)
                Index Cond: (unique1 &lt; 100)
- Total runtime: 14.727 ms
+ Planning time: 0.079 ms
+ Execution time: 14.727 ms
 
 ROLLBACK;</PRE
 ><P>
@@ -1112,7 +1119,18 @@ CLASS="COMMAND"
 ><P
 >    The <TT
 CLASS="LITERAL"
->Total runtime</TT
+>Planning time</TT
+> shown by <TT
+CLASS="COMMAND"
+>EXPLAIN
+    ANALYZE</TT
+> is the time it took to generate the query plan from the
+    parsed query and optimize it. It does not include parsing or rewriting.
+   </P
+><P
+>    The <TT
+CLASS="LITERAL"
+>Execution time</TT
 > shown by <TT
 CLASS="COMMAND"
 >EXPLAIN
@@ -1142,7 +1160,7 @@ CLASS="LITERAL"
 >AFTER</TT
 >) is also shown separately.
     Note that deferred constraint triggers will not be executed
-    until end of transaction and are thus not shown at all by
+    until end of transaction and are thus not considered at all by
     <TT
 CLASS="COMMAND"
 >EXPLAIN ANALYZE</TT
@@ -1225,7 +1243,8 @@ CLASS="SCREEN"
          Index Cond: (unique2 &gt; 9000)
          Filter: (unique1 &lt; 100)
          Rows Removed by Filter: 287
- Total runtime: 0.336 ms</PRE
+ Planning time: 0.096 ms
+ Execution time: 0.336 ms</PRE
 ><P>
 
     the estimated cost and row count for the Index Scan node are shown as

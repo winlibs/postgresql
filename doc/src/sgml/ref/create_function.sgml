@@ -3,6 +3,10 @@ doc/src/sgml/ref/create_function.sgml
 -->
 
 <refentry id="SQL-CREATEFUNCTION">
+ <indexterm zone="sql-createfunction">
+  <primary>CREATE FUNCTION</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle>CREATE FUNCTION</refentrytitle>
   <manvolnum>7</manvolnum>
@@ -13,10 +17,6 @@ doc/src/sgml/ref/create_function.sgml
   <refname>CREATE FUNCTION</refname>
   <refpurpose>define a new function</refpurpose>
  </refnamediv>
-
- <indexterm zone="sql-createfunction">
-  <primary>CREATE FUNCTION</primary>
- </indexterm>
 
  <refsynopsisdiv>
 <synopsis>
@@ -252,10 +252,10 @@ CREATE [ OR REPLACE ] FUNCTION
      <listitem>
       <para>
        The name of the language that the function is implemented in.
-       Can be <literal>SQL</literal>, <literal>C</literal>,
+       It can be <literal>sql</literal>, <literal>c</literal>,
        <literal>internal</literal>, or the name of a user-defined
-       procedural language.  For backward compatibility,
-       the name can be enclosed by single quotes.
+       procedural language, e.g. <literal>plpgsql</literal>.  Enclosing the
+       name in single quotes is deprecated and requires matching case.
       </para>
      </listitem>
     </varlistentry>

@@ -4,7 +4,7 @@
  *	  POSTGRES define and remove utility definitions.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/commands/defrem.h
@@ -15,12 +15,14 @@
 #define DEFREM_H
 
 #include "nodes/parsenodes.h"
+#include "utils/array.h"
 
 /* commands/dropcmds.c */
 extern void RemoveObjects(DropStmt *stmt);
 
 /* commands/indexcmds.c */
-extern Oid DefineIndex(IndexStmt *stmt,
+extern Oid DefineIndex(Oid relationId,
+			IndexStmt *stmt,
 			Oid indexRelationId,
 			bool is_alter_table,
 			bool check_rights,
@@ -35,7 +37,6 @@ extern char *makeObjectName(const char *name1, const char *name2,
 extern char *ChooseRelationName(const char *name1, const char *name2,
 				   const char *label, Oid namespaceid);
 extern bool CheckIndexCompatible(Oid oldId,
-					 RangeVar *heapRelation,
 					 char *accessMethodName,
 					 List *attributeList,
 					 List *exclusionOpNames);
@@ -53,6 +54,17 @@ extern void IsThereFunctionInNamespace(const char *proname, int pronargs,
 						   oidvector *proargtypes, Oid nspOid);
 extern void ExecuteDoStmt(DoStmt *stmt);
 extern Oid	get_cast_oid(Oid sourcetypeid, Oid targettypeid, bool missing_ok);
+extern void interpret_function_parameter_list(List *parameters,
+								  Oid languageOid,
+								  bool is_aggregate,
+								  const char *queryString,
+								  oidvector **parameterTypes,
+								  ArrayType **allParameterTypes,
+								  ArrayType **parameterModes,
+								  ArrayType **parameterNames,
+								  List **parameterDefaults,
+								  Oid *variadicArgType,
+								  Oid *requiredResultType);
 
 /* commands/operatorcmds.c */
 extern Oid	DefineOperator(List *names, List *parameters);
@@ -60,7 +72,7 @@ extern void RemoveOperatorById(Oid operOid);
 
 /* commands/aggregatecmds.c */
 extern Oid DefineAggregate(List *name, List *args, bool oldstyle,
-				List *parameters);
+				List *parameters, const char *queryString);
 
 /* commands/opclasscmds.c */
 extern Oid	DefineOpClass(CreateOpClassStmt *stmt);
@@ -122,6 +134,7 @@ extern Datum transformGenericOptions(Oid catalogId,
 extern char *defGetString(DefElem *def);
 extern double defGetNumeric(DefElem *def);
 extern bool defGetBoolean(DefElem *def);
+extern int32 defGetInt32(DefElem *def);
 extern int64 defGetInt64(DefElem *def);
 extern List *defGetQualifiedName(DefElem *def);
 extern TypeName *defGetTypeName(DefElem *def);

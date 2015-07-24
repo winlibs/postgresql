@@ -3,7 +3,7 @@
  * pg_proc.c
  *	  routines to support manipulation of the pg_proc relation
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -229,7 +229,7 @@ ProcedureCreate(const char *procedureName,
 
 	/*
 	 * Do not allow polymorphic return type unless at least one input argument
-	 * is polymorphic.	ANYRANGE return type is even stricter: must have an
+	 * is polymorphic.  ANYRANGE return type is even stricter: must have an
 	 * ANYRANGE input (since we can't deduce the specific range type from
 	 * ANYELEMENT).  Also, do not allow return type INTERNAL unless at least
 	 * one input argument is INTERNAL.
@@ -676,7 +676,7 @@ ProcedureCreate(const char *procedureName,
 
 		/*
 		 * Set per-function configuration parameters so that the validation is
-		 * done with the environment the function expects.	However, if
+		 * done with the environment the function expects.  However, if
 		 * check_function_bodies is off, we don't do this, because that would
 		 * create dump ordering hazards that pg_dump doesn't know how to deal
 		 * with.  (For example, a SET clause might refer to a not-yet-created
@@ -723,6 +723,9 @@ fmgr_internal_validator(PG_FUNCTION_ARGS)
 	Datum		tmp;
 	char	   *prosrc;
 
+	if (!CheckFunctionValidatorAccess(fcinfo->flinfo->fn_oid, funcoid))
+		PG_RETURN_VOID();
+
 	/*
 	 * We do not honor check_function_bodies since it's unlikely the function
 	 * name will be found later if it isn't there now.
@@ -767,6 +770,9 @@ fmgr_c_validator(PG_FUNCTION_ARGS)
 	Datum		tmp;
 	char	   *prosrc;
 	char	   *probin;
+
+	if (!CheckFunctionValidatorAccess(fcinfo->flinfo->fn_oid, funcoid))
+		PG_RETURN_VOID();
 
 	/*
 	 * It'd be most consistent to skip the check if !check_function_bodies,
@@ -818,6 +824,9 @@ fmgr_sql_validator(PG_FUNCTION_ARGS)
 	ErrorContextCallback sqlerrcontext;
 	bool		haspolyarg;
 	int			i;
+
+	if (!CheckFunctionValidatorAccess(fcinfo->flinfo->fn_oid, funcoid))
+		PG_RETURN_VOID();
 
 	tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(funcoid));
 	if (!HeapTupleIsValid(tuple))
@@ -939,7 +948,7 @@ sql_function_parse_error_callback(void *arg)
 
 /*
  * Adjust a syntax error occurring inside the function body of a CREATE
- * FUNCTION or DO command.	This can be used by any function validator or
+ * FUNCTION or DO command.  This can be used by any function validator or
  * anonymous-block handler, not only for SQL-language functions.
  * It is assumed that the syntax error position is initially relative to the
  * function body string (as passed in).  If possible, we adjust the position
@@ -1072,7 +1081,7 @@ match_prosrc_to_literal(const char *prosrc, const char *literal,
 
 	/*
 	 * This implementation handles backslashes and doubled quotes in the
-	 * string literal.	It does not handle the SQL syntax for literals
+	 * string literal.  It does not handle the SQL syntax for literals
 	 * continued across line boundaries.
 	 *
 	 * We do the comparison a character at a time, not a byte at a time, so

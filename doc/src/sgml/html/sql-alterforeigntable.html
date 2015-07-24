@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERFOREIGNTABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN64857"
+NAME="AEN67715"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN64857"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN64862"
+NAME="AEN67718"
 ></A
 ><H2
 >Synopsis</H2
@@ -291,6 +291,30 @@ CLASS="REPLACEABLE"
 >value</I
 ></TT
 >'] [, ... ])
+    DISABLE TRIGGER [ <TT
+CLASS="REPLACEABLE"
+><I
+>trigger_name</I
+></TT
+> | ALL | USER ]
+    ENABLE TRIGGER [ <TT
+CLASS="REPLACEABLE"
+><I
+>trigger_name</I
+></TT
+> | ALL | USER ]
+    ENABLE REPLICA TRIGGER <TT
+CLASS="REPLACEABLE"
+><I
+>trigger_name</I
+></TT
+>
+    ENABLE ALWAYS TRIGGER <TT
+CLASS="REPLACEABLE"
+><I
+>trigger_name</I
+></TT
+>
     OWNER TO <TT
 CLASS="REPLACEABLE"
 ><I
@@ -312,7 +336,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64899"
+NAME="AEN67759"
 ></A
 ><H2
 >Description</H2
@@ -479,6 +503,24 @@ HREF="sql-altertable.html"
 ><DT
 ><TT
 CLASS="LITERAL"
+>DISABLE</TT
+>/<TT
+CLASS="LITERAL"
+>ENABLE [ REPLICA | ALWAYS ] TRIGGER</TT
+></DT
+><DD
+><P
+>      These forms configure the firing of trigger(s) belonging to the foreign
+      table.  See the similar form of <A
+HREF="sql-altertable.html"
+>ALTER TABLE</A
+> for more
+      details.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
 >OWNER</TT
 ></DT
 ><DD
@@ -594,7 +636,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64994"
+NAME="AEN67861"
 ></A
 ><H2
 >Parameters</H2
@@ -691,6 +733,42 @@ CLASS="LITERAL"
 ><TT
 CLASS="REPLACEABLE"
 ><I
+>trigger_name</I
+></TT
+></DT
+><DD
+><P
+>        Name of a single trigger to disable or enable.
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>ALL</TT
+></DT
+><DD
+><P
+>        Disable or enable all triggers belonging to the foreign table.  (This
+        requires superuser privilege if any of the triggers are internally
+        generated triggers.  The core system does not add such triggers to
+        foreign tables, but add-on code could do so.)
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>USER</TT
+></DT
+><DD
+><P
+>        Disable or enable all triggers belonging to the foreign table except
+        for internally generated triggers.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
 >new_owner</I
 ></TT
 ></DT
@@ -717,7 +795,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65042"
+NAME="AEN67924"
 ></A
 ><H2
 >Notes</H2
@@ -758,7 +836,7 @@ HREF="sql-createforeigntable.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65053"
+NAME="AEN67935"
 ></A
 ><H2
 >Examples</H2
@@ -779,7 +857,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65059"
+NAME="AEN67941"
 ></A
 ><H2
 >Compatibility</H2

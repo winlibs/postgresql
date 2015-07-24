@@ -328,7 +328,7 @@ arow RECORD;
     <para>
      The general syntax of a variable declaration is:
 <synopsis>
-<replaceable>name</replaceable> <optional> CONSTANT </optional> <replaceable>type</replaceable> <optional> COLLATE <replaceable>collation_name</replaceable> </optional> <optional> NOT NULL </optional> <optional> { DEFAULT | := } <replaceable>expression</replaceable> </optional>;
+<replaceable>name</replaceable> <optional> CONSTANT </optional> <replaceable>type</replaceable> <optional> COLLATE <replaceable>collation_name</replaceable> </optional> <optional> NOT NULL </optional> <optional> { DEFAULT | := | = } <replaceable>expression</replaceable> </optional>;
 </synopsis>
       The <literal>DEFAULT</> clause, if given, specifies the initial value assigned
       to the variable when the block is entered.  If the <literal>DEFAULT</> clause
@@ -343,6 +343,8 @@ arow RECORD;
       is specified, an assignment of a null value results in a run-time
       error. All variables declared as <literal>NOT NULL</>
       must have a nonnull default value specified.
+      Equal (<literal>=</>) can be used instead of PL/SQL-compliant
+      <literal>:=</>.
      </para>
 
      <para>
@@ -386,9 +388,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 </programlisting>
-      The other way, which was the only way available before
-      <productname>PostgreSQL</productname> 8.0, is to explicitly
-      declare an alias, using the declaration syntax
+      The other way is to explicitly declare an alias, using the
+      declaration syntax
 
 <synopsis>
 <replaceable>name</replaceable> ALIAS FOR $<replaceable>n</replaceable>;
@@ -486,8 +487,8 @@ $$ LANGUAGE plpgsql;
 CREATE FUNCTION extended_sales(p_itemno int)
 RETURNS TABLE(quantity int, total numeric) AS $$
 BEGIN
-    RETURN QUERY SELECT quantity, quantity * price FROM sales
-                 WHERE itemno = p_itemno;
+    RETURN QUERY SELECT s.quantity, s.quantity * s.price FROM sales AS s
+                 WHERE s.itemno = p_itemno;
 END;
 $$ LANGUAGE plpgsql;
 </programlisting>
@@ -866,7 +867,7 @@ PREPARE <replaceable>statement_name</>(integer, integer) AS SELECT $1 &lt; $2;
      An assignment of a value to a <application>PL/pgSQL</application>
      variable is written as:
 <synopsis>
-<replaceable>variable</replaceable> := <replaceable>expression</replaceable>;
+<replaceable>variable</replaceable> { := | = } <replaceable>expression</replaceable>;
 </synopsis>
      As explained previously, the expression in such a statement is evaluated
      by means of an SQL <command>SELECT</> command sent to the main
@@ -874,7 +875,8 @@ PREPARE <replaceable>statement_name</>(integer, integer) AS SELECT $1 &lt; $2;
      a row value, if the variable is a row or record variable).  The target
      variable can be a simple variable (optionally qualified with a block
      name), a field of a row or record variable, or an element of an array
-     that is a simple variable or field.
+     that is a simple variable or field.  Equal (<literal>=</>) can be
+     used instead of PL/SQL-compliant <literal>:=</>.
     </para>
 
     <para>
@@ -1083,6 +1085,38 @@ END;
      <literal>STRICT</literal> is not specified.  This is because there
      is no option such as <literal>ORDER BY</> with which to determine
      which affected row should be returned.
+    </para>
+
+    <para>
+     If <literal>print_strict_params</> is enabled for the function,
+     then when an error is thrown because the requirements
+     of <literal>STRICT</> are not met, the <literal>DETAIL</> part of
+     the error message will include information about the parameters
+     passed to the query.
+     You can change the <literal>print_strict_params</>
+     setting for all functions by setting
+     <varname>plpgsql.print_strict_params</>, though only subsequent
+     function compilations will be affected.  You can also enable it
+     on a per-function basis by using a compiler option, for example:
+<programlisting>
+CREATE FUNCTION get_userid(username text) RETURNS int
+AS $$
+#print_strict_params on
+DECLARE
+userid int;
+BEGIN
+    SELECT users.userid INTO STRICT userid
+        FROM users WHERE users.username = get_userid.username;
+    RETURN userid;
+END
+$$ LANGUAGE plpgsql;
+</programlisting>
+     On failure, this function might produce an error message such as
+<programlisting>
+ERROR:  query returned no rows
+DETAIL:  parameters: $1 = 'nosuchuser'
+CONTEXT:  PL/pgSQL function get_userid(text) line 6 at SQL statement
+</programlisting>
     </para>
 
     <note>
@@ -1387,7 +1421,7 @@ EXECUTE format('UPDATE tbl SET %I = $1 WHERE key = $2', colname)
      command, which has the form:
 
 <synopsis>
-GET <optional> CURRENT </optional> DIAGNOSTICS <replaceable>variable</replaceable> = <replaceable>item</replaceable> <optional> , ... </optional>;
+GET <optional> CURRENT </optional> DIAGNOSTICS <replaceable>variable</replaceable> { = | := } <replaceable>item</replaceable> <optional> , ... </optional>;
 </synopsis>
 
      This command allows retrieval of system status indicators.  Each
@@ -1401,6 +1435,8 @@ GET <optional> CURRENT </optional> DIAGNOSTICS <replaceable>variable</replaceabl
      <acronym>SQL</acronym> command.  Note that <varname>RESULT_OID</>
      is only useful after an <command>INSERT</command> command into a
      table containing OIDs.
+     Colon-equal (<literal>:=</>) can be used instead of SQL-standard
+     <literal>=</> for <command>GET DIAGNOSTICS</>.
     </para>
 
     <para>
@@ -2615,7 +2651,7 @@ SELECT merge_db(1, 'dennis');
     </example>
 
    <sect3 id="plpgsql-exception-diagnostics">
-    <title>Obtaining information about an error</title>
+    <title>Obtaining Information About an Error</title>
 
     <para>
      Exception handlers frequently need to identify the specific error that
@@ -2639,7 +2675,7 @@ SELECT merge_db(1, 'dennis');
      <command>GET STACKED DIAGNOSTICS</command> command, which has the form:
 
 <synopsis>
-GET STACKED DIAGNOSTICS <replaceable>variable</replaceable> = <replaceable>item</replaceable> <optional> , ... </optional>;
+GET STACKED DIAGNOSTICS <replaceable>variable</replaceable> { = | := } <replaceable>item</replaceable> <optional> , ... </optional>;
 </synopsis>
 
      Each <replaceable>item</replaceable> is a key word identifying a status
@@ -2649,7 +2685,7 @@ GET STACKED DIAGNOSTICS <replaceable>variable</replaceable> = <replaceable>item<
     </para>
 
      <table id="plpgsql-exception-diagnostics-values">
-      <title>Error diagnostics values</title>
+      <title>Error Diagnostics Values</title>
       <tgroup cols="3">
        <thead>
         <row>
@@ -2667,17 +2703,17 @@ GET STACKED DIAGNOSTICS <replaceable>variable</replaceable> = <replaceable>item<
         <row>
          <entry><literal>COLUMN_NAME</literal></entry>
          <entry>text</entry>
-         <entry>the name of column related to exception</entry>
+         <entry>the name of the column related to exception</entry>
         </row>
         <row>
          <entry><literal>CONSTRAINT_NAME</literal></entry>
          <entry>text</entry>
-         <entry>the name of constraint related to exception</entry>
+         <entry>the name of the constraint related to exception</entry>
         </row>
         <row>
          <entry><literal>PG_DATATYPE_NAME</literal></entry>
          <entry>text</entry>
-         <entry>the name of datatype related to exception</entry>
+         <entry>the name of the data type related to exception</entry>
         </row>
         <row>
          <entry><literal>MESSAGE_TEXT</literal></entry>
@@ -2687,12 +2723,12 @@ GET STACKED DIAGNOSTICS <replaceable>variable</replaceable> = <replaceable>item<
         <row>
          <entry><literal>TABLE_NAME</literal></entry>
          <entry>text</entry>
-         <entry>the name of table related to exception</entry>
+         <entry>the name of the table related to exception</entry>
         </row>
         <row>
          <entry><literal>SCHEMA_NAME</literal></entry>
          <entry>text</entry>
-         <entry>the name of schema related to exception</entry>
+         <entry>the name of the schema related to exception</entry>
         </row>
         <row>
          <entry><literal>PG_EXCEPTION_DETAIL</literal></entry>
@@ -2736,6 +2772,61 @@ END;
 </programlisting>
     </para>
    </sect3>
+  </sect2>
+
+  <sect2 id="plpgsql-get-diagnostics-context">
+   <title>Obtaining Current Execution Information</title>
+
+   <para>
+    The <command>GET <optional> CURRENT </optional> DIAGNOSTICS</command>
+    command retrieves information about current execution state (whereas
+    the <command>GET STACKED DIAGNOSTICS</command> command discussed above
+    reports information about the execution state as of a previous error).
+    This command has the form:
+   </para>
+
+<synopsis>
+GET <optional> CURRENT </optional> DIAGNOSTICS <replaceable>variable</replaceable> { = | := } <replaceable>item</replaceable> <optional> , ... </optional>;
+</synopsis>
+
+   <para>
+    Currently only one information item is supported.  Status
+    item <literal>PG_CONTEXT</> will return a text string with line(s) of
+    text describing the call stack.  The first line refers to the
+    current function and currently executing <command>GET DIAGNOSTICS</command>
+    command.  The second and any subsequent lines refer to calling functions
+    further up the call stack.  For example:
+
+<programlisting>
+CREATE OR REPLACE FUNCTION outer_func() RETURNS integer AS $$
+BEGIN
+  RETURN inner_func();
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION inner_func() RETURNS integer AS $$
+DECLARE
+  stack text;
+BEGIN
+  GET DIAGNOSTICS stack = PG_CONTEXT;
+  RAISE NOTICE E'--- Call Stack ---\n%', stack;
+  RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT outer_func();
+
+NOTICE:  --- Call Stack ---
+PL/pgSQL function inner_func() line 5 at GET DIAGNOSTICS
+PL/pgSQL function outer_func() line 3 at RETURN
+CONTEXT:  PL/pgSQL function outer_func() line 3 at RETURN
+ outer_func
+ ------------
+           1
+(1 row)
+</programlisting>
+
+   </para>
   </sect2>
   </sect1>
 
@@ -3482,7 +3573,7 @@ RAISE unique_violation USING MESSAGE = 'Duplicate user ID: ' || user_id;
   </indexterm>
 
   <sect2 id="plpgsql-dml-trigger">
-   <title>Triggers on data changes</title>
+   <title>Triggers on Data Changes</title>
 
    <para>
     <application>PL/pgSQL</application> can be used to define trigger
@@ -4034,7 +4125,7 @@ SELECT * FROM sales_summary_bytime;
 </sect2>
 
   <sect2 id="plpgsql-event-trigger">
-   <title>Triggers on events</title>
+   <title>Triggers on Events</title>
 
    <para>
     <application>PL/pgSQL</application> can be used to define event
@@ -4626,6 +4717,56 @@ a_output := a_output || $$ if v_$$ || referrer_keys.kind || $$ like '$$
   </variablelist>
 
   </sect2>
+  <sect2 id="plpgsql-extra-checks">
+   <title>Additional Compile-time Checks</title>
+
+   <para>
+    To aid the user in finding instances of simple but common problems before
+    they cause harm, <application>PL/PgSQL</> provides additional
+    <replaceable>checks</>. When enabled, depending on the configuration, they
+    can be used to emit either a <literal>WARNING</> or an <literal>ERROR</>
+    during the compilation of a function. A function which has received
+    a <literal>WARNING</> can be executed without producing further messages,
+    so you are advised to test in a separate development environment.
+   </para>
+
+ <para>
+  These additional checks are enabled through the configuration variables
+  <varname>plpgsql.extra_warnings</> for warnings and
+  <varname>plpgsql.extra_errors</> for errors. Both can be set either to
+  a comma-separated list of checks, <literal>"none"</> or <literal>"all"</>.
+  The default is <literal>"none"</>. Currently the list of available checks
+  includes only one:
+  <variablelist>
+   <varlistentry>
+    <term><varname>shadowed_variables</varname></term>
+    <listitem>
+     <para>
+      Checks if a declaration shadows a previously defined variable.
+     </para>
+    </listitem>
+   </varlistentry>
+  </variablelist>
+
+  The following example shows the effect of <varname>plpgsql.extra_warnings</>
+  set to <varname>shadowed_variables</>:
+<programlisting>
+SET plpgsql.extra_warnings TO 'shadowed_variables';
+
+CREATE FUNCTION foo(f1 int) RETURNS int AS $$
+DECLARE
+f1 int;
+BEGIN
+RETURN f1;
+END
+$$ LANGUAGE plpgsql;
+WARNING:  variable "f1" shadows a previously defined variable
+LINE 3: f1 int;
+        ^
+CREATE FUNCTION
+</programlisting>
+ </para>
+ </sect2>
  </sect1>
 
   <!-- **** Porting from Oracle PL/SQL **** -->

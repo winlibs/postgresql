@@ -648,7 +648,7 @@ char *boot_yytext;
  * bootscanner.l
  *	  a lexical scanner for the bootstrap parser
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -1104,7 +1104,7 @@ case 27:
 YY_RULE_SETUP
 #line 113 "bootscanner.l"
 {
-					yylval.str = pstrdup(MapArrayTypeName(boot_yytext));
+					yylval.str = MapArrayTypeName(boot_yytext);
 					return(ID);
 				}
 	YY_BREAK

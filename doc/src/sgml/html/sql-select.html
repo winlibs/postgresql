@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-SELECT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN79774"
+NAME="AEN83142"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN79774"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN79786"
+NAME="AEN83147"
 ></A
 ><H2
 >Synopsis</H2
@@ -121,7 +121,7 @@ CLASS="REPLACEABLE"
 >expression</I
 ></TT
 > [, ...] ) ] ]
-    * | <TT
+    [ * | <TT
 CLASS="REPLACEABLE"
 ><I
 >expression</I
@@ -131,7 +131,7 @@ CLASS="REPLACEABLE"
 ><I
 >output_name</I
 ></TT
-> ] [, ...]
+> ] [, ...] ]
     [ FROM <TT
 CLASS="REPLACEABLE"
 ><I
@@ -280,7 +280,8 @@ CLASS="REPLACEABLE"
 ><I
 >argument</I
 ></TT
-> [, ...] ] ) [ AS ] <TT
+> [, ...] ] )
+                [ WITH ORDINALITY ] [ [ AS ] <TT
 CLASS="REPLACEABLE"
 ><I
 >alias</I
@@ -290,12 +291,28 @@ CLASS="REPLACEABLE"
 ><I
 >column_alias</I
 ></TT
-> [, ...] | <TT
+> [, ...] ) ] ]
+    [ LATERAL ] <TT
+CLASS="REPLACEABLE"
+><I
+>function_name</I
+></TT
+> ( [ <TT
+CLASS="REPLACEABLE"
+><I
+>argument</I
+></TT
+> [, ...] ] ) [ AS ] <TT
+CLASS="REPLACEABLE"
+><I
+>alias</I
+></TT
+> ( <TT
 CLASS="REPLACEABLE"
 ><I
 >column_definition</I
 ></TT
-> [, ...] ) ]
+> [, ...] )
     [ LATERAL ] <TT
 CLASS="REPLACEABLE"
 ><I
@@ -312,6 +329,33 @@ CLASS="REPLACEABLE"
 >column_definition</I
 ></TT
 > [, ...] )
+    [ LATERAL ] ROWS FROM( <TT
+CLASS="REPLACEABLE"
+><I
+>function_name</I
+></TT
+> ( [ <TT
+CLASS="REPLACEABLE"
+><I
+>argument</I
+></TT
+> [, ...] ] ) [ AS ( <TT
+CLASS="REPLACEABLE"
+><I
+>column_definition</I
+></TT
+> [, ...] ) ] [, ...] )
+                [ WITH ORDINALITY ] [ [ AS ] <TT
+CLASS="REPLACEABLE"
+><I
+>alias</I
+></TT
+> [ ( <TT
+CLASS="REPLACEABLE"
+><I
+>column_alias</I
+></TT
+> [, ...] ) ] ]
     <TT
 CLASS="REPLACEABLE"
 ><I
@@ -399,7 +443,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN79839"
+NAME="AEN83208"
 ></A
 ><H2
 >Description</H2
@@ -493,9 +537,11 @@ HREF="sql-select.html#SQL-WHERE"
 >      If the <TT
 CLASS="LITERAL"
 >GROUP BY</TT
-> clause is specified, the
+> clause is specified,
+      or if there are aggregate function calls, the
       output is combined into groups of rows that match on one or more
-      values.  If the <TT
+      values, and the results of aggregate functions are computed.
+      If the <TT
 CLASS="LITERAL"
 >HAVING</TT
 > clause is present, it
@@ -753,7 +799,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN79923"
+NAME="AEN83292"
 ></A
 ><H2
 >Parameters</H2
@@ -778,6 +824,9 @@ CLASS="LITERAL"
     Each subquery can be a <TT
 CLASS="COMMAND"
 >SELECT</TT
+>, <TT
+CLASS="COMMAND"
+>TABLE</TT
 >, <TT
 CLASS="COMMAND"
 >VALUES</TT
@@ -1125,24 +1174,56 @@ CLASS="LITERAL"
 >
         clause.  (This is especially useful for functions that return
         result sets, but any function can be used.)  This acts as
-        though its output were created as a temporary table for the
+        though the function's output were created as a temporary table for the
         duration of this single <TT
 CLASS="COMMAND"
 >SELECT</TT
-> command. An
-        alias can also be used. If an alias is written, a column alias
-        list can also be written to provide substitute names for one
-        or more attributes of the function's composite return type. If
-        the function has been defined as returning the <TT
+> command.
+        When the optional <TT
+CLASS="COMMAND"
+>WITH ORDINALITY</TT
+> clause is
+        added to the function call, a new column is appended after
+        all the function's output columns with numbering for each row.
+       </P
+><P
+>        An alias can be provided in the same way as for a table.
+        If an alias is written, a column
+        alias list can also be written to provide substitute names for
+        one or more attributes of the function's composite return
+        type, including the column added by <TT
+CLASS="LITERAL"
+>ORDINALITY</TT
+>
+        if present.
+       </P
+><P
+>        Multiple function calls can be combined into a
+        single <TT
+CLASS="LITERAL"
+>FROM</TT
+>-clause item by surrounding them
+        with <TT
+CLASS="LITERAL"
+>ROWS FROM( ... )</TT
+>.  The output of such an item is the
+        concatenation of the first row from each function, then the second
+        row from each function, etc.  If some of the functions produce fewer
+        rows than others, NULLs are substituted for the missing data, so
+        that the total number of rows returned is always the same as for the
+        function that produced the most rows.
+       </P
+><P
+>        If the function has been defined as returning the
+        <TT
 CLASS="TYPE"
 >record</TT
->
-        data type, then an alias or the key word <TT
+> data type, then an alias or the key word
+        <TT
 CLASS="LITERAL"
 >AS</TT
-> must
-        be present, followed by a column definition list in the form
-        <TT
+> must be present, followed by a column
+        definition list in the form <TT
 CLASS="LITERAL"
 >( <TT
 CLASS="REPLACEABLE"
@@ -1156,11 +1237,45 @@ CLASS="REPLACEABLE"
 ></TT
 > [<SPAN
 CLASS="OPTIONAL"
->, ... </SPAN
->]
-        )</TT
->.  The column definition list must match the actual
-        number and types of columns returned by the function.
+>, ...
+        </SPAN
+>])</TT
+>.  The column definition list must match the
+        actual number and types of columns returned by the function.
+       </P
+><P
+>        When using the <TT
+CLASS="LITERAL"
+>ROWS FROM( ... )</TT
+> syntax, if one of the
+        functions requires a column definition list, it's preferred to put
+        the column definition list after the function call inside
+        <TT
+CLASS="LITERAL"
+>ROWS FROM( ... )</TT
+>.  A column definition list can be placed
+        after the <TT
+CLASS="LITERAL"
+>ROWS FROM( ... )</TT
+> construct only if there's just
+        a single function and no <TT
+CLASS="LITERAL"
+>WITH ORDINALITY</TT
+> clause.
+       </P
+><P
+>        To use <TT
+CLASS="LITERAL"
+>ORDINALITY</TT
+> together with a column definition
+        list, you must use the <TT
+CLASS="LITERAL"
+>ROWS FROM( ... )</TT
+> syntax and put the
+        column definition list inside <TT
+CLASS="LITERAL"
+>ROWS FROM( ... )</TT
+>.
        </P
 ></DD
 ><DT
@@ -1670,26 +1785,86 @@ CLASS="LITERAL"
    </P
 ><P
 >    Aggregate functions, if any are used, are computed across all rows
-    making up each group, producing a separate value for each group
-    (whereas without <TT
+    making up each group, producing a separate value for each group.
+    (If there are aggregate functions but no <TT
 CLASS="LITERAL"
 >GROUP BY</TT
->, an aggregate
-    produces a single value computed across all the selected rows).
-    When <TT
+>
+    clause, the query is treated as having a single group comprising all
+    the selected rows.)
+    The set of rows fed to each aggregate function can be further filtered by
+    attaching a <TT
+CLASS="LITERAL"
+>FILTER</TT
+> clause to the aggregate function
+    call; see <A
+HREF="sql-expressions.html#SYNTAX-AGGREGATES"
+>Section 4.2.7</A
+> for more information.  When
+    a <TT
+CLASS="LITERAL"
+>FILTER</TT
+> clause is present, only those rows matching it
+    are included in the input to that aggregate function.
+   </P
+><P
+>    When <TT
 CLASS="LITERAL"
 >GROUP BY</TT
-> is present, it is not valid for
+> is present,
+    or any aggregate functions are present, it is not valid for
     the <TT
 CLASS="COMMAND"
 >SELECT</TT
 > list expressions to refer to
-    ungrouped columns except within aggregate functions or if the
+    ungrouped columns except within aggregate functions or when the
     ungrouped column is functionally dependent on the grouped columns,
     since there would otherwise be more than one possible value to
     return for an ungrouped column.  A functional dependency exists if
     the grouped columns (or a subset thereof) are the primary key of
     the table containing the ungrouped column.
+   </P
+><P
+>    Keep in mind that all aggregate functions are evaluated before
+    evaluating any <SPAN
+CLASS="QUOTE"
+>"scalar"</SPAN
+> expressions in the <TT
+CLASS="LITERAL"
+>HAVING</TT
+>
+    clause or <TT
+CLASS="LITERAL"
+>SELECT</TT
+> list.  This means that, for example,
+    a <TT
+CLASS="LITERAL"
+>CASE</TT
+> expression cannot be used to skip evaluation of
+    an aggregate function; see <A
+HREF="sql-expressions.html#SYNTAX-EXPRESS-EVAL"
+>Section 4.2.14</A
+>.
+   </P
+><P
+>    Currently, <TT
+CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+>,
+    <TT
+CLASS="LITERAL"
+>FOR SHARE</TT
+> and <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
+> cannot be
+    specified with <TT
+CLASS="LITERAL"
+>GROUP BY</TT
+>.
    </P
 ></DIV
 ><DIV
@@ -1762,7 +1937,8 @@ CLASS="REPLACEABLE"
 ></TT
 > must
     unambiguously reference a grouping column, unless the reference
-    appears within an aggregate function.
+    appears within an aggregate function or the ungrouped column is
+    functionally dependent on the grouping columns.
    </P
 ><P
 >    The presence of <TT
@@ -1791,6 +1967,26 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >HAVING</TT
 > condition is true, zero rows if it is not true.
+   </P
+><P
+>    Currently, <TT
+CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+>,
+    <TT
+CLASS="LITERAL"
+>FOR SHARE</TT
+> and <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
+> cannot be
+    specified with <TT
+CLASS="LITERAL"
+>HAVING</TT
+>.
    </P
 ></DIV
 ><DIV
@@ -1962,13 +2158,13 @@ CLASS="REPLACEABLE"
 
 </P><PRE
 CLASS="SYNOPSIS"
->[ RANGE | ROWS ] <TT
+>{ RANGE | ROWS } <TT
 CLASS="REPLACEABLE"
 ><I
 >frame_start</I
 ></TT
 >
-[ RANGE | ROWS ] BETWEEN <TT
+{ RANGE | ROWS } BETWEEN <TT
 CLASS="REPLACEABLE"
 ><I
 >frame_start</I
@@ -2074,11 +2270,12 @@ CLASS="LITERAL"
 >RANGE BETWEEN UNBOUNDED PRECEDING AND
     CURRENT ROW</TT
 >; it sets the frame to be all rows from the partition start
-    up through the current row's last peer in the <TT
+    up through the current row's last peer (a row that <TT
 CLASS="LITERAL"
->ORDER BY</TT
->
-    ordering (which means all rows if there is no <TT
+>ORDER
+    BY</TT
+> considers equivalent to the current row, or all rows if there
+    is no <TT
 CLASS="LITERAL"
 >ORDER BY</TT
 >).
@@ -2164,7 +2361,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >ORDER BY</TT
 > ordering are treated
-    alike; any two peer rows will be both in or both not in the frame.
+    alike; all peer rows will be in the same frame.
    </P
 ><P
 >    The purpose of a <TT
@@ -2218,6 +2415,26 @@ CLASS="LITERAL"
 >
     clause saves typing when the same window definition is needed for more
     than one window function.
+   </P
+><P
+>    Currently, <TT
+CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+>,
+    <TT
+CLASS="LITERAL"
+>FOR SHARE</TT
+> and <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
+> cannot be
+    specified with <TT
+CLASS="LITERAL"
+>WINDOW</TT
+>.
    </P
 ><P
 >    Window functions are described in detail in
@@ -2445,6 +2662,26 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >DISTINCT ON</TT
 > group.
+   </P
+><P
+>    Currently, <TT
+CLASS="LITERAL"
+>FOR NO KEY UPDATE</TT
+>, <TT
+CLASS="LITERAL"
+>FOR UPDATE</TT
+>,
+    <TT
+CLASS="LITERAL"
+>FOR SHARE</TT
+> and <TT
+CLASS="LITERAL"
+>FOR KEY SHARE</TT
+> cannot be
+    specified with <TT
+CLASS="LITERAL"
+>DISTINCT</TT
+>.
    </P
 ></DIV
 ><DIV
@@ -3437,179 +3674,10 @@ KEY SHARE</PRE
 ><P>
    </P
 ><P
->    <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> causes the rows retrieved by the
-    <TT
-CLASS="COMMAND"
->SELECT</TT
-> statement to be locked as though for
-    update.  This prevents them from being modified or deleted by
-    other transactions until the current transaction ends.  That is,
-    other transactions that attempt <TT
-CLASS="COMMAND"
->UPDATE</TT
->,
-    <TT
-CLASS="COMMAND"
->DELETE</TT
->,
-    <TT
-CLASS="COMMAND"
->SELECT FOR UPDATE</TT
->,
-    <TT
-CLASS="COMMAND"
->SELECT FOR NO KEY UPDATE</TT
->,
-    <TT
-CLASS="COMMAND"
->SELECT FOR SHARE</TT
-> or
-    <TT
-CLASS="COMMAND"
->SELECT FOR KEY SHARE</TT
->
-    of these rows will be blocked until the current transaction ends.
-    The <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> lock mode
-    is also acquired by any <TT
-CLASS="COMMAND"
->DELETE</TT
-> on a row, and also by an
-    <TT
-CLASS="COMMAND"
->UPDATE</TT
-> that modifies the values on certain columns.  Currently,
-    the set of columns considered for the <TT
-CLASS="COMMAND"
->UPDATE</TT
-> case are those that
-    have an unique index on them that can be used in a foreign key (so partial
-    indexes and expressional indexes are not considered), but this may change
-    in the future.
-    Also, if an <TT
-CLASS="COMMAND"
->UPDATE</TT
->, <TT
-CLASS="COMMAND"
->DELETE</TT
->,
-    or <TT
-CLASS="COMMAND"
->SELECT FOR UPDATE</TT
-> from another transaction
-    has already locked a selected row or rows, <TT
-CLASS="COMMAND"
->SELECT FOR
-    UPDATE</TT
-> will wait for the other transaction to complete,
-    and will then lock and return the updated row (or no row, if the
-    row was deleted).  Within a <TT
-CLASS="LITERAL"
->REPEATABLE READ</TT
-> or <TT
-CLASS="LITERAL"
->SERIALIZABLE</TT
-> transaction,
-    however, an error will be thrown if a row to be locked has changed
-    since the transaction started.  For further discussion see <A
-HREF="mvcc.html"
->Chapter 13</A
->.
-   </P
-><P
->    <TT
-CLASS="LITERAL"
->FOR NO KEY UPDATE</TT
-> behaves similarly, except that the lock
-    acquired is weaker: this lock will not block
-    <TT
-CLASS="LITERAL"
->SELECT FOR KEY SHARE</TT
-> commands that attempt to acquire
-    a lock on the same rows. This lock mode is also acquired by any
-    <TT
-CLASS="COMMAND"
->UPDATE</TT
-> that does not acquire a <TT
-CLASS="LITERAL"
->FOR UPDATE</TT
-> lock.
-   </P
-><P
->    <TT
-CLASS="LITERAL"
->FOR SHARE</TT
-> behaves similarly, except that it
-    acquires a shared rather than exclusive lock on each retrieved
-    row.  A shared lock blocks other transactions from performing
-    <TT
-CLASS="COMMAND"
->UPDATE</TT
->, <TT
-CLASS="COMMAND"
->DELETE</TT
->, <TT
-CLASS="COMMAND"
->SELECT
-    FOR UPDATE</TT
-> or <TT
-CLASS="COMMAND"
->SELECT FOR NO KEY UPDATE</TT
->
-    on these rows, but it does not prevent them
-    from performing <TT
-CLASS="COMMAND"
->SELECT FOR SHARE</TT
-> or
-    <TT
-CLASS="COMMAND"
->SELECT FOR KEY SHARE</TT
->.
-   </P
-><P
->    <TT
-CLASS="LITERAL"
->FOR KEY SHARE</TT
-> behaves similarly to <TT
-CLASS="LITERAL"
->FOR SHARE</TT
->,
-    except that the lock
-    is weaker: <TT
-CLASS="LITERAL"
->SELECT FOR UPDATE</TT
-> is blocked, but
-    not <TT
-CLASS="LITERAL"
->SELECT FOR NO KEY UPDATE</TT
->.  A key-shared
-    lock blocks other transactions from performing <TT
-CLASS="COMMAND"
->DELETE</TT
->
-    or any <TT
-CLASS="COMMAND"
->UPDATE</TT
-> that changes the key values, but not
-    other <TT
-CLASS="COMMAND"
->UPDATE</TT
->, and neither does it prevent
-    <TT
-CLASS="COMMAND"
->SELECT FOR NO KEY UPDATE</TT
->, <TT
-CLASS="COMMAND"
->SELECT FOR SHARE</TT
->, or
-    <TT
-CLASS="COMMAND"
->SELECT FOR KEY SHARE</TT
+>    For more information on each row-level lock mode, refer to
+    <A
+HREF="explicit-locking.html#LOCKING-ROWS"
+>Section 13.3.2</A
 >.
    </P
 ><P
@@ -3870,7 +3938,7 @@ CLASS="REPLACEABLE"
 ></TT
 ></PRE
 ><P>
-    is completely equivalent to
+    is equivalent to
 </P><PRE
 CLASS="PROGRAMLISTING"
 >SELECT * FROM <TT
@@ -3881,14 +3949,53 @@ CLASS="REPLACEABLE"
 ></PRE
 ><P>
     It can be used as a top-level command or as a space-saving syntax
-    variant in parts of complex queries.
+    variant in parts of complex queries. Only the <TT
+CLASS="LITERAL"
+>WITH</TT
+>,
+    <TT
+CLASS="LITERAL"
+>UNION</TT
+>, <TT
+CLASS="LITERAL"
+>INTERSECT</TT
+>, <TT
+CLASS="LITERAL"
+>EXCEPT</TT
+>,
+    <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>, <TT
+CLASS="LITERAL"
+>LIMIT</TT
+>, <TT
+CLASS="LITERAL"
+>OFFSET</TT
+>,
+    <TT
+CLASS="LITERAL"
+>FETCH</TT
+> and <TT
+CLASS="LITERAL"
+>FOR</TT
+> locking clauses can be used
+    with <TT
+CLASS="COMMAND"
+>TABLE</TT
+>; the <TT
+CLASS="LITERAL"
+>WHERE</TT
+> clause and any form of
+    aggregation cannot
+    be used.
    </P
 ></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80678"
+NAME="AEN84067"
 ></A
 ><H2
 >Examples</H2
@@ -4065,6 +4172,23 @@ SELECT * FROM distributors_2(111) AS (f1 int, f2 text);
 ><P>
   </P
 ><P
+>   Here is an example of a function with an ordinality column added:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT * FROM unnest(ARRAY['a','b','c','d','e','f']) WITH ORDINALITY;
+ unnest | ordinality
+--------+----------
+ a      |        1
+ b      |        2
+ c      |        3
+ d      |        4
+ e      |        5
+ f      |        6
+(6 rows)</PRE
+><P>
+  </P
+><P
 >   This example shows how to use a simple <TT
 CLASS="LITERAL"
 >WITH</TT
@@ -4164,7 +4288,7 @@ FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;</P
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80718"
+NAME="AEN84109"
 ></A
 ><H2
 >Compatibility</H2
@@ -4179,7 +4303,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80722"
+NAME="AEN84113"
 ></A
 ><H3
 >Omitted <TT
@@ -4224,7 +4348,8 @@ CLASS="LITERAL"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >SELECT distributors.* WHERE distributors.name = 'Westward';</PRE
-><P><SPAN
+><P>
+    <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > releases prior to
@@ -4239,7 +4364,35 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80736"
+NAME="AEN84127"
+></A
+><H3
+>Empty <TT
+CLASS="LITERAL"
+>SELECT</TT
+> Lists</H3
+><P
+>    The list of output expressions after <TT
+CLASS="LITERAL"
+>SELECT</TT
+> can be
+    empty, producing a zero-column result table.
+    This is not valid syntax according to the SQL standard.
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> allows it to be consistent with
+    allowing zero-column tables.
+    However, an empty list is not allowed when <TT
+CLASS="LITERAL"
+>DISTINCT</TT
+> is used.
+   </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN84134"
 ></A
 ><H3
 >Omitting the <TT
@@ -4288,7 +4441,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80748"
+NAME="AEN84146"
 ></A
 ><H3
 ><TT
@@ -4335,7 +4488,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80761"
+NAME="AEN84159"
 ></A
 ><H3
 >Function Calls in <TT
@@ -4413,7 +4566,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80780"
+NAME="AEN84178"
 ></A
 ><H3
 >Namespace Available to <TT
@@ -4467,7 +4620,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80793"
+NAME="AEN84191"
 ></A
 ><H3
 >Functional Dependencies</H3
@@ -4491,7 +4644,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80799"
+NAME="AEN84197"
 ></A
 ><H3
 ><TT
@@ -4516,7 +4669,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80805"
+NAME="AEN84203"
 ></A
 ><H3
 ><TT
@@ -4574,7 +4727,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80819"
+NAME="AEN84217"
 ></A
 ><H3
 ><TT
@@ -4631,7 +4784,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80835"
+NAME="AEN84233"
 ></A
 ><H3
 >Data-Modifying Statements in <TT
@@ -4662,16 +4815,22 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80844"
+NAME="AEN84242"
 ></A
 ><H3
 >Nonstandard Clauses</H3
 ><P
->    The clause <TT
+>    <TT
 CLASS="LITERAL"
->DISTINCT ON</TT
-> is not defined in the
+>DISTINCT ON ( ... )</TT
+> is an extension of the
     SQL standard.
+   </P
+><P
+>    <TT
+CLASS="LITERAL"
+>ROWS FROM( ... )</TT
+> is an extension of the SQL standard.
    </P
 ></DIV
 ></DIV

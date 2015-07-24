@@ -12,10 +12,12 @@ subdir = src/backend/replication
 top_builddir = ../../..
 include $(top_builddir)/src/Makefile.global
 
-override CPPFLAGS := -I$(srcdir) $(CPPFLAGS)
+override CPPFLAGS := -I. -I$(srcdir) $(CPPFLAGS)
 
 OBJS = walsender.o walreceiverfuncs.o walreceiver.o basebackup.o \
-	repl_gram.o syncrep.o
+	repl_gram.o slot.o slotfuncs.o syncrep.o
+
+SUBDIRS = logical
 
 include $(top_srcdir)/src/backend/common.mk
 

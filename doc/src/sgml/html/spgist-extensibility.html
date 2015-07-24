@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SP-GiST Indexes"
 HREF="spgist.html"><LINK
 REL="PREVIOUS"
-TITLE="Introduction"
-HREF="spgist-intro.html"><LINK
+TITLE="Built-in Operator Classes"
+HREF="spgist-builtin-opclasses.html"><LINK
 REL="NEXT"
 TITLE="Implementation"
 HREF="spgist-implementation.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="Introduction"
-HREF="spgist-intro.html"
+TITLE="Built-in Operator Classes"
+HREF="spgist-builtin-opclasses.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 56. SP-GiST Indexes</TD
+>Chapter 57. SP-GiST Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="SPGIST-EXTENSIBILITY"
->56.2. Extensibility</A
+>57.3. Extensibility</A
 ></H1
 ><P
 >  <ACRONYM
@@ -303,7 +303,7 @@ CLASS="STRUCTFIELD"
       class is capable of segmenting long values by repeated suffixing
       (see <A
 HREF="spgist-implementation.html#SPGIST-LIMITS"
->Section 56.3.1</A
+>Section 57.4.1</A
 >).
      </P
 ></DD
@@ -427,7 +427,7 @@ CLASS="STRUCTFIELD"
        marked as containing multiple equivalent nodes
        (see <A
 HREF="spgist-implementation.html#SPGIST-ALL-THE-SAME"
->Section 56.3.3</A
+>Section 57.4.3</A
 >).
        <TT
 CLASS="STRUCTFIELD"
@@ -673,7 +673,7 @@ CLASS="STRUCTFIELD"
 >
        to NULL; see <A
 HREF="spgist-implementation.html#SPGIST-NULL-LABELS"
->Section 56.3.2</A
+>Section 57.4.2</A
 > for details.)
        Set <TT
 CLASS="STRUCTFIELD"
@@ -737,7 +737,7 @@ CLASS="FUNCTION"
        must take suitable care with such inner tuples.
        See <A
 HREF="spgist-implementation.html#SPGIST-ALL-THE-SAME"
->Section 56.3.3</A
+>Section 57.4.3</A
 > for more information.
       </P
 ><P
@@ -758,7 +758,7 @@ CLASS="STRUCTFIELD"
        The call will be repeated until a leaf datum short enough to fit on
        a page has been produced.  See <A
 HREF="spgist-implementation.html#SPGIST-LIMITS"
->Section 56.3.1</A
+>Section 57.4.1</A
 > for
        more information.
       </P
@@ -893,7 +893,7 @@ CLASS="QUOTE"
        same label (if any) and so either all or none of them match the query
        (see <A
 HREF="spgist-implementation.html#SPGIST-ALL-THE-SAME"
->Section 56.3.3</A
+>Section 57.4.3</A
 >).
        <TT
 CLASS="STRUCTFIELD"
@@ -1158,7 +1158,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="spgist-intro.html"
+HREF="spgist-builtin-opclasses.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -1186,7 +1186,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Introduction</TD
+>Built-in Operator Classes</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

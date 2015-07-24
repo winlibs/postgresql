@@ -33,8 +33,7 @@ files, as shown in <xref linkend="pgdata-contents-table">.  In addition to
 these required items, the cluster configuration files
 <filename>postgresql.conf</filename>, <filename>pg_hba.conf</filename>, and
 <filename>pg_ident.conf</filename> are traditionally stored in
-<varname>PGDATA</> (although in <productname>PostgreSQL</productname> 8.0 and
-later, it is possible to place them elsewhere).
+<varname>PGDATA</>, although it is possible to place them elsewhere.
 </para>
 
 <table tocentry="1" id="pgdata-contents-table">
@@ -73,6 +72,17 @@ Item
 </row>
 
 <row>
+ <entry><filename>pg_dynshmem</></entry>
+ <entry>Subdirectory containing files used by the dynamic shared memory
+  subsystem</entry>
+</row>
+
+<row>
+ <entry><filename>pg_logical</></entry>
+ <entry>Subdirectory containing status data for logical decoding</entry>
+</row>
+
+<row>
  <entry><filename>pg_multixact</></entry>
  <entry>Subdirectory containing multitransaction status data
   (used for shared row locks)</entry>
@@ -84,6 +94,11 @@ Item
 </row>
 
 <row>
+ <entry><filename>pg_replslot</></entry>
+ <entry>Subdirectory containing replication slot data</entry>
+</row>
+
+<row>
  <entry><filename>pg_serial</></entry>
  <entry>Subdirectory containing information about committed serializable transactions</entry>
 </row>
@@ -91,6 +106,12 @@ Item
 <row>
  <entry><filename>pg_snapshots</></entry>
  <entry>Subdirectory containing exported snapshots</entry>
+</row>
+
+<row>
+ <entry><filename>pg_stat</></entry>
+ <entry>Subdirectory containing permanent files for the statistics
+  subsystem</entry>
 </row>
 
 <row>
@@ -117,6 +138,12 @@ Item
 <row>
  <entry><filename>pg_xlog</></entry>
  <entry>Subdirectory containing WAL (Write Ahead Log) files</entry>
+</row>
+
+<row>
+ <entry><filename>postgresql.auto.conf</></entry>
+ <entry>A file used for storing configuration parameters that are set by
+<command>ALTER SYSTEM</command></entry>
 </row>
 
 <row>
@@ -238,8 +265,8 @@ The <function>pg_relation_filepath()</> function shows the entire path
 as a substitute for remembering many of the above rules.  But keep in
 mind that this function just gives the name of the first segment of the
 main fork of the relation &mdash; you may need to append a segment number
-and/or <literal>_fsm</> or <literal>_vm</> to find all the files associated
-with the relation.
+and/or <literal>_fsm</>, <literal>_vm</>, or <literal>_init</> to find all
+the files associated with the relation.
 </para>
 
 <para>

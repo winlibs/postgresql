@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -140,7 +140,7 @@ CLASS="REPLACEABLE"
 ><I
 >variable</I
 ></TT
-> := <TT
+> { := | = } <TT
 CLASS="REPLACEABLE"
 ><I
 >expression</I
@@ -156,7 +156,14 @@ CLASS="COMMAND"
      a row value, if the variable is a row or record variable).  The target
      variable can be a simple variable (optionally qualified with a block
      name), a field of a row or record variable, or an element of an array
-     that is a simple variable or field.
+     that is a simple variable or field.  Equal (<TT
+CLASS="LITERAL"
+>=</TT
+>) can be
+     used instead of PL/SQL-compliant <TT
+CLASS="LITERAL"
+>:=</TT
+>.
     </P
 ><P
 >     If the expression's result data type doesn't match the variable's
@@ -640,6 +647,54 @@ CLASS="LITERAL"
 >ORDER BY</TT
 > with which to determine
      which affected row should be returned.
+    </P
+><P
+>     If <TT
+CLASS="LITERAL"
+>print_strict_params</TT
+> is enabled for the function,
+     then when an error is thrown because the requirements
+     of <TT
+CLASS="LITERAL"
+>STRICT</TT
+> are not met, the <TT
+CLASS="LITERAL"
+>DETAIL</TT
+> part of
+     the error message will include information about the parameters
+     passed to the query.
+     You can change the <TT
+CLASS="LITERAL"
+>print_strict_params</TT
+>
+     setting for all functions by setting
+     <TT
+CLASS="VARNAME"
+>plpgsql.print_strict_params</TT
+>, though only subsequent
+     function compilations will be affected.  You can also enable it
+     on a per-function basis by using a compiler option, for example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION get_userid(username text) RETURNS int
+AS $$
+#print_strict_params on
+DECLARE
+userid int;
+BEGIN
+    SELECT users.userid INTO STRICT userid
+        FROM users WHERE users.username = get_userid.username;
+    RETURN userid;
+END
+$$ LANGUAGE plpgsql;</PRE
+><P>
+     On failure, this function might produce an error message such as
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ERROR:  query returned no rows
+DETAIL:  parameters: $1 = 'nosuchuser'
+CONTEXT:  PL/pgSQL function get_userid(text) line 6 at SQL statement</PRE
+><P>
     </P
 ><DIV
 CLASS="NOTE"
@@ -1226,7 +1281,7 @@ CLASS="REPLACEABLE"
 ><I
 >variable</I
 ></TT
-> = <TT
+> { = | := } <TT
 CLASS="REPLACEABLE"
 ><I
 >item</I
@@ -1274,6 +1329,17 @@ CLASS="COMMAND"
 >INSERT</TT
 > command into a
      table containing OIDs.
+     Colon-equal (<TT
+CLASS="LITERAL"
+>:=</TT
+>) can be used instead of SQL-standard
+     <TT
+CLASS="LITERAL"
+>=</TT
+> for <TT
+CLASS="COMMAND"
+>GET DIAGNOSTICS</TT
+>.
     </P
 ><P
 >     An example:

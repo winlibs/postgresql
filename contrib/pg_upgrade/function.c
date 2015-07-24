@@ -3,7 +3,7 @@
  *
  *	server-side function support
  *
- *	Copyright (c) 2010-2013, PostgreSQL Global Development Group
+ *	Copyright (c) 2010-2014, PostgreSQL Global Development Group
  *	contrib/pg_upgrade/function.c
  */
 
@@ -161,7 +161,7 @@ get_loadable_libraries(void)
 		/*
 		 * Systems that install plpython before 8.1 have
 		 * plpython_call_handler() defined in the "public" schema, causing
-		 * pg_dumpall to dump it.  However that function still references
+		 * pg_dump to dump it.  However that function still references
 		 * "plpython" (no "2"), so it throws an error on restore.  This code
 		 * checks for the problem function, reports affected databases to the
 		 * user and explains how to remove them. 8.1 git commit:
@@ -216,8 +216,7 @@ get_loadable_libraries(void)
 	}
 
 	if (found_public_plpython_handler)
-		pg_log(PG_FATAL,
-		 "Remove the problem functions from the old cluster to continue.\n");
+		pg_fatal("Remove the problem functions from the old cluster to continue.\n");
 
 	totaltups++;				/* reserve for pg_upgrade_support */
 
@@ -297,7 +296,7 @@ check_loadable_libraries(void)
 		 * plpython2u language was created with library name plpython2.so as a
 		 * symbolic link to plpython.so.  In Postgres 9.1, only the
 		 * plpython2.so library was created, and both plpythonu and plpython2u
-		 * pointing to it.	For this reason, any reference to library name
+		 * pointing to it.  For this reason, any reference to library name
 		 * "plpython" in an old PG <= 9.1 cluster must look for "plpython2" in
 		 * the new cluster.
 		 *
@@ -324,12 +323,11 @@ check_loadable_libraries(void)
 
 			/* exit and report missing support library with special message */
 			if (strcmp(lib, PG_UPGRADE_SUPPORT) == 0)
-				pg_log(PG_FATAL,
-					   "The pg_upgrade_support module must be created and installed in the new cluster.\n");
+				pg_fatal("The pg_upgrade_support module must be created and installed in the new cluster.\n");
 
 			if (script == NULL && (script = fopen_priv(output_path, "w")) == NULL)
-				pg_log(PG_FATAL, "Could not open file \"%s\": %s\n",
-					   output_path, getErrorText(errno));
+				pg_fatal("Could not open file \"%s\": %s\n",
+						 output_path, getErrorText(errno));
 			fprintf(script, "Could not load library \"%s\"\n%s\n",
 					lib,
 					PQerrorMessage(conn));
@@ -344,12 +342,11 @@ check_loadable_libraries(void)
 	{
 		fclose(script);
 		pg_log(PG_REPORT, "fatal\n");
-		pg_log(PG_FATAL,
-			   "Your installation references loadable libraries that are missing from the\n"
-			   "new installation.  You can add these libraries to the new installation,\n"
-			   "or remove the functions using them from the old installation.  A list of\n"
-			   "problem libraries is in the file:\n"
-			   "    %s\n\n", output_path);
+		pg_fatal("Your installation references loadable libraries that are missing from the\n"
+				 "new installation.  You can add these libraries to the new installation,\n"
+				 "or remove the functions using them from the old installation.  A list of\n"
+				 "problem libraries is in the file:\n"
+				 "    %s\n\n", output_path);
 	}
 	else
 		check_ok();

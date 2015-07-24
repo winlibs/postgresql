@@ -3,7 +3,7 @@
  * acl.c
  *	  Basic access control list data structures manipulation routines.
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -123,7 +123,7 @@ static Oid	get_role_oid_or_public(const char *rolname);
 /*
  * getid
  *		Consumes the first alphanumeric string (identifier) found in string
- *		's', ignoring any leading white space.	If it finds a double quote
+ *		's', ignoring any leading white space.  If it finds a double quote
  *		it returns the word inside the quotes.
  *
  * RETURNS:
@@ -229,7 +229,7 @@ putid(char *p, const char *s)
  *
  * RETURNS:
  *		the string position in 's' immediately following the ACL
- *		specification.	Also:
+ *		specification.  Also:
  *		- loads the structure pointed to by 'aip' with the appropriate
  *		  UID/GID, id type identifier and mode type values.
  */
@@ -837,7 +837,7 @@ acldefault(GrantObjectType objtype, Oid ownerId)
 
 
 /*
- * SQL-accessible version of acldefault().	Hackish mapping from "char" type to
+ * SQL-accessible version of acldefault().  Hackish mapping from "char" type to
  * ACL_OBJECT_* values, but it's only used in the information schema, not
  * documented for general use.
  */
@@ -1006,7 +1006,7 @@ aclupdate(const Acl *old_acl, const AclItem *mod_aip,
 	}
 
 	/*
-	 * Remove abandoned privileges (cascading revoke).	Currently we can only
+	 * Remove abandoned privileges (cascading revoke).  Currently we can only
 	 * handle this when the grantee is not PUBLIC.
 	 */
 	if ((old_goptions & ~new_goptions) != 0)
@@ -1072,7 +1072,7 @@ aclnewowner(const Acl *old_acl, Oid oldOwnerId, Oid newOwnerId)
 
 	/*
 	 * If the old ACL contained any references to the new owner, then we may
-	 * now have generated an ACL containing duplicate entries.	Find them and
+	 * now have generated an ACL containing duplicate entries.  Find them and
 	 * merge them so that there are not duplicates.  (This is relatively
 	 * expensive since we use a stupid O(N^2) algorithm, but it's unlikely to
 	 * be the normal case.)
@@ -1083,7 +1083,7 @@ aclnewowner(const Acl *old_acl, Oid oldOwnerId, Oid newOwnerId)
 	 * remove privilege-free entries, should there be any in the input.)  dst
 	 * is the next output slot, targ is the currently considered input slot
 	 * (always >= dst), and src scans entries to the right of targ looking for
-	 * duplicates.	Once an entry has been emitted to dst it is known
+	 * duplicates.  Once an entry has been emitted to dst it is known
 	 * duplicate-free and need not be considered anymore.
 	 */
 	if (newpresent)
@@ -2468,7 +2468,7 @@ column_privilege_check(Oid tableoid, AttrNumber attnum,
 	 * existence of the pg_class row before risking calling pg_class_aclcheck.
 	 * Note: it might seem there's a race condition against concurrent DROP,
 	 * but really it's safe because there will be no syscache flush between
-	 * here and there.	So if we see the row in the syscache, so will
+	 * here and there.  So if we see the row in the syscache, so will
 	 * pg_class_aclcheck.
 	 */
 	if (!SearchSysCacheExists1(RELOID, ObjectIdGetDatum(tableoid)))
@@ -4582,6 +4582,11 @@ pg_role_aclcheck(Oid role_oid, Oid roleid, AclMode mode)
 {
 	if (mode & ACL_GRANT_OPTION_FOR(ACL_CREATE))
 	{
+		/*
+		 * XXX For roleid == role_oid, is_admin_of_role() also examines the
+		 * session and call stack.  That suits two-argument pg_has_role(), but
+		 * it gives the three-argument version a lamentable whimsy.
+		 */
 		if (is_admin_of_role(roleid, role_oid))
 			return ACLCHECK_OK;
 	}
@@ -4899,11 +4904,9 @@ is_member_of_role_nosuper(Oid member, Oid role)
 
 
 /*
- * Is member an admin of role (directly or indirectly)?  That is, is it
- * a member WITH ADMIN OPTION?
- *
- * We could cache the result as for is_member_of_role, but currently this
- * is not used in any performance-critical paths, so we don't.
+ * Is member an admin of role?	That is, is member the role itself (subject to
+ * restrictions below), a member (directly or indirectly) WITH ADMIN OPTION,
+ * or a superuser?
  */
 bool
 is_admin_of_role(Oid member, Oid role)
@@ -4912,13 +4915,41 @@ is_admin_of_role(Oid member, Oid role)
 	List	   *roles_list;
 	ListCell   *l;
 
-	/* Fast path for simple case */
-	if (member == role)
-		return true;
-
-	/* Superusers have every privilege, so are part of every role */
 	if (superuser_arg(member))
 		return true;
+
+	if (member == role)
+
+		/*
+		 * A role can admin itself when it matches the session user and we're
+		 * outside any security-restricted operation, SECURITY DEFINER or
+		 * similar context.  SQL-standard roles cannot self-admin.  However,
+		 * SQL-standard users are distinct from roles, and they are not
+		 * grantable like roles: PostgreSQL's role-user duality extends the
+		 * standard.  Checking for a session user match has the effect of
+		 * letting a role self-admin only when it's conspicuously behaving
+		 * like a user.  Note that allowing self-admin under a mere SET ROLE
+		 * would make WITH ADMIN OPTION largely irrelevant; any member could
+		 * SET ROLE to issue the otherwise-forbidden command.
+		 *
+		 * Withholding self-admin in a security-restricted operation prevents
+		 * object owners from harnessing the session user identity during
+		 * administrative maintenance.  Suppose Alice owns a database, has
+		 * issued "GRANT alice TO bob", and runs a daily ANALYZE.  Bob creates
+		 * an alice-owned SECURITY DEFINER function that issues "REVOKE alice
+		 * FROM carol".  If he creates an expression index calling that
+		 * function, Alice will attempt the REVOKE during each ANALYZE.
+		 * Checking InSecurityRestrictedOperation() thwarts that attack.
+		 *
+		 * Withholding self-admin in SECURITY DEFINER functions makes their
+		 * behavior independent of the calling user.  There's no security or
+		 * SQL-standard-conformance need for that restriction, though.
+		 *
+		 * A role cannot have actual WITH ADMIN OPTION on itself, because that
+		 * would imply a membership loop.  Therefore, we're done either way.
+		 */
+		return member == GetSessionUserId() &&
+			!InLocalUserIdChange() && !InSecurityRestrictedOperation();
 
 	/*
 	 * Find all the roles that member is a member of, including multi-level
@@ -4985,14 +5016,14 @@ count_one_bits(AclMode mask)
  * The grantor must always be either the object owner or some role that has
  * been explicitly granted grant options.  This ensures that all granted
  * privileges appear to flow from the object owner, and there are never
- * multiple "original sources" of a privilege.	Therefore, if the would-be
+ * multiple "original sources" of a privilege.  Therefore, if the would-be
  * grantor is a member of a role that has the needed grant options, we have
  * to do the grant as that role instead.
  *
  * It is possible that the would-be grantor is a member of several roles
  * that have different subsets of the desired grant options, but no one
  * role has 'em all.  In this case we pick a role with the largest number
- * of desired options.	Ties are broken in favor of closer ancestors.
+ * of desired options.  Ties are broken in favor of closer ancestors.
  *
  * roleId: the role attempting to do the GRANT/REVOKE
  * privileges: the privileges to be granted/revoked

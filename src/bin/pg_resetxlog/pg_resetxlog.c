@@ -20,7 +20,7 @@
  * step 2 ...
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/bin/pg_resetxlog/pg_resetxlog.c
@@ -31,7 +31,7 @@
 /*
  * We have to use postgres.h not postgres_fe.h here, because there's so much
  * backend-only stuff in the XLOG include files we need.  But we need a
- * frontend-ish environment otherwise.	Hence this ugly hack.
+ * frontend-ish environment otherwise.  Hence this ugly hack.
  */
 #define FRONTEND 1
 
@@ -44,9 +44,6 @@
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
-#ifdef HAVE_GETOPT_H
-#include <getopt.h>
-#endif
 
 #include "access/transam.h"
 #include "access/tuptoaster.h"
@@ -55,25 +52,41 @@
 #include "catalog/catversion.h"
 #include "catalog/pg_control.h"
 #include "common/fe_memutils.h"
-
-extern int	optind;
-extern char *optarg;
+#include "storage/large_object.h"
+#include "pg_getopt.h"
 
 
 static ControlFileData ControlFile;		/* pg_control values */
 static XLogSegNo newXlogSegNo;	/* new XLOG segment # */
 static bool guessed = false;	/* T if we had to guess at any values */
 static const char *progname;
+static uint32 set_xid_epoch = (uint32) -1;
+static TransactionId set_xid = 0;
+static Oid	set_oid = 0;
+static MultiXactId set_mxid = 0;
+static MultiXactOffset set_mxoff = (MultiXactOffset) -1;
+static uint32 minXlogTli = 0;
+static XLogSegNo minXlogSegNo = 0;
+
+#ifdef WIN32
+static char *restrict_env;
+#endif
 
 static bool ReadControlFile(void);
 static void GuessControlValues(void);
 static void PrintControlValues(bool guessed);
+static void PrintNewControlValues(void);
 static void RewriteControlFile(void);
 static void FindEndOfXLOG(void);
 static void KillExistingXLOG(void);
 static void KillExistingArchiveStatus(void);
 static void WriteEmptyXLOG(void);
 static void usage(void);
+static void	get_restricted_token(const char *progname);
+
+#ifdef WIN32
+static int	CreateRestrictedProcess(char *cmd, PROCESS_INFORMATION *processInfo, const char *progname);
+#endif
 
 
 int
@@ -82,14 +95,7 @@ main(int argc, char *argv[])
 	int			c;
 	bool		force = false;
 	bool		noupdate = false;
-	uint32		set_xid_epoch = (uint32) -1;
-	TransactionId set_xid = 0;
-	Oid			set_oid = 0;
-	MultiXactId set_mxid = 0;
 	MultiXactId set_oldestmxid = 0;
-	MultiXactOffset set_mxoff = (MultiXactOffset) -1;
-	uint32		minXlogTli = 0;
-	XLogSegNo	minXlogSegNo = 0;
 	char	   *endptr;
 	char	   *endptr2;
 	char	   *DataDir;
@@ -260,6 +266,7 @@ main(int argc, char *argv[])
 	}
 #endif
 
+	get_restricted_token(progname);
 	DataDir = argv[optind];
 
 	if (chdir(DataDir) < 0)
@@ -300,6 +307,13 @@ main(int argc, char *argv[])
 	 * Also look at existing segment files to set up newXlogSegNo
 	 */
 	FindEndOfXLOG();
+
+	/*
+	 * If we're not going to proceed with the reset, print the current control
+	 * file parameters.
+	 */
+	if ((guessed && !force) || noupdate)
+		PrintControlValues(guessed);
 
 	/*
 	 * Adjust fields if required by switches.  (Do this now so that printout,
@@ -356,7 +370,7 @@ main(int argc, char *argv[])
 	 */
 	if ((guessed && !force) || noupdate)
 	{
-		PrintControlValues(guessed);
+		PrintNewControlValues();
 		if (!noupdate)
 		{
 			printf(_("\nIf these values seem acceptable, use -f to force reset.\n"));
@@ -489,7 +503,8 @@ GuessControlValues(void)
 	 */
 	gettimeofday(&tv, NULL);
 	sysidentifier = ((uint64) tv.tv_sec) << 32;
-	sysidentifier |= (uint32) (tv.tv_sec | tv.tv_usec);
+	sysidentifier |= ((uint64) tv.tv_usec) << 12;
+	sysidentifier |= getpid() & 0xFFF;
 
 	ControlFile.system_identifier = sysidentifier;
 
@@ -517,7 +532,9 @@ GuessControlValues(void)
 	/* minRecoveryPoint, backupStartPoint and backupEndPoint can be left zero */
 
 	ControlFile.wal_level = WAL_LEVEL_MINIMAL;
+	ControlFile.wal_log_hints = false;
 	ControlFile.MaxConnections = 100;
+	ControlFile.max_worker_processes = 8;
 	ControlFile.max_prepared_xacts = 0;
 	ControlFile.max_locks_per_xact = 64;
 
@@ -530,6 +547,7 @@ GuessControlValues(void)
 	ControlFile.nameDataLen = NAMEDATALEN;
 	ControlFile.indexMaxKeys = INDEX_MAX_KEYS;
 	ControlFile.toast_max_chunk_size = TOAST_MAX_CHUNK_SIZE;
+	ControlFile.loblksize = LOBLKSIZE;
 #ifdef HAVE_INT64_TIMESTAMP
 	ControlFile.enableIntTimes = true;
 #else
@@ -555,12 +573,11 @@ static void
 PrintControlValues(bool guessed)
 {
 	char		sysident_str[32];
-	char		fname[MAXFNAMELEN];
 
 	if (guessed)
 		printf(_("Guessed pg_control values:\n\n"));
 	else
-		printf(_("pg_control values:\n\n"));
+		printf(_("Current pg_control values:\n\n"));
 
 	/*
 	 * Format system_identifier separately to keep platform-dependent format
@@ -569,10 +586,6 @@ PrintControlValues(bool guessed)
 	snprintf(sysident_str, sizeof(sysident_str), UINT64_FORMAT,
 			 ControlFile.system_identifier);
 
-	XLogFileName(fname, ControlFile.checkPointCopy.ThisTimeLineID, newXlogSegNo);
-
-	printf(_("First log segment after reset:        %s\n"),
-		   fname);
 	printf(_("pg_control version number:            %u\n"),
 		   ControlFile.pg_control_version);
 	printf(_("Catalog version number:               %u\n"),
@@ -619,6 +632,8 @@ PrintControlValues(bool guessed)
 		   ControlFile.indexMaxKeys);
 	printf(_("Maximum size of a TOAST chunk:        %u\n"),
 		   ControlFile.toast_max_chunk_size);
+	printf(_("Size of a large-object chunk:         %u\n"),
+		   ControlFile.loblksize);
 	printf(_("Date/time type storage:               %s\n"),
 		   (ControlFile.enableIntTimes ? _("64-bit integers") : _("floating-point numbers")));
 	printf(_("Float4 argument passing:              %s\n"),
@@ -627,6 +642,60 @@ PrintControlValues(bool guessed)
 		   (ControlFile.float8ByVal ? _("by value") : _("by reference")));
 	printf(_("Data page checksum version:           %u\n"),
 		   ControlFile.data_checksum_version);
+}
+
+
+/*
+ * Print the values to be changed.
+ */
+static void
+PrintNewControlValues()
+{
+	char		fname[MAXFNAMELEN];
+
+	/* This will be always printed in order to keep format same. */
+	printf(_("\n\nValues to be changed:\n\n"));
+
+	XLogFileName(fname, ControlFile.checkPointCopy.ThisTimeLineID, newXlogSegNo);
+	printf(_("First log segment after reset:        %s\n"), fname);
+
+	if (set_mxid != 0)
+	{
+		printf(_("NextMultiXactId:                      %u\n"),
+			   ControlFile.checkPointCopy.nextMulti);
+		printf(_("OldestMultiXid:                       %u\n"),
+			   ControlFile.checkPointCopy.oldestMulti);
+		printf(_("OldestMulti's DB:                     %u\n"),
+			   ControlFile.checkPointCopy.oldestMultiDB);
+	}
+
+	if (set_mxoff != -1)
+	{
+		printf(_("NextMultiOffset:                      %u\n"),
+			   ControlFile.checkPointCopy.nextMultiOffset);
+	}
+
+	if (set_oid != 0)
+	{
+		printf(_("NextOID:                              %u\n"),
+			   ControlFile.checkPointCopy.nextOid);
+	}
+
+	if (set_xid != 0)
+	{
+		printf(_("NextXID:                              %u\n"),
+			   ControlFile.checkPointCopy.nextXid);
+		printf(_("OldestXID:                            %u\n"),
+			   ControlFile.checkPointCopy.oldestXid);
+		printf(_("OldestXID's DB:                       %u\n"),
+			   ControlFile.checkPointCopy.oldestXidDB);
+	}
+
+	if (set_xid_epoch != -1)
+	{
+		printf(_("NextXID epoch:                        %u\n"),
+			   ControlFile.checkPointCopy.nextXidEpoch);
+	}
 }
 
 
@@ -663,7 +732,9 @@ RewriteControlFile(void)
 	 * anyway at startup.
 	 */
 	ControlFile.wal_level = WAL_LEVEL_MINIMAL;
+	ControlFile.wal_log_hints = false;
 	ControlFile.MaxConnections = 100;
+	ControlFile.max_worker_processes = 8;
 	ControlFile.max_prepared_xacts = 0;
 	ControlFile.max_locks_per_xact = 64;
 
@@ -746,7 +817,7 @@ FindEndOfXLOG(void)
 
 	/*
 	 * Initialize the max() computation using the last checkpoint address from
-	 * old pg_control.	Note that for the moment we are working with segment
+	 * old pg_control.  Note that for the moment we are working with segment
 	 * numbering according to the old xlog seg size.
 	 */
 	segs_per_xlogid = (UINT64CONST(0x0000000100000000) / ControlFile.xlog_seg_size);
@@ -765,8 +836,7 @@ FindEndOfXLOG(void)
 		exit(1);
 	}
 
-	errno = 0;
-	while ((xlde = readdir(xldir)) != NULL)
+	while (errno = 0, (xlde = readdir(xldir)) != NULL)
 	{
 		if (strlen(xlde->d_name) == 24 &&
 			strspn(xlde->d_name, "0123456789ABCDEF") == 24)
@@ -788,25 +858,21 @@ FindEndOfXLOG(void)
 			if (segno > newXlogSegNo)
 				newXlogSegNo = segno;
 		}
-		errno = 0;
 	}
-#ifdef WIN32
-
-	/*
-	 * This fix is in mingw cvs (runtime/mingwex/dirent.c rev 1.4), but not in
-	 * released version
-	 */
-	if (GetLastError() == ERROR_NO_MORE_FILES)
-		errno = 0;
-#endif
 
 	if (errno)
 	{
-		fprintf(stderr, _("%s: could not read from directory \"%s\": %s\n"),
+		fprintf(stderr, _("%s: could not read directory \"%s\": %s\n"),
 				progname, XLOGDIR, strerror(errno));
 		exit(1);
 	}
-	closedir(xldir);
+
+	if (closedir(xldir))
+	{
+		fprintf(stderr, _("%s: could not close directory \"%s\": %s\n"),
+				progname, XLOGDIR, strerror(errno));
+		exit(1);
+	}
 
 	/*
 	 * Finally, convert to new xlog seg size, and advance by one to ensure we
@@ -836,8 +902,7 @@ KillExistingXLOG(void)
 		exit(1);
 	}
 
-	errno = 0;
-	while ((xlde = readdir(xldir)) != NULL)
+	while (errno = 0, (xlde = readdir(xldir)) != NULL)
 	{
 		if (strlen(xlde->d_name) == 24 &&
 			strspn(xlde->d_name, "0123456789ABCDEF") == 24)
@@ -850,25 +915,21 @@ KillExistingXLOG(void)
 				exit(1);
 			}
 		}
-		errno = 0;
 	}
-#ifdef WIN32
-
-	/*
-	 * This fix is in mingw cvs (runtime/mingwex/dirent.c rev 1.4), but not in
-	 * released version
-	 */
-	if (GetLastError() == ERROR_NO_MORE_FILES)
-		errno = 0;
-#endif
 
 	if (errno)
 	{
-		fprintf(stderr, _("%s: could not read from directory \"%s\": %s\n"),
+		fprintf(stderr, _("%s: could not read directory \"%s\": %s\n"),
 				progname, XLOGDIR, strerror(errno));
 		exit(1);
 	}
-	closedir(xldir);
+
+	if (closedir(xldir))
+	{
+		fprintf(stderr, _("%s: could not close directory \"%s\": %s\n"),
+				progname, XLOGDIR, strerror(errno));
+		exit(1);
+	}
 }
 
 
@@ -892,8 +953,7 @@ KillExistingArchiveStatus(void)
 		exit(1);
 	}
 
-	errno = 0;
-	while ((xlde = readdir(xldir)) != NULL)
+	while (errno = 0, (xlde = readdir(xldir)) != NULL)
 	{
 		if (strspn(xlde->d_name, "0123456789ABCDEF") == 24 &&
 			(strcmp(xlde->d_name + 24, ".ready") == 0 ||
@@ -907,25 +967,21 @@ KillExistingArchiveStatus(void)
 				exit(1);
 			}
 		}
-		errno = 0;
 	}
-#ifdef WIN32
-
-	/*
-	 * This fix is in mingw cvs (runtime/mingwex/dirent.c rev 1.4), but not in
-	 * released version
-	 */
-	if (GetLastError() == ERROR_NO_MORE_FILES)
-		errno = 0;
-#endif
 
 	if (errno)
 	{
-		fprintf(stderr, _("%s: could not read from directory \"%s\": %s\n"),
+		fprintf(stderr, _("%s: could not read directory \"%s\": %s\n"),
 				progname, ARCHSTATDIR, strerror(errno));
 		exit(1);
 	}
-	closedir(xldir);
+
+	if (closedir(xldir))
+	{
+		fprintf(stderr, _("%s: could not close directory \"%s\": %s\n"),
+				progname, ARCHSTATDIR, strerror(errno));
+		exit(1);
+	}
 }
 
 
@@ -1026,6 +1082,162 @@ WriteEmptyXLOG(void)
 	close(fd);
 }
 
+#ifdef WIN32
+typedef BOOL(WINAPI * __CreateRestrictedToken) (HANDLE, DWORD, DWORD, PSID_AND_ATTRIBUTES, DWORD, PLUID_AND_ATTRIBUTES, DWORD, PSID_AND_ATTRIBUTES, PHANDLE);
+
+/* Windows API define missing from some versions of MingW headers */
+#ifndef  DISABLE_MAX_PRIVILEGE
+#define DISABLE_MAX_PRIVILEGE	0x1
+#endif
+
+/*
+* Create a restricted token and execute the specified process with it.
+*
+* Returns 0 on failure, non-zero on success, same as CreateProcess().
+*
+* On NT4, or any other system not containing the required functions, will
+* NOT execute anything.
+*/
+static int
+CreateRestrictedProcess(char *cmd, PROCESS_INFORMATION *processInfo, const char *progname)
+{
+	BOOL		b;
+	STARTUPINFO si;
+	HANDLE		origToken;
+	HANDLE		restrictedToken;
+	SID_IDENTIFIER_AUTHORITY NtAuthority = { SECURITY_NT_AUTHORITY };
+	SID_AND_ATTRIBUTES dropSids[2];
+	__CreateRestrictedToken _CreateRestrictedToken = NULL;
+	HANDLE		Advapi32Handle;
+
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+
+	Advapi32Handle = LoadLibrary("ADVAPI32.DLL");
+	if (Advapi32Handle != NULL)
+	{
+		_CreateRestrictedToken = (__CreateRestrictedToken)GetProcAddress(Advapi32Handle, "CreateRestrictedToken");
+	}
+
+	if (_CreateRestrictedToken == NULL)
+	{
+		fprintf(stderr, _("%s: WARNING: cannot create restricted tokens on this platform\n"), progname);
+		if (Advapi32Handle != NULL)
+			FreeLibrary(Advapi32Handle);
+		return 0;
+	}
+
+	/* Open the current token to use as a base for the restricted one */
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &origToken))
+	{
+		fprintf(stderr, _("%s: could not open process token: error code %lu\n"), progname, GetLastError());
+		return 0;
+	}
+
+	/* Allocate list of SIDs to remove */
+	ZeroMemory(&dropSids, sizeof(dropSids));
+	if (!AllocateAndInitializeSid(&NtAuthority, 2,
+		SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0,
+		0, &dropSids[0].Sid) ||
+		!AllocateAndInitializeSid(&NtAuthority, 2,
+		SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_POWER_USERS, 0, 0, 0, 0, 0,
+		0, &dropSids[1].Sid))
+	{
+		fprintf(stderr, _("%s: could not allocate SIDs: error code %lu\n"), progname, GetLastError());
+		return 0;
+	}
+
+	b = _CreateRestrictedToken(origToken,
+						DISABLE_MAX_PRIVILEGE,
+						sizeof(dropSids) / sizeof(dropSids[0]),
+						dropSids,
+						0, NULL,
+						0, NULL,
+						&restrictedToken);
+
+	FreeSid(dropSids[1].Sid);
+	FreeSid(dropSids[0].Sid);
+	CloseHandle(origToken);
+	FreeLibrary(Advapi32Handle);
+
+	if (!b)
+	{
+		fprintf(stderr, _("%s: could not create restricted token: error code %lu\n"), progname, GetLastError());
+		return 0;
+	}
+
+#ifndef __CYGWIN__
+	AddUserToTokenDacl(restrictedToken);
+#endif
+
+	if (!CreateProcessAsUser(restrictedToken,
+							NULL,
+							cmd,
+							NULL,
+							NULL,
+							TRUE,
+							CREATE_SUSPENDED,
+							NULL,
+							NULL,
+							&si,
+							processInfo))
+
+	{
+		fprintf(stderr, _("%s: could not start process for command \"%s\": error code %lu\n"), progname, cmd, GetLastError());
+		return 0;
+	}
+
+	return ResumeThread(processInfo->hThread);
+}
+#endif
+
+static void
+get_restricted_token(const char *progname)
+{
+#ifdef WIN32
+
+	/*
+	* Before we execute another program, make sure that we are running with a
+	* restricted token. If not, re-execute ourselves with one.
+	*/
+
+	if ((restrict_env = getenv("PG_RESTRICT_EXEC")) == NULL
+		|| strcmp(restrict_env, "1") != 0)
+	{
+		PROCESS_INFORMATION pi;
+		char	   *cmdline;
+
+		ZeroMemory(&pi, sizeof(pi));
+
+		cmdline = pg_strdup(GetCommandLine());
+
+		putenv("PG_RESTRICT_EXEC=1");
+
+		if (!CreateRestrictedProcess(cmdline, &pi, progname))
+		{
+			fprintf(stderr, _("%s: could not re-execute with restricted token: error code %lu\n"), progname, GetLastError());
+		}
+		else
+		{
+			/*
+			* Successfully re-execed. Now wait for child process to capture
+			* exitcode.
+			*/
+			DWORD		x;
+
+			CloseHandle(pi.hThread);
+			WaitForSingleObject(pi.hProcess, INFINITE);
+
+			if (!GetExitCodeProcess(pi.hProcess, &x))
+			{
+				fprintf(stderr, _("%s: could not get exit code from subprocess: error code %lu\n"), progname, GetLastError());
+				exit(1);
+			}
+			exit(x);
+		}
+	}
+#endif
+}
 
 static void
 usage(void)
@@ -1037,7 +1249,7 @@ usage(void)
 	printf(_("  -f               force update to be done\n"));
 	printf(_("  -l XLOGFILE      force minimum WAL starting location for new transaction log\n"));
 	printf(_("  -m MXID,MXID     set next and oldest multitransaction ID\n"));
-	printf(_("  -n               no update, just show extracted control values (for testing)\n"));
+	printf(_("  -n               no update, just show what would be done (for testing)\n"));
 	printf(_("  -o OID           set next OID\n"));
 	printf(_("  -O OFFSET        set next multitransaction offset\n"));
 	printf(_("  -V, --version    output version information, then exit\n"));

@@ -2,12 +2,12 @@
 .\"     Title: COPY
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "COPY" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "COPY" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 COPY \- copy data between a file and a table
-.\" COPY
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -53,6 +52,7 @@ where \fIoption\fR can be one of:
     ESCAPE \*(Aq\fIescape_character\fR\*(Aq
     FORCE_QUOTE { ( \fIcolumn_name\fR [, \&.\&.\&.] ) | * }
     FORCE_NOT_NULL ( \fIcolumn_name\fR [, \&.\&.\&.] )
+    FORCE_NULL ( \fIcolumn_name\fR [, \&.\&.\&.] )
     ENCODING \*(Aq\fIencoding_name\fR\*(Aq
 .fi
 .SH "DESCRIPTION"
@@ -85,10 +85,12 @@ will insert the default values for those columns\&.
 \fBCOPY\fR
 with a file name instructs the
 PostgreSQL
-server to directly read from or write to a file\&. The file must be accessible to the server and the name must be specified from the viewpoint of the server\&. When
+server to directly read from or write to a file\&. The file must be accessible by the
+PostgreSQL
+user (the user ID the server runs as) and the name must be specified from the viewpoint of the server\&. When
 PROGRAM
-is specified, the server executes the given command, and reads from its standard input, or writes to its standard output\&. The command must be specified from the viewpoint of the server, and be executable by the
-postgres
+is specified, the server executes the given command and reads from the standard output of the program, or writes to the standard input of the program\&. The command must be specified from the viewpoint of the server, and be executable by the
+PostgreSQL
 user\&. When
 STDIN
 or
@@ -269,6 +271,15 @@ CSV
 format\&.
 .RE
 .PP
+FORCE_NULL
+.RS 4
+Match the specified columns\*(Aq values against the null string, even if it has been quoted, and if a match is found set the value to
+NULL\&. In the default case where the null string is empty, this converts a quoted empty string into NULL\&. This option is allowed only in
+\fBCOPY FROM\fR, and only when using
+CSV
+format\&.
+.RE
+.PP
 ENCODING
 .RS 4
 Specifies that the file is encoded in the
@@ -293,6 +304,28 @@ COPY \fIcount\fR
 The
 \fIcount\fR
 is the number of rows copied\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+
+psql
+will print this command tag only if the command was not
+COPY \&.\&.\&. TO STDOUT, or the equivalent
+psql
+meta\-command
+\ecopy \&.\&.\&. to stdout\&. This is to prevent confusing the command tag with the data that was just printed\&.
+.sp .5v
+.RE
 .SH "NOTES"
 .PP
 
@@ -387,6 +420,12 @@ stops operation at the first error\&. This should not lead to problems in the ev
 \fBCOPY FROM\fR\&. These rows will not be visible or accessible, but they still occupy disk space\&. This might amount to a considerable amount of wasted disk space if the failure happened well into a large copy operation\&. You might wish to invoke
 \fBVACUUM\fR
 to recover the wasted space\&.
+.PP
+
+FORCE_NULL
+and
+FORCE_NOT_NULL
+can be used simultaneously on the same column\&. This results in converting quoted null strings to null values and unquoted null strings to empty strings\&.
 .SH "FILE FORMATS"
 .SS "Text Format"
 .PP
@@ -552,7 +591,10 @@ is written as an unquoted empty string, while an empty string data value is writ
 FORCE_NOT_NULL
 to prevent
 NULL
-input comparisons for specific columns\&.
+input comparisons for specific columns\&. You can also use
+FORCE_NULL
+to convert quoted null string data values to
+NULL\&.
 .PP
 Because backslash is not a special character in the
 CSV

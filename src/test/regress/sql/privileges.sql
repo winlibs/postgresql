@@ -37,7 +37,7 @@ ALTER GROUP regressgroup1 ADD USER regressuser4;
 
 ALTER GROUP regressgroup2 ADD USER regressuser2;	-- duplicate
 ALTER GROUP regressgroup2 DROP USER regressuser2;
-ALTER GROUP regressgroup2 ADD USER regressuser4;
+GRANT regressgroup2 TO regressuser4 WITH ADMIN OPTION;
 
 -- test owner privileges
 
@@ -255,6 +255,31 @@ SELECT one FROM atest5; -- fail
 UPDATE atest5 SET one = 1; -- fail
 SELECT atest6 FROM atest6; -- ok
 COPY atest6 TO stdout; -- ok
+
+-- check error reporting with column privs
+SET SESSION AUTHORIZATION regressuser1;
+CREATE TABLE t1 (c1 int, c2 int, c3 int check (c3 < 5), primary key (c1, c2));
+GRANT SELECT (c1) ON t1 TO regressuser2;
+GRANT INSERT (c1, c2, c3) ON t1 TO regressuser2;
+GRANT UPDATE (c1, c2, c3) ON t1 TO regressuser2;
+
+-- seed data
+INSERT INTO t1 VALUES (1, 1, 1);
+INSERT INTO t1 VALUES (1, 2, 1);
+INSERT INTO t1 VALUES (2, 1, 2);
+INSERT INTO t1 VALUES (2, 2, 2);
+INSERT INTO t1 VALUES (3, 1, 3);
+
+SET SESSION AUTHORIZATION regressuser2;
+INSERT INTO t1 (c1, c2) VALUES (1, 1); -- fail, but row not shown
+UPDATE t1 SET c2 = 1; -- fail, but row not shown
+INSERT INTO t1 (c1, c2) VALUES (null, null); -- fail, but see columns being inserted
+INSERT INTO t1 (c3) VALUES (null); -- fail, but see columns being inserted or have SELECT
+INSERT INTO t1 (c1) VALUES (5); -- fail, but see columns being inserted or have SELECT
+UPDATE t1 SET c3 = 10; -- fail, but see columns with SELECT rights, or being modified
+
+SET SESSION AUTHORIZATION regressuser1;
+DROP TABLE t1;
 
 -- test column-level privileges when involved with DELETE
 SET SESSION AUTHORIZATION regressuser1;
@@ -599,6 +624,33 @@ SELECT has_table_privilege('regressuser3', 'atest4', 'SELECT'); -- false
 SELECT has_table_privilege('regressuser1', 'atest4', 'SELECT WITH GRANT OPTION'); -- true
 
 
+-- Admin options
+
+SET SESSION AUTHORIZATION regressuser4;
+CREATE FUNCTION dogrant_ok() RETURNS void LANGUAGE sql SECURITY DEFINER AS
+	'GRANT regressgroup2 TO regressuser5';
+GRANT regressgroup2 TO regressuser5; -- ok: had ADMIN OPTION
+SET ROLE regressgroup2;
+GRANT regressgroup2 TO regressuser5; -- fails: SET ROLE suspended privilege
+
+SET SESSION AUTHORIZATION regressuser1;
+GRANT regressgroup2 TO regressuser5; -- fails: no ADMIN OPTION
+SELECT dogrant_ok();			-- ok: SECURITY DEFINER conveys ADMIN
+SET ROLE regressgroup2;
+GRANT regressgroup2 TO regressuser5; -- fails: SET ROLE did not help
+
+SET SESSION AUTHORIZATION regressgroup2;
+GRANT regressgroup2 TO regressuser5; -- ok: a role can self-admin
+CREATE FUNCTION dogrant_fails() RETURNS void LANGUAGE sql SECURITY DEFINER AS
+	'GRANT regressgroup2 TO regressuser5';
+SELECT dogrant_fails();			-- fails: no self-admin in SECURITY DEFINER
+DROP FUNCTION dogrant_fails();
+
+SET SESSION AUTHORIZATION regressuser4;
+DROP FUNCTION dogrant_ok();
+REVOKE regressgroup2 FROM regressuser5;
+
+
 -- has_sequence_privilege tests
 \c -
 
@@ -811,6 +863,33 @@ SELECT has_function_privilege('regressuser1', 'testns.testfunc(int)', 'EXECUTE')
 SET client_min_messages TO 'warning';
 DROP SCHEMA testns CASCADE;
 RESET client_min_messages;
+
+
+-- Change owner of the schema & and rename of new schema owner
+\c -
+
+CREATE ROLE schemauser1 superuser login;
+CREATE ROLE schemauser2 superuser login;
+
+SET SESSION ROLE schemauser1;
+CREATE SCHEMA testns;
+
+SELECT nspname, rolname FROM pg_namespace, pg_roles WHERE pg_namespace.nspname = 'testns' AND pg_namespace.nspowner = pg_roles.oid;
+
+ALTER SCHEMA testns OWNER TO schemauser2;
+ALTER ROLE schemauser2 RENAME TO schemauser_renamed;
+SELECT nspname, rolname FROM pg_namespace, pg_roles WHERE pg_namespace.nspname = 'testns' AND pg_namespace.nspowner = pg_roles.oid;
+
+set session role schemauser_renamed;
+SET client_min_messages TO 'warning';
+DROP SCHEMA testns CASCADE;
+RESET client_min_messages;
+
+-- clean up
+\c -
+
+DROP ROLE schemauser1;
+DROP ROLE schemauser_renamed;
 
 
 -- test that dependent privileges are revoked (or not) properly

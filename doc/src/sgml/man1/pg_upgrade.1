@@ -2,12 +2,12 @@
 .\"     Title: pg_upgrade
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "PG_UPGRADE" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "PG_UPGRADE" "1" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 pg_upgrade \- upgrade a PostgreSQL server instance
-.\" pg_upgrade
 .SH "SYNOPSIS"
 .HP \w'\fBpg_upgrade\fR\ 'u
 \fBpg_upgrade\fR \fB\-b\fR \fIoldbindir\fR \fB\-B\fR \fInewbindir\fR \fB\-d\fR \fIolddatadir\fR \fB\-D\fR \fInewdatadir\fR [\fIoption\fR...]
@@ -64,93 +63,125 @@ PostgreSQL, including snapshot and alpha releases\&.
 pg_upgrade
 accepts the following command\-line arguments:
 .PP
-\fB\-b\fR \fIold_bindir\fR, \fB\-\-old\-bindir=\fR\fIold_bindir\fR
+\fB\-b\fR \fIbindir\fR
+.br
+\fB\-\-old\-bindir=\fR\fIbindir\fR
 .RS 4
 the old PostgreSQL executable directory; environment variable
 \fBPGBINOLD\fR
 .RE
 .PP
-\fB\-B\fR \fInew_bindir\fR, \fB\-\-new\-bindir=\fR\fInew_bindir\fR
+\fB\-B\fR \fIbindir\fR
+.br
+\fB\-\-new\-bindir=\fR\fIbindir\fR
 .RS 4
 the new PostgreSQL executable directory; environment variable
 \fBPGBINNEW\fR
 .RE
 .PP
-\fB\-c\fR, \fB\-\-check\fR
+\fB\-c\fR
+.br
+\fB\-\-check\fR
 .RS 4
 check clusters only, don\*(Aqt change any data
 .RE
 .PP
-\fB\-d\fR \fIold_datadir\fR, \fB\-\-old\-datadir=\fR\fIold_datadir\fR
+\fB\-d\fR \fIdatadir\fR
+.br
+\fB\-\-old\-datadir=\fR\fIdatadir\fR
 .RS 4
 the old cluster data directory; environment variable
 \fBPGDATAOLD\fR
 .RE
 .PP
-\fB\-D\fR \fInew_datadir\fR, \fB\-\-new\-datadir=\fR\fInew_datadir\fR
+\fB\-D\fR \fIdatadir\fR
+.br
+\fB\-\-new\-datadir=\fR\fIdatadir\fR
 .RS 4
 the new cluster data directory; environment variable
 \fBPGDATANEW\fR
 .RE
 .PP
-\fB\-j\fR, \fB\-\-jobs\fR
+\fB\-j\fR
+.br
+\fB\-\-jobs\fR
 .RS 4
 number of simultaneous processes or threads to use
 .RE
 .PP
-\fB\-k\fR, \fB\-\-link\fR
+\fB\-k\fR
+.br
+\fB\-\-link\fR
 .RS 4
 use hard links instead of copying files to the new cluster (use junction points on Windows)
 .RE
 .PP
-\fB\-o\fR \fIoptions\fR, \fB\-\-old\-options\fR \fIoptions\fR
+\fB\-o\fR \fIoptions\fR
+.br
+\fB\-\-old\-options\fR \fIoptions\fR
 .RS 4
 options to be passed directly to the old
 \fBpostgres\fR
 command
 .RE
 .PP
-\fB\-O\fR \fIoptions\fR, \fB\-\-new\-options\fR \fIoptions\fR
+\fB\-O\fR \fIoptions\fR
+.br
+\fB\-\-new\-options\fR \fIoptions\fR
 .RS 4
 options to be passed directly to the new
 \fBpostgres\fR
 command
 .RE
 .PP
-\fB\-p\fR \fIold_port_number\fR, \fB\-\-old\-port=\fR\fIold_portnum\fR
+\fB\-p\fR \fIport\fR
+.br
+\fB\-\-old\-port=\fR\fIport\fR
 .RS 4
 the old cluster port number; environment variable
 \fBPGPORTOLD\fR
 .RE
 .PP
-\fB\-P\fR \fInew_port_number\fR, \fB\-\-new\-port=\fR\fInew_portnum\fR
+\fB\-P\fR \fIport\fR
+.br
+\fB\-\-new\-port=\fR\fIport\fR
 .RS 4
 the new cluster port number; environment variable
 \fBPGPORTNEW\fR
 .RE
 .PP
-\fB\-r\fR, \fB\-\-retain\fR
+\fB\-r\fR
+.br
+\fB\-\-retain\fR
 .RS 4
 retain SQL and log files even after successful completion
 .RE
 .PP
-\fB\-u\fR \fIuser_name\fR, \fB\-\-user=\fR\fIuser_name\fR
+\fB\-U\fR \fIusername\fR
+.br
+\fB\-\-username=\fR\fIusername\fR
 .RS 4
 cluster\*(Aqs super user name; environment variable
 \fBPGUSER\fR
 .RE
 .PP
-\fB\-v\fR, \fB\-\-verbose\fR
+\fB\-v\fR
+.br
+\fB\-\-verbose\fR
 .RS 4
 enable verbose internal logging
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 display version information, then exit
 .RE
 .PP
-\fB\-?\fR, \fB\-h\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 show help, then exit
 .RE
@@ -226,7 +257,7 @@ variable:
 .RS 4
 .\}
 .nf
-gmake prefix=/usr/local/pgsql\&.new install
+make prefix=/usr/local/pgsql\&.new install
 .fi
 .if n \{\
 .RE
@@ -274,7 +305,7 @@ Install custom shared object files: Install any custom shared object files (or D
 pgcrypto\&.so, whether they are from
 contrib
 or some other source\&. Do not install the schema definitions, e\&.g\&.
-pgcrypto\&.sql, because these will be upgraded from the old cluster\&.
+pgcrypto\&.sql, because these will be upgraded from the old cluster\&. Also, any custom full text search files (dictionary, synonym, thesaurus, stop words) must also be copied to the new cluster\&.
 .RE
 .sp
 .RS 4
@@ -288,13 +319,10 @@ pgcrypto\&.sql, because these will be upgraded from the old cluster\&.
 Adjust authentication: 
 \fBpg_upgrade\fR
 will connect to the old and new servers several times, so you might want to set authentication to
-trust
-or
 peer
 in
-pg_hba\&.conf, or if using
-md5
-authentication, use a
+pg_hba\&.conf
+or use a
 ~/\&.pgpass
 file (see
 Section 31.15, \(lqThe Password File\(rq, in the documentation)\&.
@@ -440,9 +468,7 @@ again, you will need to modify the old cluster so the pg_upgrade schema restore 
 .IP "  10." 4.2
 .\}
 Restore pg_hba\&.conf: If you modified
-pg_hba\&.conf
-to use
-trust, restore its original authentication settings\&. It might also be necessary to adjust other configurations files in the new cluster to match the old cluster, e\&.g\&.
+pg_hba\&.conf, restore its original settings\&. It might also be necessary to adjust other configuration files in the new cluster to match the old cluster, e\&.g\&.
 postgresql\&.conf\&.
 .RE
 .sp
@@ -506,7 +532,7 @@ Statistics: Because optimizer statistics are not transferred by
 .\}
 Delete old cluster: Once you are satisfied with the upgrade, you can delete the old cluster\*(Aqs data directories by running the script mentioned when
 \fBpg_upgrade\fR
-completes\&. You can also delete the old installation directories (e\&.g\&.
+completes\&. (Automatic deletion is not possible if you have user\-defined tablespaces inside the old data directory\&.) You can also delete the old installation directories (e\&.g\&.
 bin,
 share)\&.
 .RE
@@ -614,7 +640,7 @@ to create a dirty copy of the old cluster while the server is running, then shut
 \fBrsync\fR
 again to update the copy with any changes to make it consistent\&. You might want to exclude some files, e\&.g\&.
 postmaster\&.pid, as documented in
-Section 24.3.3, \(lqMaking a Base Backup Using the Low Level API\(rq, in the documentation\&.
+Section 24.3.3, \(lqMaking a Base Backup Using the Low Level API\(rq, in the documentation\&. If your file system supports file system snapshots or copy\-on\-write file copies, you can use that to make a backup of the old cluster and tablespaces, though the snapshot and copies must be created simultaneously or while the database server is down\&.
 .SS "Limitations in Upgrading from PostgreSQL 8\&.3"
 .PP
 Upgrading

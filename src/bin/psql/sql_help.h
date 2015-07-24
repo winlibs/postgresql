@@ -48,6 +48,7 @@ extern void sql_help_ALTER_RULE(PQExpBuffer buf);
 extern void sql_help_ALTER_SCHEMA(PQExpBuffer buf);
 extern void sql_help_ALTER_SEQUENCE(PQExpBuffer buf);
 extern void sql_help_ALTER_SERVER(PQExpBuffer buf);
+extern void sql_help_ALTER_SYSTEM(PQExpBuffer buf);
 extern void sql_help_ALTER_TABLE(PQExpBuffer buf);
 extern void sql_help_ALTER_TABLESPACE(PQExpBuffer buf);
 extern void sql_help_ALTER_TEXT_SEARCH_CONFIGURATION(PQExpBuffer buf);
@@ -194,7 +195,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER AGGREGATE",
       N_("change the definition of an aggregate function"),
       sql_help_ALTER_AGGREGATE,
-      2 },
+      8 },
 
     { "ALTER COLLATION",
       N_("change the definition of a collation"),
@@ -229,7 +230,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER EXTENSION",
       N_("change the definition of an extension"),
       sql_help_ALTER_EXTENSION,
-      30 },
+      36 },
 
     { "ALTER FOREIGN DATA WRAPPER",
       N_("change the definition of a foreign-data wrapper"),
@@ -239,7 +240,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER FOREIGN TABLE",
       N_("change the definition of a foreign table"),
       sql_help_ALTER_FOREIGN_TABLE,
-      22 },
+      26 },
 
     { "ALTER FUNCTION",
       N_("change the definition of a function"),
@@ -254,7 +255,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER INDEX",
       N_("change the definition of an index"),
       sql_help_ALTER_INDEX,
-      3 },
+      5 },
 
     { "ALTER LANGUAGE",
       N_("change the definition of a procedural language"),
@@ -269,7 +270,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER MATERIALIZED VIEW",
       N_("change the definition of a materialized view"),
       sql_help_ALTER_MATERIALIZED_VIEW,
-      20 },
+      22 },
 
     { "ALTER OPERATOR",
       N_("change the definition of an operator"),
@@ -311,10 +312,15 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_ALTER_SERVER,
       3 },
 
+    { "ALTER SYSTEM",
+      N_("change a server configuration parameter"),
+      sql_help_ALTER_SYSTEM,
+      3 },
+
     { "ALTER TABLE",
       N_("change the definition of a table"),
       sql_help_ALTER_TABLE,
-      52 },
+      56 },
 
     { "ALTER TABLESPACE",
       N_("change the definition of a tablespace"),
@@ -394,7 +400,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "COMMENT",
       N_("define or change the comment of an object"),
       sql_help_COMMENT,
-      36 },
+      42 },
 
     { "COMMIT",
       N_("commit the current transaction"),
@@ -409,12 +415,12 @@ static const struct _helpStruct QL_HELP[] = {
     { "COPY",
       N_("copy data between a file and a table"),
       sql_help_COPY,
-      20 },
+      21 },
 
     { "CREATE AGGREGATE",
       N_("define a new aggregate function"),
       sql_help_CREATE_AGGREGATE,
-      17 },
+      46 },
 
     { "CREATE CAST",
       N_("define a new cast"),
@@ -509,7 +515,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE RULE",
       N_("define a new rewrite rule"),
       sql_help_CREATE_RULE,
-      2 },
+      6 },
 
     { "CREATE SCHEMA",
       N_("define a new schema"),
@@ -539,7 +545,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE TABLESPACE",
       N_("define a new tablespace"),
       sql_help_CREATE_TABLESPACE,
-      0 },
+      3 },
 
     { "CREATE TEXT SEARCH CONFIGURATION",
       N_("define a new text search configuration"),
@@ -584,7 +590,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE VIEW",
       N_("define a new view"),
       sql_help_CREATE_VIEW,
-      2 },
+      3 },
 
     { "DEALLOCATE",
       N_("deallocate a prepared statement"),
@@ -614,7 +620,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "DROP AGGREGATE",
       N_("remove an aggregate function"),
       sql_help_DROP_AGGREGATE,
-      0 },
+      6 },
 
     { "DROP CAST",
       N_("remove a cast"),
@@ -904,12 +910,12 @@ static const struct _helpStruct QL_HELP[] = {
     { "SECURITY LABEL",
       N_("define or change a security label applied to an object"),
       sql_help_SECURITY_LABEL,
-      19 },
+      25 },
 
     { "SELECT",
       N_("retrieve rows from a table or view"),
       sql_help_SELECT,
-      28 },
+      32 },
 
     { "SELECT INTO",
       N_("define a new table from the results of a query"),
@@ -954,7 +960,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "TABLE",
       N_("retrieve rows from a table or view"),
       sql_help_TABLE,
-      28 },
+      32 },
 
     { "TRUNCATE",
       N_("empty a table or set of tables"),
@@ -984,14 +990,14 @@ static const struct _helpStruct QL_HELP[] = {
     { "WITH",
       N_("retrieve rows from a table or view"),
       sql_help_WITH,
-      28 },
+      32 },
 
 
     { NULL, NULL, NULL }    /* End of list marker */
 };
 
 
-#define QL_HELP_COUNT	160		/* number of help items */
+#define QL_HELP_COUNT	161		/* number of help items */
 #define QL_MAX_CMD_LEN	32		/* largest strlen(cmd) */
 
 

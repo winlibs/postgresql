@@ -5,7 +5,7 @@
  *
  * Access-method specific inspection functions are in separate files.
  *
- * Copyright (c) 2007-2013, PostgreSQL Global Development Group
+ * Copyright (c) 2007-2014, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  contrib/pageinspect/rawpage.c
@@ -18,17 +18,15 @@
 #include "access/htup_details.h"
 #include "catalog/catalog.h"
 #include "catalog/namespace.h"
+#include "catalog/pg_type.h"
 #include "funcapi.h"
 #include "miscadmin.h"
 #include "storage/bufmgr.h"
 #include "utils/builtins.h"
+#include "utils/pg_lsn.h"
 #include "utils/rel.h"
 
 PG_MODULE_MAGIC;
-
-Datum		get_raw_page(PG_FUNCTION_ARGS);
-Datum		get_raw_page_fork(PG_FUNCTION_ARGS);
-Datum		page_header(PG_FUNCTION_ARGS);
 
 static bytea *get_raw_page_internal(text *relname, ForkNumber forknum,
 					  BlockNumber blkno);
@@ -133,9 +131,11 @@ get_raw_page_internal(text *relname, ForkNumber forknum, BlockNumber blkno)
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 				 errmsg("cannot access temporary tables of other sessions")));
 
-	if (blkno >= RelationGetNumberOfBlocks(rel))
-		elog(ERROR, "block number %u is out of range for relation \"%s\"",
-			 blkno, RelationGetRelationName(rel));
+	if (blkno >= RelationGetNumberOfBlocksInFork(rel, forknum))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("block number %u is out of range for relation \"%s\"",
+						blkno, RelationGetRelationName(rel))));
 
 	/* Initialize buffer to copy to */
 	raw_page = (bytea *) palloc(BLCKSZ + VARHDRSZ);
@@ -180,7 +180,6 @@ page_header(PG_FUNCTION_ARGS)
 
 	PageHeader	page;
 	XLogRecPtr	lsn;
-	char		lsnchar[64];
 
 	if (!superuser())
 		ereport(ERROR,
@@ -207,10 +206,18 @@ page_header(PG_FUNCTION_ARGS)
 	/* Extract information from the page header */
 
 	lsn = PageGetLSN(page);
-	snprintf(lsnchar, sizeof(lsnchar), "%X/%X",
-			 (uint32) (lsn >> 32), (uint32) lsn);
 
-	values[0] = CStringGetTextDatum(lsnchar);
+	/* pageinspect >= 1.2 uses pg_lsn instead of text for the LSN field. */
+	if (tupdesc->attrs[0]->atttypid == TEXTOID)
+	{
+		char		lsnchar[64];
+
+		snprintf(lsnchar, sizeof(lsnchar), "%X/%X",
+				 (uint32) (lsn >> 32), (uint32) lsn);
+		values[0] = CStringGetTextDatum(lsnchar);
+	}
+	else
+		values[0] = LSNGetDatum(lsn);
 	values[1] = UInt16GetDatum(page->pd_checksum);
 	values[2] = UInt16GetDatum(page->pd_flags);
 	values[3] = UInt16GetDatum(page->pd_lower);

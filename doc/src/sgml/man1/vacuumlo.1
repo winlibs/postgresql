@@ -2,12 +2,12 @@
 .\"     Title: vacuumlo
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "VACUUMLO" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "VACUUMLO" "1" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 vacuumlo \- remove orphaned large objects from a PostgreSQL database
-.\" vacuumlo
 .SH "SYNOPSIS"
 .HP \w'\fBvacuumlo\fR\ 'u
 \fBvacuumlo\fR [\fIoption\fR...] \fIdbname\fR...
@@ -80,14 +79,18 @@ Don\*(Aqt remove anything, just show what would be done\&.
 Write a lot of progress messages\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 vacuumlo
 version and exit\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 vacuumlo
@@ -113,7 +116,9 @@ Database server\*(Aqs port\&.
 User name to connect as\&.
 .RE
 .PP
-\fB\-w\fR, \fB\-\-no\-password\fR
+\fB\-w\fR
+.br
+\fB\-\-no\-password\fR
 .RS 4
 Never issue a password prompt\&. If the server requires password authentication and a password is not available by other means such as a
 \&.pgpass

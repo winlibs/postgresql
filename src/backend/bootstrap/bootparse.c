@@ -81,7 +81,7 @@
  * bootparse.y
  *	  yacc grammar for the "bootstrap" mode (BKI file format)
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -104,6 +104,7 @@
 #include "bootstrap/bootstrap.h"
 #include "catalog/catalog.h"
 #include "catalog/heap.h"
+#include "catalog/namespace.h"
 #include "catalog/pg_am.h"
 #include "catalog/pg_attribute.h"
 #include "catalog/pg_authid.h"
@@ -169,7 +170,7 @@ static int num_columns_read = 0;
 
 
 /* Line 268 of yacc.c  */
-#line 173 "bootparse.c"
+#line 174 "bootparse.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -232,7 +233,7 @@ typedef union YYSTYPE
 {
 
 /* Line 293 of yacc.c  */
-#line 98 "bootparse.y"
+#line 99 "bootparse.y"
 
 	List		*list;
 	IndexElem	*ielem;
@@ -243,7 +244,7 @@ typedef union YYSTYPE
 
 
 /* Line 293 of yacc.c  */
-#line 247 "bootparse.c"
+#line 248 "bootparse.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -255,7 +256,7 @@ typedef union YYSTYPE
 
 
 /* Line 343 of yacc.c  */
-#line 259 "bootparse.c"
+#line 260 "bootparse.c"
 
 #ifdef short
 # undef short
@@ -563,12 +564,12 @@ static const yytype_int8 yyrhs[] =
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,   126,   126,   127,   131,   132,   136,   137,   138,   139,
-     140,   141,   142,   143,   147,   156,   162,   172,   182,   171,
-     261,   260,   282,   317,   352,   362,   372,   373,   377,   392,
-     393,   397,   398,   402,   403,   407,   408,   412,   413,   417,
-     426,   430,   431,   435,   436,   437,   441,   443,   445,   450,
-     454
+       0,   127,   127,   128,   132,   133,   137,   138,   139,   140,
+     141,   142,   143,   144,   148,   157,   163,   173,   183,   172,
+     262,   261,   283,   324,   365,   375,   385,   386,   390,   405,
+     406,   410,   411,   415,   416,   420,   421,   425,   426,   430,
+     439,   443,   444,   448,   449,   450,   454,   456,   458,   463,
+     467
 };
 #endif
 
@@ -1562,7 +1563,7 @@ yyreduce:
         case 14:
 
 /* Line 1806 of yacc.c  */
-#line 148 "bootparse.y"
+#line 149 "bootparse.y"
     {
 					do_start();
 					boot_openrel((yyvsp[(2) - (2)].str));
@@ -1573,7 +1574,7 @@ yyreduce:
   case 15:
 
 /* Line 1806 of yacc.c  */
-#line 157 "bootparse.y"
+#line 158 "bootparse.y"
     {
 					do_start();
 					closerel((yyvsp[(2) - (2)].str));
@@ -1584,7 +1585,7 @@ yyreduce:
   case 16:
 
 /* Line 1806 of yacc.c  */
-#line 163 "bootparse.y"
+#line 164 "bootparse.y"
     {
 					do_start();
 					closerel(NULL);
@@ -1595,7 +1596,7 @@ yyreduce:
   case 17:
 
 /* Line 1806 of yacc.c  */
-#line 172 "bootparse.y"
+#line 173 "bootparse.y"
     {
 					do_start();
 					numattr = 0;
@@ -1610,7 +1611,7 @@ yyreduce:
   case 18:
 
 /* Line 1806 of yacc.c  */
-#line 182 "bootparse.y"
+#line 183 "bootparse.y"
     {
 					do_end();
 				}
@@ -1619,7 +1620,7 @@ yyreduce:
   case 19:
 
 /* Line 1806 of yacc.c  */
-#line 186 "bootparse.y"
+#line 187 "bootparse.y"
     {
 					TupleDesc tupdesc;
 					bool	shared_relation;
@@ -1696,7 +1697,7 @@ yyreduce:
   case 20:
 
 /* Line 1806 of yacc.c  */
-#line 261 "bootparse.y"
+#line 262 "bootparse.y"
     {
 					do_start();
 					if ((yyvsp[(2) - (2)].oidval))
@@ -1710,7 +1711,7 @@ yyreduce:
   case 21:
 
 /* Line 1806 of yacc.c  */
-#line 270 "bootparse.y"
+#line 271 "bootparse.y"
     {
 					if (num_columns_read != numattr)
 						elog(ERROR, "incorrect number of columns in row (expected %d, got %d)",
@@ -1725,9 +1726,10 @@ yyreduce:
   case 22:
 
 /* Line 1806 of yacc.c  */
-#line 283 "bootparse.y"
+#line 284 "bootparse.y"
     {
 					IndexStmt *stmt = makeNode(IndexStmt);
+					Oid		relationId;
 
 					do_start();
 
@@ -1749,7 +1751,12 @@ yyreduce:
 					stmt->initdeferred = false;
 					stmt->concurrent = false;
 
-					DefineIndex(stmt,
+					/* locks and races need not concern us in bootstrap mode */
+					relationId = RangeVarGetRelid(stmt->relation, NoLock,
+												  false);
+
+					DefineIndex(relationId,
+								stmt,
 								(yyvsp[(4) - (11)].oidval),
 								false,
 								false,
@@ -1762,9 +1769,10 @@ yyreduce:
   case 23:
 
 /* Line 1806 of yacc.c  */
-#line 318 "bootparse.y"
+#line 325 "bootparse.y"
     {
 					IndexStmt *stmt = makeNode(IndexStmt);
+					Oid		relationId;
 
 					do_start();
 
@@ -1786,7 +1794,12 @@ yyreduce:
 					stmt->initdeferred = false;
 					stmt->concurrent = false;
 
-					DefineIndex(stmt,
+					/* locks and races need not concern us in bootstrap mode */
+					relationId = RangeVarGetRelid(stmt->relation, NoLock,
+												  false);
+
+					DefineIndex(relationId,
+								stmt,
 								(yyvsp[(5) - (12)].oidval),
 								false,
 								false,
@@ -1799,7 +1812,7 @@ yyreduce:
   case 24:
 
 /* Line 1806 of yacc.c  */
-#line 353 "bootparse.y"
+#line 366 "bootparse.y"
     {
 					do_start();
 
@@ -1811,7 +1824,7 @@ yyreduce:
   case 25:
 
 /* Line 1806 of yacc.c  */
-#line 363 "bootparse.y"
+#line 376 "bootparse.y"
     {
 					do_start();
 					build_indices();
@@ -1822,21 +1835,21 @@ yyreduce:
   case 26:
 
 /* Line 1806 of yacc.c  */
-#line 372 "bootparse.y"
+#line 385 "bootparse.y"
     { (yyval.list) = lappend((yyvsp[(1) - (3)].list), (yyvsp[(3) - (3)].ielem)); }
     break;
 
   case 27:
 
 /* Line 1806 of yacc.c  */
-#line 373 "bootparse.y"
+#line 386 "bootparse.y"
     { (yyval.list) = list_make1((yyvsp[(1) - (1)].ielem)); }
     break;
 
   case 28:
 
 /* Line 1806 of yacc.c  */
-#line 378 "bootparse.y"
+#line 391 "bootparse.y"
     {
 					IndexElem *n = makeNode(IndexElem);
 					n->name = (yyvsp[(1) - (2)].str);
@@ -1853,63 +1866,63 @@ yyreduce:
   case 29:
 
 /* Line 1806 of yacc.c  */
-#line 392 "bootparse.y"
+#line 405 "bootparse.y"
     { (yyval.ival) = 1; }
     break;
 
   case 30:
 
 /* Line 1806 of yacc.c  */
-#line 393 "bootparse.y"
+#line 406 "bootparse.y"
     { (yyval.ival) = 0; }
     break;
 
   case 31:
 
 /* Line 1806 of yacc.c  */
-#line 397 "bootparse.y"
+#line 410 "bootparse.y"
     { (yyval.ival) = 1; }
     break;
 
   case 32:
 
 /* Line 1806 of yacc.c  */
-#line 398 "bootparse.y"
+#line 411 "bootparse.y"
     { (yyval.ival) = 0; }
     break;
 
   case 33:
 
 /* Line 1806 of yacc.c  */
-#line 402 "bootparse.y"
+#line 415 "bootparse.y"
     { (yyval.ival) = 1; }
     break;
 
   case 34:
 
 /* Line 1806 of yacc.c  */
-#line 403 "bootparse.y"
+#line 416 "bootparse.y"
     { (yyval.ival) = 0; }
     break;
 
   case 35:
 
 /* Line 1806 of yacc.c  */
-#line 407 "bootparse.y"
+#line 420 "bootparse.y"
     { (yyval.oidval) = (yyvsp[(2) - (2)].oidval); }
     break;
 
   case 36:
 
 /* Line 1806 of yacc.c  */
-#line 408 "bootparse.y"
+#line 421 "bootparse.y"
     { (yyval.oidval) = InvalidOid; }
     break;
 
   case 39:
 
 /* Line 1806 of yacc.c  */
-#line 418 "bootparse.y"
+#line 431 "bootparse.y"
     {
 				   if (++numattr > MAXATTR)
 						elog(FATAL, "too many columns");
@@ -1920,63 +1933,63 @@ yyreduce:
   case 40:
 
 /* Line 1806 of yacc.c  */
-#line 426 "bootparse.y"
+#line 439 "bootparse.y"
     { (yyval.oidval) = atooid((yyvsp[(1) - (1)].str)); }
     break;
 
   case 41:
 
 /* Line 1806 of yacc.c  */
-#line 430 "bootparse.y"
+#line 443 "bootparse.y"
     { (yyval.oidval) = (yyvsp[(3) - (3)].oidval); }
     break;
 
   case 42:
 
 /* Line 1806 of yacc.c  */
-#line 431 "bootparse.y"
+#line 444 "bootparse.y"
     { (yyval.oidval) = InvalidOid; }
     break;
 
   case 46:
 
 /* Line 1806 of yacc.c  */
-#line 442 "bootparse.y"
+#line 455 "bootparse.y"
     { InsertOneValue((yyvsp[(1) - (1)].str), num_columns_read++); }
     break;
 
   case 47:
 
 /* Line 1806 of yacc.c  */
-#line 444 "bootparse.y"
+#line 457 "bootparse.y"
     { InsertOneValue((yyvsp[(1) - (1)].str), num_columns_read++); }
     break;
 
   case 48:
 
 /* Line 1806 of yacc.c  */
-#line 446 "bootparse.y"
+#line 459 "bootparse.y"
     { InsertOneNull(num_columns_read++); }
     break;
 
   case 49:
 
 /* Line 1806 of yacc.c  */
-#line 450 "bootparse.y"
+#line 463 "bootparse.y"
     { (yyval.str) = yylval.str; }
     break;
 
   case 50:
 
 /* Line 1806 of yacc.c  */
-#line 454 "bootparse.y"
+#line 467 "bootparse.y"
     { (yyval.str) = yylval.str; }
     break;
 
 
 
 /* Line 1806 of yacc.c  */
-#line 1980 "bootparse.c"
+#line 1993 "bootparse.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2207,7 +2220,7 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 456 "bootparse.y"
+#line 469 "bootparse.y"
 
 
 #include "bootscanner.c"

@@ -417,6 +417,58 @@ alter table tt9 drop column xx;
 
 select pg_get_viewdef('vv5', true);
 
+--
+-- Another corner case is that we might add a column to a table below a
+-- JOIN USING, and thereby make the USING column name ambiguous
+--
+
+create table tt11 (x int, y int);
+create table tt12 (x int, z int);
+create table tt13 (z int, q int);
+
+create view vv6 as select x,y,z,q from
+  (tt11 join tt12 using(x)) join tt13 using(z);
+
+select pg_get_viewdef('vv6', true);
+
+alter table tt11 add column z int;
+
+select pg_get_viewdef('vv6', true);
+
+--
+-- Check some cases involving dropped columns in a function's rowtype result
+--
+
+create table tt14t (f1 text, f2 text, f3 text, f4 text);
+insert into tt14t values('foo', 'bar', 'baz', 'quux');
+
+alter table tt14t drop column f2;
+
+create function tt14f() returns setof tt14t as
+$$
+declare
+    rec1 record;
+begin
+    for rec1 in select * from tt14t
+    loop
+        return next rec1;
+    end loop;
+end;
+$$
+language plpgsql;
+
+create view tt14v as select t.* from tt14f() t;
+
+select pg_get_viewdef('tt14v', true);
+select * from tt14v;
+
+-- this perhaps should be rejected, but it isn't:
+alter table tt14t drop column f3;
+
+-- f3 is still in the view but will read as nulls
+select pg_get_viewdef('tt14v', true);
+select * from tt14v;
+
 -- clean up all the random objects we made above
 set client_min_messages = warning;
 DROP SCHEMA temp_view_test CASCADE;

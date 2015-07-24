@@ -527,7 +527,7 @@ char *GUC_yytext;
 /*
  * Scanner for the configuration file
  *
- * Copyright (c) 2000-2013, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2014, PostgreSQL Global Development Group
  *
  * src/backend/utils/misc/guc-file.l
  */
@@ -569,6 +569,8 @@ static unsigned int ConfigFileLineno;
 static const char *GUC_flex_fatal_errmsg;
 static sigjmp_buf *GUC_flex_fatal_jmp;
 
+static void FreeConfigVariable(ConfigVariable *item);
+
 /* flex fails to supply a prototype for GUC_yylex, so provide one */
 int GUC_yylex(void);
 
@@ -576,7 +578,7 @@ static int GUC_flex_fatal(const char *msg);
 static char *GUC_scanstr(const char *s);
 
 #define YY_NO_INPUT 1
-#line 580 "guc-file.c"
+#line 582 "guc-file.c"
 
 #define INITIAL 0
 
@@ -761,10 +763,10 @@ YY_DECL
 	register char *yy_cp, *yy_bp;
 	register int yy_act;
     
-#line 86 "guc-file.l"
+#line 88 "guc-file.l"
 
 
-#line 768 "guc-file.c"
+#line 770 "guc-file.c"
 
 	if ( !(yy_init) )
 		{
@@ -846,65 +848,65 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 88 "guc-file.l"
+#line 90 "guc-file.l"
 ConfigFileLineno++; return GUC_EOL;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 89 "guc-file.l"
+#line 91 "guc-file.l"
 /* eat whitespace */
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 90 "guc-file.l"
+#line 92 "guc-file.l"
 /* eat comment (.* matches anything until newline) */
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 92 "guc-file.l"
+#line 94 "guc-file.l"
 return GUC_ID;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 93 "guc-file.l"
+#line 95 "guc-file.l"
 return GUC_QUALIFIED_ID;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 94 "guc-file.l"
+#line 96 "guc-file.l"
 return GUC_STRING;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 95 "guc-file.l"
+#line 97 "guc-file.l"
 return GUC_UNQUOTED_STRING;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 96 "guc-file.l"
+#line 98 "guc-file.l"
 return GUC_INTEGER;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 97 "guc-file.l"
+#line 99 "guc-file.l"
 return GUC_REAL;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 98 "guc-file.l"
+#line 100 "guc-file.l"
 return GUC_EQUALS;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 100 "guc-file.l"
+#line 102 "guc-file.l"
 return GUC_ERROR;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 102 "guc-file.l"
+#line 104 "guc-file.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 908 "guc-file.c"
+#line 910 "guc-file.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1862,7 +1864,7 @@ void GUC_yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 102 "guc-file.l"
+#line 104 "guc-file.l"
 
 
 
@@ -1881,9 +1883,10 @@ ProcessConfigFile(GucContext context)
 	bool		error = false;
 	bool		apply = false;
 	int			elevel;
+	const char *ConfFileWithError;
 	ConfigVariable *item,
-				   *head,
-				   *tail;
+			   *head,
+			   *tail;
 	int			i;
 
 	/*
@@ -1899,7 +1902,8 @@ ProcessConfigFile(GucContext context)
 	 */
 	elevel = IsUnderPostmaster ? DEBUG2 : LOG;
 
-	/* Parse the file into a list of option names and values */
+	/* Parse the main config file into a list of option names and values */
+	ConfFileWithError = ConfigFileName;
 	head = tail = NULL;
 
 	if (!ParseConfigFile(ConfigFileName, NULL, true, 0, elevel, &head, &tail))
@@ -1907,6 +1911,66 @@ ProcessConfigFile(GucContext context)
 		/* Syntax error(s) detected in the file, so bail out */
 		error = true;
 		goto cleanup_list;
+	}
+
+	/*
+	 * Parse the PG_AUTOCONF_FILENAME file, if present, after the main file
+	 * to replace any parameters set by ALTER SYSTEM command.  Because this
+	 * file is in the data directory, we can't read it until the DataDir has
+	 * been set.
+	 */
+	if (DataDir)
+	{
+		if (!ParseConfigFile(PG_AUTOCONF_FILENAME, NULL, false, 0, elevel,
+							 &head, &tail))
+		{
+			/* Syntax error(s) detected in the file, so bail out */
+			error = true;
+			ConfFileWithError = PG_AUTOCONF_FILENAME;
+			goto cleanup_list;
+		}
+	}
+	else
+	{
+		/*
+		 * If DataDir is not set, the PG_AUTOCONF_FILENAME file cannot be
+		 * read.  In this case, we don't want to accept any settings but
+		 * data_directory from postgresql.conf, because they might be
+		 * overwritten with settings in the PG_AUTOCONF_FILENAME file which
+		 * will be read later. OTOH, since data_directory isn't allowed in the
+		 * PG_AUTOCONF_FILENAME file, it will never be overwritten later.
+		 */
+		ConfigVariable *prev = NULL;
+
+		/* Prune all items except "data_directory" from the list */
+		for (item = head; item;)
+		{
+			ConfigVariable *ptr = item;
+
+			item = item->next;
+			if (strcmp(ptr->name, "data_directory") != 0)
+			{
+				if (prev == NULL)
+					head = ptr->next;
+				else
+					prev->next = ptr->next;
+				if (ptr->next == NULL)
+					tail = prev;
+				FreeConfigVariable(ptr);
+			}
+			else
+				prev = ptr;
+		}
+
+		/*
+		 * Quick exit if data_directory is not present in file.
+		 *
+		 * We need not do any further processing, in particular we don't set
+		 * PgReloadTime; that will be set soon by subsequent full loading of
+		 * the config file.
+		 */
+		if (head == NULL)
+			return;
 	}
 
 	/*
@@ -1957,6 +2021,7 @@ ProcessConfigFile(GucContext context)
 							item->name,
 							item->filename, item->sourceline)));
 			error = true;
+			ConfFileWithError = item->filename;
 		}
 	}
 
@@ -2083,7 +2148,10 @@ ProcessConfigFile(GucContext context)
 			}
 		}
 		else if (scres == 0)
+		{
 			error = true;
+			ConfFileWithError = item->filename;
+		}
 		/* else no error but variable's active value was not changed */
 
 		/*
@@ -2104,8 +2172,6 @@ ProcessConfigFile(GucContext context)
 	PgReloadTime = GetCurrentTimestamp();
 
  cleanup_list:
-	FreeConfigVariables(head);
-
 	if (error)
 	{
 		/* During postmaster startup, any error is fatal */
@@ -2113,24 +2179,31 @@ ProcessConfigFile(GucContext context)
 			ereport(ERROR,
 					(errcode(ERRCODE_CONFIG_FILE_ERROR),
 					 errmsg("configuration file \"%s\" contains errors",
-							ConfigFileName)));
+							ConfFileWithError)));
 		else if (apply)
 			ereport(elevel,
 					(errcode(ERRCODE_CONFIG_FILE_ERROR),
 					 errmsg("configuration file \"%s\" contains errors; unaffected changes were applied",
-							ConfigFileName)));
+							ConfFileWithError)));
 		else
 			ereport(elevel,
 					(errcode(ERRCODE_CONFIG_FILE_ERROR),
 					 errmsg("configuration file \"%s\" contains errors; no changes were applied",
-							ConfigFileName)));
+							ConfFileWithError)));
 	}
+
+	/*
+	 * Calling FreeConfigVariables() any earlier than this can cause problems,
+	 * because ConfFileWithError could be pointing to a string that will be
+	 * freed here.
+	 */
+	FreeConfigVariables(head);
 }
 
 /*
  * Given a configuration file or directory location that may be a relative
  * path, return an absolute one.  We consider the location to be relative to
- * the directory holding the calling file.
+ * the directory holding the calling file, or to DataDir if no calling file.
  */
 static char *
 AbsoluteConfigLocation(const char *location, const char *calling_file)
@@ -2150,10 +2223,8 @@ AbsoluteConfigLocation(const char *location, const char *calling_file)
 		}
 		else
 		{
-			/*
-			 * calling_file is NULL, we make an absolute path from $PGDATA
-			 */
-			join_path_components(abs_path, data_directory, location);
+			AssertState(DataDir);
+			join_path_components(abs_path, DataDir, location);
 			canonicalize_path(abs_path);
 		}
 		return pstrdup(abs_path);
@@ -2164,8 +2235,11 @@ AbsoluteConfigLocation(const char *location, const char *calling_file)
  * Read and parse a single configuration file.  This function recurses
  * to handle "include" directives.
  *
- * See ParseConfigFp for details.  This one merely adds opening the
- * file rather than working from a caller-supplied file descriptor,
+ * If "strict" is true, treat failure to open the config file as an error,
+ * otherwise just skip the file.
+ *
+ * See ParseConfigFp for further details.  This one merely adds opening the
+ * config file rather than working from a caller-supplied file descriptor,
  * and absolute-ifying the path name if necessary.
  */
 bool
@@ -2202,18 +2276,22 @@ ParseConfigFile(const char *config_file, const char *calling_file, bool strict,
 					(errcode_for_file_access(),
 					 errmsg("could not open configuration file \"%s\": %m",
 							abs_path)));
-			return false;
+			OK = false;
 		}
-
-		ereport(LOG,
-				(errmsg("skipping missing configuration file \"%s\"",
-						abs_path)));
-		return OK;
+		else
+		{
+			ereport(LOG,
+					(errmsg("skipping missing configuration file \"%s\"",
+							abs_path)));
+		}
+		goto cleanup;
 	}
 
 	OK = ParseConfigFp(fp, abs_path, depth, elevel, head_p, tail_p);
 
-	FreeFile(fp);
+cleanup:
+	if (fp)
+		FreeFile(fp);
 	pfree(abs_path);
 
 	return OK;
@@ -2481,7 +2559,8 @@ ParseConfigDirectory(const char *includedir,
 				(errcode_for_file_access(),
 				 errmsg("could not open configuration directory \"%s\": %m",
 						directory)));
-		return false;
+		status = false;
+		goto cleanup;
 	}
 
 	/*
@@ -2536,7 +2615,8 @@ ParseConfigDirectory(const char *includedir,
 					(errcode_for_file_access(),
 					 errmsg("could not stat file \"%s\": %m",
 							filename)));
-			return false;
+			status = false;
+			goto cleanup;
 		}
 	}
 
@@ -2557,7 +2637,9 @@ ParseConfigDirectory(const char *includedir,
 	status = true;
 
 cleanup:
-	FreeDir(d);
+	if (d)
+		FreeDir(d);
+	pfree(directory);
 	return status;
 }
 
@@ -2574,12 +2656,21 @@ FreeConfigVariables(ConfigVariable *list)
 	{
 		ConfigVariable *next = item->next;
 
-		pfree(item->name);
-		pfree(item->value);
-		pfree(item->filename);
-		pfree(item);
+		FreeConfigVariable(item);
 		item = next;
 	}
+}
+
+/*
+ * Free a single ConfigVariable
+ */
+static void
+FreeConfigVariable(ConfigVariable *item)
+{
+	pfree(item->name);
+	pfree(item->value);
+	pfree(item->filename);
+	pfree(item);
 }
 
 

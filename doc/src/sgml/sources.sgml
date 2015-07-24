@@ -143,6 +143,13 @@ ereport(ERROR,
    </para>
 
    <para>
+    If the severity level is <literal>ERROR</> or higher,
+    <function>ereport</> aborts the execution of the user-defined
+    function and does not return to the caller. If the severity level is
+    lower than <literal>ERROR</>, <function>ereport</> returns normally.
+   </para>
+
+   <para>
     The available auxiliary routines for <function>ereport</> are:
   <itemizedlist>
    <listitem>
@@ -240,6 +247,15 @@ ereport(ERROR,
      and the other to the log.  This is useful for error details that are
      too security-sensitive or too bulky to include in the report
      sent to the client.
+    </para>
+   </listitem>
+   <listitem>
+    <para>
+     <function>errdetail_log_plural(const char *fmt_singuar, const char
+     *fmt_plural, unsigned long n, ...)</function> is like
+     <function>errdetail_log</>, but with support for various plural forms of
+     the message.
+     For more information see <xref linkend="nls-guidelines">.
     </para>
    </listitem>
    <listitem>

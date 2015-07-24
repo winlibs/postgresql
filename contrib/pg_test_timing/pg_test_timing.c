@@ -49,8 +49,7 @@ handle_args(int argc, char *argv[])
 
 	if (argc > 1)
 	{
-		if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0 ||
-			strcmp(argv[1], "-?") == 0)
+		if (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-?") == 0)
 		{
 			printf("Usage: %s [-d DURATION]\n", progname);
 			exit(0);
@@ -116,7 +115,7 @@ test_timing(int32 duration)
 				end_time,
 				temp;
 
-	total_time = duration > 0 ? duration * 1000000 : 0;
+	total_time = duration > 0 ? duration * INT64CONST(1000000) : 0;
 
 	INSTR_TIME_SET_CURRENT(start_time);
 	cur = INSTR_TIME_GET_MICROSEC(start_time);

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN72465"
+NAME="AEN75671"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN72465"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN72470"
+NAME="AEN75674"
 ></A
 ><H2
 >Synopsis</H2
@@ -555,7 +555,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72550"
+NAME="AEN75754"
 ></A
 ><H2
 >Parameters</H2
@@ -565,6 +565,9 @@ NAME="AEN72550"
 CLASS="VARIABLELIST"
 ><DL
 ><DT
+><A
+NAME="SQL-CREATETABLE-TEMPORARY"
+></A
 ><TT
 CLASS="LITERAL"
 >TEMPORARY</TT
@@ -629,6 +632,9 @@ HREF="sql-createtable.html#SQL-CREATETABLE-COMPATIBILITY"
      </P
 ></DD
 ><DT
+><A
+NAME="SQL-CREATETABLE-UNLOGGED"
+></A
 ><TT
 CLASS="LITERAL"
 >UNLOGGED</TT
@@ -875,7 +881,13 @@ CLASS="LITERAL"
       copied if <TT
 CLASS="LITERAL"
 >INCLUDING DEFAULTS</TT
-> is specified.  The
+> is specified.
+      Defaults that call database-modification functions, like
+      <CODE
+CLASS="FUNCTION"
+>nextval</CODE
+>, create a linkage between the original and
+      new tables.  The
       default behavior is to exclude default expressions, resulting in the
       copied columns in the new table having null defaults.
      </P
@@ -924,7 +936,7 @@ CLASS="LITERAL"
 > settings, see
       <A
 HREF="storage-toast.html"
->Section 58.2</A
+>Section 59.2</A
 >.
      </P
 ><P
@@ -1053,7 +1065,11 @@ CLASS="LITERAL"
 >CHECK</TT
 > expressions cannot contain
       subqueries nor refer to variables other than columns of the
-      current row.
+      current row.  The system column <TT
+CLASS="LITERAL"
+>tableoid</TT
+>
+      may be referenced, but not any other system column.
      </P
 ><P
 >      A constraint marked with <TT
@@ -1268,7 +1284,7 @@ CLASS="LITERAL"
 >amgettuple</TT
 > (see <A
 HREF="indexam.html"
->Chapter 54</A
+>Chapter 55</A
 >); at present this means <ACRONYM
 CLASS="ACRONYM"
 >GIN</ACRONYM
@@ -1880,7 +1896,7 @@ CLASS="ACRONYM"
 > table, if any
     (see <A
 HREF="storage-toast.html"
->Section 58.2</A
+>Section 59.2</A
 > for more information about TOAST).
     Note that the TOAST table inherits the
     <TT
@@ -2118,7 +2134,7 @@ HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-MIN-AGE"
      <TT
 CLASS="LITERAL"
 >autovacuum_freeze_min_age</TT
-> larger than the half system-wide
+> larger than half the system-wide
      <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-FREEZE-MAX-AGE"
 >autovacuum_freeze_max_age</A
@@ -2172,6 +2188,103 @@ CLASS="TYPE"
 HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-TABLE-AGE"
 >vacuum_freeze_table_age</A
 > parameter.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_min_age</TT
+>, <TT
+CLASS="LITERAL"
+>toast.autovacuum_multixact_freeze_min_age</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</DT
+><DD
+><P
+>      Custom <A
+HREF="runtime-config-client.html#GUC-VACUUM-MULTIXACT-FREEZE-MIN-AGE"
+>vacuum_multixact_freeze_min_age</A
+> parameter.
+      Note that autovacuum will ignore attempts to set a per-table
+      <TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_min_age</TT
+> larger than half the
+      system-wide <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
+>autovacuum_multixact_freeze_max_age</A
+>
+      setting.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_max_age</TT
+>, <TT
+CLASS="LITERAL"
+>toast.autovacuum_multixact_freeze_max_age</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</DT
+><DD
+><P
+>      Custom <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
+>autovacuum_multixact_freeze_max_age</A
+> parameter. Note
+      that autovacuum will ignore attempts to set a per-table
+      <TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_max_age</TT
+> larger than the
+      system-wide setting (it can only be set smaller).  Note that while you
+      can set <TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_max_age</TT
+> very small,
+      or even zero, this is usually unwise since it will force frequent
+      vacuuming.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>autovacuum_multixact_freeze_table_age</TT
+>, <TT
+CLASS="LITERAL"
+>toast.autovacuum_multixact_freeze_table_age</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</DT
+><DD
+><P
+>      Custom <A
+HREF="runtime-config-client.html#GUC-VACUUM-MULTIXACT-FREEZE-TABLE-AGE"
+>vacuum_multixact_freeze_table_age</A
+> parameter.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>user_catalog_table</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)</DT
+><DD
+><P
+>      Declare a table as an additional catalog table, e.g. for the purpose of
+      logical replication. See
+      <A
+HREF="logicaldecoding-output-plugin.html#LOGICALDECODING-CAPABILITIES"
+>Section 46.6.2</A
+> for details.
      </P
 ></DD
 ></DL
@@ -2525,7 +2638,7 @@ CLASS="ACRONYM"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN73097"
+NAME="AEN76338"
 ></A
 ><H3
 >Temporary Tables</H3
@@ -2624,7 +2737,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN73120"
+NAME="AEN76361"
 ></A
 ><H3
 >Non-deferred Uniqueness Constraints</H3
@@ -2659,7 +2772,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN73128"
+NAME="AEN76369"
 ></A
 ><H3
 >Column Check Constraints</H3
@@ -2683,7 +2796,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN73134"
+NAME="AEN76375"
 ></A
 ><H3
 ><TT
@@ -2704,7 +2817,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN73140"
+NAME="AEN76381"
 ></A
 ><H3
 ><TT
@@ -2738,7 +2851,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN73149"
+NAME="AEN76390"
 ></A
 ><H3
 >Inheritance</H3
@@ -2763,7 +2876,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN73155"
+NAME="AEN76396"
 ></A
 ><H3
 >Zero-column Tables</H3
@@ -2788,7 +2901,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN73161"
+NAME="AEN76402"
 ></A
 ><H3
 ><TT
@@ -2809,7 +2922,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN73167"
+NAME="AEN76408"
 ></A
 ><H3
 >Tablespaces</H3
@@ -2831,7 +2944,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN73173"
+NAME="AEN76414"
 ></A
 ><H3
 >Typed Tables</H3
@@ -2851,7 +2964,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73177"
+NAME="AEN76418"
 ></A
 ><H2
 >See Also</H2

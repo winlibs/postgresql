@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -100,13 +100,18 @@ NAME="FUNCTIONS-SRF"
    The most widely used functions in this class are series generating
    functions, as detailed in <A
 HREF="functions-srf.html#FUNCTIONS-SRF-SERIES"
->Table 9-49</A
+>Table 9-54</A
 > and
    <A
 HREF="functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS"
->Table 9-50</A
+>Table 9-55</A
 >.  Other, more specialized
    set-returning functions are described elsewhere in this manual.
+   See <A
+HREF="queries-table-expressions.html#QUERIES-TABLEFUNCTIONS"
+>Section 7.2.1.4</A
+> for ways to combine multiple
+   set-returning functions.
   </P
 ><DIV
 CLASS="TABLE"
@@ -115,7 +120,7 @@ NAME="FUNCTIONS-SRF-SERIES"
 ></A
 ><P
 ><B
->Table 9-49. Series Generating Functions</B
+>Table 9-54. Series Generating Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -363,7 +368,7 @@ NAME="FUNCTIONS-SRF-SUBSCRIPTS"
 ></A
 ><P
 ><B
->Table 9-50. Subscript Generating Functions</B
+>Table 9-55. Subscript Generating Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -488,7 +493,7 @@ select $1[i][j]
         generate_subscripts($1,2) g2(j);
 $$ LANGUAGE sql IMMUTABLE;
 CREATE FUNCTION
-postgres=# SELECT * FROM unnest2(ARRAY[[1,2],[3,4]]);
+SELECT * FROM unnest2(ARRAY[[1,2],[3,4]]);
  unnest2 
 ---------
        1
@@ -496,6 +501,53 @@ postgres=# SELECT * FROM unnest2(ARRAY[[1,2],[3,4]]);
        3
        4
 (4 rows)</PRE
+><P>
+  </P
+><P
+>   When a function in the <TT
+CLASS="LITERAL"
+>FROM</TT
+> clause is suffixed
+   by <TT
+CLASS="LITERAL"
+>WITH ORDINALITY</TT
+>, a <TT
+CLASS="TYPE"
+>bigint</TT
+> column is
+   appended to the output which starts from 1 and increments by 1 for each row
+   of the function's output.  This is most useful in the case of set returning
+   functions such as <CODE
+CLASS="FUNCTION"
+>unnest()</CODE
+>.
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>-- set returning function WITH ORDINALITY
+SELECT * FROM pg_ls_dir('.') WITH ORDINALITY AS t(ls,n);
+       ls        | n
+-----------------+----
+ pg_serial       |  1
+ pg_twophase     |  2
+ postmaster.opts |  3
+ pg_notify       |  4
+ postgresql.conf |  5
+ pg_tblspc       |  6
+ logfile         |  7
+ base            |  8
+ postmaster.pid  |  9
+ pg_ident.conf   | 10
+ global          | 11
+ pg_clog         | 12
+ pg_snapshots    | 13
+ pg_multixact    | 14
+ PG_VERSION      | 15
+ pg_xlog         | 16
+ pg_hba.conf     | 17
+ pg_stat_tmp     | 18
+ pg_subtrans     | 19
+(19 rows)</PRE
 ><P>
   </P
 ></DIV

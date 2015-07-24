@@ -4,7 +4,7 @@
  *	  Utility and convenience functions for fmgr functions that return
  *	  sets and/or composite types.
  *
- * Copyright (c) 2002-2013, PostgreSQL Global Development Group
+ * Copyright (c) 2002-2014, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/utils/fmgr/funcapi.c
@@ -136,7 +136,7 @@ per_MultiFuncCall(PG_FUNCTION_ARGS)
 	 * FuncCallContext is pointing to it), but in most usage patterns the
 	 * tuples stored in it will be in the function's per-tuple context. So at
 	 * the beginning of each call, the Slot will hold a dangling pointer to an
-	 * already-recycled tuple.	We clear it out here.
+	 * already-recycled tuple.  We clear it out here.
 	 *
 	 * Note: use of retval->slot is obsolete as of 8.0, and we expect that it
 	 * will always be NULL.  This is just here for backwards compatibility in
@@ -192,13 +192,13 @@ shutdown_MultiFuncCall(Datum arg)
  *		Given a function's call info record, determine the kind of datatype
  *		it is supposed to return.  If resultTypeId isn't NULL, *resultTypeId
  *		receives the actual datatype OID (this is mainly useful for scalar
- *		result types).	If resultTupleDesc isn't NULL, *resultTupleDesc
+ *		result types).  If resultTupleDesc isn't NULL, *resultTupleDesc
  *		receives a pointer to a TupleDesc when the result is of a composite
  *		type, or NULL when it's a scalar result.
  *
  * One hard case that this handles is resolution of actual rowtypes for
  * functions returning RECORD (from either the function's OUT parameter
- * list, or a ReturnSetInfo context node).	TYPEFUNC_RECORD is returned
+ * list, or a ReturnSetInfo context node).  TYPEFUNC_RECORD is returned
  * only when we couldn't resolve the actual rowtype for lack of information.
  *
  * The other hard case that this handles is resolution of polymorphism.
@@ -281,7 +281,7 @@ get_func_result_type(Oid functionId,
 /*
  * internal_get_result_type -- workhorse code implementing all the above
  *
- * funcid must always be supplied.	call_expr and rsinfo can be NULL if not
+ * funcid must always be supplied.  call_expr and rsinfo can be NULL if not
  * available.  We will return TYPEFUNC_RECORD, and store NULL into
  * *resultTupleDesc, if we cannot deduce the complete result rowtype from
  * the available information.
@@ -448,7 +448,7 @@ resolve_polymorphic_tupdesc(TupleDesc tupdesc, oidvector *declared_args,
 		return true;
 
 	/*
-	 * Otherwise, extract actual datatype(s) from input arguments.	(We assume
+	 * Otherwise, extract actual datatype(s) from input arguments.  (We assume
 	 * the parser already validated consistency of the arguments.)
 	 */
 	if (!call_expr)
@@ -1205,8 +1205,7 @@ build_function_result_tupdesc_d(Datum proallargtypes,
 		if (pname == NULL || pname[0] == '\0')
 		{
 			/* Parameter is not named, so gin up a column name */
-			pname = (char *) palloc(32);
-			snprintf(pname, 32, "column%d", numoutargs + 1);
+			pname = psprintf("column%d", numoutargs + 1);
 		}
 		outargnames[numoutargs] = pname;
 		numoutargs++;

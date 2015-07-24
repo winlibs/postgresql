@@ -17,7 +17,7 @@
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.	IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
  * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
@@ -32,6 +32,7 @@
 #include "postgres.h"
 
 #include "px.h"
+#include "utils/memdebug.h"
 
 /* how many bytes to ask from system random provider */
 #define RND_BYTES  32
@@ -195,7 +196,7 @@ try_unix_std(uint8 *dst)
 	memcpy(dst, (uint8 *) &x, sizeof(x));
 	dst += sizeof(x);
 
-	/* let's be desperate */
+	/* hash of uninitialized stack and heap allocations */
 	res = px_find_digest("sha1", &md);
 	if (res >= 0)
 	{
@@ -203,8 +204,10 @@ try_unix_std(uint8 *dst)
 		uint8		stack[8192];
 		int			alloc = 32 * 1024;
 
+		VALGRIND_MAKE_MEM_DEFINED(stack, sizeof(stack));
 		px_md_update(md, stack, sizeof(stack));
 		ptr = px_alloc(alloc);
+		VALGRIND_MAKE_MEM_DEFINED(ptr, alloc);
 		px_md_update(md, ptr, alloc);
 		px_free(ptr);
 

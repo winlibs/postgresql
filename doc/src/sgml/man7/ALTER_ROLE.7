@@ -2,12 +2,12 @@
 .\"     Title: ALTER ROLE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "ALTER ROLE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "ALTER ROLE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 ALTER_ROLE \- change a database role
-.\" ALTER ROLE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -109,7 +108,43 @@ privilege can change defaults for non\-superuser roles\&. Ordinary roles can onl
 The name of the role whose attributes are to be altered\&.
 .RE
 .PP
-SUPERUSER, NOSUPERUSER, CREATEDB, NOCREATEDB, CREATEROLE, NOCREATEROLE, CREATEUSER, NOCREATEUSER, INHERIT, NOINHERIT, LOGIN, NOLOGIN, REPLICATION, NOREPLICATION, CONNECTION LIMIT \fIconnlimit\fR, PASSWORD \fIpassword\fR, ENCRYPTED, UNENCRYPTED, VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq
+SUPERUSER
+.br
+NOSUPERUSER
+.br
+CREATEDB
+.br
+NOCREATEDB
+.br
+CREATEROLE
+.br
+NOCREATEROLE
+.br
+CREATEUSER
+.br
+NOCREATEUSER
+.br
+INHERIT
+.br
+NOINHERIT
+.br
+LOGIN
+.br
+NOLOGIN
+.br
+REPLICATION
+.br
+NOREPLICATION
+.br
+CONNECTION LIMIT \fIconnlimit\fR
+.br
+PASSWORD \fIpassword\fR
+.br
+ENCRYPTED
+.br
+UNENCRYPTED
+.br
+VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq
 .RS 4
 These clauses alter attributes originally set by
 CREATE ROLE (\fBCREATE_ROLE\fR(7))\&. For more information, see the
@@ -127,7 +162,9 @@ The new name of the role\&.
 The name of the database the configuration variable should be set in\&.
 .RE
 .PP
-\fIconfiguration_parameter\fR, \fIvalue\fR
+\fIconfiguration_parameter\fR
+.br
+\fIvalue\fR
 .RS 4
 Set this role\*(Aqs session default for the specified configuration parameter to the given value\&. If
 \fIvalue\fR

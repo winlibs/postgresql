@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN88898"
+NAME="AEN92678"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN88904"
+NAME="AEN92682"
 ></A
 ><H2
 >Synopsis</H2
@@ -178,7 +178,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN88934"
+NAME="AEN92712"
 ></A
 ><H2
 >Description</H2
@@ -217,7 +217,7 @@ HREF="sql-vacuum.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN88944"
+NAME="AEN92722"
 ></A
 ><H2
 >Options</H2
@@ -470,6 +470,32 @@ CLASS="OPTION"
 ><DT
 ><TT
 CLASS="OPTION"
+>--analyze-in-stages</TT
+></DT
+><DD
+><P
+>        Only calculate statistics for use by the optimizer (no vacuum),
+        like <TT
+CLASS="OPTION"
+>--analyze-only</TT
+>.  Run several (currently three)
+        stages of analyze with different configuration settings, to produce
+        usable statistics faster.
+       </P
+><P
+>        This option is useful to analyze a database that was newly populated
+        from a restored dump or by <TT
+CLASS="COMMAND"
+>pg_upgrade</TT
+>.  This option
+        will try to create some statistics as fast as possible, to make the
+        database usable, and then produce full statistics in the subsequent
+        stages.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-?</TT
 ><BR><TT
 CLASS="OPTION"
@@ -660,7 +686,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN89113"
+NAME="AEN92899"
 ></A
 ><H2
 >Environment</H2
@@ -708,7 +734,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN89131"
+NAME="AEN92917"
 ></A
 ><H2
 >Diagnostics</H2
@@ -737,7 +763,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN89137"
+NAME="AEN92923"
 ></A
 ><H2
 >Notes</H2
@@ -763,7 +789,7 @@ HREF="libpq-pgpass.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN89144"
+NAME="AEN92930"
 ></A
 ><H2
 >Examples</H2
@@ -828,7 +854,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN89163"
+NAME="AEN92949"
 ></A
 ><H2
 >See Also</H2

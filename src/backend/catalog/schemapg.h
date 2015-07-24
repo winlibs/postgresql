@@ -3,7 +3,7 @@
  * schemapg.h
  *    Schema_pg_xxx macros for use by relcache.c
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * NOTES
@@ -115,19 +115,19 @@
 { 1259, {"reltuples"}, 700, -1, 4, 10, 0, -1, -1, FLOAT4PASSBYVAL, 'p', 'i', true, false, false, true, 0, 0 }, \
 { 1259, {"relallvisible"}, 23, -1, 4, 11, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
 { 1259, {"reltoastrelid"}, 26, -1, 4, 12, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
-{ 1259, {"reltoastidxid"}, 26, -1, 4, 13, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
-{ 1259, {"relhasindex"}, 16, -1, 1, 14, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relisshared"}, 16, -1, 1, 15, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relpersistence"}, 18, -1, 1, 16, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relkind"}, 18, -1, 1, 17, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relnatts"}, 21, -1, 2, 18, 0, -1, -1, true, 'p', 's', true, false, false, true, 0, 0 }, \
-{ 1259, {"relchecks"}, 21, -1, 2, 19, 0, -1, -1, true, 'p', 's', true, false, false, true, 0, 0 }, \
-{ 1259, {"relhasoids"}, 16, -1, 1, 20, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relhaspkey"}, 16, -1, 1, 21, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relhasrules"}, 16, -1, 1, 22, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relhastriggers"}, 16, -1, 1, 23, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relhassubclass"}, 16, -1, 1, 24, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relispopulated"}, 16, -1, 1, 25, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relhasindex"}, 16, -1, 1, 13, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relisshared"}, 16, -1, 1, 14, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relpersistence"}, 18, -1, 1, 15, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relkind"}, 18, -1, 1, 16, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relnatts"}, 21, -1, 2, 17, 0, -1, -1, true, 'p', 's', true, false, false, true, 0, 0 }, \
+{ 1259, {"relchecks"}, 21, -1, 2, 18, 0, -1, -1, true, 'p', 's', true, false, false, true, 0, 0 }, \
+{ 1259, {"relhasoids"}, 16, -1, 1, 19, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relhaspkey"}, 16, -1, 1, 20, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relhasrules"}, 16, -1, 1, 21, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relhastriggers"}, 16, -1, 1, 22, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relhassubclass"}, 16, -1, 1, 23, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relispopulated"}, 16, -1, 1, 24, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relreplident"}, 18, -1, 1, 25, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
 { 1259, {"relfrozenxid"}, 28, -1, 4, 26, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
 { 1259, {"relminmxid"}, 28, -1, 4, 27, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
 { 1259, {"relacl"}, 1034, -1, -1, 28, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
@@ -146,12 +146,13 @@
 { 2610, {"indcheckxmin"}, 16, -1, 1, 10, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
 { 2610, {"indisready"}, 16, -1, 1, 11, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
 { 2610, {"indislive"}, 16, -1, 1, 12, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 2610, {"indkey"}, 22, -1, -1, 13, 1, -1, -1, false, 'p', 'i', true, false, false, true, 0, 0 }, \
-{ 2610, {"indcollation"}, 30, -1, -1, 14, 1, -1, -1, false, 'p', 'i', true, false, false, true, 0, 0 }, \
-{ 2610, {"indclass"}, 30, -1, -1, 15, 1, -1, -1, false, 'p', 'i', true, false, false, true, 0, 0 }, \
-{ 2610, {"indoption"}, 22, -1, -1, 16, 1, -1, -1, false, 'p', 'i', true, false, false, true, 0, 0 }, \
-{ 2610, {"indexprs"}, 194, -1, -1, 17, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
-{ 2610, {"indpred"}, 194, -1, -1, 18, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }
+{ 2610, {"indisreplident"}, 16, -1, 1, 13, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 2610, {"indkey"}, 22, -1, -1, 14, 1, -1, -1, false, 'p', 'i', true, false, false, true, 0, 0 }, \
+{ 2610, {"indcollation"}, 30, -1, -1, 15, 1, -1, -1, false, 'p', 'i', true, false, false, true, 0, 0 }, \
+{ 2610, {"indclass"}, 30, -1, -1, 16, 1, -1, -1, false, 'p', 'i', true, false, false, true, 0, 0 }, \
+{ 2610, {"indoption"}, 22, -1, -1, 17, 1, -1, -1, false, 'p', 'i', true, false, false, true, 0, 0 }, \
+{ 2610, {"indexprs"}, 194, -1, -1, 18, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
+{ 2610, {"indpred"}, 194, -1, -1, 19, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }
 
 #define Schema_pg_database \
 { 1262, {"datname"}, 19, -1, NAMEDATALEN, 1, 0, -1, -1, false, 'p', 'c', true, false, false, true, 0, 0 }, \

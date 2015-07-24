@@ -2,12 +2,12 @@
 .\"     Title: pg_resetxlog
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "PG_RESETXLOG" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "PG_RESETXLOG" "1" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 pg_resetxlog \- reset the write\-ahead log and other control information of a PostgreSQL database cluster
-.\" pg_resetxlog
 .SH "SYNOPSIS"
 .HP \w'\fBpg_resetxlog\fR\ 'u
 \fBpg_resetxlog\fR [\fB\-f\fR] [\fB\-n\fR] [\fB\-o\fR\ \fIoid\fR] [\fB\-x\fR\ \fIxid\fR] [\fB\-e\fR\ \fIxid_epoch\fR] [\fB\-m\fR\ \fImxid\fR,\fImxid\fR] [\fB\-O\fR\ \fImxoff\fR] [\fB\-l\fR\ \fIxlogfile\fR] \fIdatadir\fR
@@ -195,7 +194,7 @@ The
 \fBpg_resetxlog\fR
 to print the values reconstructed from
 pg_control
-and then exit without modifying anything\&. This is mainly a debugging tool, but can be useful as a sanity check before allowing
+and values about to be changed, and then exit without modifying anything\&. This is mainly a debugging tool, but can be useful as a sanity check before allowing
 \fBpg_resetxlog\fR
 to proceed for real\&.
 .PP

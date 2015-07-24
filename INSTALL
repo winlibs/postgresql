@@ -9,9 +9,9 @@
                                 Short Version
 
 ./configure
-gmake
+make
 su
-gmake install
+make install
 adduser postgres
 mkdir /usr/local/pgsql/data
 chown postgres /usr/local/pgsql/data
@@ -36,11 +36,9 @@ su - postgres
    The following software packages are required for building PostgreSQL:
 
      * GNU make version 3.80 or newer is required; other make programs or
-       older GNU make versions will *not* work. GNU make is often
-       installed under the name "gmake"; this document will always refer
-       to it by that name. (On some systems GNU make is the default tool
-       with the name "make".) To test for GNU make enter:
-gmake --version
+       older GNU make versions will *not* work. (GNU make is sometimes
+       installed under the name "gmake".) To test for GNU make enter:
+make --version
      * You need an ISO/ANSI C compiler (at least C89-compliant). Recent
        versions of GCC are recommended, but PostgreSQL is known to build
        using a wide variety of compilers from different vendors.
@@ -91,9 +89,12 @@ gmake --version
        configuration process for Perl, request a shared library.
      * To build the PL/Python server programming language, you need a
        Python installation with the header files and the distutils module.
-       The minimum required version is Python 2.3. Python 3 is supported
-       if it's version 3.1 or later; but see the PL/Python documentation
-       when using Python 3.
+       The minimum required version is Python 2.3. (To work with function
+       arguments of type numeric, a 2.3.x installation must include the
+       separately-available "cdecimal" module; note the PL/Python
+       regression tests will not pass if that is missing.) Python 3 is
+       supported if it's version 3.1 or later; but see the PL/Python
+       documentation when using Python 3.
        Since PL/Python will be a shared library, the "libpython" library
        must be a shared library also on most platforms. This is not the
        case in a default Python installation. If after building and
@@ -139,6 +140,7 @@ gmake --version
      * Perl 5.8 or later is needed to build from a Git checkout, or if you
        changed the input files for any of the build steps that use Perl
        scripts. If building on Windows you will need Perl in any case.
+       Perl is also required to run some test suites.
 
    If you need to get a GNU package, you can find it at your local GNU
    mirror site (see http://www.gnu.org/order/ftp.html for a list) or at
@@ -171,7 +173,7 @@ gmake --version
 mkdir build_dir
 cd build_dir
 /path/to/source/tree/configure [options go here]
-gmake
+make
        The default configuration will build the server and utilities, as
        well as all client applications and interfaces that require only a
        C compiler. All files will be installed under "/usr/local/pgsql" by
@@ -273,6 +275,13 @@ gmake
      subdirectory will also be created, if appropriate, under libdir for
      dynamically loadable modules.
 
+        --with-extra-version=STRING
+                Append "STRING" to the PostgreSQL version number. You can
+                use this, for example, to mark binaries built from
+                unreleased Git snapshots or containing custom patches with
+                an extra version string such as a "git describe"
+                identifier or a distribution package release number.
+
         --with-includes=DIRECTORIES
                 "DIRECTORIES" is a colon-separated list of directories
                 that will be added to the list the compiler searches for
@@ -343,22 +352,11 @@ gmake
                 make sure that your GSSAPI installation is sufficient
                 before proceeding.
 
-        --with-krb5
-                Build with support for Kerberos 5 authentication. On many
-                systems, the Kerberos system is not installed in a
-                location that is searched by default (e.g.,
-                "/usr/include", "/usr/lib"), so you must use the options
-                "--with-includes" and "--with-libraries" in addition to
-                this option. "configure" will check for the required
-                header files and libraries to make sure that your Kerberos
-                installation is sufficient before proceeding.
-
         --with-krb-srvnam=NAME
-                The default name of the Kerberos service principal (also
-                used by GSSAPI). postgres is the default. There's usually
-                no reason to change this unless you have a Windows
-                environment, in which case it must be set to upper case
-                POSTGRES.
+                The default name of the Kerberos service principal used by
+                GSSAPI. postgres is the default. There's usually no reason
+                to change this unless you have a Windows environment, in
+                which case it must be set to upper case POSTGRES.
 
         --with-openssl
                 Build with support for SSL (encrypted) connections. This
@@ -393,12 +391,23 @@ gmake
 
         --with-bonjour
                 Build with Bonjour support. This requires Bonjour support
-                in your operating system. Recommended on Mac OS X.
+                in your operating system. Recommended on OS X.
+
+        --with-uuid=LIBRARY
+                Build the uuid-ossp module (which provides functions to
+                generate UUIDs), using the specified UUID library.
+                "LIBRARY" must be one of:
+
+               o "bsd" to use the UUID functions found in FreeBSD, NetBSD,
+                 and some other BSD-derived systems
+               o "e2fs" to use the UUID library created by the e2fsprogs
+                 project; this library is present in most Linux systems
+                 and in OS X, and can be obtained for other platforms as
+                 well
+               o "ossp" to use the OSSP UUID library
 
         --with-ossp-uuid
-                Build components using the OSSP UUID library.
-                Specifically, build the uuid-ossp module, which provides
-                functions to generate UUIDs.
+                Obsolete equivalent of --with-uuid=ossp.
 
         --with-libxml
                 Build with libxml (enables SQL/XML support). Libxml
@@ -512,8 +521,8 @@ gmake
         --with-system-tzdata=DIRECTORY
                 PostgreSQL includes its own time zone database, which it
                 requires for date and time operations. This time zone
-                database is in fact compatible with the "zoneinfo" time
-                zone database provided by many operating systems such as
+                database is in fact compatible with the IANA time zone
+                database provided by many operating systems such as
                 FreeBSD, Linux, and Solaris, so it would be redundant to
                 install it again. When this option is used, the
                 system-supplied time zone database in "DIRECTORY" is used
@@ -611,6 +620,10 @@ gmake
 ./configure CC='/opt/SUNWspro/bin/cc -xtarget=native64' --enable-dtrace DTRACEFL
 AGS='-64' ...
 
+        --enable-tap-tests
+                Enable tests using the Perl TAP tools. This requires a
+                Perl installation and the Perl module IPC::Run.
+
        If you prefer a C compiler different from the one "configure"
        picks, you can set the environment variable CC to the program of
        your choice. By default, "configure" will pick "gcc" if available,
@@ -693,17 +706,17 @@ AGS='-64' ...
      match up one-to-one with source code lines. If you get confused
      while trying to debug optimized code, recompile the specific files
      of interest with "-O0". An easy way to do this is by passing an
-     option to make: "gmake PROFILE=-O0 file.o".
+     option to make: "make PROFILE=-O0 file.o".
     2. Build
        To start the build, type:
-gmake
+make
        (Remember to use GNU make.) The build will take a few minutes
        depending on your hardware. The last line displayed should be:
 All of PostgreSQL is successfully made. Ready to install.
        If you want to build everything that can be built, including the
        documentation (HTML and man pages), and the additional modules
        ("contrib"), type instead:
-gmake world
+make world
        The last line displayed should be:
 PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
     3. Regression Tests
@@ -711,7 +724,7 @@ PostgreSQL, contrib and HTML documentation successfully made. Ready to install.
        you can run the regression tests at this point. The regression
        tests are a test suite to verify that PostgreSQL runs on your
        machine in the way the developers expected it to. Type:
-gmake check
+make check
        (This won't work as root; do it as an unprivileged user.) The file
        "src/test/regress/README" and the documentation contain detailed
        information about interpreting the test results. You can repeat
@@ -721,19 +734,19 @@ gmake check
      Note: If you are upgrading an existing system be sure to read the
      documentation, which has instructions about upgrading a cluster.
        To install PostgreSQL enter:
-gmake install
+make install
        This will install files into the directories that were specified in
        step 1. Make sure that you have appropriate permissions to write
        into that area. Normally you need to do this step as root.
        Alternatively, you can create the target directories in advance and
        arrange for appropriate permissions to be granted.
        To install the documentation (HTML and man pages), enter:
-gmake install-docs
+make install-docs
        If you built the world above, type instead:
-gmake install-world
+make install-world
        This also installs the documentation.
-       You can use gmake install-strip instead of gmake install to strip
-       the executable files and libraries as they are installed. This will
+       You can use make install-strip instead of make install to strip the
+       executable files and libraries as they are installed. This will
        save some space. If you built with debugging support, stripping
        will effectively remove the debugging support, so it should only be
        done if debugging is no longer needed. install-strip tries to do a
@@ -744,35 +757,35 @@ gmake install-world
        The standard installation provides all the header files needed for
        client application development as well as for server-side program
        development, such as custom functions or data types written in C.
-       (Prior to PostgreSQL 8.0, a separate gmake install-all-headers
+       (Prior to PostgreSQL 8.0, a separate make install-all-headers
        command was needed for the latter, but this step has been folded
        into the standard install.)
        Client-only installation: If you want to install only the client
        applications and interface libraries, then you can use these
        commands:
-gmake -C src/bin install
-gmake -C src/include install
-gmake -C src/interfaces install
-gmake -C doc install
+make -C src/bin install
+make -C src/include install
+make -C src/interfaces install
+make -C doc install
        "src/bin" has a few binaries for server-only use, but they are
        small.
 
-   Uninstallation: To undo the installation use the command "gmake
+   Uninstallation: To undo the installation use the command "make
    uninstall". However, this will not remove any created directories.
 
    Cleaning: After the installation you can free disk space by removing
-   the built files from the source tree with the command "gmake clean".
+   the built files from the source tree with the command "make clean".
    This will preserve the files made by the "configure" program, so that
-   you can rebuild everything with "gmake" later on. To reset the source
-   tree to the state in which it was distributed, use "gmake distclean".
-   If you are going to build for several platforms within the same source
+   you can rebuild everything with "make" later on. To reset the source
+   tree to the state in which it was distributed, use "make distclean". If
+   you are going to build for several platforms within the same source
    tree you must do this and re-configure for each platform.
    (Alternatively, use a separate build tree for each platform, so that
    the source tree remains unmodified.)
 
    If you perform a build and then discover that your "configure" options
    were wrong, or if you change anything that "configure" investigates
-   (for example, software upgrades), then it's a good idea to do "gmake
+   (for example, software upgrades), then it's a good idea to do "make
    distclean" before reconfiguring and rebuilding. Without this, your
    changes in configuration choices might not propagate everywhere they
    need to.
@@ -784,8 +797,8 @@ Shared Libraries
 
    On some systems with shared libraries you need to tell the system how
    to find the newly installed shared libraries. The systems on which this
-   is *not* necessary include FreeBSD, HP-UX, IRIX, Linux, NetBSD,
-   OpenBSD, Tru64 UNIX (formerly Digital UNIX), and Solaris.
+   is *not* necessary include FreeBSD, HP-UX, Linux, NetBSD, OpenBSD,
+   Tru64 UNIX (formerly Digital UNIX), and Solaris.
 
    The method to set the shared library search path varies between
    platforms, but the most widely-used method is to set the environment
@@ -919,7 +932,7 @@ psql testdb
      * Usually, you will want to modify your computer so that it will
        automatically start the database server whenever it boots. Some
        suggestions for this are in the documentation.
-     * Run the regression tests against the installed server (using "gmake
+     * Run the regression tests against the installed server (using "make
        installcheck"). If you didn't run the tests before installation,
        you should definitely do it now. This is also explained in the
        documentation.
@@ -948,16 +961,16 @@ psql testdb
    In general, PostgreSQL can be expected to work on these CPU
    architectures: x86, x86_64, IA64, PowerPC, PowerPC 64, S/390, S/390x,
    Sparc, Sparc 64, Alpha, ARM, MIPS, MIPSEL, M68K, and PA-RISC. Code
-   support exists for M32R, NS32K, and VAX, but these architectures are
-   not known to have been tested recently. It is often possible to build
-   on an unsupported CPU type by configuring with "--disable-spinlocks",
-   but performance will be poor.
+   support exists for M32R and VAX, but these architectures are not known
+   to have been tested recently. It is often possible to build on an
+   unsupported CPU type by configuring with "--disable-spinlocks", but
+   performance will be poor.
 
    PostgreSQL can be expected to work on these operating systems: Linux
    (all recent distributions), Windows (Win2000 SP4 and later), FreeBSD,
-   OpenBSD, NetBSD, Mac OS X, AIX, HP/UX, IRIX, Solaris, Tru64 Unix, and
-   UnixWare. Other Unix-like systems may also work but are not currently
-   being tested. In most cases, all CPU architectures supported by a given
+   OpenBSD, NetBSD, OS X, AIX, HP/UX, Solaris, Tru64 Unix, and UnixWare.
+   Other Unix-like systems may also work but are not currently being
+   tested. In most cases, all CPU architectures supported by a given
    operating system will work. Look in the the Section called
    Platform-specific Notes below to see if there is information specific
    to your operating system, particularly if using an older system.
@@ -1183,7 +1196,6 @@ Cygwin
 
      * Set your path to use the Cygwin bin directory before the Windows
        utilities. This will help prevent problems with compilation.
-     * The GNU make command is called "make", not "gmake".
      * The "adduser" command is not supported; use the appropriate user
        management application on Windows NT, 2000, or XP. Otherwise, skip
        this step.
@@ -1273,42 +1285,6 @@ HP-UX
    for suspicion.
      __________________________________________________________________
 
-IRIX
-
-   PostgreSQL has been reported to run successfully on MIPS r8000, r10000
-   (both ip25 and ip27) and r12000(ip35) processors, running IRIX 6.5.5m,
-   6.5.12, 6.5.13, and 6.5.26 with MIPSPro compilers version 7.30,
-   7.3.1.2m, 7.3, and 7.4.4m.
-
-   You will need the MIPSPro full ANSI C compiler. There are problems
-   trying to build with GCC. It is a known GCC bug (not fixed as of
-   version 3.0) related to using functions that return certain kinds of
-   structures. This bug affects functions like inet_ntoa, inet_lnaof,
-   inet_netof, inet_makeaddr, and semctl. It is supposed to be fixed by
-   forcing code to link those functions with libgcc, but this has not been
-   tested yet.
-
-   It is known that version 7.4.1m of the MIPSPro compiler generates
-   incorrect code. The symptom is "invalid primary checkpoint record" when
-   trying to start the database.) Version 7.4.4m is OK; the status of
-   intermediate versions is uncertain.
-
-   There may be a compilation problem like the following:
-cc-1020 cc: ERROR File = pqcomm.c, Line = 427
-  The identifier "TCP_NODELAY" is undefined.
-
-                if (setsockopt(port->sock, IPPROTO_TCP, TCP_NODELAY,
-
-   Some versions include TCP definitions in "sys/xti.h", so it is
-   necessary to add #include <sys/xti.h> in "src/backend/libpq/pqcomm.c"
-   and in "src/interfaces/libpq/fe-connect.c". If you encounter this,
-   please let us know so we can develop a proper fix.
-
-   In the regression tests, there might be some low-order-digit
-   differences in the geometry tests, depending on which FPU are you
-   using. Any other error is cause for suspicion.
-     __________________________________________________________________
-
 MinGW/Native Windows
 
    PostgreSQL for Windows can be built using MinGW, a Unix-like build
@@ -1376,8 +1352,7 @@ Skunkware
 GNU Make
 
    You need to use the GNU Make program, which is on the Skunkware CD. By
-   default, it installs as "/usr/local/bin/make". To avoid confusion with
-   the SCO "make" program, you may want to rename GNU "make" to "gmake".
+   default, it installs as "/usr/local/bin/make".
 
    As of UnixWare 7.1.3 and above, the GNU Make program is the OSTK
    portion of the UDK CD, and is in "/usr/gnu/bin/gmake".
@@ -1538,7 +1513,7 @@ AbortTransaction                    utils/probes.o
 CommitTransaction                   utils/probes.o
 ld: fatal: Symbol referencing errors. No output written to postgres
 collect2: ld returned 1 exit status
-gmake: *** [postgres] Error 1
+make: *** [postgres] Error 1
 
    your DTrace installation is too old to handle probes in static
    functions. You need Solaris 10u4 or newer.

@@ -3,7 +3,7 @@
  * pl_funcs.c		- Misc functions for the PL/pgSQL
  *			  procedural language
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -25,7 +25,7 @@
  * list or "chain" (from the youngest item to the root) is accessible from
  * any one plpgsql statement.  During initial parsing of a function, ns_top
  * points to the youngest item accessible from the block currently being
- * parsed.	We store the entire tree, however, since at runtime we will need
+ * parsed.  We store the entire tree, however, since at runtime we will need
  * to access the chain that's relevant to any one statement.
  *
  * Block boundaries in the namespace chain are marked by PLPGSQL_NSTYPE_LABEL
@@ -113,7 +113,7 @@ plpgsql_ns_additem(int itemtype, int itemno, const char *name)
  *
  * If localmode is TRUE, only the topmost block level is searched.
  *
- * name1 must be non-NULL.	Pass NULL for name2 and/or name3 if parsing a name
+ * name1 must be non-NULL.  Pass NULL for name2 and/or name3 if parsing a name
  * with fewer than three components.
  *
  * If names_used isn't NULL, *names_used receives the number of names
@@ -277,6 +277,8 @@ plpgsql_getdiag_kindname(int kind)
 			return "ROW_COUNT";
 		case PLPGSQL_GETDIAG_RESULT_OID:
 			return "RESULT_OID";
+		case PLPGSQL_GETDIAG_CONTEXT:
+			return "PG_CONTEXT";
 		case PLPGSQL_GETDIAG_ERROR_CONTEXT:
 			return "PG_EXCEPTION_CONTEXT";
 		case PLPGSQL_GETDIAG_ERROR_DETAIL:

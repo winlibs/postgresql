@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -139,7 +139,7 @@ CLASS="ACRONYM"
 > infrastructure for your extension,
     you must write a simple makefile.
     In the makefile, you need to set some variables
-    and finally include the global <ACRONYM
+    and include the global <ACRONYM
 CLASS="ACRONYM"
 >PGXS</ACRONYM
 > makefile.
@@ -545,47 +545,48 @@ CLASS="LITERAL"
 >make</TT
 > command line.
    </P
-><DIV
-CLASS="CAUTION"
 ><P
-></P
-><TABLE
-CLASS="CAUTION"
-BORDER="1"
-WIDTH="100%"
-><TR
-><TD
-ALIGN="CENTER"
-><B
->Caution</B
-></TD
-></TR
-><TR
-><TD
-ALIGN="LEFT"
-><P
->     Changing <TT
-CLASS="VARNAME"
->PG_CONFIG</TT
-> only works when building
-     against <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.3 or later.
-     With older releases it does not work to set it to anything except
-     <TT
+>    You can also run <TT
 CLASS="LITERAL"
->pg_config</TT
->; you must alter your <TT
-CLASS="VARNAME"
->PATH</TT
+>make</TT
+> in a directory outside the source
+    tree of your extension, if you want to keep the build directory separate.
+    This procedure is also called a
+    <I
+CLASS="FIRSTTERM"
+>VPATH</I
 >
-     to select the installation to build against.
-    </P
-></TD
-></TR
-></TABLE
-></DIV
+    build.  Here's how:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>mkdir build_dir
+cd build_dir
+make -f /path/to/extension/source/tree/Makefile
+make -f /path/to/extension/source/tree/Makefile install</PRE
+><P>
+   </P
+><P
+>    Alternatively, you can set up a directory for a VPATH build in a similar
+    way to how it is done for the core code. One way to do this is using the
+    core script <TT
+CLASS="FILENAME"
+>config/prep_buildtree</TT
+>. Once this has been done
+    you can build by setting the <TT
+CLASS="LITERAL"
+>make</TT
+> variable
+    <TT
+CLASS="VARNAME"
+>VPATH</TT
+> like this:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>make VPATH=/path/to/extension/source/tree
+make VPATH=/path/to/extension/source/tree install</PRE
+><P>
+    This procedure can work with a greater variety of directory layouts.
+   </P
 ><P
 >    The scripts listed in the <TT
 CLASS="VARNAME"

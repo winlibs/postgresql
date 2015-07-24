@@ -3,7 +3,7 @@
  *
  *	main source file
  *
- *	Copyright (c) 2010-2013, PostgreSQL Global Development Group
+ *	Copyright (c) 2010-2014, PostgreSQL Global Development Group
  *	contrib/pg_upgrade/pg_upgrade.c
  */
 
@@ -15,13 +15,12 @@
  *	oids are the same between old and new clusters.  This is important
  *	because toast oids are stored as toast pointers in user tables.
  *
- *	FYI, while pg_class.oid and pg_class.relfilenode are initially the same
- *	in a cluster, but they can diverge due to CLUSTER, REINDEX, or VACUUM
- *	FULL.  The new cluster will have matching pg_class.oid and
- *	pg_class.relfilenode values and be based on the old oid value.	This can
- *	cause the old and new pg_class.relfilenode values to differ.  In summary,
- *	old and new pg_class.oid and new pg_class.relfilenode will have the
- *	same value, and old pg_class.relfilenode might differ.
+ *	While pg_class.oid and pg_class.relfilenode are initially the same
+ *	in a cluster, they can diverge due to CLUSTER, REINDEX, or VACUUM
+ *	FULL.  In the new cluster, pg_class.oid and pg_class.relfilenode will
+ *	be the same and will match the old pg_class.oid value.  Because of
+ *	this, old/new pg_class.relfilenode values will not match if CLUSTER,
+ *	REINDEX, or VACUUM FULL have been performed in the old cluster.
  *
  *	We control all assignments of pg_type.oid because these oids are stored
  *	in user composite type values.
@@ -47,9 +46,14 @@ static void prepare_new_cluster(void);
 static void prepare_new_databases(void);
 static void create_new_objects(void);
 static void copy_clog_xlog_xid(void);
-static void set_frozenxids(void);
+static void set_frozenxids(bool minmxid_only);
 static void setup(char *argv0, bool *live_check);
 static void cleanup(void);
+static void	get_restricted_token(const char *progname);
+
+#ifdef WIN32
+static int	CreateRestrictedProcess(char *cmd, PROCESS_INFORMATION *processInfo, const char *progname);
+#endif
 
 ClusterInfo old_cluster,
 			new_cluster;
@@ -66,6 +70,9 @@ char	   *output_files[] = {
 	NULL
 };
 
+#ifdef WIN32
+static char *restrict_env;
+#endif
 
 int
 main(int argc, char **argv)
@@ -76,6 +83,8 @@ main(int argc, char **argv)
 	bool		live_check = false;
 
 	parseCommandLine(argc, argv);
+
+	get_restricted_token(os_info.progname);
 
 	adjust_data_dir(&old_cluster);
 	adjust_data_dir(&new_cluster);
@@ -126,7 +135,7 @@ main(int argc, char **argv)
 
 	/*
 	 * Most failures happen in create_new_objects(), which has completed at
-	 * this point.	We do this here because it is just before linking, which
+	 * this point.  We do this here because it is just before linking, which
 	 * will link the old and new cluster data files, preventing the old
 	 * cluster from being safely started once the new cluster is started.
 	 */
@@ -175,6 +184,162 @@ main(int argc, char **argv)
 	return 0;
 }
 
+#ifdef WIN32
+typedef BOOL(WINAPI * __CreateRestrictedToken) (HANDLE, DWORD, DWORD, PSID_AND_ATTRIBUTES, DWORD, PLUID_AND_ATTRIBUTES, DWORD, PSID_AND_ATTRIBUTES, PHANDLE);
+
+/* Windows API define missing from some versions of MingW headers */
+#ifndef  DISABLE_MAX_PRIVILEGE
+#define DISABLE_MAX_PRIVILEGE	0x1
+#endif
+
+/*
+* Create a restricted token and execute the specified process with it.
+*
+* Returns 0 on failure, non-zero on success, same as CreateProcess().
+*
+* On NT4, or any other system not containing the required functions, will
+* NOT execute anything.
+*/
+static int
+CreateRestrictedProcess(char *cmd, PROCESS_INFORMATION *processInfo, const char *progname)
+{
+	BOOL		b;
+	STARTUPINFO si;
+	HANDLE		origToken;
+	HANDLE		restrictedToken;
+	SID_IDENTIFIER_AUTHORITY NtAuthority = { SECURITY_NT_AUTHORITY };
+	SID_AND_ATTRIBUTES dropSids[2];
+	__CreateRestrictedToken _CreateRestrictedToken = NULL;
+	HANDLE		Advapi32Handle;
+
+	ZeroMemory(&si, sizeof(si));
+	si.cb = sizeof(si);
+
+	Advapi32Handle = LoadLibrary("ADVAPI32.DLL");
+	if (Advapi32Handle != NULL)
+	{
+		_CreateRestrictedToken = (__CreateRestrictedToken)GetProcAddress(Advapi32Handle, "CreateRestrictedToken");
+	}
+
+	if (_CreateRestrictedToken == NULL)
+	{
+		fprintf(stderr, _("%s: WARNING: cannot create restricted tokens on this platform\n"), progname);
+		if (Advapi32Handle != NULL)
+			FreeLibrary(Advapi32Handle);
+		return 0;
+	}
+
+	/* Open the current token to use as a base for the restricted one */
+	if (!OpenProcessToken(GetCurrentProcess(), TOKEN_ALL_ACCESS, &origToken))
+	{
+		fprintf(stderr, _("%s: could not open process token: error code %lu\n"), progname, GetLastError());
+		return 0;
+	}
+
+	/* Allocate list of SIDs to remove */
+	ZeroMemory(&dropSids, sizeof(dropSids));
+	if (!AllocateAndInitializeSid(&NtAuthority, 2,
+		SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0,
+		0, &dropSids[0].Sid) ||
+		!AllocateAndInitializeSid(&NtAuthority, 2,
+		SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_POWER_USERS, 0, 0, 0, 0, 0,
+		0, &dropSids[1].Sid))
+	{
+		fprintf(stderr, _("%s: could not allocate SIDs: error code %lu\n"), progname, GetLastError());
+		return 0;
+	}
+
+	b = _CreateRestrictedToken(origToken,
+						DISABLE_MAX_PRIVILEGE,
+						sizeof(dropSids) / sizeof(dropSids[0]),
+						dropSids,
+						0, NULL,
+						0, NULL,
+						&restrictedToken);
+
+	FreeSid(dropSids[1].Sid);
+	FreeSid(dropSids[0].Sid);
+	CloseHandle(origToken);
+	FreeLibrary(Advapi32Handle);
+
+	if (!b)
+	{
+		fprintf(stderr, _("%s: could not create restricted token: error code %lu\n"), progname, GetLastError());
+		return 0;
+	}
+
+#ifndef __CYGWIN__
+	AddUserToTokenDacl(restrictedToken);
+#endif
+
+	if (!CreateProcessAsUser(restrictedToken,
+							NULL,
+							cmd,
+							NULL,
+							NULL,
+							TRUE,
+							CREATE_SUSPENDED,
+							NULL,
+							NULL,
+							&si,
+							processInfo))
+
+	{
+		fprintf(stderr, _("%s: could not start process for command \"%s\": error code %lu\n"), progname, cmd, GetLastError());
+		return 0;
+	}
+
+	return ResumeThread(processInfo->hThread);
+}
+#endif
+
+static void
+get_restricted_token(const char *progname)
+{
+#ifdef WIN32
+
+	/*
+	* Before we execute another program, make sure that we are running with a
+	* restricted token. If not, re-execute ourselves with one.
+	*/
+
+	if ((restrict_env = getenv("PG_RESTRICT_EXEC")) == NULL
+		|| strcmp(restrict_env, "1") != 0)
+	{
+		PROCESS_INFORMATION pi;
+		char	   *cmdline;
+
+		ZeroMemory(&pi, sizeof(pi));
+
+		cmdline = pg_strdup(GetCommandLine());
+
+		putenv("PG_RESTRICT_EXEC=1");
+
+		if (!CreateRestrictedProcess(cmdline, &pi, progname))
+		{
+			fprintf(stderr, _("%s: could not re-execute with restricted token: error code %lu\n"), progname, GetLastError());
+		}
+		else
+		{
+			/*
+			* Successfully re-execed. Now wait for child process to capture
+			* exitcode.
+			*/
+			DWORD		x;
+
+			CloseHandle(pi.hThread);
+			WaitForSingleObject(pi.hProcess, INFINITE);
+
+			if (!GetExitCodeProcess(pi.hProcess, &x))
+			{
+				fprintf(stderr, _("%s: could not get exit code from subprocess: error code %lu\n"), progname, GetLastError());
+				exit(1);
+			}
+			exit(x);
+		}
+	}
+#endif
+}
 
 static void
 setup(char *argv0, bool *live_check)
@@ -194,7 +359,7 @@ setup(char *argv0, bool *live_check)
 	{
 		/*
 		 * If we have a postmaster.pid file, try to start the server.  If it
-		 * starts, the pid file was stale, so stop the server.	If it doesn't
+		 * starts, the pid file was stale, so stop the server.  If it doesn't
 		 * start, assume the server is running.  If the pid file is left over
 		 * from a server crash, this also allows any committed transactions
 		 * stored in the WAL to be replayed so they are not lost, because WAL
@@ -205,8 +370,8 @@ setup(char *argv0, bool *live_check)
 		else
 		{
 			if (!user_opts.check)
-				pg_log(PG_FATAL, "There seems to be a postmaster servicing the old cluster.\n"
-					   "Please shutdown that postmaster and try again.\n");
+				pg_fatal("There seems to be a postmaster servicing the old cluster.\n"
+						 "Please shutdown that postmaster and try again.\n");
 			else
 				*live_check = true;
 		}
@@ -218,13 +383,13 @@ setup(char *argv0, bool *live_check)
 		if (start_postmaster(&new_cluster, false))
 			stop_postmaster(false);
 		else
-			pg_log(PG_FATAL, "There seems to be a postmaster servicing the new cluster.\n"
-				   "Please shutdown that postmaster and try again.\n");
+			pg_fatal("There seems to be a postmaster servicing the new cluster.\n"
+					 "Please shutdown that postmaster and try again.\n");
 	}
 
 	/* get path to pg_upgrade executable */
 	if (find_my_exec(argv0, exec_path) < 0)
-		pg_log(PG_FATAL, "Could not get path name to pg_upgrade: %s\n", getErrorText(errno));
+		pg_fatal("Could not get path name to pg_upgrade: %s\n", getErrorText(errno));
 
 	/* Trim off program name and keep just path */
 	*last_dir_separator(exec_path) = '\0';
@@ -251,8 +416,8 @@ prepare_new_cluster(void)
 	/*
 	 * We do freeze after analyze so pg_statistic is also frozen. template0 is
 	 * not frozen here, but data rows were frozen by initdb, and we set its
-	 * datfrozenxid and relfrozenxids later to match the new xid counter
-	 * later.
+	 * datfrozenxid, relfrozenxids, and relminmxid later to match the new xid
+	 * counter later.
 	 */
 	prep_status("Freezing all rows on the new cluster");
 	exec_prog(UTILITY_LOG_FILE, NULL, true,
@@ -274,14 +439,14 @@ prepare_new_databases(void)
 	 * set.
 	 */
 
-	set_frozenxids();
+	set_frozenxids(false);
 
 	prep_status("Restoring global objects in the new cluster");
 
 	/*
 	 * Install support functions in the global-object restore database to
-	 * preserve pg_authid.oid.	pg_dumpall uses 'template0' as its template
-	 * database so objects we add into 'template1' are not propogated.	They
+	 * preserve pg_authid.oid.  pg_dumpall uses 'template0' as its template
+	 * database so objects we add into 'template1' are not propogated.  They
 	 * are removed on pg_upgrade exit.
 	 */
 	install_support_functions_in_new_db("template1");
@@ -357,6 +522,15 @@ create_new_objects(void)
 	end_progress_output();
 	check_ok();
 
+	/*
+	 * We don't have minmxids for databases or relations in pre-9.3
+	 * clusters, so set those after we have restores the schemas.
+	 */
+	if (GET_MAJOR_VERSION(old_cluster.major_version) < 903)
+		set_frozenxids(true);
+
+	optionally_create_toast_tables();
+
 	/* regenerate now that we have objects in the databases */
 	get_db_and_rel_infos(&new_cluster);
 
@@ -364,8 +538,24 @@ create_new_objects(void)
 }
 
 /*
- * Delete the given subdirectory contents from the new cluster, and copy the
- * files from the old cluster into it.
+ * Delete the given subdirectory contents from the new cluster
+ */
+static void
+remove_new_subdir(char *subdir, bool rmtopdir)
+{
+	char		new_path[MAXPGPATH];
+
+	prep_status("Deleting files from new %s", subdir);
+
+	snprintf(new_path, sizeof(new_path), "%s/%s", new_cluster.pgdata, subdir);
+	if (!rmtree(new_path, rmtopdir))
+		pg_fatal("could not delete directory \"%s\"\n", new_path);
+
+	check_ok();
+}
+
+/*
+ * Copy the files from the old cluster into it
  */
 static void
 copy_subdir_files(char *subdir)
@@ -373,13 +563,10 @@ copy_subdir_files(char *subdir)
 	char		old_path[MAXPGPATH];
 	char		new_path[MAXPGPATH];
 
-	prep_status("Deleting files from new %s", subdir);
+	remove_new_subdir(subdir, true);
 
 	snprintf(old_path, sizeof(old_path), "%s/%s", old_cluster.pgdata, subdir);
 	snprintf(new_path, sizeof(new_path), "%s/%s", new_cluster.pgdata, subdir);
-	if (!rmtree(new_path, true))
-		pg_log(PG_FATAL, "could not delete directory \"%s\"\n", new_path);
-	check_ok();
 
 	prep_status("Copying old %s to new server", subdir);
 
@@ -401,11 +588,15 @@ copy_clog_xlog_xid(void)
 	/* copy old commit logs to new data dir */
 	copy_subdir_files("pg_clog");
 
-	/* set the next transaction id of the new cluster */
-	prep_status("Setting next transaction ID for new cluster");
+	/* set the next transaction id and epoch of the new cluster */
+	prep_status("Setting next transaction ID and epoch for new cluster");
 	exec_prog(UTILITY_LOG_FILE, NULL, true,
 			  "\"%s/pg_resetxlog\" -f -x %u \"%s\"",
 			  new_cluster.bindir, old_cluster.controldata.chkpnt_nxtxid,
+			  new_cluster.pgdata);
+	exec_prog(UTILITY_LOG_FILE, NULL, true,
+			  "\"%s/pg_resetxlog\" -f -e %u \"%s\"",
+			  new_cluster.bindir, old_cluster.controldata.chkpnt_nxtepoch,
 			  new_cluster.pgdata);
 	check_ok();
 
@@ -420,6 +611,7 @@ copy_clog_xlog_xid(void)
 	{
 		copy_subdir_files("pg_multixact/offsets");
 		copy_subdir_files("pg_multixact/members");
+
 		prep_status("Setting next multixact ID and offset for new cluster");
 
 		/*
@@ -437,6 +629,13 @@ copy_clog_xlog_xid(void)
 	}
 	else if (new_cluster.controldata.cat_ver >= MULTIXACT_FORMATCHANGE_CAT_VER)
 	{
+		/*
+		 * Remove offsets/0000 file created by initdb that no longer matches
+		 * the new multi-xid value.  "members" starts at zero so no need to
+		 * remove it.
+		 */
+		remove_new_subdir("pg_multixact/offsets", false);
+
 		prep_status("Setting oldest multixact ID on new cluster");
 
 		/*
@@ -459,8 +658,9 @@ copy_clog_xlog_xid(void)
 	/* now reset the wal archives in the new cluster */
 	prep_status("Resetting WAL archives");
 	exec_prog(UTILITY_LOG_FILE, NULL, true,
-			  "\"%s/pg_resetxlog\" -l %s \"%s\"", new_cluster.bindir,
-			  old_cluster.controldata.nextxlogfile,
+			  /* use timeline 1 to match controldata and no WAL history file */
+			  "\"%s/pg_resetxlog\" -l 00000001%s \"%s\"", new_cluster.bindir,
+			  old_cluster.controldata.nextxlogfile + 8,
 			  new_cluster.pgdata);
 	check_ok();
 }
@@ -469,15 +669,15 @@ copy_clog_xlog_xid(void)
 /*
  *	set_frozenxids()
  *
- *	We have frozen all xids, so set relfrozenxid and datfrozenxid
- *	to be the old cluster's xid counter, which we just set in the new
- *	cluster.  User-table frozenxid values will be set by pg_dumpall
- *	--binary-upgrade, but objects not set by the pg_dump must have
- *	proper frozen counters.
+ *	We have frozen all xids, so set datfrozenxid, relfrozenxid, and
+ *	relminmxid to be the old cluster's xid counter, which we just set
+ *	in the new cluster.  User-table frozenxid and minmxid values will
+ *	be set by pg_dump --binary-upgrade, but objects not set by the pg_dump
+ *	must have proper frozen counters.
  */
 static
 void
-set_frozenxids(void)
+set_frozenxids(bool minmxid_only)
 {
 	int			dbnum;
 	PGconn	   *conn,
@@ -487,15 +687,25 @@ set_frozenxids(void)
 	int			i_datname;
 	int			i_datallowconn;
 
-	prep_status("Setting frozenxid counters in new cluster");
+	if (!minmxid_only)
+		prep_status("Setting frozenxid and minmxid counters in new cluster");
+	else
+		prep_status("Setting minmxid counter in new cluster");
 
 	conn_template1 = connectToServer(&new_cluster, "template1");
 
-	/* set pg_database.datfrozenxid */
+	if (!minmxid_only)
+		/* set pg_database.datfrozenxid */
+		PQclear(executeQueryOrDie(conn_template1,
+								  "UPDATE pg_catalog.pg_database "
+								  "SET	datfrozenxid = '%u'",
+								  old_cluster.controldata.chkpnt_nxtxid));
+
+	/* set pg_database.datminmxid */
 	PQclear(executeQueryOrDie(conn_template1,
 							  "UPDATE pg_catalog.pg_database "
-							  "SET	datfrozenxid = '%u'",
-							  old_cluster.controldata.chkpnt_nxtxid));
+							  "SET	datminmxid = '%u'",
+							  old_cluster.controldata.chkpnt_nxtmulti));
 
 	/* get database names */
 	dbres = executeQueryOrDie(conn_template1,
@@ -513,10 +723,10 @@ set_frozenxids(void)
 
 		/*
 		 * We must update databases where datallowconn = false, e.g.
-		 * template0, because autovacuum increments their datfrozenxids and
-		 * relfrozenxids even if autovacuum is turned off, and even though all
-		 * the data rows are already frozen  To enable this, we temporarily
-		 * change datallowconn.
+		 * template0, because autovacuum increments their datfrozenxids,
+		 * relfrozenxids, and relminmxid  even if autovacuum is turned off,
+		 * and even though all the data rows are already frozen  To enable
+		 * this, we temporarily change datallowconn.
 		 */
 		if (strcmp(datallowconn, "f") == 0)
 			PQclear(executeQueryOrDie(conn_template1,
@@ -526,13 +736,22 @@ set_frozenxids(void)
 
 		conn = connectToServer(&new_cluster, datname);
 
-		/* set pg_class.relfrozenxid */
+		if (!minmxid_only)
+			/* set pg_class.relfrozenxid */
+			PQclear(executeQueryOrDie(conn,
+									  "UPDATE	pg_catalog.pg_class "
+									  "SET	relfrozenxid = '%u' "
+			/* only heap, materialized view, and TOAST are vacuumed */
+									  "WHERE	relkind IN ('r', 'm', 't')",
+									  old_cluster.controldata.chkpnt_nxtxid));
+
+		/* set pg_class.relminmxid */
 		PQclear(executeQueryOrDie(conn,
 								  "UPDATE	pg_catalog.pg_class "
-								  "SET	relfrozenxid = '%u' "
+								  "SET	relminmxid = '%u' "
 		/* only heap, materialized view, and TOAST are vacuumed */
 								  "WHERE	relkind IN ('r', 'm', 't')",
-								  old_cluster.controldata.chkpnt_nxtxid));
+								  old_cluster.controldata.chkpnt_nxtmulti));
 		PQfinish(conn);
 
 		/* Reset datallowconn flag */

@@ -2,12 +2,12 @@
 .\"     Title: CREATE TABLE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "CREATE TABLE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "CREATE TABLE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_TABLE \- define a new table
-.\" CREATE TABLE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -225,7 +224,8 @@ INHERITS, the new table and original table are completely decoupled after creati
 .sp
 Default expressions for the copied column definitions will only be copied if
 INCLUDING DEFAULTS
-is specified\&. The default behavior is to exclude default expressions, resulting in the copied columns in the new table having null defaults\&.
+is specified\&. Defaults that call database\-modification functions, like
+\fBnextval\fR, create a linkage between the original and new tables\&. The default behavior is to exclude default expressions, resulting in the copied columns in the new table having null defaults\&.
 .sp
 Not\-null constraints are always copied to the new table\&.
 CHECK
@@ -246,7 +246,7 @@ STORAGE
 settings, resulting in the copied columns in the new table having type\-specific default settings\&. For more on
 STORAGE
 settings, see
-Section 58.2, \(lqTOAST\(rq, in the documentation\&.
+Section 59.2, \(lqTOAST\(rq, in the documentation\&.
 .sp
 Comments for the copied columns, constraints, and indexes will only be copied if
 INCLUDING COMMENTS
@@ -297,7 +297,9 @@ clause specifies an expression producing a Boolean result which new or updated r
 .sp
 Currently,
 CHECK
-expressions cannot contain subqueries nor refer to variables other than columns of the current row\&.
+expressions cannot contain subqueries nor refer to variables other than columns of the current row\&. The system column
+tableoid
+may be referenced, but not any other system column\&.
 .sp
 A constraint marked with
 NO INHERIT
@@ -313,7 +315,9 @@ clause assigns a default data value for the column whose column definition it ap
 The default expression will be used in any insert operation that does not specify a value for the column\&. If there is no default for a column, then the default is null\&.
 .RE
 .PP
-UNIQUE (column constraint), UNIQUE ( \fIcolumn_name\fR [, \&.\&.\&. ] ) (table constraint)
+UNIQUE (column constraint)
+.br
+UNIQUE ( \fIcolumn_name\fR [, \&.\&.\&. ] ) (table constraint)
 .RS 4
 The
 UNIQUE
@@ -324,7 +328,9 @@ For the purpose of a unique constraint, null values are not considered equal\&.
 Each unique table constraint must name a set of columns that is different from the set of columns named by any other unique or primary key constraint defined for the table\&. (Otherwise it would just be the same constraint listed twice\&.)
 .RE
 .PP
-PRIMARY KEY (column constraint), PRIMARY KEY ( \fIcolumn_name\fR [, \&.\&.\&. ] ) (table constraint)
+PRIMARY KEY (column constraint)
+.br
+PRIMARY KEY ( \fIcolumn_name\fR [, \&.\&.\&. ] ) (table constraint)
 .RS 4
 The primary key constraint specifies that a column or columns of a table can contain only unique (non\-duplicate), nonnull values\&. Technically,
 PRIMARY KEY
@@ -360,7 +366,7 @@ CREATE INDEX (\fBCREATE_INDEX\fR(7))\&.
 The access method must support
 amgettuple
 (see
-Chapter 54, Index Access Method Interface Definition, in the documentation); at present this means
+Chapter 55, Index Access Method Interface Definition, in the documentation); at present this means
 GIN
 cannot be used\&. Although it\*(Aqs allowed, there is little point in using B\-tree or hash indexes with an exclusion constraint, because this does nothing that an ordinary unique constraint doesn\*(Aqt do better\&. So in practice the access method will always be
 GiST
@@ -372,7 +378,9 @@ The
 allows you to specify an exclusion constraint on a subset of the table; internally this creates a partial index\&. Note that parentheses are required around the predicate\&.
 .RE
 .PP
-REFERENCES \fIreftable\fR [ ( \fIrefcolumn\fR ) ] [ MATCH \fImatchtype\fR ] [ ON DELETE \fIaction\fR ] [ ON UPDATE \fIaction\fR ] (column constraint), FOREIGN KEY ( \fIcolumn_name\fR [, \&.\&.\&. ] ) REFERENCES \fIreftable\fR [ ( \fIrefcolumn\fR [, \&.\&.\&. ] ) ] [ MATCH \fImatchtype\fR ] [ ON DELETE \fIaction\fR ] [ ON UPDATE \fIaction\fR ] (table constraint)
+REFERENCES \fIreftable\fR [ ( \fIrefcolumn\fR ) ] [ MATCH \fImatchtype\fR ] [ ON DELETE \fIaction\fR ] [ ON UPDATE \fIaction\fR ] (column constraint)
+.br
+FOREIGN KEY ( \fIcolumn_name\fR [, \&.\&.\&. ] ) REFERENCES \fIreftable\fR [ ( \fIrefcolumn\fR [, \&.\&.\&. ] ) ] [ MATCH \fImatchtype\fR ] [ ON DELETE \fIaction\fR ] [ ON UPDATE \fIaction\fR ] (table constraint)
 .RS 4
 These clauses specify a foreign key constraint, which requires that a group of one or more columns of the new table must only contain values that match values in the referenced column(s) of some row of the referenced table\&. If the
 \fIrefcolumn\fR
@@ -432,7 +440,9 @@ Set the referencing column(s) to their default values\&. (There must be a row in
 If the referenced column(s) are changed frequently, it might be wise to add an index to the referencing column(s) so that referential actions associated with the foreign key constraint can be performed more efficiently\&.
 .RE
 .PP
-DEFERRABLE, NOT DEFERRABLE
+DEFERRABLE
+.br
+NOT DEFERRABLE
 .RS 4
 This controls whether the constraint can be deferred\&. A constraint that is not deferrable will be checked immediately after every command\&. Checking of constraints that are deferrable can be postponed until the end of the transaction (using the
 SET CONSTRAINTS (\fBSET_CONSTRAINTS\fR(7))
@@ -450,7 +460,9 @@ CHECK
 constraints are not deferrable\&.
 .RE
 .PP
-INITIALLY IMMEDIATE, INITIALLY DEFERRED
+INITIALLY IMMEDIATE
+.br
+INITIALLY DEFERRED
 .RS 4
 If a constraint is deferrable, this clause specifies the default time to check the constraint\&. If the constraint is
 INITIALLY IMMEDIATE, it is checked after each statement\&. This is the default\&. If the constraint is
@@ -487,7 +499,9 @@ To remove OIDs from a table after it has been created, use
 ALTER TABLE (\fBALTER_TABLE\fR(7))\&.
 .RE
 .PP
-WITH OIDS, WITHOUT OIDS
+WITH OIDS
+.br
+WITHOUT OIDS
 .RS 4
 These are obsolescent syntaxes equivalent to
 WITH (OIDS)
@@ -546,7 +560,6 @@ temp_tablespaces
 if the table is temporary\&.
 .RE
 .SS "Storage Parameters"
-.\" storage parameters
 .PP
 The
 WITH
@@ -561,7 +574,7 @@ CREATE INDEX (\fBCREATE_INDEX\fR(7))\&. The storage parameters currently availab
 toast\&., which can be used to control the behavior of the table\*(Aqs secondary
 TOAST
 table, if any (see
-Section 58.2, \(lqTOAST\(rq, in the documentation
+Section 59.2, \(lqTOAST\(rq, in the documentation
 for more information about TOAST)\&. Note that the TOAST table inherits the
 autovacuum_*
 values from its parent table, if there are no
@@ -648,7 +661,7 @@ Custom
 vacuum_freeze_min_age
 parameter\&. Note that autovacuum will ignore attempts to set a per\-table
 autovacuum_freeze_min_age
-larger than the half system\-wide
+larger than half the system\-wide
 autovacuum_freeze_max_age
 setting\&.
 .RE
@@ -669,6 +682,42 @@ autovacuum_freeze_table_age, toast\&.autovacuum_freeze_table_age (integer)
 Custom
 vacuum_freeze_table_age
 parameter\&.
+.RE
+.PP
+autovacuum_multixact_freeze_min_age, toast\&.autovacuum_multixact_freeze_min_age (integer)
+.RS 4
+Custom
+vacuum_multixact_freeze_min_age
+parameter\&. Note that autovacuum will ignore attempts to set a per\-table
+autovacuum_multixact_freeze_min_age
+larger than half the system\-wide
+autovacuum_multixact_freeze_max_age
+setting\&.
+.RE
+.PP
+autovacuum_multixact_freeze_max_age, toast\&.autovacuum_multixact_freeze_max_age (integer)
+.RS 4
+Custom
+autovacuum_multixact_freeze_max_age
+parameter\&. Note that autovacuum will ignore attempts to set a per\-table
+autovacuum_multixact_freeze_max_age
+larger than the system\-wide setting (it can only be set smaller)\&. Note that while you can set
+autovacuum_multixact_freeze_max_age
+very small, or even zero, this is usually unwise since it will force frequent vacuuming\&.
+.RE
+.PP
+autovacuum_multixact_freeze_table_age, toast\&.autovacuum_multixact_freeze_table_age (integer)
+.RS 4
+Custom
+vacuum_multixact_freeze_table_age
+parameter\&.
+.RE
+.PP
+user_catalog_table (boolean)
+.RS 4
+Declare a table as an additional catalog table, e\&.g\&. for the purpose of logical replication\&. See
+Section 46.6.2, \(lqCapabilities\(rq, in the documentation
+for details\&.
 .RE
 .SH "NOTES"
 .PP

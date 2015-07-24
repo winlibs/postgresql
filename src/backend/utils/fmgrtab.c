@@ -3,7 +3,7 @@
  * fmgrtab.c
  *    The function manager's table of internal functions.
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * NOTES
@@ -1882,11 +1882,87 @@ extern Datum lo_truncate64 (PG_FUNCTION_ARGS);
 extern Datum json_agg_transfn (PG_FUNCTION_ARGS);
 extern Datum json_agg_finalfn (PG_FUNCTION_ARGS);
 extern Datum to_json (PG_FUNCTION_ARGS);
+extern Datum pg_stat_get_mod_since_analyze (PG_FUNCTION_ARGS);
+extern Datum numeric_sum (PG_FUNCTION_ARGS);
+extern Datum array_cardinality (PG_FUNCTION_ARGS);
+extern Datum json_object_agg_transfn (PG_FUNCTION_ARGS);
+extern Datum record_image_eq (PG_FUNCTION_ARGS);
+extern Datum record_image_ne (PG_FUNCTION_ARGS);
+extern Datum record_image_lt (PG_FUNCTION_ARGS);
+extern Datum record_image_gt (PG_FUNCTION_ARGS);
+extern Datum record_image_le (PG_FUNCTION_ARGS);
+extern Datum record_image_ge (PG_FUNCTION_ARGS);
+extern Datum btrecordimagecmp (PG_FUNCTION_ARGS);
+extern Datum pg_stat_get_archiver (PG_FUNCTION_ARGS);
+extern Datum json_object_agg_finalfn (PG_FUNCTION_ARGS);
+extern Datum json_build_array (PG_FUNCTION_ARGS);
+extern Datum json_build_array_noargs (PG_FUNCTION_ARGS);
+extern Datum json_build_object (PG_FUNCTION_ARGS);
+extern Datum json_build_object_noargs (PG_FUNCTION_ARGS);
+extern Datum json_object (PG_FUNCTION_ARGS);
+extern Datum json_object_two_arg (PG_FUNCTION_ARGS);
+extern Datum json_to_record (PG_FUNCTION_ARGS);
+extern Datum json_to_recordset (PG_FUNCTION_ARGS);
+extern Datum jsonb_array_length (PG_FUNCTION_ARGS);
+extern Datum jsonb_each (PG_FUNCTION_ARGS);
+extern Datum jsonb_populate_record (PG_FUNCTION_ARGS);
+extern Datum jsonb_typeof (PG_FUNCTION_ARGS);
+extern Datum jsonb_object_field_text (PG_FUNCTION_ARGS);
+extern Datum jsonb_array_element (PG_FUNCTION_ARGS);
+extern Datum jsonb_array_element_text (PG_FUNCTION_ARGS);
+extern Datum jsonb_extract_path (PG_FUNCTION_ARGS);
+extern Datum jsonb_array_elements (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_in (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_out (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_lt (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_le (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_eq (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_ge (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_gt (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_ne (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_mi (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_recv (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_send (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_cmp (PG_FUNCTION_ARGS);
+extern Datum pg_lsn_hash (PG_FUNCTION_ARGS);
+extern Datum pg_filenode_relation (PG_FUNCTION_ARGS);
+extern Datum lo_from_bytea (PG_FUNCTION_ARGS);
+extern Datum lo_get (PG_FUNCTION_ARGS);
+extern Datum lo_get_fragment (PG_FUNCTION_ARGS);
+extern Datum lo_put (PG_FUNCTION_ARGS);
+extern Datum make_timestamp (PG_FUNCTION_ARGS);
+extern Datum make_timestamptz (PG_FUNCTION_ARGS);
+extern Datum make_timestamptz_at_timezone (PG_FUNCTION_ARGS);
+extern Datum make_interval (PG_FUNCTION_ARGS);
+extern Datum jsonb_array_elements_text (PG_FUNCTION_ARGS);
 extern Datum spg_range_quad_config (PG_FUNCTION_ARGS);
 extern Datum spg_range_quad_choose (PG_FUNCTION_ARGS);
 extern Datum spg_range_quad_picksplit (PG_FUNCTION_ARGS);
 extern Datum spg_range_quad_inner_consistent (PG_FUNCTION_ARGS);
 extern Datum spg_range_quad_leaf_consistent (PG_FUNCTION_ARGS);
+extern Datum jsonb_populate_recordset (PG_FUNCTION_ARGS);
+extern Datum to_regoperator (PG_FUNCTION_ARGS);
+extern Datum jsonb_object_field (PG_FUNCTION_ARGS);
+extern Datum to_regprocedure (PG_FUNCTION_ARGS);
+extern Datum gin_compare_jsonb (PG_FUNCTION_ARGS);
+extern Datum gin_extract_jsonb (PG_FUNCTION_ARGS);
+extern Datum gin_extract_jsonb_query (PG_FUNCTION_ARGS);
+extern Datum gin_consistent_jsonb (PG_FUNCTION_ARGS);
+extern Datum gin_extract_jsonb_path (PG_FUNCTION_ARGS);
+extern Datum gin_extract_jsonb_query_path (PG_FUNCTION_ARGS);
+extern Datum gin_consistent_jsonb_path (PG_FUNCTION_ARGS);
+extern Datum gin_triconsistent_jsonb (PG_FUNCTION_ARGS);
+extern Datum gin_triconsistent_jsonb_path (PG_FUNCTION_ARGS);
+extern Datum jsonb_to_record (PG_FUNCTION_ARGS);
+extern Datum jsonb_to_recordset (PG_FUNCTION_ARGS);
+extern Datum to_regoper (PG_FUNCTION_ARGS);
+extern Datum to_regtype (PG_FUNCTION_ARGS);
+extern Datum to_regproc (PG_FUNCTION_ARGS);
+extern Datum to_regclass (PG_FUNCTION_ARGS);
+extern Datum bool_accum (PG_FUNCTION_ARGS);
+extern Datum bool_accum_inv (PG_FUNCTION_ARGS);
+extern Datum bool_alltrue (PG_FUNCTION_ARGS);
+extern Datum bool_anytrue (PG_FUNCTION_ARGS);
 extern Datum anyenum_in (PG_FUNCTION_ARGS);
 extern Datum anyenum_out (PG_FUNCTION_ARGS);
 extern Datum enum_in (PG_FUNCTION_ARGS);
@@ -1914,7 +1990,27 @@ extern Datum text_format (PG_FUNCTION_ARGS);
 extern Datum text_format_nv (PG_FUNCTION_ARGS);
 extern Datum bytea_string_agg_transfn (PG_FUNCTION_ARGS);
 extern Datum bytea_string_agg_finalfn (PG_FUNCTION_ARGS);
+extern Datum int8dec (PG_FUNCTION_ARGS);
+extern Datum int8dec_any (PG_FUNCTION_ARGS);
+extern Datum numeric_accum_inv (PG_FUNCTION_ARGS);
+extern Datum interval_accum_inv (PG_FUNCTION_ARGS);
+extern Datum network_overlap (PG_FUNCTION_ARGS);
+extern Datum inet_gist_consistent (PG_FUNCTION_ARGS);
+extern Datum inet_gist_union (PG_FUNCTION_ARGS);
+extern Datum inet_gist_compress (PG_FUNCTION_ARGS);
+extern Datum inet_gist_decompress (PG_FUNCTION_ARGS);
+extern Datum inet_gist_penalty (PG_FUNCTION_ARGS);
+extern Datum inet_gist_picksplit (PG_FUNCTION_ARGS);
+extern Datum inet_gist_same (PG_FUNCTION_ARGS);
+extern Datum networksel (PG_FUNCTION_ARGS);
+extern Datum networkjoinsel (PG_FUNCTION_ARGS);
 extern Datum pg_event_trigger_dropped_objects (PG_FUNCTION_ARGS);
+extern Datum int2_accum_inv (PG_FUNCTION_ARGS);
+extern Datum int4_accum_inv (PG_FUNCTION_ARGS);
+extern Datum int8_accum_inv (PG_FUNCTION_ARGS);
+extern Datum int2_avg_accum_inv (PG_FUNCTION_ARGS);
+extern Datum int4_avg_accum_inv (PG_FUNCTION_ARGS);
+extern Datum int2int4_sum (PG_FUNCTION_ARGS);
 extern Datum event_trigger_in (PG_FUNCTION_ARGS);
 extern Datum event_trigger_out (PG_FUNCTION_ARGS);
 extern Datum tsvectorin (PG_FUNCTION_ARGS);
@@ -2036,6 +2132,19 @@ extern Datum pg_stat_reset_shared (PG_FUNCTION_ARGS);
 extern Datum pg_stat_reset_single_table_counters (PG_FUNCTION_ARGS);
 extern Datum pg_stat_reset_single_function_counters (PG_FUNCTION_ARGS);
 extern Datum pg_tablespace_location (PG_FUNCTION_ARGS);
+extern Datum pg_create_physical_replication_slot (PG_FUNCTION_ARGS);
+extern Datum pg_drop_replication_slot (PG_FUNCTION_ARGS);
+extern Datum pg_get_replication_slots (PG_FUNCTION_ARGS);
+extern Datum pg_logical_slot_get_changes (PG_FUNCTION_ARGS);
+extern Datum pg_logical_slot_get_binary_changes (PG_FUNCTION_ARGS);
+extern Datum pg_logical_slot_peek_changes (PG_FUNCTION_ARGS);
+extern Datum pg_logical_slot_peek_binary_changes (PG_FUNCTION_ARGS);
+extern Datum pg_create_logical_replication_slot (PG_FUNCTION_ARGS);
+extern Datum jsonb_send (PG_FUNCTION_ARGS);
+extern Datum jsonb_out (PG_FUNCTION_ARGS);
+extern Datum jsonb_recv (PG_FUNCTION_ARGS);
+extern Datum jsonb_in (PG_FUNCTION_ARGS);
+extern Datum pg_get_function_arg_default (PG_FUNCTION_ARGS);
 extern Datum pg_export_snapshot (PG_FUNCTION_ARGS);
 extern Datum pg_is_in_recovery (PG_FUNCTION_ARGS);
 extern Datum int4_cash (PG_FUNCTION_ARGS);
@@ -2068,6 +2177,8 @@ extern Datum range_constructor2 (PG_FUNCTION_ARGS);
 extern Datum range_constructor3 (PG_FUNCTION_ARGS);
 extern Datum pg_relation_is_updatable (PG_FUNCTION_ARGS);
 extern Datum pg_column_is_updatable (PG_FUNCTION_ARGS);
+extern Datum make_date (PG_FUNCTION_ARGS);
+extern Datum make_time (PG_FUNCTION_ARGS);
 extern Datum range_lower (PG_FUNCTION_ARGS);
 extern Datum range_upper (PG_FUNCTION_ARGS);
 extern Datum range_empty (PG_FUNCTION_ARGS);
@@ -2108,6 +2219,8 @@ extern Datum daterange_canonical (PG_FUNCTION_ARGS);
 extern Datum range_typanalyze (PG_FUNCTION_ARGS);
 extern Datum timestamp_transform (PG_FUNCTION_ARGS);
 extern Datum interval_transform (PG_FUNCTION_ARGS);
+extern Datum ginarraytriconsistent (PG_FUNCTION_ARGS);
+extern Datum gin_tsquery_triconsistent (PG_FUNCTION_ARGS);
 extern Datum int4range_subdiff (PG_FUNCTION_ARGS);
 extern Datum int8range_subdiff (PG_FUNCTION_ARGS);
 extern Datum numrange_subdiff (PG_FUNCTION_ARGS);
@@ -2115,6 +2228,9 @@ extern Datum daterange_subdiff (PG_FUNCTION_ARGS);
 extern Datum int8range_canonical (PG_FUNCTION_ARGS);
 extern Datum tsrange_subdiff (PG_FUNCTION_ARGS);
 extern Datum tstzrange_subdiff (PG_FUNCTION_ARGS);
+extern Datum jsonb_object_keys (PG_FUNCTION_ARGS);
+extern Datum jsonb_each_text (PG_FUNCTION_ARGS);
+extern Datum jsonb_extract_path_text (PG_FUNCTION_ARGS);
 extern Datum acldefault_sql (PG_FUNCTION_ARGS);
 extern Datum time_transform (PG_FUNCTION_ARGS);
 extern Datum json_object_field (PG_FUNCTION_ARGS);
@@ -2130,6 +2246,21 @@ extern Datum json_each (PG_FUNCTION_ARGS);
 extern Datum json_each_text (PG_FUNCTION_ARGS);
 extern Datum json_populate_record (PG_FUNCTION_ARGS);
 extern Datum json_populate_recordset (PG_FUNCTION_ARGS);
+extern Datum json_typeof (PG_FUNCTION_ARGS);
+extern Datum json_array_elements_text (PG_FUNCTION_ARGS);
+extern Datum ordered_set_transition (PG_FUNCTION_ARGS);
+extern Datum ordered_set_transition_multi (PG_FUNCTION_ARGS);
+extern Datum percentile_disc_final (PG_FUNCTION_ARGS);
+extern Datum percentile_cont_float8_final (PG_FUNCTION_ARGS);
+extern Datum percentile_cont_interval_final (PG_FUNCTION_ARGS);
+extern Datum percentile_disc_multi_final (PG_FUNCTION_ARGS);
+extern Datum percentile_cont_float8_multi_final (PG_FUNCTION_ARGS);
+extern Datum percentile_cont_interval_multi_final (PG_FUNCTION_ARGS);
+extern Datum mode_final (PG_FUNCTION_ARGS);
+extern Datum hypothetical_rank_final (PG_FUNCTION_ARGS);
+extern Datum hypothetical_percent_rank_final (PG_FUNCTION_ARGS);
+extern Datum hypothetical_cume_dist_final (PG_FUNCTION_ARGS);
+extern Datum hypothetical_dense_rank_final (PG_FUNCTION_ARGS);
 extern Datum spggettuple (PG_FUNCTION_ARGS);
 extern Datum spggetbitmap (PG_FUNCTION_ARGS);
 extern Datum spginsert (PG_FUNCTION_ARGS);
@@ -2159,6 +2290,19 @@ extern Datum spg_text_picksplit (PG_FUNCTION_ARGS);
 extern Datum spg_text_inner_consistent (PG_FUNCTION_ARGS);
 extern Datum spg_text_leaf_consistent (PG_FUNCTION_ARGS);
 extern Datum spgcanreturn (PG_FUNCTION_ARGS);
+extern Datum jsonb_ne (PG_FUNCTION_ARGS);
+extern Datum jsonb_lt (PG_FUNCTION_ARGS);
+extern Datum jsonb_gt (PG_FUNCTION_ARGS);
+extern Datum jsonb_le (PG_FUNCTION_ARGS);
+extern Datum jsonb_ge (PG_FUNCTION_ARGS);
+extern Datum jsonb_eq (PG_FUNCTION_ARGS);
+extern Datum jsonb_cmp (PG_FUNCTION_ARGS);
+extern Datum jsonb_hash (PG_FUNCTION_ARGS);
+extern Datum jsonb_contains (PG_FUNCTION_ARGS);
+extern Datum jsonb_exists (PG_FUNCTION_ARGS);
+extern Datum jsonb_exists_any (PG_FUNCTION_ARGS);
+extern Datum jsonb_exists_all (PG_FUNCTION_ARGS);
+extern Datum jsonb_contained (PG_FUNCTION_ARGS);
 
 const FmgrBuiltin fmgr_builtins[] = {
   { 31, "byteaout", 1, true, false, byteaout },
@@ -3283,13 +3427,13 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 1830, "float8_avg", 1, true, false, float8_avg },
   { 1831, "float8_var_samp", 1, true, false, float8_var_samp },
   { 1832, "float8_stddev_samp", 1, true, false, float8_stddev_samp },
-  { 1833, "numeric_accum", 2, true, false, numeric_accum },
-  { 1834, "int2_accum", 2, true, false, int2_accum },
-  { 1835, "int4_accum", 2, true, false, int4_accum },
-  { 1836, "int8_accum", 2, true, false, int8_accum },
-  { 1837, "numeric_avg", 1, true, false, numeric_avg },
-  { 1838, "numeric_var_samp", 1, true, false, numeric_var_samp },
-  { 1839, "numeric_stddev_samp", 1, true, false, numeric_stddev_samp },
+  { 1833, "numeric_accum", 2, false, false, numeric_accum },
+  { 1834, "int2_accum", 2, false, false, int2_accum },
+  { 1835, "int4_accum", 2, false, false, int4_accum },
+  { 1836, "int8_accum", 2, false, false, int8_accum },
+  { 1837, "numeric_avg", 1, false, false, numeric_avg },
+  { 1838, "numeric_var_samp", 1, false, false, numeric_var_samp },
+  { 1839, "numeric_stddev_samp", 1, false, false, numeric_stddev_samp },
   { 1840, "int2_sum", 2, false, false, int2_sum },
   { 1841, "int4_sum", 2, false, false, int4_sum },
   { 1842, "int8_sum", 2, false, false, int8_sum },
@@ -3641,7 +3785,7 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 2331, "array_unnest", 1, true, true, array_unnest },
   { 2332, "pg_relation_size", 2, true, false, pg_relation_size },
   { 2333, "array_agg_transfn", 2, false, false, array_agg_transfn },
-  { 2334, "array_agg_finalfn", 1, false, false, array_agg_finalfn },
+  { 2334, "array_agg_finalfn", 2, false, false, array_agg_finalfn },
   { 2335, "aggregate_dummy", 1, false, false, aggregate_dummy },
   { 2338, "date_lt_timestamp", 2, true, false, date_lt_timestamp },
   { 2339, "date_le_timestamp", 2, true, false, date_le_timestamp },
@@ -3793,7 +3937,7 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 2511, "pg_cursor", 0, true, true, pg_cursor },
   { 2512, "float8_var_pop", 1, true, false, float8_var_pop },
   { 2513, "float8_stddev_pop", 1, true, false, float8_stddev_pop },
-  { 2514, "numeric_var_pop", 1, true, false, numeric_var_pop },
+  { 2514, "numeric_var_pop", 1, false, false, numeric_var_pop },
   { 2515, "booland_statefunc", 2, true, false, booland_statefunc },
   { 2516, "boolor_statefunc", 2, true, false, boolor_statefunc },
   { 2517, "aggregate_dummy", 1, false, false, aggregate_dummy },
@@ -3840,7 +3984,7 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 2588, "circle_overabove", 2, true, false, circle_overabove },
   { 2591, "gist_circle_consistent", 5, true, false, gist_circle_consistent },
   { 2592, "gist_circle_compress", 1, true, false, gist_circle_compress },
-  { 2596, "numeric_stddev_pop", 1, true, false, numeric_stddev_pop },
+  { 2596, "numeric_stddev_pop", 1, false, false, numeric_stddev_pop },
   { 2597, "domain_in", 3, false, false, domain_in },
   { 2598, "domain_recv", 3, false, false, domain_recv },
   { 2599, "pg_timezone_abbrevs", 0, true, true, pg_timezone_abbrevs },
@@ -3906,7 +4050,7 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 2741, "gincostestimate", 7, true, false, gincostestimate },
   { 2743, "ginarrayextract", 3, true, false, ginarrayextract },
   { 2744, "ginarrayconsistent", 8, true, false, ginarrayconsistent },
-  { 2746, "int8_avg_accum", 2, true, false, int8_avg_accum },
+  { 2746, "int8_avg_accum", 2, false, false, int8_avg_accum },
   { 2747, "arrayoverlap", 2, true, false, arrayoverlap },
   { 2748, "arraycontains", 2, true, false, arraycontains },
   { 2749, "arraycontained", 2, true, false, arraycontained },
@@ -3986,7 +4130,7 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 2855, "pg_is_other_temp_schema", 1, true, false, pg_is_other_temp_schema },
   { 2856, "pg_timezone_names", 0, true, true, pg_timezone_names },
   { 2857, "pg_stat_get_backend_xact_start", 1, true, false, pg_stat_get_backend_xact_start },
-  { 2858, "numeric_avg_accum", 2, true, false, numeric_avg_accum },
+  { 2858, "numeric_avg_accum", 2, false, false, numeric_avg_accum },
   { 2859, "pg_stat_get_buf_alloc", 0, true, false, pg_stat_get_buf_alloc },
   { 2878, "pg_stat_get_live_tuples", 1, true, false, pg_stat_get_live_tuples },
   { 2879, "pg_stat_get_dead_tuples", 1, true, false, pg_stat_get_dead_tuples },
@@ -4242,11 +4386,88 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3174, "json_agg_finalfn", 1, false, false, json_agg_finalfn },
   { 3175, "aggregate_dummy", 1, false, false, aggregate_dummy },
   { 3176, "to_json", 1, true, false, to_json },
+  { 3177, "pg_stat_get_mod_since_analyze", 1, true, false, pg_stat_get_mod_since_analyze },
+  { 3178, "numeric_sum", 1, false, false, numeric_sum },
+  { 3179, "array_cardinality", 1, true, false, array_cardinality },
+  { 3180, "json_object_agg_transfn", 3, false, false, json_object_agg_transfn },
+  { 3181, "record_image_eq", 2, true, false, record_image_eq },
+  { 3182, "record_image_ne", 2, true, false, record_image_ne },
+  { 3183, "record_image_lt", 2, true, false, record_image_lt },
+  { 3184, "record_image_gt", 2, true, false, record_image_gt },
+  { 3185, "record_image_le", 2, true, false, record_image_le },
+  { 3186, "record_image_ge", 2, true, false, record_image_ge },
+  { 3187, "btrecordimagecmp", 2, true, false, btrecordimagecmp },
+  { 3195, "pg_stat_get_archiver", 0, false, false, pg_stat_get_archiver },
+  { 3196, "json_object_agg_finalfn", 1, false, false, json_object_agg_finalfn },
+  { 3197, "aggregate_dummy", 2, false, false, aggregate_dummy },
+  { 3198, "json_build_array", 1, false, false, json_build_array },
+  { 3199, "json_build_array_noargs", 0, false, false, json_build_array_noargs },
+  { 3200, "json_build_object", 1, false, false, json_build_object },
+  { 3201, "json_build_object_noargs", 0, false, false, json_build_object_noargs },
+  { 3202, "json_object", 1, true, false, json_object },
+  { 3203, "json_object_two_arg", 2, true, false, json_object_two_arg },
+  { 3204, "json_to_record", 1, true, false, json_to_record },
+  { 3205, "json_to_recordset", 1, false, true, json_to_recordset },
+  { 3207, "jsonb_array_length", 1, true, false, jsonb_array_length },
+  { 3208, "jsonb_each", 1, true, true, jsonb_each },
+  { 3209, "jsonb_populate_record", 2, false, false, jsonb_populate_record },
+  { 3210, "jsonb_typeof", 1, true, false, jsonb_typeof },
+  { 3214, "jsonb_object_field_text", 2, true, false, jsonb_object_field_text },
+  { 3215, "jsonb_array_element", 2, true, false, jsonb_array_element },
+  { 3216, "jsonb_array_element_text", 2, true, false, jsonb_array_element_text },
+  { 3217, "jsonb_extract_path", 2, true, false, jsonb_extract_path },
+  { 3219, "jsonb_array_elements", 1, true, true, jsonb_array_elements },
+  { 3229, "pg_lsn_in", 1, true, false, pg_lsn_in },
+  { 3230, "pg_lsn_out", 1, true, false, pg_lsn_out },
+  { 3231, "pg_lsn_lt", 2, true, false, pg_lsn_lt },
+  { 3232, "pg_lsn_le", 2, true, false, pg_lsn_le },
+  { 3233, "pg_lsn_eq", 2, true, false, pg_lsn_eq },
+  { 3234, "pg_lsn_ge", 2, true, false, pg_lsn_ge },
+  { 3235, "pg_lsn_gt", 2, true, false, pg_lsn_gt },
+  { 3236, "pg_lsn_ne", 2, true, false, pg_lsn_ne },
+  { 3237, "pg_lsn_mi", 2, true, false, pg_lsn_mi },
+  { 3238, "pg_lsn_recv", 1, true, false, pg_lsn_recv },
+  { 3239, "pg_lsn_send", 1, true, false, pg_lsn_send },
+  { 3251, "pg_lsn_cmp", 2, true, false, pg_lsn_cmp },
+  { 3252, "pg_lsn_hash", 1, true, false, pg_lsn_hash },
+  { 3454, "pg_filenode_relation", 2, true, false, pg_filenode_relation },
+  { 3457, "lo_from_bytea", 2, true, false, lo_from_bytea },
+  { 3458, "lo_get", 1, true, false, lo_get },
+  { 3459, "lo_get_fragment", 3, true, false, lo_get_fragment },
+  { 3460, "lo_put", 3, true, false, lo_put },
+  { 3461, "make_timestamp", 6, true, false, make_timestamp },
+  { 3462, "make_timestamptz", 6, true, false, make_timestamptz },
+  { 3463, "make_timestamptz_at_timezone", 7, true, false, make_timestamptz_at_timezone },
+  { 3464, "make_interval", 7, true, false, make_interval },
+  { 3465, "jsonb_array_elements_text", 1, true, true, jsonb_array_elements_text },
   { 3469, "spg_range_quad_config", 2, true, false, spg_range_quad_config },
   { 3470, "spg_range_quad_choose", 2, true, false, spg_range_quad_choose },
   { 3471, "spg_range_quad_picksplit", 2, true, false, spg_range_quad_picksplit },
   { 3472, "spg_range_quad_inner_consistent", 2, true, false, spg_range_quad_inner_consistent },
   { 3473, "spg_range_quad_leaf_consistent", 2, true, false, spg_range_quad_leaf_consistent },
+  { 3475, "jsonb_populate_recordset", 2, false, true, jsonb_populate_recordset },
+  { 3476, "to_regoperator", 1, true, false, to_regoperator },
+  { 3478, "jsonb_object_field", 2, true, false, jsonb_object_field },
+  { 3479, "to_regprocedure", 1, true, false, to_regprocedure },
+  { 3480, "gin_compare_jsonb", 2, true, false, gin_compare_jsonb },
+  { 3482, "gin_extract_jsonb", 3, true, false, gin_extract_jsonb },
+  { 3483, "gin_extract_jsonb_query", 7, true, false, gin_extract_jsonb_query },
+  { 3484, "gin_consistent_jsonb", 8, true, false, gin_consistent_jsonb },
+  { 3485, "gin_extract_jsonb_path", 3, true, false, gin_extract_jsonb_path },
+  { 3486, "gin_extract_jsonb_query_path", 7, true, false, gin_extract_jsonb_query_path },
+  { 3487, "gin_consistent_jsonb_path", 8, true, false, gin_consistent_jsonb_path },
+  { 3488, "gin_triconsistent_jsonb", 7, true, false, gin_triconsistent_jsonb },
+  { 3489, "gin_triconsistent_jsonb_path", 7, true, false, gin_triconsistent_jsonb_path },
+  { 3490, "jsonb_to_record", 1, true, false, jsonb_to_record },
+  { 3491, "jsonb_to_recordset", 1, false, true, jsonb_to_recordset },
+  { 3492, "to_regoper", 1, true, false, to_regoper },
+  { 3493, "to_regtype", 1, true, false, to_regtype },
+  { 3494, "to_regproc", 1, true, false, to_regproc },
+  { 3495, "to_regclass", 1, true, false, to_regclass },
+  { 3496, "bool_accum", 2, false, false, bool_accum },
+  { 3497, "bool_accum_inv", 2, false, false, bool_accum_inv },
+  { 3498, "bool_alltrue", 1, true, false, bool_alltrue },
+  { 3499, "bool_anytrue", 1, true, false, bool_anytrue },
   { 3504, "anyenum_in", 1, true, false, anyenum_in },
   { 3505, "anyenum_out", 1, true, false, anyenum_out },
   { 3506, "enum_in", 2, true, false, enum_in },
@@ -4278,7 +4499,27 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3543, "bytea_string_agg_transfn", 3, false, false, bytea_string_agg_transfn },
   { 3544, "bytea_string_agg_finalfn", 1, false, false, bytea_string_agg_finalfn },
   { 3545, "aggregate_dummy", 2, false, false, aggregate_dummy },
+  { 3546, "int8dec", 1, true, false, int8dec },
+  { 3547, "int8dec_any", 2, true, false, int8dec_any },
+  { 3548, "numeric_accum_inv", 2, false, false, numeric_accum_inv },
+  { 3549, "interval_accum_inv", 2, true, false, interval_accum_inv },
+  { 3551, "network_overlap", 2, true, false, network_overlap },
+  { 3553, "inet_gist_consistent", 5, true, false, inet_gist_consistent },
+  { 3554, "inet_gist_union", 2, true, false, inet_gist_union },
+  { 3555, "inet_gist_compress", 1, true, false, inet_gist_compress },
+  { 3556, "inet_gist_decompress", 1, true, false, inet_gist_decompress },
+  { 3557, "inet_gist_penalty", 3, true, false, inet_gist_penalty },
+  { 3558, "inet_gist_picksplit", 2, true, false, inet_gist_picksplit },
+  { 3559, "inet_gist_same", 3, true, false, inet_gist_same },
+  { 3560, "networksel", 4, true, false, networksel },
+  { 3561, "networkjoinsel", 5, true, false, networkjoinsel },
   { 3566, "pg_event_trigger_dropped_objects", 0, true, true, pg_event_trigger_dropped_objects },
+  { 3567, "int2_accum_inv", 2, false, false, int2_accum_inv },
+  { 3568, "int4_accum_inv", 2, false, false, int4_accum_inv },
+  { 3569, "int8_accum_inv", 2, false, false, int8_accum_inv },
+  { 3570, "int2_avg_accum_inv", 2, true, false, int2_avg_accum_inv },
+  { 3571, "int4_avg_accum_inv", 2, true, false, int4_avg_accum_inv },
+  { 3572, "int2int4_sum", 1, true, false, int2int4_sum },
   { 3594, "event_trigger_in", 1, false, false, event_trigger_in },
   { 3595, "event_trigger_out", 1, true, false, event_trigger_out },
   { 3610, "tsvectorin", 1, true, false, tsvectorin },
@@ -4400,6 +4641,19 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3776, "pg_stat_reset_single_table_counters", 1, false, false, pg_stat_reset_single_table_counters },
   { 3777, "pg_stat_reset_single_function_counters", 1, false, false, pg_stat_reset_single_function_counters },
   { 3778, "pg_tablespace_location", 1, true, false, pg_tablespace_location },
+  { 3779, "pg_create_physical_replication_slot", 1, false, false, pg_create_physical_replication_slot },
+  { 3780, "pg_drop_replication_slot", 1, false, false, pg_drop_replication_slot },
+  { 3781, "pg_get_replication_slots", 0, false, true, pg_get_replication_slots },
+  { 3782, "pg_logical_slot_get_changes", 4, false, true, pg_logical_slot_get_changes },
+  { 3783, "pg_logical_slot_get_binary_changes", 4, false, true, pg_logical_slot_get_binary_changes },
+  { 3784, "pg_logical_slot_peek_changes", 4, false, true, pg_logical_slot_peek_changes },
+  { 3785, "pg_logical_slot_peek_binary_changes", 4, false, true, pg_logical_slot_peek_binary_changes },
+  { 3786, "pg_create_logical_replication_slot", 2, false, false, pg_create_logical_replication_slot },
+  { 3803, "jsonb_send", 1, true, false, jsonb_send },
+  { 3804, "jsonb_out", 1, true, false, jsonb_out },
+  { 3805, "jsonb_recv", 1, true, false, jsonb_recv },
+  { 3806, "jsonb_in", 1, true, false, jsonb_in },
+  { 3808, "pg_get_function_arg_default", 2, true, false, pg_get_function_arg_default },
   { 3809, "pg_export_snapshot", 0, true, false, pg_export_snapshot },
   { 3810, "pg_is_in_recovery", 0, true, false, pg_is_in_recovery },
   { 3811, "int4_cash", 1, true, false, int4_cash },
@@ -4434,6 +4688,8 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3843, "pg_column_is_updatable", 3, true, false, pg_column_is_updatable },
   { 3844, "range_constructor2", 2, false, false, range_constructor2 },
   { 3845, "range_constructor3", 3, false, false, range_constructor3 },
+  { 3846, "make_date", 3, true, false, make_date },
+  { 3847, "make_time", 3, true, false, make_time },
   { 3848, "range_lower", 1, true, false, range_lower },
   { 3849, "range_upper", 1, true, false, range_upper },
   { 3850, "range_empty", 1, true, false, range_empty },
@@ -4474,6 +4730,8 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3916, "range_typanalyze", 1, true, false, range_typanalyze },
   { 3917, "timestamp_transform", 1, true, false, timestamp_transform },
   { 3918, "interval_transform", 1, true, false, interval_transform },
+  { 3920, "ginarraytriconsistent", 7, true, false, ginarraytriconsistent },
+  { 3921, "gin_tsquery_triconsistent", 7, true, false, gin_tsquery_triconsistent },
   { 3922, "int4range_subdiff", 2, true, false, int4range_subdiff },
   { 3923, "int8range_subdiff", 2, true, false, int8range_subdiff },
   { 3924, "numrange_subdiff", 2, true, false, numrange_subdiff },
@@ -4481,10 +4739,13 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3928, "int8range_canonical", 1, true, false, int8range_canonical },
   { 3929, "tsrange_subdiff", 2, true, false, tsrange_subdiff },
   { 3930, "tstzrange_subdiff", 2, true, false, tstzrange_subdiff },
+  { 3931, "jsonb_object_keys", 1, true, true, jsonb_object_keys },
+  { 3932, "jsonb_each_text", 1, true, true, jsonb_each_text },
   { 3933, "range_constructor2", 2, false, false, range_constructor2 },
   { 3934, "range_constructor3", 3, false, false, range_constructor3 },
   { 3937, "range_constructor2", 2, false, false, range_constructor2 },
   { 3938, "range_constructor3", 3, false, false, range_constructor3 },
+  { 3940, "jsonb_extract_path_text", 2, true, false, jsonb_extract_path_text },
   { 3941, "range_constructor2", 2, false, false, range_constructor2 },
   { 3942, "range_constructor3", 3, false, false, range_constructor3 },
   { 3943, "acldefault_sql", 2, true, false, acldefault_sql },
@@ -4496,9 +4757,7 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3949, "json_array_element", 2, true, false, json_array_element },
   { 3950, "json_array_element_text", 2, true, false, json_array_element_text },
   { 3951, "json_extract_path", 2, true, false, json_extract_path },
-  { 3952, "json_extract_path", 2, true, false, json_extract_path },
   { 3953, "json_extract_path_text", 2, true, false, json_extract_path_text },
-  { 3954, "json_extract_path_text", 2, true, false, json_extract_path_text },
   { 3955, "json_array_elements", 1, true, true, json_array_elements },
   { 3956, "json_array_length", 1, true, false, json_array_length },
   { 3957, "json_object_keys", 1, true, true, json_object_keys },
@@ -4506,6 +4765,32 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 3959, "json_each_text", 1, true, true, json_each_text },
   { 3960, "json_populate_record", 3, false, false, json_populate_record },
   { 3961, "json_populate_recordset", 3, false, true, json_populate_recordset },
+  { 3968, "json_typeof", 1, true, false, json_typeof },
+  { 3969, "json_array_elements_text", 1, true, true, json_array_elements_text },
+  { 3970, "ordered_set_transition", 2, false, false, ordered_set_transition },
+  { 3971, "ordered_set_transition_multi", 2, false, false, ordered_set_transition_multi },
+  { 3972, "aggregate_dummy", 2, false, false, aggregate_dummy },
+  { 3973, "percentile_disc_final", 3, false, false, percentile_disc_final },
+  { 3974, "aggregate_dummy", 2, false, false, aggregate_dummy },
+  { 3975, "percentile_cont_float8_final", 2, false, false, percentile_cont_float8_final },
+  { 3976, "aggregate_dummy", 2, false, false, aggregate_dummy },
+  { 3977, "percentile_cont_interval_final", 2, false, false, percentile_cont_interval_final },
+  { 3978, "aggregate_dummy", 2, false, false, aggregate_dummy },
+  { 3979, "percentile_disc_multi_final", 3, false, false, percentile_disc_multi_final },
+  { 3980, "aggregate_dummy", 2, false, false, aggregate_dummy },
+  { 3981, "percentile_cont_float8_multi_final", 2, false, false, percentile_cont_float8_multi_final },
+  { 3982, "aggregate_dummy", 2, false, false, aggregate_dummy },
+  { 3983, "percentile_cont_interval_multi_final", 2, false, false, percentile_cont_interval_multi_final },
+  { 3984, "aggregate_dummy", 1, false, false, aggregate_dummy },
+  { 3985, "mode_final", 2, false, false, mode_final },
+  { 3986, "aggregate_dummy", 1, false, false, aggregate_dummy },
+  { 3987, "hypothetical_rank_final", 2, false, false, hypothetical_rank_final },
+  { 3988, "aggregate_dummy", 1, false, false, aggregate_dummy },
+  { 3989, "hypothetical_percent_rank_final", 2, false, false, hypothetical_percent_rank_final },
+  { 3990, "aggregate_dummy", 1, false, false, aggregate_dummy },
+  { 3991, "hypothetical_cume_dist_final", 2, false, false, hypothetical_cume_dist_final },
+  { 3992, "aggregate_dummy", 1, false, false, aggregate_dummy },
+  { 3993, "hypothetical_dense_rank_final", 2, false, false, hypothetical_dense_rank_final },
   { 4001, "spggettuple", 2, true, false, spggettuple },
   { 4002, "spggetbitmap", 2, true, false, spggetbitmap },
   { 4003, "spginsert", 6, true, false, spginsert },
@@ -4535,6 +4820,19 @@ const FmgrBuiltin fmgr_builtins[] = {
   { 4030, "spg_text_inner_consistent", 2, true, false, spg_text_inner_consistent },
   { 4031, "spg_text_leaf_consistent", 2, true, false, spg_text_leaf_consistent },
   { 4032, "spgcanreturn", 1, true, false, spgcanreturn },
+  { 4038, "jsonb_ne", 2, true, false, jsonb_ne },
+  { 4039, "jsonb_lt", 2, true, false, jsonb_lt },
+  { 4040, "jsonb_gt", 2, true, false, jsonb_gt },
+  { 4041, "jsonb_le", 2, true, false, jsonb_le },
+  { 4042, "jsonb_ge", 2, true, false, jsonb_ge },
+  { 4043, "jsonb_eq", 2, true, false, jsonb_eq },
+  { 4044, "jsonb_cmp", 2, true, false, jsonb_cmp },
+  { 4045, "jsonb_hash", 1, true, false, jsonb_hash },
+  { 4046, "jsonb_contains", 2, true, false, jsonb_contains },
+  { 4047, "jsonb_exists", 2, true, false, jsonb_exists },
+  { 4048, "jsonb_exists_any", 2, true, false, jsonb_exists_any },
+  { 4049, "jsonb_exists_all", 2, true, false, jsonb_exists_all },
+  { 4050, "jsonb_contained", 2, true, false, jsonb_contained },
   /* dummy entry is easier than getting rid of comma after last real one */
   /* (not that there has ever been anything wrong with *having* a
      comma after the last field in an array initializer) */

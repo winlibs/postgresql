@@ -2,12 +2,12 @@
 .\"     Title: pg_test_timing
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "PG_TEST_TIMING" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "PG_TEST_TIMING" "1" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 pg_test_timing \- measure timing overhead
-.\" pg_test_timing
 .SH "SYNOPSIS"
 .HP \w'\fBpg_test_timing\fR\ 'u
 \fBpg_test_timing\fR [\fIoption\fR...]
@@ -46,19 +45,25 @@ results\&.
 pg_test_timing
 accepts the following command\-line options:
 .PP
-\fB\-d \fR\fB\fIduration\fR\fR, \fB\-\-duration=\fR\fB\fIduration\fR\fR
+\fB\-d \fR\fB\fIduration\fR\fR
+.br
+\fB\-\-duration=\fR\fB\fIduration\fR\fR
 .RS 4
 Specifies the test duration, in seconds\&. Longer durations give slightly better accuracy, and are more likely to discover problems with the system clock moving backwards\&. The default test duration is 3 seconds\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 pg_test_timing
 version and exit\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 pg_test_timing

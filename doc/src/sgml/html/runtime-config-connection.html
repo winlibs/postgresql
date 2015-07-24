@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -118,7 +118,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >         Specifies the TCP/IP address(es) on which the server is
@@ -172,7 +173,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        The TCP port the server listens on; 5432 by default.  Note that the
@@ -190,7 +192,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Determines the maximum number of concurrent connections to the
@@ -219,7 +222,8 @@ CLASS="VARNAME"
       (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Determines the number of connection <SPAN
@@ -266,7 +270,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the directory of the Unix-domain socket(s) on which the
@@ -332,7 +337,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the owning group of the Unix-domain socket(s).  (The owning
@@ -362,7 +368,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the access permissions of the Unix-domain socket(s).  Unix-domain
@@ -414,7 +421,14 @@ HREF="client-authentication.html"
 >        This parameter can only be set at server start.
        </P
 ><P
->        This parameter is irrelevant on Windows, which does not have
+>        This parameter is irrelevant on systems, notably Solaris as of Solaris
+        10, that ignore socket permissions entirely.  There, one can achieve a
+        similar effect by pointing <TT
+CLASS="VARNAME"
+>unix_socket_directories</TT
+> to a
+        directory having search permission limited to the desired audience.
+        This parameter is also irrelevant on Windows, which does not have
         Unix-domain sockets.
        </P
 ></DD
@@ -428,7 +442,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Enables advertising the server's existence via
@@ -449,7 +464,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the <SPAN
@@ -479,11 +495,13 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
->        Specifies the number of seconds before sending a keepalive packet on
-        an otherwise idle connection.  A value of 0 uses the system default.
+>        Specifies the number of seconds of inactivity after which TCP
+        should send a keepalive message to the client.  A value of 0 uses
+        the system default.
         This parameter is supported only on systems that support the
         <TT
 CLASS="SYMBOL"
@@ -519,11 +537,13 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
->        Specifies the number of seconds between sending keepalives on an
-        otherwise idle connection.  A value of 0 uses the system default.
+>        Specifies the number of seconds after which a TCP keepalive message
+        that is not acknowledged by the client should be retransmitted.
+        A value of 0 uses the system default.
         This parameter is supported only on systems that support the
         <TT
 CLASS="SYMBOL"
@@ -556,11 +576,13 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
->        Specifies the number of keepalive packets to send on an otherwise idle
-        connection.  A value of 0 uses the system default.  This parameter is
+>        Specifies the number of TCP keepalives that can be lost before
+        the server's connection to the client is considered dead.  A value of 0
+        uses the system default.  This parameter is
         supported only on systems that support the <TT
 CLASS="SYMBOL"
 >TCP_KEEPCNT</TT
@@ -607,7 +629,10 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      
+      
+      </DT
 ><DD
 ><P
 >        Maximum time to complete client authentication, in seconds. If a
@@ -635,7 +660,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Enables <ACRONYM
@@ -667,7 +693,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the name of the file containing the SSL server certificate
@@ -691,7 +718,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the name of the file containing the SSL server certificate.
@@ -713,7 +741,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the name of the file containing the SSL server certificate
@@ -737,7 +766,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the name of the file containing the SSL server private key.
@@ -759,7 +789,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies how much data can flow over an <ACRONYM
@@ -803,18 +834,200 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies a list of <ACRONYM
 CLASS="ACRONYM"
 >SSL</ACRONYM
-> ciphers that are allowed to be
-        used on secure connections. See the <SPAN
+> cipher suites that are allowed to be
+        used on secure connections.  See
+        the <SPAN
+CLASS="CITEREFENTRY"
+><SPAN
+CLASS="REFENTRYTITLE"
+>ciphers</SPAN
+></SPAN
+> manual page
+        in the <SPAN
 CLASS="APPLICATION"
->openssl</SPAN
+>OpenSSL</SPAN
+> package for the syntax of this setting
+        and a list of supported values.  The default value is
+        <TT
+CLASS="LITERAL"
+>HIGH:MEDIUM:+3DES:!aNULL</TT
+>.  It is usually reasonable,
+        unless you have specific security requirements.
+       </P
+><P
+>        Explanation of the default value:
+        <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>HIGH</TT
+></DT
+><DD
+><P
+>            Cipher suites that use ciphers from <TT
+CLASS="LITERAL"
+>HIGH</TT
+> group (e.g.,
+            AES, Camellia, 3DES)
+           </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>MEDIUM</TT
+></DT
+><DD
+><P
+>            Cipher suites that use ciphers from <TT
+CLASS="LITERAL"
+>MEDIUM</TT
+> group
+            (e.g., RC4, SEED)
+           </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>+3DES</TT
+></DT
+><DD
+><P
+>            The OpenSSL default order for <TT
+CLASS="LITERAL"
+>HIGH</TT
+> is problematic
+            because it orders 3DES higher than AES128.  This is wrong because
+            3DES offers less security than AES128, and it is also much
+            slower.  <TT
+CLASS="LITERAL"
+>+3DES</TT
+> reorders it after all other
+            <TT
+CLASS="LITERAL"
+>HIGH</TT
+> and <TT
+CLASS="LITERAL"
+>MEDIUM</TT
+> ciphers.
+           </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>!aNULL</TT
+></DT
+><DD
+><P
+>            Disables anonymous cipher suites that do no authentication.  Such
+            cipher suites are vulnerable to man-in-the-middle attacks and
+            therefore should not be used.
+           </P
+></DD
+></DL
+></DIV
+><P>
+       </P
+><P
+>        Available cipher suite details will vary across OpenSSL versions.  Use
+        the command
+        <TT
+CLASS="LITERAL"
+>openssl ciphers -v 'HIGH:MEDIUM:+3DES:!aNULL'</TT
+> to
+        see actual details for the currently installed <SPAN
+CLASS="APPLICATION"
+>OpenSSL</SPAN
 >
-        manual page for a list of supported ciphers.
+        version.  Note that this list is filtered at run time based on the
+        server key type.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-SSL-PREFER-SERVER-CIPHERS"
+></A
+><TT
+CLASS="VARNAME"
+>ssl_prefer_server_ciphers</TT
+> (<TT
+CLASS="TYPE"
+>bool</TT
+>)
+      </DT
+><DD
+><P
+>        Specifies whether to use the server's SSL cipher preferences, rather
+        than the client's.  The default is true.
+       </P
+><P
+>        Older PostgreSQL versions do not have this setting and always use the
+        client's preferences.  This setting is mainly for backward
+        compatibility with those versions.  Using the server's preferences is
+        usually better because it is more likely that the server is appropriately
+        configured.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-SSL-ECDH-CURVE"
+></A
+><TT
+CLASS="VARNAME"
+>ssl_ecdh_curve</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)
+      </DT
+><DD
+><P
+>        Specifies the name of the curve to use in <ACRONYM
+CLASS="ACRONYM"
+>ECDH</ACRONYM
+> key
+        exchange.  It needs to be supported by all clients that connect.
+        It does not need to be same curve as used by server's Elliptic
+        Curve key.  The default is <TT
+CLASS="LITERAL"
+>prime256v1</TT
+>.
+       </P
+><P
+>        OpenSSL names for most common curves:
+        <TT
+CLASS="LITERAL"
+>prime256v1</TT
+> (NIST P-256),
+        <TT
+CLASS="LITERAL"
+>secp384r1</TT
+> (NIST P-384),
+        <TT
+CLASS="LITERAL"
+>secp521r1</TT
+> (NIST P-521).
+       </P
+><P
+>        The full list of available curves can be shown with the command
+        <TT
+CLASS="COMMAND"
+>openssl ecparam -list_curves</TT
+>.  Not all of them
+        are usable in <ACRONYM
+CLASS="ACRONYM"
+>TLS</ACRONYM
+> though.
        </P
 ></DD
 ><DT
@@ -827,7 +1040,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When a password is specified in <A
@@ -863,40 +1077,14 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the location of the Kerberos server key file. See
         <A
-HREF="auth-methods.html#KERBEROS-AUTH"
->Section 19.3.5</A
-> or <A
 HREF="auth-methods.html#GSSAPI-AUTH"
 >Section 19.3.3</A
->
-        for details. This parameter can only be set in the
-        <TT
-CLASS="FILENAME"
->postgresql.conf</TT
-> file or on the server command line.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-KRB-SRVNAME"
-></A
-><TT
-CLASS="VARNAME"
->krb_srvname</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)</DT
-><DD
-><P
->        Sets the Kerberos service name. See <A
-HREF="auth-methods.html#KERBEROS-AUTH"
->Section 19.3.5</A
 >
         for details. This parameter can only be set in the
         <TT
@@ -915,10 +1103,11 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
->        Sets whether Kerberos and GSSAPI user names should be treated
+>        Sets whether GSSAPI user names should be treated
         case-insensitively.
         The default is <TT
 CLASS="LITERAL"
@@ -940,7 +1129,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        This parameter enables per-database user names.  It is off by default.

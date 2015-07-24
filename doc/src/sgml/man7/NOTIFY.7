@@ -2,12 +2,12 @@
 .\"     Title: NOTIFY
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "NOTIFY" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "NOTIFY" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 NOTIFY \- generate a notification
-.\" NOTIFY
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -115,7 +114,6 @@ A transaction that has executed
 \fBNOTIFY\fR
 cannot be prepared for two\-phase commit\&.
 .SS "pg_notify"
-.\" pg_notify
 .PP
 To send a notification you can also use the function
 \fBpg_notify\fR(text, text)\&. The function takes the channel name as the first argument and the payload as the second\&. The function is much easier to use than the

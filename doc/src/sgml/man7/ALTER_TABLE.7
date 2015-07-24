@@ -2,12 +2,12 @@
 .\"     Title: ALTER TABLE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "ALTER TABLE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "ALTER TABLE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 ALTER_TABLE \- change the definition of a table
-.\" ALTER TABLE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -43,6 +42,8 @@ ALTER TABLE [ IF EXISTS ] \fIname\fR
     RENAME TO \fInew_name\fR
 ALTER TABLE [ IF EXISTS ] \fIname\fR
     SET SCHEMA \fInew_schema\fR
+ALTER TABLE ALL IN TABLESPACE \fIname\fR [ OWNED BY \fIrole_name\fR [, \&.\&.\&. ] ]
+    SET TABLESPACE \fInew_tablespace\fR [ NOWAIT ]
 
 where \fIaction\fR is one of:
 
@@ -58,6 +59,7 @@ where \fIaction\fR is one of:
     ALTER [ COLUMN ] \fIcolumn_name\fR SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
     ADD \fItable_constraint\fR [ NOT VALID ]
     ADD \fItable_constraint_using_index\fR
+    ALTER CONSTRAINT \fIconstraint_name\fR [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]
     VALIDATE CONSTRAINT \fIconstraint_name\fR
     DROP CONSTRAINT [ IF EXISTS ]  \fIconstraint_name\fR [ RESTRICT | CASCADE ]
     DISABLE TRIGGER [ \fItrigger_name\fR | ALL | USER ]
@@ -80,6 +82,7 @@ where \fIaction\fR is one of:
     NOT OF
     OWNER TO \fInew_owner\fR
     SET TABLESPACE \fInew_tablespace\fR
+    REPLICA IDENTITY {DEFAULT | USING INDEX \fIindex_name\fR | FULL | NOTHING}
 
 and \fItable_constraint_using_index\fR is:
 
@@ -91,7 +94,9 @@ and \fItable_constraint_using_index\fR is:
 .PP
 
 \fBALTER TABLE\fR
-changes the definition of an existing table\&. There are several subforms:
+changes the definition of an existing table\&. There are several subforms described below\&. Note that the lock level required may differ for each subform\&. An
+ACCESS EXCLUSIVE
+lock is held unless explicitly noted\&. When multiple subcommands are listed, the lock held will be the strictest one required from any subcommand\&.
 .PP
 ADD COLUMN
 .RS 4
@@ -148,9 +153,15 @@ operations\&. The target can be set in the range 0 to 10000; alternatively, set 
 PostgreSQL
 query planner, refer to
 Section 14.2, \(lqStatistics Used by the Planner\(rq, in the documentation\&.
+.sp
+SET STATISTICS acquires a
+SHARE UPDATE EXCLUSIVE
+lock\&.
 .RE
 .PP
-SET ( \fIattribute_option\fR = \fIvalue\fR [, \&.\&.\&. ] ), RESET ( \fIattribute_option\fR [, \&.\&.\&. ] )
+SET ( \fIattribute_option\fR = \fIvalue\fR [, \&.\&.\&. ] )
+.br
+RESET ( \fIattribute_option\fR [, \&.\&.\&. ] )
 .RS 4
 This form sets or resets per\-attribute options\&. Currently, the only defined per\-attribute options are
 n_distinct
@@ -169,11 +180,14 @@ will assume that the number of distinct nonnull values in the column is linear i
 PostgreSQL
 query planner, refer to
 Section 14.2, \(lqStatistics Used by the Planner\(rq, in the documentation\&.
+.sp
+Changing per\-attribute options acquires a
+SHARE UPDATE EXCLUSIVE
+lock\&.
 .RE
 .PP
 SET STORAGE
 .RS 4
-.\" TOAST: per-column storage settings
 This form sets the storage mode for a column\&. This controls whether this column is held inline or in a secondary
 TOAST
 table, and whether the data should be compressed or not\&.
@@ -198,7 +212,7 @@ bytea
 values run faster, at the penalty of increased storage space\&. Note that
 SET STORAGE
 doesn\*(Aqt itself change anything in the table, it just sets the strategy to be pursued during future table updates\&. See
-Section 58.2, \(lqTOAST\(rq, in the documentation
+Section 59.2, \(lqTOAST\(rq, in the documentation
 for more information\&.
 .RE
 .PP
@@ -260,14 +274,23 @@ Adding a constraint using an existing index can be helpful in situations where a
 .RE
 .RE
 .PP
+ALTER CONSTRAINT
+.RS 4
+This form alters the attributes of a constraint that was previously created\&. Currently only foreign key constraints may be altered\&.
+.RE
+.PP
 VALIDATE CONSTRAINT
 .RS 4
 This form validates a foreign key or check constraint that was previously created as
 NOT VALID, by scanning the table to ensure there are no rows for which the constraint is not satisfied\&. Nothing happens if the constraint is already marked valid\&.
 .sp
-Validation can be a long process on larger tables and currently requires an
-ACCESS EXCLUSIVE
-lock\&. The value of separating validation from initial creation is that you can defer validation to less busy times, or can be used to give additional time to correct pre\-existing errors while preventing new errors\&.
+Validation can be a long process on larger tables\&. The value of separating validation from initial creation is that you can defer validation to less busy times, or can be used to give additional time to correct pre\-existing errors while preventing new errors\&. Note also that validation on its own does not prevent normal write commands against the table while it runs\&.
+.sp
+Validation acquires only a
+SHARE UPDATE EXCLUSIVE
+lock on the table being altered\&. If the constraint is a foreign key then a
+ROW SHARE
+lock is also required on the table referenced by the constraint\&.
 .RE
 .PP
 DROP CONSTRAINT [ IF EXISTS ]
@@ -304,6 +327,10 @@ CLUSTER ON
 This form selects the default index for future
 \fBCLUSTER\fR(7)
 operations\&. It does not actually re\-cluster the table\&.
+.sp
+Changing cluster options acquires a
+SHARE UPDATE EXCLUSIVE
+lock\&.
 .RE
 .PP
 SET WITHOUT CLUSTER
@@ -311,6 +338,10 @@ SET WITHOUT CLUSTER
 This form removes the most recently used
 \fBCLUSTER\fR(7)
 index specification from the table\&. This affects future cluster operations that don\*(Aqt specify an index\&.
+.sp
+Changing cluster options acquires a
+SHARE UPDATE EXCLUSIVE
+lock\&.
 .RE
 .PP
 SET WITH OIDS
@@ -423,22 +454,47 @@ This form dissociates a typed table from its type\&.
 .PP
 OWNER
 .RS 4
-This form changes the owner of the table, sequence, or view to the specified user\&.
+This form changes the owner of the table, sequence, view, materialized view, or foreign table to the specified user\&.
 .RE
 .PP
 SET TABLESPACE
 .RS 4
 This form changes the table\*(Aqs tablespace to the specified tablespace and moves the data file(s) associated with the table to the new tablespace\&. Indexes on the table, if any, are not moved; but they can be moved separately with additional
 SET TABLESPACE
-commands\&. See also
+commands\&. All tables in the current database in a tablespace can be moved by using the
+ALL IN TABLESPACE
+form, which will lock all tables to be moved first and then move each one\&. This form also supports
+OWNED BY, which will only move tables owned by the roles specified\&. If the
+NOWAIT
+option is specified then the command will fail if it is unable to acquire all of the locks required immediately\&. Note that system catalogs are not moved by this command, use
+\fBALTER DATABASE\fR
+or explicit
+\fBALTER TABLE\fR
+invocations instead if desired\&. The
+information_schema
+relations are not considered part of the system catalogs and will be moved\&. See also
 CREATE TABLESPACE (\fBCREATE_TABLESPACE\fR(7))\&.
+.RE
+.PP
+REPLICA IDENTITY
+.RS 4
+This form changes the information which is written to the write\-ahead log to identify rows which are updated or deleted\&. This option has no effect except when logical replication is in use\&.
+DEFAULT
+(the default for non\-system tables) records the old values of the columns of the primary key, if any\&.
+USING INDEX
+records the old values of the columns covered by the named index, which must be unique, not partial, not deferrable, and include only columns marked
+NOT NULL\&.
+FULL
+records the old values of all columns in the row\&.
+NOTHING
+records no information about the old row\&. (This is the default for system tables\&.) In all cases, no old values are logged unless at least one of the columns that would be logged differs between the old and new versions of the row\&.
 .RE
 .PP
 RENAME
 .RS 4
 The
 RENAME
-forms change the name of a table (or an index, sequence, or view), the name of an individual column in a table, or the name of a constraint of the table\&. There is no effect on the stored data\&.
+forms change the name of a table (or an index, sequence, view, materialized view, or foreign table), the name of an individual column in a table, or the name of a constraint of the table\&. There is no effect on the stored data\&.
 .RE
 .PP
 SET SCHEMA
@@ -447,15 +503,16 @@ This form moves the table into another schema\&. Associated indexes, constraints
 .RE
 .PP
 All the actions except
-RENAME
+RENAME,
+SET TABLESPACE
 and
 SET SCHEMA
 can be combined into a list of multiple alterations to apply in parallel\&. For example, it is possible to add several columns and/or alter the type of several columns in a single command\&. This is particularly useful with large tables, since only one pass over the table need be made\&.
 .PP
 You must own the table to use
-\fBALTER TABLE\fR\&. To change the schema of a table, you must also have
+\fBALTER TABLE\fR\&. To change the schema or tablespace of a table, you must also have
 CREATE
-privilege on the new schema\&. To add the table as a new child of a parent table, you must own the parent table as well\&. To alter the owner, you must also be a direct or indirect member of the new owning role, and that role must have
+privilege on the new schema or tablespace\&. To add the table as a new child of a parent table, you must own the parent table as well\&. To alter the owner, you must also be a direct or indirect member of the new owning role, and that role must have
 CREATE
 privilege on the table\*(Aqs schema\&. (These restrictions enforce that altering the owner doesn\*(Aqt do anything you couldn\*(Aqt do by dropping and recreating the table\&. However, a superuser can alter ownership of any table anyway\&.) To add a column or alter a column type or use the
 OF
@@ -490,7 +547,7 @@ New name for an existing column\&.
 New name for the table\&.
 .RE
 .PP
-\fItype\fR
+\fIdata_type\fR
 .RS 4
 Data type of the new column, or new data type for an existing column\&.
 .RE
@@ -502,7 +559,7 @@ New table constraint for the table\&.
 .PP
 \fIconstraint_name\fR
 .RS 4
-Name of an existing constraint to drop\&.
+Name of a new or existing constraint\&.
 .RE
 .PP
 CASCADE
@@ -532,7 +589,7 @@ Disable or enable all triggers belonging to the table except for internally gene
 .PP
 \fIindex_name\fR
 .RS 4
-The index name on which the table should be marked for clustering\&.
+The name of an existing index\&.
 .RE
 .PP
 \fIstorage_parameter\fR
@@ -573,11 +630,15 @@ is noise and can be omitted\&.
 When a column is added with
 ADD COLUMN, all existing rows in the table are initialized with the column\*(Aqs default value (NULL if no
 DEFAULT
-clause is specified)\&.
+clause is specified)\&. If there is no
+DEFAULT
+clause, this is merely a metadata change and does not require any immediate update of the table\*(Aqs data; the added NULL values are supplied on readout, instead\&.
 .PP
-Adding a column with a non\-null default or changing the type of an existing column will require the entire table and indexes to be rewritten\&. As an exception, if the
+Adding a column with a
+DEFAULT
+clause or changing the type of an existing column will require the entire table and its indexes to be rewritten\&. As an exception when changing the type of an existing column, if the
 USING
-clause does not change the column contents and the old type is either binary coercible to the new type or an unconstrained domain over the new type, a table rewrite is not needed, but any indexes on the affected columns must still be rebuilt\&. Adding or removing a system
+clause does not change the column contents and the old type is either binary coercible to the new type or an unconstrained domain over the new type, a table rewrite is not needed; but any indexes on the affected columns must still be rebuilt\&. Adding or removing a system
 oid
 column also requires rewriting the entire table\&. Table and/or index rebuilds may take a significant amount of time for a large table; and will temporarily require as much as double the disk space\&.
 .PP
@@ -847,6 +908,19 @@ To add a foreign key constraint to a table:
 .\}
 .nf
 ALTER TABLE distributors ADD CONSTRAINT distfk FOREIGN KEY (address) REFERENCES addresses (address);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To add a foreign key constraint to a table with the least impact on other work:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER TABLE distributors ADD CONSTRAINT distfk FOREIGN KEY (address) REFERENCES addresses (address) NOT VALID;
+ALTER TABLE distributors VALIDATE CONSTRAINT distfk;
 .fi
 .if n \{\
 .RE

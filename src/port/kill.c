@@ -3,7 +3,7 @@
  * kill.c
  *	  kill()
  *
- * Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Copyright (c) 1996-2014, PostgreSQL Global Development Group
  *
  *	This is a replacement version of kill for Win32 which sends
  *	signals that the backend can recognize.
@@ -38,6 +38,26 @@ pgkill(int pid, int sig)
 		errno = EINVAL;
 		return -1;
 	}
+
+	/* special case for SIGKILL: just ask the system to terminate the target */
+	if (sig == SIGKILL)
+	{
+		HANDLE		prochandle;
+
+		if ((prochandle = OpenProcess(PROCESS_TERMINATE, FALSE, (DWORD) pid)) == NULL)
+		{
+			errno = ESRCH;
+			return -1;
+		}
+		if (!TerminateProcess(prochandle, 255))
+		{
+			_dosmaperr(GetLastError());
+			CloseHandle(prochandle);
+			return -1;
+		}
+		CloseHandle(prochandle);
+		return 0;
+	}
 	snprintf(pipename, sizeof(pipename), "\\\\.\\pipe\\pgsignal_%u", pid);
 
 	if (CallNamedPipe(pipename, &sigData, 1, &sigRet, 1, &bytes, 1000))
@@ -50,13 +70,28 @@ pgkill(int pid, int sig)
 		return 0;
 	}
 
-	if (GetLastError() == ERROR_FILE_NOT_FOUND)
-		errno = ESRCH;
-	else if (GetLastError() == ERROR_ACCESS_DENIED)
-		errno = EPERM;
-	else
-		errno = EINVAL;
-	return -1;
+	switch (GetLastError())
+	{
+		case ERROR_BROKEN_PIPE:
+		case ERROR_BAD_PIPE:
+
+			/*
+			 * These arise transiently as a process is exiting.  Treat them
+			 * like POSIX treats a zombie process, reporting success.
+			 */
+			return 0;
+
+		case ERROR_FILE_NOT_FOUND:
+			/* pipe fully gone, so treat the process as gone */
+			errno = ESRCH;
+			return -1;
+		case ERROR_ACCESS_DENIED:
+			errno = EPERM;
+			return -1;
+		default:
+			errno = EINVAL;		/* unexpected */
+			return -1;
+	}
 }
 
 #endif

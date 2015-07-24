@@ -2,7 +2,7 @@
  *
  *	  Utility functions for conversion procs.
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -382,6 +382,11 @@ UtfToLocal(const unsigned char *utf, unsigned char *iso,
 			iutf |= *utf++ << 8;
 			iutf |= *utf++;
 		}
+		else
+		{
+			elog(ERROR, "unsupported character length %d", l);
+			iutf = 0;			/* keep compiler quiet */
+		}
 
 		/*
 		 * first, try with combined map if possible
@@ -436,6 +441,11 @@ UtfToLocal(const unsigned char *utf, unsigned char *iso,
 				iutf |= *utf++ << 16;
 				iutf |= *utf++ << 8;
 				iutf |= *utf++;
+			}
+			else
+			{
+				elog(ERROR, "unsupported character length %d", l);
+				iutf = 0;		/* keep compiler quiet */
 			}
 
 			cutf[1] = iutf;
@@ -545,6 +555,11 @@ LocalToUtf(const unsigned char *iso, unsigned char *utf,
 			iiso |= *iso++ << 16;
 			iiso |= *iso++ << 8;
 			iiso |= *iso++;
+		}
+		else
+		{
+			elog(ERROR, "unsupported character length %d", l);
+			iiso = 0;			/* keep compiler quiet */
 		}
 
 		p = bsearch(&iiso, map, size1,

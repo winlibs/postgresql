@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -110,7 +110,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN148879"
+NAME="AEN160266"
 >F.25.1. General Hashing Functions</A
 ></H2
 ><DIV
@@ -118,7 +118,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN148881"
+NAME="AEN160268"
 >F.25.1.1. <CODE
 CLASS="FUNCTION"
 >digest()</CODE
@@ -187,7 +187,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN148901"
+NAME="AEN160288"
 >F.25.1.2. <CODE
 CLASS="FUNCTION"
 >hmac()</CODE
@@ -232,7 +232,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN148915"
+NAME="AEN160302"
 >F.25.2. Password Hashing Functions</A
 ></H2
 ><P
@@ -257,7 +257,7 @@ CLASS="FUNCTION"
 >   The algorithms in <CODE
 CLASS="FUNCTION"
 >crypt()</CODE
-> differ from the usual 
+> differ from the usual
    MD5 or SHA1 hashing algorithms in the following respects:
   </P
 ><P
@@ -412,7 +412,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN148982"
+NAME="AEN160369"
 >F.25.2.1. <CODE
 CLASS="FUNCTION"
 >crypt()</CODE
@@ -464,7 +464,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN148998"
+NAME="AEN160385"
 >F.25.2.2. <CODE
 CLASS="FUNCTION"
 >gen_salt()</CODE
@@ -632,7 +632,7 @@ NAME="PGCRYPTO-HASH-SPEED-TABLE"
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><COL><COL><THEAD
+><COL><COL><COL><COL><COL><THEAD
 ><TR
 ><TH
 >Algorithm</TH
@@ -648,6 +648,11 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >[A-Za-z0-9]</TT
 ></TH
+><TH
+>Duration relative to <TT
+CLASS="LITERAL"
+>md5 hash</TT
+></TH
 ></TR
 ></THEAD
 ><TBODY
@@ -658,11 +663,13 @@ CLASS="LITERAL"
 >crypt-bf/8</TT
 ></TD
 ><TD
->28</TD
+>1792</TD
 ><TD
->246 years</TD
+>4 years</TD
 ><TD
->251322 years</TD
+>3927 years</TD
+><TD
+>100k</TD
 ></TR
 ><TR
 ><TD
@@ -671,11 +678,13 @@ CLASS="LITERAL"
 >crypt-bf/7</TT
 ></TD
 ><TD
->57</TD
+>3648</TD
 ><TD
->121 years</TD
+>2 years</TD
 ><TD
->123457 years</TD
+>1929 years</TD
+><TD
+>50k</TD
 ></TR
 ><TR
 ><TD
@@ -684,11 +693,13 @@ CLASS="LITERAL"
 >crypt-bf/6</TT
 ></TD
 ><TD
->112</TD
+>7168</TD
 ><TD
->62 years</TD
+>1 year</TD
 ><TD
->62831 years</TD
+>982 years</TD
+><TD
+>25k</TD
 ></TR
 ><TR
 ><TD
@@ -697,11 +708,13 @@ CLASS="LITERAL"
 >crypt-bf/5</TT
 ></TD
 ><TD
->211</TD
+>13504</TD
 ><TD
->33 years</TD
+>188 days</TD
 ><TD
->33351 years</TD
+>521 years</TD
+><TD
+>12.5k</TD
 ></TR
 ><TR
 ><TD
@@ -710,11 +723,13 @@ CLASS="LITERAL"
 >crypt-md5</TT
 ></TD
 ><TD
->2681</TD
+>171584</TD
 ><TD
->2.6 years</TD
+>15 days</TD
 ><TD
->2625 years</TD
+>41 years</TD
+><TD
+>1k</TD
 ></TR
 ><TR
 ><TD
@@ -723,11 +738,13 @@ CLASS="LITERAL"
 >crypt-des</TT
 ></TD
 ><TD
->362837</TD
+>23221568</TD
 ><TD
->7 days</TD
+>157.5 minutes</TD
 ><TD
->19 years</TD
+>108 days</TD
+><TD
+>7</TD
 ></TR
 ><TR
 ><TD
@@ -736,24 +753,28 @@ CLASS="LITERAL"
 >sha1</TT
 ></TD
 ><TD
->590223</TD
+>37774272</TD
 ><TD
->4 days</TD
+>90 minutes</TD
 ><TD
->12 years</TD
+>68 days</TD
+><TD
+>4</TD
 ></TR
 ><TR
 ><TD
 ><TT
 CLASS="LITERAL"
->md5 hash</TT
-></TD
+>md5</TT
+> (hash)</TD
 ><TD
->2345086</TD
+>150085504</TD
 ><TD
->1 day</TD
+>22.5 minutes</TD
 ><TD
->3 years</TD
+>17 days</TD
+><TD
+>1</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -766,7 +787,7 @@ CLASS="LITERAL"
 ><UL
 ><LI
 ><P
->     The machine used is a 1.5GHz Pentium 4.
+>     The machine used is an Intel Mobile Core i3.
      </P
 ></LI
 ><LI
@@ -846,7 +867,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN149133"
+NAME="AEN160530"
 >F.25.3. PGP Encryption Functions</A
 ></H2
 ><P
@@ -960,7 +981,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149168"
+NAME="AEN160565"
 >F.25.3.1. <CODE
 CLASS="FUNCTION"
 >pgp_sym_encrypt()</CODE
@@ -990,7 +1011,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149180"
+NAME="AEN160577"
 >F.25.3.2. <CODE
 CLASS="FUNCTION"
 >pgp_sym_decrypt()</CODE
@@ -1030,7 +1051,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149195"
+NAME="AEN160592"
 >F.25.3.3. <CODE
 CLASS="FUNCTION"
 >pgp_pub_encrypt()</CODE
@@ -1048,7 +1069,7 @@ CLASS="PARAMETER"
 CLASS="PARAMETER"
 >key</TT
 >.
-    Giving this function a secret key will produce a error.
+    Giving this function a secret key will produce an error.
    </P
 ><P
 >    The <TT
@@ -1063,7 +1084,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149208"
+NAME="AEN160605"
 >F.25.3.4. <CODE
 CLASS="FUNCTION"
 >pgp_pub_decrypt()</CODE
@@ -1113,7 +1134,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149225"
+NAME="AEN160622"
 >F.25.3.5. <CODE
 CLASS="FUNCTION"
 >pgp_key_id()</CODE
@@ -1179,7 +1200,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149246"
+NAME="AEN160643"
 >F.25.3.6. <CODE
 CLASS="FUNCTION"
 >armor()</CODE
@@ -1202,7 +1223,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149256"
+NAME="AEN160653"
 >F.25.3.7. Options for PGP Functions</A
 ></H3
 ><P
@@ -1238,7 +1259,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN149265"
+NAME="AEN160662"
 >F.25.3.7.1. cipher-algo</A
 ></H4
 ><P
@@ -1261,7 +1282,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN149271"
+NAME="AEN160668"
 >F.25.3.7.2. compress-algo</A
 ></H4
 ><P
@@ -1285,7 +1306,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN149276"
+NAME="AEN160673"
 >F.25.3.7.3. compress-level</A
 ></H4
 ><P
@@ -1303,7 +1324,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN149280"
+NAME="AEN160677"
 >F.25.3.7.4. convert-crlf</A
 ></H4
 ><P
@@ -1339,7 +1360,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN149289"
+NAME="AEN160686"
 >F.25.3.7.5. disable-mdc</A
 ></H4
 ><P
@@ -1359,12 +1380,12 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN149293"
->F.25.3.7.6. enable-session-key</A
+NAME="AEN160690"
+>F.25.3.7.6. sess-key</A
 ></H4
 ><P
 >    Use separate session key.  Public-key encryption always uses a separate
-    session key; this is for symmetric-key encryption, which by default
+    session key; this option is for symmetric-key encryption, which by default
     uses the S2K key directly.
    </P
 ><P
@@ -1378,7 +1399,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN149297"
+NAME="AEN160694"
 >F.25.3.7.7. s2k-mode</A
 ></H4
 ><P
@@ -1398,7 +1419,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN149301"
+NAME="AEN160698"
 >F.25.3.7.8. s2k-digest-algo</A
 ></H4
 ><P
@@ -1415,7 +1436,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN149305"
+NAME="AEN160702"
 >F.25.3.7.9. s2k-cipher-algo</A
 ></H4
 ><P
@@ -1432,7 +1453,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN149309"
+NAME="AEN160706"
 >F.25.3.7.10. unicode-mode</A
 ></H4
 ><P
@@ -1453,7 +1474,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149313"
+NAME="AEN160710"
 >F.25.3.8. Generating PGP Keys with GnuPG</A
 ></H3
 ><P
@@ -1532,7 +1553,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149334"
+NAME="AEN160731"
 >F.25.3.9. Limitations of PGP Code</A
 ></H3
 ><P
@@ -1569,7 +1590,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN149344"
+NAME="AEN160741"
 >F.25.4. Raw Encryption Functions</A
 ></H2
 ><P
@@ -1768,7 +1789,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN149407"
+NAME="AEN160804"
 >F.25.5. Random-Data Functions</A
 ></H2
 ><PRE
@@ -1782,13 +1803,19 @@ CLASS="PARAMETER"
    At most 1024 bytes can be extracted at a time.  This is to avoid
    draining the randomness generator pool.
   </P
+><PRE
+CLASS="SYNOPSIS"
+>gen_random_uuid() returns uuid</PRE
+><P
+>   Returns a version 4 (random) UUID.
+  </P
 ></DIV
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN149414"
+NAME="AEN160815"
 >F.25.6. Notes</A
 ></H2
 ><DIV
@@ -1796,7 +1823,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149416"
+NAME="AEN160817"
 >F.25.6.1. Configuration</A
 ></H3
 ><P
@@ -1971,7 +1998,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149484"
+NAME="AEN160885"
 >F.25.6.2. NULL Handling</A
 ></H3
 ><P
@@ -1984,7 +2011,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149487"
+NAME="AEN160888"
 >F.25.6.3. Security Limitations</A
 ></H3
 ><P
@@ -2015,13 +2042,27 @@ TYPE="1"
 ><P
 >    If you cannot, then better do crypto inside client application.
    </P
+><P
+>    The implementation does not resist
+    <A
+HREF="http://en.wikipedia.org/wiki/Side-channel_attack"
+TARGET="_top"
+>side-channel
+    attacks</A
+>.  For example, the time required for
+    a <TT
+CLASS="FILENAME"
+>pgcrypto</TT
+> decryption function to complete varies among
+    ciphertexts of a given size.
+   </P
 ></DIV
 ><DIV
 CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149498"
+NAME="AEN160902"
 >F.25.6.4. Useful Reading</A
 ></H3
 ><P
@@ -2086,7 +2127,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN149521"
+NAME="AEN160925"
 >F.25.6.5. Technical References</A
 ></H3
 ><P
@@ -2135,16 +2176,6 @@ TARGET="_top"
 ></LI
 ><LI
 ><P
-><A
-HREF="http://csrc.nist.gov/cryptval/des.htm"
-TARGET="_top"
->http://csrc.nist.gov/cryptval/des.htm</A
-></P
-><P
->Standards for DES, 3DES and AES.</P
-></LI
-><LI
-><P
 >      <A
 HREF="http://en.wikipedia.org/wiki/Fortuna_(PRNG)"
 TARGET="_top"
@@ -2185,7 +2216,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN149557"
+NAME="AEN160957"
 >F.25.7. Author</A
 ></H2
 ><P
@@ -2208,7 +2239,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN149563"
+NAME="AEN160963"
 ></A
 ><TABLE
 BORDER="1"

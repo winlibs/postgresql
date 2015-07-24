@@ -1,9 +1,9 @@
 /*-------------------------------------------------------------------------
  *
  * jsonfuncs.c
- *		Functions to process JSON data type.
+ *		Functions to process JSON data types.
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -16,18 +16,19 @@
 
 #include <limits.h>
 
-#include "fmgr.h"
-#include "funcapi.h"
-#include "miscadmin.h"
 #include "access/htup_details.h"
 #include "catalog/pg_type.h"
+#include "fmgr.h"
+#include "funcapi.h"
 #include "lib/stringinfo.h"
 #include "mb/pg_wchar.h"
+#include "miscadmin.h"
 #include "utils/array.h"
 #include "utils/builtins.h"
 #include "utils/hsearch.h"
 #include "utils/json.h"
 #include "utils/jsonapi.h"
+#include "utils/jsonb.h"
 #include "utils/lsyscache.h"
 #include "utils/memutils.h"
 #include "utils/typcache.h"
@@ -39,32 +40,42 @@ static void okeys_scalar(void *state, char *token, JsonTokenType tokentype);
 
 /* semantic action functions for json_get* functions */
 static void get_object_start(void *state);
+static void get_object_end(void *state);
 static void get_object_field_start(void *state, char *fname, bool isnull);
 static void get_object_field_end(void *state, char *fname, bool isnull);
 static void get_array_start(void *state);
+static void get_array_end(void *state);
 static void get_array_element_start(void *state, bool isnull);
 static void get_array_element_end(void *state, bool isnull);
 static void get_scalar(void *state, char *token, JsonTokenType tokentype);
 
 /* common worker function for json getter functions */
-static inline Datum get_path_all(PG_FUNCTION_ARGS, bool as_text);
-static inline text *get_worker(text *json, char *field, int elem_index,
-		   char **tpath, int *ipath, int npath,
+static Datum get_path_all(FunctionCallInfo fcinfo, bool as_text);
+static text *get_worker(text *json, char **tpath, int *ipath, int npath,
 		   bool normalize_results);
+static Datum get_jsonb_path_all(FunctionCallInfo fcinfo, bool as_text);
 
 /* semantic action functions for json_array_length */
 static void alen_object_start(void *state);
 static void alen_scalar(void *state, char *token, JsonTokenType tokentype);
 static void alen_array_element_start(void *state, bool isnull);
 
-/* common worker for json_each* functions */
-static inline Datum each_worker(PG_FUNCTION_ARGS, bool as_text);
+/* common workers for json{b}_each* functions */
+static Datum each_worker(FunctionCallInfo fcinfo, bool as_text);
+static Datum each_worker_jsonb(FunctionCallInfo fcinfo, const char *funcname,
+				  bool as_text);
 
 /* semantic action functions for json_each */
 static void each_object_field_start(void *state, char *fname, bool isnull);
 static void each_object_field_end(void *state, char *fname, bool isnull);
 static void each_array_start(void *state);
 static void each_scalar(void *state, char *token, JsonTokenType tokentype);
+
+/* common workers for json{b}_array_elements_* functions */
+static Datum elements_worker(FunctionCallInfo fcinfo, const char *funcname,
+				bool as_text);
+static Datum elements_worker_jsonb(FunctionCallInfo fcinfo, const char *funcname,
+					  bool as_text);
 
 /* semantic action functions for json_array_elements */
 static void elements_object_start(void *state);
@@ -73,7 +84,11 @@ static void elements_array_element_end(void *state, bool isnull);
 static void elements_scalar(void *state, char *token, JsonTokenType tokentype);
 
 /* turn a json object into a hash table */
-static HTAB *get_json_object_as_hash(text *json, char *funcname, bool use_json_as_text);
+static HTAB *get_json_object_as_hash(text *json, const char *funcname);
+
+/* common worker for populate_record and to_record */
+static Datum populate_record_worker(FunctionCallInfo fcinfo, const char *funcname,
+					   bool have_record_arg);
 
 /* semantic action functions for get_json_object_as_hash */
 static void hash_object_field_start(void *state, char *fname, bool isnull);
@@ -90,13 +105,15 @@ static void populate_recordset_object_end(void *state);
 static void populate_recordset_array_start(void *state);
 static void populate_recordset_array_element_start(void *state, bool isnull);
 
-/* search type classification for json_get* functions */
-typedef enum
-{
-	JSON_SEARCH_OBJECT = 1,
-	JSON_SEARCH_ARRAY,
-	JSON_SEARCH_PATH
-} JsonSearch;
+/* worker function for populate_recordset and to_recordset */
+static Datum populate_recordset_worker(FunctionCallInfo fcinfo, const char *funcname,
+						  bool have_record_arg);
+
+/* Worker that takes care of common setup for us */
+static JsonbValue *findJsonbValueFromContainerLen(JsonbContainer *container,
+							   uint32 flags,
+							   char *key,
+							   uint32 keylen);
 
 /* state for json_object_keys */
 typedef struct OkeysState
@@ -106,35 +123,29 @@ typedef struct OkeysState
 	int			result_size;
 	int			result_count;
 	int			sent_count;
-}	OkeysState;
+} OkeysState;
 
 /* state for json_get* functions */
 typedef struct GetState
 {
 	JsonLexContext *lex;
-	JsonSearch	search_type;
-	int			search_index;
-	int			array_index;
-	char	   *search_term;
-	char	   *result_start;
 	text	   *tresult;
-	bool		result_is_null;
+	char	   *result_start;
 	bool		normalize_results;
 	bool		next_scalar;
-	char	  **path;
-	int			npath;
-	char	  **current_path;
-	bool	   *pathok;
-	int		   *array_level_index;
-	int		   *path_level_index;
-}	GetState;
+	int			npath;			/* length of each path-related array */
+	char	  **path_names;		/* field name(s) being sought */
+	int		   *path_indexes;	/* array index(es) being sought */
+	bool	   *pathok;			/* is path matched to current depth? */
+	int		   *array_cur_index;	/* current element index at each path level */
+} GetState;
 
 /* state for json_array_length */
 typedef struct AlenState
 {
 	JsonLexContext *lex;
 	int			count;
-}	AlenState;
+} AlenState;
 
 /* state for json_each */
 typedef struct EachState
@@ -147,37 +158,40 @@ typedef struct EachState
 	bool		normalize_results;
 	bool		next_scalar;
 	char	   *normalized_scalar;
-}	EachState;
+} EachState;
 
 /* state for json_array_elements */
 typedef struct ElementsState
 {
 	JsonLexContext *lex;
+	const char *function_name;
 	Tuplestorestate *tuple_store;
 	TupleDesc	ret_tdesc;
 	MemoryContext tmp_cxt;
 	char	   *result_start;
-}	ElementsState;
+	bool		normalize_results;
+	bool		next_scalar;
+	char	   *normalized_scalar;
+} ElementsState;
 
 /* state for get_json_object_as_hash */
 typedef struct JhashState
 {
 	JsonLexContext *lex;
+	const char *function_name;
 	HTAB	   *hash;
 	char	   *saved_scalar;
 	char	   *save_json_start;
-	bool		use_json_as_text;
-	char	   *function_name;
-}	JHashState;
+} JHashState;
 
-/* used to build the hashtable */
+/* hashtable element */
 typedef struct JsonHashEntry
 {
-	char		fname[NAMEDATALEN];
+	char		fname[NAMEDATALEN];		/* hash key (MUST BE FIRST) */
 	char	   *val;
 	char	   *json;
 	bool		isnull;
-}	JsonHashEntry;
+} JsonHashEntry;
 
 /* these two are stolen from hstore / record_out, used in populate_record* */
 typedef struct ColumnIOData
@@ -200,29 +214,109 @@ typedef struct RecordIOData
 typedef struct PopulateRecordsetState
 {
 	JsonLexContext *lex;
+	const char *function_name;
 	HTAB	   *json_hash;
 	char	   *saved_scalar;
 	char	   *save_json_start;
-	bool		use_json_as_text;
 	Tuplestorestate *tuple_store;
 	TupleDesc	ret_tdesc;
 	HeapTupleHeader rec;
 	RecordIOData *my_extra;
 	MemoryContext fn_mcxt;		/* used to stash IO funcs */
-}	PopulateRecordsetState;
+} PopulateRecordsetState;
+
+/* Turn a jsonb object into a record */
+static void make_row_from_rec_and_jsonb(Jsonb *element,
+							PopulateRecordsetState *state);
 
 /*
- * SQL function json_object-keys
+ * SQL function json_object_keys
  *
  * Returns the set of keys for the object argument.
  *
  * This SRF operates in value-per-call mode. It processes the
  * object during the first call, and the keys are simply stashed
- * in an array, whise size is expanded as necessary. This is probably
+ * in an array, whose size is expanded as necessary. This is probably
  * safe enough for a list of keys of a single object, since they are
  * limited in size to NAMEDATALEN and the number of keys is unlikely to
  * be so huge that it has major memory implications.
  */
+Datum
+jsonb_object_keys(PG_FUNCTION_ARGS)
+{
+	FuncCallContext *funcctx;
+	OkeysState *state;
+	int			i;
+
+	if (SRF_IS_FIRSTCALL())
+	{
+		MemoryContext oldcontext;
+		Jsonb	   *jb = PG_GETARG_JSONB(0);
+		bool		skipNested = false;
+		JsonbIterator *it;
+		JsonbValue	v;
+		int			r;
+
+		if (JB_ROOT_IS_SCALAR(jb))
+			ereport(ERROR,
+					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					 errmsg("cannot call %s on a scalar",
+							"jsonb_object_keys")));
+		else if (JB_ROOT_IS_ARRAY(jb))
+			ereport(ERROR,
+					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					 errmsg("cannot call %s on an array",
+							"jsonb_object_keys")));
+
+		funcctx = SRF_FIRSTCALL_INIT();
+		oldcontext = MemoryContextSwitchTo(funcctx->multi_call_memory_ctx);
+
+		state = palloc(sizeof(OkeysState));
+
+		state->result_size = JB_ROOT_COUNT(jb);
+		state->result_count = 0;
+		state->sent_count = 0;
+		state->result = palloc(state->result_size * sizeof(char *));
+
+		it = JsonbIteratorInit(&jb->root);
+
+		while ((r = JsonbIteratorNext(&it, &v, skipNested)) != WJB_DONE)
+		{
+			skipNested = true;
+
+			if (r == WJB_KEY)
+			{
+				char	   *cstr;
+
+				cstr = palloc(v.val.string.len + 1 * sizeof(char));
+				memcpy(cstr, v.val.string.val, v.val.string.len);
+				cstr[v.val.string.len] = '\0';
+				state->result[state->result_count++] = cstr;
+			}
+		}
+
+		MemoryContextSwitchTo(oldcontext);
+		funcctx->user_fctx = (void *) state;
+	}
+
+	funcctx = SRF_PERCALL_SETUP();
+	state = (OkeysState *) funcctx->user_fctx;
+
+	if (state->sent_count < state->result_count)
+	{
+		char	   *nxt = state->result[state->sent_count++];
+
+		SRF_RETURN_NEXT(funcctx, CStringGetTextDatum(nxt));
+	}
+
+	/* cleanup to reduce or eliminate memory leaks */
+	for (i = 0; i < state->result_count; i++)
+		pfree(state->result[i]);
+	pfree(state->result);
+	pfree(state);
+
+	SRF_RETURN_DONE(funcctx);
+}
 
 
 Datum
@@ -237,7 +331,6 @@ json_object_keys(PG_FUNCTION_ARGS)
 		text	   *json = PG_GETARG_TEXT_P(0);
 		JsonLexContext *lex = makeJsonLexContext(json, true);
 		JsonSemAction *sem;
-
 		MemoryContext oldcontext;
 
 		funcctx = SRF_FIRSTCALL_INIT();
@@ -268,7 +361,6 @@ json_object_keys(PG_FUNCTION_ARGS)
 
 		MemoryContextSwitchTo(oldcontext);
 		funcctx->user_fctx = (void *) state;
-
 	}
 
 	funcctx = SRF_PERCALL_SETUP();
@@ -303,7 +395,7 @@ okeys_object_field_start(void *state, char *fname, bool isnull)
 	if (_state->result_count >= _state->result_size)
 	{
 		_state->result_size *= 2;
-		_state->result =
+		_state->result = (char **)
 			repalloc(_state->result, sizeof(char *) * _state->result_size);
 	}
 
@@ -320,7 +412,8 @@ okeys_array_start(void *state)
 	if (_state->lex->lex_level == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot call json_object_keys on an array")));
+				 errmsg("cannot call %s on an array",
+						"json_object_keys")));
 }
 
 static void
@@ -332,13 +425,14 @@ okeys_scalar(void *state, char *token, JsonTokenType tokentype)
 	if (_state->lex->lex_level == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot call json_object_keys on a scalar")));
+				 errmsg("cannot call %s on a scalar",
+						"json_object_keys")));
 }
 
 /*
- * json getter functions
+ * json and jsonb getter functions
  * these implement the -> ->> #> and #>> operators
- * and the json_extract_path*(json, text, ...) functions
+ * and the json{b?}_extract_path*(json, text, ...) functions
  */
 
 
@@ -346,42 +440,113 @@ Datum
 json_object_field(PG_FUNCTION_ARGS)
 {
 	text	   *json = PG_GETARG_TEXT_P(0);
-	text	   *result;
-	text	   *fname = PG_GETARG_TEXT_P(1);
+	text	   *fname = PG_GETARG_TEXT_PP(1);
 	char	   *fnamestr = text_to_cstring(fname);
+	text	   *result;
 
-	result = get_worker(json, fnamestr, -1, NULL, NULL, -1, false);
+	result = get_worker(json, &fnamestr, NULL, 1, false);
 
 	if (result != NULL)
 		PG_RETURN_TEXT_P(result);
 	else
 		PG_RETURN_NULL();
+}
+
+Datum
+jsonb_object_field(PG_FUNCTION_ARGS)
+{
+	Jsonb	   *jb = PG_GETARG_JSONB(0);
+	text	   *key = PG_GETARG_TEXT_PP(1);
+	JsonbValue *v;
+
+	if (!JB_ROOT_IS_OBJECT(jb))
+		PG_RETURN_NULL();
+
+	v = findJsonbValueFromContainerLen(&jb->root, JB_FOBJECT,
+									   VARDATA_ANY(key),
+									   VARSIZE_ANY_EXHDR(key));
+
+	if (v != NULL)
+		PG_RETURN_JSONB(JsonbValueToJsonb(v));
+
+	PG_RETURN_NULL();
 }
 
 Datum
 json_object_field_text(PG_FUNCTION_ARGS)
 {
 	text	   *json = PG_GETARG_TEXT_P(0);
-	text	   *result;
-	text	   *fname = PG_GETARG_TEXT_P(1);
+	text	   *fname = PG_GETARG_TEXT_PP(1);
 	char	   *fnamestr = text_to_cstring(fname);
+	text	   *result;
 
-	result = get_worker(json, fnamestr, -1, NULL, NULL, -1, true);
+	result = get_worker(json, &fnamestr, NULL, 1, true);
 
 	if (result != NULL)
 		PG_RETURN_TEXT_P(result);
 	else
 		PG_RETURN_NULL();
+}
+
+Datum
+jsonb_object_field_text(PG_FUNCTION_ARGS)
+{
+	Jsonb	   *jb = PG_GETARG_JSONB(0);
+	text	   *key = PG_GETARG_TEXT_PP(1);
+	JsonbValue *v;
+
+	if (!JB_ROOT_IS_OBJECT(jb))
+		PG_RETURN_NULL();
+
+	v = findJsonbValueFromContainerLen(&jb->root, JB_FOBJECT,
+									   VARDATA_ANY(key),
+									   VARSIZE_ANY_EXHDR(key));
+
+	if (v != NULL)
+	{
+		text	   *result = NULL;
+
+		switch (v->type)
+		{
+			case jbvNull:
+				break;
+			case jbvBool:
+				result = cstring_to_text(v->val.boolean ? "true" : "false");
+				break;
+			case jbvString:
+				result = cstring_to_text_with_len(v->val.string.val, v->val.string.len);
+				break;
+			case jbvNumeric:
+				result = cstring_to_text(DatumGetCString(DirectFunctionCall1(numeric_out,
+										  PointerGetDatum(v->val.numeric))));
+				break;
+			case jbvBinary:
+				{
+					StringInfo	jtext = makeStringInfo();
+
+					(void) JsonbToCString(jtext, v->val.binary.data, -1);
+					result = cstring_to_text_with_len(jtext->data, jtext->len);
+				}
+				break;
+			default:
+				elog(ERROR, "unrecognized jsonb type: %d", (int) v->type);
+		}
+
+		if (result)
+			PG_RETURN_TEXT_P(result);
+	}
+
+	PG_RETURN_NULL();
 }
 
 Datum
 json_array_element(PG_FUNCTION_ARGS)
 {
 	text	   *json = PG_GETARG_TEXT_P(0);
-	text	   *result;
 	int			element = PG_GETARG_INT32(1);
+	text	   *result;
 
-	result = get_worker(json, NULL, element, NULL, NULL, -1, false);
+	result = get_worker(json, NULL, &element, 1, false);
 
 	if (result != NULL)
 		PG_RETURN_TEXT_P(result);
@@ -390,18 +555,83 @@ json_array_element(PG_FUNCTION_ARGS)
 }
 
 Datum
+jsonb_array_element(PG_FUNCTION_ARGS)
+{
+	Jsonb	   *jb = PG_GETARG_JSONB(0);
+	int			element = PG_GETARG_INT32(1);
+	JsonbValue *v;
+
+	if (!JB_ROOT_IS_ARRAY(jb))
+		PG_RETURN_NULL();
+
+	v = getIthJsonbValueFromContainer(&jb->root, element);
+	if (v != NULL)
+		PG_RETURN_JSONB(JsonbValueToJsonb(v));
+
+	PG_RETURN_NULL();
+}
+
+Datum
 json_array_element_text(PG_FUNCTION_ARGS)
 {
 	text	   *json = PG_GETARG_TEXT_P(0);
-	text	   *result;
 	int			element = PG_GETARG_INT32(1);
+	text	   *result;
 
-	result = get_worker(json, NULL, element, NULL, NULL, -1, true);
+	result = get_worker(json, NULL, &element, 1, true);
 
 	if (result != NULL)
 		PG_RETURN_TEXT_P(result);
 	else
 		PG_RETURN_NULL();
+}
+
+Datum
+jsonb_array_element_text(PG_FUNCTION_ARGS)
+{
+	Jsonb	   *jb = PG_GETARG_JSONB(0);
+	int			element = PG_GETARG_INT32(1);
+	JsonbValue *v;
+
+	if (!JB_ROOT_IS_ARRAY(jb))
+		PG_RETURN_NULL();
+
+	v = getIthJsonbValueFromContainer(&jb->root, element);
+	if (v != NULL)
+	{
+		text	   *result = NULL;
+
+		switch (v->type)
+		{
+			case jbvNull:
+				break;
+			case jbvBool:
+				result = cstring_to_text(v->val.boolean ? "true" : "false");
+				break;
+			case jbvString:
+				result = cstring_to_text_with_len(v->val.string.val, v->val.string.len);
+				break;
+			case jbvNumeric:
+				result = cstring_to_text(DatumGetCString(DirectFunctionCall1(numeric_out,
+										  PointerGetDatum(v->val.numeric))));
+				break;
+			case jbvBinary:
+				{
+					StringInfo	jtext = makeStringInfo();
+
+					(void) JsonbToCString(jtext, v->val.binary.data, -1);
+					result = cstring_to_text_with_len(jtext->data, jtext->len);
+				}
+				break;
+			default:
+				elog(ERROR, "unrecognized jsonb type: %d", (int) v->type);
+		}
+
+		if (result)
+			PG_RETURN_TEXT_P(result);
+	}
+
+	PG_RETURN_NULL();
 }
 
 Datum
@@ -419,8 +649,8 @@ json_extract_path_text(PG_FUNCTION_ARGS)
 /*
  * common routine for extract_path functions
  */
-static inline Datum
-get_path_all(PG_FUNCTION_ARGS, bool as_text)
+static Datum
+get_path_all(FunctionCallInfo fcinfo, bool as_text)
 {
 	text	   *json = PG_GETARG_TEXT_P(0);
 	ArrayType  *path = PG_GETARG_ARRAYTYPE_P(1);
@@ -431,14 +661,16 @@ get_path_all(PG_FUNCTION_ARGS, bool as_text)
 	char	  **tpath;
 	int		   *ipath;
 	int			i;
-	long		ind;
-	char	   *endptr;
 
+	/*
+	 * If the array contains any null elements, return NULL, on the grounds
+	 * that you'd have gotten NULL if any RHS value were NULL in a nested
+	 * series of applications of the -> operator.  (Note: because we also
+	 * return NULL for error cases such as no-such-field, this is true
+	 * regardless of the contents of the rest of the array.)
+	 */
 	if (array_contains_nulls(path))
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot call function with null path elements")));
-
+		PG_RETURN_NULL();
 
 	deconstruct_array(path, TEXTOID, -1, false, 'i',
 					  &pathtext, &pathnulls, &npath);
@@ -446,30 +678,33 @@ get_path_all(PG_FUNCTION_ARGS, bool as_text)
 	tpath = palloc(npath * sizeof(char *));
 	ipath = palloc(npath * sizeof(int));
 
-
 	for (i = 0; i < npath; i++)
 	{
+		Assert(!pathnulls[i]);
 		tpath[i] = TextDatumGetCString(pathtext[i]);
-		if (*tpath[i] == '\0')
-			ereport(
-					ERROR,
-					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				   errmsg("cannot call function with empty path elements")));
 
 		/*
 		 * we have no idea at this stage what structure the document is so
 		 * just convert anything in the path that we can to an integer and set
 		 * all the other integers to -1 which will never match.
 		 */
-		ind = strtol(tpath[i], &endptr, 10);
-		if (*endptr == '\0' && ind <= INT_MAX && ind >= 0)
-			ipath[i] = (int) ind;
+		if (*tpath[i] != '\0')
+		{
+			long		ind;
+			char	   *endptr;
+
+			errno = 0;
+			ind = strtol(tpath[i], &endptr, 10);
+			if (*endptr == '\0' && errno == 0 && ind <= INT_MAX && ind >= 0)
+				ipath[i] = (int) ind;
+			else
+				ipath[i] = -1;
+		}
 		else
 			ipath[i] = -1;
 	}
 
-
-	result = get_worker(json, NULL, -1, tpath, ipath, npath, as_text);
+	result = get_worker(json, tpath, ipath, npath, as_text);
 
 	if (result != NULL)
 		PG_RETURN_TEXT_P(result);
@@ -481,73 +716,65 @@ get_path_all(PG_FUNCTION_ARGS, bool as_text)
  * get_worker
  *
  * common worker for all the json getter functions
+ *
+ * json: JSON object (in text form)
+ * tpath[]: field name(s) to extract
+ * ipath[]: array index(es) (zero-based) to extract
+ * npath: length of tpath[] and/or ipath[]
+ * normalize_results: true to de-escape string and null scalars
+ *
+ * tpath can be NULL, or any one tpath[] entry can be NULL, if an object
+ * field is not to be matched at that nesting level.  Similarly, ipath can
+ * be NULL, or any one ipath[] entry can be -1, if an array element is not
+ * to be matched at that nesting level.
  */
-static inline text *
+static text *
 get_worker(text *json,
-		   char *field,
-		   int elem_index,
 		   char **tpath,
 		   int *ipath,
 		   int npath,
 		   bool normalize_results)
 {
-	GetState   *state;
 	JsonLexContext *lex = makeJsonLexContext(json, true);
-	JsonSemAction *sem;
+	JsonSemAction *sem = palloc0(sizeof(JsonSemAction));
+	GetState   *state = palloc0(sizeof(GetState));
 
-	/* only allowed to use one of these */
-	Assert(elem_index < 0 || (tpath == NULL && ipath == NULL && field == NULL));
-	Assert(tpath == NULL || field == NULL);
-
-	state = palloc0(sizeof(GetState));
-	sem = palloc0(sizeof(JsonSemAction));
+	Assert(npath >= 0);
 
 	state->lex = lex;
 	/* is it "_as_text" variant? */
 	state->normalize_results = normalize_results;
-	if (field != NULL)
-	{
-		/* single text argument */
-		state->search_type = JSON_SEARCH_OBJECT;
-		state->search_term = field;
-	}
-	else if (tpath != NULL)
-	{
-		/* path array argument */
-		state->search_type = JSON_SEARCH_PATH;
-		state->path = tpath;
-		state->npath = npath;
-		state->current_path = palloc(sizeof(char *) * npath);
-		state->pathok = palloc0(sizeof(bool) * npath);
-		state->pathok[0] = true;
-		state->array_level_index = palloc(sizeof(int) * npath);
-		state->path_level_index = ipath;
+	state->npath = npath;
+	state->path_names = tpath;
+	state->path_indexes = ipath;
+	state->pathok = palloc0(sizeof(bool) * npath);
+	state->array_cur_index = palloc(sizeof(int) * npath);
 
-	}
-	else
-	{
-		/* single integer argument */
-		state->search_type = JSON_SEARCH_ARRAY;
-		state->search_index = elem_index;
-		state->array_index = -1;
-	}
+	if (npath > 0)
+		state->pathok[0] = true;
 
 	sem->semstate = (void *) state;
 
 	/*
-	 * Not all	variants need all the semantic routines. only set the ones
-	 * that are actually needed for maximum efficiency.
+	 * Not all variants need all the semantic routines. Only set the ones that
+	 * are actually needed for maximum efficiency.
 	 */
-	sem->object_start = get_object_start;
-	sem->array_start = get_array_start;
 	sem->scalar = get_scalar;
-	if (field != NULL || tpath != NULL)
+	if (npath == 0)
+	{
+		sem->object_start = get_object_start;
+		sem->object_end = get_object_end;
+		sem->array_start = get_array_start;
+		sem->array_end = get_array_end;
+	}
+	if (tpath != NULL)
 	{
 		sem->object_field_start = get_object_field_start;
 		sem->object_field_end = get_object_field_end;
 	}
-	if (field == NULL)
+	if (ipath != NULL)
 	{
+		sem->array_start = get_array_start;
 		sem->array_element_start = get_array_element_start;
 		sem->array_element_end = get_array_element_end;
 	}
@@ -561,12 +788,33 @@ static void
 get_object_start(void *state)
 {
 	GetState   *_state = (GetState *) state;
+	int			lex_level = _state->lex->lex_level;
 
-	/* json structure check */
-	if (_state->lex->lex_level == 0 && _state->search_type == JSON_SEARCH_ARRAY)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot extract array element from a non-array")));
+	if (lex_level == 0 && _state->npath == 0)
+	{
+		/*
+		 * Special case: we should match the entire object.  We only need this
+		 * at outermost level because at nested levels the match will have
+		 * been started by the outer field or array element callback.
+		 */
+		_state->result_start = _state->lex->token_start;
+	}
+}
+
+static void
+get_object_end(void *state)
+{
+	GetState   *_state = (GetState *) state;
+	int			lex_level = _state->lex->lex_level;
+
+	if (lex_level == 0 && _state->npath == 0)
+	{
+		/* Special case: return the entire object */
+		char	   *start = _state->result_start;
+		int			len = _state->lex->prev_token_terminator - start;
+
+		_state->tresult = cstring_to_text_with_len(start, len);
+	}
 }
 
 static void
@@ -576,37 +824,30 @@ get_object_field_start(void *state, char *fname, bool isnull)
 	bool		get_next = false;
 	int			lex_level = _state->lex->lex_level;
 
-	if (lex_level == 1 && _state->search_type == JSON_SEARCH_OBJECT &&
-		strcmp(fname, _state->search_term) == 0)
+	if (lex_level <= _state->npath &&
+		_state->pathok[lex_level - 1] &&
+		_state->path_names != NULL &&
+		_state->path_names[lex_level - 1] != NULL &&
+		strcmp(fname, _state->path_names[lex_level - 1]) == 0)
 	{
-
-		_state->tresult = NULL;
-		_state->result_start = NULL;
-		get_next = true;
-	}
-	else if (_state->search_type == JSON_SEARCH_PATH &&
-			 lex_level <= _state->npath &&
-			 _state->pathok[_state->lex->lex_level - 1] &&
-			 strcmp(fname, _state->path[lex_level - 1]) == 0)
-	{
-		/* path search, path so far is ok,	and we have a match */
-
-		/* this object overrides any previous matching object */
-
-		_state->tresult = NULL;
-		_state->result_start = NULL;
-
-		/* if not at end of path just mark path ok */
 		if (lex_level < _state->npath)
+		{
+			/* if not at end of path just mark path ok */
 			_state->pathok[lex_level] = true;
-
-		/* end of path, so we want this value */
-		if (lex_level == _state->npath)
+		}
+		else
+		{
+			/* end of path, so we want this value */
 			get_next = true;
+		}
 	}
 
 	if (get_next)
 	{
+		/* this object overrides any previous matching object */
+		_state->tresult = NULL;
+		_state->result_start = NULL;
+
 		if (_state->normalize_results &&
 			_state->lex->token_type == JSON_TOKEN_STRING)
 		{
@@ -628,47 +869,46 @@ get_object_field_end(void *state, char *fname, bool isnull)
 	bool		get_last = false;
 	int			lex_level = _state->lex->lex_level;
 
-
-	/* same tests as in get_object_field_start, mutatis mutandis */
-	if (lex_level == 1 && _state->search_type == JSON_SEARCH_OBJECT &&
-		strcmp(fname, _state->search_term) == 0)
+	/* same tests as in get_object_field_start */
+	if (lex_level <= _state->npath &&
+		_state->pathok[lex_level - 1] &&
+		_state->path_names != NULL &&
+		_state->path_names[lex_level - 1] != NULL &&
+		strcmp(fname, _state->path_names[lex_level - 1]) == 0)
 	{
-		get_last = true;
-	}
-	else if (_state->search_type == JSON_SEARCH_PATH &&
-			 lex_level <= _state->npath &&
-			 _state->pathok[lex_level - 1] &&
-			 strcmp(fname, _state->path[lex_level - 1]) == 0)
-	{
-		/* done with this field so reset pathok */
 		if (lex_level < _state->npath)
+		{
+			/* done with this field so reset pathok */
 			_state->pathok[lex_level] = false;
-
-		if (lex_level == _state->npath)
+		}
+		else
+		{
+			/* end of path, so we want this value */
 			get_last = true;
+		}
 	}
 
-	/* for as_test variants our work is already done */
+	/* for as_text scalar case, our work is already done */
 	if (get_last && _state->result_start != NULL)
 	{
 		/*
 		 * make a text object from the string from the prevously noted json
 		 * start up to the end of the previous token (the lexer is by now
-		 * ahead of us on whatevere came after what we're interested in).
+		 * ahead of us on whatever came after what we're interested in).
 		 */
-		int			len = _state->lex->prev_token_terminator - _state->result_start;
-
 		if (isnull && _state->normalize_results)
 			_state->tresult = (text *) NULL;
 		else
-			_state->tresult = cstring_to_text_with_len(_state->result_start, len);
-	}
+		{
+			char	   *start = _state->result_start;
+			int			len = _state->lex->prev_token_terminator - start;
 
-	/*
-	 * don't need to reset _state->result_start b/c we're only returning one
-	 * datum, the conditions should not occur more than once, and this lets us
-	 * check cheaply that they don't (see object_field_start() )
-	 */
+			_state->tresult = cstring_to_text_with_len(start, len);
+		}
+
+		/* this should be unnecessary but let's do it for cleanliness: */
+		_state->result_start = NULL;
+	}
 }
 
 static void
@@ -677,19 +917,36 @@ get_array_start(void *state)
 	GetState   *_state = (GetState *) state;
 	int			lex_level = _state->lex->lex_level;
 
-	/* json structure check */
-	if (lex_level == 0 && _state->search_type == JSON_SEARCH_OBJECT)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot extract field from a non-object")));
+	if (lex_level < _state->npath)
+	{
+		/* Initialize counting of elements in this array */
+		_state->array_cur_index[lex_level] = -1;
+	}
+	else if (lex_level == 0 && _state->npath == 0)
+	{
+		/*
+		 * Special case: we should match the entire array.  We only need this
+		 * at outermost level because at nested levels the match will have
+		 * been started by the outer field or array element callback.
+		 */
+		_state->result_start = _state->lex->token_start;
+	}
+}
 
-	/*
-	 * initialize array count for this nesting level Note: the lex_level seen
-	 * by array_start is one less than that seen by the elements of the array.
-	 */
-	if (_state->search_type == JSON_SEARCH_PATH &&
-		lex_level < _state->npath)
-		_state->array_level_index[lex_level] = -1;
+static void
+get_array_end(void *state)
+{
+	GetState   *_state = (GetState *) state;
+	int			lex_level = _state->lex->lex_level;
+
+	if (lex_level == 0 && _state->npath == 0)
+	{
+		/* Special case: return the entire array */
+		char	   *start = _state->result_start;
+		int			len = _state->lex->prev_token_terminator - start;
+
+		_state->tresult = cstring_to_text_with_len(start, len);
+	}
 }
 
 static void
@@ -699,46 +956,33 @@ get_array_element_start(void *state, bool isnull)
 	bool		get_next = false;
 	int			lex_level = _state->lex->lex_level;
 
-	if (lex_level == 1 && _state->search_type == JSON_SEARCH_ARRAY)
-	{
-		/* single integer search */
-		_state->array_index++;
-		if (_state->array_index == _state->search_index)
-			get_next = true;
-	}
-	else if (_state->search_type == JSON_SEARCH_PATH &&
-			 lex_level <= _state->npath &&
-			 _state->pathok[lex_level - 1])
-	{
-		/*
-		 * path search, path so far is ok
-		 *
-		 * increment the array counter. no point doing this if we already know
-		 * the path is bad.
-		 *
-		 * then check if we have a match.
-		 */
+	/* Update array element counter */
+	if (lex_level <= _state->npath)
+		_state->array_cur_index[lex_level - 1]++;
 
-		if (++_state->array_level_index[lex_level - 1] ==
-			_state->path_level_index[lex_level - 1])
+	if (lex_level <= _state->npath &&
+		_state->pathok[lex_level - 1] &&
+		_state->path_indexes != NULL &&
+		_state->array_cur_index[lex_level - 1] == _state->path_indexes[lex_level - 1])
+	{
+		if (lex_level < _state->npath)
 		{
-			if (lex_level == _state->npath)
-			{
-				/* match and at end of path, so get value */
-				get_next = true;
-			}
-			else
-			{
-				/* not at end of path just mark path ok */
-				_state->pathok[lex_level] = true;
-			}
+			/* if not at end of path just mark path ok */
+			_state->pathok[lex_level] = true;
 		}
-
+		else
+		{
+			/* end of path, so we want this value */
+			get_next = true;
+		}
 	}
 
 	/* same logic as for objects */
 	if (get_next)
 	{
+		_state->tresult = NULL;
+		_state->result_start = NULL;
+
 		if (_state->normalize_results &&
 			_state->lex->token_type == JSON_TOKEN_STRING)
 		{
@@ -758,34 +1002,38 @@ get_array_element_end(void *state, bool isnull)
 	bool		get_last = false;
 	int			lex_level = _state->lex->lex_level;
 
-	/* same logic as in get_object_end, modified for arrays */
-
-	if (lex_level == 1 && _state->search_type == JSON_SEARCH_ARRAY &&
-		_state->array_index == _state->search_index)
+	/* same tests as in get_array_element_start */
+	if (lex_level <= _state->npath &&
+		_state->pathok[lex_level - 1] &&
+		_state->path_indexes != NULL &&
+		_state->array_cur_index[lex_level - 1] == _state->path_indexes[lex_level - 1])
 	{
-		get_last = true;
-	}
-	else if (_state->search_type == JSON_SEARCH_PATH &&
-			 lex_level <= _state->npath &&
-			 _state->pathok[lex_level - 1] &&
-			 _state->array_level_index[lex_level - 1] ==
-			 _state->path_level_index[lex_level - 1])
-	{
-		/* done with this element so reset pathok */
 		if (lex_level < _state->npath)
+		{
+			/* done with this element so reset pathok */
 			_state->pathok[lex_level] = false;
-
-		if (lex_level == _state->npath)
+		}
+		else
+		{
+			/* end of path, so we want this value */
 			get_last = true;
+		}
 	}
+
+	/* same logic as for objects */
 	if (get_last && _state->result_start != NULL)
 	{
-		int			len = _state->lex->prev_token_terminator - _state->result_start;
-
 		if (isnull && _state->normalize_results)
 			_state->tresult = (text *) NULL;
 		else
-			_state->tresult = cstring_to_text_with_len(_state->result_start, len);
+		{
+			char	   *start = _state->result_start;
+			int			len = _state->lex->prev_token_terminator - start;
+
+			_state->tresult = cstring_to_text_with_len(start, len);
+		}
+
+		_state->result_start = NULL;
 	}
 }
 
@@ -793,11 +1041,34 @@ static void
 get_scalar(void *state, char *token, JsonTokenType tokentype)
 {
 	GetState   *_state = (GetState *) state;
+	int			lex_level = _state->lex->lex_level;
 
-	if (_state->lex->lex_level == 0 && _state->search_type != JSON_SEARCH_PATH)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot extract element from a scalar")));
+	/* Check for whole-object match */
+	if (lex_level == 0 && _state->npath == 0)
+	{
+		if (_state->normalize_results && tokentype == JSON_TOKEN_STRING)
+		{
+			/* we want the de-escaped string */
+			_state->next_scalar = true;
+		}
+		else if (_state->normalize_results && tokentype == JSON_TOKEN_NULL)
+		{
+			_state->tresult = (text *) NULL;
+		}
+		else
+		{
+			/*
+			 * This is a bit hokey: we will suppress whitespace after the
+			 * scalar token, but not whitespace before it.  Probably not worth
+			 * doing our own space-skipping to avoid that.
+			 */
+			char	   *start = _state->lex->input;
+			int			len = _state->lex->prev_token_terminator - start;
+
+			_state->tresult = cstring_to_text_with_len(start, len);
+		}
+	}
+
 	if (_state->next_scalar)
 	{
 		/* a de-escaped text value is wanted, so supply it */
@@ -805,7 +1076,162 @@ get_scalar(void *state, char *token, JsonTokenType tokentype)
 		/* make sure the next call to get_scalar doesn't overwrite it */
 		_state->next_scalar = false;
 	}
+}
 
+Datum
+jsonb_extract_path(PG_FUNCTION_ARGS)
+{
+	return get_jsonb_path_all(fcinfo, false);
+}
+
+Datum
+jsonb_extract_path_text(PG_FUNCTION_ARGS)
+{
+	return get_jsonb_path_all(fcinfo, true);
+}
+
+static Datum
+get_jsonb_path_all(FunctionCallInfo fcinfo, bool as_text)
+{
+	Jsonb	   *jb = PG_GETARG_JSONB(0);
+	ArrayType  *path = PG_GETARG_ARRAYTYPE_P(1);
+	Jsonb	   *res;
+	Datum	   *pathtext;
+	bool	   *pathnulls;
+	int			npath;
+	int			i;
+	bool		have_object = false,
+				have_array = false;
+	JsonbValue *jbvp = NULL;
+	JsonbValue	tv;
+	JsonbContainer *container;
+
+	/*
+	 * If the array contains any null elements, return NULL, on the grounds
+	 * that you'd have gotten NULL if any RHS value were NULL in a nested
+	 * series of applications of the -> operator.  (Note: because we also
+	 * return NULL for error cases such as no-such-field, this is true
+	 * regardless of the contents of the rest of the array.)
+	 */
+	if (array_contains_nulls(path))
+		PG_RETURN_NULL();
+
+	deconstruct_array(path, TEXTOID, -1, false, 'i',
+					  &pathtext, &pathnulls, &npath);
+
+	/* Identify whether we have object, array, or scalar at top-level */
+	container = &jb->root;
+
+	if (JB_ROOT_IS_OBJECT(jb))
+		have_object = true;
+	else if (JB_ROOT_IS_ARRAY(jb) && !JB_ROOT_IS_SCALAR(jb))
+		have_array = true;
+	else
+	{
+		Assert(JB_ROOT_IS_ARRAY(jb) && JB_ROOT_IS_SCALAR(jb));
+		/* Extract the scalar value, if it is what we'll return */
+		if (npath <= 0)
+			jbvp = getIthJsonbValueFromContainer(container, 0);
+	}
+
+	/*
+	 * If the array is empty, return the entire LHS object, on the grounds
+	 * that we should do zero field or element extractions.  For the
+	 * non-scalar case we can just hand back the object without much work. For
+	 * the scalar case, fall through and deal with the value below the loop.
+	 * (This inconsistency arises because there's no easy way to generate a
+	 * JsonbValue directly for root-level containers.)
+	 */
+	if (npath <= 0 && jbvp == NULL)
+	{
+		if (as_text)
+		{
+			PG_RETURN_TEXT_P(cstring_to_text(JsonbToCString(NULL,
+															container,
+															VARSIZE(jb))));
+		}
+		else
+		{
+			/* not text mode - just hand back the jsonb */
+			PG_RETURN_JSONB(jb);
+		}
+	}
+
+	for (i = 0; i < npath; i++)
+	{
+		if (have_object)
+		{
+			jbvp = findJsonbValueFromContainerLen(container,
+												  JB_FOBJECT,
+												  VARDATA_ANY(pathtext[i]),
+											 VARSIZE_ANY_EXHDR(pathtext[i]));
+		}
+		else if (have_array)
+		{
+			long		lindex;
+			uint32		index;
+			char	   *indextext = TextDatumGetCString(pathtext[i]);
+			char	   *endptr;
+
+			errno = 0;
+			lindex = strtol(indextext, &endptr, 10);
+			if (endptr == indextext || *endptr != '\0' || errno != 0 ||
+				lindex > INT_MAX || lindex < 0)
+				PG_RETURN_NULL();
+			index = (uint32) lindex;
+			jbvp = getIthJsonbValueFromContainer(container, index);
+		}
+		else
+		{
+			/* scalar, extraction yields a null */
+			PG_RETURN_NULL();
+		}
+
+		if (jbvp == NULL)
+			PG_RETURN_NULL();
+		else if (i == npath - 1)
+			break;
+
+		if (jbvp->type == jbvBinary)
+		{
+			JsonbIterator *it = JsonbIteratorInit((JsonbContainer *) jbvp->val.binary.data);
+			int			r;
+
+			r = JsonbIteratorNext(&it, &tv, true);
+			container = (JsonbContainer *) jbvp->val.binary.data;
+			have_object = r == WJB_BEGIN_OBJECT;
+			have_array = r == WJB_BEGIN_ARRAY;
+		}
+		else
+		{
+			have_object = jbvp->type == jbvObject;
+			have_array = jbvp->type == jbvArray;
+		}
+	}
+
+	if (as_text)
+	{
+		/* special-case outputs for string and null values */
+		if (jbvp->type == jbvString)
+			PG_RETURN_TEXT_P(cstring_to_text_with_len(jbvp->val.string.val,
+													  jbvp->val.string.len));
+		if (jbvp->type == jbvNull)
+			PG_RETURN_NULL();
+	}
+
+	res = JsonbValueToJsonb(jbvp);
+
+	if (as_text)
+	{
+		PG_RETURN_TEXT_P(cstring_to_text(JsonbToCString(NULL,
+														&res->root,
+														VARSIZE(res))));
+	}
+	else
+	{
+		/* not text mode - just hand back the jsonb */
+		PG_RETURN_JSONB(res);
+	}
 }
 
 /*
@@ -815,11 +1241,11 @@ Datum
 json_array_length(PG_FUNCTION_ARGS)
 {
 	text	   *json = PG_GETARG_TEXT_P(0);
-
 	AlenState  *state;
-	JsonLexContext *lex = makeJsonLexContext(json, false);
+	JsonLexContext *lex;
 	JsonSemAction *sem;
 
+	lex = makeJsonLexContext(json, false);
 	state = palloc0(sizeof(AlenState));
 	sem = palloc0(sizeof(JsonSemAction));
 
@@ -839,8 +1265,25 @@ json_array_length(PG_FUNCTION_ARGS)
 	PG_RETURN_INT32(state->count);
 }
 
+Datum
+jsonb_array_length(PG_FUNCTION_ARGS)
+{
+	Jsonb	   *jb = PG_GETARG_JSONB(0);
+
+	if (JB_ROOT_IS_SCALAR(jb))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("cannot get array length of a scalar")));
+	else if (!JB_ROOT_IS_ARRAY(jb))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("cannot get array length of a non-array")));
+
+	PG_RETURN_INT32(JB_ROOT_COUNT(jb));
+}
+
 /*
- * These next two check ensure that the json is an array (since it can't be
+ * These next two checks ensure that the json is an array (since it can't be
  * a scalar or an object).
  */
 
@@ -895,22 +1338,173 @@ json_each(PG_FUNCTION_ARGS)
 }
 
 Datum
+jsonb_each(PG_FUNCTION_ARGS)
+{
+	return each_worker_jsonb(fcinfo, "jsonb_each", false);
+}
+
+Datum
 json_each_text(PG_FUNCTION_ARGS)
 {
 	return each_worker(fcinfo, true);
 }
 
-static inline Datum
-each_worker(PG_FUNCTION_ARGS, bool as_text)
+Datum
+jsonb_each_text(PG_FUNCTION_ARGS)
+{
+	return each_worker_jsonb(fcinfo, "jsonb_each_text", true);
+}
+
+static Datum
+each_worker_jsonb(FunctionCallInfo fcinfo, const char *funcname, bool as_text)
+{
+	Jsonb	   *jb = PG_GETARG_JSONB(0);
+	ReturnSetInfo *rsi;
+	Tuplestorestate *tuple_store;
+	TupleDesc	tupdesc;
+	TupleDesc	ret_tdesc;
+	MemoryContext old_cxt,
+				tmp_cxt;
+	bool		skipNested = false;
+	JsonbIterator *it;
+	JsonbValue	v;
+	int			r;
+
+	if (!JB_ROOT_IS_OBJECT(jb))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("cannot call %s on a non-object",
+						funcname)));
+
+	rsi = (ReturnSetInfo *) fcinfo->resultinfo;
+
+	if (!rsi || !IsA(rsi, ReturnSetInfo) ||
+		(rsi->allowedModes & SFRM_Materialize) == 0 ||
+		rsi->expectedDesc == NULL)
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("set-valued function called in context that "
+						"cannot accept a set")));
+
+	rsi->returnMode = SFRM_Materialize;
+
+	if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("function returning record called in context "
+						"that cannot accept type record")));
+
+	old_cxt = MemoryContextSwitchTo(rsi->econtext->ecxt_per_query_memory);
+
+	ret_tdesc = CreateTupleDescCopy(tupdesc);
+	BlessTupleDesc(ret_tdesc);
+	tuple_store =
+		tuplestore_begin_heap(rsi->allowedModes & SFRM_Materialize_Random,
+							  false, work_mem);
+
+	MemoryContextSwitchTo(old_cxt);
+
+	tmp_cxt = AllocSetContextCreate(CurrentMemoryContext,
+									"jsonb_each temporary cxt",
+									ALLOCSET_DEFAULT_MINSIZE,
+									ALLOCSET_DEFAULT_INITSIZE,
+									ALLOCSET_DEFAULT_MAXSIZE);
+
+	it = JsonbIteratorInit(&jb->root);
+
+	while ((r = JsonbIteratorNext(&it, &v, skipNested)) != WJB_DONE)
+	{
+		skipNested = true;
+
+		if (r == WJB_KEY)
+		{
+			text	   *key;
+			HeapTuple	tuple;
+			Datum		values[2];
+			bool		nulls[2] = {false, false};
+
+			/* Use the tmp context so we can clean up after each tuple is done */
+			old_cxt = MemoryContextSwitchTo(tmp_cxt);
+
+			key = cstring_to_text_with_len(v.val.string.val, v.val.string.len);
+
+			/*
+			 * The next thing the iterator fetches should be the value, no
+			 * matter what shape it is.
+			 */
+			r = JsonbIteratorNext(&it, &v, skipNested);
+
+			values[0] = PointerGetDatum(key);
+
+			if (as_text)
+			{
+				if (v.type == jbvNull)
+				{
+					/* a json null is an sql null in text mode */
+					nulls[1] = true;
+					values[1] = (Datum) NULL;
+				}
+				else
+				{
+					text	   *sv;
+
+					if (v.type == jbvString)
+					{
+						/* In text mode, scalar strings should be dequoted */
+						sv = cstring_to_text_with_len(v.val.string.val, v.val.string.len);
+					}
+					else
+					{
+						/* Turn anything else into a json string */
+						StringInfo	jtext = makeStringInfo();
+						Jsonb	   *jb = JsonbValueToJsonb(&v);
+
+						(void) JsonbToCString(jtext, &jb->root, 0);
+						sv = cstring_to_text_with_len(jtext->data, jtext->len);
+					}
+
+					values[1] = PointerGetDatum(sv);
+				}
+			}
+			else
+			{
+				/* Not in text mode, just return the Jsonb */
+				Jsonb	   *val = JsonbValueToJsonb(&v);
+
+				values[1] = PointerGetDatum(val);
+			}
+
+			tuple = heap_form_tuple(ret_tdesc, values, nulls);
+
+			tuplestore_puttuple(tuple_store, tuple);
+
+			/* clean up and switch back */
+			MemoryContextSwitchTo(old_cxt);
+			MemoryContextReset(tmp_cxt);
+		}
+	}
+
+	MemoryContextDelete(tmp_cxt);
+
+	rsi->setResult = tuple_store;
+	rsi->setDesc = ret_tdesc;
+
+	PG_RETURN_NULL();
+}
+
+
+static Datum
+each_worker(FunctionCallInfo fcinfo, bool as_text)
 {
 	text	   *json = PG_GETARG_TEXT_P(0);
-	JsonLexContext *lex = makeJsonLexContext(json, true);
+	JsonLexContext *lex;
 	JsonSemAction *sem;
 	ReturnSetInfo *rsi;
 	MemoryContext old_cxt;
 	TupleDesc	tupdesc;
 	EachState  *state;
 
+	lex = makeJsonLexContext(json, true);
 	state = palloc0(sizeof(EachState));
 	sem = palloc0(sizeof(JsonSemAction));
 
@@ -923,7 +1517,6 @@ each_worker(PG_FUNCTION_ARGS, bool as_text)
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 				 errmsg("set-valued function called in context that "
 						"cannot accept a set")));
-
 
 	rsi->returnMode = SFRM_Materialize;
 
@@ -948,7 +1541,6 @@ each_worker(PG_FUNCTION_ARGS, bool as_text)
 
 	state->normalize_results = as_text;
 	state->next_scalar = false;
-
 	state->lex = lex;
 	state->tmp_cxt = AllocSetContextCreate(CurrentMemoryContext,
 										   "json_each temporary cxt",
@@ -957,6 +1549,8 @@ each_worker(PG_FUNCTION_ARGS, bool as_text)
 										   ALLOCSET_DEFAULT_MAXSIZE);
 
 	pg_parse_json(lex, sem);
+
+	MemoryContextDelete(state->tmp_cxt);
 
 	rsi->setResult = state->tuple_store;
 	rsi->setDesc = state->ret_tdesc;
@@ -1008,7 +1602,7 @@ each_object_field_end(void *state, char *fname, bool isnull)
 	if (isnull && _state->normalize_results)
 	{
 		nulls[1] = true;
-		values[1] = (Datum) NULL;
+		values[1] = (Datum) 0;
 	}
 	else if (_state->next_scalar)
 	{
@@ -1021,7 +1615,6 @@ each_object_field_end(void *state, char *fname, bool isnull)
 		val = cstring_to_text_with_len(_state->result_start, len);
 		values[1] = PointerGetDatum(val);
 	}
-
 
 	tuple = heap_form_tuple(_state->ret_tdesc, values, nulls);
 
@@ -1061,19 +1654,170 @@ each_scalar(void *state, char *token, JsonTokenType tokentype)
 }
 
 /*
- * SQL function json_array_elements
+ * SQL functions json_array_elements and json_array_elements_text
  *
  * get the elements from a json array
  *
  * a lot of this processing is similar to the json_each* functions
  */
+
+Datum
+jsonb_array_elements(PG_FUNCTION_ARGS)
+{
+	return elements_worker_jsonb(fcinfo, "jsonb_array_elements", false);
+}
+
+Datum
+jsonb_array_elements_text(PG_FUNCTION_ARGS)
+{
+	return elements_worker_jsonb(fcinfo, "jsonb_array_elements_text", true);
+}
+
+static Datum
+elements_worker_jsonb(FunctionCallInfo fcinfo, const char *funcname,
+					  bool as_text)
+{
+	Jsonb	   *jb = PG_GETARG_JSONB(0);
+	ReturnSetInfo *rsi;
+	Tuplestorestate *tuple_store;
+	TupleDesc	tupdesc;
+	TupleDesc	ret_tdesc;
+	MemoryContext old_cxt,
+				tmp_cxt;
+	bool		skipNested = false;
+	JsonbIterator *it;
+	JsonbValue	v;
+	int			r;
+
+	if (JB_ROOT_IS_SCALAR(jb))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("cannot extract elements from a scalar")));
+	else if (!JB_ROOT_IS_ARRAY(jb))
+		ereport(ERROR,
+				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+				 errmsg("cannot extract elements from an object")));
+
+	rsi = (ReturnSetInfo *) fcinfo->resultinfo;
+
+	if (!rsi || !IsA(rsi, ReturnSetInfo) ||
+		(rsi->allowedModes & SFRM_Materialize) == 0 ||
+		rsi->expectedDesc == NULL)
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("set-valued function called in context that "
+						"cannot accept a set")));
+
+	rsi->returnMode = SFRM_Materialize;
+
+	/* it's a simple type, so don't use get_call_result_type() */
+	tupdesc = rsi->expectedDesc;
+
+	old_cxt = MemoryContextSwitchTo(rsi->econtext->ecxt_per_query_memory);
+
+	ret_tdesc = CreateTupleDescCopy(tupdesc);
+	BlessTupleDesc(ret_tdesc);
+	tuple_store =
+		tuplestore_begin_heap(rsi->allowedModes & SFRM_Materialize_Random,
+							  false, work_mem);
+
+	MemoryContextSwitchTo(old_cxt);
+
+	tmp_cxt = AllocSetContextCreate(CurrentMemoryContext,
+									"jsonb_array_elements temporary cxt",
+									ALLOCSET_DEFAULT_MINSIZE,
+									ALLOCSET_DEFAULT_INITSIZE,
+									ALLOCSET_DEFAULT_MAXSIZE);
+
+	it = JsonbIteratorInit(&jb->root);
+
+	while ((r = JsonbIteratorNext(&it, &v, skipNested)) != WJB_DONE)
+	{
+		skipNested = true;
+
+		if (r == WJB_ELEM)
+		{
+			HeapTuple	tuple;
+			Datum		values[1];
+			bool		nulls[1] = {false};
+
+			/* use the tmp context so we can clean up after each tuple is done */
+			old_cxt = MemoryContextSwitchTo(tmp_cxt);
+
+			if (!as_text)
+			{
+				Jsonb	   *val = JsonbValueToJsonb(&v);
+
+				values[0] = PointerGetDatum(val);
+			}
+			else
+			{
+				if (v.type == jbvNull)
+				{
+					/* a json null is an sql null in text mode */
+					nulls[0] = true;
+					values[0] = (Datum) NULL;
+				}
+				else
+				{
+					text	   *sv;
+
+					if (v.type == jbvString)
+					{
+						/* in text mode scalar strings should be dequoted */
+						sv = cstring_to_text_with_len(v.val.string.val, v.val.string.len);
+					}
+					else
+					{
+						/* turn anything else into a json string */
+						StringInfo	jtext = makeStringInfo();
+						Jsonb	   *jb = JsonbValueToJsonb(&v);
+
+						(void) JsonbToCString(jtext, &jb->root, 0);
+						sv = cstring_to_text_with_len(jtext->data, jtext->len);
+					}
+
+					values[0] = PointerGetDatum(sv);
+				}
+			}
+
+			tuple = heap_form_tuple(ret_tdesc, values, nulls);
+
+			tuplestore_puttuple(tuple_store, tuple);
+
+			/* clean up and switch back */
+			MemoryContextSwitchTo(old_cxt);
+			MemoryContextReset(tmp_cxt);
+		}
+	}
+
+	MemoryContextDelete(tmp_cxt);
+
+	rsi->setResult = tuple_store;
+	rsi->setDesc = ret_tdesc;
+
+	PG_RETURN_NULL();
+}
+
 Datum
 json_array_elements(PG_FUNCTION_ARGS)
 {
+	return elements_worker(fcinfo, "json_array_elements", false);
+}
+
+Datum
+json_array_elements_text(PG_FUNCTION_ARGS)
+{
+	return elements_worker(fcinfo, "json_array_elements_text", true);
+}
+
+static Datum
+elements_worker(FunctionCallInfo fcinfo, const char *funcname, bool as_text)
+{
 	text	   *json = PG_GETARG_TEXT_P(0);
 
-	/* elements doesn't need any escaped strings, so use false here */
-	JsonLexContext *lex = makeJsonLexContext(json, false);
+	/* elements only needs escaped strings when as_text */
+	JsonLexContext *lex = makeJsonLexContext(json, as_text);
 	JsonSemAction *sem;
 	ReturnSetInfo *rsi;
 	MemoryContext old_cxt;
@@ -1092,7 +1836,6 @@ json_array_elements(PG_FUNCTION_ARGS)
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 				 errmsg("set-valued function called in context that "
 						"cannot accept a set")));
-
 
 	rsi->returnMode = SFRM_Materialize;
 
@@ -1116,6 +1859,9 @@ json_array_elements(PG_FUNCTION_ARGS)
 	sem->array_element_start = elements_array_element_start;
 	sem->array_element_end = elements_array_element_end;
 
+	state->function_name = funcname;
+	state->normalize_results = as_text;
+	state->next_scalar = false;
 	state->lex = lex;
 	state->tmp_cxt = AllocSetContextCreate(CurrentMemoryContext,
 										 "json_array_elements temporary cxt",
@@ -1124,6 +1870,8 @@ json_array_elements(PG_FUNCTION_ARGS)
 										   ALLOCSET_DEFAULT_MAXSIZE);
 
 	pg_parse_json(lex, sem);
+
+	MemoryContextDelete(state->tmp_cxt);
 
 	rsi->setResult = state->tuple_store;
 	rsi->setDesc = state->ret_tdesc;
@@ -1138,7 +1886,17 @@ elements_array_element_start(void *state, bool isnull)
 
 	/* save a pointer to where the value starts */
 	if (_state->lex->lex_level == 1)
-		_state->result_start = _state->lex->token_start;
+	{
+		/*
+		 * next_scalar will be reset in the array_element_end handler, and
+		 * since we know the value is a scalar there is no danger of it being
+		 * on while recursing down the tree.
+		 */
+		if (_state->normalize_results && _state->lex->token_type == JSON_TOKEN_STRING)
+			_state->next_scalar = true;
+		else
+			_state->result_start = _state->lex->token_start;
+	}
 }
 
 static void
@@ -1150,7 +1908,7 @@ elements_array_element_end(void *state, bool isnull)
 	text	   *val;
 	HeapTuple	tuple;
 	Datum		values[1];
-	static bool nulls[1] = {false};
+	bool		nulls[1] = {false};
 
 	/* skip over nested objects */
 	if (_state->lex->lex_level != 1)
@@ -1159,10 +1917,22 @@ elements_array_element_end(void *state, bool isnull)
 	/* use the tmp context so we can clean up after each tuple is done */
 	old_cxt = MemoryContextSwitchTo(_state->tmp_cxt);
 
-	len = _state->lex->prev_token_terminator - _state->result_start;
-	val = cstring_to_text_with_len(_state->result_start, len);
-
-	values[0] = PointerGetDatum(val);
+	if (isnull && _state->normalize_results)
+	{
+		nulls[0] = true;
+		values[0] = (Datum) NULL;
+	}
+	else if (_state->next_scalar)
+	{
+		values[0] = CStringGetTextDatum(_state->normalized_scalar);
+		_state->next_scalar = false;
+	}
+	else
+	{
+		len = _state->lex->prev_token_terminator - _state->result_start;
+		val = cstring_to_text_with_len(_state->result_start, len);
+		values[0] = PointerGetDatum(val);
+	}
 
 	tuple = heap_form_tuple(_state->ret_tdesc, values, nulls);
 
@@ -1182,7 +1952,8 @@ elements_object_start(void *state)
 	if (_state->lex->lex_level == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot call json_array_elements on a non-array")));
+				 errmsg("cannot call %s on a non-array",
+						_state->function_name)));
 }
 
 static void
@@ -1194,12 +1965,12 @@ elements_scalar(void *state, char *token, JsonTokenType tokentype)
 	if (_state->lex->lex_level == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot call json_array_elements on a scalar")));
+				 errmsg("cannot call %s on a scalar",
+						_state->function_name)));
 
-	/*
-	 * json_array_elements always returns json, so there's no need to think
-	 * about de-escaped values here.
-	 */
+	/* supply de-escaped value if required */
+	if (_state->next_scalar)
+		_state->normalized_scalar = token;
 }
 
 /*
@@ -1211,18 +1982,45 @@ elements_scalar(void *state, char *token, JsonTokenType tokentype)
  * which is in turn partly adapted from record_out.
  *
  * The json is decomposed into a hash table, in which each
- * field in the record is then looked up by name.
+ * field in the record is then looked up by name. For jsonb
+ * we fetch the values direct from the object.
  */
+Datum
+jsonb_populate_record(PG_FUNCTION_ARGS)
+{
+	return populate_record_worker(fcinfo, "jsonb_populate_record", true);
+}
+
+Datum
+jsonb_to_record(PG_FUNCTION_ARGS)
+{
+	return populate_record_worker(fcinfo, "jsonb_to_record", false);
+}
+
 Datum
 json_populate_record(PG_FUNCTION_ARGS)
 {
-	Oid			argtype = get_fn_expr_argtype(fcinfo->flinfo, 0);
+	return populate_record_worker(fcinfo, "json_populate_record", true);
+}
+
+Datum
+json_to_record(PG_FUNCTION_ARGS)
+{
+	return populate_record_worker(fcinfo, "json_to_record", false);
+}
+
+static Datum
+populate_record_worker(FunctionCallInfo fcinfo, const char *funcname,
+					   bool have_record_arg)
+{
+	int			json_arg_num = have_record_arg ? 1 : 0;
+	Oid			jtype = get_fn_expr_argtype(fcinfo->flinfo, json_arg_num);
 	text	   *json;
-	bool		use_json_as_text;
-	HTAB	   *json_hash;
-	HeapTupleHeader rec;
-	Oid			tupType;
-	int32		tupTypmod;
+	Jsonb	   *jb = NULL;
+	HTAB	   *json_hash = NULL;
+	HeapTupleHeader rec = NULL;
+	Oid			tupType = InvalidOid;
+	int32		tupTypmod = -1;
 	TupleDesc	tupdesc;
 	HeapTupleData tuple;
 	HeapTuple	rettuple;
@@ -1231,57 +2029,92 @@ json_populate_record(PG_FUNCTION_ARGS)
 	int			i;
 	Datum	   *values;
 	bool	   *nulls;
-	char		fname[NAMEDATALEN];
-	JsonHashEntry *hashentry;
 
-	use_json_as_text = PG_ARGISNULL(2) ? false : PG_GETARG_BOOL(2);
+	Assert(jtype == JSONOID || jtype == JSONBOID);
 
-	if (!type_is_rowtype(argtype))
-		ereport(ERROR,
-				(errcode(ERRCODE_DATATYPE_MISMATCH),
-				 errmsg("first argument of json_populate_record must be a row type")));
-
-	if (PG_ARGISNULL(0))
+	if (have_record_arg)
 	{
-		if (PG_ARGISNULL(1))
-			PG_RETURN_NULL();
+		Oid			argtype = get_fn_expr_argtype(fcinfo->flinfo, 0);
 
-		rec = NULL;
+		if (!type_is_rowtype(argtype))
+			ereport(ERROR,
+					(errcode(ERRCODE_DATATYPE_MISMATCH),
+					 errmsg("first argument of %s must be a row type",
+							funcname)));
 
-		/*
-		 * have no tuple to look at, so the only source of type info is the
-		 * argtype. The lookup_rowtype_tupdesc call below will error out if we
-		 * don't have a known composite type oid here.
-		 */
-		tupType = argtype;
-		tupTypmod = -1;
+		if (PG_ARGISNULL(0))
+		{
+			if (PG_ARGISNULL(1))
+				PG_RETURN_NULL();
+
+			/*
+			 * have no tuple to look at, so the only source of type info is
+			 * the argtype. The lookup_rowtype_tupdesc call below will error
+			 * out if we don't have a known composite type oid here.
+			 */
+			tupType = argtype;
+			tupTypmod = -1;
+		}
+		else
+		{
+			rec = PG_GETARG_HEAPTUPLEHEADER(0);
+
+			if (PG_ARGISNULL(1))
+				PG_RETURN_POINTER(rec);
+
+			/* Extract type info from the tuple itself */
+			tupType = HeapTupleHeaderGetTypeId(rec);
+			tupTypmod = HeapTupleHeaderGetTypMod(rec);
+		}
+
+		tupdesc = lookup_rowtype_tupdesc(tupType, tupTypmod);
 	}
 	else
 	{
-		rec = PG_GETARG_HEAPTUPLEHEADER(0);
+		/* json{b}_to_record case */
+		if (PG_ARGISNULL(0))
+			PG_RETURN_NULL();
 
-		if (PG_ARGISNULL(1))
-			PG_RETURN_POINTER(rec);
-
-		/* Extract type info from the tuple itself */
-		tupType = HeapTupleHeaderGetTypeId(rec);
-		tupTypmod = HeapTupleHeaderGetTypMod(rec);
+		if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+			ereport(ERROR,
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					 errmsg("function returning record called in context "
+							"that cannot accept type record"),
+					 errhint("Try calling the function in the FROM clause "
+							 "using a column definition list.")));
 	}
 
-	json = PG_GETARG_TEXT_P(1);
+	if (jtype == JSONOID)
+	{
+		/* just get the text */
+		json = PG_GETARG_TEXT_P(json_arg_num);
 
-	json_hash = get_json_object_as_hash(json, "json_populate_record", use_json_as_text);
+		json_hash = get_json_object_as_hash(json, funcname);
 
-	/*
-	 * if the input json is empty, we can only skip the rest if we were passed
-	 * in a non-null record, since otherwise there may be issues with domain
-	 * nulls.
-	 */
-	if (hash_get_num_entries(json_hash) == 0 && rec)
-		PG_RETURN_POINTER(rec);
+		/*
+		 * if the input json is empty, we can only skip the rest if we were
+		 * passed in a non-null record, since otherwise there may be issues
+		 * with domain nulls.
+		 */
+		if (hash_get_num_entries(json_hash) == 0 && rec)
+		{
+			hash_destroy(json_hash);
+			ReleaseTupleDesc(tupdesc);
+			PG_RETURN_POINTER(rec);
+		}
+	}
+	else
+	{
+		jb = PG_GETARG_JSONB(json_arg_num);
 
+		/* same logic as for json */
+		if (JB_ROOT_COUNT(jb) == 0 && rec)
+		{
+			ReleaseTupleDesc(tupdesc);
+			PG_RETURN_POINTER(rec);
+		}
+	}
 
-	tupdesc = lookup_rowtype_tupdesc(tupType, tupTypmod);
 	ncolumns = tupdesc->natts;
 
 	if (rec)
@@ -1308,10 +2141,12 @@ json_populate_record(PG_FUNCTION_ARGS)
 		my_extra = (RecordIOData *) fcinfo->flinfo->fn_extra;
 		my_extra->record_type = InvalidOid;
 		my_extra->record_typmod = 0;
+		my_extra->ncolumns = ncolumns;
+		MemSet(my_extra->columns, 0, sizeof(ColumnIOData) * ncolumns);
 	}
 
-	if (my_extra->record_type != tupType ||
-		my_extra->record_typmod != tupTypmod)
+	if (have_record_arg && (my_extra->record_type != tupType ||
+							my_extra->record_typmod != tupTypmod))
 	{
 		MemSet(my_extra, 0,
 			   sizeof(RecordIOData) - sizeof(ColumnIOData)
@@ -1342,7 +2177,8 @@ json_populate_record(PG_FUNCTION_ARGS)
 	{
 		ColumnIOData *column_info = &my_extra->columns[i];
 		Oid			column_type = tupdesc->attrs[i]->atttypid;
-		char	   *value;
+		JsonbValue *v = NULL;
+		JsonHashEntry *hashentry = NULL;
 
 		/* Ignore dropped columns in datatype */
 		if (tupdesc->attrs[i]->attisdropped)
@@ -1351,9 +2187,19 @@ json_populate_record(PG_FUNCTION_ARGS)
 			continue;
 		}
 
-		memset(fname, 0, NAMEDATALEN);
-		strncpy(fname, NameStr(tupdesc->attrs[i]->attname), NAMEDATALEN);
-		hashentry = hash_search(json_hash, fname, HASH_FIND, NULL);
+		if (jtype == JSONOID)
+		{
+			hashentry = hash_search(json_hash,
+									NameStr(tupdesc->attrs[i]->attname),
+									HASH_FIND, NULL);
+		}
+		else
+		{
+			char	   *key = NameStr(tupdesc->attrs[i]->attname);
+
+			v = findJsonbValueFromContainerLen(&jb->root, JB_FOBJECT, key,
+											   strlen(key));
+		}
 
 		/*
 		 * we can't just skip here if the key wasn't found since we might have
@@ -1363,7 +2209,8 @@ json_populate_record(PG_FUNCTION_ARGS)
 		 * then every field which we don't populate needs to be run through
 		 * the input function just in case it's a domain type.
 		 */
-		if (hashentry == NULL && rec)
+		if (((jtype == JSONOID && hashentry == NULL) ||
+			 (jtype == JSONBOID && v == NULL)) && rec)
 			continue;
 
 		/*
@@ -1378,7 +2225,8 @@ json_populate_record(PG_FUNCTION_ARGS)
 						  fcinfo->flinfo->fn_mcxt);
 			column_info->column_type = column_type;
 		}
-		if (hashentry == NULL || hashentry->isnull)
+		if ((jtype == JSONOID && (hashentry == NULL || hashentry->isnull)) ||
+			(jtype == JSONBOID && (v == NULL || v->type == jbvNull)))
 		{
 			/*
 			 * need InputFunctionCall to happen even for nulls, so that domain
@@ -1391,9 +2239,29 @@ json_populate_record(PG_FUNCTION_ARGS)
 		}
 		else
 		{
-			value = hashentry->val;
+			char	   *s = NULL;
 
-			values[i] = InputFunctionCall(&column_info->proc, value,
+			if (jtype == JSONOID)
+			{
+				/* already done the hard work in the json case */
+				s = hashentry->val;
+			}
+			else
+			{
+				if (v->type == jbvString)
+					s = pnstrdup(v->val.string.val, v->val.string.len);
+				else if (v->type == jbvBool)
+					s = pnstrdup((v->val.boolean) ? "t" : "f", 1);
+				else if (v->type == jbvNumeric)
+					s = DatumGetCString(DirectFunctionCall1(numeric_out,
+										   PointerGetDatum(v->val.numeric)));
+				else if (v->type == jbvBinary)
+					s = JsonbToCString(NULL, (JsonbContainer *) v->val.binary.data, v->val.binary.len);
+				else
+					elog(ERROR, "unrecognized jsonb type: %d", (int) v->type);
+			}
+
+			values[i] = InputFunctionCall(&column_info->proc, s,
 										  column_info->typioparam,
 										  tupdesc->attrs[i]->atttypmod);
 			nulls[i] = false;
@@ -1404,6 +2272,9 @@ json_populate_record(PG_FUNCTION_ARGS)
 
 	ReleaseTupleDesc(tupdesc);
 
+	if (json_hash)
+		hash_destroy(json_hash);
+
 	PG_RETURN_DATUM(HeapTupleGetDatum(rettuple));
 }
 
@@ -1411,15 +2282,9 @@ json_populate_record(PG_FUNCTION_ARGS)
  * get_json_object_as_hash
  *
  * decompose a json object into a hash table.
- *
- * Currently doesn't allow anything but a flat object. Should this
- * change?
- *
- * funcname argument allows caller to pass in its name for use in
- * error messages.
  */
 static HTAB *
-get_json_object_as_hash(text *json, char *funcname, bool use_json_as_text)
+get_json_object_as_hash(text *json, const char *funcname)
 {
 	HASHCTL		ctl;
 	HTAB	   *tab;
@@ -1442,7 +2307,6 @@ get_json_object_as_hash(text *json, char *funcname, bool use_json_as_text)
 	state->function_name = funcname;
 	state->hash = tab;
 	state->lex = lex;
-	state->use_json_as_text = use_json_as_text;
 
 	sem->semstate = (void *) state;
 	sem->array_start = hash_array_start;
@@ -1466,11 +2330,7 @@ hash_object_field_start(void *state, char *fname, bool isnull)
 	if (_state->lex->token_type == JSON_TOKEN_ARRAY_START ||
 		_state->lex->token_type == JSON_TOKEN_OBJECT_START)
 	{
-		if (!_state->use_json_as_text)
-			ereport(ERROR,
-					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					 errmsg("cannot call %s on a nested object",
-							_state->function_name)));
+		/* remember start position of the whole text of the subobject */
 		_state->save_json_start = _state->lex->token_start;
 	}
 	else
@@ -1486,19 +2346,24 @@ hash_object_field_end(void *state, char *fname, bool isnull)
 	JHashState *_state = (JHashState *) state;
 	JsonHashEntry *hashentry;
 	bool		found;
-	char		name[NAMEDATALEN];
 
 	/*
-	 * ignore field names >= NAMEDATALEN - they can't match a record field
-	 * ignore nested fields.
+	 * Ignore nested fields.
 	 */
-	if (_state->lex->lex_level > 2 || strlen(fname) >= NAMEDATALEN)
+	if (_state->lex->lex_level > 2)
 		return;
 
-	memset(name, 0, NAMEDATALEN);
-	strncpy(name, fname, NAMEDATALEN);
+	/*
+	 * Ignore field names >= NAMEDATALEN - they can't match a record field.
+	 * (Note: without this test, the hash code would truncate the string at
+	 * NAMEDATALEN-1, and could then match against a similarly-truncated
+	 * record field name.  That would be a reasonable behavior, but this code
+	 * has previously insisted on exact equality, so we keep this behavior.)
+	 */
+	if (strlen(fname) >= NAMEDATALEN)
+		return;
 
-	hashentry = hash_search(_state->hash, name, HASH_ENTER, &found);
+	hashentry = hash_search(_state->hash, fname, HASH_ENTER, &found);
 
 	/*
 	 * found being true indicates a duplicate. We don't do anything about
@@ -1559,11 +2424,156 @@ hash_scalar(void *state, char *token, JsonTokenType tokentype)
  * per object in the array.
  */
 Datum
+jsonb_populate_recordset(PG_FUNCTION_ARGS)
+{
+	return populate_recordset_worker(fcinfo, "jsonb_populate_recordset", true);
+}
+
+Datum
+jsonb_to_recordset(PG_FUNCTION_ARGS)
+{
+	return populate_recordset_worker(fcinfo, "jsonb_to_recordset", false);
+}
+
+Datum
 json_populate_recordset(PG_FUNCTION_ARGS)
 {
-	Oid			argtype = get_fn_expr_argtype(fcinfo->flinfo, 0);
-	text	   *json;
-	bool		use_json_as_text;
+	return populate_recordset_worker(fcinfo, "json_populate_recordset", true);
+}
+
+Datum
+json_to_recordset(PG_FUNCTION_ARGS)
+{
+	return populate_recordset_worker(fcinfo, "json_to_recordset", false);
+}
+
+static void
+make_row_from_rec_and_jsonb(Jsonb *element, PopulateRecordsetState *state)
+{
+	Datum	   *values;
+	bool	   *nulls;
+	int			i;
+	RecordIOData *my_extra = state->my_extra;
+	int			ncolumns = my_extra->ncolumns;
+	TupleDesc	tupdesc = state->ret_tdesc;
+	HeapTupleHeader rec = state->rec;
+	HeapTuple	rettuple;
+
+	values = (Datum *) palloc(ncolumns * sizeof(Datum));
+	nulls = (bool *) palloc(ncolumns * sizeof(bool));
+
+	if (state->rec)
+	{
+		HeapTupleData tuple;
+
+		/* Build a temporary HeapTuple control structure */
+		tuple.t_len = HeapTupleHeaderGetDatumLength(state->rec);
+		ItemPointerSetInvalid(&(tuple.t_self));
+		tuple.t_tableOid = InvalidOid;
+		tuple.t_data = state->rec;
+
+		/* Break down the tuple into fields */
+		heap_deform_tuple(&tuple, tupdesc, values, nulls);
+	}
+	else
+	{
+		for (i = 0; i < ncolumns; ++i)
+		{
+			values[i] = (Datum) 0;
+			nulls[i] = true;
+		}
+	}
+
+	for (i = 0; i < ncolumns; ++i)
+	{
+		ColumnIOData *column_info = &my_extra->columns[i];
+		Oid			column_type = tupdesc->attrs[i]->atttypid;
+		JsonbValue *v = NULL;
+		char	   *key;
+
+		/* Ignore dropped columns in datatype */
+		if (tupdesc->attrs[i]->attisdropped)
+		{
+			nulls[i] = true;
+			continue;
+		}
+
+		key = NameStr(tupdesc->attrs[i]->attname);
+
+		v = findJsonbValueFromContainerLen(&element->root, JB_FOBJECT,
+										   key, strlen(key));
+
+		/*
+		 * We can't just skip here if the key wasn't found since we might have
+		 * a domain to deal with. If we were passed in a non-null record
+		 * datum, we assume that the existing values are valid (if they're
+		 * not, then it's not our fault), but if we were passed in a null,
+		 * then every field which we don't populate needs to be run through
+		 * the input function just in case it's a domain type.
+		 */
+		if (v == NULL && rec)
+			continue;
+
+		/*
+		 * Prepare to convert the column value from text
+		 */
+		if (column_info->column_type != column_type)
+		{
+			getTypeInputInfo(column_type,
+							 &column_info->typiofunc,
+							 &column_info->typioparam);
+			fmgr_info_cxt(column_info->typiofunc, &column_info->proc,
+						  state->fn_mcxt);
+			column_info->column_type = column_type;
+		}
+		if (v == NULL || v->type == jbvNull)
+		{
+			/*
+			 * Need InputFunctionCall to happen even for nulls, so that domain
+			 * checks are done
+			 */
+			values[i] = InputFunctionCall(&column_info->proc, NULL,
+										  column_info->typioparam,
+										  tupdesc->attrs[i]->atttypmod);
+			nulls[i] = true;
+		}
+		else
+		{
+			char	   *s = NULL;
+
+			if (v->type == jbvString)
+				s = pnstrdup(v->val.string.val, v->val.string.len);
+			else if (v->type == jbvBool)
+				s = pnstrdup((v->val.boolean) ? "t" : "f", 1);
+			else if (v->type == jbvNumeric)
+				s = DatumGetCString(DirectFunctionCall1(numeric_out,
+										   PointerGetDatum(v->val.numeric)));
+			else if (v->type == jbvBinary)
+				s = JsonbToCString(NULL, (JsonbContainer *) v->val.binary.data, v->val.binary.len);
+			else
+				elog(ERROR, "unrecognized jsonb type: %d", (int) v->type);
+
+			values[i] = InputFunctionCall(&column_info->proc, s,
+										  column_info->typioparam,
+										  tupdesc->attrs[i]->atttypmod);
+			nulls[i] = false;
+		}
+	}
+
+	rettuple = heap_form_tuple(tupdesc, values, nulls);
+
+	tuplestore_puttuple(state->tuple_store, rettuple);
+}
+
+/*
+ * common worker for json_populate_recordset() and json_to_recordset()
+ */
+static Datum
+populate_recordset_worker(FunctionCallInfo fcinfo, const char *funcname,
+						  bool have_record_arg)
+{
+	int			json_arg_num = have_record_arg ? 1 : 0;
+	Oid			jtype = get_fn_expr_argtype(fcinfo->flinfo, json_arg_num);
 	ReturnSetInfo *rsi;
 	MemoryContext old_cxt;
 	Oid			tupType;
@@ -1572,16 +2582,18 @@ json_populate_recordset(PG_FUNCTION_ARGS)
 	TupleDesc	tupdesc;
 	RecordIOData *my_extra;
 	int			ncolumns;
-	JsonLexContext *lex;
-	JsonSemAction *sem;
 	PopulateRecordsetState *state;
 
-	use_json_as_text = PG_ARGISNULL(2) ? false : PG_GETARG_BOOL(2);
+	if (have_record_arg)
+	{
+		Oid			argtype = get_fn_expr_argtype(fcinfo->flinfo, 0);
 
-	if (!type_is_rowtype(argtype))
-		ereport(ERROR,
-				(errcode(ERRCODE_DATATYPE_MISMATCH),
-				 errmsg("first argument of json_populate_recordset must be a row type")));
+		if (!type_is_rowtype(argtype))
+			ereport(ERROR,
+					(errcode(ERRCODE_DATATYPE_MISMATCH),
+					 errmsg("first argument of %s must be a row type",
+							funcname)));
+	}
 
 	rsi = (ReturnSetInfo *) fcinfo->resultinfo;
 
@@ -1593,37 +2605,24 @@ json_populate_recordset(PG_FUNCTION_ARGS)
 				 errmsg("set-valued function called in context that "
 						"cannot accept a set")));
 
-
 	rsi->returnMode = SFRM_Materialize;
 
 	/*
 	 * get the tupdesc from the result set info - it must be a record type
-	 * because we already checked that arg1 is a record type.
+	 * because we already checked that arg1 is a record type, or we're in a
+	 * to_record function which returns a setof record.
 	 */
-	(void) get_call_result_type(fcinfo, NULL, &tupdesc);
-
-	state = palloc0(sizeof(PopulateRecordsetState));
-	sem = palloc0(sizeof(JsonSemAction));
-
-
-	/* make these in a sufficiently long-lived memory context */
-	old_cxt = MemoryContextSwitchTo(rsi->econtext->ecxt_per_query_memory);
-
-	state->ret_tdesc = CreateTupleDescCopy(tupdesc);
-	BlessTupleDesc(state->ret_tdesc);
-	state->tuple_store =
-		tuplestore_begin_heap(rsi->allowedModes & SFRM_Materialize_Random,
-							  false, work_mem);
-
-	MemoryContextSwitchTo(old_cxt);
+	if (get_call_result_type(fcinfo, NULL, &tupdesc) != TYPEFUNC_COMPOSITE)
+		ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("function returning record called in context "
+						"that cannot accept type record")));
 
 	/* if the json is null send back an empty set */
-	if (PG_ARGISNULL(1))
+	if (PG_ARGISNULL(json_arg_num))
 		PG_RETURN_NULL();
 
-	json = PG_GETARG_TEXT_P(1);
-
-	if (PG_ARGISNULL(0))
+	if (!have_record_arg || PG_ARGISNULL(0))
 		rec = NULL;
 	else
 		rec = PG_GETARG_HEAPTUPLEHEADER(0);
@@ -1631,8 +2630,6 @@ json_populate_recordset(PG_FUNCTION_ARGS)
 	tupType = tupdesc->tdtypeid;
 	tupTypmod = tupdesc->tdtypmod;
 	ncolumns = tupdesc->natts;
-
-	lex = makeJsonLexContext(json, true);
 
 	/*
 	 * We arrange to look up the needed I/O info just once per series of
@@ -1662,29 +2659,85 @@ json_populate_recordset(PG_FUNCTION_ARGS)
 		my_extra->ncolumns = ncolumns;
 	}
 
-	sem->semstate = (void *) state;
-	sem->array_start = populate_recordset_array_start;
-	sem->array_element_start = populate_recordset_array_element_start;
-	sem->scalar = populate_recordset_scalar;
-	sem->object_field_start = populate_recordset_object_field_start;
-	sem->object_field_end = populate_recordset_object_field_end;
-	sem->object_start = populate_recordset_object_start;
-	sem->object_end = populate_recordset_object_end;
+	state = palloc0(sizeof(PopulateRecordsetState));
 
-	state->lex = lex;
+	/* make these in a sufficiently long-lived memory context */
+	old_cxt = MemoryContextSwitchTo(rsi->econtext->ecxt_per_query_memory);
+	state->ret_tdesc = CreateTupleDescCopy(tupdesc);
+	BlessTupleDesc(state->ret_tdesc);
+	state->tuple_store = tuplestore_begin_heap(rsi->allowedModes &
+											   SFRM_Materialize_Random,
+											   false, work_mem);
+	MemoryContextSwitchTo(old_cxt);
 
+	state->function_name = funcname;
 	state->my_extra = my_extra;
 	state->rec = rec;
-	state->use_json_as_text = use_json_as_text;
 	state->fn_mcxt = fcinfo->flinfo->fn_mcxt;
 
-	pg_parse_json(lex, sem);
+	if (jtype == JSONOID)
+	{
+		text	   *json = PG_GETARG_TEXT_P(json_arg_num);
+		JsonLexContext *lex;
+		JsonSemAction *sem;
+
+		sem = palloc0(sizeof(JsonSemAction));
+
+		lex = makeJsonLexContext(json, true);
+
+		sem->semstate = (void *) state;
+		sem->array_start = populate_recordset_array_start;
+		sem->array_element_start = populate_recordset_array_element_start;
+		sem->scalar = populate_recordset_scalar;
+		sem->object_field_start = populate_recordset_object_field_start;
+		sem->object_field_end = populate_recordset_object_field_end;
+		sem->object_start = populate_recordset_object_start;
+		sem->object_end = populate_recordset_object_end;
+
+		state->lex = lex;
+
+		pg_parse_json(lex, sem);
+	}
+	else
+	{
+		Jsonb	   *jb = PG_GETARG_JSONB(json_arg_num);
+		JsonbIterator *it;
+		JsonbValue	v;
+		bool		skipNested = false;
+		int			r;
+
+		Assert(jtype == JSONBOID);
+
+		if (JB_ROOT_IS_SCALAR(jb) || !JB_ROOT_IS_ARRAY(jb))
+			ereport(ERROR,
+					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					 errmsg("cannot call %s on a non-array",
+							funcname)));
+
+		it = JsonbIteratorInit(&jb->root);
+
+		while ((r = JsonbIteratorNext(&it, &v, skipNested)) != WJB_DONE)
+		{
+			skipNested = true;
+
+			if (r == WJB_ELEM)
+			{
+				Jsonb	   *element = JsonbValueToJsonb(&v);
+
+				if (!JB_ROOT_IS_OBJECT(element))
+					ereport(ERROR,
+							(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+						 errmsg("argument of %s must be an array of objects",
+								funcname)));
+				make_row_from_rec_and_jsonb(element, state);
+			}
+		}
+	}
 
 	rsi->setResult = state->tuple_store;
 	rsi->setDesc = state->ret_tdesc;
 
 	PG_RETURN_NULL();
-
 }
 
 static void
@@ -1694,16 +2747,18 @@ populate_recordset_object_start(void *state)
 	int			lex_level = _state->lex->lex_level;
 	HASHCTL		ctl;
 
+	/* Reject object at top level: we must have an array at level 0 */
 	if (lex_level == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot call json_populate_recordset on an object")));
-	else if (lex_level > 1 && !_state->use_json_as_text)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-		 errmsg("cannot call json_populate_recordset with nested objects")));
+				 errmsg("cannot call %s on an object",
+						_state->function_name)));
 
-	/* set up a new hash for this entry */
+	/* Nested objects require no special processing */
+	if (lex_level > 1)
+		return;
+
+	/* Object at level 1: set up a new hash table for this object */
 	memset(&ctl, 0, sizeof(ctl));
 	ctl.keysize = NAMEDATALEN;
 	ctl.entrysize = sizeof(JsonHashEntry);
@@ -1721,7 +2776,6 @@ populate_recordset_object_end(void *state)
 	HTAB	   *json_hash = _state->json_hash;
 	Datum	   *values;
 	bool	   *nulls;
-	char		fname[NAMEDATALEN];
 	int			i;
 	RecordIOData *my_extra = _state->my_extra;
 	int			ncolumns = my_extra->ncolumns;
@@ -1730,9 +2784,11 @@ populate_recordset_object_end(void *state)
 	HeapTupleHeader rec = _state->rec;
 	HeapTuple	rettuple;
 
+	/* Nested objects require no special processing */
 	if (_state->lex->lex_level > 1)
 		return;
 
+	/* Otherwise, construct and return a tuple based on this level-1 object */
 	values = (Datum *) palloc(ncolumns * sizeof(Datum));
 	nulls = (bool *) palloc(ncolumns * sizeof(bool));
 
@@ -1771,9 +2827,9 @@ populate_recordset_object_end(void *state)
 			continue;
 		}
 
-		memset(fname, 0, NAMEDATALEN);
-		strncpy(fname, NameStr(tupdesc->attrs[i]->attname), NAMEDATALEN);
-		hashentry = hash_search(json_hash, fname, HASH_FIND, NULL);
+		hashentry = hash_search(json_hash,
+								NameStr(tupdesc->attrs[i]->attname),
+								HASH_FIND, NULL);
 
 		/*
 		 * we can't just skip here if the key wasn't found since we might have
@@ -1824,7 +2880,9 @@ populate_recordset_object_end(void *state)
 
 	tuplestore_puttuple(_state->tuple_store, rettuple);
 
+	/* Done with hash for this object */
 	hash_destroy(json_hash);
+	_state->json_hash = NULL;
 }
 
 static void
@@ -1836,18 +2894,14 @@ populate_recordset_array_element_start(void *state, bool isnull)
 		_state->lex->token_type != JSON_TOKEN_OBJECT_START)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			 errmsg("must call json_populate_recordset on an array of objects")));
+				 errmsg("argument of %s must be an array of objects",
+						_state->function_name)));
 }
 
 static void
 populate_recordset_array_start(void *state)
 {
-	PopulateRecordsetState *_state = (PopulateRecordsetState *) state;
-
-	if (_state->lex->lex_level != 0 && !_state->use_json_as_text)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-		  errmsg("cannot call json_populate_recordset with nested arrays")));
+	/* nothing to do */
 }
 
 static void
@@ -1858,7 +2912,8 @@ populate_recordset_scalar(void *state, char *token, JsonTokenType tokentype)
 	if (_state->lex->lex_level == 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-				 errmsg("cannot call json_populate_recordset on a scalar")));
+				 errmsg("cannot call %s on a scalar",
+						_state->function_name)));
 
 	if (_state->lex->lex_level == 2)
 		_state->saved_scalar = token;
@@ -1875,10 +2930,6 @@ populate_recordset_object_field_start(void *state, char *fname, bool isnull)
 	if (_state->lex->token_type == JSON_TOKEN_ARRAY_START ||
 		_state->lex->token_type == JSON_TOKEN_OBJECT_START)
 	{
-		if (!_state->use_json_as_text)
-			ereport(ERROR,
-					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-					 errmsg("cannot call json_populate_recordset on a nested object")));
 		_state->save_json_start = _state->lex->token_start;
 	}
 	else
@@ -1893,19 +2944,24 @@ populate_recordset_object_field_end(void *state, char *fname, bool isnull)
 	PopulateRecordsetState *_state = (PopulateRecordsetState *) state;
 	JsonHashEntry *hashentry;
 	bool		found;
-	char		name[NAMEDATALEN];
 
 	/*
-	 * ignore field names >= NAMEDATALEN - they can't match a record field
-	 * ignore nested fields.
+	 * Ignore nested fields.
 	 */
-	if (_state->lex->lex_level > 2 || strlen(fname) >= NAMEDATALEN)
+	if (_state->lex->lex_level > 2)
 		return;
 
-	memset(name, 0, NAMEDATALEN);
-	strncpy(name, fname, NAMEDATALEN);
+	/*
+	 * Ignore field names >= NAMEDATALEN - they can't match a record field.
+	 * (Note: without this test, the hash code would truncate the string at
+	 * NAMEDATALEN-1, and could then match against a similarly-truncated
+	 * record field name.  That would be a reasonable behavior, but this code
+	 * has previously insisted on exact equality, so we keep this behavior.)
+	 */
+	if (strlen(fname) >= NAMEDATALEN)
+		return;
 
-	hashentry = hash_search(_state->json_hash, name, HASH_ENTER, &found);
+	hashentry = hash_search(_state->json_hash, fname, HASH_ENTER, &found);
 
 	/*
 	 * found being true indicates a duplicate. We don't do anything about
@@ -1927,4 +2983,20 @@ populate_recordset_object_field_end(void *state, char *fname, bool isnull)
 		/* must have had a scalar instead */
 		hashentry->val = _state->saved_scalar;
 	}
+}
+
+/*
+ * findJsonbValueFromContainer() wrapper that sets up JsonbValue key string.
+ */
+static JsonbValue *
+findJsonbValueFromContainerLen(JsonbContainer *container, uint32 flags,
+							   char *key, uint32 keylen)
+{
+	JsonbValue	k;
+
+	k.type = jbvString;
+	k.val.string.val = key;
+	k.val.string.len = keylen;
+
+	return findJsonbValueFromContainer(container, flags, &k);
 }

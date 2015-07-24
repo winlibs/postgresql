@@ -12,7 +12,10 @@
 #include "libpq/pqformat.h"
 #include "utils/builtins.h"
 #include "utils/json.h"
+#include "utils/jsonapi.h"
+#include "utils/jsonb.h"
 #include "utils/lsyscache.h"
+#include "utils/memutils.h"
 #include "utils/typcache.h"
 
 #include "hstore.h"
@@ -399,7 +402,6 @@ hstorePairs(Pairs *pairs, int32 pcount, int32 buflen)
 
 
 PG_FUNCTION_INFO_V1(hstore_in);
-Datum		hstore_in(PG_FUNCTION_ARGS);
 Datum
 hstore_in(PG_FUNCTION_ARGS)
 {
@@ -420,7 +422,6 @@ hstore_in(PG_FUNCTION_ARGS)
 
 
 PG_FUNCTION_INFO_V1(hstore_recv);
-Datum		hstore_recv(PG_FUNCTION_ARGS);
 Datum
 hstore_recv(PG_FUNCTION_ARGS)
 {
@@ -439,6 +440,11 @@ hstore_recv(PG_FUNCTION_ARGS)
 		PG_RETURN_POINTER(out);
 	}
 
+	if (pcount < 0 || pcount > MaxAllocSize / sizeof(Pairs))
+		ereport(ERROR,
+				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
+			  errmsg("number of pairs (%d) exceeds the maximum allowed (%d)",
+					 pcount, (int) (MaxAllocSize / sizeof(Pairs)))));
 	pairs = palloc(pcount * sizeof(Pairs));
 
 	for (i = 0; i < pcount; ++i)
@@ -479,7 +485,6 @@ hstore_recv(PG_FUNCTION_ARGS)
 
 
 PG_FUNCTION_INFO_V1(hstore_from_text);
-Datum		hstore_from_text(PG_FUNCTION_ARGS);
 Datum
 hstore_from_text(PG_FUNCTION_ARGS)
 {
@@ -516,7 +521,6 @@ hstore_from_text(PG_FUNCTION_ARGS)
 
 
 PG_FUNCTION_INFO_V1(hstore_from_arrays);
-Datum		hstore_from_arrays(PG_FUNCTION_ARGS);
 Datum
 hstore_from_arrays(PG_FUNCTION_ARGS)
 {
@@ -553,6 +557,13 @@ hstore_from_arrays(PG_FUNCTION_ARGS)
 	deconstruct_array(key_array,
 					  TEXTOID, -1, false, 'i',
 					  &key_datums, &key_nulls, &key_count);
+
+	/* see discussion in hstoreArrayToPairs() */
+	if (key_count > MaxAllocSize / sizeof(Pairs))
+		ereport(ERROR,
+				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
+			  errmsg("number of pairs (%d) exceeds the maximum allowed (%d)",
+					 key_count, (int) (MaxAllocSize / sizeof(Pairs)))));
 
 	/* value_array might be NULL */
 
@@ -627,7 +638,6 @@ hstore_from_arrays(PG_FUNCTION_ARGS)
 
 
 PG_FUNCTION_INFO_V1(hstore_from_array);
-Datum		hstore_from_array(PG_FUNCTION_ARGS);
 Datum
 hstore_from_array(PG_FUNCTION_ARGS)
 {
@@ -675,6 +685,13 @@ hstore_from_array(PG_FUNCTION_ARGS)
 					  &in_datums, &in_nulls, &in_count);
 
 	count = in_count / 2;
+
+	/* see discussion in hstoreArrayToPairs() */
+	if (count > MaxAllocSize / sizeof(Pairs))
+		ereport(ERROR,
+				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
+			  errmsg("number of pairs (%d) exceeds the maximum allowed (%d)",
+					 count, (int) (MaxAllocSize / sizeof(Pairs)))));
 
 	pairs = palloc(count * sizeof(Pairs));
 
@@ -734,7 +751,6 @@ typedef struct RecordIOData
 } RecordIOData;
 
 PG_FUNCTION_INFO_V1(hstore_from_record);
-Datum		hstore_from_record(PG_FUNCTION_ARGS);
 Datum
 hstore_from_record(PG_FUNCTION_ARGS)
 {
@@ -807,6 +823,7 @@ hstore_from_record(PG_FUNCTION_ARGS)
 		my_extra->ncolumns = ncolumns;
 	}
 
+	Assert(ncolumns <= MaxTupleAttributeNumber);		/* thus, no overflow */
 	pairs = palloc(ncolumns * sizeof(Pairs));
 
 	if (rec)
@@ -887,7 +904,6 @@ hstore_from_record(PG_FUNCTION_ARGS)
 
 
 PG_FUNCTION_INFO_V1(hstore_populate_record);
-Datum		hstore_populate_record(PG_FUNCTION_ARGS);
 Datum
 hstore_populate_record(PG_FUNCTION_ARGS)
 {
@@ -1100,7 +1116,6 @@ cpw(char *dst, char *src, int len)
 }
 
 PG_FUNCTION_INFO_V1(hstore_out);
-Datum		hstore_out(PG_FUNCTION_ARGS);
 Datum
 hstore_out(PG_FUNCTION_ARGS)
 {
@@ -1114,11 +1129,7 @@ hstore_out(PG_FUNCTION_ARGS)
 	HEntry	   *entries = ARRPTR(in);
 
 	if (count == 0)
-	{
-		out = palloc(1);
-		*out = '\0';
-		PG_RETURN_CSTRING(out);
-	}
+		PG_RETURN_CSTRING(pstrdup(""));
 
 	buflen = 0;
 
@@ -1176,7 +1187,6 @@ hstore_out(PG_FUNCTION_ARGS)
 
 
 PG_FUNCTION_INFO_V1(hstore_send);
-Datum		hstore_send(PG_FUNCTION_ARGS);
 Datum
 hstore_send(PG_FUNCTION_ARGS)
 {
@@ -1223,82 +1233,201 @@ hstore_send(PG_FUNCTION_ARGS)
  * (think zip codes or phone numbers starting with 0).
  */
 PG_FUNCTION_INFO_V1(hstore_to_json_loose);
-Datum		hstore_to_json_loose(PG_FUNCTION_ARGS);
 Datum
 hstore_to_json_loose(PG_FUNCTION_ARGS)
 {
 	HStore	   *in = PG_GETARG_HS(0);
-	int			buflen,
-				i;
+	int			i;
 	int			count = HS_COUNT(in);
-	char	   *out,
-			   *ptr;
 	char	   *base = STRPTR(in);
 	HEntry	   *entries = ARRPTR(in);
-	bool		is_number;
-	StringInfo	src,
+	StringInfoData tmp,
 				dst;
 
 	if (count == 0)
-		PG_RETURN_TEXT_P(cstring_to_text_with_len("{}",2));
+		PG_RETURN_TEXT_P(cstring_to_text_with_len("{}", 2));
 
-	buflen = 3;
+	initStringInfo(&tmp);
+	initStringInfo(&dst);
 
-	/*
-	 * Formula adjusted slightly from the logic in hstore_out. We have to take
-	 * account of out treatment of booleans to be a bit more pessimistic about
-	 * the length of values.
-	 */
+	appendStringInfoChar(&dst, '{');
 
 	for (i = 0; i < count; i++)
 	{
-		/* include "" and colon-space and comma-space */
-		buflen += 6 + 2 * HS_KEYLEN(entries, i);
-		/* include "" only if nonnull */
-		buflen += 3 + (HS_VALISNULL(entries, i)
-					   ? 1
-					   : 2 * HS_VALLEN(entries, i));
-	}
-
-	out = ptr = palloc(buflen);
-
-	src = makeStringInfo();
-	dst = makeStringInfo();
-
-	*ptr++ = '{';
-
-	for (i = 0; i < count; i++)
-	{
-		resetStringInfo(src);
-		resetStringInfo(dst);
-		appendBinaryStringInfo(src, HS_KEY(entries, base, i), HS_KEYLEN(entries, i));
-		escape_json(dst, src->data);
-		strncpy(ptr, dst->data, dst->len);
-		ptr += dst->len;
-		*ptr++ = ':';
-		*ptr++ = ' ';
-		resetStringInfo(dst);
+		resetStringInfo(&tmp);
+		appendBinaryStringInfo(&tmp, HS_KEY(entries, base, i), HS_KEYLEN(entries, i));
+		escape_json(&dst, tmp.data);
+		appendStringInfoString(&dst, ": ");
 		if (HS_VALISNULL(entries, i))
-			appendStringInfoString(dst, "null");
+			appendStringInfoString(&dst, "null");
 		/* guess that values of 't' or 'f' are booleans */
 		else if (HS_VALLEN(entries, i) == 1 && *(HS_VAL(entries, base, i)) == 't')
-			appendStringInfoString(dst, "true");
+			appendStringInfoString(&dst, "true");
 		else if (HS_VALLEN(entries, i) == 1 && *(HS_VAL(entries, base, i)) == 'f')
-			appendStringInfoString(dst, "false");
+			appendStringInfoString(&dst, "false");
+		else
+		{
+			resetStringInfo(&tmp);
+			appendBinaryStringInfo(&tmp, HS_VAL(entries, base, i), HS_VALLEN(entries, i));
+			if (IsValidJsonNumber(tmp.data, tmp.len))
+				appendBinaryStringInfo(&dst, tmp.data, tmp.len);
+			else
+				escape_json(&dst, tmp.data);
+		}
+
+		if (i + 1 != count)
+			appendStringInfoString(&dst, ", ");
+	}
+	appendStringInfoChar(&dst, '}');
+
+	PG_RETURN_TEXT_P(cstring_to_text(dst.data));
+}
+
+PG_FUNCTION_INFO_V1(hstore_to_json);
+Datum
+hstore_to_json(PG_FUNCTION_ARGS)
+{
+	HStore	   *in = PG_GETARG_HS(0);
+	int			i;
+	int			count = HS_COUNT(in);
+	char	   *base = STRPTR(in);
+	HEntry	   *entries = ARRPTR(in);
+	StringInfoData tmp,
+				dst;
+
+	if (count == 0)
+		PG_RETURN_TEXT_P(cstring_to_text_with_len("{}", 2));
+
+	initStringInfo(&tmp);
+	initStringInfo(&dst);
+
+	appendStringInfoChar(&dst, '{');
+
+	for (i = 0; i < count; i++)
+	{
+		resetStringInfo(&tmp);
+		appendBinaryStringInfo(&tmp, HS_KEY(entries, base, i), HS_KEYLEN(entries, i));
+		escape_json(&dst, tmp.data);
+		appendStringInfoString(&dst, ": ");
+		if (HS_VALISNULL(entries, i))
+			appendStringInfoString(&dst, "null");
+		else
+		{
+			resetStringInfo(&tmp);
+			appendBinaryStringInfo(&tmp, HS_VAL(entries, base, i), HS_VALLEN(entries, i));
+			escape_json(&dst, tmp.data);
+		}
+
+		if (i + 1 != count)
+			appendStringInfoString(&dst, ", ");
+	}
+	appendStringInfoChar(&dst, '}');
+
+	PG_RETURN_TEXT_P(cstring_to_text(dst.data));
+}
+
+PG_FUNCTION_INFO_V1(hstore_to_jsonb);
+Datum
+hstore_to_jsonb(PG_FUNCTION_ARGS)
+{
+	HStore	   *in = PG_GETARG_HS(0);
+	int			i;
+	int			count = HS_COUNT(in);
+	char	   *base = STRPTR(in);
+	HEntry	   *entries = ARRPTR(in);
+	JsonbParseState *state = NULL;
+	JsonbValue *res;
+
+	(void) pushJsonbValue(&state, WJB_BEGIN_OBJECT, NULL);
+
+	for (i = 0; i < count; i++)
+	{
+		JsonbValue	key,
+					val;
+
+		key.type = jbvString;
+		key.val.string.len = HS_KEYLEN(entries, i);
+		key.val.string.val = HS_KEY(entries, base, i);
+
+		(void) pushJsonbValue(&state, WJB_KEY, &key);
+
+		if (HS_VALISNULL(entries, i))
+		{
+			val.type = jbvNull;
+		}
+		else
+		{
+			val.type = jbvString;
+			val.val.string.len = HS_VALLEN(entries, i);
+			val.val.string.val = HS_VAL(entries, base, i);
+		}
+		(void) pushJsonbValue(&state, WJB_VALUE, &val);
+	}
+
+	res = pushJsonbValue(&state, WJB_END_OBJECT, NULL);
+
+	PG_RETURN_POINTER(JsonbValueToJsonb(res));
+}
+
+PG_FUNCTION_INFO_V1(hstore_to_jsonb_loose);
+Datum
+hstore_to_jsonb_loose(PG_FUNCTION_ARGS)
+{
+	HStore	   *in = PG_GETARG_HS(0);
+	int			i;
+	int			count = HS_COUNT(in);
+	char	   *base = STRPTR(in);
+	HEntry	   *entries = ARRPTR(in);
+	JsonbParseState *state = NULL;
+	JsonbValue *res;
+	StringInfoData tmp;
+	bool		is_number;
+
+	initStringInfo(&tmp);
+
+	(void) pushJsonbValue(&state, WJB_BEGIN_OBJECT, NULL);
+
+	for (i = 0; i < count; i++)
+	{
+		JsonbValue	key,
+					val;
+
+		key.type = jbvString;
+		key.val.string.len = HS_KEYLEN(entries, i);
+		key.val.string.val = HS_KEY(entries, base, i);
+
+		(void) pushJsonbValue(&state, WJB_KEY, &key);
+
+		if (HS_VALISNULL(entries, i))
+		{
+			val.type = jbvNull;
+		}
+		/* guess that values of 't' or 'f' are booleans */
+		else if (HS_VALLEN(entries, i) == 1 && *(HS_VAL(entries, base, i)) == 't')
+		{
+			val.type = jbvBool;
+			val.val.boolean = true;
+		}
+		else if (HS_VALLEN(entries, i) == 1 && *(HS_VAL(entries, base, i)) == 'f')
+		{
+			val.type = jbvBool;
+			val.val.boolean = false;
+		}
 		else
 		{
 			is_number = false;
-			resetStringInfo(src);
-			appendBinaryStringInfo(src, HS_VAL(entries, base, i), HS_VALLEN(entries, i));
+			resetStringInfo(&tmp);
+
+			appendBinaryStringInfo(&tmp, HS_VAL(entries, base, i), HS_VALLEN(entries, i));
 
 			/*
 			 * don't treat something with a leading zero followed by another
 			 * digit as numeric - could be a zip code or similar
 			 */
-			if (src->len > 0 &&
-				!(src->data[0] == '0' &&
-				  isdigit((unsigned char) src->data[1])) &&
-				strspn(src->data, "+-0123456789Ee.") == src->len)
+			if (tmp.len > 0 &&
+				!(tmp.data[0] == '0' &&
+				  isdigit((unsigned char) tmp.data[1])) &&
+				strspn(tmp.data, "+-0123456789Ee.") == tmp.len)
 			{
 				/*
 				 * might be a number. See if we can input it as a numeric
@@ -1307,7 +1436,7 @@ hstore_to_json_loose(PG_FUNCTION_ARGS)
 				char	   *endptr = "junk";
 				long		lval;
 
-				lval = strtol(src->data, &endptr, 10);
+				lval = strtol(tmp.data, &endptr, 10);
 				(void) lval;
 				if (*endptr == '\0')
 				{
@@ -1322,106 +1451,30 @@ hstore_to_json_loose(PG_FUNCTION_ARGS)
 					/* not an int - try a double */
 					double		dval;
 
-					dval = strtod(src->data, &endptr);
+					dval = strtod(tmp.data, &endptr);
 					(void) dval;
 					if (*endptr == '\0')
 						is_number = true;
 				}
 			}
 			if (is_number)
-				appendBinaryStringInfo(dst, src->data, src->len);
+			{
+				val.type = jbvNumeric;
+				val.val.numeric = DatumGetNumeric(
+												  DirectFunctionCall3(numeric_in, CStringGetDatum(tmp.data), 0, -1));
+
+			}
 			else
-				escape_json(dst, src->data);
+			{
+				val.type = jbvString;
+				val.val.string.len = HS_VALLEN(entries, i);
+				val.val.string.val = HS_VAL(entries, base, i);
+			}
 		}
-		strncpy(ptr, dst->data, dst->len);
-		ptr += dst->len;
-
-		if (i + 1 != count)
-		{
-			*ptr++ = ',';
-			*ptr++ = ' ';
-		}
-	}
-	*ptr++ = '}';
-	*ptr = '\0';
-
-	PG_RETURN_TEXT_P(cstring_to_text(out));
-}
-
-PG_FUNCTION_INFO_V1(hstore_to_json);
-Datum		hstore_to_json(PG_FUNCTION_ARGS);
-Datum
-hstore_to_json(PG_FUNCTION_ARGS)
-{
-	HStore	   *in = PG_GETARG_HS(0);
-	int			buflen,
-				i;
-	int			count = HS_COUNT(in);
-	char	   *out,
-			   *ptr;
-	char	   *base = STRPTR(in);
-	HEntry	   *entries = ARRPTR(in);
-	StringInfo	src,
-				dst;
-
-	if (count == 0)
-		PG_RETURN_TEXT_P(cstring_to_text_with_len("{}",2));
-
-	buflen = 3;
-
-	/*
-	 * Formula adjusted slightly from the logic in hstore_out. We have to take
-	 * account of out treatment of booleans to be a bit more pessimistic about
-	 * the length of values.
-	 */
-
-	for (i = 0; i < count; i++)
-	{
-		/* include "" and colon-space and comma-space */
-		buflen += 6 + 2 * HS_KEYLEN(entries, i);
-		/* include "" only if nonnull */
-		buflen += 3 + (HS_VALISNULL(entries, i)
-					   ? 1
-					   : 2 * HS_VALLEN(entries, i));
+		(void) pushJsonbValue(&state, WJB_VALUE, &val);
 	}
 
-	out = ptr = palloc(buflen);
+	res = pushJsonbValue(&state, WJB_END_OBJECT, NULL);
 
-	src = makeStringInfo();
-	dst = makeStringInfo();
-
-	*ptr++ = '{';
-
-	for (i = 0; i < count; i++)
-	{
-		resetStringInfo(src);
-		resetStringInfo(dst);
-		appendBinaryStringInfo(src, HS_KEY(entries, base, i), HS_KEYLEN(entries, i));
-		escape_json(dst, src->data);
-		strncpy(ptr, dst->data, dst->len);
-		ptr += dst->len;
-		*ptr++ = ':';
-		*ptr++ = ' ';
-		resetStringInfo(dst);
-		if (HS_VALISNULL(entries, i))
-			appendStringInfoString(dst, "null");
-		else
-		{
-			resetStringInfo(src);
-			appendBinaryStringInfo(src, HS_VAL(entries, base, i), HS_VALLEN(entries, i));
-			escape_json(dst, src->data);
-		}
-		strncpy(ptr, dst->data, dst->len);
-		ptr += dst->len;
-
-		if (i + 1 != count)
-		{
-			*ptr++ = ',';
-			*ptr++ = ' ';
-		}
-	}
-	*ptr++ = '}';
-	*ptr = '\0';
-
-	PG_RETURN_TEXT_P(cstring_to_text(out));
+	PG_RETURN_POINTER(JsonbValueToJsonb(res));
 }

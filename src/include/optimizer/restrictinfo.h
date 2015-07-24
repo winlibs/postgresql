@@ -4,7 +4,7 @@
  *	  prototypes for restrictinfo.c.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/optimizer/restrictinfo.h
@@ -28,9 +28,6 @@ extern RestrictInfo *make_restrictinfo(Expr *clause,
 				  Relids required_relids,
 				  Relids outer_relids,
 				  Relids nullable_relids);
-extern List *make_restrictinfo_from_bitmapqual(Path *bitmapqual,
-								  bool is_pushed_down,
-								  bool include_predicates);
 extern List *make_restrictinfos_from_actual_clauses(PlannerInfo *root,
 									   List *clause_list);
 extern bool restriction_is_or_clause(RestrictInfo *restrictinfo);

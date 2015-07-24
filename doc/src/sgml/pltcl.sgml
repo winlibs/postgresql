@@ -51,7 +51,7 @@
     Sometimes it is desirable to write Tcl functions that are not restricted
     to safe Tcl.  For example, one might want a Tcl function that sends
     email.  To handle these cases, there is a variant of <application>PL/Tcl</> called <literal>PL/TclU</>
-    (for untrusted Tcl).  This is the exact same language except that a full
+    (for untrusted Tcl).  This is exactly the same language except that a full
     Tcl interpreter is used.  <emphasis>If <application>PL/TclU</> is used, it must be
     installed as an untrusted procedural language</emphasis> so that only
     database superusers can create functions in it.  The writer of a <application>PL/TclU</>
@@ -418,10 +418,13 @@ $$ LANGUAGE pltcl;
      </varlistentry>
 
      <varlistentry>
-      <indexterm>
-       <primary>spi_lastoid</primary>
-      </indexterm>
-      <term><function>spi_lastoid</></term>
+      <term>
+       <function>spi_lastoid</>
+       <indexterm>
+        <primary>spi_lastoid</primary>
+        <secondary>in PL/Tcl</secondary>
+       </indexterm>
+      </term>
       <listitem>
        <para>
         Returns the OID of the row inserted by the last
@@ -478,11 +481,13 @@ SELECT 'doesn''t' AS ret
      </varlistentry>
 
      <varlistentry>
-      <indexterm>
-       <primary>elog</primary>
-       <secondary>in PL/Tcl</secondary>
-      </indexterm>
-      <term><function>elog</> <replaceable>level</replaceable> <replaceable>msg</replaceable></term>
+      <term>
+       <function>elog</> <replaceable>level</replaceable> <replaceable>msg</replaceable>
+       <indexterm>
+        <primary>elog</primary>
+        <secondary>in PL/Tcl</secondary>
+       </indexterm>
+      </term>
       <listitem>
        <para>
         Emits a log or error message. Possible levels are
@@ -708,6 +713,65 @@ CREATE TRIGGER trig_mytab_modcount BEFORE INSERT OR UPDATE ON mytab
      Notice that the trigger procedure itself does not know the column
      name; that's supplied from the trigger arguments.  This lets the
      trigger procedure be reused with different tables.
+    </para>
+   </sect1>
+
+   <sect1 id="pltcl-event-trigger">
+    <title>Event Trigger Procedures in PL/Tcl</title>
+
+    <indexterm>
+     <primary>event trigger</primary>
+     <secondary>in PL/Tcl</secondary>
+    </indexterm>
+
+    <para>
+     Event trigger procedures can be written in PL/Tcl.
+     <productname>PostgreSQL</productname> requires that a procedure that is
+     to be called as an event trigger must be declared as a function with no
+     arguments and a return type of <literal>event_trigger</>.
+    </para>
+    <para>
+     The information from the trigger manager is passed to the procedure body
+     in the following variables:
+
+     <variablelist>
+
+      <varlistentry>
+       <term><varname>$TG_event</varname></term>
+       <listitem>
+        <para>
+         The name of the event the trigger is fired for.
+        </para>
+       </listitem>
+      </varlistentry>
+
+      <varlistentry>
+       <term><varname>$TG_tag</varname></term>
+       <listitem>
+        <para>
+         The command tag for which the trigger is fired.
+        </para>
+       </listitem>
+      </varlistentry>
+     </variablelist>
+    </para>
+
+    <para>
+     The return value of the trigger procedure is ignored.
+    </para>
+
+    <para>
+     Here's a little example event trigger procedure that simply raises
+     a <literal>NOTICE</literal> message each time a supported command is
+     executed:
+
+<programlisting>
+CREATE OR REPLACE FUNCTION tclsnitch() RETURNS event_trigger AS $$
+  elog NOTICE "tclsnitch: $TG_event $TG_tag"
+$$ LANGUAGE pltcl;
+
+CREATE EVENT TRIGGER tcl_a_snitch ON ddl_command_start EXECUTE PROCEDURE tclsnitch();
+</programlisting>
     </para>
    </sect1>
 

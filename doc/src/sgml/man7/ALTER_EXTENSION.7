@@ -2,12 +2,12 @@
 .\"     Title: ALTER EXTENSION
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "ALTER EXTENSION" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "ALTER EXTENSION" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 ALTER_EXTENSION \- change the definition of an extension
-.\" ALTER EXTENSION
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -40,7 +39,7 @@ ALTER EXTENSION \fIname\fR DROP \fImember_object\fR
 
 where \fImember_object\fR is:
 
-  AGGREGATE \fIagg_name\fR (\fIagg_type\fR [, \&.\&.\&.] ) |
+  AGGREGATE \fIaggregate_name\fR ( \fIaggregate_signature\fR ) |
   CAST (\fIsource_type\fR AS \fItarget_type\fR) |
   COLLATION \fIobject_name\fR |
   CONVERSION \fIobject_name\fR |
@@ -64,6 +63,12 @@ where \fImember_object\fR is:
   TEXT SEARCH TEMPLATE \fIobject_name\fR |
   TYPE \fIobject_name\fR |
   VIEW \fIobject_name\fR
+
+and \fIaggregate_signature\fR is:
+
+* |
+[ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [ , \&.\&.\&. ] |
+[ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [ , \&.\&.\&. ] ] ORDER BY [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [ , \&.\&.\&. ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -120,16 +125,15 @@ attempts to update to whatever is shown as the default version in the extension\
 The new schema for the extension\&.
 .RE
 .PP
-\fIobject_name\fR, \fIagg_name\fR, \fIfunction_name\fR, \fIoperator_name\fR
+\fIobject_name\fR
+.br
+\fIaggregate_name\fR
+.br
+\fIfunction_name\fR
+.br
+\fIoperator_name\fR
 .RS 4
 The name of an object to be added to or removed from the extension\&. Names of tables, aggregates, domains, foreign tables, functions, operators, operator classes, operator families, sequences, text search objects, types, and views can be schema\-qualified\&.
-.RE
-.PP
-\fIagg_type\fR
-.RS 4
-An input data type on which the aggregate function operates\&. To reference a zero\-argument aggregate function, write
-*
-in place of the list of input data types\&.
 .RE
 .PP
 \fIsource_type\fR
@@ -144,7 +148,7 @@ The name of the target data type of the cast\&.
 .PP
 \fIargmode\fR
 .RS 4
-The mode of a function argument:
+The mode of a function or aggregate argument:
 IN,
 OUT,
 INOUT, or
@@ -162,17 +166,19 @@ arguments\&.
 .PP
 \fIargname\fR
 .RS 4
-The name of a function argument\&. Note that
+The name of a function or aggregate argument\&. Note that
 \fBALTER EXTENSION\fR
 does not actually pay any attention to argument names, since only the argument data types are needed to determine the function\*(Aqs identity\&.
 .RE
 .PP
 \fIargtype\fR
 .RS 4
-The data type(s) of the function\*(Aqs arguments (optionally schema\-qualified), if any\&.
+The data type of a function or aggregate argument\&.
 .RE
 .PP
-\fIleft_type\fR, \fIright_type\fR
+\fIleft_type\fR
+.br
+\fIright_type\fR
 .RS 4
 The data type(s) of the operator\*(Aqs arguments (optionally schema\-qualified)\&. Write
 NONE

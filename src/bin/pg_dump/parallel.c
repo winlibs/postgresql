@@ -4,7 +4,7 @@
  *
  *	Parallel support for the pg_dump archiver
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *	The author is not responsible for loss or damages that may
@@ -166,7 +166,7 @@ GetMyPSlot(ParallelState *pstate)
 }
 
 /*
- * Fail and die, with a message to stderr.	Parameters as for write_msg.
+ * Fail and die, with a message to stderr.  Parameters as for write_msg.
  *
  * This is defined in parallel.c, because in parallel mode, things are more
  * complicated. If the worker process does exit_horribly(), we forward its
@@ -558,7 +558,10 @@ ParallelBackupStart(ArchiveHandle *AH, RestoreOptions *ropt)
 		{
 			/* we are the worker */
 			int			j;
-			int			pipefd[2] = {pipeMW[PIPE_READ], pipeWM[PIPE_WRITE]};
+			int			pipefd[2];
+
+			pipefd[0] = pipeMW[PIPE_READ];
+			pipefd[1] = pipeWM[PIPE_WRITE];
 
 			/*
 			 * Store the fds for the reverse communication in pstate. Actually
@@ -670,7 +673,7 @@ ParallelBackupEnd(ArchiveHandle *AH, ParallelState *pstate)
  * AH->MasterStartParallelItemPtr, a routine of the output format. This
  * function's arguments are the parents archive handle AH (containing the full
  * catalog information), the TocEntry that the worker should work on and a
- * T_Action act indicating whether this is a backup or a restore item.	The
+ * T_Action act indicating whether this is a backup or a restore item.  The
  * function then converts the TocEntry assignment into a string that is then
  * sent over to the worker process. In the simplest case that would be
  * something like "DUMP 1234", with 1234 being the TocEntry id.
@@ -813,7 +816,7 @@ lockTableNoWait(ArchiveHandle *AH, TocEntry *te)
 					  "       pg_class.relname "
 					  "  FROM pg_class "
 					"  JOIN pg_namespace on pg_namespace.oid = relnamespace "
-					  " WHERE pg_class.oid = %d", te->catalogId.oid);
+					  " WHERE pg_class.oid = %u", te->catalogId.oid);
 
 	res = PQexec(AH->connection, query->data);
 
@@ -837,8 +840,8 @@ lockTableNoWait(ArchiveHandle *AH, TocEntry *te)
 	if (!res || PQresultStatus(res) != PGRES_COMMAND_OK)
 		exit_horribly(modulename,
 					  "could not obtain lock on relation \"%s\"\n"
-					  "This usually means that someone requested an ACCESS EXCLUSIVE lock "
-					  "on the table after the pg_dump parent process had gotten the "
+		"This usually means that someone requested an ACCESS EXCLUSIVE lock "
+			  "on the table after the pg_dump parent process had gotten the "
 					  "initial ACCESS SHARE lock on the table.\n", qualId);
 
 	PQclear(res);
@@ -920,7 +923,7 @@ WaitForCommands(ArchiveHandle *AH, int pipefd[2])
 		}
 		else
 			exit_horribly(modulename,
-						  "unrecognized command on communication channel: %s\n",
+					   "unrecognized command on communication channel: %s\n",
 						  command);
 
 		/* command was pg_malloc'd and we are responsible for free()ing it. */
@@ -1248,7 +1251,7 @@ sendMessageToWorker(ParallelState *pstate, int worker, const char *str)
 		if (!aborting)
 #endif
 			exit_horribly(modulename,
-						  "could not write to the communication channel: %s\n",
+						"could not write to the communication channel: %s\n",
 						  strerror(errno));
 	}
 }
@@ -1288,7 +1291,7 @@ readMessageFromPipe(int fd)
 
 		/* worker has closed the connection or another error happened */
 		if (ret <= 0)
-			return NULL;
+			break;
 
 		Assert(ret == 1);
 
@@ -1300,27 +1303,40 @@ readMessageFromPipe(int fd)
 		{
 			/* could be any number */
 			bufsize += 16;
-			msg = (char *) realloc(msg, bufsize);
+			msg = (char *) pg_realloc(msg, bufsize);
 		}
 	}
+
+	/*
+	 * Worker has closed the connection, make sure to clean up before return
+	 * since we are not returning msg (but did allocate it).
+	 */
+	pg_free(msg);
+
+	return NULL;
 }
 
 #ifdef WIN32
 /*
  * This is a replacement version of pipe for Win32 which allows returned
  * handles to be used in select(). Note that read/write calls must be replaced
- * with recv/send.
+ * with recv/send.  "handles" have to be integers so we check for errors then
+ * cast to integers.
  */
 static int
 pgpipe(int handles[2])
 {
-	SOCKET		s;
+	pgsocket		s, tmp_sock;
 	struct sockaddr_in serv_addr;
 	int			len = sizeof(serv_addr);
 
-	handles[0] = handles[1] = INVALID_SOCKET;
+	/* We have to use the Unix socket invalid file descriptor value here. */
+	handles[0] = handles[1] = -1;
 
-	if ((s = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+	/*
+	 * setup listen socket
+	 */
+	if ((s = socket(AF_INET, SOCK_STREAM, 0)) == PGINVALID_SOCKET)
 	{
 		write_msg(modulename, "pgpipe: could not create socket: error code %d\n",
 				  WSAGetLastError());
@@ -1352,13 +1368,18 @@ pgpipe(int handles[2])
 		closesocket(s);
 		return -1;
 	}
-	if ((handles[1] = socket(PF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+
+	/*
+	 * setup pipe handles
+	 */
+	if ((tmp_sock = socket(AF_INET, SOCK_STREAM, 0)) == PGINVALID_SOCKET)
 	{
 		write_msg(modulename, "pgpipe: could not create second socket: error code %d\n",
 				  WSAGetLastError());
 		closesocket(s);
 		return -1;
 	}
+	handles[1] = (int) tmp_sock;
 
 	if (connect(handles[1], (SOCKADDR *) &serv_addr, len) == SOCKET_ERROR)
 	{
@@ -1367,15 +1388,17 @@ pgpipe(int handles[2])
 		closesocket(s);
 		return -1;
 	}
-	if ((handles[0] = accept(s, (SOCKADDR *) &serv_addr, &len)) == INVALID_SOCKET)
+	if ((tmp_sock = accept(s, (SOCKADDR *) &serv_addr, &len)) == PGINVALID_SOCKET)
 	{
 		write_msg(modulename, "pgpipe: could not accept connection: error code %d\n",
 				  WSAGetLastError());
 		closesocket(handles[1]);
-		handles[1] = INVALID_SOCKET;
+		handles[1] = -1;
 		closesocket(s);
 		return -1;
 	}
+	handles[0] = (int) tmp_sock;
+
 	closesocket(s);
 	return 0;
 }

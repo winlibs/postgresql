@@ -193,7 +193,6 @@
 (define %use-id-as-filename%    #t)
 (define %stylesheet%            (if website-stylesheet "http://www.postgresql.org/media/css/docs.css" "stylesheet.css"))
 (define %graphic-default-extension% "gif")
-(define %gentext-nav-use-ff%    #t)
 (define %body-attr%             '())
 (define ($generate-book-lot-list$) '())
 (define use-output-dir          #t)
@@ -283,14 +282,17 @@
         (empty-sosofo))))
 
 
-;; Customization of header, add title attributes (overrides
-;; dbcommon.dsl)
-(define (default-header-nav-tbl-ff elemnode prev next prevsib nextsib)
+;; Customization of header
+;; - make title a link to the home page
+;; - add tool tips to Prev/Next links
+;; - add Up link
+;; (overrides dbnavig.dsl)
+(define (default-header-nav-tbl-noff elemnode prev next prevsib nextsib)
   (let* ((r1? (nav-banner? elemnode))
          (r1-sosofo (make element gi: "TR"
                           (make element gi: "TH"
                                 attributes: (list
-                                             (list "COLSPAN" "5")
+                                             (list "COLSPAN" "4")
                                              (list "ALIGN" "center")
                                              (list "VALIGN" "bottom"))
                                 (make element gi: "A"
@@ -626,7 +628,7 @@
 
 ;; By default, the part and reference title pages get wrong page
 ;; numbers: The first title page gets roman numerals carried over from
-;; preface/toc -- we want arabic numerals.  We also need to make sure
+;; preface/toc -- we want Arabic numerals.  We also need to make sure
 ;; that page-number-restart is set of #f explicitly, because otherwise
 ;; it will carry over from the previous component, which is not good.
 ;;

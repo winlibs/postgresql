@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -100,15 +100,24 @@ NAME="FUNCTIONS-AGGREGATE"
 CLASS="FIRSTTERM"
 >Aggregate functions</I
 > compute a single result
-   from a set of input values.  The built-in aggregate functions
+   from a set of input values.  The built-in normal aggregate functions
    are listed in
    <A
 HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE"
->Table 9-46</A
+>Table 9-49</A
 > and
    <A
 HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
->Table 9-47</A
+>Table 9-50</A
+>.
+   The built-in ordered-set aggregate functions
+   are listed in <A
+HREF="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE"
+>Table 9-51</A
+> and
+   <A
+HREF="functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE"
+>Table 9-52</A
 >.
    The special syntax considerations for aggregate
    functions are explained in <A
@@ -128,7 +137,7 @@ NAME="FUNCTIONS-AGGREGATE-TABLE"
 ></A
 ><P
 ><B
->Table 9-46. General-Purpose Aggregate Functions</B
+>Table 9-49. General-Purpose Aggregate Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -432,7 +441,7 @@ CLASS="FUNCTION"
 >json_agg(<TT
 CLASS="REPLACEABLE"
 ><I
->record</I
+>expression</I
 ></TT
 >)</CODE
 >
@@ -440,7 +449,7 @@ CLASS="REPLACEABLE"
 ><TD
 >       <TT
 CLASS="TYPE"
->record</TT
+>any</TT
 >
       </TD
 ><TD
@@ -450,7 +459,40 @@ CLASS="TYPE"
 >
       </TD
 ><TD
->aggregates records as a JSON array of objects</TD
+>aggregates values as a JSON array</TD
+></TR
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
+>json_object_agg(<TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>(any, any)</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>json</TT
+>
+      </TD
+><TD
+>aggregates name/value pairs as a JSON object</TD
 ></TR
 ><TR
 ><TD
@@ -581,10 +623,13 @@ CLASS="TYPE"
 >, <TT
 CLASS="TYPE"
 >numeric</TT
->, or
+>,
        <TT
 CLASS="TYPE"
 >interval</TT
+>, or <TT
+CLASS="TYPE"
+>money</TT
 >
       </TD
 ><TD
@@ -605,11 +650,7 @@ CLASS="TYPE"
        <TT
 CLASS="TYPE"
 >bigint</TT
-> arguments, <TT
-CLASS="TYPE"
->double precision</TT
->
-       for floating-point arguments, otherwise the same as the
+> arguments, otherwise the same as the
        argument data type
       </TD
 ><TD
@@ -762,6 +803,10 @@ CLASS="FUNCTION"
 >,
    <CODE
 CLASS="FUNCTION"
+>json_object_agg</CODE
+>,
+   <CODE
+CLASS="FUNCTION"
 >string_agg</CODE
 >,
    and <CODE
@@ -793,7 +838,7 @@ CLASS="SCREEN"
 ><P
 >   <A
 HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
->Table 9-47</A
+>Table 9-50</A
 > shows
    aggregate functions typically used in statistical analysis.
    (These are separated out merely to avoid cluttering the listing
@@ -820,7 +865,7 @@ NAME="FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
 ></A
 ><P
 ><B
->Table 9-47. Aggregate Functions for Statistics</B
+>Table 9-50. Aggregate Functions for Statistics</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1675,6 +1720,522 @@ CLASS="TYPE"
 ></TBODY
 ></TABLE
 ></DIV
+><P
+>   <A
+HREF="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE"
+>Table 9-51</A
+> shows some
+   aggregate functions that use the <I
+CLASS="FIRSTTERM"
+>ordered-set aggregate</I
+>
+   syntax.  These functions are sometimes referred to as <SPAN
+CLASS="QUOTE"
+>"inverse
+   distribution"</SPAN
+> functions.
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-ORDEREDSET-TABLE"
+></A
+><P
+><B
+>Table 9-51. Ordered-Set Aggregate Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><COL><COL><THEAD
+><TR
+><TH
+>Function</TH
+><TH
+>Direct Argument Type(s)</TH
+><TH
+>Aggregated Argument Type(s)</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
+>mode() WITHIN GROUP (ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>sort_expression</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>&nbsp;</TD
+><TD
+>       any sortable type
+      </TD
+><TD
+>       same as sort expression
+      </TD
+><TD
+>       returns the most frequent input value (arbitrarily choosing the first
+       one if there are multiple equally-frequent results)
+      </TD
+></TR
+><TR
+><TD
+>       
+       
+       <CODE
+CLASS="FUNCTION"
+>percentile_cont(<TT
+CLASS="REPLACEABLE"
+><I
+>fraction</I
+></TT
+>) WITHIN GROUP (ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>sort_expression</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>double precision</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>double precision</TT
+> or <TT
+CLASS="TYPE"
+>interval</TT
+>
+      </TD
+><TD
+>       same as sort expression
+      </TD
+><TD
+>       continuous percentile: returns a value corresponding to the specified
+       fraction in the ordering, interpolating between adjacent input items if
+       needed
+      </TD
+></TR
+><TR
+><TD
+>       <CODE
+CLASS="FUNCTION"
+>percentile_cont(<TT
+CLASS="REPLACEABLE"
+><I
+>fractions</I
+></TT
+>) WITHIN GROUP (ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>sort_expression</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>double precision[]</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>double precision</TT
+> or <TT
+CLASS="TYPE"
+>interval</TT
+>
+      </TD
+><TD
+>       array of sort expression's type
+      </TD
+><TD
+>       multiple continuous percentile: returns an array of results matching
+       the shape of the <TT
+CLASS="LITERAL"
+>fractions</TT
+> parameter, with each
+       non-null element replaced by the value corresponding to that percentile
+      </TD
+></TR
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
+>percentile_disc(<TT
+CLASS="REPLACEABLE"
+><I
+>fraction</I
+></TT
+>) WITHIN GROUP (ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>sort_expression</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>double precision</TT
+>
+      </TD
+><TD
+>       any sortable type
+      </TD
+><TD
+>       same as sort expression
+      </TD
+><TD
+>       discrete percentile: returns the first input value whose position in
+       the ordering equals or exceeds the specified fraction
+      </TD
+></TR
+><TR
+><TD
+>       <CODE
+CLASS="FUNCTION"
+>percentile_disc(<TT
+CLASS="REPLACEABLE"
+><I
+>fractions</I
+></TT
+>) WITHIN GROUP (ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>sort_expression</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>double precision[]</TT
+>
+      </TD
+><TD
+>       any sortable type
+      </TD
+><TD
+>       array of sort expression's type
+      </TD
+><TD
+>       multiple discrete percentile: returns an array of results matching the
+       shape of the <TT
+CLASS="LITERAL"
+>fractions</TT
+> parameter, with each non-null
+       element replaced by the input value corresponding to that percentile
+      </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   All the aggregates listed in <A
+HREF="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE"
+>Table 9-51</A
+>
+   ignore null values in their sorted input.  For those that take
+   a <TT
+CLASS="REPLACEABLE"
+><I
+>fraction</I
+></TT
+> parameter, the fraction value must be
+   between 0 and 1; an error is thrown if not.  However, a null fraction value
+   simply produces a null result.
+  </P
+><P
+>   Each of the aggregates listed in
+   <A
+HREF="functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE"
+>Table 9-52</A
+> is associated with a
+   window function of the same name defined in
+   <A
+HREF="functions-window.html"
+>Section 9.21</A
+>.  In each case, the aggregate result
+   is the value that the associated window function would have
+   returned for the <SPAN
+CLASS="QUOTE"
+>"hypothetical"</SPAN
+> row constructed from
+   <TT
+CLASS="REPLACEABLE"
+><I
+>args</I
+></TT
+>, if such a row had been added to the sorted
+   group of rows computed from the <TT
+CLASS="REPLACEABLE"
+><I
+>sorted_args</I
+></TT
+>.
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-HYPOTHETICAL-TABLE"
+></A
+><P
+><B
+>Table 9-52. Hypothetical-Set Aggregate Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><COL><COL><THEAD
+><TR
+><TH
+>Function</TH
+><TH
+>Direct Argument Type(s)</TH
+><TH
+>Aggregated Argument Type(s)</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
+>rank(<TT
+CLASS="REPLACEABLE"
+><I
+>args</I
+></TT
+>) WITHIN GROUP (ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>sorted_args</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> <TT
+CLASS="TYPE"
+>"any"</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> <TT
+CLASS="TYPE"
+>"any"</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>bigint</TT
+>
+      </TD
+><TD
+>       rank of the hypothetical row, with gaps for duplicate rows
+      </TD
+></TR
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
+>dense_rank(<TT
+CLASS="REPLACEABLE"
+><I
+>args</I
+></TT
+>) WITHIN GROUP (ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>sorted_args</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> <TT
+CLASS="TYPE"
+>"any"</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> <TT
+CLASS="TYPE"
+>"any"</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>bigint</TT
+>
+      </TD
+><TD
+>       rank of the hypothetical row, without gaps
+      </TD
+></TR
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
+>percent_rank(<TT
+CLASS="REPLACEABLE"
+><I
+>args</I
+></TT
+>) WITHIN GROUP (ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>sorted_args</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> <TT
+CLASS="TYPE"
+>"any"</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> <TT
+CLASS="TYPE"
+>"any"</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>double precision</TT
+>
+      </TD
+><TD
+>       relative rank of the hypothetical row, ranging from 0 to 1
+      </TD
+></TR
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
+>cume_dist(<TT
+CLASS="REPLACEABLE"
+><I
+>args</I
+></TT
+>) WITHIN GROUP (ORDER BY <TT
+CLASS="REPLACEABLE"
+><I
+>sorted_args</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> <TT
+CLASS="TYPE"
+>"any"</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> <TT
+CLASS="TYPE"
+>"any"</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>double precision</TT
+>
+      </TD
+><TD
+>       relative rank of the hypothetical row, ranging from
+       1/<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+> to 1
+      </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   For each of these hypothetical-set aggregates, the list of direct arguments
+   given in <TT
+CLASS="REPLACEABLE"
+><I
+>args</I
+></TT
+> must match the number and types of
+   the aggregated arguments given in <TT
+CLASS="REPLACEABLE"
+><I
+>sorted_args</I
+></TT
+>.
+   Unlike most built-in aggregates, these aggregates are not strict, that is
+   they do not drop input rows containing nulls.  Null values sort according
+   to the rule specified in the <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> clause.
+  </P
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

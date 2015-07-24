@@ -5,7 +5,7 @@
  *	  clients and standalone backends are supported here).
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -20,6 +20,7 @@
 #include "libpq/pqformat.h"
 #include "tcop/pquery.h"
 #include "utils/lsyscache.h"
+#include "utils/memdebug.h"
 #include "utils/memutils.h"
 
 
@@ -181,7 +182,7 @@ printtup_startup(DestReceiver *self, int operation, TupleDesc typeinfo)
  * or some similar function; it does not contain a full set of fields.
  * The targetlist will be NIL when executing a utility function that does
  * not have a plan.  If the targetlist isn't NIL then it is a Query node's
- * targetlist; it is up to us to ignore resjunk columns in it.	The formats[]
+ * targetlist; it is up to us to ignore resjunk columns in it.  The formats[]
  * array pointer might be NULL (if we are doing Describe on a prepared stmt);
  * send zeroes for the format codes in that case.
  */
@@ -338,6 +339,17 @@ printtup(TupleTableSlot *slot, DestReceiver *self)
 			pq_sendint(&buf, -1, 4);
 			continue;
 		}
+
+		/*
+		 * Here we catch undefined bytes in datums that are returned to the
+		 * client without hitting disk; see comments at the related check in
+		 * PageAddItem().  This test is most useful for uncompressed,
+		 * non-external datums, but we're quite likely to see such here when
+		 * testing new C functions.
+		 */
+		if (thisState->typisvarlena)
+			VALGRIND_CHECK_MEM_IS_DEFINED(DatumGetPointer(attr),
+										  VARSIZE_ANY(attr));
 
 		if (thisState->format == 0)
 		{

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Type Conversion"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -160,8 +160,21 @@ CLASS="STEP"
 CLASS="TYPE"
 >unknown</TT
 >,
-resolve as that type.  Otherwise, replace any domain types in the list with
-their underlying base types.</P
+resolve as that type.</P
+></LI
+><LI
+CLASS="STEP"
+><P
+>If any input is of a domain type, treat it as being of the
+domain's base type for all subsequent steps.
+  <A
+NAME="AEN23040"
+HREF="#FTN.AEN23040"
+><SPAN
+CLASS="footnote"
+>[1]</SPAN
+></A
+></P
 ></LI
 ><LI
 CLASS="STEP"
@@ -211,11 +224,11 @@ conversion from a given input to the selected type.</P
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN21480"
+NAME="AEN23057"
 ></A
 ><P
 ><B
->Example 10-8. Type Resolution with Underspecified Types in a Union</B
+>Example 10-9. Type Resolution with Underspecified Types in a Union</B
 ></P
 ><P
 ></P><PRE
@@ -239,11 +252,11 @@ CLASS="TYPE"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN21486"
+NAME="AEN23063"
 ></A
 ><P
 ><B
->Example 10-9. Type Resolution in a Simple Union</B
+>Example 10-10. Type Resolution in a Simple Union</B
 ></P
 ><P
 ></P><PRE
@@ -278,11 +291,11 @@ CLASS="TYPE"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN21495"
+NAME="AEN23072"
 ></A
 ><P
 ><B
->Example 10-10. Type Resolution in a Transposed Union</B
+>Example 10-11. Type Resolution in a Transposed Union</B
 ></P
 ><P
 ></P><PRE
@@ -315,6 +328,43 @@ CLASS="TYPE"
 >.</P
 ></DIV
 ></DIV
+><H3
+CLASS="FOOTNOTES"
+>Notes</H3
+><TABLE
+BORDER="0"
+CLASS="FOOTNOTES"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="5%"
+><A
+NAME="FTN.AEN23040"
+HREF="typeconv-union-case.html#AEN23040"
+><SPAN
+CLASS="footnote"
+>[1]</SPAN
+></A
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="95%"
+><P
+>    Somewhat like the treatment of domain inputs for operators and
+    functions, this behavior allows a domain type to be preserved through
+    a <TT
+CLASS="LITERAL"
+>UNION</TT
+> or similar construct, so long as the user is
+    careful to ensure that all inputs are implicitly or explicitly of that
+    exact type.  Otherwise the domain's base type will be preferred.
+   </P
+></TD
+></TR
+></TABLE
 ><DIV
 CLASS="NAVFOOTER"
 ><HR

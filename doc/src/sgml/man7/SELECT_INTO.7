@@ -2,12 +2,12 @@
 .\"     Title: SELECT INTO
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "SELECT INTO" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "SELECT INTO" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 SELECT_INTO \- define a new table from the results of a query
-.\" SELECT INTO
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -98,15 +97,10 @@ clause differently\&. Furthermore,
 offers a superset of the functionality provided by
 \fBSELECT INTO\fR\&.
 .PP
-Prior to
-PostgreSQL
-8\&.1, the table created by
-\fBSELECT INTO\fR
-included OIDs by default\&. In
-PostgreSQL
-8\&.1, this is not the case \(em to include OIDs in the new table, the
+To add OIDs to the table created by
+\fBSELECT INTO\fR, enable the
 default_with_oids
-configuration variable must be enabled\&. Alternatively,
+configuration variable\&. Alternatively,
 \fBCREATE TABLE AS\fR
 can be used with the
 WITH OIDS

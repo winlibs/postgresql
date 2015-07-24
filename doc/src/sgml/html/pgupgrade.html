@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN153434"
+NAME="AEN165092"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN153440"
+NAME="AEN165096"
 ></A
 ><H2
 >Synopsis</H2
@@ -159,7 +159,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN153461"
+NAME="AEN165117"
 ></A
 ><H2
 >Description</H2
@@ -228,7 +228,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN153477"
+NAME="AEN165133"
 ></A
 ><H2
 >Options</H2
@@ -250,7 +250,7 @@ CLASS="OPTION"
 > <TT
 CLASS="REPLACEABLE"
 ><I
->old_bindir</I
+>bindir</I
 ></TT
 ><BR><TT
 CLASS="OPTION"
@@ -258,7 +258,7 @@ CLASS="OPTION"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->old_bindir</I
+>bindir</I
 ></TT
 ></DT
 ><DD
@@ -276,7 +276,7 @@ CLASS="OPTION"
 > <TT
 CLASS="REPLACEABLE"
 ><I
->new_bindir</I
+>bindir</I
 ></TT
 ><BR><TT
 CLASS="OPTION"
@@ -284,7 +284,7 @@ CLASS="OPTION"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->new_bindir</I
+>bindir</I
 ></TT
 ></DT
 ><DD
@@ -314,7 +314,7 @@ CLASS="OPTION"
 > <TT
 CLASS="REPLACEABLE"
 ><I
->old_datadir</I
+>datadir</I
 ></TT
 ><BR><TT
 CLASS="OPTION"
@@ -322,7 +322,7 @@ CLASS="OPTION"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->old_datadir</I
+>datadir</I
 ></TT
 ></DT
 ><DD
@@ -340,7 +340,7 @@ CLASS="OPTION"
 > <TT
 CLASS="REPLACEABLE"
 ><I
->new_datadir</I
+>datadir</I
 ></TT
 ><BR><TT
 CLASS="OPTION"
@@ -348,7 +348,7 @@ CLASS="OPTION"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->new_datadir</I
+>datadir</I
 ></TT
 ></DT
 ><DD
@@ -444,7 +444,7 @@ CLASS="OPTION"
 > <TT
 CLASS="REPLACEABLE"
 ><I
->old_port_number</I
+>port</I
 ></TT
 ><BR><TT
 CLASS="OPTION"
@@ -452,7 +452,7 @@ CLASS="OPTION"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->old_portnum</I
+>port</I
 ></TT
 ></DT
 ><DD
@@ -470,7 +470,7 @@ CLASS="OPTION"
 > <TT
 CLASS="REPLACEABLE"
 ><I
->new_port_number</I
+>port</I
 ></TT
 ><BR><TT
 CLASS="OPTION"
@@ -478,7 +478,7 @@ CLASS="OPTION"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->new_portnum</I
+>port</I
 ></TT
 ></DT
 ><DD
@@ -505,19 +505,19 @@ CLASS="OPTION"
 ><DT
 ><TT
 CLASS="OPTION"
->-u</TT
+>-U</TT
 > <TT
 CLASS="REPLACEABLE"
 ><I
->user_name</I
+>username</I
 ></TT
 ><BR><TT
 CLASS="OPTION"
->--user=</TT
+>--username=</TT
 ><TT
 CLASS="REPLACEABLE"
 ><I
->user_name</I
+>username</I
 ></TT
 ></DT
 ><DD
@@ -558,9 +558,6 @@ CLASS="OPTION"
 >-?</TT
 ><BR><TT
 CLASS="OPTION"
->-h</TT
-><BR><TT
-CLASS="OPTION"
 >--help</TT
 ></DT
 ><DD
@@ -575,7 +572,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN153623"
+NAME="AEN165277"
 ></A
 ><H2
 >Usage</H2
@@ -670,7 +667,7 @@ CLASS="LITERAL"
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->gmake prefix=/usr/local/pgsql.new install</PRE
+>make prefix=/usr/local/pgsql.new install</PRE
 ><P></P
 ></LI
 ><LI
@@ -732,6 +729,8 @@ CLASS="FILENAME"
 CLASS="FILENAME"
 >pgcrypto.sql</TT
 >, because these will be upgraded from the old cluster.
+     Also, any custom full text search files (dictionary, synonym,
+     thesaurus, stop words) must also be copied to the new cluster.
     </P
 ></LI
 ><LI
@@ -744,22 +743,15 @@ CLASS="STEP"
 >     <TT
 CLASS="COMMAND"
 >pg_upgrade</TT
-> will connect to the old and new servers several times,
-     so you might want to set authentication to <TT
-CLASS="LITERAL"
->trust</TT
->
-     or <TT
+> will connect to the old and new servers several
+     times, so you might want to set authentication to <TT
 CLASS="LITERAL"
 >peer</TT
-> in <TT
+>
+     in <TT
 CLASS="FILENAME"
 >pg_hba.conf</TT
->, or if using
-     <TT
-CLASS="LITERAL"
->md5</TT
-> authentication, use a <TT
+> or use a <TT
 CLASS="FILENAME"
 >~/.pgpass</TT
 > file
@@ -952,13 +944,9 @@ CLASS="FILENAME"
 >     If you modified <TT
 CLASS="FILENAME"
 >pg_hba.conf</TT
-> to use <TT
-CLASS="LITERAL"
->trust</TT
->,
-     restore its original authentication settings.  It might also be
-     necessary to adjust other configurations files in the new cluster to
-     match the old cluster, e.g. <TT
+>, restore its original settings.
+     It might also be necessary to adjust other configuration files in the new
+     cluster to match the old cluster, e.g. <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
 >.
@@ -1042,8 +1030,9 @@ CLASS="STEP"
      <TT
 CLASS="COMMAND"
 >pg_upgrade</TT
-> completes. You can also delete the
-     old installation directories
+> completes. (Automatic deletion is not
+     possible if you have user-defined tablespaces inside the old data
+     directory.)  You can also delete the old installation directories
      (e.g. <TT
 CLASS="FILENAME"
 >bin</TT
@@ -1146,7 +1135,7 @@ CLASS="FILENAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN153757"
+NAME="AEN165408"
 ></A
 ><H2
 >Notes</H2
@@ -1266,12 +1255,16 @@ CLASS="FILENAME"
 >, as documented in <A
 HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
 >Section 24.3.3</A
->.
+>.  If your file system supports
+   file system snapshots or copy-on-write file copies, you can use that
+   to make a backup of the old cluster and tablespaces, though the snapshot
+   and copies must be created simultaneously or while the database server
+   is down.
   </P
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN153788"
+NAME="AEN165439"
 ></A
 ><H3
 >Limitations in Upgrading from PostgreSQL 8.3</H3
@@ -1379,7 +1372,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN153818"
+NAME="AEN165469"
 ></A
 ><H2
 >See Also</H2

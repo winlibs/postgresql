@@ -557,8 +557,7 @@ insert into bar2 values(2,2,2);
 insert into bar2 values(3,3,3);
 insert into bar2 values(4,4,4);
 update bar set f2 = f2 + 100 where f1 in (select f1 from foo);
-SELECT relname, bar.* FROM bar, pg_class where bar.tableoid = pg_class.oid
-order by 1,2;
+select tableoid::regclass::text as relname, bar.* from bar order by 1,2;
  relname | f1 | f2  
 ---------+----+-----
  bar     |  1 | 101
@@ -569,6 +568,24 @@ order by 1,2;
  bar2    |  2 | 102
  bar2    |  3 | 103
  bar2    |  4 |   4
+(8 rows)
+
+-- Check UPDATE with inherited target and an appendrel subquery
+update bar set f2 = f2 + 100
+from
+  ( select f1 from foo union all select f1+3 from foo ) ss
+where bar.f1 = ss.f1;
+select tableoid::regclass::text as relname, bar.* from bar order by 1,2;
+ relname | f1 | f2  
+---------+----+-----
+ bar     |  1 | 201
+ bar     |  2 | 202
+ bar     |  3 | 203
+ bar     |  4 | 104
+ bar2    |  1 | 201
+ bar2    |  2 | 202
+ bar2    |  3 | 203
+ bar2    |  4 | 104
 (8 rows)
 
 /* Test multiple inheritance of column defaults */
@@ -896,7 +913,6 @@ ALTER TABLE inhts RENAME d TO dd;
  dd     | integer |           | plain   |              | 
 Inherits: inht1,
           inhs1
-Has OIDs: no
 
 DROP TABLE inhts;
 -- Test for renaming in diamond inheritance
@@ -917,7 +933,6 @@ ALTER TABLE inht1 RENAME aa TO aaa;
  z      | integer |           | plain   |              | 
 Inherits: inht2,
           inht3
-Has OIDs: no
 
 CREATE TABLE inhts (d int) INHERITS (inht2, inhs1);
 NOTICE:  merging multiple inherited definitions of column "b"
@@ -935,7 +950,6 @@ ERROR:  cannot rename inherited column "b"
  d      | integer |           | plain   |              | 
 Inherits: inht2,
           inhs1
-Has OIDs: no
 
 WITH RECURSIVE r AS (
   SELECT 'inht1'::regclass AS inhrelid
@@ -982,7 +996,6 @@ CREATE TABLE test_constraints_inh () INHERITS (test_constraints);
 Indexes:
     "test_constraints_val1_val2_key" UNIQUE CONSTRAINT, btree (val1, val2)
 Child tables: test_constraints_inh
-Has OIDs: no
 
 ALTER TABLE ONLY test_constraints DROP CONSTRAINT test_constraints_val1_val2_key;
 \d+ test_constraints
@@ -993,7 +1006,6 @@ ALTER TABLE ONLY test_constraints DROP CONSTRAINT test_constraints_val1_val2_key
  val1   | character varying |           | extended |              | 
  val2   | integer           |           | plain    |              | 
 Child tables: test_constraints_inh
-Has OIDs: no
 
 \d+ test_constraints_inh
                       Table "public.test_constraints_inh"
@@ -1003,7 +1015,6 @@ Has OIDs: no
  val1   | character varying |           | extended |              | 
  val2   | integer           |           | plain    |              | 
 Inherits: test_constraints
-Has OIDs: no
 
 DROP TABLE test_constraints_inh;
 DROP TABLE test_constraints;
@@ -1020,7 +1031,6 @@ CREATE TABLE test_ex_constraints_inh () INHERITS (test_ex_constraints);
 Indexes:
     "test_ex_constraints_c_excl" EXCLUDE USING gist (c WITH &&)
 Child tables: test_ex_constraints_inh
-Has OIDs: no
 
 ALTER TABLE test_ex_constraints DROP CONSTRAINT test_ex_constraints_c_excl;
 \d+ test_ex_constraints
@@ -1029,7 +1039,6 @@ ALTER TABLE test_ex_constraints DROP CONSTRAINT test_ex_constraints_c_excl;
 --------+--------+-----------+---------+--------------+-------------
  c      | circle |           | plain   |              | 
 Child tables: test_ex_constraints_inh
-Has OIDs: no
 
 \d+ test_ex_constraints_inh
                Table "public.test_ex_constraints_inh"
@@ -1037,7 +1046,6 @@ Has OIDs: no
 --------+--------+-----------+---------+--------------+-------------
  c      | circle |           | plain   |              | 
 Inherits: test_ex_constraints
-Has OIDs: no
 
 DROP TABLE test_ex_constraints_inh;
 DROP TABLE test_ex_constraints;
@@ -1054,7 +1062,6 @@ Indexes:
     "test_primary_constraints_pkey" PRIMARY KEY, btree (id)
 Referenced by:
     TABLE "test_foreign_constraints" CONSTRAINT "test_foreign_constraints_id1_fkey" FOREIGN KEY (id1) REFERENCES test_primary_constraints(id)
-Has OIDs: no
 
 \d+ test_foreign_constraints
                Table "public.test_foreign_constraints"
@@ -1064,7 +1071,6 @@ Has OIDs: no
 Foreign-key constraints:
     "test_foreign_constraints_id1_fkey" FOREIGN KEY (id1) REFERENCES test_primary_constraints(id)
 Child tables: test_foreign_constraints_inh
-Has OIDs: no
 
 ALTER TABLE test_foreign_constraints DROP CONSTRAINT test_foreign_constraints_id1_fkey;
 \d+ test_foreign_constraints
@@ -1073,7 +1079,6 @@ ALTER TABLE test_foreign_constraints DROP CONSTRAINT test_foreign_constraints_id
 --------+---------+-----------+---------+--------------+-------------
  id1    | integer |           | plain   |              | 
 Child tables: test_foreign_constraints_inh
-Has OIDs: no
 
 \d+ test_foreign_constraints_inh
              Table "public.test_foreign_constraints_inh"
@@ -1081,7 +1086,6 @@ Has OIDs: no
 --------+---------+-----------+---------+--------------+-------------
  id1    | integer |           | plain   |              | 
 Inherits: test_foreign_constraints
-Has OIDs: no
 
 DROP TABLE test_foreign_constraints_inh;
 DROP TABLE test_foreign_constraints;

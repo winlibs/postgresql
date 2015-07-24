@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -239,6 +239,41 @@ SELECT clean_emp();
 (1 row)</PRE
 ><P>
     </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>      The entire body of a SQL function is parsed before any of it is
+      executed.  While a SQL function can contain commands that alter
+      the system catalogs (e.g., <TT
+CLASS="COMMAND"
+>CREATE TABLE</TT
+>), the effects
+      of such commands will not be visible during parse analysis of
+      later commands in the function.  Thus, for example,
+      <TT
+CLASS="LITERAL"
+>CREATE TABLE foo (...); INSERT INTO foo VALUES(...);</TT
+>
+      will not work as desired if packaged up into a single SQL function,
+      since <TT
+CLASS="STRUCTNAME"
+>foo</TT
+> won't exist yet when the <TT
+CLASS="COMMAND"
+>INSERT</TT
+>
+      command is parsed.  It's recommended to use <SPAN
+CLASS="APPLICATION"
+>PL/PgSQL</SPAN
+>
+      instead of a SQL function in this type of situation.
+     </P
+></BLOCKQUOTE
+></DIV
 ><P
 >    The syntax of the <TT
 CLASS="COMMAND"
@@ -1056,6 +1091,29 @@ CLASS="LITERAL"
      actual argument of a function call.
     </P
 ><P
+>     Specifying <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> in the call is also the only way to
+     pass an empty array to a variadic function, for example:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT mleast(VARIADIC ARRAY[]::numeric[]);</PRE
+><P>
+
+     Simply writing <TT
+CLASS="LITERAL"
+>SELECT mleast()</TT
+> does not work because a
+     variadic parameter must match at least one actual argument.
+     (You could define a second function also named <TT
+CLASS="LITERAL"
+>mleast</TT
+>,
+     with no parameters, if you wanted to allow such calls.)
+    </P
+><P
 >     The array element parameters generated from a variadic parameter are
      treated as not having any names of their own.  This means it is not
      possible to call a variadic function using named arguments (<A
@@ -1536,7 +1594,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN52916"
+NAME="AEN55230"
 >35.4.10. Polymorphic <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
@@ -1690,7 +1748,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN52942"
+NAME="AEN55256"
 >35.4.11. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM

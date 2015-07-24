@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -105,97 +105,188 @@ NAME="CONFIG-SETTING-NAMES-VALUES"
 ></H2
 ><P
 >     All parameter names are case-insensitive. Every parameter takes a
-     value of one of five types: Boolean, integer, floating point,
-     string or enum. Boolean values can be written as <TT
+     value of one of five types: boolean, string, integer, floating point,
+     or enumerated (enum).  The type determines the syntax for setting the
+     parameter:
+    </P
+><P
+></P
+><UL
+><LI
+><P
+>       <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>Boolean:</I
+></SPAN
+>
+       Values can be written as
+       <TT
 CLASS="LITERAL"
 >on</TT
 >,
-     <TT
+       <TT
 CLASS="LITERAL"
 >off</TT
->, <TT
+>,
+       <TT
 CLASS="LITERAL"
 >true</TT
 >,
-     <TT
+       <TT
 CLASS="LITERAL"
 >false</TT
->, <TT
+>,
+       <TT
 CLASS="LITERAL"
 >yes</TT
 >,
-     <TT
+       <TT
 CLASS="LITERAL"
 >no</TT
->, <TT
+>,
+       <TT
 CLASS="LITERAL"
 >1</TT
->, <TT
+>,
+       <TT
 CLASS="LITERAL"
 >0</TT
 >
-     (all case-insensitive) or any unambiguous prefix of these.
-    </P
+       (all case-insensitive) or any unambiguous prefix of one of these.
+      </P
+></LI
+><LI
 ><P
->     Some settings specify a memory or time value.  Each of these has an
-     implicit unit, which is either kilobytes, blocks (typically eight
-     kilobytes), milliseconds, seconds, or minutes.  Default units can be
-     found by referencing <TT
+>       <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>String:</I
+></SPAN
+>
+       In general, enclose the value in single quotes, doubling any single
+       quotes within the value.  Quotes can usually be omitted if the value
+       is a simple number or identifier, however.
+      </P
+></LI
+><LI
+><P
+>       <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>Numeric (integer and floating point):</I
+></SPAN
+>
+       A decimal point is permitted only for floating-point parameters.
+       Do not use thousands separators.  Quotes are not required.
+      </P
+></LI
+><LI
+><P
+>       <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>Numeric with Unit:</I
+></SPAN
+>
+       Some numeric parameters have an implicit unit, because they describe
+       quantities of memory or time. The unit might be kilobytes, blocks
+       (typically eight kilobytes), milliseconds, seconds, or minutes.
+       An unadorned numeric value for one of these settings will use the
+       setting's default unit, which can be learned from
+       <TT
 CLASS="STRUCTNAME"
 >pg_settings</TT
 >.<TT
 CLASS="STRUCTFIELD"
 >unit</TT
 >.
-     For convenience,
-     a different unit can also be specified explicitly.  Valid memory units
-     are <TT
+       For convenience, settings can be given with a unit specified explicitly,
+       for example <TT
+CLASS="LITERAL"
+>'120 ms'</TT
+> for a time value, and they will be
+       converted to whatever the parameter's actual unit is.  Note that the
+       value must be written as a string (with quotes) to use this feature.
+       The unit name is case-sensitive, and there can be whitespace between
+       the numeric value and the unit.
+
+       <P
+></P
+></P><UL
+><LI
+><P
+>          Valid memory units are <TT
 CLASS="LITERAL"
 >kB</TT
-> (kilobytes), <TT
+> (kilobytes),
+          <TT
 CLASS="LITERAL"
 >MB</TT
->
-     (megabytes), and <TT
+> (megabytes), <TT
 CLASS="LITERAL"
 >GB</TT
-> (gigabytes); valid time units
-     are <TT
+>
+          (gigabytes), and <TT
+CLASS="LITERAL"
+>TB</TT
+> (terabytes).
+          The multiplier for memory units is 1024, not 1000.
+         </P
+></LI
+><LI
+><P
+>          Valid time units are <TT
 CLASS="LITERAL"
 >ms</TT
-> (milliseconds), <TT
+> (milliseconds),
+          <TT
 CLASS="LITERAL"
 >s</TT
->
-     (seconds), <TT
+> (seconds), <TT
 CLASS="LITERAL"
 >min</TT
-> (minutes), <TT
+> (minutes),
+          <TT
 CLASS="LITERAL"
 >h</TT
->
-     (hours), and <TT
+> (hours), and <TT
 CLASS="LITERAL"
 >d</TT
-> (days).  Note that the multiplier
-     for memory units is 1024, not 1000.
-    </P
+> (days).
+         </P
+></LI
+></UL
+><P>
+      </P
+></LI
+><LI
 ><P
->     Parameters of type <SPAN
-CLASS="QUOTE"
->"enum"</SPAN
-> are specified in the same way as string
-     parameters, but are restricted to a limited set of values.  The allowed
-     values can be found
-     from <TT
+>       <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>Enumerated:</I
+></SPAN
+>
+       Enumerated-type parameters are written in the same way as string
+       parameters, but are restricted to have one of a limited set of
+       values.  The values allowable for such a parameter can be found from
+       <TT
 CLASS="STRUCTNAME"
 >pg_settings</TT
 >.<TT
 CLASS="STRUCTFIELD"
 >enumvals</TT
 >.
-     Enum parameter values are case-insensitive.
-    </P
+       Enum parameter values are case-insensitive.
+      </P
+></LI
+></UL
 ></DIV
 ><DIV
 CLASS="SECT2"
@@ -203,17 +294,17 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="CONFIG-SETTING-CONFIGURATION-FILE"
->18.1.2. Setting Parameters via the Configuration File</A
+>18.1.2. Parameter Interaction via the Configuration File</A
 ></H2
 ><P
->     One way to set these parameters is to edit the file
+>     The most fundamental way to set these parameters is to edit the file
      <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
 >,
-     which is normally kept in the data directory.  (A default copy is
-     installed there when the database cluster directory is
-     initialized.)  An example of what this file might look like is:
+     which is normally kept in the data directory.  A default copy is
+     installed when the database cluster directory is initialized.
+     An example of what this file might look like is:
 </P><PRE
 CLASS="PROGRAMLISTING"
 ># This is a comment
@@ -223,14 +314,22 @@ search_path = '"$user", public'
 shared_buffers = 128MB</PRE
 ><P>
      One parameter is specified per line. The equal sign between name and
-     value is optional. Whitespace is insignificant and blank lines are
+     value is optional. Whitespace is insignificant (except within a quoted
+     parameter value) and blank lines are
      ignored. Hash marks (<TT
 CLASS="LITERAL"
 >#</TT
->) designate the remainder of the
-     line as a comment.  Parameter values that are not simple identifiers or
-     numbers must be single-quoted.  To embed a single quote in a parameter
-     value, write either two quotes (preferred) or backslash-quote.
+>) designate the remainder
+     of the line as a comment.  Parameter values that are not simple
+     identifiers or numbers must be single-quoted.  To embed a single
+     quote in a parameter value, write either two quotes (preferred)
+     or backslash-quote.
+    </P
+><P
+>     Parameters set in this way provide default values for the cluster.
+     The settings seen by active sessions will be these values unless they
+     are overridden.  The following sections describe ways in which the
+     administrator or user can override these defaults.
     </P
 ><P
 >     
@@ -238,188 +337,304 @@ CLASS="LITERAL"
      receives a <SPAN
 CLASS="SYSTEMITEM"
 >SIGHUP</SPAN
-> signal;  this is most easily done by
-     running <TT
+> signal; this signal is most easily
+     sent by running <TT
 CLASS="LITERAL"
 >pg_ctl reload</TT
-> from the command-line or by calling
-     the SQL function <CODE
+> from the command line or by
+     calling the SQL function <CODE
 CLASS="FUNCTION"
 >pg_reload_conf()</CODE
 >. The main
-     server process
-     also propagates this signal to all currently running server
-     processes so that existing sessions also get the new
-     value. Alternatively, you can send the signal to a single server
-     process directly.  Some parameters can only be set at server start;
-     any changes to their entries in the configuration file will be ignored
-     until the server is restarted.  Invalid parameter settings in the
-     configuration file are likewise ignored (but logged) during
-     <SPAN
+     server process also propagates this signal to all currently running
+     server processes, so that existing sessions also adopt the new values
+     (this will happen after they complete any currently-executing client
+     command).  Alternatively, you can
+     send the signal to a single server process directly.  Some parameters
+     can only be set at server start; any changes to their entries in the
+     configuration file will be ignored until the server is restarted.
+     Invalid parameter settings in the configuration file are likewise
+     ignored (but logged) during <SPAN
 CLASS="SYSTEMITEM"
 >SIGHUP</SPAN
 > processing.
     </P
+><P
+>     In addition to <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>,
+     a <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> data directory contains a file
+     <TT
+CLASS="FILENAME"
+>postgresql.auto.conf</TT
+>,
+     which has the same format as <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> but should
+     never be edited manually.  This file holds settings provided through
+     the <A
+HREF="sql-altersystem.html"
+>ALTER SYSTEM</A
+> command.  This file is automatically
+     read whenever <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> is, and its settings take
+     effect in the same way.  Settings in <TT
+CLASS="FILENAME"
+>postgresql.auto.conf</TT
+>
+     override those in <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>.
+    </P
 ></DIV
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="CONFIG-SETTING-OTHER-METHODS"
->18.1.3. Other Ways to Set Parameters</A
+NAME="CONFIG-SETTING-SQL-COMMAND-INTERACTION"
+>18.1.3. Parameter Interaction via SQL</A
 ></H2
 ><P
->     A second way to set these configuration parameters is to give them
-     as a command-line option to the <TT
+>      <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> provides three SQL
+      commands to establish configuration defaults.
+      The already-mentioned <A
+HREF="sql-altersystem.html"
+>ALTER SYSTEM</A
+> command
+      provides a SQL-accessible means of changing global defaults; it is
+      functionally equivalent to editing <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>.
+      In addition, there are two commands that allow setting of defaults
+      on a per-database or per-role basis:
+     </P
+><P
+></P
+><UL
+><LI
+><P
+>       The <A
+HREF="sql-alterdatabase.html"
+>ALTER DATABASE</A
+> command allows global
+       settings to be overridden on a per-database basis.
+      </P
+></LI
+><LI
+><P
+>       The <A
+HREF="sql-alterrole.html"
+>ALTER ROLE</A
+> command allows both global and
+       per-database settings to be overridden with user-specific values.
+      </P
+></LI
+></UL
+><P
+>      Values set with <TT
+CLASS="COMMAND"
+>ALTER DATABASE</TT
+> and <TT
+CLASS="COMMAND"
+>ALTER ROLE</TT
+>
+      are applied only when starting a fresh database session.  They
+      override values obtained from the configuration files or server
+      command line, and constitute defaults for the rest of the session.
+      Note that some settings cannot be changed after server start, and
+      so cannot be set with these commands (or the ones listed below).
+    </P
+><P
+>      Once a client is connected to the database, <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+      provides two additional SQL commands (and equivalent functions) to
+      interact with session-local configuration settings:
+    </P
+><P
+></P
+><UL
+><LI
+><P
+>      The <A
+HREF="sql-show.html"
+>SHOW</A
+> command allows inspection of the
+      current value of all parameters.  The corresponding function is
+      <CODE
+CLASS="FUNCTION"
+>current_setting(setting_name text)</CODE
+>.
+     </P
+></LI
+><LI
+><P
+>       The <A
+HREF="sql-set.html"
+>SET</A
+> command allows modification of the
+       current value of those parameters that can be set locally to a
+       session; it has no effect on other sessions.
+       The corresponding function is
+       <CODE
+CLASS="FUNCTION"
+>set_config(setting_name, new_value, is_local)</CODE
+>.
+      </P
+></LI
+></UL
+><P
+>     In addition, the system view <A
+HREF="view-pg-settings.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_settings</TT
+></A
+> can be
+     used to view and change session-local values:
+    </P
+><P
+></P
+><UL
+><LI
+><P
+>       Querying this view is similar to using <TT
+CLASS="COMMAND"
+>SHOW ALL</TT
+> but
+       provides more detail.  It is also more flexible, since it's possible
+       to specify filter conditions or join against other relations.
+      </P
+></LI
+><LI
+><P
+>       Using <A
+HREF="sql-update.html"
+>UPDATE</A
+> on this view, specifically
+       updating the <TT
+CLASS="STRUCTNAME"
+>setting</TT
+> column, is the equivalent
+       of issuing <TT
+CLASS="COMMAND"
+>SET</TT
+> commands.  For example, the equivalent of
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SET configuration_parameter TO DEFAULT;</PRE
+><P>
+       is:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>UPDATE pg_settings SET setting = reset_val WHERE name = 'configuration_parameter';</PRE
+><P>
+      </P
+></LI
+></UL
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN29452"
+>18.1.4. Parameter Interaction via the Shell</A
+></H2
+><P
+>      In addition to setting global defaults or attaching
+      overrides at the database or role level, you can pass settings to
+      <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> via shell facilities.
+      Both the server and <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> client library
+      accept parameter values via the shell.
+     </P
+><P
+></P
+><UL
+><LI
+><P
+>       During server startup, parameter settings can be
+       passed to the <TT
 CLASS="COMMAND"
 >postgres</TT
-> command,
-     such as:
+> command via the
+       <TT
+CLASS="OPTION"
+>-c</TT
+> command-line parameter.  For example,
 </P><PRE
 CLASS="PROGRAMLISTING"
 >postgres -c log_connections=yes -c log_destination='syslog'</PRE
 ><P>
-     Command-line options override any conflicting settings in
-     <TT
+       Settings provided in this way override those set via
+       <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
->.  Note that this means you won't
-     be able to change the value on-the-fly by editing
-     <TT
-CLASS="FILENAME"
->postgresql.conf</TT
->, so while the command-line
-     method might be convenient, it can cost you flexibility later.
-    </P
+> or <TT
+CLASS="COMMAND"
+>ALTER SYSTEM</TT
+>,
+       so they cannot be changed globally without restarting the server.
+     </P
+></LI
+><LI
 ><P
->     Occasionally it is useful to give a command line option to
-     one particular session only. The environment variable
-     <TT
-CLASS="ENVAR"
->PGOPTIONS</TT
-> can be used for this purpose on the
-     client side:
-</P><PRE
-CLASS="PROGRAMLISTING"
->env PGOPTIONS='-c geqo=off' psql</PRE
-><P>
-     (This works for any <SPAN
+>      When starting a client session via <SPAN
 CLASS="APPLICATION"
 >libpq</SPAN
->-based client application, not
-     just <SPAN
-CLASS="APPLICATION"
->psql</SPAN
->.) Note that this won't work for
-     parameters that are fixed when the server is started or that must be
-     specified in <TT
-CLASS="FILENAME"
->postgresql.conf</TT
->.
-    </P
-><P
->     Furthermore, it is possible to assign a set of parameter settings to
-     a user or a database.  Whenever a session is started, the default
-     settings for the user and database involved are loaded.  The
-     commands <A
-HREF="sql-alterrole.html"
->ALTER ROLE</A
->
-     and <A
-HREF="sql-alterdatabase.html"
->ALTER DATABASE</A
 >,
-     respectively, are used to configure these settings.  Per-database
-     settings override anything received from the
-     <TT
+      parameter settings can be
+      specified using the <TT
+CLASS="ENVAR"
+>PGOPTIONS</TT
+> environment variable.
+      Settings established in this way constitute defaults for the life
+      of the session, but do not affect other sessions.
+      For historical reasons, the format of <TT
+CLASS="ENVAR"
+>PGOPTIONS</TT
+> is
+      similar to that used when launching the <TT
 CLASS="COMMAND"
 >postgres</TT
-> command-line or the configuration
-     file, and in turn are overridden by per-user settings; both are
-     overridden by per-session settings.
-    </P
-><P
->     Some parameters can be changed in individual <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
 >
-     sessions with the <A
-HREF="sql-set.html"
->SET</A
->
-     command, for example:
+      command; specifically, the <TT
+CLASS="OPTION"
+>-c</TT
+> flag must be specified.
+      For example,
 </P><PRE
-CLASS="SCREEN"
->SET ENABLE_SEQSCAN TO OFF;</PRE
+CLASS="PROGRAMLISTING"
+>env PGOPTIONS="-c geqo=off -c statement_timeout=5min" psql</PRE
 ><P>
-     If <TT
-CLASS="COMMAND"
->SET</TT
-> is allowed, it overrides all other sources of
-     values for the parameter. Some parameters cannot be changed via
-     <TT
-CLASS="COMMAND"
->SET</TT
->: for example, if they control behavior that
-     cannot be changed without restarting the entire
-     <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> server.  Also, some parameters
-     require superuser permission to change via <TT
-CLASS="COMMAND"
->SET</TT
-> or
-     <TT
-CLASS="COMMAND"
->ALTER</TT
->.
-    </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="CONFIG-SETTING-EXAMINING"
->18.1.4. Examining Parameter Settings</A
-></H2
+     </P
 ><P
->     The <A
-HREF="sql-show.html"
->SHOW</A
->
-     command allows inspection of the current values of all parameters.
-    </P
-><P
->     The virtual table <TT
-CLASS="STRUCTNAME"
->pg_settings</TT
-> also allows
-     displaying and updating session run-time parameters;  see <A
-HREF="view-pg-settings.html"
->Section 47.66</A
-> for details and a description of the
-     different variable types and when they can be changed.
-     <TT
-CLASS="STRUCTNAME"
->pg_settings</TT
-> is equivalent to <TT
-CLASS="COMMAND"
->SHOW</TT
->
-     and <TT
-CLASS="COMMAND"
->SET</TT
->, but can be more convenient
-     to use because it can be joined with other tables, or selected from using
-     any desired selection condition. It also contains more information about
-     each parameter than is available from <TT
-CLASS="COMMAND"
->SHOW</TT
->.
-    </P
+>      Other clients and libraries might provide their own mechanisms,
+      via the shell or otherwise, that allow the user to alter session
+      settings without direct use of SQL commands.
+     </P
+></LI
+></UL
 ></DIV
 ><DIV
 CLASS="SECT2"
@@ -427,175 +642,186 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="CONFIG-INCLUDES"
->18.1.5. Configuration File Includes</A
+>18.1.5. Managing Configuration File Contents</A
 ></H2
 ><P
->      
-         In addition to parameter settings, the <TT
+>      <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> provides several features for breaking
+      down complex <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
->
-         file can contain <I
+> files into sub-files.
+      These features are especially useful when managing multiple servers
+      with related, but not identical, configurations.
+     </P
+><P
+>      
+      In addition to individual parameter settings,
+      the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file can contain <I
 CLASS="FIRSTTERM"
->include directives</I
->, which specify
-         another file to read and process as if it were inserted into the
-         configuration file at this point.  This feature allows a configuration
-         file to be divided into physically separate parts.
-         Include directives simply look like:
+>include
+      directives</I
+>, which specify another file to read and process as if
+      it were inserted into the configuration file at this point.  This
+      feature allows a configuration file to be divided into physically
+      separate parts.  Include directives simply look like:
 </P><PRE
 CLASS="PROGRAMLISTING"
 >include 'filename'</PRE
 ><P>
-         If the file name is not an absolute path, it is taken as relative to
-         the directory containing the referencing configuration file.
-         Inclusions can be nested.
+      If the file name is not an absolute path, it is taken as relative to
+      the directory containing the referencing configuration file.
+      Inclusions can be nested.
      </P
 ><P
 >      
-         There is also an <TT
+      There is also an <TT
 CLASS="LITERAL"
 >include_if_exists</TT
 > directive, which acts
-         the same as the <TT
+      the same as the <TT
 CLASS="LITERAL"
 >include</TT
-> directive, except for the behavior
-         when the referenced file does not exist or cannot be read.  A regular
-         <TT
+> directive, except
+      when the referenced file does not exist or cannot be read.  A regular
+      <TT
 CLASS="LITERAL"
 >include</TT
 > will consider this an error condition, but
-         <TT
+      <TT
 CLASS="LITERAL"
 >include_if_exists</TT
 > merely logs a message and continues
-         processing the referencing configuration file.
+      processing the referencing configuration file.
      </P
 ><P
 >      
-        The <TT
+      The <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
 > file can also contain
-        <TT
+      <TT
 CLASS="LITERAL"
 >include_dir</TT
-> directives, which specify an entire directory
-        of configuration files to include.  It is used similarly:
- </P><PRE
+> directives, which specify an entire
+      directory of configuration files to include.  These look like
+</P><PRE
 CLASS="PROGRAMLISTING"
-> include_dir 'directory'
- </PRE
+>include_dir 'directory'</PRE
 ><P>
-        Non-absolute directory names follow the same rules as single file include
-        directives:  they are relative to the directory containing the referencing
-        configuration file.  Within that directory, only non-directory files whose
-        names end with the suffix <TT
+      Non-absolute directory names are taken as relative to the directory
+      containing the referencing configuration file.  Within the specified
+      directory, only non-directory files whose names end with the
+      suffix <TT
 CLASS="LITERAL"
 >.conf</TT
-> will be included.  File
-        names that start with the <TT
+> will be included.  File names that
+      start with the <TT
 CLASS="LITERAL"
 >.</TT
-> character are also excluded,
-        to prevent mistakes as they are hidden on some platforms.  Multiple files
-        within an include directory are processed in file name order. The file names
-        are ordered by C locale rules, ie. numbers before letters, and uppercase
-        letters before lowercase ones.
+> character are also ignored, to
+      prevent mistakes since such files are hidden on some platforms.  Multiple
+      files within an include directory are processed in file name order
+      (according to C locale rules, i.e. numbers before letters, and
+      uppercase letters before lowercase ones).
      </P
 ><P
->       Include files or directories can be used to logically separate portions
-       of the database configuration, rather than having a single large
-       <TT
+>      Include files or directories can be used to logically separate portions
+      of the database configuration, rather than having a single large
+      <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
 > file.  Consider a company that has two
-       database servers, each with a different amount of memory.  There are likely
-       elements of the configuration both will share, for things such as logging.
-       But memory-related parameters on the server will vary between the two.  And
-       there might be server specific customizations, too.  One way to manage this
-       situation is to break the custom configuration changes for your site into
-       three files.  You could add this to the end of your
-       <TT
+      database servers, each with a different amount of memory.  There are
+      likely elements of the configuration both will share, for things such
+      as logging.  But memory-related parameters on the server will vary
+      between the two.  And there might be server specific customizations,
+      too.  One way to manage this situation is to break the custom
+      configuration changes for your site into three files.  You could add
+      this to the end of your <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
-> file to include them:
- </P><PRE
+> file to include
+      them:
+</P><PRE
 CLASS="PROGRAMLISTING"
-> include 'shared.conf'
- include 'memory.conf'
- include 'server.conf'
- </PRE
+>include 'shared.conf'
+include 'memory.conf'
+include 'server.conf'</PRE
 ><P>
-       All systems would have the same <TT
+      All systems would have the same <TT
 CLASS="FILENAME"
 >shared.conf</TT
->.  Each server
-       with a particular amount of memory could share the same
-       <TT
+>.  Each
+      server with a particular amount of memory could share the
+      same <TT
 CLASS="FILENAME"
 >memory.conf</TT
->; you might have one for all servers with 8GB of RAM,
-       another for those having 16GB.  And finally <TT
+>; you might have one for all servers
+      with 8GB of RAM, another for those having 16GB.  And
+      finally <TT
 CLASS="FILENAME"
 >server.conf</TT
-> could
-       have truly server-specific configuration information in it.
+> could have truly server-specific
+      configuration information in it.
      </P
 ><P
->       Another possibility is to create a configuration file directory and
-       put this information into files there. For example, a <TT
+>      Another possibility is to create a configuration file directory and
+      put this information into files there. For example, a <TT
 CLASS="FILENAME"
 >conf.d</TT
 >
-       directory could be referenced at the end of<TT
+      directory could be referenced at the end of <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
 >:
- </P><PRE
-CLASS="SCREEN"
-> include_dir 'conf.d'
- </PRE
+</P><PRE
+CLASS="PROGRAMLISTING"
+>include_dir 'conf.d'</PRE
 ><P>
-       Then you could name the files in the <TT
+      Then you could name the files in the <TT
 CLASS="FILENAME"
 >conf.d</TT
-> directory like this:
- </P><PRE
-CLASS="SCREEN"
-> 00shared.conf
- 01memory.conf
- 02server.conf
- </PRE
+> directory
+      like this:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>00shared.conf
+01memory.conf
+02server.conf</PRE
 ><P>
-       This shows a clear order in which these files will be loaded.  This is
-       important because only the last setting encountered when the server is
-       reading its configuration will be used.  Something set in
-       <TT
+       This naming convention establishes a clear order in which these
+       files will be loaded.  This is important because only the last
+       setting encountered for a particular parameter while the server is
+       reading configuration files will be used.  In this example,
+       something set in <TT
 CLASS="FILENAME"
 >conf.d/02server.conf</TT
-> in this example would override a value
-       set in <TT
+> would override a
+       value set in <TT
 CLASS="FILENAME"
 >conf.d/01memory.conf</TT
 >.
      </P
 ><P
->       You might instead use this configuration directory approach while naming
-       these files more descriptively:
- </P><PRE
-CLASS="SCREEN"
-> 00shared.conf
- 01memory-8GB.conf
- 02server-foo.conf
- </PRE
+>      You might instead use this approach to naming the files
+      descriptively:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>00shared.conf
+01memory-8GB.conf
+02server-foo.conf</PRE
 ><P>
-       This sort of arrangement gives a unique name for each configuration file
-       variation.  This can help eliminate ambiguity when several servers have
-       their configurations all stored in one place, such as in a version
-       control repository.  (Storing database configuration files under version
-       control is another good practice to consider).
+      This sort of arrangement gives a unique name for each configuration file
+      variation.  This can help eliminate ambiguity when several servers have
+      their configurations all stored in one place, such as in a version
+      control repository.  (Storing database configuration files under version
+      control is another good practice to consider.)
      </P
 ></DIV
 ></DIV

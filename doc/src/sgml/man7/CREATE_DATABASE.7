@@ -2,12 +2,12 @@
 .\"     Title: CREATE DATABASE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "CREATE DATABASE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "CREATE DATABASE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_DATABASE \- create a new database
-.\" CREATE DATABASE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -135,6 +134,9 @@ to remove a database\&.
 The program
 \fBcreatedb\fR(1)
 is a wrapper program around this command, provided for convenience\&.
+.PP
+Database\-level configuration parameters (set via
+ALTER DATABASE (\fBALTER_DATABASE\fR(7))) are not copied from the template database\&.
 .PP
 Although it is possible to copy a database other than
 template1

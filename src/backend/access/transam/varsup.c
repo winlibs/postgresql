@@ -3,7 +3,7 @@
  * varsup.c
  *	  postgres OID & XID variables support routines
  *
- * Copyright (c) 2000-2013, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2014, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/access/transam/varsup.c
@@ -39,7 +39,7 @@ VariableCache ShmemVariableCache = NULL;
  *
  * Note: when this is called, we are actually already inside a valid
  * transaction, since XIDs are now not allocated until the transaction
- * does something.	So it is safe to do a database lookup if we want to
+ * does something.  So it is safe to do a database lookup if we want to
  * issue a warning about XID wrap.
  */
 TransactionId
@@ -73,7 +73,7 @@ GetNewTransactionId(bool isSubXact)
 	 * If we're past xidVacLimit, start trying to force autovacuum cycles.
 	 * If we're past xidWarnLimit, start issuing warnings.
 	 * If we're past xidStopLimit, refuse to execute transactions, unless
-	 * we are running in a standalone backend (which gives an escape hatch
+	 * we are running in single-user mode (which gives an escape hatch
 	 * to the DBA who somehow got past the earlier defenses).
 	 *
 	 * Note that this coding also appears in GetNewMultiXactId.
@@ -114,14 +114,14 @@ GetNewTransactionId(bool isSubXact)
 						(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
 						 errmsg("database is not accepting commands to avoid wraparound data loss in database \"%s\"",
 								oldest_datname),
-						 errhint("Stop the postmaster and use a standalone backend to vacuum that database.\n"
+						 errhint("Stop the postmaster and vacuum that database in single-user mode.\n"
 								 "You might also need to commit or roll back old prepared transactions.")));
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
 						 errmsg("database is not accepting commands to avoid wraparound data loss in database with OID %u",
 								oldest_datoid),
-						 errhint("Stop the postmaster and use a standalone backend to vacuum that database.\n"
+						 errhint("Stop the postmaster and vacuum that database in single-user mode.\n"
 								 "You might also need to commit or roll back old prepared transactions.")));
 		}
 		else if (TransactionIdFollowsOrEquals(xid, xidWarnLimit))
@@ -165,20 +165,20 @@ GetNewTransactionId(bool isSubXact)
 	/*
 	 * Now advance the nextXid counter.  This must not happen until after we
 	 * have successfully completed ExtendCLOG() --- if that routine fails, we
-	 * want the next incoming transaction to try it again.	We cannot assign
+	 * want the next incoming transaction to try it again.  We cannot assign
 	 * more XIDs until there is CLOG space for them.
 	 */
 	TransactionIdAdvance(ShmemVariableCache->nextXid);
 
 	/*
 	 * We must store the new XID into the shared ProcArray before releasing
-	 * XidGenLock.	This ensures that every active XID older than
+	 * XidGenLock.  This ensures that every active XID older than
 	 * latestCompletedXid is present in the ProcArray, which is essential for
 	 * correct OldestXmin tracking; see src/backend/access/transam/README.
 	 *
 	 * XXX by storing xid into MyPgXact without acquiring ProcArrayLock, we
 	 * are relying on fetch/store of an xid to be atomic, else other backends
-	 * might see a partially-set xid here.	But holding both locks at once
+	 * might see a partially-set xid here.  But holding both locks at once
 	 * would be a nasty concurrency hit.  So for now, assume atomicity.
 	 *
 	 * Note that readers of PGXACT xid fields should be careful to fetch the
@@ -289,7 +289,7 @@ SetTransactionIdLimit(TransactionId oldest_datfrozenxid, Oid oldest_datoid)
 
 	/*
 	 * We'll start complaining loudly when we get within 10M transactions of
-	 * the stop point.	This is kind of arbitrary, but if you let your gas
+	 * the stop point.  This is kind of arbitrary, but if you let your gas
 	 * gauge get down to 1% of full, would you be looking for the next gas
 	 * station?  We need to be fairly liberal about this number because there
 	 * are lots of scenarios where most transactions are done by automatic
@@ -313,7 +313,8 @@ SetTransactionIdLimit(TransactionId oldest_datfrozenxid, Oid oldest_datoid)
 	 * value.  It doesn't look practical to update shared state from a GUC
 	 * assign hook (too many processes would try to execute the hook,
 	 * resulting in race conditions as well as crashes of those not connected
-	 * to shared memory).  Perhaps this can be improved someday.
+	 * to shared memory).  Perhaps this can be improved someday.  See also
+	 * SetMultiXactIdLimit.
 	 */
 	xidVacLimit = oldest_datfrozenxid + autovacuum_freeze_max_age;
 	if (xidVacLimit < FirstNormalTransactionId)
@@ -389,7 +390,7 @@ SetTransactionIdLimit(TransactionId oldest_datfrozenxid, Oid oldest_datoid)
  * We primarily check whether oldestXidDB is valid.  The cases we have in
  * mind are that that database was dropped, or the field was reset to zero
  * by pg_resetxlog.  In either case we should force recalculation of the
- * wrap limit.	Also do it if oldestXid is old enough to be forcing
+ * wrap limit.  Also do it if oldestXid is old enough to be forcing
  * autovacuums or other actions; this ensures we update our state as soon
  * as possible once extra overhead is being incurred.
  */

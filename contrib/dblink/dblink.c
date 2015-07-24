@@ -9,7 +9,7 @@
  * Shridhar Daithankar <shridhar_daithankar@persistent.co.in>
  *
  * contrib/dblink/dblink.c
- * Copyright (c) 2001-2013, PostgreSQL Global Development Group
+ * Copyright (c) 2001-2014, PostgreSQL Global Development Group
  * ALL RIGHTS RESERVED;
  *
  * Permission to use, copy, modify, and distribute this software and its
@@ -94,8 +94,8 @@ static void materializeQueryResult(FunctionCallInfo fcinfo,
 					   const char *conname,
 					   const char *sql,
 					   bool fail);
-static PGresult *storeQueryResult(storeInfo *sinfo, PGconn *conn, const char *sql);
-static void storeRow(storeInfo *sinfo, PGresult *res, bool first);
+static PGresult *storeQueryResult(volatile storeInfo *sinfo, PGconn *conn, const char *sql);
+static void storeRow(volatile storeInfo *sinfo, PGresult *res, bool first);
 static remoteConn *getConnectionByName(const char *name);
 static HTAB *createConnHash(void);
 static void createNewConnection(const char *name, remoteConn *rconn);
@@ -209,7 +209,8 @@ typedef struct remoteConnHashEnt
 							 errdetail_internal("%s", msg))); \
 				} \
 				dblink_security_check(conn, rconn); \
-				PQsetClientEncoding(conn, GetDatabaseEncodingName()); \
+				if (PQclientEncoding(conn) != GetDatabaseEncoding()) \
+					PQsetClientEncoding(conn, GetDatabaseEncodingName()); \
 				freeconn = true; \
 			} \
 	} while (0)
@@ -288,8 +289,9 @@ dblink_connect(PG_FUNCTION_ARGS)
 	/* check password actually used if not superuser */
 	dblink_security_check(conn, rconn);
 
-	/* attempt to set client encoding to match server encoding */
-	PQsetClientEncoding(conn, GetDatabaseEncodingName());
+	/* attempt to set client encoding to match server encoding, if needed */
+	if (PQclientEncoding(conn) != GetDatabaseEncoding())
+		PQsetClientEncoding(conn, GetDatabaseEncodingName());
 
 	if (connname)
 	{
@@ -964,17 +966,24 @@ materializeQueryResult(FunctionCallInfo fcinfo,
 {
 	ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
 	PGresult   *volatile res = NULL;
-	storeInfo	sinfo;
+	volatile storeInfo sinfo;
 
 	/* prepTuplestoreResult must have been called previously */
 	Assert(rsinfo->returnMode == SFRM_Materialize);
 
 	/* initialize storeInfo to empty */
-	memset(&sinfo, 0, sizeof(sinfo));
+	memset((void *) &sinfo, 0, sizeof(sinfo));
 	sinfo.fcinfo = fcinfo;
 
 	PG_TRY();
 	{
+		/* Create short-lived memory context for data conversions */
+		sinfo.tmpcontext = AllocSetContextCreate(CurrentMemoryContext,
+												 "dblink temporary context",
+												 ALLOCSET_DEFAULT_MINSIZE,
+												 ALLOCSET_DEFAULT_INITSIZE,
+												 ALLOCSET_DEFAULT_MAXSIZE);
+
 		/* execute query, collecting any tuples into the tuplestore */
 		res = storeQueryResult(&sinfo, conn, sql);
 
@@ -1039,6 +1048,12 @@ materializeQueryResult(FunctionCallInfo fcinfo,
 			PQclear(res);
 			res = NULL;
 		}
+
+		/* clean up data conversion short-lived memory context */
+		if (sinfo.tmpcontext != NULL)
+			MemoryContextDelete(sinfo.tmpcontext);
+		sinfo.tmpcontext = NULL;
+
 		PQclear(sinfo.last_res);
 		sinfo.last_res = NULL;
 		PQclear(sinfo.cur_res);
@@ -1062,7 +1077,7 @@ materializeQueryResult(FunctionCallInfo fcinfo,
  * Execute query, and send any result rows to sinfo->tuplestore.
  */
 static PGresult *
-storeQueryResult(storeInfo *sinfo, PGconn *conn, const char *sql)
+storeQueryResult(volatile storeInfo *sinfo, PGconn *conn, const char *sql)
 {
 	bool		first = true;
 	int			nestlevel = -1;
@@ -1130,7 +1145,7 @@ storeQueryResult(storeInfo *sinfo, PGconn *conn, const char *sql)
  * (in this case the PGresult might contain either zero or one row).
  */
 static void
-storeRow(storeInfo *sinfo, PGresult *res, bool first)
+storeRow(volatile storeInfo *sinfo, PGresult *res, bool first)
 {
 	int			nfields = PQnfields(res);
 	HeapTuple	tuple;
@@ -1202,15 +1217,6 @@ storeRow(storeInfo *sinfo, PGresult *res, bool first)
 		if (sinfo->cstrs)
 			pfree(sinfo->cstrs);
 		sinfo->cstrs = (char **) palloc(nfields * sizeof(char *));
-
-		/* Create short-lived memory context for data conversions */
-		if (!sinfo->tmpcontext)
-			sinfo->tmpcontext =
-				AllocSetContextCreate(CurrentMemoryContext,
-									  "dblink temporary context",
-									  ALLOCSET_DEFAULT_MINSIZE,
-									  ALLOCSET_DEFAULT_INITSIZE,
-									  ALLOCSET_DEFAULT_MAXSIZE);
 	}
 
 	/* Should have a single-row result if we get here */
@@ -1561,10 +1567,7 @@ dblink_get_pkey(PG_FUNCTION_ARGS)
 		Datum		result;
 
 		values = (char **) palloc(2 * sizeof(char *));
-		values[0] = (char *) palloc(12);		/* sign, 10 digits, '\0' */
-
-		sprintf(values[0], "%d", call_cntr + 1);
-
+		values[0] = psprintf("%d", call_cntr + 1);
 		values[1] = results[call_cntr];
 
 		/* build the tuple */
@@ -2046,7 +2049,7 @@ get_pkey_attnames(Relation rel, int16 *numatts)
 				ObjectIdGetDatum(RelationGetRelid(rel)));
 
 	scan = systable_beginscan(indexRelation, IndexIndrelidIndexId, true,
-							  SnapshotNow, 1, &skey);
+							  NULL, 1, &skey);
 
 	while (HeapTupleIsValid(indexTuple = systable_getnext(scan)))
 	{
@@ -2169,14 +2172,14 @@ get_sql_insert(Relation rel, int *pkattnums, int pknumatts, char **src_pkattvals
 			continue;
 
 		if (needComma)
-			appendStringInfo(&buf, ",");
+			appendStringInfoChar(&buf, ',');
 
 		appendStringInfoString(&buf,
 					  quote_ident_cstr(NameStr(tupdesc->attrs[i]->attname)));
 		needComma = true;
 	}
 
-	appendStringInfo(&buf, ") VALUES(");
+	appendStringInfoString(&buf, ") VALUES(");
 
 	/*
 	 * Note: i is physical column number (counting from 0).
@@ -2188,7 +2191,7 @@ get_sql_insert(Relation rel, int *pkattnums, int pknumatts, char **src_pkattvals
 			continue;
 
 		if (needComma)
-			appendStringInfo(&buf, ",");
+			appendStringInfoChar(&buf, ',');
 
 		key = get_attnum_pk_pos(pkattnums, pknumatts, i);
 
@@ -2203,10 +2206,10 @@ get_sql_insert(Relation rel, int *pkattnums, int pknumatts, char **src_pkattvals
 			pfree(val);
 		}
 		else
-			appendStringInfo(&buf, "NULL");
+			appendStringInfoString(&buf, "NULL");
 		needComma = true;
 	}
-	appendStringInfo(&buf, ")");
+	appendStringInfoChar(&buf, ')');
 
 	return (buf.data);
 }
@@ -2232,7 +2235,7 @@ get_sql_delete(Relation rel, int *pkattnums, int pknumatts, char **tgt_pkattvals
 		int			pkattnum = pkattnums[i];
 
 		if (i > 0)
-			appendStringInfo(&buf, " AND ");
+			appendStringInfoString(&buf, " AND ");
 
 		appendStringInfoString(&buf,
 			   quote_ident_cstr(NameStr(tupdesc->attrs[pkattnum]->attname)));
@@ -2241,7 +2244,7 @@ get_sql_delete(Relation rel, int *pkattnums, int pknumatts, char **tgt_pkattvals
 			appendStringInfo(&buf, " = %s",
 							 quote_literal_cstr(tgt_pkattvals[i]));
 		else
-			appendStringInfo(&buf, " IS NULL");
+			appendStringInfoString(&buf, " IS NULL");
 	}
 
 	return (buf.data);
@@ -2286,7 +2289,7 @@ get_sql_update(Relation rel, int *pkattnums, int pknumatts, char **src_pkattvals
 			continue;
 
 		if (needComma)
-			appendStringInfo(&buf, ", ");
+			appendStringInfoString(&buf, ", ");
 
 		appendStringInfo(&buf, "%s = ",
 					  quote_ident_cstr(NameStr(tupdesc->attrs[i]->attname)));
@@ -2308,16 +2311,16 @@ get_sql_update(Relation rel, int *pkattnums, int pknumatts, char **src_pkattvals
 		needComma = true;
 	}
 
-	appendStringInfo(&buf, " WHERE ");
+	appendStringInfoString(&buf, " WHERE ");
 
 	for (i = 0; i < pknumatts; i++)
 	{
 		int			pkattnum = pkattnums[i];
 
 		if (i > 0)
-			appendStringInfo(&buf, " AND ");
+			appendStringInfoString(&buf, " AND ");
 
-		appendStringInfo(&buf, "%s",
+		appendStringInfoString(&buf,
 			   quote_ident_cstr(NameStr(tupdesc->attrs[pkattnum]->attname)));
 
 		val = tgt_pkattvals[i];
@@ -2325,7 +2328,7 @@ get_sql_update(Relation rel, int *pkattnums, int pknumatts, char **src_pkattvals
 		if (val != NULL)
 			appendStringInfo(&buf, " = %s", quote_literal_cstr(val));
 		else
-			appendStringInfo(&buf, " IS NULL");
+			appendStringInfoString(&buf, " IS NULL");
 	}
 
 	return (buf.data);
@@ -2395,7 +2398,7 @@ get_tuple_of_interest(Relation rel, int *pkattnums, int pknumatts, char **src_pk
 	 * Build sql statement to look up tuple of interest, ie, the one matching
 	 * src_pkattvals.  We used to use "SELECT *" here, but it's simpler to
 	 * generate a result tuple that matches the table's physical structure,
-	 * with NULLs for any dropped columns.	Otherwise we have to deal with two
+	 * with NULLs for any dropped columns.  Otherwise we have to deal with two
 	 * different tupdescs and everything's very confusing.
 	 */
 	appendStringInfoString(&buf, "SELECT ");
@@ -2419,7 +2422,7 @@ get_tuple_of_interest(Relation rel, int *pkattnums, int pknumatts, char **src_pk
 		int			pkattnum = pkattnums[i];
 
 		if (i > 0)
-			appendStringInfo(&buf, " AND ");
+			appendStringInfoString(&buf, " AND ");
 
 		appendStringInfoString(&buf,
 			   quote_ident_cstr(NameStr(tupdesc->attrs[pkattnum]->attname)));
@@ -2428,7 +2431,7 @@ get_tuple_of_interest(Relation rel, int *pkattnums, int pknumatts, char **src_pk
 			appendStringInfo(&buf, " = %s",
 							 quote_literal_cstr(src_pkattvals[i]));
 		else
-			appendStringInfo(&buf, " IS NULL");
+			appendStringInfoString(&buf, " IS NULL");
 	}
 
 	/*
@@ -2621,7 +2624,7 @@ dblink_security_check(PGconn *conn, remoteConn *rconn)
 }
 
 /*
- * For non-superusers, insist that the connstr specify a password.	This
+ * For non-superusers, insist that the connstr specify a password.  This
  * prevents a password from being picked up from .pgpass, a service file,
  * the environment, etc.  We don't want the postgres user's passwords
  * to be accessible to non-superusers.

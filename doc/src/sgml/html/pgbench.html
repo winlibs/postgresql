@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN152270"
+NAME="AEN163814"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN152276"
+NAME="AEN163818"
 ></A
 ><H2
 >Synopsis</H2
@@ -150,7 +150,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN152291"
+NAME="AEN163833"
 ></A
 ><H2
 >Description</H2
@@ -379,7 +379,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN152336"
+NAME="AEN163878"
 ></A
 ><H2
 >Options</H2
@@ -411,6 +411,9 @@ CLASS="VARIABLELIST"
 ><TT
 CLASS="OPTION"
 >-i</TT
+><BR><TT
+CLASS="OPTION"
+>--initialize</TT
 ></DT
 ><DD
 ><P
@@ -422,6 +425,14 @@ CLASS="OPTION"
 CLASS="OPTION"
 >-F</TT
 > <TT
+CLASS="REPLACEABLE"
+><I
+>fillfactor</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--fillfactor=</TT
+><TT
 CLASS="REPLACEABLE"
 ><I
 >fillfactor</I
@@ -448,6 +459,9 @@ CLASS="STRUCTNAME"
 ><TT
 CLASS="OPTION"
 >-n</TT
+><BR><TT
+CLASS="OPTION"
+>--no-vacuum</TT
 ></DT
 ><DD
 ><P
@@ -458,6 +472,9 @@ CLASS="OPTION"
 ><TT
 CLASS="OPTION"
 >-q</TT
+><BR><TT
+CLASS="OPTION"
+>--quiet</TT
 ></DT
 ><DD
 ><P
@@ -471,6 +488,14 @@ CLASS="OPTION"
 CLASS="OPTION"
 >-s</TT
 > <TT
+CLASS="REPLACEABLE"
+><I
+>scale_factor</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--scale=</TT
+><TT
 CLASS="REPLACEABLE"
 ><I
 >scale_factor</I
@@ -585,6 +610,14 @@ CLASS="REPLACEABLE"
 ><I
 >clients</I
 ></TT
+><BR><TT
+CLASS="OPTION"
+>--client=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>clients</I
+></TT
 ></DT
 ><DD
 ><P
@@ -596,6 +629,9 @@ CLASS="REPLACEABLE"
 ><TT
 CLASS="OPTION"
 >-C</TT
+><BR><TT
+CLASS="OPTION"
+>--connect</TT
 ></DT
 ><DD
 ><P
@@ -608,6 +644,9 @@ CLASS="OPTION"
 ><TT
 CLASS="OPTION"
 >-d</TT
+><BR><TT
+CLASS="OPTION"
+>--debug</TT
 ></DT
 ><DD
 ><P
@@ -619,6 +658,22 @@ CLASS="OPTION"
 CLASS="OPTION"
 >-D</TT
 > <TT
+CLASS="REPLACEABLE"
+><I
+>varname</I
+></TT
+><TT
+CLASS="LITERAL"
+>=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--define=</TT
+><TT
 CLASS="REPLACEABLE"
 ><I
 >varname</I
@@ -646,6 +701,14 @@ CLASS="OPTION"
 CLASS="OPTION"
 >-f</TT
 > <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--file=</TT
+><TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
@@ -682,6 +745,14 @@ CLASS="REPLACEABLE"
 ><I
 >threads</I
 ></TT
+><BR><TT
+CLASS="OPTION"
+>--jobs=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>threads</I
+></TT
 ></DT
 ><DD
 ><P
@@ -699,6 +770,9 @@ CLASS="APPLICATION"
 ><TT
 CLASS="OPTION"
 >-l</TT
+><BR><TT
+CLASS="OPTION"
+>--log</TT
 ></DT
 ><DD
 ><P
@@ -711,6 +785,14 @@ CLASS="OPTION"
 CLASS="OPTION"
 >-M</TT
 > <TT
+CLASS="REPLACEABLE"
+><I
+>querymode</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--protocol=</TT
+><TT
 CLASS="REPLACEABLE"
 ><I
 >querymode</I
@@ -747,7 +829,7 @@ CLASS="LITERAL"
 ><P>
         The default is simple query protocol.  (See <A
 HREF="protocol.html"
->Chapter 48</A
+>Chapter 49</A
 >
         for more information.)
        </P
@@ -756,6 +838,9 @@ HREF="protocol.html"
 ><TT
 CLASS="OPTION"
 >-n</TT
+><BR><TT
+CLASS="OPTION"
+>--no-vacuum</TT
 ></DT
 ><DD
 ><P
@@ -789,6 +874,9 @@ CLASS="STRUCTNAME"
 ><TT
 CLASS="OPTION"
 >-N</TT
+><BR><TT
+CLASS="OPTION"
+>--skip-some-updates</TT
 ></DT
 ><DD
 ><P
@@ -807,7 +895,45 @@ CLASS="STRUCTNAME"
 ><DT
 ><TT
 CLASS="OPTION"
+>-P</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>sec</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--progress=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>sec</I
+></TT
+></DT
+><DD
+><P
+>        Show progress report every <TT
+CLASS="LITERAL"
+>sec</TT
+> seconds.  The report
+        includes the time since the beginning of the run, the tps since the
+        last report, and the transaction latency average and standard
+        deviation since the last report.  Under throttling (<TT
+CLASS="OPTION"
+>-R</TT
+>),
+        the latency is computed with respect to the transaction scheduled
+        start time, not the actual transaction beginning time, thus it also
+        includes the average schedule lag time.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-r</TT
+><BR><TT
+CLASS="OPTION"
+>--report-latencies</TT
 ></DT
 ><DD
 ><P
@@ -819,8 +945,70 @@ CLASS="OPTION"
 ><DT
 ><TT
 CLASS="OPTION"
+>-R</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>rate</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--rate=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>rate</I
+></TT
+></DT
+><DD
+><P
+>        Execute transactions targeting the specified rate instead of running
+        as fast as possible (the default).  The rate is given in transactions
+        per second.  If the targeted rate is above the maximum possible rate,
+        the rate limit won't impact the results.
+       </P
+><P
+>        The rate is targeted by starting transactions along a
+        Poisson-distributed schedule time line.  The expected start time
+        schedule moves forward based on when the client first started, not
+        when the previous transaction ended.  That approach means that when
+        transactions go past their original scheduled end time, it is
+        possible for later ones to catch up again.
+       </P
+><P
+>        When throttling is active, the transaction latency reported at the
+        end of the run is calculated from the scheduled start times, so it
+        includes the time each transaction had to wait for the previous
+        transaction to finish. The wait time is called the schedule lag time,
+        and its average and maximum are also reported separately. The
+        transaction latency with respect to the actual transaction start time,
+        i.e. the time spent executing the transaction in the database, can be
+        computed by subtracting the schedule lag time from the reported
+        latency.
+       </P
+><P
+>        A high schedule lag time is an indication that the system cannot
+        process transactions at the specified rate, with the chosen number of
+        clients and threads. When the average transaction execution time is
+        longer than the scheduled interval between each transaction, each
+        successive transaction will fall further behind, and the schedule lag
+        time will keep increasing the longer the test run is. When that
+        happens, you will have to reduce the specified transaction rate.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-s</TT
 > <TT
+CLASS="REPLACEABLE"
+><I
+>scale_factor</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--scale=</TT
+><TT
 CLASS="REPLACEABLE"
 ><I
 >scale_factor</I
@@ -849,6 +1037,9 @@ CLASS="OPTION"
 ><TT
 CLASS="OPTION"
 >-S</TT
+><BR><TT
+CLASS="OPTION"
+>--select-only</TT
 ></DT
 ><DD
 ><P
@@ -864,6 +1055,14 @@ CLASS="REPLACEABLE"
 ><I
 >transactions</I
 ></TT
+><BR><TT
+CLASS="OPTION"
+>--transactions=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>transactions</I
+></TT
 ></DT
 ><DD
 ><P
@@ -875,6 +1074,14 @@ CLASS="REPLACEABLE"
 CLASS="OPTION"
 >-T</TT
 > <TT
+CLASS="REPLACEABLE"
+><I
+>seconds</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--time=</TT
+><TT
 CLASS="REPLACEABLE"
 ><I
 >seconds</I
@@ -897,6 +1104,9 @@ CLASS="OPTION"
 ><TT
 CLASS="OPTION"
 >-v</TT
+><BR><TT
+CLASS="OPTION"
+>--vacuum-all</TT
 ></DT
 ><DD
 ><P
@@ -1002,6 +1212,14 @@ CLASS="REPLACEABLE"
 ><I
 >hostname</I
 ></TT
+><BR><TT
+CLASS="OPTION"
+>--host=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>hostname</I
+></TT
 ></DT
 ><DD
 ><P
@@ -1017,6 +1235,14 @@ CLASS="REPLACEABLE"
 ><I
 >port</I
 ></TT
+><BR><TT
+CLASS="OPTION"
+>--port=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>port</I
+></TT
 ></DT
 ><DD
 ><P
@@ -1028,6 +1254,14 @@ CLASS="REPLACEABLE"
 CLASS="OPTION"
 >-U</TT
 > <TT
+CLASS="REPLACEABLE"
+><I
+>login</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--username=</TT
+><TT
 CLASS="REPLACEABLE"
 ><I
 >login</I
@@ -1080,14 +1314,14 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN152583"
+NAME="AEN164211"
 ></A
 ><H2
 >Notes</H2
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN152585"
+NAME="AEN164213"
 ></A
 ><H3
 >What is the <SPAN
@@ -1169,7 +1403,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN152615"
+NAME="AEN164243"
 ></A
 ><H3
 >Custom Scripts</H3
@@ -1222,10 +1456,15 @@ CLASS="OPTION"
 CLASS="OPTION"
 >-D</TT
 > command-line options,
-   the variable <TT
-CLASS="LITERAL"
->scale</TT
-> is preset to the current scale factor.
+   there are a few variables that are preset automatically, listed in
+   <A
+HREF="pgbench.html#PGBENCH-AUTOMATIC-VARIABLES"
+>Table G-1</A
+>. A value specified for these
+   variables using <TT
+CLASS="OPTION"
+>-D</TT
+> takes precedence over the automatic presets.
    Once set, a variable's
    value can be inserted into a SQL command by writing
    <TT
@@ -1239,6 +1478,48 @@ CLASS="REPLACEABLE"
 >.  When running more than
    one client session, each session has its own set of variables.
   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="PGBENCH-AUTOMATIC-VARIABLES"
+></A
+><P
+><B
+>Table G-1. Automatic variables</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>Variable</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+> <TT
+CLASS="LITERAL"
+>scale</TT
+> </TD
+><TD
+>current scale factor</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="LITERAL"
+>client_id</TT
+> </TD
+><TD
+>unique number identifying the client session (starts from zero)</TD
+></TR
+></TBODY
+></TABLE
+></DIV
 ><P
 >   Script file meta commands begin with a backslash (<TT
 CLASS="LITERAL"
@@ -1568,7 +1849,7 @@ END;</PRE
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN152714"
+NAME="AEN164359"
 ></A
 ><H3
 >Per-Transaction Logging</H3
@@ -1664,7 +1945,12 @@ CLASS="REPLACEABLE"
 ><I
 >time_us</I
 ></TT
-></PRE
+> [<TT
+CLASS="REPLACEABLE"
+><I
+>schedule_lag</I
+></TT
+>]</PRE
 ><P>
 
    where <TT
@@ -1695,9 +1981,20 @@ CLASS="REPLACEABLE"
 ></TT
 > are a
    UNIX epoch format timestamp and an offset
-   in microseconds (suitable for creating a ISO 8601
+   in microseconds (suitable for creating an ISO 8601
    timestamp with fractional seconds) showing when
-   the transaction completed.
+   the transaction completed. The last field, <TT
+CLASS="REPLACEABLE"
+><I
+>schedule_lag</I
+></TT
+>, is
+   the difference between the transaction's scheduled start time, and the
+   time it actually started, in microseconds. It is only present when the
+   <TT
+CLASS="OPTION"
+>--rate</TT
+> option is used.
   </P
 ><P
 >   Here are example outputs:
@@ -1720,7 +2017,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN152745"
+NAME="AEN164393"
 ></A
 ><H3
 >Aggregated Logging</H3
@@ -1762,7 +2059,27 @@ CLASS="REPLACEABLE"
 ><I
 >max_latency</I
 ></TT
-></PRE
+> [<TT
+CLASS="REPLACEABLE"
+><I
+>lag_sum</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>lag_2_sum</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>min_lag</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>max_lag</I
+></TT
+>]</PRE
 ><P>
 
    where <TT
@@ -1808,7 +2125,31 @@ CLASS="REPLACEABLE"
 >max_latency</I
 ></TT
 > - maximum latency within the interval. A transaction is
-   counted into the interval when it was committed.
+   counted into the interval when it was committed. The last four fields, 
+   <TT
+CLASS="REPLACEABLE"
+><I
+>lag_sum</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>lag_2_sum</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>min_lag</I
+></TT
+>, and <TT
+CLASS="REPLACEABLE"
+><I
+>max_lag</I
+></TT
+>, are only present if the --rate option is used.
+   They are calculated from the time each transaction had to wait for the
+   previous one to finish, i.e. the difference between each transaction's
+   scheduled start time and the time it actually started.
   </P
 ><P
 >   Here is example outputs:
@@ -1829,7 +2170,7 @@ CLASS="SCREEN"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN152766"
+NAME="AEN164422"
 ></A
 ><H3
 >Per-Statement Latencies</H3
@@ -1892,7 +2233,7 @@ statement latencies in milliseconds:
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN152775"
+NAME="AEN164431"
 ></A
 ><H3
 >Good Practices</H3

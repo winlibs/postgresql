@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Database Physical Storage"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 58. Database Physical Storage</TD
+>Chapter 59. Database Physical Storage</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="STORAGE-PAGE-LAYOUT"
->58.6. Database Page Layout</A
+>59.6. Database Page Layout</A
 ></H1
 ><P
 >This section provides an overview of the page format used within
@@ -101,8 +101,8 @@ NAME="STORAGE-PAGE-LAYOUT"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > tables and indexes.<A
-NAME="AEN103242"
-HREF="#FTN.AEN103242"
+NAME="AEN107994"
+HREF="#FTN.AEN107994"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN
@@ -142,7 +142,7 @@ within the index, depending on the index access method.</P
 ><P
 ><A
 HREF="storage-page-layout.html#PAGE-TABLE"
->Table 58-2</A
+>Table 59-2</A
 > shows the overall layout of a page.
 There are five parts to each page.</P
 ><DIV
@@ -152,7 +152,7 @@ NAME="PAGE-TABLE"
 ></A
 ><P
 ><B
->Table 58-2. Overall Page Layout</B
+>Table 59-2. Overall Page Layout</B
 ></P
 ><TABLE
 BORDER="1"
@@ -207,7 +207,7 @@ data. Empty in ordinary tables.</TD
 >&#13;  The first 24 bytes of each page consists of a page header
   (PageHeaderData). Its format is detailed in <A
 HREF="storage-page-layout.html#PAGEHEADERDATA-TABLE"
->Table 58-3</A
+>Table 59-3</A
 >. The first two fields track the most
   recent WAL entry related to this page. Next is a 2-byte field
   containing flag bits. This is followed by three 2-byte integer fields
@@ -263,7 +263,7 @@ NAME="PAGEHEADERDATA-TABLE"
 ></A
 ><P
 ><B
->Table 58-3. PageHeaderData Layout</B
+>Table 59-3. PageHeaderData Layout</B
 ></P
 ><TABLE
 BORDER="1"
@@ -439,7 +439,7 @@ CLASS="STRUCTFIELD"
   detailed
   in <A
 HREF="storage-page-layout.html#HEAPTUPLEHEADERDATA-TABLE"
->Table 58-4</A
+>Table 59-4</A
 >.  The actual user data
   (columns of the row) begins at the offset indicated by
   <TT
@@ -490,7 +490,7 @@ NAME="HEAPTUPLEHEADERDATA-TABLE"
 ></A
 ><P
 ><B
->Table 58-4. HeapTupleHeaderData Layout</B
+>Table 59-4. HeapTupleHeaderData Layout</B
 ></P
 ><TABLE
 BORDER="1"
@@ -646,7 +646,7 @@ CLASS="ACRONYM"
 > table;
   it might be compressed, too (see <A
 HREF="storage-toast.html"
->Section 58.2</A
+>Section 59.2</A
 >).
 
  </P
@@ -664,8 +664,8 @@ ALIGN="LEFT"
 VALIGN="TOP"
 WIDTH="5%"
 ><A
-NAME="FTN.AEN103242"
-HREF="storage-page-layout.html#AEN103242"
+NAME="FTN.AEN107994"
+HREF="storage-page-layout.html#AEN107994"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN

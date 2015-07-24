@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -278,7 +278,16 @@ CLASS="LITERAL"
 CLASS="PARAMETER"
 >dbname</TT
 > key word value is allowed to be recognized
-       as a connection string. More details on the possible formats appear in
+       as a connection string. Only the first occurrence of
+       <TT
+CLASS="PARAMETER"
+>dbname</TT
+> is expanded this way, any subsequent
+       <TT
+CLASS="PARAMETER"
+>dbname</TT
+> value is processed as plain database name. More
+       details on the possible connection string formats appear in
        <A
 HREF="libpq-connect.html#LIBPQ-CONNSTRING"
 >Section 31.1.1</A
@@ -287,23 +296,26 @@ HREF="libpq-connect.html#LIBPQ-CONNSTRING"
 ><P
 >       The passed arrays can be empty to use all default parameters, or can
        contain one or more parameter settings. They should be matched in length.
-       Processing will stop with the last non-<TT
+       Processing will stop at the first <TT
 CLASS="SYMBOL"
 >NULL</TT
 > element
-       of the <TT
+       in the <TT
 CLASS="LITERAL"
 >keywords</TT
 > array.
       </P
 ><P
->       If  any  parameter is unspecified, then the corresponding
+>       If  any  parameter is <TT
+CLASS="SYMBOL"
+>NULL</TT
+> or an emptry string, the corresponding
        environment variable (see <A
 HREF="libpq-envars.html"
 >Section 31.14</A
->)
-       is checked. If the  environment  variable is not set either,
-       then the indicated built-in defaults are used.
+>) is checked.
+       If the  environment  variable is not set either, then the indicated
+       built-in defaults are used.
       </P
 ><P
 >       In general key words are processed from the beginning of these arrays in index
@@ -928,7 +940,8 @@ CLASS="STRUCTFIELD"
 CLASS="STRUCTFIELD"
 >val</TT
 > fields)
-       will depend on environment variables and other context.  Callers
+       will depend on environment variables and other context.  A
+       missing or invalid service file will be silently ignored.  Callers
        must treat the connection options data as read-only.
       </P
 ><P
@@ -1389,7 +1402,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN38877"
+NAME="AEN41097"
 >31.1.1.1. Keyword/Value Connection Strings</A
 ></H3
 ><P
@@ -1432,7 +1445,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN38888"
+NAME="AEN41108"
 >31.1.1.2. Connection URIs</A
 ></H3
 ><P
@@ -1622,7 +1635,7 @@ CLASS="LITERAL"
 > allows the
         application to avoid a host name look-up, which might be important
         in applications with time constraints. However, a host name is
-        required for Kerberos, GSSAPI, or SSPI authentication
+        required for GSSAPI or SSPI authentication
         methods, as well as for <TT
 CLASS="LITERAL"
 >verify-full</TT
@@ -2389,7 +2402,7 @@ CLASS="LITERAL"
 > authentication method is implemented; see
         <A
 HREF="auth-methods.html#AUTH-PEER"
->Section 19.3.7</A
+>Section 19.3.6</A
 >.
        </P
 ></DD
@@ -2403,14 +2416,10 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        Kerberos service name to use when authenticating with Kerberos 5
-        or GSSAPI.
+>        Kerberos service name to use when authenticating with GSSAPI.
         This must match the service name specified in the server
         configuration for Kerberos authentication to succeed. (See also
         <A
-HREF="auth-methods.html#KERBEROS-AUTH"
->Section 19.3.5</A
-> and <A
 HREF="auth-methods.html#GSSAPI-AUTH"
 >Section 19.3.3</A
 >.)

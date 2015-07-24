@@ -5,7 +5,7 @@
  *	  However, we define it here so that the format is documented.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/catalog/pg_control.h
@@ -21,7 +21,7 @@
 
 
 /* Version identifier for this pg_control format */
-#define PG_CONTROL_VERSION	937
+#define PG_CONTROL_VERSION	942
 
 /*
  * Body of CheckPoint XLOG records.  This is declared here because we keep
@@ -102,9 +102,9 @@ typedef struct ControlFileData
 	uint64		system_identifier;
 
 	/*
-	 * Version identifier information.	Keep these fields at the same offset,
+	 * Version identifier information.  Keep these fields at the same offset,
 	 * especially pg_control_version; they won't be real useful if they move
-	 * around.	(For historical reasons they must be 8 bytes into the file
+	 * around.  (For historical reasons they must be 8 bytes into the file
 	 * rather than immediately at the front.)
 	 *
 	 * pg_control_version identifies the format of pg_control itself.
@@ -171,7 +171,9 @@ typedef struct ControlFileData
 	 * or hot standby.
 	 */
 	int			wal_level;
+	bool		wal_log_hints;
 	int			MaxConnections;
+	int			max_worker_processes;
 	int			max_prepared_xacts;
 	int			max_locks_per_xact;
 
@@ -205,6 +207,7 @@ typedef struct ControlFileData
 	uint32		indexMaxKeys;	/* max number of columns in an index */
 
 	uint32		toast_max_chunk_size;	/* chunk size in TOAST tables */
+	uint32		loblksize;		/* chunk size in pg_largeobject */
 
 	/* flag indicating internal format of timestamp, interval, time */
 	bool		enableIntTimes; /* int64 storage enabled? */

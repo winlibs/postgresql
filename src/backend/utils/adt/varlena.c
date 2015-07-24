@@ -3,7 +3,7 @@
  * varlena.c
  *	  Functions for the variable-length built-in types.
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -591,7 +591,7 @@ textlen(PG_FUNCTION_ARGS)
  *	Does the real work for textlen()
  *
  *	This is broken out so it can be called directly by other string processing
- *	functions.	Note that the argument is passed as a Datum, to indicate that
+ *	functions.  Note that the argument is passed as a Datum, to indicate that
  *	it may still be in compressed form.  We can avoid decompressing it at all
  *	in some cases.
  */
@@ -763,7 +763,7 @@ text_substr_no_len(PG_FUNCTION_ARGS)
  *	Does the real work for text_substr() and text_substr_no_len()
  *
  *	This is broken out so it can be called directly by other string processing
- *	functions.	Note that the argument is passed as a Datum, to indicate that
+ *	functions.  Note that the argument is passed as a Datum, to indicate that
  *	it may still be in compressed/toasted form.  We can avoid detoasting all
  *	of it in some cases.
  *
@@ -1113,7 +1113,7 @@ text_position_setup(text *t1, text *t2, TextPositionState *state)
 	 * searched (t1) and the "needle" is the pattern being sought (t2).
 	 *
 	 * If the needle is empty or bigger than the haystack then there is no
-	 * point in wasting cycles initializing the table.	We also choose not to
+	 * point in wasting cycles initializing the table.  We also choose not to
 	 * use B-M-H for needles of length 1, since the skip table can't possibly
 	 * save anything in that case.
 	 */
@@ -1129,7 +1129,7 @@ text_position_setup(text *t1, text *t2, TextPositionState *state)
 		 * declaration of TextPositionState allows up to 256 elements, but for
 		 * short search problems we don't really want to have to initialize so
 		 * many elements --- it would take too long in comparison to the
-		 * actual search time.	So we choose a useful skip table size based on
+		 * actual search time.  So we choose a useful skip table size based on
 		 * the haystack length minus the needle length.  The closer the needle
 		 * length is to the haystack length the less useful skipping becomes.
 		 *
@@ -1161,7 +1161,7 @@ text_position_setup(text *t1, text *t2, TextPositionState *state)
 			state->skiptable[i] = len2;
 
 		/*
-		 * Now examine the needle.	For each character except the last one,
+		 * Now examine the needle.  For each character except the last one,
 		 * set the corresponding table element to the appropriate skip
 		 * distance.  Note that when two characters share the same skip table
 		 * entry, the one later in the needle must determine the skip
@@ -1249,11 +1249,11 @@ text_position_next(int start_pos, TextPositionState *state)
 
 				/*
 				 * No match, so use the haystack char at hptr to decide how
-				 * far to advance.	If the needle had any occurrence of that
+				 * far to advance.  If the needle had any occurrence of that
 				 * character (or more precisely, one sharing the same
 				 * skiptable entry) before its last character, then we advance
 				 * far enough to align the last such needle character with
-				 * that haystack position.	Otherwise we can advance by the
+				 * that haystack position.  Otherwise we can advance by the
 				 * whole needle length.
 				 */
 				hptr += state->skiptable[(unsigned char) *hptr & skiptablemask];
@@ -1305,11 +1305,11 @@ text_position_next(int start_pos, TextPositionState *state)
 
 				/*
 				 * No match, so use the haystack char at hptr to decide how
-				 * far to advance.	If the needle had any occurrence of that
+				 * far to advance.  If the needle had any occurrence of that
 				 * character (or more precisely, one sharing the same
 				 * skiptable entry) before its last character, then we advance
 				 * far enough to align the last such needle character with
-				 * that haystack position.	Otherwise we can advance by the
+				 * that haystack position.  Otherwise we can advance by the
 				 * whole needle length.
 				 */
 				hptr += state->skiptable[*hptr & skiptablemask];
@@ -1344,7 +1344,7 @@ varstr_cmp(char *arg1, int len1, char *arg2, int len2, Oid collid)
 
 	/*
 	 * Unfortunately, there is no strncoll(), so in the non-C locale case we
-	 * have to do some memory copying.	This turns out to be significantly
+	 * have to do some memory copying.  This turns out to be significantly
 	 * slower, so we optimize the case where LC_COLLATE is C.  We also try to
 	 * optimize relatively-short strings by avoiding palloc/pfree overhead.
 	 */
@@ -2334,7 +2334,7 @@ textToQualifiedNameList(text *textval)
  * SplitIdentifierString --- parse a string containing identifiers
  *
  * This is the guts of textToQualifiedNameList, and is exported for use in
- * other situations such as parsing GUC variables.	In the GUC case, it's
+ * other situations such as parsing GUC variables.  In the GUC case, it's
  * important to avoid memory leaks, so the API is designed to minimize the
  * amount of stuff that needs to be allocated and freed.
  *
@@ -2342,7 +2342,7 @@ textToQualifiedNameList(text *textval)
  *	rawstring: the input string; must be overwritable!	On return, it's
  *			   been modified to contain the separated identifiers.
  *	separator: the separator punctuation expected between identifiers
- *			   (typically '.' or ',').	Whitespace may also appear around
+ *			   (typically '.' or ',').  Whitespace may also appear around
  *			   identifiers.
  * Outputs:
  *	namelist: filled with a palloc'd list of pointers to identifiers within
@@ -2411,7 +2411,7 @@ SplitIdentifierString(char *rawstring, char separator,
 			 *
 			 * XXX because we want to overwrite the input in-place, we cannot
 			 * support a downcasing transformation that increases the string
-			 * length.	This is not a problem given the current implementation
+			 * length.  This is not a problem given the current implementation
 			 * of downcase_truncate_identifier, but we'll probably have to do
 			 * something about this someday.
 			 */
@@ -2468,7 +2468,7 @@ SplitIdentifierString(char *rawstring, char separator,
  * Inputs:
  *	rawstring: the input string; must be modifiable!
  *	separator: the separator punctuation expected between directories
- *			   (typically ',' or ';').	Whitespace may also appear around
+ *			   (typically ',' or ';').  Whitespace may also appear around
  *			   directories.
  * Outputs:
  *	namelist: filled with a palloc'd list of directory names.
@@ -2875,7 +2875,7 @@ check_replace_text_has_escape_char(const text *replace_text)
  * appendStringInfoRegexpSubstr
  *
  * Append replace_text to str, substituting regexp back references for
- * \n escapes.	start_ptr is the start of the match in the source string,
+ * \n escapes.  start_ptr is the start of the match in the source string,
  * at logical character position data_pos.
  */
 static void
@@ -2958,7 +2958,7 @@ appendStringInfoRegexpSubstr(StringInfo str, text *replace_text,
 		if (so != -1 && eo != -1)
 		{
 			/*
-			 * Copy the text that is back reference of regexp.	Note so and eo
+			 * Copy the text that is back reference of regexp.  Note so and eo
 			 * are counted in characters not bytes.
 			 */
 			char	   *chunk_start;
@@ -3035,6 +3035,7 @@ replace_text_regexp(text *src_text, void *regexp,
 		{
 			char		errMsg[100];
 
+			CHECK_FOR_INTERRUPTS();
 			pg_regerror(regexec_result, re, errMsg, sizeof(errMsg));
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_REGULAR_EXPRESSION),
@@ -3823,7 +3824,6 @@ concat_internal(const char *sepstr, int argidx,
 	 */
 	if (get_fn_expr_variadic(fcinfo->flinfo))
 	{
-		Oid			arr_typid;
 		ArrayType  *arr;
 
 		/* Should have just the one argument */
@@ -3834,18 +3834,13 @@ concat_internal(const char *sepstr, int argidx,
 			return NULL;
 
 		/*
-		 * Non-null argument had better be an array.  The parser doesn't
-		 * enforce this for VARIADIC ANY functions (maybe it should?), so that
-		 * check uses ereport not just elog.
+		 * Non-null argument had better be an array.  We assume that any call
+		 * context that could let get_fn_expr_variadic return true will have
+		 * checked that a VARIADIC-labeled parameter actually is an array.  So
+		 * it should be okay to just Assert that it's an array rather than
+		 * doing a full-fledged error check.
 		 */
-		arr_typid = get_fn_expr_argtype(fcinfo->flinfo, argidx);
-		if (!OidIsValid(arr_typid))
-			elog(ERROR, "could not determine data type of concat() input");
-
-		if (!OidIsValid(get_element_type(arr_typid)))
-			ereport(ERROR,
-					(errcode(ERRCODE_DATATYPE_MISMATCH),
-					 errmsg("VARIADIC argument must be an array")));
+		Assert(OidIsValid(get_base_element_type(get_fn_expr_argtype(fcinfo->flinfo, argidx))));
 
 		/* OK, safe to fetch the array value */
 		arr = PG_GETARG_ARRAYTYPE_P(argidx);
@@ -4052,7 +4047,6 @@ text_format(PG_FUNCTION_ARGS)
 	/* If argument is marked VARIADIC, expand array into elements */
 	if (get_fn_expr_variadic(fcinfo->flinfo))
 	{
-		Oid			arr_typid;
 		ArrayType  *arr;
 		int16		elmlen;
 		bool		elmbyval;
@@ -4068,18 +4062,13 @@ text_format(PG_FUNCTION_ARGS)
 		else
 		{
 			/*
-			 * Non-null argument had better be an array.  The parser doesn't
-			 * enforce this for VARIADIC ANY functions (maybe it should?), so
-			 * that check uses ereport not just elog.
+			 * Non-null argument had better be an array.  We assume that any
+			 * call context that could let get_fn_expr_variadic return true
+			 * will have checked that a VARIADIC-labeled parameter actually is
+			 * an array.  So it should be okay to just Assert that it's an
+			 * array rather than doing a full-fledged error check.
 			 */
-			arr_typid = get_fn_expr_argtype(fcinfo->flinfo, 1);
-			if (!OidIsValid(arr_typid))
-				elog(ERROR, "could not determine data type of format() input");
-
-			if (!OidIsValid(get_element_type(arr_typid)))
-				ereport(ERROR,
-						(errcode(ERRCODE_DATATYPE_MISMATCH),
-						 errmsg("VARIADIC argument must be an array")));
+			Assert(OidIsValid(get_base_element_type(get_fn_expr_argtype(fcinfo->flinfo, 1))));
 
 			/* OK, safe to fetch the array value */
 			arr = PG_GETARG_ARRAYTYPE_P(1);
@@ -4248,7 +4237,7 @@ text_format(PG_FUNCTION_ARGS)
 
 		/*
 		 * Get the appropriate typOutput function, reusing previous one if
-		 * same type as previous argument.	That's particularly useful in the
+		 * same type as previous argument.  That's particularly useful in the
 		 * variadic-array case, but often saves work even for ordinary calls.
 		 */
 		if (typid != prev_type)
@@ -4340,12 +4329,12 @@ text_format_parse_digits(const char **ptr, const char *end_ptr, int *value)
  *
  * Inputs are start_ptr (the position after '%') and end_ptr (string end + 1).
  * Output parameters:
- *	argpos: argument position for value to be printed.	-1 means unspecified.
- *	widthpos: argument position for width.	Zero means the argument position
+ *	argpos: argument position for value to be printed.  -1 means unspecified.
+ *	widthpos: argument position for width.  Zero means the argument position
  *			was unspecified (ie, take the next arg) and -1 means no width
  *			argument (width was omitted or specified as a constant).
  *	flags: bitmask of flags.
- *	width: directly-specified width value.	Zero means the width was omitted
+ *	width: directly-specified width value.  Zero means the width was omitted
  *			(note it's not necessary to distinguish this case from an explicit
  *			zero width value).
  *

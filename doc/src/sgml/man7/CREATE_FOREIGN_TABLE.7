@@ -2,12 +2,12 @@
 .\"     Title: CREATE FOREIGN TABLE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "CREATE FOREIGN TABLE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "CREATE FOREIGN TABLE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_FOREIGN_TABLE \- define a new foreign table
-.\" CREATE FOREIGN TABLE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -54,7 +53,7 @@ where \fIcolumn_constraint\fR is:
 creates a new foreign table in the current database\&. The table will be owned by the user issuing the command\&.
 .PP
 If a schema name is given (for example,
-CREATE FOREIGN TABLE myschema\&.mytable \&.\&.\&.) then the table is created in the specified schema\&. Otherwise it is created in the current schema\&. The name of the foreign table must be distinct from the name of any other foreign table, table, sequence, index, or view in the same schema\&.
+CREATE FOREIGN TABLE myschema\&.mytable \&.\&.\&.) then the table is created in the specified schema\&. Otherwise it is created in the current schema\&. The name of the foreign table must be distinct from the name of any other foreign table, table, sequence, index, view, or materialized view in the same schema\&.
 .PP
 
 \fBCREATE FOREIGN TABLE\fR

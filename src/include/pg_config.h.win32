@@ -185,25 +185,13 @@
 //#define HAVE_INTTYPES_H 1
 
 /* Define to 1 if you have the global variable 'int timezone'. */
-#define HAVE_INT_TIMEZONE
+#define HAVE_INT_TIMEZONE 1
 
 /* Define to 1 if you have support for IPv6. */
 #define HAVE_IPV6 1
 
 /* Define to 1 if you have isinf(). */
 #define HAVE_ISINF 1
-
-/* Define to 1 if `e_data' is member of `krb5_error'. */
-/* #undef HAVE_KRB5_ERROR_E_DATA */
-
-/* Define to 1 if `text.data' is member of `krb5_error'. */
-/* #undef HAVE_KRB5_ERROR_TEXT_DATA */
-
-/* Define to 1 if `client' is member of `krb5_ticket'. */
-/* #undef HAVE_KRB5_TICKET_CLIENT */
-
-/* Define to 1 if `enc_part2' is member of `krb5_ticket'. */
-/* #undef HAVE_KRB5_TICKET_ENC_PART2 */
 
 /* Define to 1 if you have the <langinfo.h> header file. */
 /* #undef HAVE_LANGINFO_H */
@@ -261,6 +249,9 @@
 /* Define to 1 if the system has the type `MINIDUMP_TYPE'. */
 #define HAVE_MINIDUMP_TYPE 1
 
+/* Define to 1 if you have the `mkdtemp' function. */
+/* #undef HAVE_MKDTEMP */
+
 /* Define to 1 if you have the <netinet/in.h> header file. */
 #define HAVE_NETINET_IN_H 1
 
@@ -307,7 +298,10 @@
 /* #undef HAVE_READLINK */
 
 /* Define to 1 if you have the `rint' function. */
-/*#define HAVE_RINT 1*/
+#if (_MSC_VER >= 1800)
+#define HAVE_RINT 1
+#endif
+
 
 /* Define to 1 if you have the global variable
    'rl_completion_append_character'. */
@@ -346,6 +340,9 @@
 /* Define to 1 if you have the `srandom' function. */
 /* #undef HAVE_SRANDOM */
 
+/* Define to 1 if you have the `SSL_get_current_compression' function. */
+#define HAVE_SSL_GET_CURRENT_COMPRESSION 1
+
 /* Define to 1 if you have the <stdint.h> header file. */
 /* #undef HAVE_STDINT_H */
 
@@ -359,9 +356,6 @@
 
 /* Define to 1 if you have the `strerror_r' function. */
 /* #undef HAVE_STRERROR_R */
-
-/* Define to 1 if cpp supports the ANSI # stringizing operator. */
-#define HAVE_STRINGIZE 1
 
 /* Define to 1 if you have the <strings.h> header file. */
 /*#define HAVE_STRINGS_H 1 */
@@ -544,9 +538,6 @@
 /* Define to the appropriate snprintf format for 64-bit ints, if any. */
 #define INT64_FORMAT "%lld"
 
-/* Define to build with Kerberos 5 support. (--with-krb5) */
-/* #undef KRB5 */
-
 /* Define to 1 if `locale_t' requires <xlocale.h>. */
 /* #undef LOCALE_T_IN_XLOCALE */
 
@@ -566,19 +557,19 @@
 #define PACKAGE_NAME "PostgreSQL"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PostgreSQL 9.3.2"
+#define PACKAGE_STRING "PostgreSQL 9.4.4"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "9.3.2"
+#define PACKAGE_VERSION "9.4.4"
 
 /* Define to the name of a signed 64-bit integer type. */
 #define PG_INT64_TYPE long long int
 
 /* PostgreSQL version as a string */
-#define PG_VERSION "9.3.2"
+#define PG_VERSION "9.4.4"
 
 /* PostgreSQL version as a number */
-#define PG_VERSION_NUM 90302
+#define PG_VERSION_NUM 90404
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "postgresql"
@@ -663,7 +654,7 @@
 /* #undef USE_UNNAMED_POSIX_SEMAPHORES */
 
 /* Define to select Win32-style semaphores. */
-#define USE_WIN32_SEMAPHORES
+#define USE_WIN32_SEMAPHORES 1
 
 /* Number of bits in a file offset, on hosts where this is settable. */
 /* #undef _FILE_OFFSET_BITS */
@@ -674,9 +665,6 @@
 /* Define for large files, on AIX-style hosts. */
 /* #undef _LARGE_FILES */
 
-/* Define to empty if `const' does not conform to ANSI C. */
-/* #undef const */
-
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus
@@ -685,7 +673,3 @@
 
 /* Define to empty if the C compiler does not understand signed types. */
 /* #undef signed */
-
-/* Define to empty if the keyword `volatile' does not work. Warning: valid
-   code using `volatile' can become incorrect without. Disable with care. */
-/* #undef volatile */

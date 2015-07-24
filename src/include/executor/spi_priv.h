@@ -3,7 +3,7 @@
  * spi_priv.h
  *				Server Programming Interface private declarations
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/executor/spi_priv.h
@@ -50,7 +50,7 @@ typedef struct
  * adequate locks to prevent other backends from messing with the tables.
  *
  * For a saved plan, the plancxt is made a child of CacheMemoryContext
- * since it should persist until explicitly destroyed.	Likewise, the
+ * since it should persist until explicitly destroyed.  Likewise, the
  * plancache entries will be under CacheMemoryContext since we tell
  * plancache.c to save them.  We rely on plancache.c to keep the cache
  * entries up-to-date as needed in the face of invalidation events.

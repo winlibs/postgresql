@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Database Physical Storage"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 58. Database Physical Storage</TD
+>Chapter 59. Database Physical Storage</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="STORAGE-FILE-LAYOUT"
->58.1. Database File Layout</A
+>59.1. Database File Layout</A
 ></H1
 ><P
 >This section describes the storage format at the level of files and
@@ -121,7 +121,7 @@ CLASS="VARNAME"
 > directory contains several subdirectories and control
 files, as shown in <A
 HREF="storage-file-layout.html#PGDATA-CONTENTS-TABLE"
->Table 58-1</A
+>Table 59-1</A
 >.  In addition to
 these required items, the cluster configuration files
 <TT
@@ -138,11 +138,7 @@ CLASS="FILENAME"
 <TT
 CLASS="VARNAME"
 >PGDATA</TT
-> (although in <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.0 and
-later, it is possible to place them elsewhere).</P
+>, although it is possible to place them elsewhere.</P
 ><DIV
 CLASS="TABLE"
 ><A
@@ -150,7 +146,7 @@ NAME="PGDATA-CONTENTS-TABLE"
 ></A
 ><P
 ><B
->Table 58-1. Contents of <TT
+>Table 59-1. Contents of <TT
 CLASS="VARNAME"
 >PGDATA</TT
 ></B
@@ -214,6 +210,25 @@ CLASS="FILENAME"
 ><TD
 ><TT
 CLASS="FILENAME"
+>pg_dynshmem</TT
+></TD
+><TD
+>Subdirectory containing files used by the dynamic shared memory
+  subsystem</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="FILENAME"
+>pg_logical</TT
+></TD
+><TD
+>Subdirectory containing status data for logical decoding</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="FILENAME"
 >pg_multixact</TT
 ></TD
 ><TD
@@ -233,6 +248,15 @@ CLASS="FILENAME"
 ><TD
 ><TT
 CLASS="FILENAME"
+>pg_replslot</TT
+></TD
+><TD
+>Subdirectory containing replication slot data</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="FILENAME"
 >pg_serial</TT
 ></TD
 ><TD
@@ -246,6 +270,16 @@ CLASS="FILENAME"
 ></TD
 ><TD
 >Subdirectory containing exported snapshots</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="FILENAME"
+>pg_stat</TT
+></TD
+><TD
+>Subdirectory containing permanent files for the statistics
+  subsystem</TD
 ></TR
 ><TR
 ><TD
@@ -292,6 +326,19 @@ CLASS="FILENAME"
 ></TD
 ><TD
 >Subdirectory containing WAL (Write Ahead Log) files</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="FILENAME"
+>postgresql.auto.conf</TT
+></TD
+><TD
+>A file used for storing configuration parameters that are set by
+<TT
+CLASS="COMMAND"
+>ALTER SYSTEM</TT
+></TD
 ></TR
 ><TR
 ><TD
@@ -386,7 +433,7 @@ CLASS="FIRSTTERM"
 >free space map</I
 > (see <A
 HREF="storage-fsm.html"
->Section 58.3</A
+>Section 59.3</A
 >), which stores information about free space available in
 the relation.  The free space map is stored in a file named with the filenode
 number plus the suffix <TT
@@ -403,7 +450,7 @@ CLASS="LITERAL"
 to track which pages are known to have no dead tuples.  The visibility map is
 described further in <A
 HREF="storage-vm.html"
->Section 58.4</A
+>Section 59.4</A
 >.  Unlogged tables and indexes
 have a third fork, known as the initialization fork, which is stored in a fork
 with the suffix <TT
@@ -411,7 +458,7 @@ CLASS="LITERAL"
 >_init</TT
 > (see <A
 HREF="storage-init.html"
->Section 58.5</A
+>Section 59.5</A
 >).</P
 ><DIV
 CLASS="CAUTION"
@@ -515,13 +562,13 @@ CLASS="ACRONYM"
 > table, if any.
 See <A
 HREF="storage-toast.html"
->Section 58.2</A
+>Section 59.2</A
 > for more information.</P
 ><P
 >The contents of tables and indexes are discussed further in
 <A
 HREF="storage-page-layout.html"
->Section 58.6</A
+>Section 59.6</A
 >.</P
 ><P
 >Tablespaces make the scenario more complicated.  Each user-defined tablespace
@@ -600,11 +647,14 @@ main fork of the relation &mdash; you may need to append a segment number
 and/or <TT
 CLASS="LITERAL"
 >_fsm</TT
-> or <TT
+>, <TT
 CLASS="LITERAL"
 >_vm</TT
-> to find all the files associated
-with the relation.</P
+>, or <TT
+CLASS="LITERAL"
+>_init</TT
+> to find all
+the files associated with the relation.</P
 ><P
 >Temporary files (for operations such as sorting more data than can fit in
 memory) are created within <TT

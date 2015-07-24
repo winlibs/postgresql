@@ -143,6 +143,21 @@ SELECT clean_emp();
 </screen>
     </para>
 
+    <note>
+     <para>
+      The entire body of a SQL function is parsed before any of it is
+      executed.  While a SQL function can contain commands that alter
+      the system catalogs (e.g., <command>CREATE TABLE</>), the effects
+      of such commands will not be visible during parse analysis of
+      later commands in the function.  Thus, for example,
+      <literal>CREATE TABLE foo (...); INSERT INTO foo VALUES(...);</literal>
+      will not work as desired if packaged up into a single SQL function,
+      since <structname>foo</> won't exist yet when the <command>INSERT</>
+      command is parsed.  It's recommended to use <application>PL/PgSQL</>
+      instead of a SQL function in this type of situation.
+     </para>
+   </note>
+
    <para>
     The syntax of the <command>CREATE FUNCTION</command> command requires
     the function body to be written as a string constant.  It is usually
@@ -737,6 +752,20 @@ SELECT mleast(VARIADIC ARRAY[10, -1, 5, 4.4]);
      element type, thereby allowing the array argument value to match
      normally.  <literal>VARIADIC</> can only be attached to the last
      actual argument of a function call.
+    </para>
+
+    <para>
+     Specifying <literal>VARIADIC</> in the call is also the only way to
+     pass an empty array to a variadic function, for example:
+
+<screen>
+SELECT mleast(VARIADIC ARRAY[]::numeric[]);
+</screen>
+
+     Simply writing <literal>SELECT mleast()</> does not work because a
+     variadic parameter must match at least one actual argument.
+     (You could define a second function also named <literal>mleast</>,
+     with no parameters, if you wanted to allow such calls.)
     </para>
 
     <para>
@@ -1465,11 +1494,9 @@ CREATE FUNCTION test(int, int) RETURNS int
 
    <note>
     <para>
-     Before <productname>PostgreSQL</productname> release 8.0, the requirement
-     that <literal>STABLE</> and <literal>IMMUTABLE</> functions cannot modify
-     the database was not enforced by the system.  Releases 8.0 and later enforce it
-     by requiring SQL functions and procedural language functions of these
-     categories to contain no SQL commands other than <command>SELECT</>.
+     <productname>PostgreSQL</productname> requires that <literal>STABLE</>
+     and <literal>IMMUTABLE</> functions contain no SQL commands other
+     than <command>SELECT</> to prevent data modification.
      (This is not a completely bulletproof test, since such functions could
      still call <literal>VOLATILE</> functions that modify the database.
      If you do that, you will find that the <literal>STABLE</> or
@@ -3154,9 +3181,10 @@ CREATE OR REPLACE FUNCTION retcomposite(IN integer, IN integer,
      is zero based.  <function>get_call_result_type</> can also be used
      as an alternative to <function>get_fn_expr_rettype</>.
      There is also <function>get_fn_expr_variadic</>, which can be used to
-     find out whether the call contained an explicit <literal>VARIADIC</>
-     keyword.  This is primarily useful for <literal>VARIADIC "any"</>
-     functions, as described below.
+     find out whether variadic arguments have been merged into an array.
+     This is primarily useful for <literal>VARIADIC "any"</> functions,
+     since such merging will always have occurred for variadic functions
+     taking ordinary array types.
     </para>
 
     <para>

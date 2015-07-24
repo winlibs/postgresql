@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Managing Databases"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -124,6 +124,46 @@ CLASS="PRODUCTNAME"
    rarely used or not performance critical could be stored on a less
    expensive, slower disk system.
   </P
+><DIV
+CLASS="WARNING"
+><P
+></P
+><TABLE
+CLASS="WARNING"
+BORDER="1"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Warning</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>     Even though located outside the main PostgreSQL data directory,
+     tablespaces are an integral part of the database cluster and
+     <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>cannot</I
+></SPAN
+> be treated as an autonomous collection
+     of data files. They are dependent on metadata contained in the main
+     data directory, and therefore cannot be attached to a different
+     database cluster or backed up individually.  Similarly, if you lose
+     a tablespace (file deletion, disk failure, etc), the database cluster
+     might become unreadable or unable to start.  Placing a tablespace
+     on a temporary file system like a ramdisk risks the reliability of
+     the entire cluster.
+   </P
+></TD
+></TR
+></TABLE
+></DIV
 ><P
 >   To define a tablespace, use the <A
 HREF="sql-createtablespace.html"
@@ -132,7 +172,7 @@ HREF="sql-createtablespace.html"
    command, for example::
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE TABLESPACE fastspace LOCATION '/mnt/sda1/postgresql/data';</PRE
+>CREATE TABLESPACE fastspace LOCATION '/ssd1/postgresql/data';</PRE
 ><P>
    The location must be an existing, empty directory that is owned by
    the <SPAN
@@ -140,7 +180,9 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > operating system user.  All objects subsequently
    created within the tablespace will be stored in files underneath this
-   directory.
+   directory.  The location must not be on removable or transient storage,
+   as the cluster might fail to function if the tablespace is missing
+   or lost.
   </P
 ><DIV
 CLASS="NOTE"

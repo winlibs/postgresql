@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="pg_cast"
 HREF="catalog-pg-cast.html"><LINK
 REL="NEXT"
-TITLE="pg_event_trigger"
-HREF="catalog-pg-event-trigger.html"><LINK
+TITLE="pg_collation"
+HREF="catalog-pg-collation.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,14 +71,14 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 47. System Catalogs</TD
+>Chapter 48. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="pg_event_trigger"
-HREF="catalog-pg-event-trigger.html"
+TITLE="pg_collation"
+HREF="catalog-pg-collation.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOG-PG-CLASS"
->47.11. <TT
+>48.11. <TT
 CLASS="STRUCTNAME"
 >pg_class</TT
 ></A
@@ -123,11 +123,11 @@ CLASS="QUOTE"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN92251"
+NAME="AEN96148"
 ></A
 ><P
 ><B
->Table 47-11. <TT
+>Table 48-11. <TT
 CLASS="STRUCTNAME"
 >pg_class</TT
 > Columns</B
@@ -489,32 +489,6 @@ CLASS="QUOTE"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
->reltoastidxid</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-class.html"
-><TT
-CLASS="STRUCTNAME"
->pg_class</TT
-></A
->.oid</TT
-></TD
-><TD
->       For a TOAST table, the OID of its index.  0 if not a TOAST table.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
 >relhasindex</TT
 ></TD
 ><TD
@@ -794,6 +768,45 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
+>relreplident</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>char</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>       Columns used to form <SPAN
+CLASS="QUOTE"
+>"replica identity"</SPAN
+> for rows:
+       <TT
+CLASS="LITERAL"
+>d</TT
+> = default (primary key, if any),
+       <TT
+CLASS="LITERAL"
+>n</TT
+> = nothing,
+       <TT
+CLASS="LITERAL"
+>f</TT
+> = all columns
+       <TT
+CLASS="LITERAL"
+>i</TT
+> = index with <TT
+CLASS="STRUCTFIELD"
+>indisreplident</TT
+> set, or default
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
 >relfrozenxid</TT
 ></TD
 ><TD
@@ -834,16 +847,16 @@ CLASS="TYPE"
 ><TD
 >&nbsp;</TD
 ><TD
->       All multitransaction IDs before this one have been replaced by a
+>       All multixact IDs before this one have been replaced by a
        transaction ID in this table.  This is used to track
-       whether the table needs to be vacuumed in order to prevent multitransaction ID
-       ID wraparound or to allow <TT
+       whether the table needs to be vacuumed in order to prevent multixact ID
+       wraparound or to allow <TT
 CLASS="LITERAL"
->pg_clog</TT
+>pg_multixact</TT
 > to be shrunk.  Zero
        (<TT
 CLASS="SYMBOL"
->InvalidTransactionId</TT
+>InvalidMultiXactId</TT
 >) if the relation is not a table.
       </TD
 ></TR
@@ -959,7 +972,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="catalog-pg-event-trigger.html"
+HREF="catalog-pg-collation.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -988,7 +1001,7 @@ ALIGN="right"
 VALIGN="top"
 ><TT
 CLASS="STRUCTNAME"
->pg_event_trigger</TT
+>pg_collation</TT
 ></TD
 ></TR
 ></TABLE

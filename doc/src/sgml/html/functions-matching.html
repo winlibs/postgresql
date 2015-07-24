@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -758,7 +758,7 @@ CLASS="ACRONYM"
 ><P
 >    <A
 HREF="functions-matching.html#FUNCTIONS-POSIX-TABLE"
->Table 9-11</A
+>Table 9-12</A
 > lists the available
     operators for pattern matching using POSIX regular expressions.
    </P
@@ -769,7 +769,7 @@ NAME="FUNCTIONS-POSIX-TABLE"
 ></A
 ><P
 ><B
->Table 9-11. Regular Expression Match Operators</B
+>Table 9-12. Regular Expression Match Operators</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1083,10 +1083,14 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >g</TT
 > specifies replacement of each matching
-     substring rather than only the first one.  Other supported flags are
+     substring rather than only the first one.  Supported flags (though
+     not <TT
+CLASS="LITERAL"
+>g</TT
+>) are
      described in <A
 HREF="functions-matching.html#POSIX-EMBEDDED-OPTIONS-TABLE"
->Table 9-19</A
+>Table 9-20</A
 >.
     </P
 ><P
@@ -1184,10 +1188,14 @@ CLASS="LITERAL"
 >g</TT
 > causes the function to find
      each match in the string, not only the first one, and return a row for
-     each such match.  Other supported
-     flags are described in <A
+     each such match.  Supported flags (though
+     not <TT
+CLASS="LITERAL"
+>g</TT
+>)
+     are described in <A
 HREF="functions-matching.html#POSIX-EMBEDDED-OPTIONS-TABLE"
->Table 9-19</A
+>Table 9-20</A
 >.
     </P
 ><P
@@ -1287,7 +1295,7 @@ CLASS="FUNCTION"
 > supports the flags described in
      <A
 HREF="functions-matching.html#POSIX-EMBEDDED-OPTIONS-TABLE"
->Table 9-19</A
+>Table 9-20</A
 >.
     </P
 ><P
@@ -1541,12 +1549,12 @@ CLASS="FIRSTTERM"
 > can be any of the possibilities
     shown in <A
 HREF="functions-matching.html#POSIX-ATOMS-TABLE"
->Table 9-12</A
+>Table 9-13</A
 >.
     The possible quantifiers and their meanings are shown in
     <A
 HREF="functions-matching.html#POSIX-QUANTIFIERS-TABLE"
->Table 9-13</A
+>Table 9-14</A
 >.
    </P
 ><P
@@ -1559,7 +1567,7 @@ CLASS="FIRSTTERM"
     The simple constraints are shown in
     <A
 HREF="functions-matching.html#POSIX-CONSTRAINTS-TABLE"
->Table 9-14</A
+>Table 9-15</A
 >;
     some more constraints are described later.
    </P
@@ -1570,7 +1578,7 @@ NAME="POSIX-ATOMS-TABLE"
 ></A
 ><P
 ><B
->Table 9-12. Regular Expression Atoms</B
+>Table 9-13. Regular Expression Atoms</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1803,7 +1811,7 @@ NAME="POSIX-QUANTIFIERS-TABLE"
 ></A
 ><P
 ><B
->Table 9-13. Regular Expression Quantifiers</B
+>Table 9-14. Regular Expression Quantifiers</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2151,7 +2159,7 @@ NAME="POSIX-CONSTRAINTS-TABLE"
 ></A
 ><P
 ><B
->Table 9-14. Regular Expression Constraints</B
+>Table 9-15. Regular Expression Constraints</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2571,7 +2579,7 @@ CLASS="FIRSTTERM"
     non-printing and other inconvenient characters in REs.  They are
     shown in <A
 HREF="functions-matching.html#POSIX-CHARACTER-ENTRY-ESCAPES-TABLE"
->Table 9-15</A
+>Table 9-16</A
 >.
    </P
 ><P
@@ -2582,7 +2590,7 @@ CLASS="FIRSTTERM"
     commonly-used character classes.  They are
     shown in <A
 HREF="functions-matching.html#POSIX-CLASS-SHORTHAND-ESCAPES-TABLE"
->Table 9-16</A
+>Table 9-17</A
 >.
    </P
 ><P
@@ -2594,7 +2602,7 @@ CLASS="FIRSTTERM"
     written as an escape.  They are
     shown in <A
 HREF="functions-matching.html#POSIX-CONSTRAINT-ESCAPES-TABLE"
->Table 9-17</A
+>Table 9-18</A
 >.
    </P
 ><P
@@ -2619,7 +2627,7 @@ CLASS="REPLACEABLE"
 >
     (see <A
 HREF="functions-matching.html#POSIX-CONSTRAINT-BACKREF-TABLE"
->Table 9-18</A
+>Table 9-19</A
 >).  For example,
     <TT
 CLASS="LITERAL"
@@ -2671,7 +2679,7 @@ NAME="POSIX-CHARACTER-ENTRY-ESCAPES-TABLE"
 ></A
 ><P
 ><B
->Table 9-15. Regular Expression Character-entry Escapes</B
+>Table 9-16. Regular Expression Character-entry Escapes</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3015,7 +3023,7 @@ NAME="POSIX-CLASS-SHORTHAND-ESCAPES-TABLE"
 ></A
 ><P
 ><B
->Table 9-16. Regular Expression Class-shorthand Escapes</B
+>Table 9-17. Regular Expression Class-shorthand Escapes</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3152,7 +3160,7 @@ NAME="POSIX-CONSTRAINT-ESCAPES-TABLE"
 ></A
 ><P
 ><B
->Table 9-17. Regular Expression Constraint Escapes</B
+>Table 9-18. Regular Expression Constraint Escapes</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3258,7 +3266,7 @@ NAME="POSIX-CONSTRAINT-BACKREF-TABLE"
 ></A
 ><P
 ><B
->Table 9-18. Regular Expression Back References</B
+>Table 9-19. Regular Expression Back References</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3435,7 +3443,7 @@ CLASS="REPLACEABLE"
     The available option letters are
     shown in <A
 HREF="functions-matching.html#POSIX-EMBEDDED-OPTIONS-TABLE"
->Table 9-19</A
+>Table 9-20</A
 >.
     Note that these same option letters are used in the <TT
 CLASS="REPLACEABLE"
@@ -3452,7 +3460,7 @@ NAME="POSIX-EMBEDDED-OPTIONS-TABLE"
 ></A
 ><P
 ><B
->Table 9-19. ARE Embedded-option Letters</B
+>Table 9-20. ARE Embedded-option Letters</B
 ></P
 ><TABLE
 BORDER="1"

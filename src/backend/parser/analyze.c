@@ -14,7 +14,7 @@
  * contain optimizable statements, which we should transform.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *	src/backend/parser/analyze.c
@@ -79,7 +79,7 @@ static void transformLockingClause(ParseState *pstate, Query *qry,
  * Optionally, information about $n parameter types can be supplied.
  * References to $n indexes not defined by paramTypes[] are disallowed.
  *
- * The result is a Query node.	Optimizable statements require considerable
+ * The result is a Query node.  Optimizable statements require considerable
  * transformation, while utility-type statements are simply hung off
  * a dummy CMD_UTILITY Query node.
  */
@@ -288,16 +288,12 @@ transformStmt(ParseState *pstate, Node *parseTree)
  *		Returns true if a snapshot must be set before doing parse analysis
  *		on the given raw parse tree.
  *
- * Classification here should match transformStmt(); but we also have to
- * allow a NULL input (for Parse/Bind of an empty query string).
+ * Classification here should match transformStmt().
  */
 bool
 analyze_requires_snapshot(Node *parseTree)
 {
 	bool		result;
-
-	if (parseTree == NULL)
-		return false;
 
 	switch (nodeTag(parseTree))
 	{
@@ -342,6 +338,7 @@ static Query *
 transformDeleteStmt(ParseState *pstate, DeleteStmt *stmt)
 {
 	Query	   *qry = makeNode(Query);
+	ParseNamespaceItem *nsitem;
 	Node	   *qual;
 
 	qry->commandType = CMD_DELETE;
@@ -360,7 +357,15 @@ transformDeleteStmt(ParseState *pstate, DeleteStmt *stmt)
 										 true,
 										 ACL_DELETE);
 
+	/* grab the namespace item made by setTargetTable */
+	nsitem = (ParseNamespaceItem *) llast(pstate->p_namespace);
+
+	/* there's no DISTINCT in DELETE */
 	qry->distinctClause = NIL;
+
+	/* subqueries in USING cannot access the result relation */
+	nsitem->p_lateral_only = true;
+	nsitem->p_lateral_ok = false;
 
 	/*
 	 * The USING clause is non-standard SQL syntax, and is equivalent in
@@ -369,6 +374,10 @@ transformDeleteStmt(ParseState *pstate, DeleteStmt *stmt)
 	 * keyword in the DELETE syntax.
 	 */
 	transformFromClause(pstate, stmt->usingClause);
+
+	/* remaining clauses can reference the result relation normally */
+	nsitem->p_lateral_only = false;
+	nsitem->p_lateral_ok = true;
 
 	qual = transformWhereClause(pstate, stmt->whereClause,
 								EXPR_KIND_WHERE, "WHERE");
@@ -444,7 +453,7 @@ transformInsertStmt(ParseState *pstate, InsertStmt *stmt)
 	/*
 	 * If a non-nil rangetable/namespace was passed in, and we are doing
 	 * INSERT/SELECT, arrange to pass the rangetable/namespace down to the
-	 * SELECT.	This can only happen if we are inside a CREATE RULE, and in
+	 * SELECT.  This can only happen if we are inside a CREATE RULE, and in
 	 * that case we want the rule's OLD and NEW rtable entries to appear as
 	 * part of the SELECT's rtable, not as outer references for it.  (Kluge!)
 	 * The SELECT's joinlist is not affected however.  We must do this before
@@ -629,7 +638,7 @@ transformInsertStmt(ParseState *pstate, InsertStmt *stmt)
 			 * We must assign collations now because assign_query_collations
 			 * doesn't process rangetable entries.  We just assign all the
 			 * collations independently in each row, and don't worry about
-			 * whether they are consistent vertically.	The outer INSERT query
+			 * whether they are consistent vertically.  The outer INSERT query
 			 * isn't going to care about the collations of the VALUES columns,
 			 * so it's not worth the effort to identify a common collation for
 			 * each one here.  (But note this does have one user-visible
@@ -678,7 +687,7 @@ transformInsertStmt(ParseState *pstate, InsertStmt *stmt)
 	else
 	{
 		/*
-		 * Process INSERT ... VALUES with a single VALUES sublist.	We treat
+		 * Process INSERT ... VALUES with a single VALUES sublist.  We treat
 		 * this case separately for efficiency.  The sublist is just computed
 		 * directly as the Query's targetlist, with no VALUES RTE.  So it
 		 * works just like a SELECT without any FROM.
@@ -776,7 +785,7 @@ transformInsertRow(ParseState *pstate, List *exprlist,
 	 * Check length of expr list.  It must not have more expressions than
 	 * there are target columns.  We allow fewer, but only if no explicit
 	 * columns list was given (the remaining columns are implicitly
-	 * defaulted).	Note we must check this *after* transformation because
+	 * defaulted).  Note we must check this *after* transformation because
 	 * that could expand '*' into multiple items.
 	 */
 	if (list_length(exprlist) > list_length(icolumns))
@@ -846,7 +855,7 @@ transformInsertRow(ParseState *pstate, List *exprlist,
  *	  return -1 if expression isn't a RowExpr or a Var referencing one.
  *
  * This is currently used only for hint purposes, so we aren't terribly
- * tense about recognizing all possible cases.	The Var case is interesting
+ * tense about recognizing all possible cases.  The Var case is interesting
  * because that's what we'll get in the INSERT ... SELECT (...) case.
  */
 static int
@@ -1178,7 +1187,7 @@ transformValuesClause(ParseState *pstate, SelectStmt *stmt)
 	/*
 	 * Ordinarily there can't be any current-level Vars in the expression
 	 * lists, because the namespace was empty ... but if we're inside CREATE
-	 * RULE, then NEW/OLD references might appear.	In that case we have to
+	 * RULE, then NEW/OLD references might appear.  In that case we have to
 	 * mark the VALUES RTE as LATERAL.
 	 */
 	if (pstate->p_rtable != NIL &&
@@ -1221,11 +1230,11 @@ transformValuesClause(ParseState *pstate, SelectStmt *stmt)
 	if (stmt->lockingClause)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("%s cannot be applied to VALUES",
 						LCS_asString(((LockingClause *)
-									  linitial(stmt->lockingClause))->strength))));
+								linitial(stmt->lockingClause))->strength))));
 
 	qry->rtable = pstate->p_rtable;
 	qry->jointree = makeFromExpr(pstate->p_joinlist, NULL);
@@ -1316,8 +1325,8 @@ transformSetOperationStmt(ParseState *pstate, SelectStmt *stmt)
 	if (lockingClause)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("%s is not allowed with UNION/INTERSECT/EXCEPT",
 						LCS_asString(((LockingClause *)
 									  linitial(lockingClause))->strength))));
@@ -1400,7 +1409,7 @@ transformSetOperationStmt(ParseState *pstate, SelectStmt *stmt)
 	/*
 	 * As a first step towards supporting sort clauses that are expressions
 	 * using the output columns, generate a namespace entry that makes the
-	 * output columns visible.	A Join RTE node is handy for this, since we
+	 * output columns visible.  A Join RTE node is handy for this, since we
 	 * can easily control the Vars generated upon matches.
 	 *
 	 * Note: we don't yet do anything useful with such cases, but at least
@@ -1480,7 +1489,7 @@ transformSetOperationStmt(ParseState *pstate, SelectStmt *stmt)
  *		Recursively transform leaves and internal nodes of a set-op tree
  *
  * In addition to returning the transformed node, if targetlist isn't NULL
- * then we return a list of its non-resjunk TargetEntry nodes.	For a leaf
+ * then we return a list of its non-resjunk TargetEntry nodes.  For a leaf
  * set-op node these are the actual targetlist entries; otherwise they are
  * dummy entries created to carry the type, typmod, collation, and location
  * (for error messages) of each output column of the set-op node.  This info
@@ -1514,16 +1523,16 @@ transformSetOperationTree(ParseState *pstate, SelectStmt *stmt,
 	if (stmt->lockingClause)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("%s is not allowed with UNION/INTERSECT/EXCEPT",
 						LCS_asString(((LockingClause *)
-									  linitial(stmt->lockingClause))->strength))));
+								linitial(stmt->lockingClause))->strength))));
 
 	/*
 	 * If an internal node of a set-op tree has ORDER BY, LIMIT, FOR UPDATE,
 	 * or WITH clauses attached, we need to treat it like a leaf node to
-	 * generate an independent sub-Query tree.	Otherwise, it can be
+	 * generate an independent sub-Query tree.  Otherwise, it can be
 	 * represented by a SetOperationStmt node underneath the parent Query.
 	 */
 	if (stmt->op == SETOP_NONE)
@@ -1699,7 +1708,7 @@ transformSetOperationTree(ParseState *pstate, SelectStmt *stmt,
 				rescoltypmod = -1;
 
 			/*
-			 * Verify the coercions are actually possible.	If not, we'd fail
+			 * Verify the coercions are actually possible.  If not, we'd fail
 			 * later anyway, but we want to fail now while we have sufficient
 			 * context to produce an error cursor position.
 			 *
@@ -1708,7 +1717,7 @@ transformSetOperationTree(ParseState *pstate, SelectStmt *stmt,
 			 * child query's semantics.
 			 *
 			 * If a child expression is an UNKNOWN-type Const or Param, we
-			 * want to replace it with the coerced expression.	This can only
+			 * want to replace it with the coerced expression.  This can only
 			 * happen when the child is a leaf set-op node.  It's safe to
 			 * replace the expression because if the child query's semantics
 			 * depended on the type of this output column, it'd have already
@@ -1889,6 +1898,7 @@ static Query *
 transformUpdateStmt(ParseState *pstate, UpdateStmt *stmt)
 {
 	Query	   *qry = makeNode(Query);
+	ParseNamespaceItem *nsitem;
 	RangeTblEntry *target_rte;
 	Node	   *qual;
 	ListCell   *origTargetList;
@@ -1910,11 +1920,22 @@ transformUpdateStmt(ParseState *pstate, UpdateStmt *stmt)
 										 true,
 										 ACL_UPDATE);
 
+	/* grab the namespace item made by setTargetTable */
+	nsitem = (ParseNamespaceItem *) llast(pstate->p_namespace);
+
+	/* subqueries in FROM cannot access the result relation */
+	nsitem->p_lateral_only = true;
+	nsitem->p_lateral_ok = false;
+
 	/*
 	 * the FROM clause is non-standard SQL syntax. We used to be able to do
 	 * this with REPLACE in POSTQUEL so we keep the feature.
 	 */
 	transformFromClause(pstate, stmt->fromClause);
+
+	/* remaining clauses can reference the result relation normally */
+	nsitem->p_lateral_only = false;
+	nsitem->p_lateral_ok = true;
 
 	qry->targetList = transformTargetList(pstate, stmt->targetList,
 										  EXPR_KIND_UPDATE_SOURCE);
@@ -2018,6 +2039,19 @@ transformReturningList(ParseState *pstate, List *returningList)
 	/* transform RETURNING identically to a SELECT targetlist */
 	rlist = transformTargetList(pstate, returningList, EXPR_KIND_RETURNING);
 
+	/*
+	 * Complain if the nonempty tlist expanded to nothing (which is possible
+	 * if it contains only a star-expansion of a zero-column table).  If we
+	 * allow this, the parsed Query will look like it didn't have RETURNING,
+	 * with results that would probably surprise the user.
+	 */
+	if (rlist == NIL)
+		ereport(ERROR,
+				(errcode(ERRCODE_SYNTAX_ERROR),
+				 errmsg("RETURNING must have at least one column"),
+				 parser_errposition(pstate,
+									exprLocation(linitial(returningList)))));
+
 	/* mark column origins */
 	markTargetListOrigins(pstate, rlist);
 
@@ -2075,8 +2109,8 @@ transformDeclareCursorStmt(ParseState *pstate, DeclareCursorStmt *stmt)
 	if (result->rowMarks != NIL && (stmt->options & CURSOR_OPT_HOLD))
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("DECLARE CURSOR WITH HOLD ... %s is not supported",
 						LCS_asString(((RowMarkClause *)
 									  linitial(result->rowMarks))->strength)),
@@ -2086,8 +2120,8 @@ transformDeclareCursorStmt(ParseState *pstate, DeclareCursorStmt *stmt)
 	if (result->rowMarks != NIL && (stmt->options & CURSOR_OPT_SCROLL))
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("DECLARE SCROLL CURSOR ... %s is not supported",
 						LCS_asString(((RowMarkClause *)
 									  linitial(result->rowMarks))->strength)),
@@ -2097,8 +2131,8 @@ transformDeclareCursorStmt(ParseState *pstate, DeclareCursorStmt *stmt)
 	if (result->rowMarks != NIL && (stmt->options & CURSOR_OPT_INSENSITIVE))
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("DECLARE INSENSITIVE CURSOR ... %s is not supported",
 						LCS_asString(((RowMarkClause *)
 									  linitial(result->rowMarks))->strength)),
@@ -2182,7 +2216,7 @@ transformCreateTableAsStmt(ParseState *pstate, CreateTableAsStmt *stmt)
 
 		/*
 		 * A materialized view would either need to save parameters for use in
-		 * maintaining/loading the data or prohibit them entirely.	The latter
+		 * maintaining/loading the data or prohibit them entirely.  The latter
 		 * seems safer and more sane.
 		 */
 		if (query_contains_extern_params(query))
@@ -2234,7 +2268,7 @@ LCS_asString(LockClauseStrength strength)
 		case LCS_FORUPDATE:
 			return "FOR UPDATE";
 	}
-	return "FOR some";	/* shouldn't happen */
+	return "FOR some";			/* shouldn't happen */
 }
 
 /*
@@ -2248,50 +2282,50 @@ CheckSelectLocking(Query *qry, LockClauseStrength strength)
 	if (qry->setOperations)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("%s is not allowed with UNION/INTERSECT/EXCEPT",
 						LCS_asString(strength))));
 	if (qry->distinctClause != NIL)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("%s is not allowed with DISTINCT clause",
 						LCS_asString(strength))));
 	if (qry->groupClause != NIL)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("%s is not allowed with GROUP BY clause",
 						LCS_asString(strength))));
 	if (qry->havingQual != NULL)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("%s is not allowed with HAVING clause",
 						LCS_asString(strength))));
 	if (qry->hasAggs)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("%s is not allowed with aggregate functions",
 						LCS_asString(strength))));
 	if (qry->hasWindowFuncs)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("%s is not allowed with window functions",
 						LCS_asString(strength))));
 	if (expression_returns_set((Node *) qry->targetList))
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 /*------
-				   translator: %s is a SQL row locking clause such as FOR UPDATE */
+		/*------
+		  translator: %s is a SQL row locking clause such as FOR UPDATE */
 				 errmsg("%s is not allowed with set-returning functions in the target list",
 						LCS_asString(strength))));
 }
@@ -2369,8 +2403,8 @@ transformLockingClause(ParseState *pstate, Query *qry, LockingClause *lc,
 			if (thisrel->catalogname || thisrel->schemaname)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 /*------
-						   translator: %s is a SQL row locking clause such as FOR UPDATE */
+				/*------
+				  translator: %s is a SQL row locking clause such as FOR UPDATE */
 						 errmsg("%s must specify unqualified relation names",
 								LCS_asString(lc->strength)),
 						 parser_errposition(pstate, thisrel->location)));
@@ -2402,8 +2436,8 @@ transformLockingClause(ParseState *pstate, Query *qry, LockingClause *lc,
 						case RTE_JOIN:
 							ereport(ERROR,
 									(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-									 /*------
-									   translator: %s is a SQL row locking clause such as FOR UPDATE */
+							/*------
+							  translator: %s is a SQL row locking clause such as FOR UPDATE */
 									 errmsg("%s cannot be applied to a join",
 											LCS_asString(lc->strength)),
 							 parser_errposition(pstate, thisrel->location)));
@@ -2411,17 +2445,17 @@ transformLockingClause(ParseState *pstate, Query *qry, LockingClause *lc,
 						case RTE_FUNCTION:
 							ereport(ERROR,
 									(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-									 /*------
-									   translator: %s is a SQL row locking clause such as FOR UPDATE */
-									 errmsg("%s cannot be applied to a function",
-											LCS_asString(lc->strength)),
+							/*------
+							  translator: %s is a SQL row locking clause such as FOR UPDATE */
+								 errmsg("%s cannot be applied to a function",
+										LCS_asString(lc->strength)),
 							 parser_errposition(pstate, thisrel->location)));
 							break;
 						case RTE_VALUES:
 							ereport(ERROR,
 									(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-									 /*------
-									   translator: %s is a SQL row locking clause such as FOR UPDATE */
+							/*------
+							  translator: %s is a SQL row locking clause such as FOR UPDATE */
 									 errmsg("%s cannot be applied to VALUES",
 											LCS_asString(lc->strength)),
 							 parser_errposition(pstate, thisrel->location)));
@@ -2429,10 +2463,10 @@ transformLockingClause(ParseState *pstate, Query *qry, LockingClause *lc,
 						case RTE_CTE:
 							ereport(ERROR,
 									(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-									 /*------
-									   translator: %s is a SQL row locking clause such as FOR UPDATE */
-									 errmsg("%s cannot be applied to a WITH query",
-											LCS_asString(lc->strength)),
+							/*------
+							  translator: %s is a SQL row locking clause such as FOR UPDATE */
+							   errmsg("%s cannot be applied to a WITH query",
+									  LCS_asString(lc->strength)),
 							 parser_errposition(pstate, thisrel->location)));
 							break;
 						default:
@@ -2446,8 +2480,8 @@ transformLockingClause(ParseState *pstate, Query *qry, LockingClause *lc,
 			if (rt == NULL)
 				ereport(ERROR,
 						(errcode(ERRCODE_UNDEFINED_TABLE),
-						 /*------
-						   translator: %s is a SQL row locking clause such as FOR UPDATE */
+				/*------
+				  translator: %s is a SQL row locking clause such as FOR UPDATE */
 						 errmsg("relation \"%s\" in %s clause not found in FROM clause",
 								thisrel->relname,
 								LCS_asString(lc->strength)),

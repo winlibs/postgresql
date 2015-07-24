@@ -80,7 +80,7 @@
  *
  * repl_gram.y				- Parser for the replication commands
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -102,14 +102,6 @@
 /* Result of the parsing is returned here */
 Node *replication_parse_result;
 
-/* Location tracking support --- simpler than bison's default */
-#define YYLLOC_DEFAULT(Current, Rhs, N) \
-	do { \
-		if (N) \
-			(Current) = (Rhs)[1]; \
-		else \
-			(Current) = (Rhs)[0]; \
-	} while (0)
 
 /*
  * Bison doesn't allocate anything that needs to live across parser calls,
@@ -122,13 +114,10 @@ Node *replication_parse_result;
 #define YYMALLOC palloc
 #define YYFREE   pfree
 
-#define parser_yyerror(msg)  replication_yyerror(msg, yyscanner)
-#define parser_errposition(pos)  replication_scanner_errposition(pos)
-
 
 
 /* Line 268 of yacc.c  */
-#line 132 "repl_gram.c"
+#line 121 "repl_gram.c"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -156,18 +145,25 @@ Node *replication_parse_result;
       know about them.  */
    enum yytokentype {
      SCONST = 258,
-     UCONST = 259,
-     RECPTR = 260,
-     K_BASE_BACKUP = 261,
-     K_IDENTIFY_SYSTEM = 262,
-     K_START_REPLICATION = 263,
-     K_TIMELINE_HISTORY = 264,
-     K_LABEL = 265,
-     K_PROGRESS = 266,
-     K_FAST = 267,
-     K_NOWAIT = 268,
-     K_WAL = 269,
-     K_TIMELINE = 270
+     IDENT = 259,
+     UCONST = 260,
+     RECPTR = 261,
+     K_BASE_BACKUP = 262,
+     K_IDENTIFY_SYSTEM = 263,
+     K_START_REPLICATION = 264,
+     K_CREATE_REPLICATION_SLOT = 265,
+     K_DROP_REPLICATION_SLOT = 266,
+     K_TIMELINE_HISTORY = 267,
+     K_LABEL = 268,
+     K_PROGRESS = 269,
+     K_FAST = 270,
+     K_NOWAIT = 271,
+     K_MAX_RATE = 272,
+     K_WAL = 273,
+     K_TIMELINE = 274,
+     K_PHYSICAL = 275,
+     K_LOGICAL = 276,
+     K_SLOT = 277
    };
 #endif
 
@@ -178,7 +174,7 @@ typedef union YYSTYPE
 {
 
 /* Line 293 of yacc.c  */
-#line 56 "repl_gram.y"
+#line 45 "repl_gram.y"
 
 		char					*str;
 		bool					boolval;
@@ -192,7 +188,7 @@ typedef union YYSTYPE
 
 
 /* Line 293 of yacc.c  */
-#line 196 "repl_gram.c"
+#line 192 "repl_gram.c"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -204,7 +200,7 @@ typedef union YYSTYPE
 
 
 /* Line 343 of yacc.c  */
-#line 208 "repl_gram.c"
+#line 204 "repl_gram.c"
 
 #ifdef short
 # undef short
@@ -421,22 +417,22 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  14
+#define YYFINAL  22
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   15
+#define YYLAST   35
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  17
+#define YYNTOKENS  27
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  11
+#define YYNNTS  20
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  21
+#define YYNRULES  40
 /* YYNRULES -- Number of states.  */
-#define YYNSTATES  27
+#define YYNSTATES  56
 
 /* YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   270
+#define YYMAXUTOK   277
 
 #define YYTRANSLATE(YYX)						\
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -448,8 +444,8 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,    16,
+      24,    25,     2,     2,    26,     2,     2,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,    23,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -471,7 +467,7 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15
+      15,    16,    17,    18,    19,    20,    21,    22
 };
 
 #if YYDEBUG
@@ -480,26 +476,36 @@ static const yytype_uint8 yytranslate[] =
 static const yytype_uint8 yyprhs[] =
 {
        0,     0,     3,     6,     8,     9,    11,    13,    15,    17,
-      19,    22,    25,    26,    29,    31,    33,    35,    37,    41,
-      44,    45
+      19,    21,    23,    25,    28,    31,    32,    35,    37,    39,
+      41,    43,    46,    50,    55,    58,    64,    71,    74,    76,
+      77,    80,    81,    84,    85,    89,    90,    92,    96,    99,
+     101
 };
 
 /* YYRHS -- A `-1'-separated list of the rules' RHS.  */
 static const yytype_int8 yyrhs[] =
 {
-      18,     0,    -1,    20,    19,    -1,    16,    -1,    -1,    21,
-      -1,    22,    -1,    25,    -1,    27,    -1,     7,    -1,     6,
-      23,    -1,    23,    24,    -1,    -1,    10,     3,    -1,    11,
-      -1,    12,    -1,    14,    -1,    13,    -1,     8,     5,    26,
-      -1,    15,     4,    -1,    -1,     9,     4,    -1
+      28,     0,    -1,    30,    29,    -1,    23,    -1,    -1,    31,
+      -1,    32,    -1,    37,    -1,    38,    -1,    35,    -1,    36,
+      -1,    39,    -1,     8,    -1,     7,    33,    -1,    33,    34,
+      -1,    -1,    13,     3,    -1,    14,    -1,    15,    -1,    18,
+      -1,    16,    -1,    17,     5,    -1,    10,     4,    20,    -1,
+      10,     4,    21,     4,    -1,    11,     4,    -1,     9,    41,
+      40,     6,    42,    -1,     9,    22,     4,    21,     6,    43,
+      -1,    12,     5,    -1,    20,    -1,    -1,    22,     4,    -1,
+      -1,    19,     5,    -1,    -1,    24,    44,    25,    -1,    -1,
+      45,    -1,    44,    26,    45,    -1,     4,    46,    -1,     3,
+      -1,    -1
 };
 
 /* YYRLINE[YYN] -- source line where rule number YYN was defined.  */
-static const yytype_uint8 yyrline[] =
+static const yytype_uint16 yyrline[] =
 {
-       0,    91,    91,    97,    98,   102,   103,   104,   105,   112,
-     122,   130,   131,   134,   139,   144,   149,   154,   165,   178,
-     186,   193
+       0,    91,    91,    97,    98,   102,   103,   104,   105,   106,
+     107,   108,   115,   125,   134,   137,   141,   146,   151,   156,
+     161,   166,   175,   184,   197,   210,   225,   240,   257,   258,
+     262,   265,   269,   277,   282,   283,   287,   291,   298,   305,
+     306
 };
 #endif
 
@@ -508,13 +514,17 @@ static const yytype_uint8 yyrline[] =
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "SCONST", "UCONST", "RECPTR",
+  "$end", "error", "$undefined", "SCONST", "IDENT", "UCONST", "RECPTR",
   "K_BASE_BACKUP", "K_IDENTIFY_SYSTEM", "K_START_REPLICATION",
+  "K_CREATE_REPLICATION_SLOT", "K_DROP_REPLICATION_SLOT",
   "K_TIMELINE_HISTORY", "K_LABEL", "K_PROGRESS", "K_FAST", "K_NOWAIT",
-  "K_WAL", "K_TIMELINE", "';'", "$accept", "firstcmd", "opt_semicolon",
+  "K_MAX_RATE", "K_WAL", "K_TIMELINE", "K_PHYSICAL", "K_LOGICAL", "K_SLOT",
+  "';'", "'('", "')'", "','", "$accept", "firstcmd", "opt_semicolon",
   "command", "identify_system", "base_backup", "base_backup_opt_list",
-  "base_backup_opt", "start_replication", "opt_timeline",
-  "timeline_history", 0
+  "base_backup_opt", "create_replication_slot", "drop_replication_slot",
+  "start_replication", "start_logical_replication", "timeline_history",
+  "opt_physical", "opt_slot", "opt_timeline", "plugin_options",
+  "plugin_opt_list", "plugin_opt_elem", "plugin_opt_arg", 0
 };
 #endif
 
@@ -524,24 +534,29 @@ static const char *const yytname[] =
 static const yytype_uint16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,    59
+     265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
+     275,   276,   277,    59,    40,    41,    44
 };
 # endif
 
 /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    17,    18,    19,    19,    20,    20,    20,    20,    21,
-      22,    23,    23,    24,    24,    24,    24,    24,    25,    26,
-      26,    27
+       0,    27,    28,    29,    29,    30,    30,    30,    30,    30,
+      30,    30,    31,    32,    33,    33,    34,    34,    34,    34,
+      34,    34,    35,    35,    36,    37,    38,    39,    40,    40,
+      41,    41,    42,    42,    43,    43,    44,    44,    45,    46,
+      46
 };
 
 /* YYR2[YYN] -- Number of symbols composing right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
        0,     2,     2,     1,     0,     1,     1,     1,     1,     1,
-       2,     2,     0,     2,     1,     1,     1,     1,     3,     2,
-       0,     2
+       1,     1,     1,     2,     2,     0,     2,     1,     1,     1,
+       1,     2,     3,     4,     2,     5,     6,     2,     1,     0,
+       2,     0,     2,     0,     3,     0,     1,     3,     2,     1,
+       0
 };
 
 /* YYDEFACT[STATE-NAME] -- Default reduction number in state STATE-NUM.
@@ -549,33 +564,39 @@ static const yytype_uint8 yyr2[] =
    means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,    12,     9,     0,     0,     0,     4,     5,     6,     7,
-       8,    10,    20,    21,     1,     3,     2,     0,    14,    15,
-      17,    16,    11,     0,    18,    13,    19
+       0,    15,    12,    31,     0,     0,     0,     0,     4,     5,
+       6,     9,    10,     7,     8,    11,    13,     0,    29,     0,
+      24,    27,     1,     3,     2,     0,    17,    18,    20,     0,
+      19,    14,    30,    28,     0,    22,     0,    16,    21,     0,
+      33,    23,    35,     0,    25,     0,    26,    32,    40,     0,
+      36,    39,    38,    34,     0,    37
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     5,    16,     6,     7,     8,    11,    22,     9,    24,
-      10
+      -1,     7,    24,     8,     9,    10,    16,    31,    11,    12,
+      13,    14,    15,    34,    18,    44,    46,    49,    50,    52
 };
 
 /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
    STATE-NUM.  */
-#define YYPACT_NINF -11
+#define YYPACT_NINF -20
 static const yytype_int8 yypact[] =
 {
-      -1,   -11,   -11,     4,     6,    11,    -4,   -11,   -11,   -11,
-     -11,   -10,    -2,   -11,   -11,   -11,   -11,    12,   -11,   -11,
-     -11,   -11,   -11,    10,   -11,   -11,   -11
+      -7,   -20,   -20,   -16,    13,    14,    15,    19,    -2,   -20,
+     -20,   -20,   -20,   -20,   -20,   -20,    -6,    18,     3,    -5,
+     -20,   -20,   -20,   -20,   -20,    21,   -20,   -20,   -20,    20,
+     -20,   -20,     5,   -20,    22,   -20,    23,   -20,   -20,    24,
+      10,   -20,     7,    27,   -20,    29,   -20,   -20,    31,   -12,
+     -20,   -20,   -20,   -20,    29,   -20
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -11,   -11,   -11,   -11,   -11,   -11,   -11,   -11,   -11,   -11,
-     -11
+     -20,   -20,   -20,   -20,   -20,   -20,   -20,   -20,   -20,   -20,
+     -20,   -20,   -20,   -20,   -20,   -20,   -20,   -20,   -19,   -20
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]].  What to do in state STATE-NUM.  If
@@ -584,29 +605,36 @@ static const yytype_int8 yypgoto[] =
 #define YYTABLE_NINF -1
 static const yytype_uint8 yytable[] =
 {
-      17,    18,    19,    20,    21,     1,     2,     3,     4,    12,
-      13,    14,    15,    23,    26,    25
+       1,     2,     3,     4,     5,     6,    17,    25,    26,    27,
+      28,    29,    30,    53,    54,    35,    36,    19,    20,    22,
+      21,    23,    32,    33,    37,    38,    39,    41,    40,    43,
+      42,    45,    47,    48,    51,    55
 };
 
 #define yypact_value_is_default(yystate) \
-  ((yystate) == (-11))
+  ((yystate) == (-20))
 
 #define yytable_value_is_error(yytable_value) \
   YYID (0)
 
 static const yytype_uint8 yycheck[] =
 {
-      10,    11,    12,    13,    14,     6,     7,     8,     9,     5,
-       4,     0,    16,    15,     4,     3
+       7,     8,     9,    10,    11,    12,    22,    13,    14,    15,
+      16,    17,    18,    25,    26,    20,    21,     4,     4,     0,
+       5,    23,     4,    20,     3,     5,    21,     4,     6,    19,
+       6,    24,     5,     4,     3,    54
 };
 
 /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
    symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,     6,     7,     8,     9,    18,    20,    21,    22,    25,
-      27,    23,     5,     4,     0,    16,    19,    10,    11,    12,
-      13,    14,    24,    15,    26,     3,     4
+       0,     7,     8,     9,    10,    11,    12,    28,    30,    31,
+      32,    35,    36,    37,    38,    39,    33,    22,    41,     4,
+       4,     5,     0,    23,    29,    13,    14,    15,    16,    17,
+      18,    34,     4,    20,    40,    20,    21,     3,     5,    21,
+       6,     4,     6,    19,    42,    24,    43,     5,     4,    44,
+      45,     3,    46,    25,    26,    45
 };
 
 #define yyerrok		(yyerrstatus = 0)
@@ -1449,19 +1477,19 @@ yyreduce:
 				}
     break;
 
-  case 9:
+  case 12:
 
 /* Line 1806 of yacc.c  */
-#line 113 "repl_gram.y"
+#line 116 "repl_gram.y"
     {
 					(yyval.node) = (Node *) makeNode(IdentifySystemCmd);
 				}
     break;
 
-  case 10:
+  case 13:
 
 /* Line 1806 of yacc.c  */
-#line 123 "repl_gram.y"
+#line 126 "repl_gram.y"
     {
 					BaseBackupCmd *cmd = (BaseBackupCmd *) makeNode(BaseBackupCmd);
 					cmd->options = (yyvsp[(2) - (2)].list);
@@ -1469,109 +1497,154 @@ yyreduce:
 				}
     break;
 
-  case 11:
-
-/* Line 1806 of yacc.c  */
-#line 130 "repl_gram.y"
-    { (yyval.list) = lappend((yyvsp[(1) - (2)].list), (yyvsp[(2) - (2)].defelt)); }
-    break;
-
-  case 12:
-
-/* Line 1806 of yacc.c  */
-#line 131 "repl_gram.y"
-    { (yyval.list) = NIL; }
-    break;
-
-  case 13:
-
-/* Line 1806 of yacc.c  */
-#line 135 "repl_gram.y"
-    {
-				  (yyval.defelt) = makeDefElem("label",
-						   (Node *)makeString((yyvsp[(2) - (2)].str)));
-				}
-    break;
-
   case 14:
 
 /* Line 1806 of yacc.c  */
-#line 140 "repl_gram.y"
-    {
-				  (yyval.defelt) = makeDefElem("progress",
-						   (Node *)makeInteger(TRUE));
-				}
+#line 135 "repl_gram.y"
+    { (yyval.list) = lappend((yyvsp[(1) - (2)].list), (yyvsp[(2) - (2)].defelt)); }
     break;
 
   case 15:
 
 /* Line 1806 of yacc.c  */
-#line 145 "repl_gram.y"
-    {
-				  (yyval.defelt) = makeDefElem("fast",
-						   (Node *)makeInteger(TRUE));
-				}
+#line 137 "repl_gram.y"
+    { (yyval.list) = NIL; }
     break;
 
   case 16:
 
 /* Line 1806 of yacc.c  */
-#line 150 "repl_gram.y"
+#line 142 "repl_gram.y"
     {
-				  (yyval.defelt) = makeDefElem("wal",
-						   (Node *)makeInteger(TRUE));
+				  (yyval.defelt) = makeDefElem("label",
+								   (Node *)makeString((yyvsp[(2) - (2)].str)));
 				}
     break;
 
   case 17:
 
 /* Line 1806 of yacc.c  */
-#line 155 "repl_gram.y"
+#line 147 "repl_gram.y"
     {
-				  (yyval.defelt) = makeDefElem("nowait",
-						   (Node *)makeInteger(TRUE));
+				  (yyval.defelt) = makeDefElem("progress",
+								   (Node *)makeInteger(TRUE));
 				}
     break;
 
   case 18:
 
 /* Line 1806 of yacc.c  */
-#line 166 "repl_gram.y"
+#line 152 "repl_gram.y"
     {
-					StartReplicationCmd *cmd;
-
-					cmd = makeNode(StartReplicationCmd);
-					cmd->startpoint = (yyvsp[(2) - (3)].recptr);
-					cmd->timeline = (yyvsp[(3) - (3)].uintval);
-
-					(yyval.node) = (Node *) cmd;
+				  (yyval.defelt) = makeDefElem("fast",
+								   (Node *)makeInteger(TRUE));
 				}
     break;
 
   case 19:
 
 /* Line 1806 of yacc.c  */
-#line 179 "repl_gram.y"
+#line 157 "repl_gram.y"
     {
-					if ((yyvsp[(2) - (2)].uintval) <= 0)
-						ereport(ERROR,
-								(errcode(ERRCODE_SYNTAX_ERROR),
-								 (errmsg("invalid timeline %u", (yyvsp[(2) - (2)].uintval)))));
-					(yyval.uintval) = (yyvsp[(2) - (2)].uintval);
+				  (yyval.defelt) = makeDefElem("wal",
+								   (Node *)makeInteger(TRUE));
 				}
     break;
 
   case 20:
 
 /* Line 1806 of yacc.c  */
-#line 186 "repl_gram.y"
-    { (yyval.uintval) = 0; }
+#line 162 "repl_gram.y"
+    {
+				  (yyval.defelt) = makeDefElem("nowait",
+								   (Node *)makeInteger(TRUE));
+				}
     break;
 
   case 21:
 
 /* Line 1806 of yacc.c  */
-#line 194 "repl_gram.y"
+#line 167 "repl_gram.y"
+    {
+				  (yyval.defelt) = makeDefElem("max_rate",
+								   (Node *)makeInteger((yyvsp[(2) - (2)].uintval)));
+				}
+    break;
+
+  case 22:
+
+/* Line 1806 of yacc.c  */
+#line 176 "repl_gram.y"
+    {
+					CreateReplicationSlotCmd *cmd;
+					cmd = makeNode(CreateReplicationSlotCmd);
+					cmd->kind = REPLICATION_KIND_PHYSICAL;
+					cmd->slotname = (yyvsp[(2) - (3)].str);
+					(yyval.node) = (Node *) cmd;
+				}
+    break;
+
+  case 23:
+
+/* Line 1806 of yacc.c  */
+#line 185 "repl_gram.y"
+    {
+					CreateReplicationSlotCmd *cmd;
+					cmd = makeNode(CreateReplicationSlotCmd);
+					cmd->kind = REPLICATION_KIND_LOGICAL;
+					cmd->slotname = (yyvsp[(2) - (4)].str);
+					cmd->plugin = (yyvsp[(4) - (4)].str);
+					(yyval.node) = (Node *) cmd;
+				}
+    break;
+
+  case 24:
+
+/* Line 1806 of yacc.c  */
+#line 198 "repl_gram.y"
+    {
+					DropReplicationSlotCmd *cmd;
+					cmd = makeNode(DropReplicationSlotCmd);
+					cmd->slotname = (yyvsp[(2) - (2)].str);
+					(yyval.node) = (Node *) cmd;
+				}
+    break;
+
+  case 25:
+
+/* Line 1806 of yacc.c  */
+#line 211 "repl_gram.y"
+    {
+					StartReplicationCmd *cmd;
+
+					cmd = makeNode(StartReplicationCmd);
+					cmd->kind = REPLICATION_KIND_PHYSICAL;
+					cmd->slotname = (yyvsp[(2) - (5)].str);
+					cmd->startpoint = (yyvsp[(4) - (5)].recptr);
+					cmd->timeline = (yyvsp[(5) - (5)].uintval);
+					(yyval.node) = (Node *) cmd;
+				}
+    break;
+
+  case 26:
+
+/* Line 1806 of yacc.c  */
+#line 226 "repl_gram.y"
+    {
+					StartReplicationCmd *cmd;
+					cmd = makeNode(StartReplicationCmd);
+					cmd->kind = REPLICATION_KIND_LOGICAL;
+					cmd->slotname = (yyvsp[(3) - (6)].str);
+					cmd->startpoint = (yyvsp[(5) - (6)].recptr);
+					cmd->options = (yyvsp[(6) - (6)].list);
+					(yyval.node) = (Node *) cmd;
+				}
+    break;
+
+  case 27:
+
+/* Line 1806 of yacc.c  */
+#line 241 "repl_gram.y"
     {
 					TimeLineHistoryCmd *cmd;
 
@@ -1587,10 +1660,99 @@ yyreduce:
 				}
     break;
 
+  case 30:
+
+/* Line 1806 of yacc.c  */
+#line 263 "repl_gram.y"
+    { (yyval.str) = (yyvsp[(2) - (2)].str); }
+    break;
+
+  case 31:
+
+/* Line 1806 of yacc.c  */
+#line 265 "repl_gram.y"
+    { (yyval.str) = NULL; }
+    break;
+
+  case 32:
+
+/* Line 1806 of yacc.c  */
+#line 270 "repl_gram.y"
+    {
+					if ((yyvsp[(2) - (2)].uintval) <= 0)
+						ereport(ERROR,
+								(errcode(ERRCODE_SYNTAX_ERROR),
+								 (errmsg("invalid timeline %u", (yyvsp[(2) - (2)].uintval)))));
+					(yyval.uintval) = (yyvsp[(2) - (2)].uintval);
+				}
+    break;
+
+  case 33:
+
+/* Line 1806 of yacc.c  */
+#line 277 "repl_gram.y"
+    { (yyval.uintval) = 0; }
+    break;
+
+  case 34:
+
+/* Line 1806 of yacc.c  */
+#line 282 "repl_gram.y"
+    { (yyval.list) = (yyvsp[(2) - (3)].list); }
+    break;
+
+  case 35:
+
+/* Line 1806 of yacc.c  */
+#line 283 "repl_gram.y"
+    { (yyval.list) = NIL; }
+    break;
+
+  case 36:
+
+/* Line 1806 of yacc.c  */
+#line 288 "repl_gram.y"
+    {
+					(yyval.list) = list_make1((yyvsp[(1) - (1)].defelt));
+				}
+    break;
+
+  case 37:
+
+/* Line 1806 of yacc.c  */
+#line 292 "repl_gram.y"
+    {
+					(yyval.list) = lappend((yyvsp[(1) - (3)].list), (yyvsp[(3) - (3)].defelt));
+				}
+    break;
+
+  case 38:
+
+/* Line 1806 of yacc.c  */
+#line 299 "repl_gram.y"
+    {
+					(yyval.defelt) = makeDefElem((yyvsp[(1) - (2)].str), (yyvsp[(2) - (2)].node));
+				}
+    break;
+
+  case 39:
+
+/* Line 1806 of yacc.c  */
+#line 305 "repl_gram.y"
+    { (yyval.node) = (Node *) makeString((yyvsp[(1) - (1)].str)); }
+    break;
+
+  case 40:
+
+/* Line 1806 of yacc.c  */
+#line 306 "repl_gram.y"
+    { (yyval.node) = NULL; }
+    break;
+
 
 
 /* Line 1806 of yacc.c  */
-#line 1594 "repl_gram.c"
+#line 1756 "repl_gram.c"
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1821,7 +1983,7 @@ yyreturn:
 
 
 /* Line 2067 of yacc.c  */
-#line 208 "repl_gram.y"
+#line 308 "repl_gram.y"
 
 
 #include "repl_scanner.c"

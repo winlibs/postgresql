@@ -13,7 +13,7 @@
  *	plan --- consider improving this someday.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  *
  * src/backend/utils/adt/ri_triggers.c
  *
@@ -43,6 +43,7 @@
 #include "parser/parse_coerce.h"
 #include "parser/parse_relation.h"
 #include "miscadmin.h"
+#include "utils/acl.h"
 #include "utils/builtins.h"
 #include "utils/fmgroids.h"
 #include "utils/guc.h"
@@ -427,7 +428,7 @@ RI_FKey_check(TriggerData *trigdata)
 			querysep = "AND";
 			queryoids[i] = fk_type;
 		}
-		appendStringInfo(&querybuf, " FOR KEY SHARE OF x");
+		appendStringInfoString(&querybuf, " FOR KEY SHARE OF x");
 
 		/* Prepare and save the plan */
 		qplan = ri_PlanCheck(querybuf.data, riinfo->nkeys, queryoids,
@@ -562,7 +563,7 @@ ri_Check_Pk_Match(Relation pk_rel, Relation fk_rel,
 			querysep = "AND";
 			queryoids[i] = pk_type;
 		}
-		appendStringInfo(&querybuf, " FOR KEY SHARE OF x");
+		appendStringInfoString(&querybuf, " FOR KEY SHARE OF x");
 
 		/* Prepare and save the plan */
 		qplan = ri_PlanCheck(querybuf.data, riinfo->nkeys, queryoids,
@@ -698,7 +699,7 @@ ri_restrict_del(TriggerData *trigdata, bool is_no_action)
 
 			/*
 			 * If another PK row now exists providing the old key values, we
-			 * should not do anything.	However, this check should only be
+			 * should not do anything.  However, this check should only be
 			 * made in the NO ACTION case; in RESTRICT cases we don't wish to
 			 * allow another row to be substituted.
 			 */
@@ -754,7 +755,7 @@ ri_restrict_del(TriggerData *trigdata, bool is_no_action)
 					querysep = "AND";
 					queryoids[i] = pk_type;
 				}
-				appendStringInfo(&querybuf, " FOR KEY SHARE OF x");
+				appendStringInfoString(&querybuf, " FOR KEY SHARE OF x");
 
 				/* Prepare and save the plan */
 				qplan = ri_PlanCheck(querybuf.data, riinfo->nkeys, queryoids,
@@ -922,7 +923,7 @@ ri_restrict_upd(TriggerData *trigdata, bool is_no_action)
 
 			/*
 			 * If another PK row now exists providing the old key values, we
-			 * should not do anything.	However, this check should only be
+			 * should not do anything.  However, this check should only be
 			 * made in the NO ACTION case; in RESTRICT cases we don't wish to
 			 * allow another row to be substituted.
 			 */
@@ -977,7 +978,7 @@ ri_restrict_upd(TriggerData *trigdata, bool is_no_action)
 					querysep = "AND";
 					queryoids[i] = pk_type;
 				}
-				appendStringInfo(&querybuf, " FOR KEY SHARE OF x");
+				appendStringInfoString(&querybuf, " FOR KEY SHARE OF x");
 
 				/* Prepare and save the plan */
 				qplan = ri_PlanCheck(querybuf.data, riinfo->nkeys, queryoids,
@@ -1850,7 +1851,7 @@ RI_FKey_setdefault_del(PG_FUNCTION_ARGS)
 			 * believe no check is necessary.  So we need to do another lookup
 			 * now and in case a reference still exists, abort the operation.
 			 * That is already implemented in the NO ACTION trigger, so just
-			 * run it.	(This recheck is only needed in the SET DEFAULT case,
+			 * run it.  (This recheck is only needed in the SET DEFAULT case,
 			 * since CASCADE would remove such rows, while SET NULL is certain
 			 * to result in rows that satisfy the FK constraint.)
 			 */
@@ -2041,7 +2042,7 @@ RI_FKey_setdefault_upd(PG_FUNCTION_ARGS)
 			 * believe no check is necessary.  So we need to do another lookup
 			 * now and in case a reference still exists, abort the operation.
 			 * That is already implemented in the NO ACTION trigger, so just
-			 * run it.	(This recheck is only needed in the SET DEFAULT case,
+			 * run it.  (This recheck is only needed in the SET DEFAULT case,
 			 * since CASCADE must change the FK key values, while SET NULL is
 			 * certain to result in rows that satisfy the FK constraint.)
 			 */
@@ -2319,7 +2320,7 @@ RI_Initial_Check(Trigger *trigger, Relation fk_rel, Relation pk_rel)
 	 *----------
 	 */
 	initStringInfo(&querybuf);
-	appendStringInfo(&querybuf, "SELECT ");
+	appendStringInfoString(&querybuf, "SELECT ");
 	sep = "";
 	for (i = 0; i < riinfo->nkeys; i++)
 	{
@@ -2391,13 +2392,13 @@ RI_Initial_Check(Trigger *trigger, Relation fk_rel, Relation pk_rel)
 				break;
 		}
 	}
-	appendStringInfo(&querybuf, ")");
+	appendStringInfoChar(&querybuf, ')');
 
 	/*
 	 * Temporarily increase work_mem so that the check query can be executed
 	 * more efficiently.  It seems okay to do this because the query is simple
 	 * enough to not use a multiple of work_mem, and one typically would not
-	 * have many large foreign-key validations happening concurrently.	So
+	 * have many large foreign-key validations happening concurrently.  So
 	 * this seems to meet the criteria for being considered a "maintenance"
 	 * operation, and accordingly we use maintenance_work_mem.
 	 *
@@ -2451,7 +2452,7 @@ RI_Initial_Check(Trigger *trigger, Relation fk_rel, Relation pk_rel)
 
 		/*
 		 * The columns to look at in the result tuple are 1..N, not whatever
-		 * they are in the fk_rel.	Hack up riinfo so that the subroutines
+		 * they are in the fk_rel.  Hack up riinfo so that the subroutines
 		 * called here will behave properly.
 		 *
 		 * In addition to this, we have to pass the correct tupdesc to
@@ -2934,7 +2935,8 @@ InvalidateConstraintCacheCallBack(Datum arg, int cacheid, uint32 hashvalue)
 	hash_seq_init(&status, ri_constraint_cache);
 	while ((hentry = (RI_ConstraintInfo *) hash_seq_search(&status)) != NULL)
 	{
-		if (hashvalue == 0 || hentry->oidHashValue == hashvalue)
+		if (hentry->valid &&
+			(hashvalue == 0 || hentry->oidHashValue == hashvalue))
 			hentry->valid = false;
 	}
 }
@@ -3169,6 +3171,9 @@ ri_ReportViolation(const RI_ConstraintInfo *riinfo,
 	bool		onfk;
 	const int16 *attnums;
 	int			idx;
+	Oid			rel_oid;
+	AclResult	aclresult;
+	bool		has_perm = true;
 
 	if (spi_err)
 		ereport(ERROR,
@@ -3180,44 +3185,75 @@ ri_ReportViolation(const RI_ConstraintInfo *riinfo,
 				 errhint("This is most likely due to a rule having rewritten the query.")));
 
 	/*
-	 * Determine which relation to complain about.	If tupdesc wasn't passed
+	 * Determine which relation to complain about.  If tupdesc wasn't passed
 	 * by caller, assume the violator tuple came from there.
 	 */
 	onfk = (queryno == RI_PLAN_CHECK_LOOKUPPK);
 	if (onfk)
 	{
 		attnums = riinfo->fk_attnums;
+		rel_oid = fk_rel->rd_id;
 		if (tupdesc == NULL)
 			tupdesc = fk_rel->rd_att;
 	}
 	else
 	{
 		attnums = riinfo->pk_attnums;
+		rel_oid = pk_rel->rd_id;
 		if (tupdesc == NULL)
 			tupdesc = pk_rel->rd_att;
 	}
 
-	/* Get printable versions of the keys involved */
-	initStringInfo(&key_names);
-	initStringInfo(&key_values);
-	for (idx = 0; idx < riinfo->nkeys; idx++)
+	/*
+	 * Check permissions- if the user does not have access to view the data in
+	 * any of the key columns then we don't include the errdetail() below.
+	 *
+	 * Check table-level permissions first and, failing that, column-level
+	 * privileges.
+	 */
+	aclresult = pg_class_aclcheck(rel_oid, GetUserId(), ACL_SELECT);
+	if (aclresult != ACLCHECK_OK)
 	{
-		int			fnum = attnums[idx];
-		char	   *name,
+		/* Try for column-level permissions */
+		for (idx = 0; idx < riinfo->nkeys; idx++)
+		{
+			aclresult = pg_attribute_aclcheck(rel_oid, attnums[idx],
+											  GetUserId(),
+											  ACL_SELECT);
+
+			/* No access to the key */
+			if (aclresult != ACLCHECK_OK)
+			{
+				has_perm = false;
+				break;
+			}
+		}
+	}
+
+	if (has_perm)
+	{
+		/* Get printable versions of the keys involved */
+		initStringInfo(&key_names);
+		initStringInfo(&key_values);
+		for (idx = 0; idx < riinfo->nkeys; idx++)
+		{
+			int			fnum = attnums[idx];
+			char	   *name,
 				   *val;
 
-		name = SPI_fname(tupdesc, fnum);
-		val = SPI_getvalue(violator, tupdesc, fnum);
-		if (!val)
-			val = "null";
+			name = SPI_fname(tupdesc, fnum);
+			val = SPI_getvalue(violator, tupdesc, fnum);
+			if (!val)
+				val = "null";
 
-		if (idx > 0)
-		{
-			appendStringInfoString(&key_names, ", ");
-			appendStringInfoString(&key_values, ", ");
+			if (idx > 0)
+			{
+				appendStringInfoString(&key_names, ", ");
+				appendStringInfoString(&key_values, ", ");
+			}
+			appendStringInfoString(&key_names, name);
+			appendStringInfoString(&key_values, val);
 		}
-		appendStringInfoString(&key_names, name);
-		appendStringInfoString(&key_values, val);
 	}
 
 	if (onfk)
@@ -3226,9 +3262,12 @@ ri_ReportViolation(const RI_ConstraintInfo *riinfo,
 				 errmsg("insert or update on table \"%s\" violates foreign key constraint \"%s\"",
 						RelationGetRelationName(fk_rel),
 						NameStr(riinfo->conname)),
-				 errdetail("Key (%s)=(%s) is not present in table \"%s\".",
-						   key_names.data, key_values.data,
-						   RelationGetRelationName(pk_rel)),
+				 has_perm ?
+					 errdetail("Key (%s)=(%s) is not present in table \"%s\".",
+							   key_names.data, key_values.data,
+							   RelationGetRelationName(pk_rel)) :
+					 errdetail("Key is not present in table \"%s\".",
+							   RelationGetRelationName(pk_rel)),
 				 errtableconstraint(fk_rel, NameStr(riinfo->conname))));
 	else
 		ereport(ERROR,
@@ -3237,8 +3276,11 @@ ri_ReportViolation(const RI_ConstraintInfo *riinfo,
 						RelationGetRelationName(pk_rel),
 						NameStr(riinfo->conname),
 						RelationGetRelationName(fk_rel)),
+				 has_perm ?
 			errdetail("Key (%s)=(%s) is still referenced from table \"%s\".",
 					  key_names.data, key_values.data,
+					  RelationGetRelationName(fk_rel)) :
+					errdetail("Key is still referenced from table \"%s\".",
 					  RelationGetRelationName(fk_rel)),
 				 errtableconstraint(fk_rel, NameStr(riinfo->conname))));
 }
@@ -3586,8 +3628,7 @@ ri_HashCompareOp(Oid eq_opr, Oid typeid)
 				 * special cases such as RECORD; find_coercion_pathway
 				 * currently doesn't subsume these special cases.
 				 */
-				if (!IsPolymorphicType(lefttype) &&
-					!IsBinaryCoercible(typeid, lefttype))
+				if (!IsBinaryCoercible(typeid, lefttype))
 					elog(ERROR, "no conversion function from %s to %s",
 						 format_type_be(typeid),
 						 format_type_be(lefttype));

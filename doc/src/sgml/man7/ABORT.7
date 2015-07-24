@@ -2,12 +2,12 @@
 .\"     Title: ABORT
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "ABORT" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "ABORT" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 ABORT \- abort the current transaction
-.\" ABORT
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -45,7 +44,9 @@ command
 \fBROLLBACK\fR(7), and is present only for historical reasons\&.
 .SH "PARAMETERS"
 .PP
-WORK, TRANSACTION
+WORK
+.br
+TRANSACTION
 .RS 4
 Optional key words\&. They have no effect\&.
 .RE
@@ -57,7 +58,7 @@ to successfully terminate a transaction\&.
 .PP
 Issuing
 \fBABORT\fR
-when not inside a transaction does no harm, but it will provoke a warning message\&.
+outside of a transaction block emits a warning and otherwise has no effect\&.
 .SH "EXAMPLES"
 .PP
 To abort all changes:

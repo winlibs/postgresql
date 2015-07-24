@@ -2,12 +2,12 @@
 .\"     Title: DECLARE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "DECLARE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "DECLARE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,8 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 DECLARE \- define a cursor
-.\" DECLARE
-.\" cursor: DECLARE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -80,7 +78,9 @@ Indicates that data retrieved from the cursor should be unaffected by updates to
 PostgreSQL, this is the default behavior; so this key word has no effect and is only accepted for compatibility with the SQL standard\&.
 .RE
 .PP
-SCROLL, NO SCROLL
+SCROLL
+.br
+NO SCROLL
 .RS 4
 SCROLL
 specifies that the cursor can be used to retrieve rows in a nonsequential fashion (e\&.g\&., backward)\&. Depending upon the complexity of the query\*(Aqs execution plan, specifying
@@ -93,7 +93,9 @@ NOTES
 for details\&.
 .RE
 .PP
-WITH HOLD, WITHOUT HOLD
+WITH HOLD
+.br
+WITHOUT HOLD
 .RS 4
 WITH HOLD
 specifies that the cursor can continue to be used after the transaction that created it successfully commits\&.

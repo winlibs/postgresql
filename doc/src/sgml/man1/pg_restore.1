@@ -2,12 +2,12 @@
 .\"     Title: pg_restore
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "PG_RESTORE" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "PG_RESTORE" "1" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 pg_restore \- restore a PostgreSQL database from an archive file created by pg_dump
-.\" pg_restore
 .SH "SYNOPSIS"
 .HP \w'\fBpg_restore\fR\ 'u
 \fBpg_restore\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\fIfilename\fR]
@@ -74,7 +73,9 @@ accepts the following command line arguments\&.
 Specifies the location of the archive file (or directory, for a directory\-format archive) to be restored\&. If not specified, the standard input is used\&.
 .RE
 .PP
-\fB\-a\fR, \fB\-\-data\-only\fR
+\fB\-a\fR
+.br
+\fB\-\-data\-only\fR
 .RS 4
 Restore only the data, not the schema (data definitions)\&. Table data, large objects, and sequence values are restored, if present in the archive\&.
 .sp
@@ -82,12 +83,18 @@ This option is similar to, but for historical reasons not identical to, specifyi
 \fB\-\-section=data\fR\&.
 .RE
 .PP
-\fB\-c\fR, \fB\-\-clean\fR
+\fB\-c\fR
+.br
+\fB\-\-clean\fR
 .RS 4
-Clean (drop) database objects before recreating them\&. (This might generate some harmless error messages, if any objects were not present in the destination database\&.)
+Clean (drop) database objects before recreating them\&. (Unless
+\fB\-\-if\-exists\fR
+is used, this might generate some harmless error messages, if any objects were not present in the destination database\&.)
 .RE
 .PP
-\fB\-C\fR, \fB\-\-create\fR
+\fB\-C\fR
+.br
+\fB\-\-create\fR
 .RS 4
 Create the database before restoring into it\&. If
 \fB\-\-clean\fR
@@ -102,42 +109,56 @@ and
 commands\&. All data is restored into the database name that appears in the archive\&.
 .RE
 .PP
-\fB\-d \fR\fB\fIdbname\fR\fR, \fB\-\-dbname=\fR\fB\fIdbname\fR\fR
+\fB\-d \fR\fB\fIdbname\fR\fR
+.br
+\fB\-\-dbname=\fR\fB\fIdbname\fR\fR
 .RS 4
 Connect to database
 \fIdbname\fR
 and restore directly into the database\&.
 .RE
 .PP
-\fB\-e\fR, \fB\-\-exit\-on\-error\fR
+\fB\-e\fR
+.br
+\fB\-\-exit\-on\-error\fR
 .RS 4
 Exit if an error is encountered while sending SQL commands to the database\&. The default is to continue and to display a count of errors at the end of the restoration\&.
 .RE
 .PP
-\fB\-f \fR\fB\fIfilename\fR\fR, \fB\-\-file=\fR\fB\fIfilename\fR\fR
+\fB\-f \fR\fB\fIfilename\fR\fR
+.br
+\fB\-\-file=\fR\fB\fIfilename\fR\fR
 .RS 4
 Specify output file for generated script, or for the listing when used with
 \fB\-l\fR\&. Default is the standard output\&.
 .RE
 .PP
-\fB\-F \fR\fB\fIformat\fR\fR, \fB\-\-format=\fR\fB\fIformat\fR\fR
+\fB\-F \fR\fB\fIformat\fR\fR
+.br
+\fB\-\-format=\fR\fB\fIformat\fR\fR
 .RS 4
 Specify format of the archive\&. It is not necessary to specify the format, since
 pg_restore
 will determine the format automatically\&. If specified, it can be one of the following:
 .PP
-c, custom
+c
+.br
+custom
 .RS 4
 The archive is in the custom format of
 pg_dump\&.
 .RE
 .PP
-d, directory
+d
+.br
+directory
 .RS 4
 The archive is a directory archive\&.
 .RE
 .PP
-t, tar
+t
+.br
+tar
 .RS 4
 The archive is a
 \fBtar\fR
@@ -145,17 +166,25 @@ archive\&.
 .RE
 .RE
 .PP
-\fB\-i\fR, \fB\-\-ignore\-version\fR
+\fB\-i\fR
+.br
+\fB\-\-ignore\-version\fR
 .RS 4
 A deprecated option that is now ignored\&.
 .RE
 .PP
-\fB\-I \fR\fB\fIindex\fR\fR, \fB\-\-index=\fR\fB\fIindex\fR\fR
+\fB\-I \fR\fB\fIindex\fR\fR
+.br
+\fB\-\-index=\fR\fB\fIindex\fR\fR
 .RS 4
-Restore definition of named index only\&.
+Restore definition of named index only\&. Multiple indexes may be specified with multiple
+\fB\-I\fR
+switches\&.
 .RE
 .PP
-\fB\-j \fR\fB\fInumber\-of\-jobs\fR\fR, \fB\-\-jobs=\fR\fB\fInumber\-of\-jobs\fR\fR
+\fB\-j \fR\fB\fInumber\-of\-jobs\fR\fR
+.br
+\fB\-\-jobs=\fR\fB\fInumber\-of\-jobs\fR\fR
 .RS 4
 Run the most time\-consuming parts of
 pg_restore
@@ -169,7 +198,9 @@ Only the custom and directory archive formats are supported with this option\&. 
 \fB\-\-single\-transaction\fR\&.
 .RE
 .PP
-\fB\-l\fR, \fB\-\-list\fR
+\fB\-l\fR
+.br
+\fB\-\-list\fR
 .RS 4
 List the contents of the archive\&. The output of this operation can be used as input to the
 \fB\-L\fR
@@ -181,7 +212,9 @@ are used with
 \fB\-l\fR, they will restrict the items listed\&.
 .RE
 .PP
-\fB\-L \fR\fB\fIlist\-file\fR\fR, \fB\-\-use\-list=\fR\fB\fIlist\-file\fR\fR
+\fB\-L \fR\fB\fIlist\-file\fR\fR
+.br
+\fB\-\-use\-list=\fR\fB\fIlist\-file\fR\fR
 .RS 4
 Restore only those archive elements that are listed in
 \fIlist\-file\fR, and restore them in the order they appear in the file\&. Note that if filtering switches such as
@@ -197,14 +230,20 @@ is normally created by editing the output of a previous
 operation\&. Lines can be moved or removed, and can also be commented out by placing a semicolon (;) at the start of the line\&. See below for examples\&.
 .RE
 .PP
-\fB\-n \fR\fB\fInamespace\fR\fR, \fB\-\-schema=\fR\fB\fIschema\fR\fR
+\fB\-n \fR\fB\fInamespace\fR\fR
+.br
+\fB\-\-schema=\fR\fB\fIschema\fR\fR
 .RS 4
-Restore only objects that are in the named schema\&. This can be combined with the
+Restore only objects that are in the named schema\&. Multiple schemas may be specified with multiple
+\fB\-n\fR
+switches\&. This can be combined with the
 \fB\-t\fR
 option to restore just a specific table\&.
 .RE
 .PP
-\fB\-O\fR, \fB\-\-no\-owner\fR
+\fB\-O\fR
+.br
+\fB\-\-no\-owner\fR
 .RS 4
 Do not output commands to set ownership of objects to match the original database\&. By default,
 pg_restore
@@ -216,17 +255,25 @@ statements to set ownership of created schema elements\&. These statements will 
 \fB\-O\fR, any user name can be used for the initial connection, and this user will own all the created objects\&.
 .RE
 .PP
-\fB\-P \fR\fB\fIfunction\-name(argtype [, \&.\&.\&.])\fR\fR, \fB\-\-function=\fR\fB\fIfunction\-name(argtype [, \&.\&.\&.])\fR\fR
+\fB\-P \fR\fB\fIfunction\-name(argtype [, \&.\&.\&.])\fR\fR
+.br
+\fB\-\-function=\fR\fB\fIfunction\-name(argtype [, \&.\&.\&.])\fR\fR
 .RS 4
-Restore the named function only\&. Be careful to spell the function name and arguments exactly as they appear in the dump file\*(Aqs table of contents\&.
+Restore the named function only\&. Be careful to spell the function name and arguments exactly as they appear in the dump file\*(Aqs table of contents\&. Multiple functions may be specified with multiple
+\fB\-P\fR
+switches\&.
 .RE
 .PP
-\fB\-R\fR, \fB\-\-no\-reconnect\fR
+\fB\-R\fR
+.br
+\fB\-\-no\-reconnect\fR
 .RS 4
 This option is obsolete but still accepted for backwards compatibility\&.
 .RE
 .PP
-\fB\-s\fR, \fB\-\-schema\-only\fR
+\fB\-s\fR
+.br
+\fB\-\-schema\-only\fR
 .RS 4
 Restore only the schema (data definitions), not data, to the extent that schema entries are present in the archive\&.
 .sp
@@ -241,14 +288,18 @@ option, which uses the word
 in a different meaning\&.)
 .RE
 .PP
-\fB\-S \fR\fB\fIusername\fR\fR, \fB\-\-superuser=\fR\fB\fIusername\fR\fR
+\fB\-S \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-superuser=\fR\fB\fIusername\fR\fR
 .RS 4
 Specify the superuser user name to use when disabling triggers\&. This is relevant only if
 \fB\-\-disable\-triggers\fR
 is used\&.
 .RE
 .PP
-\fB\-t \fR\fB\fItable\fR\fR, \fB\-\-table=\fR\fB\fItable\fR\fR
+\fB\-t \fR\fB\fItable\fR\fR
+.br
+\fB\-\-table=\fR\fB\fItable\fR\fR
 .RS 4
 Restore definition and/or data of named table only\&. Multiple tables may be specified with multiple
 \fB\-t\fR
@@ -257,29 +308,43 @@ switches\&. This can be combined with the
 option to specify a schema\&.
 .RE
 .PP
-\fB\-T \fR\fB\fItrigger\fR\fR, \fB\-\-trigger=\fR\fB\fItrigger\fR\fR
+\fB\-T \fR\fB\fItrigger\fR\fR
+.br
+\fB\-\-trigger=\fR\fB\fItrigger\fR\fR
 .RS 4
-Restore named trigger only\&.
+Restore named trigger only\&. Multiple triggers may be specified with multiple
+\fB\-T\fR
+switches\&.
 .RE
 .PP
-\fB\-v\fR, \fB\-\-verbose\fR
+\fB\-v\fR
+.br
+\fB\-\-verbose\fR
 .RS 4
 Specifies verbose mode\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 pg_restore
 version and exit\&.
 .RE
 .PP
-\fB\-x\fR, \fB\-\-no\-privileges\fR, \fB\-\-no\-acl\fR
+\fB\-x\fR
+.br
+\fB\-\-no\-privileges\fR
+.br
+\fB\-\-no\-acl\fR
 .RS 4
 Prevent restoration of access privileges (grant/revoke commands)\&.
 .RE
 .PP
-\fB\-1\fR, \fB\-\-single\-transaction\fR
+\fB\-1\fR
+.br
+\fB\-\-single\-transaction\fR
 .RS 4
 Execute the restore as a single transaction (that is, wrap the emitted commands in
 \fBBEGIN\fR/\fBCOMMIT\fR)\&. This ensures that either all the commands complete successfully, or no changes are applied\&. This option implies
@@ -301,6 +366,15 @@ pg_restore
 as a
 PostgreSQL
 superuser\&.
+.RE
+.PP
+\fB\-\-if\-exists\fR
+.RS 4
+Use conditional commands (i\&.e\&. add an
+IF EXISTS
+clause) when cleaning database objects\&. This option is not valid unless
+\fB\-\-clean\fR
+is also specified\&.
 .RE
 .PP
 \fB\-\-no\-data\-for\-failed\-tables\fR
@@ -343,7 +417,9 @@ commands instead of
 commands to determine object ownership\&. This makes the dump more standards\-compatible, but depending on the history of the objects in the dump, might not restore properly\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 pg_restore
@@ -354,33 +430,43 @@ command line arguments, and exit\&.
 pg_restore
 also accepts the following command line arguments for connection parameters:
 .PP
-\fB\-h \fR\fB\fIhost\fR\fR, \fB\-\-host=\fR\fB\fIhost\fR\fR
+\fB\-h \fR\fB\fIhost\fR\fR
+.br
+\fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
 Specifies the host name of the machine on which the server is running\&. If the value begins with a slash, it is used as the directory for the Unix domain socket\&. The default is taken from the
 \fBPGHOST\fR
 environment variable, if set, else a Unix domain socket connection is attempted\&.
 .RE
 .PP
-\fB\-p \fR\fB\fIport\fR\fR, \fB\-\-port=\fR\fB\fIport\fR\fR
+\fB\-p \fR\fB\fIport\fR\fR
+.br
+\fB\-\-port=\fR\fB\fIport\fR\fR
 .RS 4
 Specifies the TCP port or local Unix domain socket file extension on which the server is listening for connections\&. Defaults to the
 \fBPGPORT\fR
 environment variable, if set, or a compiled\-in default\&.
 .RE
 .PP
-\fB\-U \fR\fB\fIusername\fR\fR, \fB\-\-username=\fR\fB\fIusername\fR\fR
+\fB\-U \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-username=\fR\fB\fIusername\fR\fR
 .RS 4
 User name to connect as\&.
 .RE
 .PP
-\fB\-w\fR, \fB\-\-no\-password\fR
+\fB\-w\fR
+.br
+\fB\-\-no\-password\fR
 .RS 4
 Never issue a password prompt\&. If the server requires password authentication and a password is not available by other means such as a
 \&.pgpass
 file, the connection attempt will fail\&. This option can be useful in batch jobs and scripts where no user is present to enter a password\&.
 .RE
 .PP
-\fB\-W\fR, \fB\-\-password\fR
+\fB\-W\fR
+.br
+\fB\-\-password\fR
 .RS 4
 Force
 pg_restore
@@ -408,7 +494,13 @@ pg_restore, but can switch to a role with the required rights\&. Some installati
 .RE
 .SH "ENVIRONMENT"
 .PP
-\fBPGHOST\fR, \fBPGOPTIONS\fR, \fBPGPORT\fR, \fBPGUSER\fR
+\fBPGHOST\fR
+.br
+\fBPGOPTIONS\fR
+.br
+\fBPGPORT\fR
+.br
+\fBPGUSER\fR
 .RS 4
 Default connection parameters
 .RE

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -131,7 +131,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the size of a disk block.  It is determined by the value
@@ -155,6 +156,27 @@ HREF="runtime-config-resource.html"
 ></DD
 ><DT
 ><A
+NAME="GUC-DATA-CHECKSUMS"
+></A
+><TT
+CLASS="VARNAME"
+>data_checksums</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)
+      </DT
+><DD
+><P
+>        Reports whether data checksums are enabled for this cluster.
+        See <A
+HREF="app-initdb.html#APP-INITDB-DATA-CHECKSUMS"
+>data checksums</A
+> for more information.
+       </P
+></DD
+><DT
+><A
 NAME="GUC-INTEGER-DATETIMES"
 ></A
 ><TT
@@ -163,7 +185,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports whether <SPAN
@@ -195,7 +218,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the locale in which sorting of textual data is done.
@@ -216,7 +240,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the locale that determines character classifications.
@@ -242,7 +267,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the maximum number of function arguments. It is determined by
@@ -263,7 +289,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the maximum identifier length. It is determined as one
@@ -293,7 +320,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the maximum number of index keys. It is determined by
@@ -314,7 +342,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the number of blocks (pages) that can be stored within a file
@@ -343,7 +372,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        Reports the database encoding (character set).
@@ -364,7 +395,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the version number of the server. It is determined by the
@@ -384,7 +416,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the version number of the server as an integer. It is determined
@@ -404,7 +437,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the size of a WAL disk block.  It is determined by the value
@@ -425,7 +459,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Reports the number of blocks (pages) in a WAL segment file.

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -118,7 +118,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        This variable specifies the order in which schemas are searched
@@ -272,7 +274,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        This variable specifies the default tablespace in which to create
@@ -327,7 +331,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        This variable specifies tablespaces in which to create temporary
@@ -398,7 +404,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        This parameter is normally on. When set to <TT
@@ -408,9 +415,17 @@ CLASS="LITERAL"
         disables validation of the function body string during <A
 HREF="sql-createfunction.html"
 >CREATE FUNCTION</A
->. Disabling validation is
-        occasionally useful to avoid problems such as forward references
-        when restoring function definitions from a dump.
+>.  Disabling validation avoids side
+        effects of the validation process and avoids false positives due
+        to problems such as forward references.  Set this parameter
+        to <TT
+CLASS="LITERAL"
+>off</TT
+> before loading functions on behalf of other
+        users; <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> does so automatically.
        </P
 ></DD
 ><DT
@@ -423,7 +438,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        Each SQL transaction has an isolation level, which can be
@@ -468,7 +485,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        A read-only SQL transaction cannot alter non-temporary tables.
@@ -495,7 +514,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        When running at the <TT
@@ -538,7 +559,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls firing of replication-related triggers and rules for the
@@ -572,7 +594,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Abort any statement that takes more than the specified number of
@@ -609,7 +632,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Abort any statement that waits longer than the specified number of
@@ -675,7 +699,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        <TT
@@ -691,7 +716,7 @@ CLASS="STRUCTFIELD"
 > field has reached
         the age specified by this setting.  The default is 150 million
         transactions.  Although users can set this value anywhere from zero to
-        one billion, <TT
+        two billions, <TT
 CLASS="COMMAND"
 >VACUUM</TT
 > will silently limit the effective value
@@ -721,18 +746,16 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the cutoff age (in transactions) that <TT
 CLASS="COMMAND"
 >VACUUM</TT
 >
-        should use to decide whether to replace transaction IDs with
-        <TT
-CLASS="LITERAL"
->FrozenXID</TT
-> while scanning a table.
+        should use to decide whether to freeze row versions
+        while scanning a table.
         The default is 50 million transactions.  Although
         users can set this value anywhere from zero to one billion,
         <TT
@@ -752,6 +775,90 @@ HREF="routine-vacuuming.html#VACUUM-FOR-WRAPAROUND"
 ></DD
 ><DT
 ><A
+NAME="GUC-VACUUM-MULTIXACT-FREEZE-TABLE-AGE"
+></A
+><TT
+CLASS="VARNAME"
+>vacuum_multixact_freeze_table_age</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> performs a whole-table scan if the table's
+        <TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>relminmxid</TT
+> field has reached
+        the age specified by this setting.  The default is 150 million multixacts.
+        Although users can set this value anywhere from zero to two billions,
+        <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> will silently limit the effective value to 95% of
+        <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
+>autovacuum_multixact_freeze_max_age</A
+>, so that a
+        periodical manual <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> has a chance to run before an
+        anti-wraparound is launched for the table.
+        For more information see <A
+HREF="routine-vacuuming.html#VACUUM-FOR-MULTIXACT-WRAPAROUND"
+>Section 23.1.5.1</A
+>.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-VACUUM-MULTIXACT-FREEZE-MIN-AGE"
+></A
+><TT
+CLASS="VARNAME"
+>vacuum_multixact_freeze_min_age</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        Specifies the cutoff age (in multixacts) that <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>
+        should use to decide whether to replace multixact IDs with a newer
+        transaction ID or multixact ID while scanning a table.  The default
+        is 5 million multixacts.
+        Although users can set this value anywhere from zero to one billion,
+        <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> will silently limit the effective value to half
+        the value of <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
+>autovacuum_multixact_freeze_max_age</A
+>,
+        so that there is not an unreasonably short time between forced
+        autovacuums.
+        For more information see <A
+HREF="routine-vacuuming.html#VACUUM-FOR-MULTIXACT-WRAPAROUND"
+>Section 23.1.5.1</A
+>.
+       </P
+></DD
+><DT
+><A
 NAME="GUC-BYTEA-OUTPUT"
 ></A
 ><TT
@@ -760,7 +867,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the output format for values of type <TT
@@ -796,7 +904,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets how binary values are to be encoded in XML.  This applies
@@ -847,7 +956,10 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      
+      
+      </DT
 ><DD
 ><P
 >        Sets whether <TT
@@ -910,7 +1022,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the display format for date and time values, as well as the
@@ -995,7 +1108,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the display format for interval values.
@@ -1071,7 +1185,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        Sets the time zone for displaying and interpreting time stamps.
@@ -1103,7 +1219,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        Sets the collection of time zone abbreviations that will be accepted
@@ -1118,10 +1236,11 @@ CLASS="LITERAL"
 > and <TT
 CLASS="LITERAL"
 >'India'</TT
->, and other collections can be defined
-        for a particular installation.  See <A
-HREF="datetime-appendix.html"
->Appendix B</A
+>,
+        and other collections can be defined for a particular installation.
+        See <A
+HREF="datetime-config-files.html"
+>Section B.3</A
 > for more information.
        </P
 ></DD
@@ -1135,7 +1254,10 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      
+      
+      </DT
 ><DD
 ><P
 >        This parameter adjusts the number of digits displayed for
@@ -1174,7 +1296,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        Sets the client-side encoding (character set).
@@ -1199,7 +1323,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the language in which messages are displayed.  Acceptable
@@ -1235,7 +1360,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the locale to use for formatting monetary amounts, for
@@ -1262,7 +1388,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the locale to use for formatting numbers, for example
@@ -1289,7 +1416,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the locale to use for formatting dates and times, for example
@@ -1316,7 +1444,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Selects the text search configuration that is used by those variants
@@ -1350,8 +1479,263 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
+NAME="RUNTIME-CONFIG-CLIENT-PRELOAD"
+>18.11.3. Shared Library Preloading</A
+></H2
+><P
+>      Several settings are available for preloading shared libraries into the
+      server, in order to load additional functionality or achieve performance
+      benefits.  For example, a setting of
+      <TT
+CLASS="LITERAL"
+>'$libdir/mylib'</TT
+> would cause
+      <TT
+CLASS="LITERAL"
+>mylib.so</TT
+> (or on some platforms,
+      <TT
+CLASS="LITERAL"
+>mylib.sl</TT
+>) to be preloaded from the installation's standard
+      library directory.  The differences between the settings are when they
+      take effect and what privileges are required to change them.
+     </P
+><P
+>      <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> procedural language libraries can
+      be preloaded in this way, typically by using the
+      syntax <TT
+CLASS="LITERAL"
+>'$libdir/plXXX'</TT
+> where
+      <TT
+CLASS="LITERAL"
+>XXX</TT
+> is <TT
+CLASS="LITERAL"
+>pgsql</TT
+>, <TT
+CLASS="LITERAL"
+>perl</TT
+>,
+      <TT
+CLASS="LITERAL"
+>tcl</TT
+>, or <TT
+CLASS="LITERAL"
+>python</TT
+>.
+     </P
+><P
+>      For each parameter, if more than one library is to be loaded, separate
+      their names with commas.  All library names are converted to lower case
+      unless double-quoted.
+     </P
+><P
+>      Only shared libraries specifically intended to be used with PostgreSQL
+      can be loaded this way.  Every PostgreSQL-supported library has
+      a <SPAN
+CLASS="QUOTE"
+>"magic block"</SPAN
+> that is checked to guarantee compatibility.  For
+      this reason, non-PostgreSQL libraries cannot be loaded in this way.  You
+      might be able to use operating-system facilities such
+      as <TT
+CLASS="ENVAR"
+>LD_PRELOAD</TT
+> for that.
+     </P
+><P
+>      In general, refer to the documentation of a specific module for the
+      recommended way to load that module.
+     </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A
+NAME="GUC-LOCAL-PRELOAD-LIBRARIES"
+></A
+><TT
+CLASS="VARNAME"
+>local_preload_libraries</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)
+      
+      </DT
+><DD
+><P
+>        This variable specifies one or more shared libraries that are to be
+        preloaded at connection start.  This parameter cannot be changed after
+        the start of a particular session.  If a specified library is not
+        found, the connection attempt will fail.
+       </P
+><P
+>        This option can be set by any user.  Because of that, the libraries
+        that can be loaded are restricted to those appearing in the
+        <TT
+CLASS="FILENAME"
+>plugins</TT
+> subdirectory of the installation's
+        standard library directory.  (It is the database administrator's
+        responsibility to ensure that only <SPAN
+CLASS="QUOTE"
+>"safe"</SPAN
+> libraries
+        are installed there.)  Entries in <TT
+CLASS="VARNAME"
+>local_preload_libraries</TT
+>
+        can specify this directory explicitly, for example
+        <TT
+CLASS="LITERAL"
+>$libdir/plugins/mylib</TT
+>, or just specify
+        the library name &mdash; <TT
+CLASS="LITERAL"
+>mylib</TT
+> would have
+        the same effect as <TT
+CLASS="LITERAL"
+>$libdir/plugins/mylib</TT
+>.
+       </P
+><P
+>        Unless a module is specifically designed to be used in this way by
+        non-superusers, this is usually not the right setting to use.  Look
+        at <A
+HREF="runtime-config-client.html#GUC-SESSION-PRELOAD-LIBRARIES"
+>session_preload_libraries</A
+> instead.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-SESSION-PRELOAD-LIBRARIES"
+></A
+><TT
+CLASS="VARNAME"
+>session_preload_libraries</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)
+      </DT
+><DD
+><P
+>        This variable specifies one or more shared libraries that are to be
+        preloaded at connection start.  Only superusers can change this setting.
+        The parameter value only takes effect at the start of the connection.
+        Subsequent changes have no effect.  If a specified library is not
+        found, the connection attempt will fail.
+       </P
+><P
+>        The intent of this feature is to allow debugging or
+        performance-measurement libraries to be loaded into specific sessions
+        without an explicit
+        <TT
+CLASS="COMMAND"
+>LOAD</TT
+> command being given.  For
+        example, <A
+HREF="auto-explain.html"
+>auto_explain</A
+> could be enabled for all
+        sessions under a given user name by setting this parameter
+        with <TT
+CLASS="COMMAND"
+>ALTER ROLE SET</TT
+>.  Also, this parameter can be changed
+        without restarting the server (but changes only take effect when a new
+        session is started), so it is easier to add new modules this way, even
+        if they should apply to all sessions.
+       </P
+><P
+>        Unlike <A
+HREF="runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES"
+>shared_preload_libraries</A
+>, there is no large
+        performance advantage to loading a library at session start rather than
+        when it is first used.  There is some advantage, however, when
+        connection pooling is used.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-SHARED-PRELOAD-LIBRARIES"
+></A
+><TT
+CLASS="VARNAME"
+>shared_preload_libraries</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)
+      </DT
+><DD
+><P
+>        This variable specifies one or more shared libraries to be preloaded at
+        server start.  with commas.  This parameter can only be set at server
+        start.  If a specified library is not found, the server will fail to
+        start.
+       </P
+><P
+>        Some libraries need to perform certain operations that can only take
+        place at postmaster start, such as allocating shared memory, reserving
+        light-weight locks, or starting background workers.  Those libraries
+        must be loaded at server start through this parameter.  See the
+        documentation of each library for details.
+       </P
+><P
+>        Other libraries can also be preloaded.  By preloading a shared library,
+        the library startup time is avoided when the library is first used.
+        However, the time to start each new server process might increase
+        slightly, even if that process never uses the library.  So this
+        parameter is recommended only for libraries that will be used in most
+        sessions.  Also, changing this parameter requires a server restart, so
+        this is not the right setting to use for short-term debugging tasks,
+        say.  Use <A
+HREF="runtime-config-client.html#GUC-SESSION-PRELOAD-LIBRARIES"
+>session_preload_libraries</A
+> for that
+        instead.
+       </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>        On Windows hosts, preloading a library at server start will not reduce
+        the time required to start each new server process; each server process
+        will re-load all preload libraries.  However, <TT
+CLASS="VARNAME"
+>shared_preload_libraries
+        </TT
+> is still useful on Windows hosts for libraries that need to
+        perform operations at postmaster start time.
+       </P
+></BLOCKQUOTE
+></DIV
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
 NAME="RUNTIME-CONFIG-CLIENT-OTHER"
->18.11.3. Other Defaults</A
+>18.11.4. Other Defaults</A
 ></H2
 ><P
 ></P
@@ -1368,7 +1752,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        If a dynamically loadable module needs to be opened and the
@@ -1453,97 +1839,15 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Soft upper limit of the size of the set returned by GIN index scans. For more
         information see <A
 HREF="gin-tips.html"
->Section 57.4</A
+>Section 58.5</A
 >.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-LOCAL-PRELOAD-LIBRARIES"
-></A
-><TT
-CLASS="VARNAME"
->local_preload_libraries</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)</DT
-><DD
-><P
->        This variable specifies one or more shared libraries that are
-        to be preloaded at connection start.  If more than one library
-        is to be loaded, separate their names with commas.  All library
-        names are converted to lower case unless double-quoted.
-        This parameter cannot be changed after the start of a particular
-        session.
-       </P
-><P
->        Because this is not a superuser-only option, the libraries
-        that can be loaded are restricted to those appearing in the
-        <TT
-CLASS="FILENAME"
->plugins</TT
-> subdirectory of the installation's
-        standard library directory.  (It is the database administrator's
-        responsibility to ensure that only <SPAN
-CLASS="QUOTE"
->"safe"</SPAN
-> libraries
-        are installed there.)  Entries in <TT
-CLASS="VARNAME"
->local_preload_libraries</TT
->
-        can specify this directory explicitly, for example
-        <TT
-CLASS="LITERAL"
->$libdir/plugins/mylib</TT
->, or just specify
-        the library name &mdash; <TT
-CLASS="LITERAL"
->mylib</TT
-> would have
-        the same effect as <TT
-CLASS="LITERAL"
->$libdir/plugins/mylib</TT
->.
-       </P
-><P
->        Unlike <A
-HREF="runtime-config-resource.html#GUC-SHARED-PRELOAD-LIBRARIES"
->shared_preload_libraries</A
->, there is no
-        performance advantage to loading a library at session
-        start rather than when it is first used.  Rather, the intent of
-        this feature is to allow debugging or performance-measurement
-        libraries to be loaded into specific sessions without an explicit
-        <TT
-CLASS="COMMAND"
->LOAD</TT
-> command being given.  For example, debugging could
-        be enabled for all sessions under a given user name by setting
-        this parameter with <TT
-CLASS="COMMAND"
->ALTER ROLE SET</TT
->.
-       </P
-><P
->        If a specified library is not found,
-        the connection attempt will fail.
-       </P
-><P
->        Every  PostgreSQL-supported library has a <SPAN
-CLASS="QUOTE"
->"magic
-        block"</SPAN
-> that is checked to guarantee compatibility.
-        For this reason, non-PostgreSQL libraries cannot be
-        loaded in this way.
        </P
 ></DD
 ></DL

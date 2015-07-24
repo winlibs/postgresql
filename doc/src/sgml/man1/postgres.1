@@ -2,12 +2,12 @@
 .\"     Title: postgres
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "POSTGRES" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "POSTGRES" "1" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 postgres \- PostgreSQL database server
-.\" postgres
 .SH "SYNOPSIS"
 .HP \w'\fBpostgres\fR\ 'u
 \fBpostgres\fR [\fIoption\fR...]
@@ -259,7 +258,9 @@ configuration parameter in
 Section 18.4.1, \(lqMemory\(rq, in the documentation\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 postgres
@@ -279,7 +280,9 @@ This option dumps out the server\*(Aqs internal configuration variables, descrip
 format\&. It is designed primarily for use by administration tools\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 postgres
@@ -384,9 +387,7 @@ Disables use of newline as a statement delimiter\&.
 \fB\-r\fR \fIfilename\fR
 .RS 4
 Send all server log output to
-\fIfilename\fR\&. In normal multiuser mode, this option is ignored, and
-stderr
-is used by all processes\&.
+\fIfilename\fR\&. This option is only honored when supplied as a command\-line option\&.
 .RE
 .SH "ENVIRONMENT"
 .PP

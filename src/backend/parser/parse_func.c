@@ -3,7 +3,7 @@
  * parse_func.c
  *		handle function calls in parser
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -15,6 +15,7 @@
 #include "postgres.h"
 
 #include "access/htup_details.h"
+#include "catalog/pg_aggregate.h"
 #include "catalog/pg_proc.h"
 #include "catalog/pg_type.h"
 #include "funcapi.h"
@@ -22,6 +23,7 @@
 #include "nodes/makefuncs.h"
 #include "nodes/nodeFuncs.h"
 #include "parser/parse_agg.h"
+#include "parser/parse_clause.h"
 #include "parser/parse_coerce.h"
 #include "parser/parse_func.h"
 #include "parser/parse_relation.h"
@@ -32,6 +34,9 @@
 #include "utils/syscache.h"
 
 
+static void unify_hypothetical_args(ParseState *pstate,
+						List *fargs, int numAggregatedArgs,
+						Oid *actual_arg_types, Oid *declared_arg_types);
 static Oid	FuncNameAsType(List *funcname);
 static Node *ParseComplexProjection(ParseState *pstate, char *funcname,
 					   Node *first_arg, int location);
@@ -47,24 +52,30 @@ static Node *ParseComplexProjection(ParseState *pstate, char *funcname,
  *	a function of a single complex-type argument can be written like a
  *	column reference, allowing functions to act like computed columns.
  *
- *	Hence, both cases come through here.  The is_column parameter tells us
- *	which syntactic construct is actually being dealt with, but this is
- *	intended to be used only to deliver an appropriate error message,
- *	not to affect the semantics.  When is_column is true, we should have
- *	a single argument (the putative table), unqualified function name
- *	equal to the column name, and no aggregate or variadic decoration.
- *	Also, when is_column is true, we return NULL on failure rather than
+ *	Hence, both cases come through here.  If fn is null, we're dealing with
+ *	column syntax not function syntax, but in principle that should not
+ *	affect the lookup behavior, only which error messages we deliver.
+ *	The FuncCall struct is needed however to carry various decoration that
+ *	applies to aggregate and window functions.
+ *
+ *	Also, when fn is null, we return NULL on failure rather than
  *	reporting a no-such-function error.
  *
- *	The argument expressions (in fargs) must have been transformed already.
- *	But the agg_order expressions, if any, have not been.
+ *	The argument expressions (in fargs) must have been transformed
+ *	already.  However, nothing in *fn has been transformed.
  */
 Node *
 ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
-				  List *agg_order, bool agg_star, bool agg_distinct,
-				  bool func_variadic,
-				  WindowDef *over, bool is_column, int location)
+				  FuncCall *fn, int location)
 {
+	bool		is_column = (fn == NULL);
+	List	   *agg_order = (fn ? fn->agg_order : NIL);
+	Expr	   *agg_filter = NULL;
+	bool		agg_within_group = (fn ? fn->agg_within_group : false);
+	bool		agg_star = (fn ? fn->agg_star : false);
+	bool		agg_distinct = (fn ? fn->agg_distinct : false);
+	bool		func_variadic = (fn ? fn->func_variadic : false);
+	WindowDef  *over = (fn ? fn->over : NULL);
 	Oid			rettype;
 	Oid			funcid;
 	ListCell   *l;
@@ -79,11 +90,21 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 	Node	   *retval;
 	bool		retset;
 	int			nvargs;
+	Oid			vatype;
 	FuncDetailCode fdresult;
+	char		aggkind = 0;
+
+	/*
+	 * If there's an aggregate filter, transform it using transformWhereClause
+	 */
+	if (fn && fn->agg_filter != NULL)
+		agg_filter = (Expr *) transformWhereClause(pstate, fn->agg_filter,
+												   EXPR_KIND_FILTER,
+												   "FILTER");
 
 	/*
 	 * Most of the rest of the parser just assumes that functions do not have
-	 * more than FUNC_MAX_ARGS parameters.	We have to test here to protect
+	 * more than FUNC_MAX_ARGS parameters.  We have to test here to protect
 	 * against array overruns, etc.  Of course, this may not be a function,
 	 * but the test doesn't hurt.
 	 */
@@ -100,10 +121,12 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 	 * Extract arg type info in preparation for function lookup.
 	 *
 	 * If any arguments are Param markers of type VOID, we discard them from
-	 * the parameter list.	This is a hack to allow the JDBC driver to not
-	 * have to distinguish "input" and "output" parameter symbols while
-	 * parsing function-call constructs.  We can't use foreach() because we
-	 * may modify the list ...
+	 * the parameter list. This is a hack to allow the JDBC driver to not have
+	 * to distinguish "input" and "output" parameter symbols while parsing
+	 * function-call constructs.  Don't do this if dealing with column syntax,
+	 * nor if we had WITHIN GROUP (because in that case it's critical to keep
+	 * the argument count unchanged).  We can't use foreach() because we may
+	 * modify the list ...
 	 */
 	nargs = 0;
 	for (l = list_head(fargs); l != NULL; l = nextl)
@@ -113,7 +136,8 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 
 		nextl = lnext(l);
 
-		if (argtype == VOIDOID && IsA(arg, Param) &&!is_column)
+		if (argtype == VOIDOID && IsA(arg, Param) &&
+			!is_column && !agg_within_group)
 		{
 			fargs = list_delete_ptr(fargs, arg);
 			continue;
@@ -174,8 +198,8 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 	 * the "function call" could be a projection.  We also check that there
 	 * wasn't any aggregate or variadic decoration, nor an argument name.
 	 */
-	if (nargs == 1 && agg_order == NIL && !agg_star && !agg_distinct &&
-		over == NULL && !func_variadic && argnames == NIL &&
+	if (nargs == 1 && agg_order == NIL && agg_filter == NULL && !agg_star &&
+		!agg_distinct && over == NULL && !func_variadic && argnames == NIL &&
 		list_length(funcname) == 1)
 	{
 		Oid			argtype = actual_arg_types[0];
@@ -214,7 +238,8 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 	fdresult = func_get_detail(funcname, fargs, argnames, nargs,
 							   actual_arg_types,
 							   !func_variadic, true,
-							   &funcid, &rettype, &retset, &nvargs,
+							   &funcid, &rettype, &retset,
+							   &nvargs, &vatype,
 							   &declared_arg_types, &argdefaults);
 	if (fdresult == FUNCDETAIL_COERCION)
 	{
@@ -245,11 +270,23 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 			errmsg("DISTINCT specified, but %s is not an aggregate function",
 				   NameListToString(funcname)),
 					 parser_errposition(pstate, location)));
+		if (agg_within_group)
+			ereport(ERROR,
+					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+					 errmsg("WITHIN GROUP specified, but %s is not an aggregate function",
+							NameListToString(funcname)),
+					 parser_errposition(pstate, location)));
 		if (agg_order != NIL)
 			ereport(ERROR,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 			errmsg("ORDER BY specified, but %s is not an aggregate function",
 				   NameListToString(funcname)),
+					 parser_errposition(pstate, location)));
+		if (agg_filter)
+			ereport(ERROR,
+					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+			  errmsg("FILTER specified, but %s is not an aggregate function",
+					 NameListToString(funcname)),
 					 parser_errposition(pstate, location)));
 		if (over)
 			ereport(ERROR,
@@ -258,8 +295,181 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 							NameListToString(funcname)),
 					 parser_errposition(pstate, location)));
 	}
-	else if (!(fdresult == FUNCDETAIL_AGGREGATE ||
-			   fdresult == FUNCDETAIL_WINDOWFUNC))
+	else if (fdresult == FUNCDETAIL_AGGREGATE)
+	{
+		/*
+		 * It's an aggregate; fetch needed info from the pg_aggregate entry.
+		 */
+		HeapTuple	tup;
+		Form_pg_aggregate classForm;
+		int			catDirectArgs;
+
+		tup = SearchSysCache1(AGGFNOID, ObjectIdGetDatum(funcid));
+		if (!HeapTupleIsValid(tup))		/* should not happen */
+			elog(ERROR, "cache lookup failed for aggregate %u", funcid);
+		classForm = (Form_pg_aggregate) GETSTRUCT(tup);
+		aggkind = classForm->aggkind;
+		catDirectArgs = classForm->aggnumdirectargs;
+		ReleaseSysCache(tup);
+
+		/* Now check various disallowed cases. */
+		if (AGGKIND_IS_ORDERED_SET(aggkind))
+		{
+			int			numAggregatedArgs;
+			int			numDirectArgs;
+
+			if (!agg_within_group)
+				ereport(ERROR,
+						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+						 errmsg("WITHIN GROUP is required for ordered-set aggregate %s",
+								NameListToString(funcname)),
+						 parser_errposition(pstate, location)));
+			if (over)
+				ereport(ERROR,
+						(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+				 errmsg("OVER is not supported for ordered-set aggregate %s",
+						NameListToString(funcname)),
+						 parser_errposition(pstate, location)));
+			/* gram.y rejects DISTINCT + WITHIN GROUP */
+			Assert(!agg_distinct);
+			/* gram.y rejects VARIADIC + WITHIN GROUP */
+			Assert(!func_variadic);
+
+			/*
+			 * Since func_get_detail was working with an undifferentiated list
+			 * of arguments, it might have selected an aggregate that doesn't
+			 * really match because it requires a different division of direct
+			 * and aggregated arguments.  Check that the number of direct
+			 * arguments is actually OK; if not, throw an "undefined function"
+			 * error, similarly to the case where a misplaced ORDER BY is used
+			 * in a regular aggregate call.
+			 */
+			numAggregatedArgs = list_length(agg_order);
+			numDirectArgs = nargs - numAggregatedArgs;
+			Assert(numDirectArgs >= 0);
+
+			if (!OidIsValid(vatype))
+			{
+				/* Test is simple if aggregate isn't variadic */
+				if (numDirectArgs != catDirectArgs)
+					ereport(ERROR,
+							(errcode(ERRCODE_UNDEFINED_FUNCTION),
+							 errmsg("function %s does not exist",
+									func_signature_string(funcname, nargs,
+														  argnames,
+														  actual_arg_types)),
+							 errhint("There is an ordered-set aggregate %s, but it requires %d direct arguments, not %d.",
+									 NameListToString(funcname),
+									 catDirectArgs, numDirectArgs),
+							 parser_errposition(pstate, location)));
+			}
+			else
+			{
+				/*
+				 * If it's variadic, we have two cases depending on whether
+				 * the agg was "... ORDER BY VARIADIC" or "..., VARIADIC ORDER
+				 * BY VARIADIC".  It's the latter if catDirectArgs equals
+				 * pronargs; to save a catalog lookup, we reverse-engineer
+				 * pronargs from the info we got from func_get_detail.
+				 */
+				int			pronargs;
+
+				pronargs = nargs;
+				if (nvargs > 1)
+					pronargs -= nvargs - 1;
+				if (catDirectArgs < pronargs)
+				{
+					/* VARIADIC isn't part of direct args, so still easy */
+					if (numDirectArgs != catDirectArgs)
+						ereport(ERROR,
+								(errcode(ERRCODE_UNDEFINED_FUNCTION),
+								 errmsg("function %s does not exist",
+										func_signature_string(funcname, nargs,
+															  argnames,
+														  actual_arg_types)),
+								 errhint("There is an ordered-set aggregate %s, but it requires %d direct arguments, not %d.",
+										 NameListToString(funcname),
+										 catDirectArgs, numDirectArgs),
+								 parser_errposition(pstate, location)));
+				}
+				else
+				{
+					/*
+					 * Both direct and aggregated args were declared variadic.
+					 * For a standard ordered-set aggregate, it's okay as long
+					 * as there aren't too few direct args.  For a
+					 * hypothetical-set aggregate, we assume that the
+					 * hypothetical arguments are those that matched the
+					 * variadic parameter; there must be just as many of them
+					 * as there are aggregated arguments.
+					 */
+					if (aggkind == AGGKIND_HYPOTHETICAL)
+					{
+						if (nvargs != 2 * numAggregatedArgs)
+							ereport(ERROR,
+									(errcode(ERRCODE_UNDEFINED_FUNCTION),
+									 errmsg("function %s does not exist",
+									   func_signature_string(funcname, nargs,
+															 argnames,
+														  actual_arg_types)),
+									 errhint("To use the hypothetical-set aggregate %s, the number of hypothetical direct arguments (here %d) must match the number of ordering columns (here %d).",
+											 NameListToString(funcname),
+							  nvargs - numAggregatedArgs, numAggregatedArgs),
+									 parser_errposition(pstate, location)));
+					}
+					else
+					{
+						if (nvargs <= numAggregatedArgs)
+							ereport(ERROR,
+									(errcode(ERRCODE_UNDEFINED_FUNCTION),
+									 errmsg("function %s does not exist",
+									   func_signature_string(funcname, nargs,
+															 argnames,
+														  actual_arg_types)),
+									 errhint("There is an ordered-set aggregate %s, but it requires at least %d direct arguments.",
+											 NameListToString(funcname),
+											 catDirectArgs),
+									 parser_errposition(pstate, location)));
+					}
+				}
+			}
+
+			/* Check type matching of hypothetical arguments */
+			if (aggkind == AGGKIND_HYPOTHETICAL)
+				unify_hypothetical_args(pstate, fargs, numAggregatedArgs,
+										actual_arg_types, declared_arg_types);
+		}
+		else
+		{
+			/* Normal aggregate, so it can't have WITHIN GROUP */
+			if (agg_within_group)
+				ereport(ERROR,
+						(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+						 errmsg("%s is not an ordered-set aggregate, so it cannot have WITHIN GROUP",
+								NameListToString(funcname)),
+						 parser_errposition(pstate, location)));
+		}
+	}
+	else if (fdresult == FUNCDETAIL_WINDOWFUNC)
+	{
+		/*
+		 * True window functions must be called with a window definition.
+		 */
+		if (!over)
+			ereport(ERROR,
+					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+					 errmsg("window function %s requires an OVER clause",
+							NameListToString(funcname)),
+					 parser_errposition(pstate, location)));
+		/* And, per spec, WITHIN GROUP isn't allowed */
+		if (agg_within_group)
+			ereport(ERROR,
+					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+					 errmsg("window function %s cannot have WITHIN GROUP",
+							NameListToString(funcname)),
+					 parser_errposition(pstate, location)));
+	}
+	else
 	{
 		/*
 		 * Oops.  Time to die.
@@ -282,7 +492,7 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 					 errhint("Could not choose a best candidate function. "
 							 "You might need to add explicit type casts."),
 					 parser_errposition(pstate, location)));
-		else if (list_length(agg_order) > 1)
+		else if (list_length(agg_order) > 1 && !agg_within_group)
 		{
 			/* It's agg(x, ORDER BY y,z) ... perhaps misplaced ORDER BY */
 			ereport(ERROR,
@@ -310,7 +520,7 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 	 * If there are default arguments, we have to include their types in
 	 * actual_arg_types for the purpose of checking generic type consistency.
 	 * However, we do NOT put them into the generated parse node, because
-	 * their actual values might change before the query gets run.	The
+	 * their actual values might change before the query gets run.  The
 	 * planner has to insert the up-to-date values at plan time.
 	 */
 	nargsplusdefs = nargs;
@@ -346,10 +556,21 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 	make_fn_arguments(pstate, fargs, actual_arg_types, declared_arg_types);
 
 	/*
+	 * If the function isn't actually variadic, forget any VARIADIC decoration
+	 * on the call.  (Perhaps we should throw an error instead, but
+	 * historically we've allowed people to write that.)
+	 */
+	if (!OidIsValid(vatype))
+	{
+		Assert(nvargs == 0);
+		func_variadic = false;
+	}
+
+	/*
 	 * If it's a variadic function call, transform the last nvargs arguments
 	 * into an array --- unless it's an "any" variadic.
 	 */
-	if (nvargs > 0 && declared_arg_types[nargs - 1] != ANYOID)
+	if (nvargs > 0 && vatype != ANYOID)
 	{
 		ArrayExpr  *newa = makeNode(ArrayExpr);
 		int			non_var_args = nargs - nvargs;
@@ -374,6 +595,27 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 		newa->location = exprLocation((Node *) vargs);
 
 		fargs = lappend(fargs, newa);
+
+		/* We could not have had VARIADIC marking before ... */
+		Assert(!func_variadic);
+		/* ... but now, it's a VARIADIC call */
+		func_variadic = true;
+	}
+
+	/*
+	 * If an "any" variadic is called with explicit VARIADIC marking, insist
+	 * that the variadic parameter be of some array type.
+	 */
+	if (nargs > 0 && vatype == ANYOID && func_variadic)
+	{
+		Oid			va_arr_typid = actual_arg_types[nargs - 1];
+
+		if (!OidIsValid(get_base_element_type(va_arr_typid)))
+			ereport(ERROR,
+					(errcode(ERRCODE_DATATYPE_MISMATCH),
+					 errmsg("VARIADIC argument must be an array"),
+					 parser_errposition(pstate,
+									  exprLocation((Node *) llast(fargs)))));
 	}
 
 	/* build the appropriate output structure */
@@ -400,16 +642,20 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 		aggref->aggfnoid = funcid;
 		aggref->aggtype = rettype;
 		/* aggcollid and inputcollid will be set by parse_collate.c */
-		/* args, aggorder, aggdistinct will be set by transformAggregateCall */
+		/* aggdirectargs and args will be set by transformAggregateCall */
+		/* aggorder and aggdistinct will be set by transformAggregateCall */
+		aggref->aggfilter = agg_filter;
 		aggref->aggstar = agg_star;
+		aggref->aggvariadic = func_variadic;
+		aggref->aggkind = aggkind;
 		/* agglevelsup will be set by transformAggregateCall */
 		aggref->location = location;
 
 		/*
 		 * Reject attempt to call a parameterless aggregate without (*)
-		 * syntax.	This is mere pedantry but some folks insisted ...
+		 * syntax.  This is mere pedantry but some folks insisted ...
 		 */
-		if (fargs == NIL && !agg_star)
+		if (fargs == NIL && !agg_star && !agg_within_group)
 			ereport(ERROR,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					 errmsg("%s(*) must be used to call a parameterless aggregate function",
@@ -423,10 +669,13 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 					 parser_errposition(pstate, location)));
 
 		/*
-		 * Currently it's not possible to define an aggregate with named
-		 * arguments, so this case should be impossible.  Check anyway because
-		 * the planner and executor wouldn't cope with NamedArgExprs in an
-		 * Aggref node.
+		 * We might want to support named arguments later, but disallow it for
+		 * now.  We'd need to figure out the parsed representation (should the
+		 * NamedArgExprs go above or below the TargetEntry nodes?) and then
+		 * teach the planner to reorder the list properly.  Or maybe we could
+		 * make transformAggregateCall do that?  However, if you'd also like
+		 * to allow default arguments for aggregates, we'd need to do it in
+		 * planning to avoid semantic problems.
 		 */
 		if (argnames != NIL)
 			ereport(ERROR,
@@ -444,14 +693,8 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 		/* window function */
 		WindowFunc *wfunc = makeNode(WindowFunc);
 
-		/*
-		 * True window functions must be called with a window definition.
-		 */
-		if (!over)
-			ereport(ERROR,
-					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
-					 errmsg("window function call requires an OVER clause"),
-					 parser_errposition(pstate, location)));
+		Assert(over);			/* lack of this was checked above */
+		Assert(!agg_within_group);		/* also checked above */
 
 		wfunc->winfnoid = funcid;
 		wfunc->wintype = rettype;
@@ -460,6 +703,7 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 		/* winref will be set by transformWindowFuncCall */
 		wfunc->winstar = agg_star;
 		wfunc->winagg = (fdresult == FUNCDETAIL_AGGREGATE);
+		wfunc->aggfilter = agg_filter;
 		wfunc->location = location;
 
 		/*
@@ -473,7 +717,7 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 
 		/*
 		 * Reject attempt to call a parameterless aggregate without (*)
-		 * syntax.	This is mere pedantry but some folks insisted ...
+		 * syntax.  This is mere pedantry but some folks insisted ...
 		 */
 		if (wfunc->winagg && fargs == NIL && !agg_star)
 			ereport(ERROR,
@@ -489,6 +733,15 @@ ParseFuncOrColumn(ParseState *pstate, List *funcname, List *fargs,
 			ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
 					 errmsg("aggregate ORDER BY is not implemented for window functions"),
+					 parser_errposition(pstate, location)));
+
+		/*
+		 * FILTER is not yet supported with true window functions
+		 */
+		if (!wfunc->winagg && agg_filter)
+			ereport(ERROR,
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					 errmsg("FILTER is not implemented for non-aggregate window functions"),
 					 parser_errposition(pstate, location)));
 
 		if (retset)
@@ -642,7 +895,7 @@ func_select_candidate(int nargs,
 	 * matches" in the exact-match heuristic; it also makes it possible to do
 	 * something useful with the type-category heuristics. Note that this
 	 * makes it difficult, but not impossible, to use functions declared to
-	 * take a domain as an input datatype.	Such a function will be selected
+	 * take a domain as an input datatype.  Such a function will be selected
 	 * over the base-type function only if it is an exact match at all
 	 * argument positions, and so was already chosen by our caller.
 	 *
@@ -766,7 +1019,7 @@ func_select_candidate(int nargs,
 
 	/*
 	 * The next step examines each unknown argument position to see if we can
-	 * determine a "type category" for it.	If any candidate has an input
+	 * determine a "type category" for it.  If any candidate has an input
 	 * datatype of STRING category, use STRING category (this bias towards
 	 * STRING is appropriate since unknown-type literals look like strings).
 	 * Otherwise, if all the candidates agree on the type category of this
@@ -777,7 +1030,7 @@ func_select_candidate(int nargs,
 	 * the candidates takes a preferred datatype within the category.
 	 *
 	 * Having completed this examination, remove candidates that accept the
-	 * wrong category at any unknown position.	Also, if at least one
+	 * wrong category at any unknown position.  Also, if at least one
 	 * candidate accepted a preferred type at a position, remove candidates
 	 * that accept non-preferred types.  If just one candidate remains, return
 	 * that one.  However, if this rule turns out to reject all candidates,
@@ -906,7 +1159,7 @@ func_select_candidate(int nargs,
 	 * type, and see if that gives us a unique match.  If so, use that match.
 	 *
 	 * NOTE: for a binary operator with one unknown and one non-unknown input,
-	 * we already tried this heuristic in binary_oper_exact().	However, that
+	 * we already tried this heuristic in binary_oper_exact().  However, that
 	 * code only finds exact matches, whereas here we will handle matches that
 	 * involve coercion, polymorphic type resolution, etc.
 	 */
@@ -1004,6 +1257,7 @@ func_get_detail(List *funcname,
 				Oid *rettype,	/* return value */
 				bool *retset,	/* return value */
 				int *nvargs,	/* return value */
+				Oid *vatype,	/* return value */
 				Oid **true_typeids,		/* return value */
 				List **argdefaults)		/* optional return value */
 {
@@ -1015,13 +1269,15 @@ func_get_detail(List *funcname,
 	*rettype = InvalidOid;
 	*retset = false;
 	*nvargs = 0;
+	*vatype = InvalidOid;
 	*true_typeids = NULL;
 	if (argdefaults)
 		*argdefaults = NIL;
 
 	/* Get list of possible candidates from namespace search */
 	raw_candidates = FuncnameGetCandidates(funcname, nargs, fargnames,
-										   expand_variadic, expand_defaults);
+										   expand_variadic, expand_defaults,
+										   false);
 
 	/*
 	 * Quickly check if there is an exact match to the input datatypes (there
@@ -1072,7 +1328,7 @@ func_get_detail(List *funcname,
 		 *
 		 * NB: it's important that this code does not exceed what coerce_type
 		 * can do, because the caller will try to apply coerce_type if we
-		 * return FUNCDETAIL_COERCION.	If we return that result for something
+		 * return FUNCDETAIL_COERCION.  If we return that result for something
 		 * coerce_type can't handle, we'll cause infinite recursion between
 		 * this module and coerce_type!
 		 */
@@ -1125,6 +1381,7 @@ func_get_detail(List *funcname,
 					*rettype = targetType;
 					*retset = false;
 					*nvargs = 0;
+					*vatype = InvalidOid;
 					*true_typeids = argtypes;
 					return FUNCDETAIL_COERCION;
 				}
@@ -1222,6 +1479,7 @@ func_get_detail(List *funcname,
 		pform = (Form_pg_proc) GETSTRUCT(ftup);
 		*rettype = pform->prorettype;
 		*retset = pform->proretset;
+		*vatype = pform->provariadic;
 		/* fetch default args if caller wants 'em */
 		if (argdefaults && best_candidate->ndargs > 0)
 		{
@@ -1248,7 +1506,7 @@ func_get_detail(List *funcname,
 			{
 				/*
 				 * This is a bit tricky in named notation, since the supplied
-				 * arguments could replace any subset of the defaults.	We
+				 * arguments could replace any subset of the defaults.  We
 				 * work by making a bitmapset of the argnumbers of defaulted
 				 * arguments, then scanning the defaults list and selecting
 				 * the needed items.  (This assumes that defaulted arguments
@@ -1302,6 +1560,101 @@ func_get_detail(List *funcname,
 	}
 
 	return FUNCDETAIL_NOTFOUND;
+}
+
+
+/*
+ * unify_hypothetical_args()
+ *
+ * Ensure that each hypothetical direct argument of a hypothetical-set
+ * aggregate has the same type as the corresponding aggregated argument.
+ * Modify the expressions in the fargs list, if necessary, and update
+ * actual_arg_types[].
+ *
+ * If the agg declared its args non-ANY (even ANYELEMENT), we need only a
+ * sanity check that the declared types match; make_fn_arguments will coerce
+ * the actual arguments to match the declared ones.  But if the declaration
+ * is ANY, nothing will happen in make_fn_arguments, so we need to fix any
+ * mismatch here.  We use the same type resolution logic as UNION etc.
+ */
+static void
+unify_hypothetical_args(ParseState *pstate,
+						List *fargs,
+						int numAggregatedArgs,
+						Oid *actual_arg_types,
+						Oid *declared_arg_types)
+{
+	Node	   *args[FUNC_MAX_ARGS];
+	int			numDirectArgs,
+				numNonHypotheticalArgs;
+	int			i;
+	ListCell   *lc;
+
+	numDirectArgs = list_length(fargs) - numAggregatedArgs;
+	numNonHypotheticalArgs = numDirectArgs - numAggregatedArgs;
+	/* safety check (should only trigger with a misdeclared agg) */
+	if (numNonHypotheticalArgs < 0)
+		elog(ERROR, "incorrect number of arguments to hypothetical-set aggregate");
+
+	/* Deconstruct fargs into an array for ease of subscripting */
+	i = 0;
+	foreach(lc, fargs)
+	{
+		args[i++] = (Node *) lfirst(lc);
+	}
+
+	/* Check each hypothetical arg and corresponding aggregated arg */
+	for (i = numNonHypotheticalArgs; i < numDirectArgs; i++)
+	{
+		int			aargpos = numDirectArgs + (i - numNonHypotheticalArgs);
+		Oid			commontype;
+
+		/* A mismatch means AggregateCreate didn't check properly ... */
+		if (declared_arg_types[i] != declared_arg_types[aargpos])
+			elog(ERROR, "hypothetical-set aggregate has inconsistent declared argument types");
+
+		/* No need to unify if make_fn_arguments will coerce */
+		if (declared_arg_types[i] != ANYOID)
+			continue;
+
+		/*
+		 * Select common type, giving preference to the aggregated argument's
+		 * type (we'd rather coerce the direct argument once than coerce all
+		 * the aggregated values).
+		 */
+		commontype = select_common_type(pstate,
+										list_make2(args[aargpos], args[i]),
+										"WITHIN GROUP",
+										NULL);
+
+		/*
+		 * Perform the coercions.  We don't need to worry about NamedArgExprs
+		 * here because they aren't supported with aggregates.
+		 */
+		args[i] = coerce_type(pstate,
+							  args[i],
+							  actual_arg_types[i],
+							  commontype, -1,
+							  COERCION_IMPLICIT,
+							  COERCE_IMPLICIT_CAST,
+							  -1);
+		actual_arg_types[i] = commontype;
+		args[aargpos] = coerce_type(pstate,
+									args[aargpos],
+									actual_arg_types[aargpos],
+									commontype, -1,
+									COERCION_IMPLICIT,
+									COERCE_IMPLICIT_CAST,
+									-1);
+		actual_arg_types[aargpos] = commontype;
+	}
+
+	/* Reconstruct fargs from array */
+	i = 0;
+	foreach(lc, fargs)
+	{
+		lfirst(lc) = args[i++];
+	}
 }
 
 
@@ -1380,7 +1733,7 @@ FuncNameAsType(List *funcname)
 	Oid			result;
 	Type		typtup;
 
-	typtup = LookupTypeName(NULL, makeTypeNameFromNameList(funcname), NULL);
+	typtup = LookupTypeName(NULL, makeTypeNameFromNameList(funcname), NULL, false);
 	if (typtup == NULL)
 		return InvalidOid;
 
@@ -1398,7 +1751,7 @@ FuncNameAsType(List *funcname)
  * ParseComplexProjection -
  *	  handles function calls with a single argument that is of complex type.
  *	  If the function call is actually a column projection, return a suitably
- *	  transformed expression tree.	If not, return NULL.
+ *	  transformed expression tree.  If not, return NULL.
  */
 static Node *
 ParseComplexProjection(ParseState *pstate, char *funcname, Node *first_arg,
@@ -1472,7 +1825,7 @@ ParseComplexProjection(ParseState *pstate, char *funcname, Node *first_arg,
  *		The result is something like "foo(integer)".
  *
  * If argnames isn't NIL, it is a list of C strings representing the actual
- * arg names for the last N arguments.	This must be considered part of the
+ * arg names for the last N arguments.  This must be considered part of the
  * function signature too, when dealing with named-notation function calls.
  *
  * This is typically used in the construction of function-not-found error
@@ -1539,7 +1892,7 @@ LookupFuncName(List *funcname, int nargs, const Oid *argtypes, bool noError)
 {
 	FuncCandidateList clist;
 
-	clist = FuncnameGetCandidates(funcname, nargs, NIL, false, false);
+	clist = FuncnameGetCandidates(funcname, nargs, NIL, false, false, noError);
 
 	while (clist)
 	{
@@ -1556,27 +1909,6 @@ LookupFuncName(List *funcname, int nargs, const Oid *argtypes, bool noError)
 											  NIL, argtypes))));
 
 	return InvalidOid;
-}
-
-/*
- * LookupTypeNameOid
- *		Convenience routine to look up a type, silently accepting shell types
- */
-static Oid
-LookupTypeNameOid(const TypeName *typename)
-{
-	Oid			result;
-	Type		typtup;
-
-	typtup = LookupTypeName(NULL, typename, NULL);
-	if (typtup == NULL)
-		ereport(ERROR,
-				(errcode(ERRCODE_UNDEFINED_OBJECT),
-				 errmsg("type \"%s\" does not exist",
-						TypeNameToString(typename))));
-	result = typeTypeId(typtup);
-	ReleaseSysCache(typtup);
-	return result;
 }
 
 /*
@@ -1606,7 +1938,7 @@ LookupFuncNameTypeNames(List *funcname, List *argtypes, bool noError)
 	{
 		TypeName   *t = (TypeName *) lfirst(args_item);
 
-		argoids[i] = LookupTypeNameOid(t);
+		argoids[i] = LookupTypeNameOid(NULL, t, noError);
 		args_item = lnext(args_item);
 	}
 
@@ -1646,7 +1978,7 @@ LookupAggNameTypeNames(List *aggname, List *argtypes, bool noError)
 	{
 		TypeName   *t = (TypeName *) lfirst(lc);
 
-		argoids[i] = LookupTypeNameOid(t);
+		argoids[i] = LookupTypeNameOid(NULL, t, noError);
 		i++;
 	}
 

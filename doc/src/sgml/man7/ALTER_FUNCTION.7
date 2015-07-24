@@ -2,12 +2,12 @@
 .\"     Title: ALTER FUNCTION
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "ALTER FUNCTION" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "ALTER FUNCTION" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 ALTER_FUNCTION \- change the definition of a function
-.\" ALTER FUNCTION
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -119,7 +118,11 @@ SECURITY DEFINER, it will subsequently execute as the new owner\&.
 The new schema for the function\&.
 .RE
 .PP
-CALLED ON NULL INPUT, RETURNS NULL ON NULL INPUT, STRICT
+CALLED ON NULL INPUT
+.br
+RETURNS NULL ON NULL INPUT
+.br
+STRICT
 .RS 4
 CALLED ON NULL INPUT
 changes the function so that it will be invoked when some or all of its arguments are null\&.
@@ -131,14 +134,20 @@ CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7))
 for more information\&.
 .RE
 .PP
-IMMUTABLE, STABLE, VOLATILE
+IMMUTABLE
+.br
+STABLE
+.br
+VOLATILE
 .RS 4
 Change the volatility of the function to the specified setting\&. See
 CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7))
 for details\&.
 .RE
 .PP
-[ EXTERNAL ] SECURITY INVOKER, [ EXTERNAL ] SECURITY DEFINER
+[ EXTERNAL ] SECURITY INVOKER
+.br
+[ EXTERNAL ] SECURITY DEFINER
 .RS 4
 Change whether the function is a security definer or not\&. The key word
 EXTERNAL
@@ -168,7 +177,9 @@ CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7))
 for more information\&.
 .RE
 .PP
-\fIconfiguration_parameter\fR, \fIvalue\fR
+\fIconfiguration_parameter\fR
+.br
+\fIvalue\fR
 .RS 4
 Add or change the assignment to be made to a configuration parameter when the function is called\&. If
 \fIvalue\fR

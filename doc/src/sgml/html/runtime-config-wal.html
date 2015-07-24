@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -125,7 +125,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        <TT
@@ -140,13 +141,18 @@ CLASS="LITERAL"
         shutdown. <TT
 CLASS="LITERAL"
 >archive</TT
-> adds logging required for WAL archiving,
-        and <TT
+> adds logging required for WAL archiving;
+        <TT
 CLASS="LITERAL"
 >hot_standby</TT
 > further adds information required to run
-        read-only queries on a standby server.
-        This parameter can only be set at server start.
+        read-only queries on a standby server; and, finally
+        <TT
+CLASS="LITERAL"
+>logical</TT
+> adds information necessary to support logical
+        decoding.  Each level includes the information logged at all lower
+        levels.  This parameter can only be set at server start.
        </P
 ><P
 >        In <TT
@@ -198,21 +204,16 @@ CLASS="COMMAND"
 ><P
 ></P
 >
-        But minimal WAL does not contain
-        enough information to reconstruct the data from a base backup and the
-        WAL logs, so either <TT
+        But minimal WAL does not contain enough information to reconstruct the
+        data from a base backup and the WAL logs, so <TT
 CLASS="LITERAL"
 >archive</TT
-> or <TT
-CLASS="LITERAL"
->hot_standby</TT
->
-        level must be used to enable
-        WAL archiving (<A
+> or
+        higher must be used to enable WAL archiving
+        (<A
 HREF="runtime-config-wal.html#GUC-ARCHIVE-MODE"
 >archive_mode</A
->) and streaming
-        replication.
+>) and streaming replication.
        </P
 ><P
 >        In <TT
@@ -231,21 +232,47 @@ CLASS="VARNAME"
         <TT
 CLASS="LITERAL"
 >hot_standby</TT
-> on the primary, and
+> or higher on the primary, and
         <A
 HREF="runtime-config-replication.html#GUC-HOT-STANDBY"
 >hot_standby</A
 > must be enabled in the standby. It is
-        thought that there is
-        little measurable difference in performance between using
-        <TT
+        thought that there is little measurable difference in performance
+        between using <TT
 CLASS="LITERAL"
 >hot_standby</TT
 > and <TT
 CLASS="LITERAL"
 >archive</TT
-> levels, so feedback
-        is welcome if any production impacts are noticeable.
+> levels,
+        so feedback is welcome if any production impacts are noticeable.
+       </P
+><P
+>        In <TT
+CLASS="LITERAL"
+>logical</TT
+> level, the same information is logged as
+        with <TT
+CLASS="LITERAL"
+>hot_standby</TT
+>, plus information needed to allow
+        extracting logical changesets from the WAL. Using a level of
+        <TT
+CLASS="LITERAL"
+>logical</TT
+> will increase the WAL volume, particularly if many
+        tables are configured for <TT
+CLASS="LITERAL"
+>REPLICA IDENTITY FULL</TT
+> and
+        many <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> and <TT
+CLASS="COMMAND"
+>DELETE</TT
+> statements are
+        executed.
        </P
 ></DD
 ><DT
@@ -258,7 +285,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        If this parameter is on, the <SPAN
@@ -363,7 +391,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies whether transaction commit will wait for WAL records
@@ -502,7 +531,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Method used for forcing WAL updates out to disk.
@@ -617,7 +647,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When this parameter is on, the <SPAN
@@ -671,6 +702,44 @@ CLASS="LITERAL"
 ></DD
 ><DT
 ><A
+NAME="GUC-WAL-LOG-HINTS"
+></A
+><TT
+CLASS="VARNAME"
+>wal_log_hints</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)
+      </DT
+><DD
+><P
+>        When this parameter is <TT
+CLASS="LITERAL"
+>on</TT
+>, the <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        server writes the entire content of each disk page to WAL during the
+        first modification of that page after a checkpoint, even for
+        non-critical modifications of so-called hint bits.
+       </P
+><P
+>        If data checksums are enabled, hint bit updates are always WAL-logged
+        and this setting is ignored. You can use this setting to test how much
+        extra WAL-logging would occur if your database had data checksums
+        enabled.
+       </P
+><P
+>        This parameter can only be set at server start. The default value is <TT
+CLASS="LITERAL"
+>off</TT
+>.
+       </P
+></DD
+><DT
+><A
 NAME="GUC-WAL-BUFFERS"
 ></A
 ><TT
@@ -679,7 +748,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        The amount of shared memory used for WAL data that has not yet been
@@ -727,7 +797,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the delay between activity rounds for the WAL writer.
@@ -763,7 +834,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        <TT
@@ -826,7 +898,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Minimum number of concurrent open transactions to require
@@ -865,7 +938,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Maximum number of log file segments between automatic WAL
@@ -889,7 +963,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Maximum time between automatic WAL checkpoints, in
@@ -916,7 +991,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >floating point</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies the target of checkpoint completion, as a fraction of
@@ -939,7 +1015,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Write a message to the server log if checkpoints caused by
@@ -994,7 +1071,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        When <TT
@@ -1042,10 +1120,11 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
->        The shell command to execute to archive a completed WAL file
+>        The local shell command to execute to archive a completed WAL file
         segment.  Any <TT
 CLASS="LITERAL"
 >%p</TT
@@ -1117,7 +1196,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        The <A

@@ -3,7 +3,7 @@
  * tblspcdesc.c
  *	  rmgr descriptor routines for commands/tablespace.c
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -36,5 +36,5 @@ tblspc_desc(StringInfo buf, uint8 xl_info, char *rec)
 		appendStringInfo(buf, "drop tablespace: %u", xlrec->ts_id);
 	}
 	else
-		appendStringInfo(buf, "UNKNOWN");
+		appendStringInfoString(buf, "UNKNOWN");
 }

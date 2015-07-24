@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERINDEX"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN65348"
+NAME="AEN68232"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN65348"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN65353"
+NAME="AEN68235"
 ></A
 ><H2
 >Synopsis</H2
@@ -157,12 +157,29 @@ CLASS="REPLACEABLE"
 ><I
 >storage_parameter</I
 ></TT
-> [, ... ] )</PRE
+> [, ... ] )
+ALTER INDEX ALL IN TABLESPACE <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> [ OWNED BY <TT
+CLASS="REPLACEABLE"
+><I
+>role_name</I
+></TT
+> [, ... ] ]
+    SET TABLESPACE <TT
+CLASS="REPLACEABLE"
+><I
+>new_tablespace</I
+></TT
+> [ NOWAIT ]</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65364"
+NAME="AEN68249"
 ></A
 ><H2
 >Description</H2
@@ -212,6 +229,35 @@ CLASS="LITERAL"
 ><P
 >      This form changes the index's tablespace to the specified tablespace and
       moves the data file(s) associated with the index to the new tablespace.
+      To change the tablespace of an index, you must own the index and have
+      <TT
+CLASS="LITERAL"
+>CREATE</TT
+> privilege on the new tablespace.
+      All indexes in the current database in a tablespace can be moved by using
+      the <TT
+CLASS="LITERAL"
+>ALL IN TABLESPACE</TT
+> form, which will lock all
+      indexes to be moved and then move each one.  This form also supports
+      <TT
+CLASS="LITERAL"
+>OWNED BY</TT
+>, which will only move indexes owned by the
+      roles specified.  If the <TT
+CLASS="LITERAL"
+>NOWAIT</TT
+> option is specified
+      then the command will fail if it is unable to acquire all of the locks
+      required immediately.  Note that system catalogs will not be moved by
+      this command, use <TT
+CLASS="COMMAND"
+>ALTER DATABASE</TT
+> or explicit
+      <TT
+CLASS="COMMAND"
+>ALTER INDEX</TT
+> invocations instead if desired.
       See also
       <A
 HREF="sql-createtablespace.html"
@@ -283,7 +329,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65403"
+NAME="AEN68294"
 ></A
 ><H2
 >Parameters</H2
@@ -360,7 +406,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65431"
+NAME="AEN68322"
 ></A
 ><H2
 >Notes</H2
@@ -395,7 +441,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65440"
+NAME="AEN68331"
 ></A
 ><H2
 >Examples</H2
@@ -425,7 +471,7 @@ REINDEX INDEX distributors;</PRE
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65448"
+NAME="AEN68339"
 ></A
 ><H2
 >Compatibility</H2
@@ -443,7 +489,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN65453"
+NAME="AEN68344"
 ></A
 ><H2
 >See Also</H2

@@ -19,10 +19,13 @@ test: uuid
 test: enum
 test: money
 test: rangetypes
+test: pg_lsn
+test: regproc
 test: strings
 test: numerology
 test: point
 test: lseg
+test: line
 test: box
 test: path
 test: polygon
@@ -96,9 +99,12 @@ test: privileges
 test: security_label
 test: collate
 test: matview
+test: lock
+test: replica_identity
 test: alter_generic
 test: misc
 test: psql
+test: async
 test: rules
 test: event_trigger
 test: select_views
@@ -117,6 +123,9 @@ test: xmlmap
 test: functional_deps
 test: advisory_lock
 test: json
+test: jsonb
+test: indirect_toast
+test: equivclass
 test: plancache
 test: limit
 test: plpgsql

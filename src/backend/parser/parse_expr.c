@@ -3,7 +3,7 @@
  * parse_expr.c
  *	  handle expressions in parser
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -22,6 +22,7 @@
 #include "nodes/nodeFuncs.h"
 #include "optimizer/var.h"
 #include "parser/analyze.h"
+#include "parser/parse_clause.h"
 #include "parser/parse_coerce.h"
 #include "parser/parse_collate.h"
 #include "parser/parse_expr.h"
@@ -462,8 +463,8 @@ transformIndirection(ParseState *pstate, Node *basenode, List *indirection)
 			newresult = ParseFuncOrColumn(pstate,
 										  list_make1(n),
 										  list_make1(result),
-										  NIL, false, false, false,
-										  NULL, true, location);
+										  NULL,
+										  location);
 			if (newresult == NULL)
 				unknown_attribute(pstate, result, strVal(n), location);
 			result = newresult;
@@ -505,7 +506,7 @@ transformColumnRef(ParseState *pstate, ColumnRef *cref)
 	}			crerr = CRERR_NO_COLUMN;
 
 	/*
-	 * Give the PreParseColumnRefHook, if any, first shot.	If it returns
+	 * Give the PreParseColumnRefHook, if any, first shot.  If it returns
 	 * non-null then that's all, folks.
 	 */
 	if (pstate->p_pre_columnref_hook != NULL)
@@ -576,7 +577,7 @@ transformColumnRef(ParseState *pstate, ColumnRef *cref)
 					}
 
 					/*
-					 * Try to find the name as a relation.	Note that only
+					 * Try to find the name as a relation.  Note that only
 					 * relations already entered into the rangetable will be
 					 * recognized.
 					 *
@@ -630,8 +631,8 @@ transformColumnRef(ParseState *pstate, ColumnRef *cref)
 					node = ParseFuncOrColumn(pstate,
 											 list_make1(makeString(colname)),
 											 list_make1(node),
-											 NIL, false, false, false,
-											 NULL, true, cref->location);
+											 NULL,
+											 cref->location);
 				}
 				break;
 			}
@@ -675,8 +676,8 @@ transformColumnRef(ParseState *pstate, ColumnRef *cref)
 					node = ParseFuncOrColumn(pstate,
 											 list_make1(makeString(colname)),
 											 list_make1(node),
-											 NIL, false, false, false,
-											 NULL, true, cref->location);
+											 NULL,
+											 cref->location);
 				}
 				break;
 			}
@@ -733,8 +734,8 @@ transformColumnRef(ParseState *pstate, ColumnRef *cref)
 					node = ParseFuncOrColumn(pstate,
 											 list_make1(makeString(colname)),
 											 list_make1(node),
-											 NIL, false, false, false,
-											 NULL, true, cref->location);
+											 NULL,
+											 cref->location);
 				}
 				break;
 			}
@@ -807,7 +808,7 @@ transformParamRef(ParseState *pstate, ParamRef *pref)
 	Node	   *result;
 
 	/*
-	 * The core parser knows nothing about Params.	If a hook is supplied,
+	 * The core parser knows nothing about Params.  If a hook is supplied,
 	 * call it.  If not, or if the hook returns NULL, throw a generic error.
 	 */
 	if (pstate->p_paramref_hook != NULL)
@@ -1107,7 +1108,7 @@ transformAExprIn(ParseState *pstate, A_Expr *a)
 	 * We try to generate a ScalarArrayOpExpr from IN/NOT IN, but this is only
 	 * possible if there is a suitable array type available.  If not, we fall
 	 * back to a boolean condition tree with multiple copies of the lefthand
-	 * expression.	Also, any IN-list items that contain Vars are handled as
+	 * expression.  Also, any IN-list items that contain Vars are handled as
 	 * separate boolean conditions, because that gives the planner more scope
 	 * for optimization on such clauses.
 	 *
@@ -1138,7 +1139,7 @@ transformAExprIn(ParseState *pstate, A_Expr *a)
 		Oid			array_type;
 
 		/*
-		 * Try to select a common type for the array elements.	Note that
+		 * Try to select a common type for the array elements.  Note that
 		 * since the LHS' type is first in the list, it will be preferred when
 		 * there is doubt (eg, when all the RHS items are unknown literals).
 		 *
@@ -1250,16 +1251,31 @@ transformFuncCall(ParseState *pstate, FuncCall *fn)
 													(Node *) lfirst(args)));
 	}
 
+	/*
+	 * When WITHIN GROUP is used, we treat its ORDER BY expressions as
+	 * additional arguments to the function, for purposes of function lookup
+	 * and argument type coercion.  So, transform each such expression and add
+	 * them to the targs list.  We don't explicitly mark where each argument
+	 * came from, but ParseFuncOrColumn can tell what's what by reference to
+	 * list_length(fn->agg_order).
+	 */
+	if (fn->agg_within_group)
+	{
+		Assert(fn->agg_order != NIL);
+		foreach(args, fn->agg_order)
+		{
+			SortBy	   *arg = (SortBy *) lfirst(args);
+
+			targs = lappend(targs, transformExpr(pstate, arg->node,
+												 EXPR_KIND_ORDER_BY));
+		}
+	}
+
 	/* ... and hand off to ParseFuncOrColumn */
 	return ParseFuncOrColumn(pstate,
 							 fn->funcname,
 							 targs,
-							 fn->agg_order,
-							 fn->agg_star,
-							 fn->agg_distinct,
-							 fn->func_variadic,
-							 fn->over,
-							 false,
+							 fn,
 							 fn->location);
 }
 
@@ -1430,6 +1446,7 @@ transformSubLink(ParseState *pstate, SubLink *sublink)
 		case EXPR_KIND_FROM_FUNCTION:
 		case EXPR_KIND_WHERE:
 		case EXPR_KIND_HAVING:
+		case EXPR_KIND_FILTER:
 		case EXPR_KIND_WINDOW_PARTITION:
 		case EXPR_KIND_WINDOW_ORDER:
 		case EXPR_KIND_WINDOW_FRAME_RANGE:
@@ -1493,7 +1510,7 @@ transformSubLink(ParseState *pstate, SubLink *sublink)
 	qtree = parse_sub_analyze(sublink->subselect, pstate, NULL, false);
 
 	/*
-	 * Check that we got something reasonable.	Many of these conditions are
+	 * Check that we got something reasonable.  Many of these conditions are
 	 * impossible given restrictions of the grammar, but check 'em anyway.
 	 */
 	if (!IsA(qtree, Query) ||
@@ -1908,7 +1925,7 @@ transformXmlExpr(ParseState *pstate, XmlExpr *x)
 	newx->location = x->location;
 
 	/*
-	 * gram.y built the named args as a list of ResTarget.	Transform each,
+	 * gram.y built the named args as a list of ResTarget.  Transform each,
 	 * and break the names out as a separate list.
 	 */
 	newx->named_args = NIL;
@@ -2171,9 +2188,9 @@ transformWholeRowRef(ParseState *pstate, RangeTblEntry *rte, int location)
 	vnum = RTERangeTablePosn(pstate, rte, &sublevels_up);
 
 	/*
-	 * Build the appropriate referencing node.	Note that if the RTE is a
+	 * Build the appropriate referencing node.  Note that if the RTE is a
 	 * function returning scalar, we create just a plain reference to the
-	 * function value, not a composite containing a single column.	This is
+	 * function value, not a composite containing a single column.  This is
 	 * pretty inconsistent at first sight, but it's what we've done
 	 * historically.  One argument for it is that "rel" and "rel.*" mean the
 	 * same thing for composite relations, so why not for scalar functions...
@@ -2357,7 +2374,7 @@ make_row_comparison_op(ParseState *pstate, List *opname,
 
 	/*
 	 * Now we must determine which row comparison semantics (= <> < <= > >=)
-	 * apply to this set of operators.	We look for btree opfamilies
+	 * apply to this set of operators.  We look for btree opfamilies
 	 * containing the operators, and see which interpretations (strategy
 	 * numbers) exist for each operator.
 	 */
@@ -2579,6 +2596,8 @@ ParseExprKindName(ParseExprKind exprKind)
 			return "WHERE";
 		case EXPR_KIND_HAVING:
 			return "HAVING";
+		case EXPR_KIND_FILTER:
+			return "FILTER";
 		case EXPR_KIND_WINDOW_PARTITION:
 			return "window PARTITION BY";
 		case EXPR_KIND_WINDOW_ORDER:

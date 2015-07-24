@@ -10,14 +10,14 @@
  *		 ORDER BY col ASC/DESC
  *		 LIMIT 1)
  * Given a suitable index on tab.col, this can be much faster than the
- * generic scan-all-the-rows aggregation plan.	We can handle multiple
+ * generic scan-all-the-rows aggregation plan.  We can handle multiple
  * MIN/MAX aggregates by generating multiple subqueries, and their
- * orderings can be different.	However, if the query contains any
+ * orderings can be different.  However, if the query contains any
  * non-optimizable aggregates, there's no point since we'll have to
  * scan all the rows anyway.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -128,7 +128,7 @@ preprocess_minmax_aggregates(PlannerInfo *root, List *tlist)
 
 	/*
 	 * Scan the tlist and HAVING qual to find all the aggregates and verify
-	 * all are MIN/MAX aggregates.	Stop as soon as we find one that isn't.
+	 * all are MIN/MAX aggregates.  Stop as soon as we find one that isn't.
 	 */
 	aggs_list = NIL;
 	if (find_minmax_aggs_walker((Node *) tlist, &aggs_list))
@@ -163,7 +163,7 @@ preprocess_minmax_aggregates(PlannerInfo *root, List *tlist)
 		 * We can use either an ordering that gives NULLS FIRST or one that
 		 * gives NULLS LAST; furthermore there's unlikely to be much
 		 * performance difference between them, so it doesn't seem worth
-		 * costing out both ways if we get a hit on the first one.	NULLS
+		 * costing out both ways if we get a hit on the first one.  NULLS
 		 * FIRST is more likely to be available if the operator is a
 		 * reverse-sort operator, so try that first if reverse.
 		 */
@@ -315,14 +315,39 @@ find_minmax_aggs_walker(Node *node, List **context)
 		ListCell   *l;
 
 		Assert(aggref->agglevelsup == 0);
-		if (list_length(aggref->args) != 1 || aggref->aggorder != NIL)
+		if (list_length(aggref->args) != 1)
 			return true;		/* it couldn't be MIN/MAX */
+
+		/*
+		 * ORDER BY is usually irrelevant for MIN/MAX, but it can change the
+		 * outcome if the aggsortop's operator class recognizes non-identical
+		 * values as equal.  For example, 4.0 and 4.00 are equal according to
+		 * numeric_ops, yet distinguishable.  If MIN() receives more than one
+		 * value equal to 4.0 and no value less than 4.0, it is unspecified
+		 * which of those equal values MIN() returns.  An ORDER BY expression
+		 * that differs for each of those equal values of the argument
+		 * expression makes the result predictable once again.  This is a
+		 * niche requirement, and we do not implement it with subquery paths.
+		 * In any case, this test lets us reject ordered-set aggregates
+		 * quickly.
+		 */
+		if (aggref->aggorder != NIL)
+			return true;
 		/* note: we do not care if DISTINCT is mentioned ... */
-		curTarget = (TargetEntry *) linitial(aggref->args);
+
+		/*
+		 * We might implement the optimization when a FILTER clause is present
+		 * by adding the filter to the quals of the generated subquery.  For
+		 * now, just punt.
+		 */
+		if (aggref->aggfilter != NULL)
+			return true;
 
 		aggsortop = fetch_agg_sort_op(aggref->aggfnoid);
 		if (!OidIsValid(aggsortop))
 			return true;		/* not a MIN/MAX aggregate */
+
+		curTarget = (TargetEntry *) linitial(aggref->args);
 
 		if (contain_mutable_functions((Node *) curTarget->expr))
 			return true;		/* not potentially indexable */
@@ -380,9 +405,8 @@ build_minmax_path(PlannerInfo *root, MinMaxAggInfo *mminfo,
 	TargetEntry *tle;
 	NullTest   *ntest;
 	SortGroupClause *sortcl;
-	Path	   *cheapest_path;
+	RelOptInfo *final_rel;
 	Path	   *sorted_path;
-	double		dNumGroups;
 	Cost		path_cost;
 	double		path_fraction;
 
@@ -451,25 +475,28 @@ build_minmax_path(PlannerInfo *root, MinMaxAggInfo *mminfo,
 	 * Generate the best paths for this query, telling query_planner that we
 	 * have LIMIT 1.
 	 */
-	query_planner(subroot, parse->targetList, 1.0, 1.0,
-				  minmax_qp_callback, NULL,
-				  &cheapest_path, &sorted_path, &dNumGroups);
+	subroot->tuple_fraction = 1.0;
+	subroot->limit_tuples = 1.0;
+
+	final_rel = query_planner(subroot, parse->targetList,
+							  minmax_qp_callback, NULL);
 
 	/*
-	 * Fail if no presorted path.  However, if query_planner determines that
-	 * the presorted path is also the cheapest, it will set sorted_path to
-	 * NULL ... don't be fooled.  (This is kind of a pain here, but it
-	 * simplifies life for grouping_planner, so leave it be.)
+	 * Get the best presorted path, that being the one that's cheapest for
+	 * fetching just one row.  If there's no such path, fail.
 	 */
+	if (final_rel->rows > 1.0)
+		path_fraction = 1.0 / final_rel->rows;
+	else
+		path_fraction = 1.0;
+
+	sorted_path =
+		get_cheapest_fractional_path_for_pathkeys(final_rel->pathlist,
+												  subroot->query_pathkeys,
+												  NULL,
+												  path_fraction);
 	if (!sorted_path)
-	{
-		if (cheapest_path &&
-			pathkeys_contained_in(subroot->sort_pathkeys,
-								  cheapest_path->pathkeys))
-			sorted_path = cheapest_path;
-		else
-			return false;
-	}
+		return false;
 
 	/*
 	 * Determine cost to get just the first row of the presorted path.
@@ -477,11 +504,6 @@ build_minmax_path(PlannerInfo *root, MinMaxAggInfo *mminfo,
 	 * Note: cost calculation here should match
 	 * compare_fractional_path_costs().
 	 */
-	if (sorted_path->parent->rows > 1.0)
-		path_fraction = 1.0 / sorted_path->parent->rows;
-	else
-		path_fraction = 1.0;
-
 	path_cost = sorted_path->startup_cost +
 		path_fraction * (sorted_path->total_cost - sorted_path->startup_cost);
 

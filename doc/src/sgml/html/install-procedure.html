@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="  Installation from Source Code"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -154,7 +154,7 @@ CLASS="USERINPUT"
 >
 <KBD
 CLASS="USERINPUT"
->gmake</KBD
+>make</KBD
 ></PRE
 ><P>
    </P
@@ -654,6 +654,33 @@ CLASS="VARIABLELIST"
 ><DT
 ><TT
 CLASS="OPTION"
+>--with-extra-version=<TT
+CLASS="REPLACEABLE"
+><I
+>STRING</I
+></TT
+></TT
+></DT
+><DD
+><P
+>         Append <TT
+CLASS="REPLACEABLE"
+><I
+>STRING</I
+></TT
+> to the PostgreSQL version number.  You
+         can use this, for example, to mark binaries built from unreleased Git
+         snapshots or containing custom patches with an extra version string
+         such as a <TT
+CLASS="COMMAND"
+>git describe</TT
+> identifier or a
+         distribution package release number.
+        </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >--with-includes=<TT
 CLASS="REPLACEABLE"
 ><I
@@ -894,38 +921,6 @@ CLASS="FILENAME"
 ><DT
 ><TT
 CLASS="OPTION"
->--with-krb5</TT
-></DT
-><DD
-><P
->         Build with support for Kerberos 5 authentication. On many
-         systems, the Kerberos system is not installed in a location
-         that is searched by default (e.g., <TT
-CLASS="FILENAME"
->/usr/include</TT
->,
-         <TT
-CLASS="FILENAME"
->/usr/lib</TT
->), so you must use the options
-         <TT
-CLASS="OPTION"
->--with-includes</TT
-> and <TT
-CLASS="OPTION"
->--with-libraries</TT
-> in
-         addition to this option.  <TT
-CLASS="FILENAME"
->configure</TT
-> will check
-         for the required header files and libraries to make sure that
-         your Kerberos installation is sufficient before proceeding.
-        </P
-></DD
-><DT
-><TT
-CLASS="OPTION"
 >--with-krb-srvnam=<TT
 CLASS="REPLACEABLE"
 ><I
@@ -935,8 +930,8 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->         The default name of the Kerberos service principal (also used
-         by GSSAPI).
+>         The default name of the Kerberos service principal used
+         by GSSAPI.
          <TT
 CLASS="LITERAL"
 >postgres</TT
@@ -953,7 +948,8 @@ CLASS="LITERAL"
 ><TT
 CLASS="OPTION"
 >--with-openssl</TT
-></DT
+>
+       </DT
 ><DD
 ><P
 >         Build with support for <ACRONYM
@@ -1008,7 +1004,7 @@ HREF="libpq-ldap.html"
 > and
          <A
 HREF="auth-methods.html#AUTH-LDAP"
->Section 19.3.8</A
+>Section 19.3.7</A
 > for more information). On Unix,
          this requires the <SPAN
 CLASS="PRODUCTNAME"
@@ -1082,8 +1078,74 @@ CLASS="OPTION"
 ><DD
 ><P
 >         Build with Bonjour support.  This requires Bonjour support
-         in your operating system.  Recommended on Mac OS X.
+         in your operating system.  Recommended on OS X.
         </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--with-uuid=<TT
+CLASS="REPLACEABLE"
+><I
+>LIBRARY</I
+></TT
+></TT
+></DT
+><DD
+><P
+>         Build the 
+         <A
+HREF="uuid-ossp.html"
+>uuid-ossp</A
+> module
+         (which provides functions to generate UUIDs), using the specified
+         UUID library.
+         <TT
+CLASS="REPLACEABLE"
+><I
+>LIBRARY</I
+></TT
+> must be one of:
+        </P
+><P
+></P
+><UL
+><LI
+><P
+>           <TT
+CLASS="OPTION"
+>bsd</TT
+> to use the UUID functions found in FreeBSD, NetBSD,
+           and some other BSD-derived systems
+          </P
+></LI
+><LI
+><P
+>           <TT
+CLASS="OPTION"
+>e2fs</TT
+> to use the UUID library created by
+           the <TT
+CLASS="LITERAL"
+>e2fsprogs</TT
+> project; this library is present in most
+           Linux systems and in OS X, and can be obtained for other
+           platforms as well
+          </P
+></LI
+><LI
+><P
+>           <TT
+CLASS="OPTION"
+>ossp</TT
+> to use the <A
+HREF="http://www.ossp.org/pkg/lib/uuid/"
+TARGET="_top"
+>OSSP UUID library</A
+>
+          </P
+></LI
+></UL
 ></DD
 ><DT
 ><TT
@@ -1092,19 +1154,10 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->         Build components using the <A
-HREF="http://www.ossp.org/pkg/lib/uuid/"
-TARGET="_top"
->OSSP UUID
-         library</A
->.  Specifically, build the
-         
-         <A
-HREF="uuid-ossp.html"
->uuid-ossp</A
-> module,
-         which provides functions to generate
-         UUIDs.
+>         Obsolete equivalent of <TT
+CLASS="LITERAL"
+>--with-uuid=ossp</TT
+>.
         </P
 ></DD
 ><DT
@@ -1427,7 +1480,8 @@ CLASS="REPLACEABLE"
 >DIRECTORY</I
 ></TT
 ></TT
-></DT
+>
+       </DT
 ><DD
 ><P
 >         <SPAN
@@ -1435,10 +1489,7 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > includes its own time zone database,
          which it requires for date and time operations.  This time zone
-         database is in fact compatible with the <SPAN
-CLASS="QUOTE"
->"zoneinfo"</SPAN
-> time zone
+         database is in fact compatible with the IANA time zone
          database provided by many operating systems such as FreeBSD,
          Linux, and Solaris, so it would be redundant to install it again.
          When this option is used, the system-supplied time zone database
@@ -1535,7 +1586,7 @@ CLASS="OPTION"
          metrics.
          See <A
 HREF="regress-coverage.html"
->Section 30.4</A
+>Section 30.5</A
 >
          for more information. This option is for use only with GCC
          and when doing development work.
@@ -1661,6 +1712,24 @@ CLASS="SCREEN"
 CLASS="SCREEN"
 >./configure CC='/opt/SUNWspro/bin/cc -xtarget=native64' --enable-dtrace DTRACEFLAGS='-64' ...</PRE
 ><P>
+        </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--enable-tap-tests</TT
+></DT
+><DD
+><P
+>         Enable tests using the Perl TAP tools.  This requires a Perl
+         installation and the Perl module <TT
+CLASS="LITERAL"
+>IPC::Run</TT
+>.
+         See <A
+HREF="regress-tap.html"
+>Section 30.4</A
+> for more information.
         </P
 ></DD
 ></DL
@@ -1949,7 +2018,7 @@ CLASS="APPLICATION"
 >make</SPAN
 >: <TT
 CLASS="COMMAND"
->gmake PROFILE=-O0 file.o</TT
+>make PROFILE=-O0 file.o</TT
 >.
      </P
 ></BLOCKQUOTE
@@ -1970,7 +2039,7 @@ NAME="BUILD"
 CLASS="SCREEN"
 ><KBD
 CLASS="USERINPUT"
->gmake</KBD
+>make</KBD
 ></PRE
 ><P>
     (Remember to use <ACRONYM
@@ -1998,7 +2067,7 @@ CLASS="FILENAME"
 CLASS="SCREEN"
 ><KBD
 CLASS="USERINPUT"
->gmake world</KBD
+>make world</KBD
 ></PRE
 ><P>
    The last line displayed should be:
@@ -2027,7 +2096,7 @@ CLASS="PRODUCTNAME"
 CLASS="SCREEN"
 ><KBD
 CLASS="USERINPUT"
->gmake check</KBD
+>make check</KBD
 ></PRE
 ><P>
     (This won't work as root; do it as an unprivileged user.)
@@ -2076,7 +2145,7 @@ CLASS="PRODUCTNAME"
 CLASS="SCREEN"
 ><KBD
 CLASS="USERINPUT"
->gmake install</KBD
+>make install</KBD
 ></PRE
 ><P>
     This will install files into the directories that were specified
@@ -2095,7 +2164,7 @@ HREF="install-procedure.html#CONFIGURE"
 CLASS="SCREEN"
 ><KBD
 CLASS="USERINPUT"
->gmake install-docs</KBD
+>make install-docs</KBD
 ></PRE
 ><P>
    </P
@@ -2105,7 +2174,7 @@ CLASS="USERINPUT"
 CLASS="SCREEN"
 ><KBD
 CLASS="USERINPUT"
->gmake install-world</KBD
+>make install-world</KBD
 ></PRE
 ><P>
     This also installs the documentation.
@@ -2113,11 +2182,11 @@ CLASS="USERINPUT"
 ><P
 >    You can use <TT
 CLASS="LITERAL"
->gmake install-strip</TT
+>make install-strip</TT
 > instead of
     <TT
 CLASS="LITERAL"
->gmake install</TT
+>make install</TT
 > to strip the executable files and
     libraries as they are installed.  This will save some space.  If
     you built with debugging support, stripping will effectively
@@ -2140,7 +2209,7 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > 8.0, a separate <TT
 CLASS="LITERAL"
->gmake
+>make
     install-all-headers</TT
 > command was needed for the latter, but this
     step has been folded into the standard install.)
@@ -2156,19 +2225,19 @@ CLASS="FORMALPARA"
 CLASS="SCREEN"
 ><KBD
 CLASS="USERINPUT"
->gmake -C src/bin install</KBD
+>make -C src/bin install</KBD
 >
 <KBD
 CLASS="USERINPUT"
->gmake -C src/include install</KBD
+>make -C src/include install</KBD
 >
 <KBD
 CLASS="USERINPUT"
->gmake -C src/interfaces install</KBD
+>make -C src/interfaces install</KBD
 >
 <KBD
 CLASS="USERINPUT"
->gmake -C doc install</KBD
+>make -C doc install</KBD
 ></PRE
 ><P>
     <TT
@@ -2188,7 +2257,7 @@ CLASS="FORMALPARA"
 >Uninstallation: </B
 >    To undo the installation use the command <TT
 CLASS="COMMAND"
->gmake
+>make
     uninstall</TT
 >. However, this will not remove any created directories.
    </P
@@ -2201,7 +2270,7 @@ CLASS="FORMALPARA"
 >    After the installation you can free disk space by removing the built
     files from the source tree with the command <TT
 CLASS="COMMAND"
->gmake
+>make
     clean</TT
 >. This will preserve the files made by the <TT
 CLASS="COMMAND"
@@ -2209,12 +2278,12 @@ CLASS="COMMAND"
 >
     program, so that you can rebuild everything with <TT
 CLASS="COMMAND"
->gmake</TT
+>make</TT
 >
     later on. To reset the source tree to the state in which it was
     distributed, use <TT
 CLASS="COMMAND"
->gmake distclean</TT
+>make distclean</TT
 >. If you are going to
     build for several platforms within the same source tree you must do
     this and re-configure for each platform.  (Alternatively, use
@@ -2234,7 +2303,7 @@ CLASS="COMMAND"
    investigates (for example, software upgrades), then it's a good
    idea to do <TT
 CLASS="COMMAND"
->gmake distclean</TT
+>make distclean</TT
 > before reconfiguring and
    rebuilding.  Without this, your changes in configuration choices
    might not propagate everywhere they need to.

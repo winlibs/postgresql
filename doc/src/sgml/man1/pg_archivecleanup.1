@@ -2,12 +2,12 @@
 .\"     Title: pg_archivecleanup
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "PG_ARCHIVECLEANUP" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "PG_ARCHIVECLEANUP" "1" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 pg_archivecleanup \- clean up PostgreSQL WAL archive files
-.\" pg_archivecleanup
 .SH "SYNOPSIS"
 .HP \w'\fBpg_archivecleanup\fR\ 'u
 \fBpg_archivecleanup\fR [\fIoption\fR...] \fIarchivelocation\fR \fIoldestkeptwalfile\fR
@@ -122,7 +121,9 @@ stdout
 (performs a dry run)\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 pg_archivecleanup
@@ -139,7 +140,9 @@ Note that the
 file name passed to the program should not include the extension\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 pg_archivecleanup

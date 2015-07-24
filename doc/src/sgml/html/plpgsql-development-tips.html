@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -375,6 +375,107 @@ CLASS="LITERAL"
 ></DD
 ></DL
 ></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="PLPGSQL-EXTRA-CHECKS"
+>40.11.2. Additional Compile-time Checks</A
+></H2
+><P
+>    To aid the user in finding instances of simple but common problems before
+    they cause harm, <SPAN
+CLASS="APPLICATION"
+>PL/PgSQL</SPAN
+> provides additional
+    <TT
+CLASS="REPLACEABLE"
+><I
+>checks</I
+></TT
+>. When enabled, depending on the configuration, they
+    can be used to emit either a <TT
+CLASS="LITERAL"
+>WARNING</TT
+> or an <TT
+CLASS="LITERAL"
+>ERROR</TT
+>
+    during the compilation of a function. A function which has received
+    a <TT
+CLASS="LITERAL"
+>WARNING</TT
+> can be executed without producing further messages,
+    so you are advised to test in a separate development environment.
+   </P
+><P
+>  These additional checks are enabled through the configuration variables
+  <TT
+CLASS="VARNAME"
+>plpgsql.extra_warnings</TT
+> for warnings and
+  <TT
+CLASS="VARNAME"
+>plpgsql.extra_errors</TT
+> for errors. Both can be set either to
+  a comma-separated list of checks, <TT
+CLASS="LITERAL"
+>"none"</TT
+> or <TT
+CLASS="LITERAL"
+>"all"</TT
+>.
+  The default is <TT
+CLASS="LITERAL"
+>"none"</TT
+>. Currently the list of available checks
+  includes only one:
+  <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="VARNAME"
+>shadowed_variables</TT
+></DT
+><DD
+><P
+>      Checks if a declaration shadows a previously defined variable.
+     </P
+></DD
+></DL
+></DIV
+><P>
+
+  The following example shows the effect of <TT
+CLASS="VARNAME"
+>plpgsql.extra_warnings</TT
+>
+  set to <TT
+CLASS="VARNAME"
+>shadowed_variables</TT
+>:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SET plpgsql.extra_warnings TO 'shadowed_variables';
+
+CREATE FUNCTION foo(f1 int) RETURNS int AS $$
+DECLARE
+f1 int;
+BEGIN
+RETURN f1;
+END
+$$ LANGUAGE plpgsql;
+WARNING:  variable "f1" shadows a previously defined variable
+LINE 3: f1 int;
+        ^
+CREATE FUNCTION</PRE
+><P>
+ </P
 ></DIV
 ></DIV
 ><DIV

@@ -11,7 +11,7 @@
  * Note: This file must be includable in both frontend and backend contexts,
  * to allow stand-alone tools like pg_receivexlog to deal with WAL files.
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/xlog_internal.h
@@ -55,7 +55,7 @@ typedef struct BkpBlock
 /*
  * Each page of XLOG file has a header like this:
  */
-#define XLOG_PAGE_MAGIC 0xD075	/* can be used as WAL version indicator */
+#define XLOG_PAGE_MAGIC 0xD07E	/* can be used as WAL version indicator */
 
 typedef struct XLogPageHeaderData
 {
@@ -123,7 +123,7 @@ typedef XLogLongPageHeaderData *XLogLongPageHeader;
  * Compute ID and segment from an XLogRecPtr.
  *
  * For XLByteToSeg, do the computation at face value.  For XLByteToPrevSeg,
- * a boundary byte is taken to be in the previous segment.	This is suitable
+ * a boundary byte is taken to be in the previous segment.  This is suitable
  * for deciding which segment to write given a pointer to a record end,
  * for example.
  */
@@ -205,9 +205,11 @@ typedef XLogLongPageHeaderData *XLogLongPageHeader;
 typedef struct xl_parameter_change
 {
 	int			MaxConnections;
+	int			max_worker_processes;
 	int			max_prepared_xacts;
 	int			max_locks_per_xact;
 	int			wal_level;
+	bool		wal_log_hints;
 } xl_parameter_change;
 
 /* logs restore point */
@@ -246,7 +248,6 @@ typedef struct RmgrData
 	void		(*rm_desc) (StringInfo buf, uint8 xl_info, char *rec);
 	void		(*rm_startup) (void);
 	void		(*rm_cleanup) (void);
-	bool		(*rm_safe_restartpoint) (void);
 } RmgrData;
 
 extern const RmgrData RmgrTable[];
@@ -260,7 +261,7 @@ extern XLogRecPtr RequestXLogSwitch(void);
 extern void GetOldestRestartPoint(XLogRecPtr *oldrecptr, TimeLineID *oldtli);
 
 /*
- * Exported for the functions in timeline.c and xlogarchive.c.	Only valid
+ * Exported for the functions in timeline.c and xlogarchive.c.  Only valid
  * in the startup process.
  */
 extern bool ArchiveRecoveryRequested;
@@ -282,6 +283,7 @@ extern void XLogArchiveNotifySeg(XLogSegNo segno);
 extern void XLogArchiveForceDone(const char *xlog);
 extern bool XLogArchiveCheckDone(const char *xlog);
 extern bool XLogArchiveIsBusy(const char *xlog);
+extern bool XLogArchiveIsReady(const char *xlog);
 extern void XLogArchiveCleanup(const char *xlog);
 
 #endif   /* XLOG_INTERNAL_H */

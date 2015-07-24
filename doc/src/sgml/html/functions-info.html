@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ NAME="FUNCTIONS-INFO"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-SESSION-TABLE"
->Table 9-51</A
+>Table 9-56</A
 > shows several
    functions that extract session and system information.
   </P
@@ -118,7 +118,7 @@ NAME="FUNCTIONS-INFO-SESSION-TABLE"
 ></A
 ><P
 ><B
->Table 9-51. Session Information Functions</B
+>Table 9-56. Session Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -702,7 +702,7 @@ CLASS="PRODUCTNAME"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE"
->Table 9-52</A
+>Table 9-57</A
 > lists functions that
    allow the user to query object access privileges programmatically.
    See <A
@@ -718,7 +718,7 @@ NAME="FUNCTIONS-INFO-ACCESS-TABLE"
 ></A
 ><P
 ><B
->Table 9-52. Access Privilege Inquiry Functions</B
+>Table 9-57. Access Privilege Inquiry Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1764,7 +1764,7 @@ CLASS="COMMAND"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE"
->Table 9-53</A
+>Table 9-58</A
 > shows functions that
    determine whether a certain object is <I
 CLASS="FIRSTTERM"
@@ -1788,7 +1788,7 @@ NAME="FUNCTIONS-INFO-SCHEMA-TABLE"
 ></A
 ><P
 ><B
->Table 9-53. Schema Visibility Inquiry Functions</B
+>Table 9-58. Schema Visibility Inquiry Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2115,7 +2115,7 @@ CLASS="PROGRAMLISTING"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE"
->Table 9-54</A
+>Table 9-59</A
 > lists functions that
    extract information from the system catalogs.
   </P
@@ -2126,7 +2126,7 @@ NAME="FUNCTIONS-INFO-CATALOG-TABLE"
 ></A
 ><P
 ><B
->Table 9-54. System Catalog Information Functions</B
+>Table 9-59. System Catalog Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2881,6 +2881,126 @@ CLASS="TYPE"
 ><TD
 >get the collation of the argument</TD
 ></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>to_regclass(<TT
+CLASS="PARAMETER"
+>rel_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>regclass</TT
+></TD
+><TD
+>get the OID of the named relation</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>to_regproc(<TT
+CLASS="PARAMETER"
+>func_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>regproc</TT
+></TD
+><TD
+>get the OID of the named function</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>to_regprocedure(<TT
+CLASS="PARAMETER"
+>func_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>regprocedure</TT
+></TD
+><TD
+>get the OID of the named function</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>to_regoper(<TT
+CLASS="PARAMETER"
+>operator_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>regoper</TT
+></TD
+><TD
+>get the OID of the named operator</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>to_regoperator(<TT
+CLASS="PARAMETER"
+>operator_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>regoperator</TT
+></TD
+><TD
+>get the OID of the named operator</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>to_regtype(<TT
+CLASS="PARAMETER"
+>type_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>regtype</TT
+></TD
+><TD
+>get the OID of the named type</TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -3137,7 +3257,7 @@ CLASS="LITERAL"
 CLASS="PARAMETER"
 >name</TT
 > is the name of the object, quoted if necessary, only
-   present if it can be used (alongside schema name, if pertinent) as an unique
+   present if it can be used (alongside schema name, if pertinent) as a unique
    identifier of the object, otherwise <TT
 CLASS="LITERAL"
 >NULL</TT
@@ -3206,9 +3326,64 @@ SELECT collation for ('foo' COLLATE "de_DE");
   is not of a collatable data type, then an error is raised.
   </P
 ><P
+>   The <CODE
+CLASS="FUNCTION"
+>to_regclass</CODE
+>, <CODE
+CLASS="FUNCTION"
+>to_regproc</CODE
+>,
+   <CODE
+CLASS="FUNCTION"
+>to_regprocedure</CODE
+>, <CODE
+CLASS="FUNCTION"
+>to_regoper</CODE
+>,
+   <CODE
+CLASS="FUNCTION"
+>to_regoperator</CODE
+>, and <CODE
+CLASS="FUNCTION"
+>to_regtype</CODE
+>
+   functions translate relation, function, operator, and type names to objects
+   of type <TT
+CLASS="TYPE"
+>regclass</TT
+>, <TT
+CLASS="TYPE"
+>regproc</TT
+>, <TT
+CLASS="TYPE"
+>regprocedure</TT
+>,
+   <TT
+CLASS="TYPE"
+>regoper</TT
+>, <TT
+CLASS="TYPE"
+>regoperator</TT
+>, and <TT
+CLASS="TYPE"
+>regtype</TT
+>,
+   respectively.  These functions differ from a cast from
+   text in that they don't accept a numeric OID, and that they return null
+   rather than throwing an error if the name is not found (or, for
+   <CODE
+CLASS="FUNCTION"
+>to_regproc</CODE
+> and <CODE
+CLASS="FUNCTION"
+>to_regoper</CODE
+>, if
+   the given name matches multiple objects).
+  </P
+><P
 >    The functions shown in <A
 HREF="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE"
->Table 9-55</A
+>Table 9-60</A
 >
     extract comments previously stored with the <A
 HREF="sql-comment.html"
@@ -3224,7 +3399,7 @@ NAME="FUNCTIONS-INFO-COMMENT-TABLE"
 ></A
 ><P
 ><B
->Table 9-55. Comment Information Functions</B
+>Table 9-60. Comment Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3386,7 +3561,7 @@ CLASS="FUNCTION"
 ><P
 >    The functions shown in <A
 HREF="functions-info.html#FUNCTIONS-TXID-SNAPSHOT"
->Table 9-56</A
+>Table 9-61</A
 >
     provide server transaction information in an exportable form.  The main
     use of these functions is to determine which transactions were committed
@@ -3399,7 +3574,7 @@ NAME="FUNCTIONS-TXID-SNAPSHOT"
 ></A
 ><P
 ><B
->Table 9-56. Transaction IDs and Snapshots</B
+>Table 9-61. Transaction IDs and Snapshots</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3560,7 +3735,7 @@ CLASS="TYPE"
     visibility at a particular moment in time.  Its components are
     described in <A
 HREF="functions-info.html#FUNCTIONS-TXID-SNAPSHOT-PARTS"
->Table 9-57</A
+>Table 9-62</A
 >.
    </P
 ><DIV
@@ -3570,7 +3745,7 @@ NAME="FUNCTIONS-TXID-SNAPSHOT-PARTS"
 ></A
 ><P
 ><B
->Table 9-57. Snapshot Components</B
+>Table 9-62. Snapshot Components</B
 ></P
 ><TABLE
 BORDER="1"

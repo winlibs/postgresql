@@ -6,18 +6,18 @@
  *
  * There are two code paths in the planner for set-operation queries.
  * If a subquery consists entirely of simple UNION ALL operations, it
- * is converted into an "append relation".	Otherwise, it is handled
+ * is converted into an "append relation".  Otherwise, it is handled
  * by the general code in this module (plan_set_operations and its
  * subroutines).  There is some support code here for the append-relation
  * case, but most of the heavy lifting for that is done elsewhere,
  * notably in prepjointree.c and allpaths.c.
  *
  * There is also some code here to support planning of queries that use
- * inheritance (SELECT FROM foo*).	Inheritance trees are converted into
+ * inheritance (SELECT FROM foo*).  Inheritance trees are converted into
  * append relations, and thenceforth share code with the UNION ALL case.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -55,6 +55,7 @@ typedef struct
 {
 	PlannerInfo *root;
 	AppendRelInfo *appinfo;
+	int			sublevels_up;
 } adjust_appendrel_attrs_context;
 
 static Plan *recurse_set_operations(Node *setOp, PlannerInfo *root,
@@ -576,7 +577,7 @@ generate_nonunion_plan(SetOperationStmt *op, PlannerInfo *root,
 	 *
 	 * The tlist for an Append plan isn't important as far as the Append is
 	 * concerned, but we must make it look real anyway for the benefit of the
-	 * next plan level up.	In fact, it has to be real enough that the flag
+	 * next plan level up.  In fact, it has to be real enough that the flag
 	 * column is shown as a variable not a constant, else setrefs.c will get
 	 * confused.
 	 */
@@ -969,7 +970,7 @@ generate_setop_tlist(List *colTypes, List *colCollations,
 		 * Ensure the tlist entry's exposed collation matches the set-op. This
 		 * is necessary because plan_set_operations() reports the result
 		 * ordering as a list of SortGroupClauses, which don't carry collation
-		 * themselves but just refer to tlist entries.	If we don't show the
+		 * themselves but just refer to tlist entries.  If we don't show the
 		 * right collation then planner.c might do the wrong thing in
 		 * higher-level queries.
 		 *
@@ -1183,7 +1184,7 @@ generate_setop_grouplist(SetOperationStmt *op, List *targetlist)
 /*
  * expand_inherited_tables
  *		Expand each rangetable entry that represents an inheritance set
- *		into an "append relation".	At the conclusion of this process,
+ *		into an "append relation".  At the conclusion of this process,
  *		the "inh" flag is set in all and only those RTEs that are append
  *		relation parents.
  */
@@ -1215,7 +1216,7 @@ expand_inherited_tables(PlannerInfo *root)
  *		Check whether a rangetable entry represents an inheritance set.
  *		If so, add entries for all the child tables to the query's
  *		rangetable, and build AppendRelInfo nodes for all the child tables
- *		and add them to root->append_rel_list.	If not, clear the entry's
+ *		and add them to root->append_rel_list.  If not, clear the entry's
  *		"inh" flag to prevent later code from looking for AppendRelInfos.
  *
  * Note that the original RTE is considered to represent the whole
@@ -1526,7 +1527,7 @@ make_inh_translation_list(Relation oldrelation, Relation newrelation,
  *	  parent rel's attribute numbering to the child's.
  *
  * The only surprise here is that we don't translate a parent whole-row
- * reference into a child whole-row reference.	That would mean requiring
+ * reference into a child whole-row reference.  That would mean requiring
  * permissions on all child columns, which is overly strict, since the
  * query is really only going to reference the inherited columns.  Instead
  * we set the per-column bits for all inherited columns.
@@ -1580,8 +1581,9 @@ translate_col_privs(const Bitmapset *parent_privs,
  *	  child rel instead.  We also update rtindexes appearing outside Vars,
  *	  such as resultRelation and jointree relids.
  *
- * Note: this is only applied after conversion of sublinks to subplans,
- * so we don't need to cope with recursion into sub-queries.
+ * Note: this is applied after conversion of sublinks to subplans in the
+ * query jointree, but there may still be sublinks in the security barrier
+ * quals of RTEs, so we do need to cope with recursion into sub-queries.
  *
  * Note: this is not hugely different from what pullup_replace_vars() does;
  * maybe we should try to fold the two routines together.
@@ -1594,9 +1596,12 @@ adjust_appendrel_attrs(PlannerInfo *root, Node *node, AppendRelInfo *appinfo)
 
 	context.root = root;
 	context.appinfo = appinfo;
+	context.sublevels_up = 0;
 
 	/*
-	 * Must be prepared to start with a Query or a bare expression tree.
+	 * Must be prepared to start with a Query or a bare expression tree; if
+	 * it's a Query, go straight to query_tree_walker to make sure that
+	 * sublevels_up doesn't get incremented prematurely.
 	 */
 	if (node && IsA(node, Query))
 	{
@@ -1635,7 +1640,7 @@ adjust_appendrel_attrs_mutator(Node *node,
 	{
 		Var		   *var = (Var *) copyObject(node);
 
-		if (var->varlevelsup == 0 &&
+		if (var->varlevelsup == context->sublevels_up &&
 			var->varno == appinfo->parent_relid)
 		{
 			var->varno = appinfo->child_relid;
@@ -1652,6 +1657,7 @@ adjust_appendrel_attrs_mutator(Node *node,
 				if (newnode == NULL)
 					elog(ERROR, "attribute %d of relation \"%s\" does not exist",
 						 var->varattno, get_rel_name(appinfo->parent_reloid));
+				((Var *) newnode)->varlevelsup += context->sublevels_up;
 				return newnode;
 			}
 			else if (var->varattno == 0)
@@ -1694,10 +1700,17 @@ adjust_appendrel_attrs_mutator(Node *node,
 					RowExpr    *rowexpr;
 					List	   *fields;
 					RangeTblEntry *rte;
+					ListCell   *lc;
 
 					rte = rt_fetch(appinfo->parent_relid,
 								   context->root->parse->rtable);
 					fields = (List *) copyObject(appinfo->translated_vars);
+					foreach(lc, fields)
+					{
+						Var		   *field = (Var *) lfirst(lc);
+
+						field->varlevelsup += context->sublevels_up;
+					}
 					rowexpr = makeNode(RowExpr);
 					rowexpr->args = fields;
 					rowexpr->row_typeid = var->vartype;
@@ -1716,7 +1729,8 @@ adjust_appendrel_attrs_mutator(Node *node,
 	{
 		CurrentOfExpr *cexpr = (CurrentOfExpr *) copyObject(node);
 
-		if (cexpr->cvarno == appinfo->parent_relid)
+		if (context->sublevels_up == 0 &&
+			cexpr->cvarno == appinfo->parent_relid)
 			cexpr->cvarno = appinfo->child_relid;
 		return (Node *) cexpr;
 	}
@@ -1724,7 +1738,8 @@ adjust_appendrel_attrs_mutator(Node *node,
 	{
 		RangeTblRef *rtr = (RangeTblRef *) copyObject(node);
 
-		if (rtr->rtindex == appinfo->parent_relid)
+		if (context->sublevels_up == 0 &&
+			rtr->rtindex == appinfo->parent_relid)
 			rtr->rtindex = appinfo->child_relid;
 		return (Node *) rtr;
 	}
@@ -1737,7 +1752,8 @@ adjust_appendrel_attrs_mutator(Node *node,
 											  adjust_appendrel_attrs_mutator,
 												 (void *) context);
 		/* now fix JoinExpr's rtindex (probably never happens) */
-		if (j->rtindex == appinfo->parent_relid)
+		if (context->sublevels_up == 0 &&
+			j->rtindex == appinfo->parent_relid)
 			j->rtindex = appinfo->child_relid;
 		return (Node *) j;
 	}
@@ -1750,7 +1766,7 @@ adjust_appendrel_attrs_mutator(Node *node,
 											  adjust_appendrel_attrs_mutator,
 														 (void *) context);
 		/* now fix PlaceHolderVar's relid sets */
-		if (phv->phlevelsup == 0)
+		if (phv->phlevelsup == context->sublevels_up)
 			phv->phrels = adjust_relid_set(phv->phrels,
 										   appinfo->parent_relid,
 										   appinfo->child_relid);
@@ -1822,12 +1838,29 @@ adjust_appendrel_attrs_mutator(Node *node,
 		return (Node *) newinfo;
 	}
 
-	/*
-	 * NOTE: we do not need to recurse into sublinks, because they should
-	 * already have been converted to subplans before we see them.
-	 */
-	Assert(!IsA(node, SubLink));
-	Assert(!IsA(node, Query));
+	if (IsA(node, Query))
+	{
+		/*
+		 * Recurse into sublink subqueries. This should only be possible in
+		 * security barrier quals of top-level RTEs. All other sublinks should
+		 * have already been converted to subplans during expression
+		 * preprocessing, but this doesn't happen for security barrier quals,
+		 * since they are destined to become quals of a subquery RTE, which
+		 * will be recursively planned, and so should not be preprocessed at
+		 * this stage.
+		 *
+		 * We don't explicitly Assert() for securityQuals here simply because
+		 * it's not trivial to do so.
+		 */
+		Query	   *newnode;
+
+		context->sublevels_up++;
+		newnode = query_tree_mutator((Query *) node,
+									 adjust_appendrel_attrs_mutator,
+									 (void *) context, 0);
+		context->sublevels_up--;
+		return (Node *) newnode;
+	}
 
 	return expression_tree_mutator(node, adjust_appendrel_attrs_mutator,
 								   (void *) context);
@@ -1855,7 +1888,7 @@ adjust_relid_set(Relids relids, Index oldrelid, Index newrelid)
  *
  * The expressions have already been fixed, but we have to make sure that
  * the target resnos match the child table (they may not, in the case of
- * a column that was added after-the-fact by ALTER TABLE).	In some cases
+ * a column that was added after-the-fact by ALTER TABLE).  In some cases
  * this can force us to re-order the tlist to preserve resno ordering.
  * (We do all this work in special cases so that preptlist.c is fast for
  * the typical case.)
@@ -1945,4 +1978,27 @@ adjust_inherited_tlist(List *tlist, AppendRelInfo *context)
 	}
 
 	return new_tlist;
+}
+
+/*
+ * adjust_appendrel_attrs_multilevel
+ *	  Apply Var translations from a toplevel appendrel parent down to a child.
+ *
+ * In some cases we need to translate expressions referencing a baserel
+ * to reference an appendrel child that's multiple levels removed from it.
+ */
+Node *
+adjust_appendrel_attrs_multilevel(PlannerInfo *root, Node *node,
+								  RelOptInfo *child_rel)
+{
+	AppendRelInfo *appinfo = find_childrel_appendrelinfo(root, child_rel);
+	RelOptInfo *parent_rel = find_base_rel(root, appinfo->parent_relid);
+
+	/* If parent is also a child, first recurse to apply its translations */
+	if (parent_rel->reloptkind == RELOPT_OTHER_MEMBER_REL)
+		node = adjust_appendrel_attrs_multilevel(root, node, parent_rel);
+	else
+		Assert(parent_rel->reloptkind == RELOPT_BASEREL);
+	/* Now translate for this child */
+	return adjust_appendrel_attrs(root, node, appinfo);
 }

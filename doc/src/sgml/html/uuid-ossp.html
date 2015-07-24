@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="UUID-OSSP"
->F.41. uuid-ossp</A
+>F.44. uuid-ossp</A
 ></H1
 ><P
 >  The <TT
@@ -103,21 +103,13 @@ CLASS="FILENAME"
   unique identifiers (UUIDs) using one of several standard algorithms.  There
   are also functions to produce certain special UUID constants.
  </P
-><P
->  This module depends on the OSSP UUID library, which can be found at
-  <A
-HREF="http://www.ossp.org/pkg/lib/uuid/"
-TARGET="_top"
->http://www.ossp.org/pkg/lib/uuid/</A
->.
- </P
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN151814"
->F.41.1. <TT
+NAME="AEN163334"
+>F.44.1. <TT
 CLASS="LITERAL"
 >uuid-ossp</TT
 > Functions</A
@@ -353,8 +345,99 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN151893"
->F.41.2. Author</A
+NAME="AEN163413"
+>F.44.2. Building <TT
+CLASS="FILENAME"
+>uuid-ossp</TT
+></A
+></H2
+><P
+>   Historically this module depended on the OSSP UUID library, which accounts
+   for the module's name.  While the OSSP UUID library can still be found
+   at <A
+HREF="http://www.ossp.org/pkg/lib/uuid/"
+TARGET="_top"
+>http://www.ossp.org/pkg/lib/uuid/</A
+>, it is not well
+   maintained, and is becoming increasingly difficult to port to newer
+   platforms.  <TT
+CLASS="FILENAME"
+>uuid-ossp</TT
+> can now be built without the OSSP
+   library on some platforms.  On FreeBSD, NetBSD, and some other BSD-derived
+   platforms, suitable UUID creation functions are included in the
+   core <TT
+CLASS="FILENAME"
+>libc</TT
+> library.  On Linux, OS X, and some other
+   platforms, suitable functions are provided in the <TT
+CLASS="FILENAME"
+>libuuid</TT
+>
+   library, which originally came from the <TT
+CLASS="LITERAL"
+>e2fsprogs</TT
+> project
+   (though on modern Linux it is considered part
+   of <TT
+CLASS="LITERAL"
+>util-linux-ng</TT
+>).  When invoking <TT
+CLASS="FILENAME"
+>configure</TT
+>,
+   specify <TT
+CLASS="OPTION"
+>--with-uuid=bsd</TT
+> to use the BSD functions,
+   or <TT
+CLASS="OPTION"
+>--with-uuid=e2fs</TT
+> to
+   use <TT
+CLASS="LITERAL"
+>e2fsprogs</TT
+>' <TT
+CLASS="FILENAME"
+>libuuid</TT
+>, or
+   <TT
+CLASS="OPTION"
+>--with-uuid=ossp</TT
+> to use the OSSP UUID library.
+   More than one of these libraries might be available on a particular
+   machine, so <TT
+CLASS="FILENAME"
+>configure</TT
+> does not automatically choose one.
+  </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>    If you only need randomly-generated (version 4) UUIDs,
+    consider using the <CODE
+CLASS="FUNCTION"
+>gen_random_uuid()</CODE
+> function
+    from the <A
+HREF="pgcrypto.html"
+>pgcrypto</A
+> module instead.
+   </P
+></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN163434"
+>F.44.3. Author</A
 ></H2
 ><P
 >   Peter Eisentraut <CODE

@@ -6,7 +6,7 @@
 # runs the regression tests (to put in some data), runs pg_dumpall,
 # runs pg_upgrade, runs pg_dumpall again, compares the dumps.
 #
-# Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+# Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
 # Portions Copyright (c) 1994, Regents of the University of California
 
 set -e
@@ -17,15 +17,50 @@ set -e
 unset MAKEFLAGS
 unset MAKELEVEL
 
-# Set listen_addresses desirably
+# Run a given "initdb" binary and overlay the regression testing
+# authentication configuration.
+standard_initdb() {
+	"$1" -N
+	../../src/test/regress/pg_regress --config-auth "$PGDATA"
+}
+
+# Establish how the server will listen for connections
 testhost=`uname -s`
 
 case $testhost in
-	MINGW*)	LISTEN_ADDRESSES="localhost" ;;
-	*)		LISTEN_ADDRESSES="" ;;
+	MINGW*)
+		LISTEN_ADDRESSES="localhost"
+		PGHOST=localhost
+		;;
+	*)
+		LISTEN_ADDRESSES=""
+		# Select a socket directory.  The algorithm is from the "configure"
+		# script; the outcome mimics pg_regress.c:make_temp_sockdir().
+		PGHOST=$PG_REGRESS_SOCK_DIR
+		if [ "x$PGHOST" = x ]; then
+			{
+				dir=`(umask 077 &&
+					  mktemp -d /tmp/pg_upgrade_check-XXXXXX) 2>/dev/null` &&
+				[ -d "$dir" ]
+			} ||
+			{
+				dir=/tmp/pg_upgrade_check-$$-$RANDOM
+				(umask 077 && mkdir "$dir")
+			} ||
+			{
+				echo "could not create socket temporary directory in \"/tmp\""
+				exit 1
+			}
+
+			PGHOST=$dir
+			trap 'rm -rf "$PGHOST"' 0
+			trap 'exit 3' 1 2 13 15
+		fi
+		;;
 esac
 
-POSTMASTER_OPTS="-F -c listen_addresses=$LISTEN_ADDRESSES"
+POSTMASTER_OPTS="-F -c listen_addresses=$LISTEN_ADDRESSES -k \"$PGHOST\""
+export PGHOST
 
 temp_root=$PWD/tmp_check
 
@@ -83,10 +118,9 @@ mkdir "$logdir"
 PGDATABASE="";        unset PGDATABASE
 PGUSER="";            unset PGUSER
 PGSERVICE="";         unset PGSERVICE
-PGSSLMODE=""          unset PGSSLMODE
+PGSSLMODE="";         unset PGSSLMODE
 PGREQUIRESSL="";      unset PGREQUIRESSL
 PGCONNECT_TIMEOUT=""; unset PGCONNECT_TIMEOUT
-PGHOST=""             unset PGHOST
 PGHOSTADDR="";        unset PGHOSTADDR
 
 # Select a non-conflicting port number, similarly to pg_regress.c
@@ -114,7 +148,7 @@ export EXTRA_REGRESS_OPTS
 # enable echo so the user can see what is being executed
 set -x
 
-$oldbindir/initdb -N
+standard_initdb "$oldbindir"/initdb
 $oldbindir/pg_ctl start -l "$logdir/postmaster1.log" -o "$POSTMASTER_OPTS" -w
 if "$MAKE" -C "$oldsrc" installcheck; then
 	pg_dumpall -f "$temp_root"/dump1.sql || pg_dumpall1_status=$?
@@ -154,7 +188,7 @@ fi
 
 PGDATA=$BASE_PGDATA
 
-initdb -N
+standard_initdb 'initdb'
 
 pg_upgrade $PG_UPGRADE_OPTS -d "${PGDATA}.old" -D "${PGDATA}" -b "$oldbindir" -B "$bindir" -p "$PGPORT" -P "$PGPORT"
 

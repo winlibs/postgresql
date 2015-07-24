@@ -2,12 +2,12 @@
 .\"     Title: ALTER FOREIGN TABLE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "ALTER FOREIGN TABLE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "ALTER FOREIGN TABLE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 ALTER_FOREIGN_TABLE \- change the definition of a foreign table
-.\" ALTER FOREIGN TABLE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -54,6 +53,10 @@ where \fIaction\fR is one of:
     ALTER [ COLUMN ] \fIcolumn_name\fR SET ( \fIattribute_option\fR = \fIvalue\fR [, \&.\&.\&. ] )
     ALTER [ COLUMN ] \fIcolumn_name\fR RESET ( \fIattribute_option\fR [, \&.\&.\&. ] )
     ALTER [ COLUMN ] \fIcolumn_name\fR OPTIONS ( [ ADD | SET | DROP ] \fIoption\fR [\*(Aq\fIvalue\fR\*(Aq] [, \&.\&.\&. ])
+    DISABLE TRIGGER [ \fItrigger_name\fR | ALL | USER ]
+    ENABLE TRIGGER [ \fItrigger_name\fR | ALL | USER ]
+    ENABLE REPLICA TRIGGER \fItrigger_name\fR
+    ENABLE ALWAYS TRIGGER \fItrigger_name\fR
     OWNER TO \fInew_owner\fR
     OPTIONS ( [ ADD | SET | DROP ] \fIoption\fR [\*(Aq\fIvalue\fR\*(Aq] [, \&.\&.\&. ])
 .fi
@@ -111,9 +114,18 @@ ALTER TABLE (\fBALTER_TABLE\fR(7))
 for more details\&.
 .RE
 .PP
-SET ( \fIattribute_option\fR = \fIvalue\fR [, \&.\&.\&. ] ), RESET ( \fIattribute_option\fR [, \&.\&.\&. ] )
+SET ( \fIattribute_option\fR = \fIvalue\fR [, \&.\&.\&. ] )
+.br
+RESET ( \fIattribute_option\fR [, \&.\&.\&. ] )
 .RS 4
 This form sets or resets per\-attribute options\&. See the similar form of
+ALTER TABLE (\fBALTER_TABLE\fR(7))
+for more details\&.
+.RE
+.PP
+DISABLE/ENABLE [ REPLICA | ALWAYS ] TRIGGER
+.RS 4
+These forms configure the firing of trigger(s) belonging to the foreign table\&. See the similar form of
 ALTER TABLE (\fBALTER_TABLE\fR(7))
 for more details\&.
 .RE
@@ -195,6 +207,21 @@ Automatically drop objects that depend on the dropped column (for example, views
 RESTRICT
 .RS 4
 Refuse to drop the column if there are any dependent objects\&. This is the default behavior\&.
+.RE
+.PP
+\fItrigger_name\fR
+.RS 4
+Name of a single trigger to disable or enable\&.
+.RE
+.PP
+ALL
+.RS 4
+Disable or enable all triggers belonging to the foreign table\&. (This requires superuser privilege if any of the triggers are internally generated triggers\&. The core system does not add such triggers to foreign tables, but add\-on code could do so\&.)
+.RE
+.PP
+USER
+.RS 4
+Disable or enable all triggers belonging to the foreign table except for internally generated triggers\&.
 .RE
 .PP
 \fInew_owner\fR

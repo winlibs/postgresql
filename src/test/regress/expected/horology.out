@@ -2907,6 +2907,81 @@ SELECT to_timestamp('  20050302', 'YYYYMMDD');
 (1 row)
 
 --
+-- Check handling of multiple spaces in format and/or input
+--
+SELECT to_timestamp('2011-12-18 23:38:15', 'YYYY-MM-DD  HH24:MI:SS');
+         to_timestamp         
+------------------------------
+ Sun Dec 18 03:38:15 2011 PST
+(1 row)
+
+SELECT to_timestamp('2011-12-18  23:38:15', 'YYYY-MM-DD  HH24:MI:SS');
+         to_timestamp         
+------------------------------
+ Sun Dec 18 23:38:15 2011 PST
+(1 row)
+
+SELECT to_timestamp('2011-12-18   23:38:15', 'YYYY-MM-DD  HH24:MI:SS');
+         to_timestamp         
+------------------------------
+ Sun Dec 18 23:38:15 2011 PST
+(1 row)
+
+SELECT to_timestamp('2011-12-18  23:38:15', 'YYYY-MM-DD HH24:MI:SS');
+         to_timestamp         
+------------------------------
+ Sun Dec 18 23:38:15 2011 PST
+(1 row)
+
+SELECT to_timestamp('2011-12-18  23:38:15', 'YYYY-MM-DD  HH24:MI:SS');
+         to_timestamp         
+------------------------------
+ Sun Dec 18 23:38:15 2011 PST
+(1 row)
+
+SELECT to_timestamp('2011-12-18  23:38:15', 'YYYY-MM-DD   HH24:MI:SS');
+         to_timestamp         
+------------------------------
+ Sun Dec 18 03:38:15 2011 PST
+(1 row)
+
+SELECT to_date('2011 12  18', 'YYYY MM DD');
+  to_date   
+------------
+ 12-18-2011
+(1 row)
+
+SELECT to_date('2011 12  18', 'YYYY MM  DD');
+  to_date   
+------------
+ 12-18-2011
+(1 row)
+
+SELECT to_date('2011 12  18', 'YYYY MM   DD');
+  to_date   
+------------
+ 12-08-2011
+(1 row)
+
+SELECT to_date('2011 12 18', 'YYYY  MM DD');
+  to_date   
+------------
+ 02-18-2011
+(1 row)
+
+SELECT to_date('2011  12 18', 'YYYY  MM DD');
+  to_date   
+------------
+ 12-18-2011
+(1 row)
+
+SELECT to_date('2011   12 18', 'YYYY  MM DD');
+  to_date   
+------------
+ 12-18-2011
+(1 row)
+
+--
 -- Check errors for some incorrect usages of to_timestamp()
 --
 -- Mixture of date conventions (ISO week and Gregorian):
@@ -2941,9 +3016,9 @@ DETAIL:  Value must be in the range -2147483648 to 2147483647.
 SET TIME ZONE 'America/New_York';
 SET TIME ZONE '-1.5';
 SHOW TIME ZONE;
-       TimeZone       
-----------------------
- @ 1 hour 30 mins ago
+    TimeZone    
+----------------
+ <-01:30>+01:30
 (1 row)
 
 SELECT '2012-12-12 12:00'::timestamptz;
@@ -2959,9 +3034,9 @@ SELECT '2012-12-12 12:00 America/New_York'::timestamptz;
 (1 row)
 
 SELECT to_char('2012-12-12 12:00'::timestamptz, 'YYYY-MM-DD HH:MI:SS TZ');
-       to_char        
-----------------------
- 2012-12-12 12:00:00 
+          to_char           
+----------------------------
+ 2012-12-12 12:00:00 -01:30
 (1 row)
 
 RESET TIME ZONE;

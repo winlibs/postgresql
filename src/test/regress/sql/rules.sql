@@ -768,10 +768,17 @@ drop table cchild;
 --
 -- Check that ruleutils are working
 --
+
+-- temporarily disable fancy output, so view changes create less diff noise
+\a\t
+
 SELECT viewname, definition FROM pg_views WHERE schemaname <> 'information_schema' ORDER BY viewname;
 
 SELECT tablename, rulename, definition FROM pg_rules
 	ORDER BY tablename, rulename;
+
+-- restore normal output mode
+\a\t
 
 --
 -- CREATE OR REPLACE RULE
@@ -872,7 +879,7 @@ create rule "_RETURN" as on select to fooview do instead
 select * from fooview;
 select xmin, * from fooview;  -- fail, views don't have such a column
 
-select reltoastrelid, reltoastidxid, relkind, relfrozenxid
+select reltoastrelid, relkind, relfrozenxid
   from pg_class where oid = 'fooview'::regclass;
 
 drop view fooview;
@@ -1000,3 +1007,19 @@ ALTER RULE "_RETURN" ON rule_v1 RENAME TO abc; -- ON SELECT rule cannot be renam
 
 DROP VIEW rule_v1;
 DROP TABLE rule_t1;
+
+--
+-- check display of VALUES in view definitions
+--
+create view rule_v1 as values(1,2);
+\d+ rule_v1
+drop view rule_v1;
+create view rule_v1(x) as values(1,2);
+\d+ rule_v1
+drop view rule_v1;
+create view rule_v1(x) as select * from (values(1,2)) v;
+\d+ rule_v1
+drop view rule_v1;
+create view rule_v1(x) as select * from (values(1,2)) v(q,w);
+\d+ rule_v1
+drop view rule_v1;

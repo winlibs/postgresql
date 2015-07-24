@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -175,7 +175,7 @@ CLASS="OPTIONAL"
 > NOT NULL </SPAN
 >] [<SPAN
 CLASS="OPTIONAL"
-> { DEFAULT | := } <TT
+> { DEFAULT | := | = } <TT
 CLASS="REPLACEABLE"
 ><I
 >expression</I
@@ -220,6 +220,14 @@ CLASS="LITERAL"
 >NOT NULL</TT
 >
       must have a nonnull default value specified.
+      Equal (<TT
+CLASS="LITERAL"
+>=</TT
+>) can be used instead of PL/SQL-compliant
+      <TT
+CLASS="LITERAL"
+>:=</TT
+>.
      </P
 ><P
 >      A variable's default value is evaluated and assigned to the variable
@@ -289,12 +297,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;</PRE
 ><P>
-      The other way, which was the only way available before
-      <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.0, is to explicitly
-      declare an alias, using the declaration syntax
+      The other way is to explicitly declare an alias, using the
+      declaration syntax
 
 </P><PRE
 CLASS="SYNOPSIS"
@@ -447,8 +451,8 @@ CLASS="PROGRAMLISTING"
 >CREATE FUNCTION extended_sales(p_itemno int)
 RETURNS TABLE(quantity int, total numeric) AS $$
 BEGIN
-    RETURN QUERY SELECT quantity, quantity * price FROM sales
-                 WHERE itemno = p_itemno;
+    RETURN QUERY SELECT s.quantity, s.quantity * s.price FROM sales AS s
+                 WHERE s.itemno = p_itemno;
 END;
 $$ LANGUAGE plpgsql;</PRE
 ><P>

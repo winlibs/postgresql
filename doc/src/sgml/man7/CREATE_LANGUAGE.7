@@ -2,12 +2,12 @@
 .\"     Title: CREATE LANGUAGE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "CREATE LANGUAGE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "CREATE LANGUAGE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_LANGUAGE \- define a new procedural language
-.\" CREATE LANGUAGE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -75,7 +74,7 @@ CREATE EXTENSION \fIlangname\fR FROM unpackaged\&.
 
 \fBCREATE LANGUAGE\fR
 effectively associates the language name with handler function(s) that are responsible for executing functions written in the language\&. Refer to
-Chapter 51, Writing A Procedural Language Handler, in the documentation
+Chapter 52, Writing A Procedural Language Handler, in the documentation
 for more information about language handlers\&.
 .PP
 There are two forms of the
@@ -188,7 +187,7 @@ program, to drop procedural languages\&.
 The system catalog
 pg_language
 (see
-Section 47.28, \(lqpg_language\(rq, in the documentation) records information about the currently installed languages\&. Also,
+Section 48.28, \(lqpg_language\(rq, in the documentation) records information about the currently installed languages\&. Also,
 \fBcreatelang\fR
 has an option to list the installed languages\&.
 .PP

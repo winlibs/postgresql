@@ -3,7 +3,7 @@
  * explain.h
  *	  prototypes for explain.c
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994-5, Regents of the University of California
  *
  * src/include/commands/explain.h
@@ -24,22 +24,30 @@ typedef enum ExplainFormat
 	EXPLAIN_FORMAT_YAML
 } ExplainFormat;
 
+/* Crude hack to avoid changing sizeof(ExplainState) in released branches */
+typedef struct ExplainStateExtra
+{
+	List	   *groupingstack;	/* format-specific grouping state */
+	List	   *deparsecxt;		/* context list for deparsing expressions */
+} ExplainStateExtra;
+
 typedef struct ExplainState
 {
 	StringInfo	str;			/* output buffer */
 	/* options */
 	bool		verbose;		/* be verbose */
 	bool		analyze;		/* print actual times */
-	bool		costs;			/* print costs */
+	bool		costs;			/* print estimated costs */
 	bool		buffers;		/* print buffer usage */
-	bool		timing;			/* print timing */
+	bool		timing;			/* print detailed node timing */
+	bool		summary;		/* print total planning and execution timing */
 	ExplainFormat format;		/* output format */
 	/* other states */
 	PlannedStmt *pstmt;			/* top of plan */
 	List	   *rtable;			/* range table */
 	List	   *rtable_names;	/* alias names for RTEs */
 	int			indent;			/* current indentation level */
-	List	   *grouping_stack; /* format-specific grouping state */
+	ExplainStateExtra *extra;	/* pointer to additional data */
 } ExplainState;
 
 /* Hook for plugins to get control in ExplainOneQuery() */
@@ -67,10 +75,11 @@ extern void ExplainOneUtility(Node *utilityStmt, IntoClause *into,
 				  const char *queryString, ParamListInfo params);
 
 extern void ExplainOnePlan(PlannedStmt *plannedstmt, IntoClause *into,
-			   ExplainState *es,
-			   const char *queryString, ParamListInfo params);
+			   ExplainState *es, const char *queryString,
+			   ParamListInfo params, const instr_time *planduration);
 
 extern void ExplainPrintPlan(ExplainState *es, QueryDesc *queryDesc);
+extern void ExplainPrintTriggers(ExplainState *es, QueryDesc *queryDesc);
 
 extern void ExplainQueryText(ExplainState *es, QueryDesc *queryDesc);
 

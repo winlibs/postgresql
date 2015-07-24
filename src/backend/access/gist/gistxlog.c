@@ -4,7 +4,7 @@
  *	  WAL replay logic for GiST.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -38,7 +38,7 @@ static MemoryContext opCtx;		/* working memory for operations */
  * follow-right flag, because that change is not included in the full-page
  * image.  To be sure that the intermediate state with the wrong flag value is
  * not visible to concurrent Hot Standby queries, this function handles
- * restoring the full-page image as well as updating the flag.	(Note that
+ * restoring the full-page image as well as updating the flag.  (Note that
  * we never need to do anything else to the child page in the current WAL
  * action.)
  */
@@ -89,7 +89,7 @@ gistRedoPageUpdateRecord(XLogRecPtr lsn, XLogRecord *record)
 
 	/*
 	 * We need to acquire and hold lock on target page while updating the left
-	 * child page.	If we have a full-page image of target page, getting the
+	 * child page.  If we have a full-page image of target page, getting the
 	 * lock is a side-effect of restoring that image.  Note that even if the
 	 * target page no longer exists, we'll still attempt to replay the change
 	 * on the child page.
@@ -182,7 +182,6 @@ gistRedoPageUpdateRecord(XLogRecPtr lsn, XLogRecord *record)
 		GistPageSetLeaf(page);
 	}
 
-	GistPageGetOpaque(page)->rightlink = InvalidBlockNumber;
 	PageSetLSN(page, lsn);
 	MarkBufferDirty(buffer);
 	UnlockReleaseBuffer(buffer);
@@ -379,7 +378,7 @@ gistXLogSplit(RelFileNode node, BlockNumber blkno, bool page_is_leaf,
 			  BlockNumber origrlink, GistNSN orignsn,
 			  Buffer leftchildbuf, bool markfollowright)
 {
-	XLogRecData *rdata;
+	XLogRecData rdata[GIST_MAX_SPLIT_PAGES * 2 + 2];
 	gistxlogPageSplit xlrec;
 	SplitedPageLayout *ptr;
 	int			npage = 0,
@@ -389,7 +388,12 @@ gistXLogSplit(RelFileNode node, BlockNumber blkno, bool page_is_leaf,
 	for (ptr = dist; ptr; ptr = ptr->next)
 		npage++;
 
-	rdata = (XLogRecData *) palloc(sizeof(XLogRecData) * (npage * 2 + 2));
+	/*
+	 * the caller should've checked this already, but doesn't hurt to check
+	 * again.
+	 */
+	if (npage > GIST_MAX_SPLIT_PAGES)
+		elog(ERROR, "GiST page split into too many halves");
 
 	xlrec.node = node;
 	xlrec.origblkno = blkno;
@@ -439,7 +443,6 @@ gistXLogSplit(RelFileNode node, BlockNumber blkno, bool page_is_leaf,
 
 	recptr = XLogInsert(RM_GIST_ID, XLOG_GIST_PAGE_SPLIT, rdata);
 
-	pfree(rdata);
 	return recptr;
 }
 
@@ -462,13 +465,11 @@ gistXLogUpdate(RelFileNode node, Buffer buffer,
 			   IndexTuple *itup, int ituplen,
 			   Buffer leftchildbuf)
 {
-	XLogRecData *rdata;
+	XLogRecData rdata[MaxIndexTuplesPerPage + 3];
 	gistxlogPageUpdate xlrec;
 	int			cur,
 				i;
 	XLogRecPtr	recptr;
-
-	rdata = (XLogRecData *) palloc(sizeof(XLogRecData) * (3 + ituplen));
 
 	xlrec.node = node;
 	xlrec.blkno = BufferGetBlockNumber(buffer);
@@ -516,6 +517,5 @@ gistXLogUpdate(RelFileNode node, Buffer buffer,
 
 	recptr = XLogInsert(RM_GIST_ID, XLOG_GIST_PAGE_UPDATE, rdata);
 
-	pfree(rdata);
 	return recptr;
 }

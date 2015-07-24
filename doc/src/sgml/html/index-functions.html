@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Index Access Method Interface Definition"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 54. Index Access Method Interface Definition</TD
+>Chapter 55. Index Access Method Interface Definition</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="INDEX-FUNCTIONS"
->54.2. Index Access Method Functions</A
+>55.2. Index Access Method Functions</A
 ></H1
 ><P
 >   The index construction and maintenance functions that an index access
@@ -128,7 +128,10 @@ CLASS="PROGRAMLISTING"
 >void
 ambuildempty (Relation indexRelation);</PRE
 ><P>
-   Build an empty index, and write it to the initialization fork (INIT_FORKNUM)
+   Build an empty index, and write it to the initialization fork (<TT
+CLASS="SYMBOL"
+>INIT_FORKNUM</TT
+>)
    of the given relation.  This method is called only for unlogged tables; the
    empty index written to the initialization fork will be copied over the main
    relation fork on each server restart.
@@ -171,7 +174,7 @@ CLASS="LITERAL"
    perform.  This varies depending on whether the unique constraint is
    deferrable; see <A
 HREF="index-unique-checks.html"
->Section 54.5</A
+>Section 55.5</A
 > for details.
    Normally the access method only needs the <TT
 CLASS="LITERAL"
@@ -347,7 +350,10 @@ CLASS="FIRSTTERM"
 >index-only scans</I
 > by
    returning the indexed column values for an index entry in the form of an
-   IndexTuple.  Return TRUE if so, else FALSE.  If the index AM can never
+   <TT
+CLASS="STRUCTNAME"
+>IndexTuple</TT
+>.  Return TRUE if so, else FALSE.  If the index AM can never
    support index-only scans (an example is hash, which stores only
    the hash values not the original data), it is sufficient to set its
    <TT
@@ -373,7 +379,7 @@ amcostestimate (PlannerInfo *root,
    Estimate the costs of an index scan.  This function is described fully
    in <A
 HREF="index-cost-estimation.html"
->Section 54.6</A
+>Section 55.6</A
 >, below.
   </P
 ><P
@@ -459,7 +465,7 @@ CLASS="FIRSTTERM"
 >.  The semantics of
    index scanning are described more fully in <A
 HREF="index-scanning.html"
->Section 54.3</A
+>Section 55.3</A
 >,
    below.  An index access method can support <SPAN
 CLASS="QUOTE"
@@ -681,7 +687,7 @@ CLASS="FUNCTION"
 >, as explained
    in <A
 HREF="index-scanning.html"
->Section 54.3</A
+>Section 55.3</A
 >.
   </P
 ><P

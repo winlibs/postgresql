@@ -1,5 +1,5 @@
 ; DEF file for MS VC++
-LIBRARY LIBPQ
+LIBRARY LIBPQ.dll
 EXPORTS
     PQconnectdb               @ 1
     PQsetdbLogin              @ 2

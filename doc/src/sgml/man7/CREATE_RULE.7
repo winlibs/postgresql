@@ -2,12 +2,12 @@
 .\"     Title: CREATE RULE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "CREATE RULE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "CREATE RULE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,13 +29,16 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_RULE \- define a new rewrite rule
-.\" CREATE RULE
 .SH "SYNOPSIS"
 .sp
 .nf
 CREATE [ OR REPLACE ] RULE \fIname\fR AS ON \fIevent\fR
     TO \fItable_name\fR [ WHERE \fIcondition\fR ]
     DO [ ALSO | INSTEAD ] { NOTHING | \fIcommand\fR | ( \fIcommand\fR ; \fIcommand\fR \&.\&.\&. ) }
+
+where \fIevent\fR can be one of:
+
+    SELECT | INSERT | UPDATE | DELETE
 .fi
 .SH "DESCRIPTION"
 .PP

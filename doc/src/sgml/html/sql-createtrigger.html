@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETRIGGER"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN73728"
+NAME="AEN76979"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN73728"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN73733"
+NAME="AEN76982"
 ></A
 ><H2
 >Synopsis</H2
@@ -132,7 +132,7 @@ CLASS="REPLACEABLE"
 >referenced_table_name</I
 ></TT
 > ]
-    { NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED } }
+    [ NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED } ]
     [ FOR [ EACH ] { ROW | STATEMENT } ]
     [ WHEN ( <TT
 CLASS="REPLACEABLE"
@@ -178,7 +178,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73745"
+NAME="AEN76994"
 ></A
 ><H2
 >Description</H2
@@ -187,13 +187,15 @@ NAME="AEN73745"
 CLASS="COMMAND"
 >CREATE TRIGGER</TT
 > creates a new trigger.  The
-   trigger will be associated with the specified table or view and will
-   execute the specified function <TT
+   trigger will be associated with the specified table, view, or foreign table
+   and will execute the specified
+   function <TT
 CLASS="REPLACEABLE"
 ><I
 >function_name</I
 ></TT
-> when certain events occur.
+> when
+   certain events occur.
   </P
 ><P
 >   The trigger can be specified to fire before the
@@ -299,7 +301,7 @@ CLASS="LITERAL"
   </P
 ><P
 >   The following table summarizes which types of triggers may be used on
-   tables and views:
+   tables, views, and foreign tables:
   </P
 ><DIV
 CLASS="INFORMALTABLE"
@@ -346,10 +348,10 @@ CLASS="COMMAND"
 ></TD
 ><TD
 ALIGN="CENTER"
->Tables</TD
+>Tables and foreign tables</TD
 ><TD
 ALIGN="CENTER"
->Tables and views</TD
+>Tables, views, and foreign tables</TD
 ></TR
 ><TR
 ><TD
@@ -387,10 +389,10 @@ CLASS="COMMAND"
 ></TD
 ><TD
 ALIGN="CENTER"
->Tables</TD
+>Tables and foreign tables</TD
 ><TD
 ALIGN="CENTER"
->Tables and views</TD
+>Tables, views, and foreign tables</TD
 ></TR
 ><TR
 ><TD
@@ -491,19 +493,19 @@ HREF="sql-set-constraints.html"
    Constraint triggers must be <TT
 CLASS="LITERAL"
 >AFTER ROW</TT
-> triggers.  They can
-   be fired either at the end of the statement causing the triggering event,
-   or at the end of the containing transaction; in the latter case they are
-   said to be <I
+> triggers on tables.  They
+   can be fired either at the end of the statement causing the triggering
+   event, or at the end of the containing transaction; in the latter case they
+   are said to be <I
 CLASS="FIRSTTERM"
 >deferred</I
->.  A pending deferred-trigger firing can
-   also be forced to happen immediately by using <TT
+>.  A pending deferred-trigger firing
+   can also be forced to happen immediately by using <TT
 CLASS="COMMAND"
->SET CONSTRAINTS</TT
->.
-   Constraint triggers are expected to raise an exception when the constraints
-   they implement are violated.
+>SET
+   CONSTRAINTS</TT
+>.  Constraint triggers are expected to raise an exception
+   when the constraints they implement are violated.
   </P
 ><P
 >   <TT
@@ -526,7 +528,7 @@ HREF="triggers.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73844"
+NAME="AEN77093"
 ></A
 ><H2
 >Parameters</H2
@@ -647,8 +649,8 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      The name (optionally schema-qualified) of the table or view the trigger
-      is for.
+>      The name (optionally schema-qualified) of the table, view, or foreign
+      table the trigger is for.
      </P
 ></DD
 ><DT
@@ -1249,7 +1251,7 @@ CLASS="ACRONYM"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74043"
+NAME="AEN77292"
 ></A
 ><H2
 >See Also</H2

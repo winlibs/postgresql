@@ -27,12 +27,11 @@
   </tip>
 
  <para>
-  As of <productname>PostgreSQL</productname> 7.4, PL/Python is only
-  available as an <quote>untrusted</> language, meaning it does not
-  offer any way of restricting what users can do in it.  It has
-  therefore been renamed to <literal>plpythonu</>.  The trusted
-  variant <literal>plpython</> might become available again in future,
-  if a new secure execution mechanism is developed in Python.  The
+  PL/Python is only available as an <quote>untrusted</> language, meaning
+  it does not offer any way of restricting what users can do in it and
+  is therefore named <literal>plpythonu</>.  A trusted
+  variant <literal>plpython</> might become available in the future
+  if a secure execution mechanism is developed in Python.  The
   writer of a function in untrusted PL/Python must take care that the
   function cannot be used to do anything unwanted, since it will be
   able to do anything that could be done by a user logged in as the
@@ -310,12 +309,23 @@ $$ LANGUAGE plpythonu;
 
      <listitem>
       <para>
-       PostgreSQL <type>real</type>, <type>double</type>,
-       and <type>numeric</type> are converted to
-       Python <type>float</type>.  Note that for
-       the <type>numeric</type> this loses information and can lead to
-       incorrect results.  This might be fixed in a future
-       release.
+       PostgreSQL <type>real</type> and <type>double</type> are converted to
+       Python <type>float</type>.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
+       PostgreSQL <type>numeric</type> is converted to
+       Python <type>Decimal</type>.  This type is imported from
+       the <literal>cdecimal</literal> package if that is available.
+       Otherwise,
+       <literal>decimal.Decimal</literal> from the standard library will be
+       used.  <literal>cdecimal</literal> is significantly faster
+       than <literal>decimal</literal>.  In Python 3.3,
+       however, <literal>cdecimal</literal> has been integrated into the
+       standard library under the name <literal>decimal</literal>, so there is
+       no longer any difference.
       </para>
      </listitem>
 
@@ -1034,7 +1044,11 @@ rv = plpy.execute(plan, ["name"], 5)
       <xref linkend="plpython-sharing">). For example:
 <programlisting>
 CREATE FUNCTION usesavedplan() RETURNS trigger AS $$
-    plan = SD.setdefault("plan", plpy.prepare("SELECT 1"))
+    if "plan" in SD:
+        plan = SD["plan"]
+    else:
+        plan = plpy.prepare("SELECT 1")
+        SD["plan"] = plan
     # rest of function
 $$ LANGUAGE plpythonu;
 </programlisting>

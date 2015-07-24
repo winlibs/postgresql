@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTEREXTENSION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN64552"
+NAME="AEN67405"
 ></A
 ><H2
 >Name</H2
@@ -104,7 +104,7 @@ NAME="AEN64552"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN64557"
+NAME="AEN67408"
 ></A
 ><H2
 >Synopsis</H2
@@ -171,14 +171,14 @@ CLASS="REPLACEABLE"
   AGGREGATE <TT
 CLASS="REPLACEABLE"
 ><I
->agg_name</I
+>aggregate_name</I
 ></TT
-> (<TT
+> ( <TT
 CLASS="REPLACEABLE"
 ><I
->agg_type</I
+>aggregate_signature</I
 ></TT
-> [, ...] ) |
+> ) |
   CAST (<TT
 CLASS="REPLACEABLE"
 ><I
@@ -356,12 +356,74 @@ CLASS="REPLACEABLE"
 ><I
 >object_name</I
 ></TT
-></PRE
+>
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>and <TT
+CLASS="REPLACEABLE"
+><I
+>aggregate_signature</I
+></TT
+> is:</SPAN
+></SPAN
+>
+
+* |
+[ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [ , ... ] |
+[ [ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [ , ... ] ] ORDER BY [ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [ , ... ]</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64602"
+NAME="AEN67464"
 ></A
 ><H2
 >Description</H2
@@ -467,7 +529,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64635"
+NAME="AEN67497"
 ></A
 ><H2
 >Parameters</H2
@@ -528,7 +590,7 @@ CLASS="REPLACEABLE"
 ><BR><TT
 CLASS="REPLACEABLE"
 ><I
->agg_name</I
+>aggregate_name</I
 ></TT
 ><BR><TT
 CLASS="REPLACEABLE"
@@ -548,23 +610,6 @@ CLASS="REPLACEABLE"
        aggregates, domains, foreign tables, functions, operators,
        operator classes, operator families, sequences, text search objects,
        types, and views can be schema-qualified.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->agg_type</I
-></TT
-></DT
-><DD
-><P
->       An input data type on which the aggregate function operates.
-       To reference a zero-argument aggregate function, write <TT
-CLASS="LITERAL"
->*</TT
->
-       in place of the list of input data types.
       </P
 ></DD
 ><DT
@@ -600,7 +645,8 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->       The mode of a function argument: <TT
+>       The mode of a function or aggregate
+       argument: <TT
 CLASS="LITERAL"
 >IN</TT
 >, <TT
@@ -649,7 +695,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->       The name of a function argument.
+>       The name of a function or aggregate argument.
        Note that <TT
 CLASS="COMMAND"
 >ALTER EXTENSION</TT
@@ -667,8 +713,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->       The data type(s) of the function's arguments (optionally
-       schema-qualified), if any.
+>       The data type of a function or aggregate argument.
       </P
 ></DD
 ><DT
@@ -711,7 +756,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64721"
+NAME="AEN67577"
 ></A
 ><H2
 >Examples</H2
@@ -752,7 +797,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN64733"
+NAME="AEN67589"
 ></A
 ><H2
 >Compatibility</H2

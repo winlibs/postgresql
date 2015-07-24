@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -108,7 +108,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN148648"
+NAME="AEN160034"
 >F.22.1. Functions</A
 ></H2
 ><P
@@ -120,14 +120,15 @@ CLASS="VARIABLELIST"
 ><CODE
 CLASS="FUNCTION"
 >get_raw_page(relname text, fork text, blkno int) returns bytea</CODE
-></DT
+>
+     </DT
 ><DD
 ><P
 >      <CODE
 CLASS="FUNCTION"
 >get_raw_page</CODE
 > reads the specified block of the named
-      table and returns a copy as a <TT
+      relation and returns a copy as a <TT
 CLASS="TYPE"
 >bytea</TT
 > value.  This allows a
@@ -141,14 +142,18 @@ CLASS="REPLACEABLE"
 CLASS="LITERAL"
 >'main'</TT
 > for
-      the main data fork, or <TT
+      the main data fork, <TT
 CLASS="LITERAL"
 >'fsm'</TT
 > for the free space map,
-      or <TT
+      <TT
 CLASS="LITERAL"
 >'vm'</TT
-> for the visibility map.
+> for the visibility map, or <TT
+CLASS="LITERAL"
+>'init'</TT
+>
+      for the initialization fork.
      </P
 ></DD
 ><DT
@@ -173,7 +178,8 @@ CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
 >page_header(page bytea) returns record</CODE
-></DT
+>
+     </DT
 ><DD
 ><P
 >      <CODE
@@ -213,7 +219,8 @@ CLASS="FILENAME"
 ><CODE
 CLASS="FUNCTION"
 >heap_page_items(page bytea) returns setof record</CODE
-></DT
+>
+     </DT
 ><DD
 ><P
 >      <CODE
@@ -249,7 +256,8 @@ CLASS="FILENAME"
 ><CODE
 CLASS="FUNCTION"
 >bt_metap(relname text) returns record</CODE
-></DT
+>
+     </DT
 ><DD
 ><P
 >      <CODE
@@ -274,7 +282,8 @@ fastlevel | 0</PRE
 ><CODE
 CLASS="FUNCTION"
 >bt_page_stats(relname text, blkno int) returns record</CODE
-></DT
+>
+     </DT
 ><DD
 ><P
 >      <CODE
@@ -304,7 +313,8 @@ btpo_flags    | 3</PRE
 ><CODE
 CLASS="FUNCTION"
 >bt_page_items(relname text, blkno int) returns setof record</CODE
-></DT
+>
+     </DT
 ><DD
 ><P
 >      <CODE
@@ -332,7 +342,8 @@ CLASS="SCREEN"
 ><CODE
 CLASS="FUNCTION"
 >fsm_page_contents(page bytea) returns text</CODE
-></DT
+>
+     </DT
 ><DD
 ><P
 >      <CODE

@@ -2,12 +2,12 @@
 .\"     Title: pg_ctl
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "PG_CTL" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "PG_CTL" "1" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 pg_ctl \- initialize, start, stop, or control a PostgreSQL server
-.\" pg_ctl
 .SH "SYNOPSIS"
 .HP \w'\fBpg_ctl\fR\ 'u
 \fBpg_ctl\fR \fBinit[db]\fR [\fB\-s\fR] [\fB\-D\fR\ \fIdatadir\fR] [\fB\-o\fR\ \fIinitdb\-options\fR]
@@ -126,7 +125,7 @@ pg_hba\&.conf, etc\&.)\&. This allows changing of configuration\-file options th
 \fBstatus\fR
 mode checks whether a server is running in the specified data directory\&. If it is, the
 PID
-and the command line options that were used to invoke it are displayed\&. If the server is not running, the process returns an exit status of 3\&.
+and the command line options that were used to invoke it are displayed\&. If the server is not running, the process returns an exit status of 3\&. If an accessible data directory is not specified, the process returns an exit status of 4\&.
 .PP
 In
 \fBpromote\fR
@@ -161,19 +160,25 @@ Microsoft Windows\&. This undoes the effects of the
 command\&.
 .SH "OPTIONS"
 .PP
-\fB\-c\fR, \fB\-\-core\-file\fR
+\fB\-c\fR
+.br
+\fB\-\-core\-file\fR
 .RS 4
 Attempt to allow server crashes to produce core files, on platforms where this is possible, by lifting any soft resource limit placed on core files\&. This is useful in debugging or diagnosing problems by allowing a stack trace to be obtained from a failed server process\&.
 .RE
 .PP
-\fB\-D \fR\fB\fIdatadir\fR\fR, \fB\-\-pgdata \fR\fB\fIdatadir\fR\fR
+\fB\-D \fR\fB\fIdatadir\fR\fR
+.br
+\fB\-\-pgdata \fR\fB\fIdatadir\fR\fR
 .RS 4
 Specifies the file system location of the database configuration files\&. If this is omitted, the environment variable
 \fBPGDATA\fR
 is used\&.
 .RE
 .PP
-\fB\-l \fR\fB\fIfilename\fR\fR, \fB\-\-log \fR\fB\fIfilename\fR\fR
+\fB\-l \fR\fB\fIfilename\fR\fR
+.br
+\fB\-\-log \fR\fB\fIfilename\fR\fR
 .RS 4
 Append the server log output to
 \fIfilename\fR\&. If the file does not exist, it is created\&. The
@@ -181,7 +186,9 @@ umask
 is set to 077, so access to the log file is disallowed to other users by default\&.
 .RE
 .PP
-\fB\-m \fR\fB\fImode\fR\fR, \fB\-\-mode \fR\fB\fImode\fR\fR
+\fB\-m \fR\fB\fImode\fR\fR
+.br
+\fB\-\-mode \fR\fB\fImode\fR\fR
 .RS 4
 Specifies the shutdown mode\&.
 \fImode\fR
@@ -229,17 +236,23 @@ initdb
 executable\&.
 .RE
 .PP
-\fB\-s\fR, \fB\-\-silent\fR
+\fB\-s\fR
+.br
+\fB\-\-silent\fR
 .RS 4
 Print only errors, no informational messages\&.
 .RE
 .PP
-\fB\-t\fR, \fB\-\-timeout\fR
+\fB\-t\fR
+.br
+\fB\-\-timeout\fR
 .RS 4
 The maximum number of seconds to wait when waiting for startup or shutdown to complete\&. The default is 60 seconds\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 pg_ctl
@@ -266,7 +279,9 @@ returns an exit code based on the success of the startup or shutdown\&.
 Do not wait for startup or shutdown to complete\&. This is the default for start and restart modes\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 pg_ctl

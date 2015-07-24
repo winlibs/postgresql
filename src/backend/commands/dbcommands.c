@@ -8,7 +8,7 @@
  * stepping on each others' toes.  Formerly we used table-level locks
  * on pg_database, but that's too coarse-grained.
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -45,6 +45,7 @@
 #include "miscadmin.h"
 #include "pgstat.h"
 #include "postmaster/bgwriter.h"
+#include "replication/slot.h"
 #include "storage/copydir.h"
 #include "storage/fd.h"
 #include "storage/lmgr.h"
@@ -133,7 +134,6 @@ createdb(const CreatedbStmt *stmt)
 	int			notherbackends;
 	int			npreparedxacts;
 	createdb_failure_params fparms;
-	Snapshot	snapshot;
 
 	/* Extract options from the statement node tree */
 	foreach(option, stmt->options)
@@ -265,7 +265,7 @@ createdb(const CreatedbStmt *stmt)
 	 * To create a database, must have createdb privilege and must be able to
 	 * become the target role (this does not imply that the target role itself
 	 * must have createdb privilege).  The latter provision guards against
-	 * "giveaway" attacks.	Note that a superuser will always have both of
+	 * "giveaway" attacks.  Note that a superuser will always have both of
 	 * these privileges a fortiori.
 	 */
 	if (!have_createdb_privilege())
@@ -397,7 +397,7 @@ createdb(const CreatedbStmt *stmt)
 		/*
 		 * If we are trying to change the default tablespace of the template,
 		 * we require that the template not have any files in the new default
-		 * tablespace.	This is necessary because otherwise the copied
+		 * tablespace.  This is necessary because otherwise the copied
 		 * database would contain pg_class rows that refer to its default
 		 * tablespace both explicitly (by OID) and implicitly (as zero), which
 		 * would cause problems.  For example another CREATE DATABASE using
@@ -433,7 +433,7 @@ createdb(const CreatedbStmt *stmt)
 	}
 
 	/*
-	 * Check for db name conflict.	This is just to give a more friendly error
+	 * Check for db name conflict.  This is just to give a more friendly error
 	 * message than "unique index violation".  There's a race condition but
 	 * we're willing to accept the less friendly message in that case.
 	 */
@@ -498,7 +498,7 @@ createdb(const CreatedbStmt *stmt)
 
 	/*
 	 * We deliberately set datacl to default (NULL), rather than copying it
-	 * from the template database.	Copying it would be a bad idea when the
+	 * from the template database.  Copying it would be a bad idea when the
 	 * owner is not the same as the template's owner.
 	 */
 	new_record_nulls[Anum_pg_database_datacl - 1] = true;
@@ -527,38 +527,17 @@ createdb(const CreatedbStmt *stmt)
 	InvokeObjectPostCreateHook(DatabaseRelationId, dboid, 0);
 
 	/*
-	 * Force a checkpoint before starting the copy. This will force dirty
-	 * buffers out to disk, to ensure source database is up-to-date on disk
-	 * for the copy. FlushDatabaseBuffers() would suffice for that, but we
-	 * also want to process any pending unlink requests. Otherwise, if a
-	 * checkpoint happened while we're copying files, a file might be deleted
-	 * just when we're about to copy it, causing the lstat() call in copydir()
-	 * to fail with ENOENT.
+	 * Force a checkpoint before starting the copy. This will force all dirty
+	 * buffers, including those of unlogged tables, out to disk, to ensure
+	 * source database is up-to-date on disk for the copy.
+	 * FlushDatabaseBuffers() would suffice for that, but we also want
+	 * to process any pending unlink requests. Otherwise, if a checkpoint
+	 * happened while we're copying files, a file might be deleted just when
+	 * we're about to copy it, causing the lstat() call in copydir() to fail
+	 * with ENOENT.
 	 */
-	RequestCheckpoint(CHECKPOINT_IMMEDIATE | CHECKPOINT_FORCE | CHECKPOINT_WAIT);
-
-	/*
-	 * Take an MVCC snapshot to use while scanning through pg_tablespace.  For
-	 * safety, register the snapshot (this prevents it from changing if
-	 * something else were to request a snapshot during the loop).
-	 *
-	 * Traversing pg_tablespace with an MVCC snapshot is necessary to provide
-	 * us with a consistent view of the tablespaces that exist.  Using
-	 * SnapshotNow here would risk seeing the same tablespace multiple times,
-	 * or worse not seeing a tablespace at all, if its tuple is moved around
-	 * by a concurrent update (eg an ACL change).
-	 *
-	 * Inconsistency of this sort is inherent to all SnapshotNow scans, unless
-	 * some lock is held to prevent concurrent updates of the rows being
-	 * sought.	There should be a generic fix for that, but in the meantime
-	 * it's worth fixing this case in particular because we are doing very
-	 * heavyweight operations within the scan, so that the elapsed time for
-	 * the scan is vastly longer than for most other catalog scans.  That
-	 * means there's a much wider window for concurrent updates to cause
-	 * trouble here than anywhere else.  XXX this code should be changed
-	 * whenever a generic fix is implemented.
-	 */
-	snapshot = RegisterSnapshot(GetLatestSnapshot());
+	RequestCheckpoint(CHECKPOINT_IMMEDIATE | CHECKPOINT_FORCE | CHECKPOINT_WAIT
+					  | CHECKPOINT_FLUSH_ALL);
 
 	/*
 	 * Once we start copying subdirectories, we need to be able to clean 'em
@@ -577,7 +556,7 @@ createdb(const CreatedbStmt *stmt)
 		 * each one to the new database.
 		 */
 		rel = heap_open(TableSpaceRelationId, AccessShareLock);
-		scan = heap_beginscan(rel, snapshot, 0, NULL);
+		scan = heap_beginscan_catalog(rel, 0, NULL);
 		while ((tuple = heap_getnext(scan, ForwardScanDirection)) != NULL)
 		{
 			Oid			srctablespace = HeapTupleGetOid(tuple);
@@ -682,9 +661,6 @@ createdb(const CreatedbStmt *stmt)
 	PG_END_ENSURE_ERROR_CLEANUP(createdb_failure_callback,
 								PointerGetDatum(&fparms));
 
-	/* Free our snapshot */
-	UnregisterSnapshot(snapshot);
-
 	return dboid;
 }
 
@@ -777,6 +753,8 @@ dropdb(const char *dbname, bool missing_ok)
 	HeapTuple	tup;
 	int			notherbackends;
 	int			npreparedxacts;
+	int			nslots,
+				nslots_active;
 
 	/*
 	 * Look up the target database's OID, and get exclusive lock on it. We
@@ -832,6 +810,21 @@ dropdb(const char *dbname, bool missing_ok)
 		ereport(ERROR,
 				(errcode(ERRCODE_OBJECT_IN_USE),
 				 errmsg("cannot drop the currently open database")));
+
+	/*
+	 * Check whether there are, possibly unconnected, logical slots that refer
+	 * to the to-be-dropped database. The database lock we are holding
+	 * prevents the creation of new slots using the database.
+	 */
+	if (ReplicationSlotsCountDBSlots(db_id, &nslots, &nslots_active))
+		ereport(ERROR,
+				(errcode(ERRCODE_OBJECT_IN_USE),
+				 errmsg("database \"%s\" is used by a logical replication slot",
+						dbname),
+				 errdetail_plural("There is %d slot, %d of them active.",
+								  "There are %d slots, %d of them active.",
+								  nslots,
+								  nslots, nslots_active)));
 
 	/*
 	 * Check for other backends in the target database.  (Because we hold the
@@ -1125,8 +1118,9 @@ movedb(const char *dbname, const char *tblspcname)
 	dst_dbpath = GetDatabasePath(db_id, dst_tblspcoid);
 
 	/*
-	 * Force a checkpoint before proceeding. This will force dirty buffers out
-	 * to disk, to ensure source database is up-to-date on disk for the copy.
+	 * Force a checkpoint before proceeding. This will force all dirty
+	 * buffers, including those of unlogged tables, out to disk, to ensure
+	 * source database is up-to-date on disk for the copy.
 	 * FlushDatabaseBuffers() would suffice for that, but we also want to
 	 * process any pending unlink requests. Otherwise, the check for existing
 	 * files in the target directory might fail unnecessarily, not to mention
@@ -1134,7 +1128,25 @@ movedb(const char *dbname, const char *tblspcname)
 	 * On Windows, this also ensures that background procs don't hold any open
 	 * files, which would cause rmdir() to fail.
 	 */
-	RequestCheckpoint(CHECKPOINT_IMMEDIATE | CHECKPOINT_FORCE | CHECKPOINT_WAIT);
+	RequestCheckpoint(CHECKPOINT_IMMEDIATE | CHECKPOINT_FORCE | CHECKPOINT_WAIT
+					  | CHECKPOINT_FLUSH_ALL);
+
+	/*
+	 * Now drop all buffers holding data of the target database; they should
+	 * no longer be dirty so DropDatabaseBuffers is safe.
+	 *
+	 * It might seem that we could just let these buffers age out of shared
+	 * buffers naturally, since they should not get referenced anymore.  The
+	 * problem with that is that if the user later moves the database back to
+	 * its original tablespace, any still-surviving buffers would appear to
+	 * contain valid data again --- but they'd be missing any changes made in
+	 * the database while it was in the new tablespace.  In any case, freeing
+	 * buffers that should never be used again seems worth the cycles.
+	 *
+	 * Note: it'd be sufficient to get rid of buffers matching db_id and
+	 * src_tblspcoid, but bufmgr.c presently provides no API for that.
+	 */
+	DropDatabaseBuffers(db_id);
 
 	/*
 	 * Check for existence of files in the target directory, i.e., objects of
@@ -1172,7 +1184,7 @@ movedb(const char *dbname, const char *tblspcname)
 
 	/*
 	 * Use an ENSURE block to make sure we remove the debris if the copy fails
-	 * (eg, due to out-of-disk-space).	This is not a 100% solution, because
+	 * (eg, due to out-of-disk-space).  This is not a 100% solution, because
 	 * of the possibility of failure during transaction commit, but it should
 	 * handle most scenarios.
 	 */
@@ -1214,7 +1226,7 @@ movedb(const char *dbname, const char *tblspcname)
 					BTEqualStrategyNumber, F_NAMEEQ,
 					NameGetDatum(dbname));
 		sysscan = systable_beginscan(pgdbrel, DatabaseNameIndexId, true,
-									 SnapshotNow, 1, &scankey);
+									 NULL, 1, &scankey);
 		oldtuple = systable_getnext(sysscan);
 		if (!HeapTupleIsValid(oldtuple))		/* shouldn't happen... */
 			ereport(ERROR,
@@ -1403,7 +1415,7 @@ AlterDatabase(AlterDatabaseStmt *stmt, bool isTopLevel)
 				BTEqualStrategyNumber, F_NAMEEQ,
 				NameGetDatum(stmt->dbname));
 	scan = systable_beginscan(rel, DatabaseNameIndexId, true,
-							  SnapshotNow, 1, &scankey);
+							  NULL, 1, &scankey);
 	tuple = systable_getnext(scan);
 	if (!HeapTupleIsValid(tuple))
 		ereport(ERROR,
@@ -1498,7 +1510,7 @@ AlterDatabaseOwner(const char *dbname, Oid newOwnerId)
 				BTEqualStrategyNumber, F_NAMEEQ,
 				NameGetDatum(dbname));
 	scan = systable_beginscan(rel, DatabaseNameIndexId, true,
-							  SnapshotNow, 1, &scankey);
+							  NULL, 1, &scankey);
 	tuple = systable_getnext(scan);
 	if (!HeapTupleIsValid(tuple))
 		ereport(ERROR,
@@ -1637,7 +1649,7 @@ get_db_info(const char *name, LOCKMODE lockmode,
 					NameGetDatum(name));
 
 		scan = systable_beginscan(relation, DatabaseNameIndexId, true,
-								  SnapshotNow, 1, &scanKey);
+								  NULL, 1, &scanKey);
 
 		tuple = systable_getnext(scan);
 
@@ -1659,7 +1671,7 @@ get_db_info(const char *name, LOCKMODE lockmode,
 			LockSharedObject(DatabaseRelationId, dbOid, 0, lockmode);
 
 		/*
-		 * And now, re-fetch the tuple by OID.	If it's still there and still
+		 * And now, re-fetch the tuple by OID.  If it's still there and still
 		 * the same name, we win; else, drop the lock and loop back to try
 		 * again.
 		 */
@@ -1751,20 +1763,9 @@ remove_dbtablespaces(Oid db_id)
 	Relation	rel;
 	HeapScanDesc scan;
 	HeapTuple	tuple;
-	Snapshot	snapshot;
-
-	/*
-	 * As in createdb(), we'd better use an MVCC snapshot here, since this
-	 * scan can run for a long time.  Duplicate visits to tablespaces would be
-	 * harmless, but missing a tablespace could result in permanently leaked
-	 * files.
-	 *
-	 * XXX change this when a generic fix for SnapshotNow races is implemented
-	 */
-	snapshot = RegisterSnapshot(GetLatestSnapshot());
 
 	rel = heap_open(TableSpaceRelationId, AccessShareLock);
-	scan = heap_beginscan(rel, snapshot, 0, NULL);
+	scan = heap_beginscan_catalog(rel, 0, NULL);
 	while ((tuple = heap_getnext(scan, ForwardScanDirection)) != NULL)
 	{
 		Oid			dsttablespace = HeapTupleGetOid(tuple);
@@ -1810,7 +1811,6 @@ remove_dbtablespaces(Oid db_id)
 
 	heap_endscan(scan);
 	heap_close(rel, AccessShareLock);
-	UnregisterSnapshot(snapshot);
 }
 
 /*
@@ -1832,19 +1832,9 @@ check_db_file_conflict(Oid db_id)
 	Relation	rel;
 	HeapScanDesc scan;
 	HeapTuple	tuple;
-	Snapshot	snapshot;
-
-	/*
-	 * As in createdb(), we'd better use an MVCC snapshot here; missing a
-	 * tablespace could result in falsely reporting the OID is unique, with
-	 * disastrous future consequences per the comment above.
-	 *
-	 * XXX change this when a generic fix for SnapshotNow races is implemented
-	 */
-	snapshot = RegisterSnapshot(GetLatestSnapshot());
 
 	rel = heap_open(TableSpaceRelationId, AccessShareLock);
-	scan = heap_beginscan(rel, snapshot, 0, NULL);
+	scan = heap_beginscan_catalog(rel, 0, NULL);
 	while ((tuple = heap_getnext(scan, ForwardScanDirection)) != NULL)
 	{
 		Oid			dsttablespace = HeapTupleGetOid(tuple);
@@ -1870,7 +1860,6 @@ check_db_file_conflict(Oid db_id)
 
 	heap_endscan(scan);
 	heap_close(rel, AccessShareLock);
-	UnregisterSnapshot(snapshot);
 
 	return result;
 }
@@ -1927,7 +1916,7 @@ get_database_oid(const char *dbname, bool missing_ok)
 				BTEqualStrategyNumber, F_NAMEEQ,
 				CStringGetDatum(dbname));
 	scan = systable_beginscan(pg_database, DatabaseNameIndexId, true,
-							  SnapshotNow, 1, entry);
+							  NULL, 1, entry);
 
 	dbtuple = systable_getnext(scan);
 

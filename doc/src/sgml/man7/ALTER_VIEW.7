@@ -2,12 +2,12 @@
 .\"     Title: ALTER VIEW
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "ALTER VIEW" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "ALTER VIEW" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 ALTER_VIEW \- change the definition of a view
-.\" ALTER VIEW
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -90,14 +89,28 @@ The new name for the view\&.
 The new schema for the view\&.
 .RE
 .PP
-\fIview_option_name\fR
+SET ( \fIview_option_name\fR [= \fIview_option_value\fR] [, \&.\&.\&. ] )
+.br
+RESET ( \fIview_option_name\fR [, \&.\&.\&. ] )
 .RS 4
-The name of a view option to be set or reset\&.
+Sets or resets a view option\&. Currently supported options are:
+.PP
+check_option (string)
+.RS 4
+Changes the check option of the view\&. The value must be
+local
+or
+cascaded\&.
 .RE
 .PP
-\fIview_option_value\fR
+security_barrier (boolean)
 .RS 4
-The new value for a view option\&.
+Changes the security\-barrier property of the view\&. The value must be Boolean value, such as
+true
+or
+false\&.
+.RE
+.sp
 .RE
 .SH "NOTES"
 .PP

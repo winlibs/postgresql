@@ -3,9 +3,9 @@
  * tqual.h
  *	  POSTGRES "time qualification" definitions, ie, tuple visibility rules.
  *
- *	  Should be moved/renamed...	- vadim 07/28/98
+ *	  Should be moved/renamed...    - vadim 07/28/98
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/tqual.h
@@ -19,12 +19,11 @@
 
 
 /* Static variables representing various special snapshot semantics */
-extern PGDLLIMPORT SnapshotData SnapshotNowData;
 extern PGDLLIMPORT SnapshotData SnapshotSelfData;
 extern PGDLLIMPORT SnapshotData SnapshotAnyData;
 extern PGDLLIMPORT SnapshotData SnapshotToastData;
+extern PGDLLIMPORT SnapshotData CatalogSnapshotData;
 
-#define SnapshotNow			(&SnapshotNowData)
 #define SnapshotSelf		(&SnapshotSelfData)
 #define SnapshotAny			(&SnapshotAnyData)
 #define SnapshotToast		(&SnapshotToastData)
@@ -39,7 +38,8 @@ extern PGDLLIMPORT SnapshotData SnapshotToastData;
 
 /* This macro encodes the knowledge of which snapshots are MVCC-safe */
 #define IsMVCCSnapshot(snapshot)  \
-	((snapshot)->satisfies == HeapTupleSatisfiesMVCC)
+	((snapshot)->satisfies == HeapTupleSatisfiesMVCC || \
+	 (snapshot)->satisfies == HeapTupleSatisfiesHistoricMVCC)
 
 /*
  * HeapTupleSatisfiesVisibility
@@ -52,7 +52,7 @@ extern PGDLLIMPORT SnapshotData SnapshotToastData;
  *	if so, the indicated buffer is marked dirty.
  */
 #define HeapTupleSatisfiesVisibility(tuple, snapshot, buffer) \
-	((*(snapshot)->satisfies) ((tuple)->t_data, snapshot, buffer))
+	((*(snapshot)->satisfies) (tuple, snapshot, buffer))
 
 /* Result codes for HeapTupleSatisfiesVacuum */
 typedef enum
@@ -65,29 +65,38 @@ typedef enum
 } HTSV_Result;
 
 /* These are the "satisfies" test routines for the various snapshot types */
-extern bool HeapTupleSatisfiesMVCC(HeapTupleHeader tuple,
+extern bool HeapTupleSatisfiesMVCC(HeapTuple htup,
 					   Snapshot snapshot, Buffer buffer);
-extern bool HeapTupleSatisfiesNow(HeapTupleHeader tuple,
-					  Snapshot snapshot, Buffer buffer);
-extern bool HeapTupleSatisfiesSelf(HeapTupleHeader tuple,
+extern bool HeapTupleSatisfiesSelf(HeapTuple htup,
 					   Snapshot snapshot, Buffer buffer);
-extern bool HeapTupleSatisfiesAny(HeapTupleHeader tuple,
+extern bool HeapTupleSatisfiesAny(HeapTuple htup,
 					  Snapshot snapshot, Buffer buffer);
-extern bool HeapTupleSatisfiesToast(HeapTupleHeader tuple,
+extern bool HeapTupleSatisfiesToast(HeapTuple htup,
 						Snapshot snapshot, Buffer buffer);
-extern bool HeapTupleSatisfiesDirty(HeapTupleHeader tuple,
+extern bool HeapTupleSatisfiesDirty(HeapTuple htup,
 						Snapshot snapshot, Buffer buffer);
+extern bool HeapTupleSatisfiesHistoricMVCC(HeapTuple htup,
+							   Snapshot snapshot, Buffer buffer);
 
 /* Special "satisfies" routines with different APIs */
-extern HTSU_Result HeapTupleSatisfiesUpdate(HeapTupleHeader tuple,
+extern HTSU_Result HeapTupleSatisfiesUpdate(HeapTuple htup,
 						 CommandId curcid, Buffer buffer);
-extern HTSV_Result HeapTupleSatisfiesVacuum(HeapTupleHeader tuple,
+extern HTSV_Result HeapTupleSatisfiesVacuum(HeapTuple htup,
 						 TransactionId OldestXmin, Buffer buffer);
-extern bool HeapTupleIsSurelyDead(HeapTupleHeader tuple,
+extern bool HeapTupleIsSurelyDead(HeapTuple htup,
 					  TransactionId OldestXmin);
 
 extern void HeapTupleSetHintBits(HeapTupleHeader tuple, Buffer buffer,
 					 uint16 infomask, TransactionId xid);
 extern bool HeapTupleHeaderIsOnlyLocked(HeapTupleHeader tuple);
 
+/*
+ * To avoid leaking to much knowledge about reorderbuffer implementation
+ * details this is implemented in reorderbuffer.c not tqual.c.
+ */
+extern bool ResolveCminCmaxDuringDecoding(struct HTAB *tuplecid_data,
+							  Snapshot snapshot,
+							  HeapTuple htup,
+							  Buffer buffer,
+							  CommandId *cmin, CommandId *cmax);
 #endif   /* TQUAL_H */

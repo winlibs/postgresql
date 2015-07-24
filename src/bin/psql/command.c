@@ -1,7 +1,7 @@
 /*
  * psql - the PostgreSQL interactive terminal
  *
- * Copyright (c) 2000-2013, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2014, PostgreSQL Global Development Group
  *
  * src/bin/psql/command.c
  */
@@ -68,6 +68,8 @@ static int	strip_lineno_from_funcdesc(char *func);
 static void minimal_error_message(PGresult *res);
 
 static void printSSLInfo(void);
+static bool printPsetInfo(const char *param, struct printQueryOpt *popt);
+static char *pset_value_string(const char *param, struct printQueryOpt *popt);
 
 #ifdef WIN32
 static void checkWin32Codepage(void);
@@ -263,11 +265,15 @@ exec_command(const char *cmd,
 		{
 #ifndef WIN32
 			struct passwd *pw;
+			uid_t		user_id = geteuid();
 
-			pw = getpwuid(geteuid());
+			errno = 0;			/* clear errno before call */
+			pw = getpwuid(user_id);
 			if (!pw)
 			{
-				psql_error("could not get home directory: %s\n", strerror(errno));
+				psql_error("could not get home directory for user ID %ld: %s\n",
+						   (long) user_id,
+						 errno ? strerror(errno) : _("user does not exist"));
 				exit(EXIT_FAILURE);
 			}
 			dir = pw->pw_dir;
@@ -288,11 +294,6 @@ exec_command(const char *cmd,
 			success = false;
 		}
 
-		if (pset.dirname)
-			free(pset.dirname);
-		pset.dirname = pg_strdup(dir);
-		canonicalize_path(pset.dirname);
-
 		if (opt)
 			free(opt);
 	}
@@ -301,14 +302,33 @@ exec_command(const char *cmd,
 	else if (strcmp(cmd, "conninfo") == 0)
 	{
 		char	   *db = PQdb(pset.db);
-		char	   *host = PQhost(pset.db);
 
 		if (db == NULL)
 			printf(_("You are currently not connected to a database.\n"));
 		else
 		{
+			char	   *host;
+			PQconninfoOption *connOptions;
+			PQconninfoOption *option;
+
+			host = PQhost(pset.db);
 			if (host == NULL)
 				host = DEFAULT_PGSOCKET_DIR;
+			/* A usable "hostaddr" overrides the basic sense of host. */
+			connOptions = PQconninfo(pset.db);
+			if (connOptions == NULL)
+			{
+				psql_error("out of memory\n");
+				exit(EXIT_FAILURE);
+			}
+			for (option = connOptions; option && option->keyword; option++)
+				if (strcmp(option->keyword, "hostaddr") == 0)
+				{
+					if (option->val != NULL && option->val[0] != '\0')
+						host = option->val;
+					break;
+				}
+
 			/* If the host is an absolute path, the connection is via socket */
 			if (is_absolute_path(host))
 				printf(_("You are connected to database \"%s\" as user \"%s\" via socket in \"%s\" at port \"%s\".\n"),
@@ -317,6 +337,8 @@ exec_command(const char *cmd,
 				printf(_("You are connected to database \"%s\" as user \"%s\" on host \"%s\" at port \"%s\".\n"),
 					   db, PQuser(pset.db), host, PQport(pset.db));
 			printSSLInfo();
+
+			PQconninfoFree(connOptions);
 		}
 	}
 
@@ -411,7 +433,7 @@ exec_command(const char *cmd,
 				success = listSchemas(pattern, show_verbose, show_system);
 				break;
 			case 'o':
-				success = describeOperators(pattern, show_system);
+				success = describeOperators(pattern, show_verbose, show_system);
 				break;
 			case 'O':
 				success = listCollations(pattern, show_verbose, show_system);
@@ -764,6 +786,7 @@ exec_command(const char *cmd,
 			/* we must set a non-NULL prefix to trigger storing */
 			pset.gset_prefix = pg_strdup("");
 		}
+		/* gset_prefix is freed later */
 		status = PSQL_CMD_SEND;
 	}
 
@@ -1045,8 +1068,25 @@ exec_command(const char *cmd,
 
 		if (!opt0)
 		{
-			psql_error("\\%s: missing required argument\n", cmd);
-			success = false;
+			/* list all variables */
+
+			int			i;
+			static const char *const my_list[] = {
+				"border", "columns", "expanded", "fieldsep", "fieldsep_zero",
+				"footer", "format", "linestyle", "null",
+				"numericlocale", "pager", "recordsep", "recordsep_zero",
+				"tableattr", "title", "tuples_only",
+				NULL
+			};
+
+			for (i = 0; my_list[i] != NULL; i++)
+			{
+				char   *val = pset_value_string(my_list[i], &pset.popt);
+				printf("%-14s %s\n", my_list[i], val);
+				free(val);
+			}
+
+			success = true;
 		}
 		else
 			success = do_pset(opt0, opt1, &pset.popt, pset.quiet);
@@ -1074,23 +1114,10 @@ exec_command(const char *cmd,
 		char	   *fname = psql_scan_slash_option(scan_state,
 												   OT_NORMAL, NULL, true);
 
-#if defined(WIN32) && !defined(__CYGWIN__)
-
-		/*
-		 * XXX This does not work for all terminal environments or for output
-		 * containing non-ASCII characters; see comments in simple_prompt().
-		 */
-#define DEVTTY	"con"
-#else
-#define DEVTTY	"/dev/tty"
-#endif
-
 		expand_tilde(&fname);
-		/* This scrolls off the screen when using /dev/tty */
-		success = saveHistory(fname ? fname : DEVTTY, -1, false, false);
+		success = printHistory(fname, pset.popt.topt.pager);
 		if (success && !pset.quiet && fname)
-			printf(gettext("Wrote history to file \"%s/%s\".\n"),
-				   pset.dirname ? pset.dirname : ".", fname);
+			printf(_("Wrote history to file \"%s\".\n"), fname);
 		if (!fname)
 			putchar('\n');
 		free(fname);
@@ -1124,12 +1151,7 @@ exec_command(const char *cmd,
 			while ((opt = psql_scan_slash_option(scan_state,
 												 OT_NORMAL, NULL, false)))
 			{
-				newval = realloc(newval, strlen(newval) + strlen(opt) + 1);
-				if (!newval)
-				{
-					psql_error("out of memory\n");
-					exit(EXIT_FAILURE);
-				}
+				newval = pg_realloc(newval, strlen(newval) + strlen(opt) + 1);
 				strcat(newval, opt);
 				free(opt);
 			}
@@ -1173,10 +1195,9 @@ exec_command(const char *cmd,
 		else
 		{
 			/* Set variable to the value of the next argument */
-			int			len = strlen(envvar) + strlen(envval) + 1;
-			char	   *newval = pg_malloc(len + 1);
+			char	   *newval;
 
-			snprintf(newval, len + 1, "%s=%s", envvar, envval);
+			newval = psprintf("%s=%s", envvar, envval);
 			putenv(newval);
 			success = true;
 
@@ -1338,7 +1359,7 @@ exec_command(const char *cmd,
 												 OT_NORMAL, NULL, false);
 
 		if (opt)
-			pset.timing = ParseVariableBool(opt);
+			pset.timing = ParseVariableBool(opt, "\\timing");
 		else
 			pset.timing = !pset.timing;
 		if (!pset.quiet)
@@ -1537,9 +1558,7 @@ prompt_for_password(const char *username)
 	{
 		char	   *prompt_text;
 
-		prompt_text = pg_malloc(strlen(username) + 100);
-		snprintf(prompt_text, strlen(username) + 100,
-				 _("Password for user %s: "), username);
+		prompt_text = psprintf(_("Password for user %s: "), username);
 		result = simple_prompt(prompt_text, 100, false);
 		free(prompt_text);
 	}
@@ -1576,6 +1595,8 @@ do_connect(char *dbname, char *user, char *host, char *port)
 	PGconn	   *o_conn = pset.db,
 			   *n_conn;
 	char	   *password = NULL;
+	bool		keep_password;
+	bool		has_connection_string;
 
 	if (!o_conn && (!dbname || !user || !host || !port))
 	{
@@ -1589,14 +1610,34 @@ do_connect(char *dbname, char *user, char *host, char *port)
 		return false;
 	}
 
-	if (!dbname)
-		dbname = PQdb(o_conn);
+	/* grab values from the old connection, unless supplied by caller */
 	if (!user)
 		user = PQuser(o_conn);
 	if (!host)
 		host = PQhost(o_conn);
 	if (!port)
 		port = PQport(o_conn);
+
+	has_connection_string =
+		dbname ? recognized_connection_string(dbname) : false;
+
+	/*
+	 * Any change in the parameters read above makes us discard the password.
+	 * We also discard it if we're to use a conninfo rather than the positional
+	 * syntax.
+	 */
+	keep_password =
+		((strcmp(user, PQuser(o_conn)) == 0) &&
+		 (!host || strcmp(host, PQhost(o_conn)) == 0) &&
+		 (strcmp(port, PQport(o_conn)) == 0) &&
+		 !has_connection_string);
+
+	/*
+	 * Grab dbname from old connection unless supplied by caller.  No password
+	 * discard if this changes: passwords aren't (usually) database-specific.
+	 */
+	if (!dbname)
+		dbname = PQdb(o_conn);
 
 	/*
 	 * If the user asked to be prompted for a password, ask for one now. If
@@ -1612,9 +1653,13 @@ do_connect(char *dbname, char *user, char *host, char *port)
 	{
 		password = prompt_for_password(user);
 	}
-	else if (o_conn && user && strcmp(PQuser(o_conn), user) == 0)
+	else if (o_conn && keep_password)
 	{
-		password = pg_strdup(PQpass(o_conn));
+		password = PQpass(o_conn);
+		if (password && *password)
+			password = pg_strdup(password);
+		else
+			password = NULL;
 	}
 
 	while (true)
@@ -1622,32 +1667,39 @@ do_connect(char *dbname, char *user, char *host, char *port)
 #define PARAMS_ARRAY_SIZE	8
 		const char **keywords = pg_malloc(PARAMS_ARRAY_SIZE * sizeof(*keywords));
 		const char **values = pg_malloc(PARAMS_ARRAY_SIZE * sizeof(*values));
+		int			paramnum = 0;
 
-		keywords[0] = "host";
-		values[0] = host;
-		keywords[1] = "port";
-		values[1] = port;
-		keywords[2] = "user";
-		values[2] = user;
-		keywords[3] = "password";
-		values[3] = password;
-		keywords[4] = "dbname";
-		values[4] = dbname;
-		keywords[5] = "fallback_application_name";
-		values[5] = pset.progname;
-		keywords[6] = "client_encoding";
-		values[6] = (pset.notty || getenv("PGCLIENTENCODING")) ? NULL : "auto";
-		keywords[7] = NULL;
-		values[7] = NULL;
+		keywords[0] = "dbname";
+		values[0] = dbname;
+
+		if (!has_connection_string)
+		{
+			keywords[++paramnum] = "host";
+			values[paramnum] = host;
+			keywords[++paramnum] = "port";
+			values[paramnum] = port;
+			keywords[++paramnum] = "user";
+			values[paramnum] = user;
+		}
+		keywords[++paramnum] = "password";
+		values[paramnum] = password;
+		keywords[++paramnum] = "fallback_application_name";
+		values[paramnum] = pset.progname;
+		keywords[++paramnum] = "client_encoding";
+		values[paramnum] = (pset.notty || getenv("PGCLIENTENCODING")) ? NULL : "auto";
+
+		/* add array terminator */
+		keywords[++paramnum] = NULL;
+		values[paramnum] = NULL;
 
 		n_conn = PQconnectdbParams(keywords, values, true);
 
-		free(keywords);
-		free(values);
+		pg_free(keywords);
+		pg_free(values);
 
 		/* We can immediately discard the password -- no longer needed */
 		if (password)
-			free(password);
+			pg_free(password);
 
 		if (PQstatus(n_conn) == CONNECTION_OK)
 			break;
@@ -1790,8 +1842,9 @@ printSSLInfo(void)
 		return;					/* no SSL */
 
 	SSL_get_cipher_bits(ssl, &sslbits);
-	printf(_("SSL connection (cipher: %s, bits: %d)\n"),
-		   SSL_get_cipher(ssl), sslbits);
+	printf(_("SSL connection (protocol: %s, cipher: %s, bits: %d, compression: %s)\n"),
+		   SSL_get_version(ssl), SSL_get_cipher(ssl), sslbits,
+		   SSL_get_current_compression(ssl) ? _("on") : _("off"));
 #else
 
 	/*
@@ -1910,14 +1963,6 @@ editFile(const char *fname, int lineno)
 		}
 	}
 
-	/* Allocate sufficient memory for command line. */
-	if (lineno > 0)
-		sys = pg_malloc(strlen(editorName)
-						+ strlen(editor_lineno_arg) + 10		/* for integer */
-						+ 1 + strlen(fname) + 10 + 1);
-	else
-		sys = pg_malloc(strlen(editorName) + strlen(fname) + 10 + 1);
-
 	/*
 	 * On Unix the EDITOR value should *not* be quoted, since it might include
 	 * switches, eg, EDITOR="pico -t"; it's up to the user to put quotes in it
@@ -1927,18 +1972,18 @@ editFile(const char *fname, int lineno)
 	 */
 #ifndef WIN32
 	if (lineno > 0)
-		sprintf(sys, "exec %s %s%d '%s'",
-				editorName, editor_lineno_arg, lineno, fname);
+		sys = psprintf("exec %s %s%d '%s'",
+					   editorName, editor_lineno_arg, lineno, fname);
 	else
-		sprintf(sys, "exec %s '%s'",
-				editorName, fname);
+		sys = psprintf("exec %s '%s'",
+					   editorName, fname);
 #else
 	if (lineno > 0)
-		sprintf(sys, SYSTEMQUOTE "\"%s\" %s%d \"%s\"" SYSTEMQUOTE,
-				editorName, editor_lineno_arg, lineno, fname);
+		sys = psprintf("\"%s\" %s%d \"%s\"",
+					   editorName, editor_lineno_arg, lineno, fname);
 	else
-		sprintf(sys, SYSTEMQUOTE "\"%s\" \"%s\"" SYSTEMQUOTE,
-				editorName, fname);
+		sys = psprintf("\"%s\" \"%s\"",
+					   editorName, fname);
 #endif
 	result = system(sys);
 	if (result == -1)
@@ -2025,14 +2070,20 @@ do_edit(const char *filename_arg, PQExpBuffer query_buf,
 			if (fwrite(query_buf->data, 1, ql, stream) != ql)
 			{
 				psql_error("%s: %s\n", fname, strerror(errno));
-				fclose(stream);
-				remove(fname);
+
+				if (fclose(stream) != 0)
+					psql_error("%s: %s\n", fname, strerror(errno));
+
+				if (remove(fname) != 0)
+					psql_error("%s: %s\n", fname, strerror(errno));
+
 				error = true;
 			}
 			else if (fclose(stream) != 0)
 			{
 				psql_error("%s: %s\n", fname, strerror(errno));
-				remove(fname);
+				if (remove(fname) != 0)
+					psql_error("%s: %s\n", fname, strerror(errno));
 				error = true;
 			}
 		}
@@ -2103,7 +2154,7 @@ do_edit(const char *filename_arg, PQExpBuffer query_buf,
 /*
  * process_file
  *
- * Read commands from filename and then them to the main processing loop
+ * Reads commands from filename and passes them to the main processing loop.
  * Handler for \i and \ir, but can be used for other things as well.  Returns
  * MainLoop() error code.
  *
@@ -2202,10 +2253,6 @@ error:
 
 
 
-/*
- * do_pset
- *
- */
 static const char *
 _align2string(enum printFormat in)
 {
@@ -2240,6 +2287,10 @@ _align2string(enum printFormat in)
 }
 
 
+/*
+ * do_pset
+ *
+ */
 bool
 do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 {
@@ -2275,8 +2326,6 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 			return false;
 		}
 
-		if (!quiet)
-			printf(_("Output format is %s.\n"), _align2string(popt->topt.format));
 	}
 
 	/* set table line style */
@@ -2296,9 +2345,6 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 			return false;
 		}
 
-		if (!quiet)
-			printf(_("Line style is %s.\n"),
-				   get_line_style(&popt->topt)->name);
 	}
 
 	/* set border style/width */
@@ -2307,44 +2353,28 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 		if (value)
 			popt->topt.border = atoi(value);
 
-		if (!quiet)
-			printf(_("Border style is %d.\n"), popt->topt.border);
 	}
 
 	/* set expanded/vertical mode */
-	else if (strcmp(param, "x") == 0 || strcmp(param, "expanded") == 0 || strcmp(param, "vertical") == 0)
+	else if (strcmp(param, "x") == 0 ||
+			 strcmp(param, "expanded") == 0 ||
+			 strcmp(param, "vertical") == 0)
 	{
 		if (value && pg_strcasecmp(value, "auto") == 0)
 			popt->topt.expanded = 2;
 		else if (value)
-			popt->topt.expanded = ParseVariableBool(value);
+			popt->topt.expanded = ParseVariableBool(value, param);
 		else
 			popt->topt.expanded = !popt->topt.expanded;
-		if (!quiet)
-		{
-			if (popt->topt.expanded == 1)
-				printf(_("Expanded display is on.\n"));
-			else if (popt->topt.expanded == 2)
-				printf(_("Expanded display is used automatically.\n"));
-			else
-				printf(_("Expanded display is off.\n"));
-		}
 	}
 
 	/* locale-aware numeric output */
 	else if (strcmp(param, "numericlocale") == 0)
 	{
 		if (value)
-			popt->topt.numericLocale = ParseVariableBool(value);
+			popt->topt.numericLocale = ParseVariableBool(value, param);
 		else
 			popt->topt.numericLocale = !popt->topt.numericLocale;
-		if (!quiet)
-		{
-			if (popt->topt.numericLocale)
-				puts(_("Showing locale-adjusted numeric output."));
-			else
-				puts(_("Locale-adjusted numeric output is off."));
-		}
 	}
 
 	/* null display */
@@ -2355,8 +2385,6 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 			free(popt->nullPrint);
 			popt->nullPrint = pg_strdup(value);
 		}
-		if (!quiet)
-			printf(_("Null display is \"%s\".\n"), popt->nullPrint ? popt->nullPrint : "");
 	}
 
 	/* field separator for unaligned text */
@@ -2368,13 +2396,6 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 			popt->topt.fieldSep.separator = pg_strdup(value);
 			popt->topt.fieldSep.separator_zero = false;
 		}
-		if (!quiet)
-		{
-			if (popt->topt.fieldSep.separator_zero)
-				printf(_("Field separator is zero byte.\n"));
-			else
-				printf(_("Field separator is \"%s\".\n"), popt->topt.fieldSep.separator);
-		}
 	}
 
 	else if (strcmp(param, "fieldsep_zero") == 0)
@@ -2382,8 +2403,6 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 		free(popt->topt.fieldSep.separator);
 		popt->topt.fieldSep.separator = NULL;
 		popt->topt.fieldSep.separator_zero = true;
-		if (!quiet)
-			printf(_("Field separator is zero byte.\n"));
 	}
 
 	/* record separator for unaligned text */
@@ -2395,15 +2414,6 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 			popt->topt.recordSep.separator = pg_strdup(value);
 			popt->topt.recordSep.separator_zero = false;
 		}
-		if (!quiet)
-		{
-			if (popt->topt.recordSep.separator_zero)
-				printf(_("Record separator is zero byte.\n"));
-			else if (strcmp(popt->topt.recordSep.separator, "\n") == 0)
-				printf(_("Record separator is <newline>."));
-			else
-				printf(_("Record separator is \"%s\".\n"), popt->topt.recordSep.separator);
-		}
 	}
 
 	else if (strcmp(param, "recordsep_zero") == 0)
@@ -2411,24 +2421,15 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 		free(popt->topt.recordSep.separator);
 		popt->topt.recordSep.separator = NULL;
 		popt->topt.recordSep.separator_zero = true;
-		if (!quiet)
-			printf(_("Record separator is zero byte.\n"));
 	}
 
 	/* toggle between full and tuples-only format */
 	else if (strcmp(param, "t") == 0 || strcmp(param, "tuples_only") == 0)
 	{
 		if (value)
-			popt->topt.tuples_only = ParseVariableBool(value);
+			popt->topt.tuples_only = ParseVariableBool(value, param);
 		else
 			popt->topt.tuples_only = !popt->topt.tuples_only;
-		if (!quiet)
-		{
-			if (popt->topt.tuples_only)
-				puts(_("Showing only tuples."));
-			else
-				puts(_("Tuples only is off."));
-		}
 	}
 
 	/* set title override */
@@ -2439,14 +2440,6 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 			popt->title = NULL;
 		else
 			popt->title = pg_strdup(value);
-
-		if (!quiet)
-		{
-			if (popt->title)
-				printf(_("Title is \"%s\".\n"), popt->title);
-			else
-				printf(_("Title is unset.\n"));
-		}
 	}
 
 	/* set HTML table tag options */
@@ -2457,14 +2450,6 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 			popt->topt.tableAttr = NULL;
 		else
 			popt->topt.tableAttr = pg_strdup(value);
-
-		if (!quiet)
-		{
-			if (popt->topt.tableAttr)
-				printf(_("Table attribute is \"%s\".\n"), popt->topt.tableAttr);
-			else
-				printf(_("Table attributes unset.\n"));
-		}
 	}
 
 	/* toggle use of pager */
@@ -2473,39 +2458,25 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 		if (value && pg_strcasecmp(value, "always") == 0)
 			popt->topt.pager = 2;
 		else if (value)
-			if (ParseVariableBool(value))
+		{
+			if (ParseVariableBool(value, param))
 				popt->topt.pager = 1;
 			else
 				popt->topt.pager = 0;
+		}
 		else if (popt->topt.pager == 1)
 			popt->topt.pager = 0;
 		else
 			popt->topt.pager = 1;
-		if (!quiet)
-		{
-			if (popt->topt.pager == 1)
-				puts(_("Pager is used for long output."));
-			else if (popt->topt.pager == 2)
-				puts(_("Pager is always used."));
-			else
-				puts(_("Pager usage is off."));
-		}
 	}
 
 	/* disable "(x rows)" footer */
 	else if (strcmp(param, "footer") == 0)
 	{
 		if (value)
-			popt->topt.default_footer = ParseVariableBool(value);
+			popt->topt.default_footer = ParseVariableBool(value, param);
 		else
 			popt->topt.default_footer = !popt->topt.default_footer;
-		if (!quiet)
-		{
-			if (popt->topt.default_footer)
-				puts(_("Default footer is on."));
-			else
-				puts(_("Default footer is off."));
-		}
 	}
 
 	/* set border style/width */
@@ -2513,9 +2484,156 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 	{
 		if (value)
 			popt->topt.columns = atoi(value);
+	}
+	else
+	{
+		psql_error("\\pset: unknown option: %s\n", param);
+		return false;
+	}
 
-		if (!quiet)
+	if (!quiet)
+		printPsetInfo(param, &pset.popt);
+
+	return true;
+}
+
+
+static bool
+printPsetInfo(const char *param, struct printQueryOpt *popt)
+{
+	Assert(param != NULL);
+
+	/* show border style/width */
+	if (strcmp(param, "border") == 0)
+		printf(_("Border style is %d.\n"), popt->topt.border);
+
+	/* show the target width for the wrapped format */
+	else if (strcmp(param, "columns") == 0)
+	{
+		if (!popt->topt.columns)
+			printf(_("Target width is unset.\n"));
+		else
 			printf(_("Target width is %d.\n"), popt->topt.columns);
+	}
+
+	/* show expanded/vertical mode */
+	else if (strcmp(param, "x") == 0 || strcmp(param, "expanded") == 0 || strcmp(param, "vertical") == 0)
+	{
+		if (popt->topt.expanded == 1)
+			printf(_("Expanded display is on.\n"));
+		else if (popt->topt.expanded == 2)
+			printf(_("Expanded display is used automatically.\n"));
+		else
+			printf(_("Expanded display is off.\n"));
+	}
+
+	/* show field separator for unaligned text */
+	else if (strcmp(param, "fieldsep") == 0)
+	{
+		if (popt->topt.fieldSep.separator_zero)
+			printf(_("Field separator is zero byte.\n"));
+		else
+			printf(_("Field separator is \"%s\".\n"),
+				   popt->topt.fieldSep.separator);
+	}
+
+	else if (strcmp(param, "fieldsep_zero") == 0)
+	{
+		printf(_("Field separator is zero byte.\n"));
+	}
+
+	/* show disable "(x rows)" footer */
+	else if (strcmp(param, "footer") == 0)
+	{
+		if (popt->topt.default_footer)
+			printf(_("Default footer is on.\n"));
+		else
+			printf(_("Default footer is off.\n"));
+	}
+
+	/* show format */
+	else if (strcmp(param, "format") == 0)
+	{
+		printf(_("Output format is %s.\n"), _align2string(popt->topt.format));
+	}
+
+	/* show table line style */
+	else if (strcmp(param, "linestyle") == 0)
+	{
+		printf(_("Line style is %s.\n"),
+			   get_line_style(&popt->topt)->name);
+	}
+
+	/* show null display */
+	else if (strcmp(param, "null") == 0)
+	{
+		printf(_("Null display is \"%s\".\n"),
+			   popt->nullPrint ? popt->nullPrint : "");
+	}
+
+	/* show locale-aware numeric output */
+	else if (strcmp(param, "numericlocale") == 0)
+	{
+		if (popt->topt.numericLocale)
+			printf(_("Locale-adjusted numeric output is on.\n"));
+		else
+			printf(_("Locale-adjusted numeric output is off.\n"));
+	}
+
+	/* show toggle use of pager */
+	else if (strcmp(param, "pager") == 0)
+	{
+		if (popt->topt.pager == 1)
+			printf(_("Pager is used for long output.\n"));
+		else if (popt->topt.pager == 2)
+			printf(_("Pager is always used.\n"));
+		else
+			printf(_("Pager usage is off.\n"));
+	}
+
+	/* show record separator for unaligned text */
+	else if (strcmp(param, "recordsep") == 0)
+	{
+		if (popt->topt.recordSep.separator_zero)
+			printf(_("Record separator is zero byte.\n"));
+		else if (strcmp(popt->topt.recordSep.separator, "\n") == 0)
+			printf(_("Record separator is <newline>.\n"));
+		else
+			printf(_("Record separator is \"%s\".\n"),
+				   popt->topt.recordSep.separator);
+	}
+
+	else if (strcmp(param, "recordsep_zero") == 0)
+	{
+		printf(_("Record separator is zero byte.\n"));
+	}
+
+	/* show HTML table tag options */
+	else if (strcmp(param, "T") == 0 || strcmp(param, "tableattr") == 0)
+	{
+		if (popt->topt.tableAttr)
+			printf(_("Table attributes are \"%s\".\n"),
+				   popt->topt.tableAttr);
+		else
+			printf(_("Table attributes unset.\n"));
+	}
+
+	/* show title override */
+	else if (strcmp(param, "title") == 0)
+	{
+		if (popt->title)
+			printf(_("Title is \"%s\".\n"), popt->title);
+		else
+			printf(_("Title is unset.\n"));
+	}
+
+	/* show toggle between full and tuples-only format */
+	else if (strcmp(param, "t") == 0 || strcmp(param, "tuples_only") == 0)
+	{
+		if (popt->topt.tuples_only)
+			printf(_("Tuples only is on.\n"));
+		else
+			printf(_("Tuples only is off.\n"));
 	}
 
 	else
@@ -2525,6 +2643,101 @@ do_pset(const char *param, const char *value, printQueryOpt *popt, bool quiet)
 	}
 
 	return true;
+}
+
+
+static const char *
+pset_bool_string(bool val)
+{
+	return val ? "on" : "off";
+}
+
+
+static char *
+pset_quoted_string(const char *str)
+{
+	char	   *ret = pg_malloc(strlen(str) * 2 + 3);
+	char	   *r = ret;
+
+	*r++ = '\'';
+
+	for (; *str; str++)
+	{
+		if (*str == '\n')
+		{
+			*r++ = '\\';
+			*r++ = 'n';
+		}
+		else if (*str == '\'')
+		{
+			*r++ = '\\';
+			*r++ = '\'';
+		}
+		else
+			*r++ = *str;
+	}
+
+	*r++ = '\'';
+	*r = '\0';
+
+	return ret;
+}
+
+
+/*
+ * Return a malloc'ed string for the \pset value.
+ *
+ * Note that for some string parameters, print.c distinguishes between unset
+ * and empty string, but for others it doesn't.  This function should produce
+ * output that produces the correct setting when fed back into \pset.
+ */
+static char *
+pset_value_string(const char *param, struct printQueryOpt *popt)
+{
+	Assert(param != NULL);
+
+	if (strcmp(param, "border") == 0)
+		return psprintf("%d", popt->topt.border);
+	else if (strcmp(param, "columns") == 0)
+		return psprintf("%d", popt->topt.columns);
+	else if (strcmp(param, "expanded") == 0)
+		return pstrdup(popt->topt.expanded == 2
+					   ? "auto"
+					   : pset_bool_string(popt->topt.expanded));
+	else if (strcmp(param, "fieldsep") == 0)
+		return pset_quoted_string(popt->topt.fieldSep.separator
+								  ? popt->topt.fieldSep.separator
+								  : "");
+	else if (strcmp(param, "fieldsep_zero") == 0)
+		return pstrdup(pset_bool_string(popt->topt.fieldSep.separator_zero));
+	else if (strcmp(param, "footer") == 0)
+		return pstrdup(pset_bool_string(popt->topt.default_footer));
+	else if (strcmp(param, "format") == 0)
+		return psprintf("%s", _align2string(popt->topt.format));
+	else if (strcmp(param, "linestyle") == 0)
+		return psprintf("%s", get_line_style(&popt->topt)->name);
+	else if (strcmp(param, "null") == 0)
+		return pset_quoted_string(popt->nullPrint
+								  ? popt->nullPrint
+								  : "");
+	else if (strcmp(param, "numericlocale") == 0)
+		return pstrdup(pset_bool_string(popt->topt.numericLocale));
+	else if (strcmp(param, "pager") == 0)
+		return psprintf("%d", popt->topt.pager);
+	else if (strcmp(param, "recordsep") == 0)
+		return pset_quoted_string(popt->topt.recordSep.separator
+								  ? popt->topt.recordSep.separator
+								  : "");
+	else if (strcmp(param, "recordsep_zero") == 0)
+		return pstrdup(pset_bool_string(popt->topt.recordSep.separator_zero));
+	else if (strcmp(param, "tableattr") == 0)
+		return popt->topt.tableAttr ? pset_quoted_string(popt->topt.tableAttr) : pstrdup("");
+	else if (strcmp(param, "title") == 0)
+		return popt->title ? pset_quoted_string(popt->title) : pstrdup("");
+	else if (strcmp(param, "tuples_only") == 0)
+		return pstrdup(pset_bool_string(popt->topt.tuples_only));
+	else
+		return pstrdup("ERROR");
 }
 
 
@@ -2557,14 +2770,11 @@ do_shell(const char *command)
 		if (shellName == NULL)
 			shellName = DEFAULT_SHELL;
 
-		sys = pg_malloc(strlen(shellName) + 16);
+		/* See EDITOR handling comment for an explanation */
 #ifndef WIN32
-		sprintf(sys,
-		/* See EDITOR handling comment for an explanation */
-				"exec %s", shellName);
+		sys = psprintf("exec %s", shellName);
 #else
-		/* See EDITOR handling comment for an explanation */
-		sprintf(sys, SYSTEMQUOTE "\"%s\"" SYSTEMQUOTE, shellName);
+		sys = psprintf("\"%s\"", shellName);
 #endif
 		result = system(sys);
 		free(sys);
@@ -2602,7 +2812,6 @@ do_watch(PQExpBuffer query_buf, long sleep)
 	 * Set up rendering options, in particular, disable the pager, because
 	 * nobody wants to be prompted while watching the output of 'watch'.
 	 */
-	myopt.nullPrint = NULL;
 	myopt.topt.pager = 0;
 
 	for (;;)
@@ -2718,7 +2927,7 @@ lookup_function_oid(PGconn *conn, const char *desc, Oid *foid)
 	PGresult   *res;
 
 	query = createPQExpBuffer();
-	printfPQExpBuffer(query, "SELECT ");
+	appendPQExpBufferStr(query, "SELECT ");
 	appendStringLiteralConn(query, desc, conn);
 	appendPQExpBuffer(query, "::pg_catalog.%s::pg_catalog.oid",
 					  strchr(desc, '(') ? "regprocedure" : "regproc");

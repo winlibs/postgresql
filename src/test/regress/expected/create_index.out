@@ -2221,6 +2221,20 @@ RESET enable_seqscan;
 RESET enable_indexscan;
 RESET enable_bitmapscan;
 --
+-- Try a GIN index with a lot of items with same key. (GIN creates a posting
+-- tree when there are enough duplicates)
+--
+CREATE TABLE array_gin_test (a int[]);
+INSERT INTO array_gin_test SELECT ARRAY[1, g%5, g] FROM generate_series(1, 10000) g;
+CREATE INDEX array_gin_test_idx ON array_gin_test USING gin (a);
+SELECT COUNT(*) FROM array_gin_test WHERE a @> '{2}';
+ count 
+-------
+  2000
+(1 row)
+
+DROP TABLE array_gin_test;
+--
 -- HASH
 --
 CREATE INDEX hash_i4_index ON hash_i4_heap USING hash (random int4_ops);
@@ -2383,6 +2397,14 @@ ALTER TABLE cwi_test ADD primary key USING INDEX cwi_uniq_idx;
 Indexes:
     "cwi_uniq_idx" PRIMARY KEY, btree (a, b)
 
+\d cwi_uniq_idx
+         Index "public.cwi_uniq_idx"
+ Column |         Type          | Definition 
+--------+-----------------------+------------
+ a      | integer               | a
+ b      | character varying(10) | b
+primary key, btree, for table "public.cwi_test"
+
 CREATE UNIQUE INDEX cwi_uniq2_idx ON cwi_test(b , a);
 ALTER TABLE cwi_test DROP CONSTRAINT cwi_uniq_idx,
 	ADD CONSTRAINT cwi_replaced_pkey PRIMARY KEY
@@ -2397,6 +2419,14 @@ NOTICE:  ALTER TABLE / ADD CONSTRAINT USING INDEX will rename index "cwi_uniq2_i
  c      | character(1)          | 
 Indexes:
     "cwi_replaced_pkey" PRIMARY KEY, btree (b, a)
+
+\d cwi_replaced_pkey
+      Index "public.cwi_replaced_pkey"
+ Column |         Type          | Definition 
+--------+-----------------------+------------
+ b      | character varying(10) | b
+ a      | integer               | a
+primary key, btree, for table "public.cwi_test"
 
 DROP INDEX cwi_replaced_pkey;	-- Should fail; a constraint depends on it
 ERROR:  cannot drop index cwi_replaced_pkey because constraint cwi_replaced_pkey on table cwi_test requires it
@@ -2699,7 +2729,7 @@ SELECT count(*) FROM dupindexcols
 --
 -- Check ordering of =ANY indexqual results (bug in 9.2.0)
 --
-vacuum analyze tenk1;		-- ensure we get consistent plans here
+vacuum tenk1;		-- ensure we get consistent plans here
 explain (costs off)
 SELECT unique1 FROM tenk1
 WHERE unique1 IN (1,42,7)
@@ -2724,11 +2754,32 @@ explain (costs off)
 SELECT thousand, tenthous FROM tenk1
 WHERE thousand < 2 AND tenthous IN (1001,3000)
 ORDER BY thousand;
+                      QUERY PLAN                       
+-------------------------------------------------------
+ Index Only Scan using tenk1_thous_tenthous on tenk1
+   Index Cond: (thousand < 2)
+   Filter: (tenthous = ANY ('{1001,3000}'::integer[]))
+(3 rows)
+
+SELECT thousand, tenthous FROM tenk1
+WHERE thousand < 2 AND tenthous IN (1001,3000)
+ORDER BY thousand;
+ thousand | tenthous 
+----------+----------
+        0 |     3000
+        1 |     1001
+(2 rows)
+
+SET enable_indexonlyscan = OFF;
+explain (costs off)
+SELECT thousand, tenthous FROM tenk1
+WHERE thousand < 2 AND tenthous IN (1001,3000)
+ORDER BY thousand;
                                       QUERY PLAN                                      
 --------------------------------------------------------------------------------------
  Sort
    Sort Key: thousand
-   ->  Index Only Scan using tenk1_thous_tenthous on tenk1
+   ->  Index Scan using tenk1_thous_tenthous on tenk1
          Index Cond: ((thousand < 2) AND (tenthous = ANY ('{1001,3000}'::integer[])))
 (4 rows)
 
@@ -2739,5 +2790,17 @@ ORDER BY thousand;
 ----------+----------
         0 |     3000
         1 |     1001
+(2 rows)
+
+RESET enable_indexscan;
+--
+-- Check elimination of constant-NULL subexpressions
+--
+explain (costs off)
+  select * from tenk1 where (thousand, tenthous) in ((1,1001), (null,null));
+                      QUERY PLAN                      
+------------------------------------------------------
+ Index Scan using tenk1_thous_tenthous on tenk1
+   Index Cond: ((thousand = 1) AND (tenthous = 1001))
 (2 rows)
 

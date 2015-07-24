@@ -52,3 +52,21 @@ more than one row returned for \gset
 select 10 as test01, 20 as test02 from generate_series(1,0) \gset
 no rows returned for \gset
 \unset FETCH_COUNT
+-- show all pset options
+\pset
+border         1
+columns        0
+expanded       off
+fieldsep       '|'
+fieldsep_zero  off
+footer         on
+format         aligned
+linestyle      ascii
+null           ''
+numericlocale  off
+pager          1
+recordsep      '\n'
+recordsep_zero off
+tableattr      
+title          
+tuples_only    off

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -105,7 +105,7 @@ CLASS="PRODUCTNAME"
     and for converting from formatted strings to specific data types.
     <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-TABLE"
->Table 9-20</A
+>Table 9-21</A
 > lists them.
     These functions all follow a common calling convention: the first
     argument is the value to be formatted and the second argument is a
@@ -142,7 +142,7 @@ NAME="FUNCTIONS-FORMATTING-TABLE"
 ></A
 ><P
 ><B
->Table 9-20. Formatting Functions</B
+>Table 9-21. Formatting Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -435,7 +435,7 @@ CLASS="FUNCTION"
 ><P
 >   <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-DATETIME-TABLE"
->Table 9-21</A
+>Table 9-22</A
 > shows the
    template patterns available for formatting date and time values.
   </P
@@ -446,7 +446,7 @@ NAME="FUNCTIONS-FORMATTING-DATETIME-TABLE"
 ></A
 ><P
 ><B
->Table 9-21. Template Patterns for Date/Time Formatting</B
+>Table 9-22. Template Patterns for Date/Time Formatting</B
 ></P
 ><TABLE
 BORDER="1"
@@ -577,7 +577,7 @@ CLASS="LITERAL"
 >Y,YYY</TT
 ></TD
 ><TD
->year (4 and more digits) with comma</TD
+>year (4 or more digits) with comma</TD
 ></TR
 ><TR
 ><TD
@@ -586,7 +586,7 @@ CLASS="LITERAL"
 >YYYY</TT
 ></TD
 ><TD
->year (4 and more digits)</TD
+>year (4 or more digits)</TD
 ></TR
 ><TR
 ><TD
@@ -622,7 +622,7 @@ CLASS="LITERAL"
 >IYYY</TT
 ></TD
 ><TD
->ISO year (4 and more digits)</TD
+>ISO 8601 week-numbering year (4 or more digits)</TD
 ></TR
 ><TR
 ><TD
@@ -631,7 +631,7 @@ CLASS="LITERAL"
 >IYY</TT
 ></TD
 ><TD
->last 3 digits of ISO year</TD
+>last 3 digits of ISO 8601 week-numbering year</TD
 ></TR
 ><TR
 ><TD
@@ -640,7 +640,7 @@ CLASS="LITERAL"
 >IY</TT
 ></TD
 ><TD
->last 2 digits of ISO year</TD
+>last 2 digits of ISO 8601 week-numbering year</TD
 ></TR
 ><TR
 ><TD
@@ -649,7 +649,7 @@ CLASS="LITERAL"
 >I</TT
 ></TD
 ><TD
->last digit of ISO year</TD
+>last digit of ISO 8601 week-numbering year</TD
 ></TR
 ><TR
 ><TD
@@ -822,7 +822,7 @@ CLASS="LITERAL"
 >IDDD</TT
 ></TD
 ><TD
->ISO day of year (001-371; day 1 of the year is Monday of the first ISO week.)</TD
+>day of ISO 8601 week-numbering year (001-371; day 1 of the year is Monday of the first ISO week)</TD
 ></TR
 ><TR
 ><TD
@@ -840,10 +840,10 @@ CLASS="LITERAL"
 >D</TT
 ></TD
 ><TD
->day of the week, Sunday(<TT
+>day of the week, Sunday (<TT
 CLASS="LITERAL"
 >1</TT
->) to Saturday(<TT
+>) to Saturday (<TT
 CLASS="LITERAL"
 >7</TT
 >)</TD
@@ -855,10 +855,10 @@ CLASS="LITERAL"
 >ID</TT
 ></TD
 ><TD
->ISO day of the week, Monday(<TT
+>ISO 8601 day of the week, Monday (<TT
 CLASS="LITERAL"
 >1</TT
->) to Sunday(<TT
+>) to Sunday (<TT
 CLASS="LITERAL"
 >7</TT
 >)</TD
@@ -870,7 +870,7 @@ CLASS="LITERAL"
 >W</TT
 ></TD
 ><TD
->week of month (1-5) (The first week starts on the first day of the month.)</TD
+>week of month (1-5) (the first week starts on the first day of the month)</TD
 ></TR
 ><TR
 ><TD
@@ -879,7 +879,7 @@ CLASS="LITERAL"
 >WW</TT
 ></TD
 ><TD
->week number of year (1-53) (The first week starts on the first day of the year.)</TD
+>week number of year (1-53) (the first week starts on the first day of the year)</TD
 ></TR
 ><TR
 ><TD
@@ -888,7 +888,7 @@ CLASS="LITERAL"
 >IW</TT
 ></TD
 ><TD
->ISO week number of year (01 - 53; the first Thursday of the new year is in week 1.)</TD
+>week number of ISO 8601 week-numbering year (01-53; the first Thursday of the year is in week 1)</TD
 ></TR
 ><TR
 ><TD
@@ -897,7 +897,7 @@ CLASS="LITERAL"
 >CC</TT
 ></TD
 ><TD
->century (2 digits) (The twenty-first century starts on 2001-01-01.)</TD
+>century (2 digits) (the twenty-first century starts on 2001-01-01)</TD
 ></TR
 ><TR
 ><TD
@@ -959,6 +959,15 @@ CLASS="LITERAL"
 ><TD
 >lower case time-zone name</TD
 ></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>OF</TT
+></TD
+><TD
+>time-zone offset</TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -978,7 +987,7 @@ CLASS="LITERAL"
 > modifier.
     <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-DATETIMEMOD-TABLE"
->Table 9-22</A
+>Table 9-23</A
 > shows the
     modifier patterns for date/time formatting.
    </P
@@ -989,7 +998,7 @@ NAME="FUNCTIONS-FORMATTING-DATETIMEMOD-TABLE"
 ></A
 ><P
 ><B
->Table 9-22. Template Pattern Modifiers for Date/Time Formatting</B
+>Table 9-23. Template Pattern Modifiers for Date/Time Formatting</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1177,6 +1186,31 @@ CLASS="LITERAL"
 ></LI
 ><LI
 ><P
+>       <CODE
+CLASS="FUNCTION"
+>to_timestamp</CODE
+> and <CODE
+CLASS="FUNCTION"
+>to_date</CODE
+>
+       exist to handle input formats that cannot be converted by
+       simple casting.  These functions interpret input liberally,
+       with minimal error checking.  While they produce valid output,
+       the conversion can yield unexpected results.  For example,
+       input to these functions is not restricted by normal ranges,
+       thus <TT
+CLASS="LITERAL"
+>to_date('20096040','YYYYMMDD')</TT
+> returns
+       <TT
+CLASS="LITERAL"
+>2014-01-17</TT
+> rather than causing an error.
+       Casting does not have this behavior.
+      </P
+></LI
+><LI
+><P
 >       Ordinary text is allowed in <CODE
 CLASS="FUNCTION"
 >to_char</CODE
@@ -1316,8 +1350,8 @@ CLASS="LITERAL"
 ></LI
 ><LI
 ><P
->       An ISO week date (as distinct from a Gregorian date) can be
-       specified to <CODE
+>       An ISO 8601 week-numbering date (as distinct from a Gregorian date)
+       can be specified to <CODE
 CLASS="FUNCTION"
 >to_timestamp</CODE
 > and
@@ -1330,16 +1364,16 @@ CLASS="FUNCTION"
 ></P><UL
 ><LI
 ><P
->          Year, week, and weekday:  for example <TT
+>          Year, week number, and weekday:  for
+          example <TT
 CLASS="LITERAL"
->to_date('2006-42-4',
-          'IYYY-IW-ID')</TT
-> returns the date
-          <TT
+>to_date('2006-42-4', 'IYYY-IW-ID')</TT
+>
+          returns the date <TT
 CLASS="LITERAL"
 >2006-10-19</TT
->.  If you omit the weekday it
-          is assumed to be 1 (Monday).
+>.
+          If you omit the weekday it is assumed to be 1 (Monday).
          </P
 ></LI
 ><LI
@@ -1358,19 +1392,66 @@ CLASS="LITERAL"
 ><P>
       </P
 ><P
->       Attempting to construct a date using a mixture of ISO week and
-       Gregorian date fields is nonsensical, and will cause an error.  In the
-       context of an ISO year, the concept of a <SPAN
+>       Attempting to enter a date using a mixture of ISO 8601 week-numbering
+       fields and Gregorian date fields is nonsensical, and will cause an
+       error.  In the context of an ISO 8601 week-numbering year, the
+       concept of a <SPAN
 CLASS="QUOTE"
 >"month"</SPAN
 > or <SPAN
 CLASS="QUOTE"
->"day
-       of month"</SPAN
-> has no meaning.  In the context of a Gregorian year, the
-       ISO week has no meaning.  Users should avoid mixing Gregorian and
-       ISO date specifications.
+>"day of month"</SPAN
+> has no
+       meaning.  In the context of a Gregorian year, the ISO week has no
+       meaning.
       </P
+><DIV
+CLASS="CAUTION"
+><P
+></P
+><TABLE
+CLASS="CAUTION"
+BORDER="1"
+WIDTH="90%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Caution</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>        While <CODE
+CLASS="FUNCTION"
+>to_date</CODE
+> will reject a mixture of
+        Gregorian and ISO week-numbering date
+        fields, <CODE
+CLASS="FUNCTION"
+>to_char</CODE
+> will not, since output format
+        specifications like <TT
+CLASS="LITERAL"
+>YYYY-MM-DD (IYYY-IDDD)</TT
+> can be
+        useful.  But avoid writing something like <TT
+CLASS="LITERAL"
+>IYYY-MM-DD</TT
+>;
+        that would yield surprising results near the start of the year.
+        (See <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT"
+>Section 9.9.1</A
+> for more
+        information.)
+       </P
+></TD
+></TR
+></TABLE
+></DIV
 ></LI
 ><LI
 ><P
@@ -1473,7 +1554,7 @@ CLASS="LITERAL"
 ><P
 >   <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE"
->Table 9-23</A
+>Table 9-24</A
 > shows the
    template patterns available for formatting numeric values.
   </P
@@ -1484,7 +1565,7 @@ NAME="FUNCTIONS-FORMATTING-NUMERIC-TABLE"
 ></A
 ><P
 ><B
->Table 9-23. Template Patterns for Numeric Formatting</B
+>Table 9-24. Template Patterns for Numeric Formatting</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1814,7 +1895,7 @@ CLASS="LITERAL"
 > modifier.
     <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-NUMERICMOD-TABLE"
->Table 9-24</A
+>Table 9-25</A
 > shows the
     modifier patterns for numeric formatting.
    </P
@@ -1825,7 +1906,7 @@ NAME="FUNCTIONS-FORMATTING-NUMERICMOD-TABLE"
 ></A
 ><P
 ><B
->Table 9-24. Template Pattern Modifiers for Numeric Formatting</B
+>Table 9-25. Template Pattern Modifiers for Numeric Formatting</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1889,7 +1970,7 @@ CLASS="LITERAL"
 ><P
 >   <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-EXAMPLES-TABLE"
->Table 9-25</A
+>Table 9-26</A
 > shows some
    examples of the use of the <CODE
 CLASS="FUNCTION"
@@ -1903,7 +1984,7 @@ NAME="FUNCTIONS-FORMATTING-EXAMPLES-TABLE"
 ></A
 ><P
 ><B
->Table 9-25. <CODE
+>Table 9-26. <CODE
 CLASS="FUNCTION"
 >to_char</CODE
 > Examples</B

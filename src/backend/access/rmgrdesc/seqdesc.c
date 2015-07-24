@@ -3,7 +3,7 @@
  * seqdesc.c
  *	  rmgr descriptor routines for commands/sequence.c
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -24,10 +24,10 @@ seq_desc(StringInfo buf, uint8 xl_info, char *rec)
 	xl_seq_rec *xlrec = (xl_seq_rec *) rec;
 
 	if (info == XLOG_SEQ_LOG)
-		appendStringInfo(buf, "log: ");
+		appendStringInfoString(buf, "log: ");
 	else
 	{
-		appendStringInfo(buf, "UNKNOWN");
+		appendStringInfoString(buf, "UNKNOWN");
 		return;
 	}
 

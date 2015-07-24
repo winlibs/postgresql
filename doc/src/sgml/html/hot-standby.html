@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="High Availability, Load Balancing, and Replication"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -507,7 +507,7 @@ CLASS="COMMAND"
 >.  In addition, a set of
     functions (<A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-INFO-TABLE"
->Table 9-61</A
+>Table 9-66</A
 >) allow users to
     access information about the standby server. These allow you to write
     programs that are aware of the current state of the database. These
@@ -754,12 +754,23 @@ CLASS="COMMAND"
     situation will be no worse than if the standby queries were running
     directly on the primary server, and you are still getting the benefit of
     off-loading execution onto the standby.
+    If standby servers connect and disconnect frequently, you
+    might want to make adjustments to handle the period when
     <TT
 CLASS="VARNAME"
+>hot_standby_feedback</TT
+> feedback is not being provided.
+    For example, consider increasing <TT
+CLASS="VARNAME"
 >max_standby_archive_delay</TT
-> must be kept large in this case,
-    because delayed WAL files might already contain entries that conflict with
-    the desired standby queries.
+>
+    so that queries are not rapidly canceled by conflicts in WAL archive
+    files during disconnected periods.  You should also consider increasing
+    <TT
+CLASS="VARNAME"
+>max_standby_streaming_delay</TT
+> to avoid rapid cancellations
+    by newly-arrived streaming WAL entries after reconnection.
    </P
 ><P
 >    Another option is to increase <A
@@ -844,8 +855,12 @@ CLASS="VARNAME"
     <TT
 CLASS="LITERAL"
 >hot_standby</TT
-> on the primary.  Reaching a consistent state can
-    also be delayed in the presence of both of these conditions:
+> or <TT
+CLASS="LITERAL"
+>logical</TT
+> on the primary.  Reaching
+    a consistent state can also be delayed in the presence of both of these
+    conditions:
 
       <P
 ></P

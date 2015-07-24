@@ -2,12 +2,12 @@
 .\"     Title: SELECT
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "SELECT" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "SELECT" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,15 +29,12 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 SELECT, TABLE, WITH \- retrieve rows from a table or view
-.\" SELECT
-.\" TABLE command
-.\" WITH: in SELECT
 .SH "SYNOPSIS"
 .sp
 .nf
 [ WITH [ RECURSIVE ] \fIwith_query\fR [, \&.\&.\&.] ]
 SELECT [ ALL | DISTINCT [ ON ( \fIexpression\fR [, \&.\&.\&.] ) ] ]
-    * | \fIexpression\fR [ [ AS ] \fIoutput_name\fR ] [, \&.\&.\&.]
+    [ * | \fIexpression\fR [ [ AS ] \fIoutput_name\fR ] [, \&.\&.\&.] ]
     [ FROM \fIfrom_item\fR [, \&.\&.\&.] ]
     [ WHERE \fIcondition\fR ]
     [ GROUP BY \fIexpression\fR [, \&.\&.\&.] ]
@@ -55,8 +52,12 @@ where \fIfrom_item\fR can be one of:
     [ ONLY ] \fItable_name\fR [ * ] [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
     [ LATERAL ] ( \fIselect\fR ) [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ]
     \fIwith_query_name\fR [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
-    [ LATERAL ] \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] ) [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] | \fIcolumn_definition\fR [, \&.\&.\&.] ) ]
+    [ LATERAL ] \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] )
+                [ WITH ORDINALITY ] [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
+    [ LATERAL ] \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] ) [ AS ] \fIalias\fR ( \fIcolumn_definition\fR [, \&.\&.\&.] )
     [ LATERAL ] \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] ) AS ( \fIcolumn_definition\fR [, \&.\&.\&.] )
+    [ LATERAL ] ROWS FROM( \fIfunction_name\fR ( [ \fIargument\fR [, \&.\&.\&.] ] ) [ AS ( \fIcolumn_definition\fR [, \&.\&.\&.] ) ] [, \&.\&.\&.] )
+                [ WITH ORDINALITY ] [ [ AS ] \fIalias\fR [ ( \fIcolumn_alias\fR [, \&.\&.\&.] ) ] ]
     \fIfrom_item\fR [ NATURAL ] \fIjoin_type\fR \fIfrom_item\fR [ ON \fIjoin_condition\fR | USING ( \fIjoin_column\fR [, \&.\&.\&.] ) ]
 
 and \fIwith_query\fR is:
@@ -138,7 +139,7 @@ below\&.)
 .\}
 If the
 GROUP BY
-clause is specified, the output is combined into groups of rows that match on one or more values\&. If the
+clause is specified, or if there are aggregate function calls, the output is combined into groups of rows that match on one or more values, and the results of aggregate functions are computed\&. If the
 HAVING
 clause is present, it eliminates groups that do not satisfy the given condition\&. (See
 GROUP BY Clause
@@ -294,6 +295,7 @@ The
 WITH
 clause allows you to specify one or more subqueries that can be referenced by name in the primary query\&. The subqueries effectively act as temporary tables or views for the duration of the primary query\&. Each subquery can be a
 \fBSELECT\fR,
+\fBTABLE\fR,
 \fBVALUES\fR,
 \fBINSERT\fR,
 \fBUPDATE\fR
@@ -434,14 +436,42 @@ query hides any real table of the same name for the purposes of the primary quer
 .RS 4
 Function calls can appear in the
 FROM
-clause\&. (This is especially useful for functions that return result sets, but any function can be used\&.) This acts as though its output were created as a temporary table for the duration of this single
+clause\&. (This is especially useful for functions that return result sets, but any function can be used\&.) This acts as though the function\*(Aqs output were created as a temporary table for the duration of this single
 \fBSELECT\fR
-command\&. An alias can also be used\&. If an alias is written, a column alias list can also be written to provide substitute names for one or more attributes of the function\*(Aqs composite return type\&. If the function has been defined as returning the
+command\&. When the optional
+\fBWITH ORDINALITY\fR
+clause is added to the function call, a new column is appended after all the function\*(Aqs output columns with numbering for each row\&.
+.sp
+An alias can be provided in the same way as for a table\&. If an alias is written, a column alias list can also be written to provide substitute names for one or more attributes of the function\*(Aqs composite return type, including the column added by
+ORDINALITY
+if present\&.
+.sp
+Multiple function calls can be combined into a single
+FROM\-clause item by surrounding them with
+ROWS FROM( \&.\&.\&. )\&. The output of such an item is the concatenation of the first row from each function, then the second row from each function, etc\&. If some of the functions produce fewer rows than others, NULLs are substituted for the missing data, so that the total number of rows returned is always the same as for the function that produced the most rows\&.
+.sp
+If the function has been defined as returning the
 record
 data type, then an alias or the key word
 AS
 must be present, followed by a column definition list in the form
-( \fIcolumn_name\fR \fIdata_type\fR [, \&.\&.\&. ] )\&. The column definition list must match the actual number and types of columns returned by the function\&.
+( \fIcolumn_name\fR \fIdata_type\fR [, \&.\&.\&. ])\&. The column definition list must match the actual number and types of columns returned by the function\&.
+.sp
+When using the
+ROWS FROM( \&.\&.\&. )
+syntax, if one of the functions requires a column definition list, it\*(Aqs preferred to put the column definition list after the function call inside
+ROWS FROM( \&.\&.\&. )\&. A column definition list can be placed after the
+ROWS FROM( \&.\&.\&. )
+construct only if there\*(Aqs just a single function and no
+WITH ORDINALITY
+clause\&.
+.sp
+To use
+ORDINALITY
+together with a column definition list, you must use the
+ROWS FROM( \&.\&.\&. )
+syntax and put the column definition list inside
+ROWS FROM( \&.\&.\&. )\&.
 .RE
 .PP
 \fIjoin_type\fR
@@ -688,12 +718,41 @@ list item), or an arbitrary expression formed from input\-column values\&. In ca
 GROUP BY
 name will be interpreted as an input\-column name rather than an output column name\&.
 .PP
-Aggregate functions, if any are used, are computed across all rows making up each group, producing a separate value for each group (whereas without
-GROUP BY, an aggregate produces a single value computed across all the selected rows)\&. When
+Aggregate functions, if any are used, are computed across all rows making up each group, producing a separate value for each group\&. (If there are aggregate functions but no
 GROUP BY
-is present, it is not valid for the
+clause, the query is treated as having a single group comprising all the selected rows\&.) The set of rows fed to each aggregate function can be further filtered by attaching a
+FILTER
+clause to the aggregate function call; see
+Section 4.2.7, \(lqAggregate Expressions\(rq, in the documentation
+for more information\&. When a
+FILTER
+clause is present, only those rows matching it are included in the input to that aggregate function\&.
+.PP
+When
+GROUP BY
+is present, or any aggregate functions are present, it is not valid for the
 \fBSELECT\fR
-list expressions to refer to ungrouped columns except within aggregate functions or if the ungrouped column is functionally dependent on the grouped columns, since there would otherwise be more than one possible value to return for an ungrouped column\&. A functional dependency exists if the grouped columns (or a subset thereof) are the primary key of the table containing the ungrouped column\&.
+list expressions to refer to ungrouped columns except within aggregate functions or when the ungrouped column is functionally dependent on the grouped columns, since there would otherwise be more than one possible value to return for an ungrouped column\&. A functional dependency exists if the grouped columns (or a subset thereof) are the primary key of the table containing the ungrouped column\&.
+.PP
+Keep in mind that all aggregate functions are evaluated before evaluating any
+\(lqscalar\(rq
+expressions in the
+HAVING
+clause or
+SELECT
+list\&. This means that, for example, a
+CASE
+expression cannot be used to skip evaluation of an aggregate function; see
+Section 4.2.14, \(lqExpression Evaluation Rules\(rq, in the documentation\&.
+.PP
+Currently,
+FOR NO KEY UPDATE,
+FOR UPDATE,
+FOR SHARE
+and
+FOR KEY SHARE
+cannot be specified with
+GROUP BY\&.
 .SS "HAVING Clause"
 .PP
 The optional
@@ -730,7 +789,7 @@ HAVING
 filters group rows created by
 GROUP BY\&. Each column referenced in
 \fIcondition\fR
-must unambiguously reference a grouping column, unless the reference appears within an aggregate function\&.
+must unambiguously reference a grouping column, unless the reference appears within an aggregate function or the ungrouped column is functionally dependent on the grouping columns\&.
 .PP
 The presence of
 HAVING
@@ -745,6 +804,15 @@ HAVING
 clause can only reference table columns from within aggregate functions\&. Such a query will emit a single row if the
 HAVING
 condition is true, zero rows if it is not true\&.
+.PP
+Currently,
+FOR NO KEY UPDATE,
+FOR UPDATE,
+FOR SHARE
+and
+FOR KEY SHARE
+cannot be specified with
+HAVING\&.
 .SS "WINDOW Clause"
 .PP
 The optional
@@ -818,8 +886,8 @@ can be one of
 .RS 4
 .\}
 .nf
-[ RANGE | ROWS ] \fIframe_start\fR
-[ RANGE | ROWS ] BETWEEN \fIframe_start\fR AND \fIframe_end\fR
+{ RANGE | ROWS } \fIframe_start\fR
+{ RANGE | ROWS } BETWEEN \fIframe_start\fR AND \fIframe_end\fR
 .fi
 .if n \{\
 .RE
@@ -866,9 +934,9 @@ is not allowed\&.
 .PP
 The default framing option is
 RANGE UNBOUNDED PRECEDING, which is the same as
-RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW; it sets the frame to be all rows from the partition start up through the current row\*(Aqs last peer in the
+RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW; it sets the frame to be all rows from the partition start up through the current row\*(Aqs last peer (a row that
 ORDER BY
-ordering (which means all rows if there is no
+considers equivalent to the current row, or all rows if there is no
 ORDER BY)\&. In general,
 UNBOUNDED PRECEDING
 means that the frame starts with the first row of the partition, and similarly
@@ -905,7 +973,7 @@ ordering does not order the rows uniquely\&. The
 RANGE
 options are designed to ensure that rows that are peers in the
 ORDER BY
-ordering are treated alike; any two peer rows will be both in or both not in the frame\&.
+ordering are treated alike; all peer rows will be in the same frame\&.
 .PP
 The purpose of a
 WINDOW
@@ -927,6 +995,15 @@ OVER
 clause\&. However, the
 WINDOW
 clause saves typing when the same window definition is needed for more than one window function\&.
+.PP
+Currently,
+FOR NO KEY UPDATE,
+FOR UPDATE,
+FOR SHARE
+and
+FOR KEY SHARE
+cannot be specified with
+WINDOW\&.
 .PP
 Window functions are described in detail in
 Section 3.5, \(lqWindow Functions\(rq, in the documentation,
@@ -1025,6 +1102,15 @@ ORDER BY
 clause will normally contain additional expression(s) that determine the desired precedence of rows within each
 DISTINCT ON
 group\&.
+.PP
+Currently,
+FOR NO KEY UPDATE,
+FOR UPDATE,
+FOR SHARE
+and
+FOR KEY SHARE
+cannot be specified with
+DISTINCT\&.
 .SS "UNION Clause"
 .PP
 The
@@ -1485,77 +1571,8 @@ KEY SHARE
 .RE
 .\}
 .PP
-
-FOR UPDATE
-causes the rows retrieved by the
-\fBSELECT\fR
-statement to be locked as though for update\&. This prevents them from being modified or deleted by other transactions until the current transaction ends\&. That is, other transactions that attempt
-\fBUPDATE\fR,
-\fBDELETE\fR,
-\fBSELECT FOR UPDATE\fR,
-\fBSELECT FOR NO KEY UPDATE\fR,
-\fBSELECT FOR SHARE\fR
-or
-\fBSELECT FOR KEY SHARE\fR
-of these rows will be blocked until the current transaction ends\&. The
-FOR UPDATE
-lock mode is also acquired by any
-\fBDELETE\fR
-on a row, and also by an
-\fBUPDATE\fR
-that modifies the values on certain columns\&. Currently, the set of columns considered for the
-\fBUPDATE\fR
-case are those that have an unique index on them that can be used in a foreign key (so partial indexes and expressional indexes are not considered), but this may change in the future\&. Also, if an
-\fBUPDATE\fR,
-\fBDELETE\fR, or
-\fBSELECT FOR UPDATE\fR
-from another transaction has already locked a selected row or rows,
-\fBSELECT FOR UPDATE\fR
-will wait for the other transaction to complete, and will then lock and return the updated row (or no row, if the row was deleted)\&. Within a
-REPEATABLE READ
-or
-SERIALIZABLE
-transaction, however, an error will be thrown if a row to be locked has changed since the transaction started\&. For further discussion see
-Chapter 13, Concurrency Control, in the documentation\&.
-.PP
-
-FOR NO KEY UPDATE
-behaves similarly, except that the lock acquired is weaker: this lock will not block
-SELECT FOR KEY SHARE
-commands that attempt to acquire a lock on the same rows\&. This lock mode is also acquired by any
-\fBUPDATE\fR
-that does not acquire a
-FOR UPDATE
-lock\&.
-.PP
-
-FOR SHARE
-behaves similarly, except that it acquires a shared rather than exclusive lock on each retrieved row\&. A shared lock blocks other transactions from performing
-\fBUPDATE\fR,
-\fBDELETE\fR,
-\fBSELECT FOR UPDATE\fR
-or
-\fBSELECT FOR NO KEY UPDATE\fR
-on these rows, but it does not prevent them from performing
-\fBSELECT FOR SHARE\fR
-or
-\fBSELECT FOR KEY SHARE\fR\&.
-.PP
-
-FOR KEY SHARE
-behaves similarly to
-FOR SHARE, except that the lock is weaker:
-SELECT FOR UPDATE
-is blocked, but not
-SELECT FOR NO KEY UPDATE\&. A key\-shared lock blocks other transactions from performing
-\fBDELETE\fR
-or any
-\fBUPDATE\fR
-that changes the key values, but not other
-\fBUPDATE\fR, and neither does it prevent
-\fBSELECT FOR NO KEY UPDATE\fR,
-\fBSELECT FOR SHARE\fR, or
-\fBSELECT FOR KEY SHARE\fR\&.
+For more information on each row\-level lock mode, refer to
+Section 13.3.2, \(lqRow-level Locks\(rq, in the documentation\&.
 .PP
 To prevent the operation from waiting for other transactions to commit, use the
 NOWAIT
@@ -1700,7 +1717,7 @@ TABLE \fIname\fR
 .RE
 .\}
 .sp
-is completely equivalent to
+is equivalent to
 .sp
 .if n \{\
 .RS 4
@@ -1712,7 +1729,21 @@ SELECT * FROM \fIname\fR
 .RE
 .\}
 .sp
-It can be used as a top\-level command or as a space\-saving syntax variant in parts of complex queries\&.
+It can be used as a top\-level command or as a space\-saving syntax variant in parts of complex queries\&. Only the
+WITH,
+UNION,
+INTERSECT,
+EXCEPT,
+ORDER BY,
+LIMIT,
+OFFSET,
+FETCH
+and
+FOR
+locking clauses can be used with
+\fBTABLE\fR; the
+WHERE
+clause and any form of aggregation cannot be used\&.
 .SH "EXAMPLES"
 .PP
 To join the table
@@ -1884,6 +1915,27 @@ SELECT * FROM distributors_2(111) AS (f1 int, f2 text);
 .RE
 .\}
 .PP
+Here is an example of a function with an ordinality column added:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+SELECT * FROM unnest(ARRAY[\*(Aqa\*(Aq,\*(Aqb\*(Aq,\*(Aqc\*(Aq,\*(Aqd\*(Aq,\*(Aqe\*(Aq,\*(Aqf\*(Aq]) WITH ORDINALITY;
+ unnest | ordinality
+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-
+ a      |        1
+ b      |        2
+ c      |        3
+ d      |        4
+ e      |        5
+ f      |        6
+(6 rows)
+.fi
+.if n \{\
+.RE
+.\}
+.PP
 This example shows how to use a simple
 WITH
 clause:
@@ -2021,10 +2073,20 @@ SELECT distributors\&.* WHERE distributors\&.name = \*(AqWestward\*(Aq;
 .RE
 .\}
 .sp
+
 PostgreSQL
 releases prior to 8\&.1 would accept queries of this form, and add an implicit entry to the query\*(Aqs
 FROM
 clause for each table referenced by the query\&. This is no longer allowed\&.
+.SS "Empty SELECT Lists"
+.PP
+The list of output expressions after
+SELECT
+can be empty, producing a zero\-column result table\&. This is not valid syntax according to the SQL standard\&.
+PostgreSQL
+allows it to be consistent with allowing zero\-column tables\&. However, an empty list is not allowed when
+DISTINCT
+is used\&.
 .SS "Omitting the AS Key Word"
 .PP
 In the SQL standard, the optional key word
@@ -2163,6 +2225,10 @@ WITH
 queries\&. This is not found in the SQL standard\&.
 .SS "Nonstandard Clauses"
 .PP
-The clause
-DISTINCT ON
-is not defined in the SQL standard\&.
+
+DISTINCT ON ( \&.\&.\&. )
+is an extension of the SQL standard\&.
+.PP
+
+ROWS FROM( \&.\&.\&. )
+is an extension of the SQL standard\&.

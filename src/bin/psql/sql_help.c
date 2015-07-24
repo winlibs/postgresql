@@ -20,18 +20,34 @@ void
 sql_help_ALTER_AGGREGATE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER AGGREGATE %s ( %s [ , ... ] ) RENAME TO %s\n"
-					  "ALTER AGGREGATE %s ( %s [ , ... ] ) OWNER TO %s\n"
-					  "ALTER AGGREGATE %s ( %s [ , ... ] ) SET SCHEMA %s",
+					  "ALTER AGGREGATE %s ( %s ) RENAME TO %s\n"
+					  "ALTER AGGREGATE %s ( %s ) OWNER TO %s\n"
+					  "ALTER AGGREGATE %s ( %s ) SET SCHEMA %s\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "* |\n"
+					  "[ %s ] [ %s ] %s [ , ... ] |\n"
+					  "[ [ %s ] [ %s ] %s [ , ... ] ] ORDER BY [ %s ] [ %s ] %s [ , ... ]",
 					  _("name"),
-					  _("argtype"),
+					  _("aggregate_signature"),
 					  _("new_name"),
 					  _("name"),
-					  _("argtype"),
+					  _("aggregate_signature"),
 					  _("new_owner"),
 					  _("name"),
+					  _("aggregate_signature"),
+					  _("new_schema"),
+					  _("where aggregate_signature is:"),
+					  _("argmode"),
+					  _("argname"),
 					  _("argtype"),
-					  _("new_schema"));
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"));
 }
 
 void
@@ -241,7 +257,7 @@ sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "  AGGREGATE %s (%s [, ...] ) |\n"
+					  "  AGGREGATE %s ( %s ) |\n"
 					  "  CAST (%s AS %s) |\n"
 					  "  COLLATION %s |\n"
 					  "  CONVERSION %s |\n"
@@ -264,7 +280,13 @@ sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 					  "  TEXT SEARCH PARSER %s |\n"
 					  "  TEXT SEARCH TEMPLATE %s |\n"
 					  "  TYPE %s |\n"
-					  "  VIEW %s",
+					  "  VIEW %s\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "* |\n"
+					  "[ %s ] [ %s ] %s [ , ... ] |\n"
+					  "[ [ %s ] [ %s ] %s [ , ... ] ] ORDER BY [ %s ] [ %s ] %s [ , ... ]",
 					  _("name"),
 					  _("new_version"),
 					  _("name"),
@@ -274,8 +296,8 @@ sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 					  _("name"),
 					  _("member_object"),
 					  _("where member_object is:"),
-					  _("agg_name"),
-					  _("agg_type"),
+					  _("aggregate_name"),
+					  _("aggregate_signature"),
 					  _("source_type"),
 					  _("target_type"),
 					  _("object_name"),
@@ -306,7 +328,17 @@ sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
-					  _("object_name"));
+					  _("object_name"),
+					  _("and aggregate_signature is:"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"));
 }
 
 void
@@ -355,6 +387,10 @@ sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf)
 					  "    ALTER [ COLUMN ] %s SET ( %s = %s [, ... ] )\n"
 					  "    ALTER [ COLUMN ] %s RESET ( %s [, ... ] )\n"
 					  "    ALTER [ COLUMN ] %s OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ])\n"
+					  "    DISABLE TRIGGER [ %s | ALL | USER ]\n"
+					  "    ENABLE TRIGGER [ %s | ALL | USER ]\n"
+					  "    ENABLE REPLICA TRIGGER %s\n"
+					  "    ENABLE ALWAYS TRIGGER %s\n"
 					  "    OWNER TO %s\n"
 					  "    OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ])",
 					  _("name"),
@@ -388,6 +424,10 @@ sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf)
 					  _("column_name"),
 					  _("option"),
 					  _("value"),
+					  _("trigger_name"),
+					  _("trigger_name"),
+					  _("trigger_name"),
+					  _("trigger_name"),
 					  _("new_owner"),
 					  _("option"),
 					  _("value"));
@@ -469,7 +509,9 @@ sql_help_ALTER_INDEX(PQExpBuffer buf)
 					  "ALTER INDEX [ IF EXISTS ] %s RENAME TO %s\n"
 					  "ALTER INDEX [ IF EXISTS ] %s SET TABLESPACE %s\n"
 					  "ALTER INDEX [ IF EXISTS ] %s SET ( %s = %s [, ... ] )\n"
-					  "ALTER INDEX [ IF EXISTS ] %s RESET ( %s [, ... ] )",
+					  "ALTER INDEX [ IF EXISTS ] %s RESET ( %s [, ... ] )\n"
+					  "ALTER INDEX ALL IN TABLESPACE %s [ OWNED BY %s [, ... ] ]\n"
+					  "    SET TABLESPACE %s [ NOWAIT ]",
 					  _("name"),
 					  _("new_name"),
 					  _("name"),
@@ -478,7 +520,10 @@ sql_help_ALTER_INDEX(PQExpBuffer buf)
 					  _("storage_parameter"),
 					  _("value"),
 					  _("name"),
-					  _("storage_parameter"));
+					  _("storage_parameter"),
+					  _("name"),
+					  _("role_name"),
+					  _("new_tablespace"));
 }
 
 void
@@ -514,6 +559,8 @@ sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf)
 					  "    RENAME TO %s\n"
 					  "ALTER MATERIALIZED VIEW [ IF EXISTS ] %s\n"
 					  "    SET SCHEMA %s\n"
+					  "ALTER MATERIALIZED VIEW ALL IN TABLESPACE %s [ OWNED BY %s [, ... ] ]\n"
+					  "    SET TABLESPACE %s [ NOWAIT ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -536,6 +583,9 @@ sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf)
 					  _("new_name"),
 					  _("name"),
 					  _("new_schema"),
+					  _("name"),
+					  _("role_name"),
+					  _("new_tablespace"),
 					  _("where action is one of:"),
 					  _("column_name"),
 					  _("integer"),
@@ -751,6 +801,20 @@ sql_help_ALTER_SERVER(PQExpBuffer buf)
 }
 
 void
+sql_help_ALTER_SYSTEM(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "ALTER SYSTEM SET %s { TO | = } { %s | '%s' | DEFAULT }\n"
+					  "\n"
+					  "ALTER SYSTEM RESET %s\n"
+					  "ALTER SYSTEM RESET ALL",
+					  _("configuration_parameter"),
+					  _("value"),
+					  _("value"),
+					  _("configuration_parameter"));
+}
+
+void
 sql_help_ALTER_TABLE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
@@ -764,6 +828,8 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  "    RENAME TO %s\n"
 					  "ALTER TABLE [ IF EXISTS ] %s\n"
 					  "    SET SCHEMA %s\n"
+					  "ALTER TABLE ALL IN TABLESPACE %s [ OWNED BY %s [, ... ] ]\n"
+					  "    SET TABLESPACE %s [ NOWAIT ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -779,6 +845,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  "    ALTER [ COLUMN ] %s SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }\n"
 					  "    ADD %s [ NOT VALID ]\n"
 					  "    ADD %s\n"
+					  "    ALTER CONSTRAINT %s [ DEFERRABLE | NOT DEFERRABLE ] [ INITIALLY DEFERRED | INITIALLY IMMEDIATE ]\n"
 					  "    VALIDATE CONSTRAINT %s\n"
 					  "    DROP CONSTRAINT [ IF EXISTS ]  %s [ RESTRICT | CASCADE ]\n"
 					  "    DISABLE TRIGGER [ %s | ALL | USER ]\n"
@@ -801,6 +868,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  "    NOT OF\n"
 					  "    OWNER TO %s\n"
 					  "    SET TABLESPACE %s\n"
+					  "    REPLICA IDENTITY {DEFAULT | USING INDEX %s | FULL | NOTHING}\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -819,6 +887,9 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  _("new_name"),
 					  _("name"),
 					  _("new_schema"),
+					  _("name"),
+					  _("role_name"),
+					  _("new_tablespace"),
 					  _("where action is one of:"),
 					  _("column_name"),
 					  _("data_type"),
@@ -845,6 +916,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  _("table_constraint_using_index"),
 					  _("constraint_name"),
 					  _("constraint_name"),
+					  _("constraint_name"),
 					  _("trigger_name"),
 					  _("trigger_name"),
 					  _("trigger_name"),
@@ -862,6 +934,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  _("type_name"),
 					  _("new_owner"),
 					  _("new_tablespace"),
+					  _("index_name"),
 					  _("and table_constraint_using_index is:"),
 					  _("constraint_name"),
 					  _("index_name"));
@@ -1161,7 +1234,7 @@ sql_help_COMMENT(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "COMMENT ON\n"
 					  "{\n"
-					  "  AGGREGATE %s (%s [, ...] ) |\n"
+					  "  AGGREGATE %s ( %s ) |\n"
 					  "  CAST (%s AS %s) |\n"
 					  "  COLLATION %s |\n"
 					  "  COLUMN %s.%s |\n"
@@ -1195,9 +1268,15 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  "  TRIGGER %s ON %s |\n"
 					  "  TYPE %s |\n"
 					  "  VIEW %s\n"
-					  "} IS '%s'",
-					  _("agg_name"),
-					  _("agg_type"),
+					  "} IS '%s'\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "* |\n"
+					  "[ %s ] [ %s ] %s [ , ... ] |\n"
+					  "[ [ %s ] [ %s ] %s [ , ... ] ] ORDER BY [ %s ] [ %s ] %s [ , ... ]",
+					  _("aggregate_name"),
+					  _("aggregate_signature"),
 					  _("source_type"),
 					  _("target_type"),
 					  _("object_name"),
@@ -1243,7 +1322,17 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  _("table_name"),
 					  _("object_name"),
 					  _("object_name"),
-					  _("text"));
+					  _("text"),
+					  _("where aggregate_signature is:"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"));
 }
 
 void
@@ -1285,6 +1374,7 @@ sql_help_COPY(PQExpBuffer buf)
 					  "    ESCAPE '%s'\n"
 					  "    FORCE_QUOTE { ( %s [, ...] ) | * }\n"
 					  "    FORCE_NOT_NULL ( %s [, ...] )\n"
+					  "    FORCE_NULL ( %s [, ...] )\n"
 					  "    ENCODING '%s'",
 					  _("table_name"),
 					  _("column_name"),
@@ -1308,6 +1398,7 @@ sql_help_COPY(PQExpBuffer buf)
 					  _("escape_character"),
 					  _("column_name"),
 					  _("column_name"),
+					  _("column_name"),
 					  _("encoding_name"));
 }
 
@@ -1315,12 +1406,32 @@ void
 sql_help_CREATE_AGGREGATE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE AGGREGATE %s ( %s [ , ... ] ) (\n"
+					  "CREATE AGGREGATE %s ( [ %s ] [ %s ] %s [ , ... ] ) (\n"
 					  "    SFUNC = %s,\n"
 					  "    STYPE = %s\n"
+					  "    [ , SSPACE = %s ]\n"
 					  "    [ , FINALFUNC = %s ]\n"
+					  "    [ , FINALFUNC_EXTRA ]\n"
 					  "    [ , INITCOND = %s ]\n"
+					  "    [ , MSFUNC = %s ]\n"
+					  "    [ , MINVFUNC = %s ]\n"
+					  "    [ , MSTYPE = %s ]\n"
+					  "    [ , MSSPACE = %s ]\n"
+					  "    [ , MFINALFUNC = %s ]\n"
+					  "    [ , MFINALFUNC_EXTRA ]\n"
+					  "    [ , MINITCOND = %s ]\n"
 					  "    [ , SORTOP = %s ]\n"
+					  ")\n"
+					  "\n"
+					  "CREATE AGGREGATE %s ( [ [ %s ] [ %s ] %s [ , ... ] ]\n"
+					  "                        ORDER BY [ %s ] [ %s ] %s [ , ... ] ) (\n"
+					  "    SFUNC = %s,\n"
+					  "    STYPE = %s\n"
+					  "    [ , SSPACE = %s ]\n"
+					  "    [ , FINALFUNC = %s ]\n"
+					  "    [ , FINALFUNC_EXTRA ]\n"
+					  "    [ , INITCOND = %s ]\n"
+					  "    [ , HYPOTHETICAL ]\n"
 					  ")\n"
 					  "\n"
 					  "%s\n"
@@ -1329,24 +1440,61 @@ sql_help_CREATE_AGGREGATE(PQExpBuffer buf)
 					  "    BASETYPE = %s,\n"
 					  "    SFUNC = %s,\n"
 					  "    STYPE = %s\n"
+					  "    [ , SSPACE = %s ]\n"
 					  "    [ , FINALFUNC = %s ]\n"
+					  "    [ , FINALFUNC_EXTRA ]\n"
 					  "    [ , INITCOND = %s ]\n"
+					  "    [ , MSFUNC = %s ]\n"
+					  "    [ , MINVFUNC = %s ]\n"
+					  "    [ , MSTYPE = %s ]\n"
+					  "    [ , MSSPACE = %s ]\n"
+					  "    [ , MFINALFUNC = %s ]\n"
+					  "    [ , MFINALFUNC_EXTRA ]\n"
+					  "    [ , MINITCOND = %s ]\n"
 					  "    [ , SORTOP = %s ]\n"
 					  ")",
 					  _("name"),
-					  _("input_data_type"),
+					  _("argmode"),
+					  _("argname"),
+					  _("arg_data_type"),
 					  _("sfunc"),
 					  _("state_data_type"),
+					  _("state_data_size"),
 					  _("ffunc"),
 					  _("initial_condition"),
+					  _("msfunc"),
+					  _("minvfunc"),
+					  _("mstate_data_type"),
+					  _("mstate_data_size"),
+					  _("mffunc"),
+					  _("minitial_condition"),
 					  _("sort_operator"),
+					  _("name"),
+					  _("argmode"),
+					  _("argname"),
+					  _("arg_data_type"),
+					  _("argmode"),
+					  _("argname"),
+					  _("arg_data_type"),
+					  _("sfunc"),
+					  _("state_data_type"),
+					  _("state_data_size"),
+					  _("ffunc"),
+					  _("initial_condition"),
 					  _("or the old syntax"),
 					  _("name"),
 					  _("base_type"),
 					  _("sfunc"),
 					  _("state_data_type"),
+					  _("state_data_size"),
 					  _("ffunc"),
 					  _("initial_condition"),
+					  _("msfunc"),
+					  _("minvfunc"),
+					  _("mstate_data_type"),
+					  _("mstate_data_size"),
+					  _("mffunc"),
+					  _("minitial_condition"),
 					  _("sort_operator"));
 }
 
@@ -1755,14 +1903,19 @@ sql_help_CREATE_RULE(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "CREATE [ OR REPLACE ] RULE %s AS ON %s\n"
 					  "    TO %s [ WHERE %s ]\n"
-					  "    DO [ ALSO | INSTEAD ] { NOTHING | %s | ( %s ; %s ... ) }",
+					  "    DO [ ALSO | INSTEAD ] { NOTHING | %s | ( %s ; %s ... ) }\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    SELECT | INSERT | UPDATE | DELETE",
 					  _("name"),
 					  _("event"),
 					  _("table_name"),
 					  _("condition"),
 					  _("command"),
 					  _("command"),
-					  _("command"));
+					  _("command"),
+					  _("where event can be one of:"));
 }
 
 void
@@ -1958,10 +2111,15 @@ void
 sql_help_CREATE_TABLESPACE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE TABLESPACE %s [ OWNER %s ] LOCATION '%s'",
+					  "CREATE TABLESPACE %s\n"
+					  "    [ OWNER %s ]\n"
+					  "    LOCATION '%s'\n"
+					  "    [ WITH ( %s = %s [, ... ] ) ]",
 					  _("tablespace_name"),
 					  _("user_name"),
-					  _("directory"));
+					  _("directory"),
+					  _("tablespace_option"),
+					  _("value"));
 }
 
 void
@@ -2030,7 +2188,7 @@ sql_help_CREATE_TRIGGER(PQExpBuffer buf)
 					  "CREATE [ CONSTRAINT ] TRIGGER %s { BEFORE | AFTER | INSTEAD OF } { %s [ OR ... ] }\n"
 					  "    ON %s\n"
 					  "    [ FROM %s ]\n"
-					  "    { NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED } }\n"
+					  "    [ NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED } ]\n"
 					  "    [ FOR [ EACH ] { ROW | STATEMENT } ]\n"
 					  "    [ WHEN ( %s ) ]\n"
 					  "    EXECUTE PROCEDURE %s ( %s )\n"
@@ -2182,7 +2340,8 @@ sql_help_CREATE_VIEW(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "CREATE [ OR REPLACE ] [ TEMP | TEMPORARY ] [ RECURSIVE ] VIEW %s [ ( %s [, ...] ) ]\n"
 					  "    [ WITH ( %s [= %s] [, ... ] ) ]\n"
-					  "    AS %s",
+					  "    AS %s\n"
+					  "    [ WITH [ CASCADED | LOCAL ] CHECK OPTION ]",
 					  _("name"),
 					  _("column_name"),
 					  _("view_option_name"),
@@ -2231,7 +2390,7 @@ void
 sql_help_DISCARD(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "DISCARD { ALL | PLANS | TEMPORARY | TEMP }");
+					  "DISCARD { ALL | PLANS | SEQUENCES | TEMPORARY | TEMP }");
 }
 
 void
@@ -2247,8 +2406,24 @@ void
 sql_help_DROP_AGGREGATE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "DROP AGGREGATE [ IF EXISTS ] %s ( %s [ , ... ] ) [ CASCADE | RESTRICT ]",
+					  "DROP AGGREGATE [ IF EXISTS ] %s ( %s ) [ CASCADE | RESTRICT ]\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "* |\n"
+					  "[ %s ] [ %s ] %s [ , ... ] |\n"
+					  "[ [ %s ] [ %s ] %s [ , ... ] ] ORDER BY [ %s ] [ %s ] %s [ , ... ]",
 					  _("name"),
+					  _("aggregate_signature"),
+					  _("where aggregate_signature is:"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"),
+					  _("argmode"),
+					  _("argname"),
 					  _("argtype"));
 }
 
@@ -2831,7 +3006,7 @@ void
 sql_help_REFRESH_MATERIALIZED_VIEW(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "REFRESH MATERIALIZED VIEW %s\n"
+					  "REFRESH MATERIALIZED VIEW [ CONCURRENTLY ] %s\n"
 					  "    [ WITH [ NO ] DATA ]",
 					  _("name"));
 }
@@ -3029,7 +3204,7 @@ sql_help_SECURITY_LABEL(PQExpBuffer buf)
 					  "{\n"
 					  "  TABLE %s |\n"
 					  "  COLUMN %s.%s |\n"
-					  "  AGGREGATE %s (%s [, ...] ) |\n"
+					  "  AGGREGATE %s ( %s ) |\n"
 					  "  DATABASE %s |\n"
 					  "  DOMAIN %s |\n"
 					  "  EVENT TRIGGER %s |\n"
@@ -3044,13 +3219,19 @@ sql_help_SECURITY_LABEL(PQExpBuffer buf)
 					  "  TABLESPACE %s |\n"
 					  "  TYPE %s |\n"
 					  "  VIEW %s\n"
-					  "} IS '%s'",
+					  "} IS '%s'\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "* |\n"
+					  "[ %s ] [ %s ] %s [ , ... ] |\n"
+					  "[ [ %s ] [ %s ] %s [ , ... ] ] ORDER BY [ %s ] [ %s ] %s [ , ... ]",
 					  _("provider"),
 					  _("object_name"),
 					  _("table_name"),
 					  _("column_name"),
-					  _("agg_name"),
-					  _("agg_type"),
+					  _("aggregate_name"),
+					  _("aggregate_signature"),
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
@@ -3068,7 +3249,17 @@ sql_help_SECURITY_LABEL(PQExpBuffer buf)
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
-					  _("label"));
+					  _("label"),
+					  _("where aggregate_signature is:"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"),
+					  _("argmode"),
+					  _("argname"),
+					  _("argtype"));
 }
 
 void
@@ -3077,7 +3268,7 @@ sql_help_SELECT(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
 					  "SELECT [ ALL | DISTINCT [ ON ( %s [, ...] ) ] ]\n"
-					  "    * | %s [ [ AS ] %s ] [, ...]\n"
+					  "    [ * | %s [ [ AS ] %s ] [, ...] ]\n"
 					  "    [ FROM %s [, ...] ]\n"
 					  "    [ WHERE %s ]\n"
 					  "    [ GROUP BY %s [, ...] ]\n"
@@ -3095,8 +3286,12 @@ sql_help_SELECT(PQExpBuffer buf)
 					  "    [ ONLY ] %s [ * ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
 					  "    [ LATERAL ] ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
 					  "    %s [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) [ AS ] %s [ ( %s [, ...] | %s [, ...] ) ]\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] )\n"
+					  "                [ WITH ORDINALITY ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) [ AS ] %s ( %s [, ...] )\n"
 					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
+					  "    [ LATERAL ] ROWS FROM( %s ( [ %s [, ...] ] ) [ AS ( %s [, ...] ) ] [, ...] )\n"
+					  "                [ WITH ORDINALITY ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
 					  "    %s [ NATURAL ] %s %s [ ON %s | USING ( %s [, ...] ) ]\n"
 					  "\n"
 					  "%s\n"
@@ -3135,10 +3330,18 @@ sql_help_SELECT(PQExpBuffer buf)
 					  _("argument"),
 					  _("alias"),
 					  _("column_alias"),
+					  _("function_name"),
+					  _("argument"),
+					  _("alias"),
 					  _("column_definition"),
 					  _("function_name"),
 					  _("argument"),
 					  _("column_definition"),
+					  _("function_name"),
+					  _("argument"),
+					  _("column_definition"),
+					  _("alias"),
+					  _("column_alias"),
 					  _("from_item"),
 					  _("join_type"),
 					  _("from_item"),
@@ -3283,7 +3486,7 @@ sql_help_TABLE(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
 					  "SELECT [ ALL | DISTINCT [ ON ( %s [, ...] ) ] ]\n"
-					  "    * | %s [ [ AS ] %s ] [, ...]\n"
+					  "    [ * | %s [ [ AS ] %s ] [, ...] ]\n"
 					  "    [ FROM %s [, ...] ]\n"
 					  "    [ WHERE %s ]\n"
 					  "    [ GROUP BY %s [, ...] ]\n"
@@ -3301,8 +3504,12 @@ sql_help_TABLE(PQExpBuffer buf)
 					  "    [ ONLY ] %s [ * ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
 					  "    [ LATERAL ] ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
 					  "    %s [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) [ AS ] %s [ ( %s [, ...] | %s [, ...] ) ]\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] )\n"
+					  "                [ WITH ORDINALITY ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) [ AS ] %s ( %s [, ...] )\n"
 					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
+					  "    [ LATERAL ] ROWS FROM( %s ( [ %s [, ...] ] ) [ AS ( %s [, ...] ) ] [, ...] )\n"
+					  "                [ WITH ORDINALITY ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
 					  "    %s [ NATURAL ] %s %s [ ON %s | USING ( %s [, ...] ) ]\n"
 					  "\n"
 					  "%s\n"
@@ -3341,10 +3548,18 @@ sql_help_TABLE(PQExpBuffer buf)
 					  _("argument"),
 					  _("alias"),
 					  _("column_alias"),
+					  _("function_name"),
+					  _("argument"),
+					  _("alias"),
 					  _("column_definition"),
 					  _("function_name"),
 					  _("argument"),
 					  _("column_definition"),
+					  _("function_name"),
+					  _("argument"),
+					  _("column_definition"),
+					  _("alias"),
+					  _("column_alias"),
 					  _("from_item"),
 					  _("join_type"),
 					  _("from_item"),
@@ -3440,7 +3655,7 @@ sql_help_WITH(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
 					  "SELECT [ ALL | DISTINCT [ ON ( %s [, ...] ) ] ]\n"
-					  "    * | %s [ [ AS ] %s ] [, ...]\n"
+					  "    [ * | %s [ [ AS ] %s ] [, ...] ]\n"
 					  "    [ FROM %s [, ...] ]\n"
 					  "    [ WHERE %s ]\n"
 					  "    [ GROUP BY %s [, ...] ]\n"
@@ -3458,8 +3673,12 @@ sql_help_WITH(PQExpBuffer buf)
 					  "    [ ONLY ] %s [ * ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
 					  "    [ LATERAL ] ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
 					  "    %s [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
-					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) [ AS ] %s [ ( %s [, ...] | %s [, ...] ) ]\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] )\n"
+					  "                [ WITH ORDINALITY ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
+					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) [ AS ] %s ( %s [, ...] )\n"
 					  "    [ LATERAL ] %s ( [ %s [, ...] ] ) AS ( %s [, ...] )\n"
+					  "    [ LATERAL ] ROWS FROM( %s ( [ %s [, ...] ] ) [ AS ( %s [, ...] ) ] [, ...] )\n"
+					  "                [ WITH ORDINALITY ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
 					  "    %s [ NATURAL ] %s %s [ ON %s | USING ( %s [, ...] ) ]\n"
 					  "\n"
 					  "%s\n"
@@ -3498,10 +3717,18 @@ sql_help_WITH(PQExpBuffer buf)
 					  _("argument"),
 					  _("alias"),
 					  _("column_alias"),
+					  _("function_name"),
+					  _("argument"),
+					  _("alias"),
 					  _("column_definition"),
 					  _("function_name"),
 					  _("argument"),
 					  _("column_definition"),
+					  _("function_name"),
+					  _("argument"),
+					  _("column_definition"),
+					  _("alias"),
+					  _("column_alias"),
 					  _("from_item"),
 					  _("join_type"),
 					  _("from_item"),

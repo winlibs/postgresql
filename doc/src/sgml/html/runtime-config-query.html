@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -152,7 +152,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of bitmap-scan plan
@@ -172,7 +174,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of hashed
@@ -192,7 +195,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of hash-join plan
@@ -212,7 +216,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of index-scan plan
@@ -232,7 +238,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of index-only-scan plan
@@ -252,7 +260,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of materialization.
@@ -275,7 +284,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of merge-join plan
@@ -295,7 +305,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of nested-loop join
@@ -318,7 +329,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of sequential scan
@@ -341,7 +354,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of explicit sort
@@ -364,7 +378,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of <ACRONYM
@@ -438,7 +453,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >floating point</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the planner's estimate of the cost of a disk page fetch
@@ -461,7 +477,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >floating point</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the planner's estimate of the cost of a
@@ -486,7 +503,7 @@ CLASS="VARNAME"
        </P
 ><P
 >        Random access to mechanical disk storage is normally much more expensive
-        than four-times sequential access.  However, a lower default is used
+        than four times sequential access.  However, a lower default is used
         (4.0) because the majority of random accesses to disk, such as indexed
         reads, are assumed to be in cache.  The default value can be thought of
         as modeling random access as 40 times slower than sequential, while
@@ -537,7 +554,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >floating point</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the planner's estimate of the cost of processing
@@ -555,7 +573,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >floating point</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the planner's estimate of the cost of processing
@@ -573,7 +592,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >floating point</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the planner's estimate of the cost of processing each
@@ -591,7 +611,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the planner's assumption about the effective size of the
@@ -618,10 +639,10 @@ CLASS="PRODUCTNAME"
 >, nor
         does it reserve kernel disk cache; it is used only for estimation
         purposes.  The system also does not assume data remains in
-        the disk cache between queries.  The default is 128 megabytes
+        the disk cache between queries.  The default is 4 gigabytes
         (<TT
 CLASS="LITERAL"
->128MB</TT
+>4GB</TT
 >).
        </P
 ></DD
@@ -644,7 +665,7 @@ NAME="RUNTIME-CONFIG-QUERY-GEQO"
       exhaustive-search algorithm.
       For more information see <A
 HREF="geqo.html"
->Chapter 53</A
+>Chapter 54</A
 >.
      </P
 ><P
@@ -662,7 +683,10 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      
+      
+      </DT
 ><DD
 ><P
 >        Enables or disables genetic query optimization.
@@ -684,7 +708,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Use genetic query optimization to plan queries with at least
@@ -714,11 +739,11 @@ NAME="GUC-GEQO-EFFORT"
 ><TT
 CLASS="VARNAME"
 >geqo_effort</TT
->
-      (<TT
+> (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls the trade-off between planning time and query plan
@@ -749,7 +774,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls the pool size used by GEQO, that is the
@@ -773,7 +799,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls the number of generations used by GEQO, that is
@@ -797,7 +824,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >floating point</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls the selection bias used by GEQO. The selection bias
@@ -815,7 +843,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >floating point</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Controls the initial value of the random number generator used
@@ -851,7 +880,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the default statistics target for table columns without
@@ -885,7 +915,9 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >enum</TT
->)</DT
+>)
+      
+      </DT
 ><DD
 ><P
 >        Controls the query planner's use of table constraints to
@@ -970,7 +1002,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >floating point</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Sets the planner's estimate of the fraction of a cursor's rows that
@@ -997,7 +1030,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        The planner will merge sub-queries into upper queries if the
@@ -1034,7 +1068,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >integer</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        The planner will rewrite explicit <TT

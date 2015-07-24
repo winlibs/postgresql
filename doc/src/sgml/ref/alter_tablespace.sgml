@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="SQL-ALTERTABLESPACE">
+ <indexterm zone="sql-altertablespace">
+  <primary>ALTER TABLESPACE</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle>ALTER TABLESPACE</refentrytitle>
   <manvolnum>7</manvolnum>
@@ -14,10 +18,6 @@ PostgreSQL documentation
   <refname>ALTER TABLESPACE</refname>
   <refpurpose>change the definition of a tablespace</refpurpose>
  </refnamediv>
-
- <indexterm zone="sql-altertablespace">
-  <primary>ALTER TABLESPACE</primary>
- </indexterm>
 
  <refsynopsisdiv>
 <synopsis>
@@ -32,16 +32,17 @@ ALTER TABLESPACE <replaceable>name</replaceable> RESET ( <replaceable class="PAR
   <title>Description</title>
 
   <para>
-   <command>ALTER TABLESPACE</command> changes the definition of
+   <command>ALTER TABLESPACE</command> can be used to change the definition of
    a tablespace.
   </para>
 
   <para>
-   You must own the tablespace to use <command>ALTER TABLESPACE</>.
+   You must own the tablespace to change the definition of a tablespace.
    To alter the owner, you must also be a direct or indirect member of the new
    owning role.
    (Note that superusers have these privileges automatically.)
   </para>
+
  </refsect1>
 
  <refsect1>
@@ -94,6 +95,7 @@ ALTER TABLESPACE <replaceable>name</replaceable> RESET ( <replaceable class="PAR
      </para>
     </listitem>
    </varlistentry>
+
   </variablelist>
  </refsect1>
 

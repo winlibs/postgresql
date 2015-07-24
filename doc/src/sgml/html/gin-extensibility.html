@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="GIN Indexes"
 HREF="gin.html"><LINK
 REL="PREVIOUS"
-TITLE="Introduction"
-HREF="gin-intro.html"><LINK
+TITLE="Built-in Operator Classes"
+HREF="gin-builtin-opclasses.html"><LINK
 REL="NEXT"
 TITLE="Implementation"
 HREF="gin-implementation.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="Introduction"
-HREF="gin-intro.html"
+TITLE="Built-in Operator Classes"
+HREF="gin-builtin-opclasses.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 57. GIN Indexes</TD
+>Chapter 58. GIN Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="GIN-EXTENSIBILITY"
->57.2. Extensibility</A
+>58.3. Extensibility</A
 ></H1
 ><P
 >   The <ACRONYM
@@ -112,7 +112,7 @@ CLASS="ACRONYM"
 CLASS="ACRONYM"
 >GIN</ACRONYM
 > access method working is to
-   implement four (or five) user-defined methods, which define the behavior of
+   implement a few user-defined methods, which define the behavior of
    keys in the tree and the relationships between keys, indexed items,
    and indexable queries. In short, <ACRONYM
 CLASS="ACRONYM"
@@ -121,11 +121,11 @@ CLASS="ACRONYM"
    extensibility with generality, code reuse, and a clean interface.
  </P
 ><P
->   The four methods that an operator class for
+>   There are three methods that an operator class for
    <ACRONYM
 CLASS="ACRONYM"
 >GIN</ACRONYM
-> must provide are:
+> must provide:
 
  <P
 ></P
@@ -381,6 +381,33 @@ CLASS="FUNCTION"
 > method.
       </P
 ></DD
+></DL
+></DIV
+><P>
+
+  An operator class must also provide a function to check if an indexed item
+  matches the query. It comes in two flavors, a boolean <CODE
+CLASS="FUNCTION"
+>consistent</CODE
+>
+  function, and a ternary <CODE
+CLASS="FUNCTION"
+>triConsistent</CODE
+> function.
+  <CODE
+CLASS="FUNCTION"
+>triConsistent</CODE
+> covers the functionality of both, so providing
+  triConsistent alone is sufficient. However, if the boolean variant is
+  significantly cheaper to calculate, it can be advantageous to provide both.
+  If only the boolean variant is provided, some optimizations that depend on
+  refuting index items before fetching all the keys are disabled.
+
+  <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
 ><DT
 ><CODE
 CLASS="FUNCTION"
@@ -422,7 +449,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >check</TT
 > array is TRUE if the indexed item contains the
-       corresponding query key, ie, if (check[i] == TRUE) the i-th key of the
+       corresponding query key, i.e., if (check[i] == TRUE) the i-th key of the
        <CODE
 CLASS="FUNCTION"
 >extractQuery</CODE
@@ -509,15 +536,86 @@ CLASS="LITERAL"
        query operator directly against the originally indexed item.
       </P
 ></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>GinTernaryValue triConsistent(GinTernaryValue check[], StrategyNumber n, Datum query,
+        int32 nkeys, Pointer extra_data[],
+        Datum queryKeys[], bool nullFlags[])</CODE
+></DT
+><DD
+><P
+>       <CODE
+CLASS="FUNCTION"
+>triConsistent</CODE
+> is similar to <CODE
+CLASS="FUNCTION"
+>consistent</CODE
+>,
+       but instead of a boolean <TT
+CLASS="LITERAL"
+>check[]</TT
+>, there are three possible
+       values for each key: <TT
+CLASS="LITERAL"
+>GIN_TRUE</TT
+>, <TT
+CLASS="LITERAL"
+>GIN_FALSE</TT
+> and
+       <TT
+CLASS="LITERAL"
+>GIN_MAYBE</TT
+>. <TT
+CLASS="LITERAL"
+>GIN_FALSE</TT
+> and <TT
+CLASS="LITERAL"
+>GIN_TRUE</TT
+>
+       have the same meaning as regular boolean values.
+       <TT
+CLASS="LITERAL"
+>GIN_MAYBE</TT
+> means that the presence of that key is not known.
+       When <TT
+CLASS="LITERAL"
+>GIN_MAYBE</TT
+> values are present, the function should only
+       return GIN_TRUE if the item matches whether or not the index item
+       contains the corresponding query keys. Likewise, the function must
+       return GIN_FALSE only if the item does not match, whether or not it
+       contains the GIN_MAYBE keys. If the result depends on the GIN_MAYBE
+       entries, i.e. the match cannot be confirmed or refuted based on the
+       known query keys, the function must return GIN_MAYBE.
+      </P
+><P
+>       When there are no GIN_MAYBE values in the <TT
+CLASS="LITERAL"
+>check</TT
+> vector,
+       <TT
+CLASS="LITERAL"
+>GIN_MAYBE</TT
+> return value is equivalent of setting
+       <TT
+CLASS="LITERAL"
+>recheck</TT
+> flag in the boolean <CODE
+CLASS="FUNCTION"
+>consistent</CODE
+> function.
+      </P
+></DD
 ></DL
 ></DIV
 ><P>
 
-  Optionally, an operator class for
-  <ACRONYM
+  Optionally, an operator class for <ACRONYM
 CLASS="ACRONYM"
 >GIN</ACRONYM
-> can supply a fifth method:
+> can supply the
+  following method:
 
   <P
 ></P
@@ -580,7 +678,7 @@ CLASS="LITERAL"
   parameter when a partial-match query is encountered.  See
   <A
 HREF="gin-implementation.html#GIN-PARTIAL-MATCH"
->Section 57.3.2</A
+>Section 58.4.2</A
 > for details.
  </P
 ><P
@@ -603,11 +701,15 @@ CLASS="LITERAL"
 > argument passed to <CODE
 CLASS="FUNCTION"
 >extractQuery</CODE
-> and
+>,
   <CODE
 CLASS="FUNCTION"
 >consistent</CODE
-> is whatever is specified as the right-hand input
+> and <CODE
+CLASS="FUNCTION"
+>triConsistent</CODE
+> is whatever is
+  specified as the right-hand input
   type of the class member operator identified by the strategy number.
   This need not be the same as the item type, so long as key values of the
   correct type can be extracted from it.
@@ -629,7 +731,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="gin-intro.html"
+HREF="gin-builtin-opclasses.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -657,7 +759,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Introduction</TD
+>Built-in Operator Classes</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

@@ -2,12 +2,12 @@
 .\"     Title: ALTER TABLESPACE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "ALTER TABLESPACE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "ALTER TABLESPACE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 ALTER_TABLESPACE \- change the definition of a tablespace
-.\" ALTER TABLESPACE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -42,10 +41,9 @@ ALTER TABLESPACE \fIname\fR RESET ( \fItablespace_option\fR [, \&.\&.\&. ] )
 .PP
 
 \fBALTER TABLESPACE\fR
-changes the definition of a tablespace\&.
+can be used to change the definition of a tablespace\&.
 .PP
-You must own the tablespace to use
-\fBALTER TABLESPACE\fR\&. To alter the owner, you must also be a direct or indirect member of the new owning role\&. (Note that superusers have these privileges automatically\&.)
+You must own the tablespace to change the definition of a tablespace\&. To alter the owner, you must also be a direct or indirect member of the new owning role\&. (Note that superusers have these privileges automatically\&.)
 .SH "PARAMETERS"
 .PP
 \fIname\fR

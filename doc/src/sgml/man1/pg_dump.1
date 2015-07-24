@@ -2,12 +2,12 @@
 .\"     Title: pg_dump
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "PG_DUMP" "1" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "PG_DUMP" "1" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 pg_dump \- extract a PostgreSQL database into a script file or other archive file
-.\" pg_dump
 .SH "SYNOPSIS"
 .HP \w'\fBpg_dump\fR\ 'u
 \fBpg_dump\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\fIdbname\fR]
@@ -80,7 +79,9 @@ Specifies the name of the database to be dumped\&. If this is not specified, the
 is used\&. If that is not set, the user name specified for the connection is used\&.
 .RE
 .PP
-\fB\-a\fR, \fB\-\-data\-only\fR
+\fB\-a\fR
+.br
+\fB\-\-data\-only\fR
 .RS 4
 Dump only the data, not the schema (data definitions)\&. Table data, large objects, and sequence values are dumped\&.
 .sp
@@ -88,7 +89,9 @@ This option is similar to, but for historical reasons not identical to, specifyi
 \fB\-\-section=data\fR\&.
 .RE
 .PP
-\fB\-b\fR, \fB\-\-blobs\fR
+\fB\-b\fR
+.br
+\fB\-\-blobs\fR
 .RS 4
 Include large objects in the dump\&. This is the default behavior except when
 \fB\-\-schema\fR,
@@ -99,15 +102,21 @@ is specified, so the
 switch is only useful to add large objects to selective dumps\&.
 .RE
 .PP
-\fB\-c\fR, \fB\-\-clean\fR
+\fB\-c\fR
+.br
+\fB\-\-clean\fR
 .RS 4
-Output commands to clean (drop) database objects prior to outputting the commands for creating them\&. (Restore might generate some harmless error messages, if any objects were not present in the destination database\&.)
+Output commands to clean (drop) database objects prior to outputting the commands for creating them\&. (Unless
+\fB\-\-if\-exists\fR
+is also specified, restore might generate some harmless error messages, if any objects were not present in the destination database\&.)
 .sp
 This option is only meaningful for the plain\-text format\&. For the archive formats, you can specify the option when you call
 \fBpg_restore\fR\&.
 .RE
 .PP
-\fB\-C\fR, \fB\-\-create\fR
+\fB\-C\fR
+.br
+\fB\-\-create\fR
 .RS 4
 Begin the output with a command to create the database itself and reconnect to the created database\&. (With a script of this form, it doesn\*(Aqt matter which database in the destination installation you connect to before running the script\&.) If
 \fB\-\-clean\fR
@@ -117,40 +126,52 @@ This option is only meaningful for the plain\-text format\&. For the archive for
 \fBpg_restore\fR\&.
 .RE
 .PP
-\fB\-E \fR\fB\fIencoding\fR\fR, \fB\-\-encoding=\fR\fB\fIencoding\fR\fR
+\fB\-E \fR\fB\fIencoding\fR\fR
+.br
+\fB\-\-encoding=\fR\fB\fIencoding\fR\fR
 .RS 4
 Create the dump in the specified character set encoding\&. By default, the dump is created in the database encoding\&. (Another way to get the same result is to set the
 \fBPGCLIENTENCODING\fR
 environment variable to the desired dump encoding\&.)
 .RE
 .PP
-\fB\-f \fR\fB\fIfile\fR\fR, \fB\-\-file=\fR\fB\fIfile\fR\fR
+\fB\-f \fR\fB\fIfile\fR\fR
+.br
+\fB\-\-file=\fR\fB\fIfile\fR\fR
 .RS 4
 Send output to the specified file\&. This parameter can be omitted for file based output formats, in which case the standard output is used\&. It must be given for the directory output format however, where it specifies the target directory instead of a file\&. In this case the directory is created by
 \fBpg_dump\fR
 and must not exist before\&.
 .RE
 .PP
-\fB\-F \fR\fB\fIformat\fR\fR, \fB\-\-format=\fR\fB\fIformat\fR\fR
+\fB\-F \fR\fB\fIformat\fR\fR
+.br
+\fB\-\-format=\fR\fB\fIformat\fR\fR
 .RS 4
 Selects the format of the output\&.
 \fIformat\fR
 can be one of the following:
 .PP
-p, plain
+p
+.br
+plain
 .RS 4
 Output a plain\-text
 SQL
 script file (the default)\&.
 .RE
 .PP
-c, custom
+c
+.br
+custom
 .RS 4
 Output a custom\-format archive suitable for input into
 pg_restore\&. Together with the directory output format, this is the most flexible output format in that it allows manual selection and reordering of archived items during restore\&. This format is also compressed by default\&.
 .RE
 .PP
-d, directory
+d
+.br
+directory
 .RS 4
 Output a directory\-format archive suitable for input into
 pg_restore\&. This will create a directory with one file for each table and blob being dumped, plus a so\-called Table of Contents file describing the dumped objects in a machine\-readable format that
@@ -160,7 +181,9 @@ gzip
 tool\&. This format is compressed by default and also supports parallel dumps\&.
 .RE
 .PP
-t, tar
+t
+.br
+tar
 .RS 4
 Output a
 \fBtar\fR\-format archive suitable for input into
@@ -168,12 +191,16 @@ pg_restore\&. The tar\-format is compatible with the directory\-format; extracti
 .RE
 .RE
 .PP
-\fB\-i\fR, \fB\-\-ignore\-version\fR
+\fB\-i\fR
+.br
+\fB\-\-ignore\-version\fR
 .RS 4
 A deprecated option that is now ignored\&.
 .RE
 .PP
-\fB\-j \fR\fB\fInjobs\fR\fR, \fB\-\-jobs=\fR\fB\fInjobs\fR\fR
+\fB\-j \fR\fB\fInjobs\fR\fR
+.br
+\fB\-\-jobs=\fR\fB\fInjobs\fR\fR
 .RS 4
 Run the dump in parallel by dumping
 \fInjobs\fR
@@ -188,7 +215,7 @@ setting is high enough to accommodate all connections\&.
 .sp
 Requesting exclusive locks on database objects while running a parallel dump could cause the dump to fail\&. The reason is that the
 pg_dump
-master process requests shared locks on the objects that the worker processes are going to dump later in order to make sure that nobody deletes them and makes them go away while the dump is running\&. If another client then requests an exclusive lock on a table, that lock will not be granted but will be queued waiting for the shared lock of the master process to be released\&.\&. Consequently any other access to the table will not be granted either and will queue after the exclusive lock request\&. This includes the worker process trying to dump the table\&. Without any precautions this would be a classic deadlock situation\&. To detect this conflict, the
+master process requests shared locks on the objects that the worker processes are going to dump later in order to make sure that nobody deletes them and makes them go away while the dump is running\&. If another client then requests an exclusive lock on a table, that lock will not be granted but will be queued waiting for the shared lock of the master process to be released\&. Consequently any other access to the table will not be granted either and will queue after the exclusive lock request\&. This includes the worker process trying to dump the table\&. Without any precautions this would be a classic deadlock situation\&. To detect this conflict, the
 pg_dump
 worker process requests another shared lock using the
 NOWAIT
@@ -211,7 +238,9 @@ PostgreSQL
 server\&.
 .RE
 .PP
-\fB\-n \fR\fB\fIschema\fR\fR, \fB\-\-schema=\fR\fB\fIschema\fR\fR
+\fB\-n \fR\fB\fIschema\fR\fR
+.br
+\fB\-\-schema=\fR\fB\fIschema\fR\fR
 .RS 4
 Dump only schemas matching
 \fIschema\fR; this selects both the schema itself, and all its contained objects\&. When this option is not specified, all non\-system schemas in the target database will be dumped\&. Multiple schemas can be selected by writing multiple
@@ -264,7 +293,9 @@ switch\&.
 .RE
 .RE
 .PP
-\fB\-N \fR\fB\fIschema\fR\fR, \fB\-\-exclude\-schema=\fR\fB\fIschema\fR\fR
+\fB\-N \fR\fB\fIschema\fR\fR
+.br
+\fB\-\-exclude\-schema=\fR\fB\fIschema\fR\fR
 .RS 4
 Do not dump any schemas matching the
 \fIschema\fR
@@ -289,14 +320,18 @@ appears without
 are excluded from what is otherwise a normal dump\&.
 .RE
 .PP
-\fB\-o\fR, \fB\-\-oids\fR
+\fB\-o\fR
+.br
+\fB\-\-oids\fR
 .RS 4
 Dump object identifiers (OIDs) as part of the data for every table\&. Use this option if your application references the
 OID
 columns in some way (e\&.g\&., in a foreign key constraint)\&. Otherwise, this option should not be used\&.
 .RE
 .PP
-\fB\-O\fR, \fB\-\-no\-owner\fR
+\fB\-O\fR
+.br
+\fB\-\-no\-owner\fR
 .RS 4
 Do not output commands to set ownership of objects to match the original database\&. By default,
 pg_dump
@@ -311,12 +346,16 @@ This option is only meaningful for the plain\-text format\&. For the archive for
 \fBpg_restore\fR\&.
 .RE
 .PP
-\fB\-R\fR, \fB\-\-no\-reconnect\fR
+\fB\-R\fR
+.br
+\fB\-\-no\-reconnect\fR
 .RS 4
 This option is obsolete but still accepted for backwards compatibility\&.
 .RE
 .PP
-\fB\-s\fR, \fB\-\-schema\-only\fR
+\fB\-s\fR
+.br
+\fB\-\-schema\-only\fR
 .RS 4
 Dump only the object definitions (schema), not data\&.
 .sp
@@ -334,14 +373,18 @@ To exclude table data for only a subset of tables in the database, see
 \fB\-\-exclude\-table\-data\fR\&.
 .RE
 .PP
-\fB\-S \fR\fB\fIusername\fR\fR, \fB\-\-superuser=\fR\fB\fIusername\fR\fR
+\fB\-S \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-superuser=\fR\fB\fIusername\fR\fR
 .RS 4
 Specify the superuser user name to use when disabling triggers\&. This is relevant only if
 \fB\-\-disable\-triggers\fR
 is used\&. (Usually, it\*(Aqs better to leave this out, and instead start the resulting script as superuser\&.)
 .RE
 .PP
-\fB\-t \fR\fB\fItable\fR\fR, \fB\-\-table=\fR\fB\fItable\fR\fR
+\fB\-t \fR\fB\fItable\fR\fR
+.br
+\fB\-\-table=\fR\fB\fItable\fR\fR
 .RS 4
 Dump only tables (or views or sequences or foreign tables) matching
 \fItable\fR\&. Multiple tables can be selected by writing multiple
@@ -411,7 +454,9 @@ to select a table in a particular schema, rather than the old locution of
 .RE
 .RE
 .PP
-\fB\-T \fR\fB\fItable\fR\fR, \fB\-\-exclude\-table=\fR\fB\fItable\fR\fR
+\fB\-T \fR\fB\fItable\fR\fR
+.br
+\fB\-\-exclude\-table=\fR\fB\fItable\fR\fR
 .RS 4
 Do not dump any tables matching the
 \fItable\fR
@@ -436,26 +481,36 @@ appears without
 are excluded from what is otherwise a normal dump\&.
 .RE
 .PP
-\fB\-v\fR, \fB\-\-verbose\fR
+\fB\-v\fR
+.br
+\fB\-\-verbose\fR
 .RS 4
 Specifies verbose mode\&. This will cause
 pg_dump
 to output detailed object comments and start/stop times to the dump file, and progress messages to standard error\&.
 .RE
 .PP
-\fB\-V\fR, \fB\-\-version\fR
+\fB\-V\fR
+.br
+\fB\-\-version\fR
 .RS 4
 Print the
 pg_dump
 version and exit\&.
 .RE
 .PP
-\fB\-x\fR, \fB\-\-no\-privileges\fR, \fB\-\-no\-acl\fR
+\fB\-x\fR
+.br
+\fB\-\-no\-privileges\fR
+.br
+\fB\-\-no\-acl\fR
 .RS 4
 Prevent dumping of access privileges (grant/revoke commands)\&.
 .RE
 .PP
-\fB\-Z \fR\fB\fI0\&.\&.9\fR\fR, \fB\-\-compress=\fR\fB\fI0\&.\&.9\fR\fR
+\fB\-Z \fR\fB\fI0\&.\&.9\fR\fR
+.br
+\fB\-\-compress=\fR\fB\fI0\&.\&.9\fR\fR
 .RS 4
 Specify the compression level to use\&. Zero means no compression\&. For the custom archive format, this specifies compression of individual table\-data segments, and the default is to compress at a moderate level\&. For plain text output, setting a nonzero compression level causes the entire output file to be compressed, as though it had been fed through
 gzip; but the default is not to compress\&. The tar archive format currently does not support compression at all\&.
@@ -466,7 +521,9 @@ gzip; but the default is not to compress\&. The tar archive format currently doe
 This option is for use by in\-place upgrade utilities\&. Its use for other purposes is not recommended or supported\&. The behavior of the option may change in future releases without notice\&.
 .RE
 .PP
-\fB\-\-column\-inserts\fR, \fB\-\-attribute\-inserts\fR
+\fB\-\-column\-inserts\fR
+.br
+\fB\-\-attribute\-inserts\fR
 .RS 4
 Dump data as
 \fBINSERT\fR
@@ -505,6 +562,15 @@ can be given more than once to exclude tables matching any of several patterns\&
 .sp
 To exclude data for all tables in the database, see
 \fB\-\-schema\-only\fR\&.
+.RE
+.PP
+\fB\-\-if\-exists\fR
+.RS 4
+Use conditional commands (i\&.e\&. add an
+IF EXISTS
+clause) when cleaning database objects\&. This option is not valid unless
+\fB\-\-clean\fR
+is also specified\&.
 .RE
 .PP
 \fB\-\-inserts\fR
@@ -594,7 +660,9 @@ will certainly require superuser privileges to restore correctly, whereas
 requires lesser privileges\&.
 .RE
 .PP
-\fB\-?\fR, \fB\-\-help\fR
+\fB\-?\fR
+.br
+\fB\-\-help\fR
 .RS 4
 Show help about
 pg_dump
@@ -603,7 +671,9 @@ command line arguments, and exit\&.
 .PP
 The following command\-line options control the database connection parameters\&.
 .PP
-\fB\-d \fR\fB\fIdbname\fR\fR, \fB\-\-dbname=\fR\fB\fIdbname\fR\fR
+\fB\-d \fR\fB\fIdbname\fR\fR
+.br
+\fB\-\-dbname=\fR\fB\fIdbname\fR\fR
 .RS 4
 Specifies the name of the database to connect to\&. This is equivalent to specifying
 \fIdbname\fR
@@ -622,33 +692,43 @@ Section 31.1, \(lqDatabase Connection Control Functions\(rq, in the documentatio
 for more information\&.
 .RE
 .PP
-\fB\-h \fR\fB\fIhost\fR\fR, \fB\-\-host=\fR\fB\fIhost\fR\fR
+\fB\-h \fR\fB\fIhost\fR\fR
+.br
+\fB\-\-host=\fR\fB\fIhost\fR\fR
 .RS 4
 Specifies the host name of the machine on which the server is running\&. If the value begins with a slash, it is used as the directory for the Unix domain socket\&. The default is taken from the
 \fBPGHOST\fR
 environment variable, if set, else a Unix domain socket connection is attempted\&.
 .RE
 .PP
-\fB\-p \fR\fB\fIport\fR\fR, \fB\-\-port=\fR\fB\fIport\fR\fR
+\fB\-p \fR\fB\fIport\fR\fR
+.br
+\fB\-\-port=\fR\fB\fIport\fR\fR
 .RS 4
 Specifies the TCP port or local Unix domain socket file extension on which the server is listening for connections\&. Defaults to the
 \fBPGPORT\fR
 environment variable, if set, or a compiled\-in default\&.
 .RE
 .PP
-\fB\-U \fR\fB\fIusername\fR\fR, \fB\-\-username=\fR\fB\fIusername\fR\fR
+\fB\-U \fR\fB\fIusername\fR\fR
+.br
+\fB\-\-username=\fR\fB\fIusername\fR\fR
 .RS 4
 User name to connect as\&.
 .RE
 .PP
-\fB\-w\fR, \fB\-\-no\-password\fR
+\fB\-w\fR
+.br
+\fB\-\-no\-password\fR
 .RS 4
 Never issue a password prompt\&. If the server requires password authentication and a password is not available by other means such as a
 \&.pgpass
 file, the connection attempt will fail\&. This option can be useful in batch jobs and scripts where no user is present to enter a password\&.
 .RE
 .PP
-\fB\-W\fR, \fB\-\-password\fR
+\fB\-W\fR
+.br
+\fB\-\-password\fR
 .RS 4
 Force
 pg_dump
@@ -676,7 +756,15 @@ pg_dump, but can switch to a role with the required rights\&. Some installations
 .RE
 .SH "ENVIRONMENT"
 .PP
-\fBPGDATABASE\fR, \fBPGHOST\fR, \fBPGOPTIONS\fR, \fBPGPORT\fR, \fBPGUSER\fR
+\fBPGDATABASE\fR
+.br
+\fBPGHOST\fR
+.br
+\fBPGOPTIONS\fR
+.br
+\fBPGPORT\fR
+.br
+\fBPGUSER\fR
 .RS 4
 Default connection parameters\&.
 .RE

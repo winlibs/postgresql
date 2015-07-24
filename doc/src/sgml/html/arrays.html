@@ -9,13 +9,13 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
 HREF="datatype.html"><LINK
 REL="PREVIOUS"
-TITLE="JSON Type"
+TITLE="JSON Types"
 HREF="datatype-json.html"><LINK
 REL="NEXT"
 TITLE="Composite Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,7 +53,7 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="JSON Type"
+TITLE="JSON Types"
 HREF="datatype-json.html"
 ACCESSKEY="P"
 >Prev</A
@@ -607,6 +607,26 @@ CLASS="PROGRAMLISTING"
             2
 (1 row)</PRE
 ><P>
+
+ <CODE
+CLASS="FUNCTION"
+>cardinality</CODE
+> returns the total number of elements in an
+ array across all dimensions.  It is effectively the number of rows a call to
+ <CODE
+CLASS="FUNCTION"
+>unnest</CODE
+> would yield:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT cardinality(schedule) FROM sal_emp WHERE name = 'Carol';
+
+ cardinality 
+-------------
+           4
+(1 row)</PRE
+><P>
  </P
 ></DIV
 ><DIV
@@ -914,7 +934,7 @@ CLASS="PROGRAMLISTING"
 
   This function is described in <A
 HREF="functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS"
->Table 9-50</A
+>Table 9-55</A
 >.
  </P
 ><P
@@ -1221,7 +1241,7 @@ VALIGN="top"
 ><ACRONYM
 CLASS="ACRONYM"
 >JSON</ACRONYM
-> Type</TD
+> Types</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

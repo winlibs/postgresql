@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="SQL-DROPAGGREGATE">
+ <indexterm zone="sql-dropaggregate">
+  <primary>DROP AGGREGATE</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle>DROP AGGREGATE</refentrytitle>
   <manvolnum>7</manvolnum>
@@ -15,13 +19,15 @@ PostgreSQL documentation
   <refpurpose>remove an aggregate function</refpurpose>
  </refnamediv>
 
- <indexterm zone="sql-dropaggregate">
-  <primary>DROP AGGREGATE</primary>
- </indexterm>
-
  <refsynopsisdiv>
 <synopsis>
-DROP AGGREGATE [ IF EXISTS ] <replaceable class="PARAMETER">name</replaceable> ( <replaceable class="PARAMETER">argtype</replaceable> [ , ... ] ) [ CASCADE | RESTRICT ]
+DROP AGGREGATE [ IF EXISTS ] <replaceable>name</replaceable> ( <replaceable>aggregate_signature</replaceable> ) [ CASCADE | RESTRICT ]
+
+<phrase>where <replaceable>aggregate_signature</replaceable> is:</phrase>
+
+* |
+[ <replaceable>argmode</replaceable> ] [ <replaceable>argname</replaceable> ] <replaceable>argtype</replaceable> [ , ... ] |
+[ [ <replaceable>argmode</replaceable> ] [ <replaceable>argname</replaceable> ] <replaceable>argtype</replaceable> [ , ... ] ] ORDER BY [ <replaceable>argmode</replaceable> ] [ <replaceable>argname</replaceable> ] <replaceable>argtype</replaceable> [ , ... ]
 </synopsis>
  </refsynopsisdiv>
 
@@ -60,12 +66,39 @@ DROP AGGREGATE [ IF EXISTS ] <replaceable class="PARAMETER">name</replaceable> (
    </varlistentry>
 
    <varlistentry>
+    <term><replaceable class="parameter">argmode</replaceable></term>
+
+    <listitem>
+     <para>
+      The mode of an argument: <literal>IN</> or <literal>VARIADIC</>.
+      If omitted, the default is <literal>IN</>.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><replaceable class="parameter">argname</replaceable></term>
+
+    <listitem>
+     <para>
+      The name of an argument.
+      Note that <command>DROP AGGREGATE</command> does not actually pay
+      any attention to argument names, since only the argument data
+      types are needed to determine the aggregate function's identity.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
     <term><replaceable class="parameter">argtype</replaceable></term>
     <listitem>
      <para>
       An input data type on which the aggregate function operates.
       To reference a zero-argument aggregate function, write <literal>*</>
-      in place of the list of input data types.
+      in place of the list of argument specifications.
+      To reference an ordered-set aggregate function, write
+      <literal>ORDER BY</> between the direct and aggregated argument
+      specifications.
      </para>
     </listitem>
    </varlistentry>
@@ -92,6 +125,15 @@ DROP AGGREGATE [ IF EXISTS ] <replaceable class="PARAMETER">name</replaceable> (
  </refsect1>
 
  <refsect1>
+  <title>Notes</title>
+
+   <para>
+    Alternative syntaxes for referencing ordered-set aggregates
+    are described under <xref linkend="sql-alteraggregate">.
+   </para>
+ </refsect1>
+
+ <refsect1>
   <title>Examples</title>
 
   <para>
@@ -99,7 +141,17 @@ DROP AGGREGATE [ IF EXISTS ] <replaceable class="PARAMETER">name</replaceable> (
    <type>integer</type>:
 <programlisting>
 DROP AGGREGATE myavg(integer);
-</programlisting></para>
+</programlisting>
+  </para>
+
+  <para>
+   To remove the hypothetical-set aggregate function <literal>myrank</>,
+   which takes an arbitrary list of ordering columns and a matching list
+   of direct arguments:
+<programlisting>
+DROP AGGREGATE myrank(VARIADIC "any" ORDER BY VARIADIC "any");
+</programlisting>
+  </para>
  </refsect1>
 
  <refsect1>

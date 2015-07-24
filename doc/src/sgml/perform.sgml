@@ -426,7 +426,7 @@ WHERE t1.unique1 &lt; 10 AND t2.unique2 &lt; 10 AND t1.hundred &lt; t2.hundred;
    <para>
     Notice that here the planner has chosen to <quote>materialize</> the inner
     relation of the join, by putting a Materialize plan node atop it.  This
-    means that the <literal>t2</> indexscan will be done just once, even
+    means that the <literal>t2</> index scan will be done just once, even
     though the nested-loop join node needs to read that data ten times, once
     for each row from the outer relation.  The Materialize node saves the data
     in memory as it's read, and then returns the data from memory on each
@@ -564,7 +564,8 @@ WHERE t1.unique1 &lt; 10 AND t1.unique2 = t2.unique2;
                Index Cond: (unique1 &lt; 10)
    -&gt;  Index Scan using tenk2_unique2 on tenk2 t2  (cost=0.29..7.91 rows=1 width=244) (actual time=0.021..0.022 rows=1 loops=10)
          Index Cond: (unique2 = t1.unique2)
- Total runtime: 0.501 ms
+ Planning time: 0.181 ms
+ Execution time: 0.501 ms
 </screen>
 
     Note that the <quote>actual time</quote> values are in milliseconds of
@@ -612,7 +613,8 @@ WHERE t1.unique1 &lt; 100 AND t1.unique2 = t2.unique2 ORDER BY t1.fivethous;
                      Recheck Cond: (unique1 &lt; 100)
                      -&gt;  Bitmap Index Scan on tenk1_unique1  (cost=0.00..5.04 rows=101 width=0) (actual time=0.049..0.049 rows=100 loops=1)
                            Index Cond: (unique1 &lt; 100)
- Total runtime: 8.008 ms
+ Planning time: 0.194 ms
+ Execution time: 8.008 ms
 </screen>
 
     The Sort node shows the sort method used (in particular, whether the sort
@@ -635,7 +637,8 @@ EXPLAIN ANALYZE SELECT * FROM tenk1 WHERE ten &lt; 7;
  Seq Scan on tenk1  (cost=0.00..483.00 rows=7000 width=244) (actual time=0.016..5.107 rows=7000 loops=1)
    Filter: (ten &lt; 7)
    Rows Removed by Filter: 3000
- Total runtime: 5.905 ms
+ Planning time: 0.083 ms
+ Execution time: 5.905 ms
 </screen>
 
     These counts can be particularly valuable for filter conditions applied at
@@ -657,7 +660,8 @@ EXPLAIN ANALYZE SELECT * FROM polygon_tbl WHERE f1 @&gt; polygon '(0.5,2.0)';
  Seq Scan on polygon_tbl  (cost=0.00..1.05 rows=1 width=32) (actual time=0.044..0.044 rows=0 loops=1)
    Filter: (f1 @&gt; '((0.5,2))'::polygon)
    Rows Removed by Filter: 4
- Total runtime: 0.083 ms
+ Planning time: 0.040 ms
+ Execution time: 0.083 ms
 </screen>
 
     The planner thinks (quite correctly) that this sample table is too small
@@ -675,7 +679,8 @@ EXPLAIN ANALYZE SELECT * FROM polygon_tbl WHERE f1 @&gt; polygon '(0.5,2.0)';
  Index Scan using gpolygonind on polygon_tbl  (cost=0.13..8.15 rows=1 width=32) (actual time=0.062..0.062 rows=0 loops=1)
    Index Cond: (f1 @&gt; '((0.5,2))'::polygon)
    Rows Removed by Index Recheck: 1
- Total runtime: 0.144 ms
+ Planning time: 0.034 ms
+ Execution time: 0.144 ms
 </screen>
 
     Here we can see that the index returned one candidate row, which was
@@ -705,7 +710,8 @@ EXPLAIN (ANALYZE, BUFFERS) SELECT * FROM tenk1 WHERE unique1 &lt; 100 AND unique
          -&gt;  Bitmap Index Scan on tenk1_unique2  (cost=0.00..19.78 rows=999 width=0) (actual time=0.227..0.227 rows=999 loops=1)
                Index Cond: (unique2 &gt; 9000)
                Buffers: shared hit=5
- Total runtime: 0.423 ms
+ Planning time: 0.088 ms
+ Execution time: 0.423 ms
 </screen>
 
     The numbers provided by <literal>BUFFERS</> help to identify which parts
@@ -732,7 +738,8 @@ EXPLAIN ANALYZE UPDATE tenk1 SET hundred = hundred + 1 WHERE unique1 &lt; 100;
          Recheck Cond: (unique1 &lt; 100)
          -&gt;  Bitmap Index Scan on tenk1_unique1  (cost=0.00..5.04 rows=101 width=0) (actual time=0.043..0.043 rows=100 loops=1)
                Index Cond: (unique1 &lt; 100)
- Total runtime: 14.727 ms
+ Planning time: 0.079 ms
+ Execution time: 14.727 ms
 
 ROLLBACK;
 </screen>
@@ -755,7 +762,13 @@ ROLLBACK;
    </para>
 
    <para>
-    The <literal>Total runtime</literal> shown by <command>EXPLAIN
+    The <literal>Planning time</literal> shown by <command>EXPLAIN
+    ANALYZE</command> is the time it took to generate the query plan from the
+    parsed query and optimize it. It does not include parsing or rewriting.
+   </para>
+
+   <para>
+    The <literal>Execution time</literal> shown by <command>EXPLAIN
     ANALYZE</command> includes executor start-up and shut-down time, as well
     as the time to run any triggers that are fired, but it does not include
     parsing, rewriting, or planning time.
@@ -766,7 +779,7 @@ ROLLBACK;
     The total time spent in each trigger
     (either <literal>BEFORE</> or <literal>AFTER</>) is also shown separately.
     Note that deferred constraint triggers will not be executed
-    until end of transaction and are thus not shown at all by
+    until end of transaction and are thus not considered at all by
     <command>EXPLAIN ANALYZE</command>.
    </para>
 
@@ -817,7 +830,8 @@ EXPLAIN ANALYZE SELECT * FROM tenk1 WHERE unique1 &lt; 100 AND unique2 &gt; 9000
          Index Cond: (unique2 &gt; 9000)
          Filter: (unique1 &lt; 100)
          Rows Removed by Filter: 287
- Total runtime: 0.336 ms
+ Planning time: 0.096 ms
+ Execution time: 0.336 ms
 </screen>
 
     the estimated cost and row count for the Index Scan node are shown as
@@ -1547,6 +1561,15 @@ SELECT * FROM x, y, a, b, c WHERE something AND somethingelse;
 
      <listitem>
       <para>
+       Turn off <xref linkend="guc-synchronous-commit">;  there might be no
+       need to force <acronym>WAL</acronym> writes to disk on every
+       commit.  This setting does risk transaction loss (though not data
+       corruption) in case of a crash of the <emphasis>database</>.
+      </para>
+     </listitem>
+
+     <listitem>
+      <para>
        Turn off <xref linkend="guc-full-page-writes">;  there is no need
        to guard against partial page writes.
       </para>
@@ -1563,12 +1586,12 @@ SELECT * FROM x, y, a, b, c WHERE something AND somethingelse;
 
      <listitem>
       <para>
-       Turn off <xref linkend="guc-synchronous-commit">;  there might be no
-       need to write the <acronym>WAL</acronym> to disk on every
-       commit.  This setting does risk transaction loss (though not data
-       corruption) in case of a crash of the <emphasis>database</> alone.
+       Create <link linkend="SQL-CREATETABLE-UNLOGGED">unlogged
+       tables</link> to avoid <acronym>WAL</acronym> writes, though it
+       makes the tables non-crash-safe.
       </para>
      </listitem>
+
     </itemizedlist>
    </para>
   </sect1>

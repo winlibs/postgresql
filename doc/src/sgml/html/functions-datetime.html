@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,12 +98,12 @@ NAME="FUNCTIONS-DATETIME"
 ><P
 >   <A
 HREF="functions-datetime.html#FUNCTIONS-DATETIME-TABLE"
->Table 9-27</A
+>Table 9-28</A
 > shows the available
    functions for date/time value processing, with details appearing in
    the following subsections.  <A
 HREF="functions-datetime.html#OPERATORS-DATETIME-TABLE"
->Table 9-26</A
+>Table 9-27</A
 > illustrates the behaviors of
    the basic arithmetic operators (<TT
 CLASS="LITERAL"
@@ -162,7 +162,7 @@ NAME="OPERATORS-DATETIME-TABLE"
 ></A
 ><P
 ><B
->Table 9-26. Date/Time Operators</B
+>Table 9-27. Date/Time Operators</B
 ></P
 ><TABLE
 BORDER="1"
@@ -511,7 +511,7 @@ NAME="FUNCTIONS-DATETIME-TABLE"
 ></A
 ><P
 ><B
->Table 9-27. Date/Time Functions</B
+>Table 9-28. Date/Time Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -558,7 +558,7 @@ CLASS="TYPE"
 CLASS="QUOTE"
 >"symbolic"</SPAN
 > result that
-        uses years and months</TD
+        uses years and months, rather than just days</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -836,6 +836,43 @@ CLASS="LITERAL"
 ><TT
 CLASS="LITERAL"
 >2001-02-16 20:00:00</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>date_trunc(<TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="TYPE"
+>interval</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>interval</TT
+></TD
+><TD
+>Truncate to specified precision; see also <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-TRUNC"
+>Section 9.9.2</A
+>
+        </TD
+><TD
+><TT
+CLASS="LITERAL"
+>date_trunc('hour', interval '2 days 3 hours 40 minutes')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>2 days 03:00:00</TT
 ></TD
 ></TR
 ><TR
@@ -1171,6 +1208,352 @@ HREF="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT"
 >         
          <TT
 CLASS="LITERAL"
+>            <CODE
+CLASS="FUNCTION"
+>             make_date(<TT
+CLASS="PARAMETER"
+>year</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+             <TT
+CLASS="PARAMETER"
+>month</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+             <TT
+CLASS="PARAMETER"
+>day</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>)
+            </CODE
+>
+         </TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>date</TT
+></TD
+><TD
+>         Create date from year, month and day fields
+        </TD
+><TD
+><TT
+CLASS="LITERAL"
+>make_date(2013, 7, 15)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>2013-07-15</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+>          <CODE
+CLASS="FUNCTION"
+>           make_interval(<TT
+CLASS="PARAMETER"
+>years</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+> DEFAULT 0,
+           <TT
+CLASS="PARAMETER"
+>months</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+> DEFAULT 0,
+           <TT
+CLASS="PARAMETER"
+>weeks</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+> DEFAULT 0,
+           <TT
+CLASS="PARAMETER"
+>days</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+> DEFAULT 0,
+           <TT
+CLASS="PARAMETER"
+>hours</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+> DEFAULT 0,
+           <TT
+CLASS="PARAMETER"
+>mins</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+> DEFAULT 0,
+           <TT
+CLASS="PARAMETER"
+>secs</TT
+> <TT
+CLASS="TYPE"
+>double precision</TT
+> DEFAULT 0.0)
+          </CODE
+>
+         </TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>interval</TT
+></TD
+><TD
+>         Create interval from years, months, weeks, days, hours, minutes and
+         seconds fields
+        </TD
+><TD
+><TT
+CLASS="LITERAL"
+>make_interval(days := 10)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>10 days</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+>          <CODE
+CLASS="FUNCTION"
+>           make_time(<TT
+CLASS="PARAMETER"
+>hour</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>min</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>sec</TT
+> <TT
+CLASS="TYPE"
+>double precision</TT
+>)
+          </CODE
+>
+         </TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>time</TT
+></TD
+><TD
+>         Create time from hour, minute and seconds fields
+        </TD
+><TD
+><TT
+CLASS="LITERAL"
+>make_time(8, 15, 23.5)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>08:15:23.5</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+>          <CODE
+CLASS="FUNCTION"
+>           make_timestamp(<TT
+CLASS="PARAMETER"
+>year</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>month</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>day</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>hour</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>min</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>sec</TT
+> <TT
+CLASS="TYPE"
+>double precision</TT
+>)
+          </CODE
+>
+         </TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp</TT
+></TD
+><TD
+>         Create timestamp from year, month, day, hour, minute and seconds fields
+        </TD
+><TD
+><TT
+CLASS="LITERAL"
+>make_timestamp(2013, 7, 15, 8, 15, 23.5)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>2013-07-15 08:15:23.5</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+>          <CODE
+CLASS="FUNCTION"
+>           make_timestamptz(<TT
+CLASS="PARAMETER"
+>year</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>month</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>day</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>hour</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>min</TT
+> <TT
+CLASS="TYPE"
+>int</TT
+>,
+           <TT
+CLASS="PARAMETER"
+>sec</TT
+> <TT
+CLASS="TYPE"
+>double precision</TT
+>,
+           [<SPAN
+CLASS="OPTIONAL"
+> <TT
+CLASS="PARAMETER"
+>timezone</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+> </SPAN
+>])
+          </CODE
+>
+         </TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>         Create timestamp with time zone from year, month, day, hour, minute
+         and seconds fields. When <TT
+CLASS="PARAMETER"
+>timezone</TT
+> is not specified,
+         then current time zone is used.
+        </TD
+><TD
+><TT
+CLASS="LITERAL"
+>make_timestamptz(2013, 7, 15, 8, 15, 23.5)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>2013-07-15 08:15:23.5+01</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
 >now()</CODE
@@ -1289,7 +1672,8 @@ HREF="functions-datetime.html#FUNCTIONS-DATETIME-CURRENT"
 ></TABLE
 ></DIV
 ><P
->    In addition to these functions, the SQL <TT
+>    
+    In addition to these functions, the SQL <TT
 CLASS="LITERAL"
 >OVERLAPS</TT
 > operator is
@@ -1436,12 +1820,12 @@ CLASS="TYPE"
 CLASS="TYPE"
 >timestamp with time zone</TT
 >
-   value, the days component advances (or decrements) the date of the
+   value, the days component advances or decrements the date of the
    <TT
 CLASS="TYPE"
 >timestamp with time zone</TT
 > by the indicated number of days.
-   Across daylight saving time changes (with the session time zone set to a
+   Across daylight saving time changes (when the session time zone is set to a
    time zone that recognizes DST), this means <TT
 CLASS="LITERAL"
 >interval '1 day'</TT
@@ -1456,7 +1840,7 @@ CLASS="LITERAL"
 >,
    <TT
 CLASS="LITERAL"
->timestamp with time zone '2005-04-02 12:00-07' + interval '1 day' </TT
+>timestamp with time zone '2005-04-02 12:00-07' + interval '1 day'</TT
 >
    will produce <TT
 CLASS="LITERAL"
@@ -1487,11 +1871,11 @@ CLASS="LITERAL"
 >   Note there can be ambiguity in the <TT
 CLASS="LITERAL"
 >months</TT
-> returned by
+> field returned by
    <CODE
 CLASS="FUNCTION"
 >age</CODE
-> because different months have a different number of
+> because different months have different numbers of
    days.  <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
@@ -1510,6 +1894,82 @@ CLASS="LITERAL"
    days</TT
 > because May has 31 days, while April has only 30.
   </P
+><P
+>   Subtraction of dates and timestamps can also be complex.  One conceptually
+   simple way to perform subtraction is to convert each value to a number
+   of seconds using <TT
+CLASS="LITERAL"
+>EXTRACT(EPOCH FROM ...)</TT
+>, then subtract the
+   results; this produces the
+   number of <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>seconds</I
+></SPAN
+> between the two values.  This will adjust
+   for the number of days in each month, timezone changes, and daylight
+   saving time adjustments.  Subtraction of date or timestamp
+   values with the <SPAN
+CLASS="QUOTE"
+>"<TT
+CLASS="LITERAL"
+>-</TT
+>"</SPAN
+> operator
+   returns the number of days (24-hours) and hours/minutes/seconds
+   between the values, making the same adjustments.  The <CODE
+CLASS="FUNCTION"
+>age</CODE
+>
+   function returns years, months, days, and hours/minutes/seconds,
+   performing field-by-field subtraction and then adjusting for negative
+   field values.  The following queries illustrate the differences in these
+   approaches.  The sample results were produced with <TT
+CLASS="LITERAL"
+>timezone
+   = 'US/Eastern'</TT
+>; there is a daylight saving time change between the
+   two dates used:
+  </P
+><PRE
+CLASS="SCREEN"
+>SELECT EXTRACT(EPOCH FROM timestamptz '2013-07-01 12:00:00') -
+       EXTRACT(EPOCH FROM timestamptz '2013-03-01 12:00:00');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>10537200</SAMP
+>
+SELECT (EXTRACT(EPOCH FROM timestamptz '2013-07-01 12:00:00') -
+        EXTRACT(EPOCH FROM timestamptz '2013-03-01 12:00:00'))
+        / 60 / 60 / 24;
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>121.958333333333</SAMP
+>
+SELECT timestamptz '2013-07-01 12:00:00' - timestamptz '2013-03-01 12:00:00';
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>121 days 23:00:00</SAMP
+>
+SELECT age(timestamptz '2013-07-01 12:00:00', timestamptz '2013-03-01 12:00:00');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>4 mons</SAMP
+></PRE
 ><DIV
 CLASS="SECT2"
 ><H2
@@ -1626,14 +2086,6 @@ CLASS="COMPUTEROUTPUT"
         If you disagree with this, please write your complaint to:
         Pope, Cathedral Saint-Peter of Roma, Vatican.
        </P
-><P
->        <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> releases before 8.0 did not
-        follow the conventional numbering of centuries, but just returned
-        the year field divided by 100.
-       </P
 ></DD
 ><DT
 ><TT
@@ -1698,11 +2150,11 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        The day of the week as Sunday(<TT
+>        The day of the week as Sunday (<TT
 CLASS="LITERAL"
 >0</TT
 >) to
-        Saturday(<TT
+        Saturday (<TT
 CLASS="LITERAL"
 >6</TT
 >)
@@ -1836,11 +2288,11 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        The day of the week as Monday(<TT
+>        The day of the week as Monday (<TT
 CLASS="LITERAL"
 >1</TT
 >) to
-        Sunday(<TT
+        Sunday (<TT
 CLASS="LITERAL"
 >7</TT
 >)
@@ -1876,7 +2328,8 @@ CLASS="LITERAL"
 >        The <ACRONYM
 CLASS="ACRONYM"
 >ISO</ACRONYM
-> 8601 year that the date falls in (not applicable to intervals)
+> 8601 week-numbering year that the date
+        falls in (not applicable to intervals)
        </P
 ><PRE
 CLASS="SCREEN"
@@ -1900,13 +2353,17 @@ CLASS="COMPUTEROUTPUT"
 >        Each <ACRONYM
 CLASS="ACRONYM"
 >ISO</ACRONYM
-> year begins with the Monday of the week containing the 4th of January, so in early January or late December the <ACRONYM
+> 8601 week-numbering year begins with the
+        Monday of the week containing the 4th of January, so in early
+        January or late December the <ACRONYM
 CLASS="ACRONYM"
 >ISO</ACRONYM
-> year may be different from the Gregorian year.  See the <TT
+> year may be
+        different from the Gregorian year.  See the <TT
 CLASS="LITERAL"
 >week</TT
-> field for more information.
+>
+        field for more information.
        </P
 ><P
 >        This field is not available in PostgreSQL releases prior to 8.3.
@@ -1955,14 +2412,6 @@ CLASS="COMPUTEROUTPUT"
 ><P
 >        Years in the 1900s are in the second millennium.
         The third millennium started January 1, 2001.
-       </P
-><P
->        <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> releases before 8.0 did not
-        follow the conventional numbering of millennia, but just returned
-        the year field divided by 1000.
        </P
 ></DD
 ><DT
@@ -2081,8 +2530,8 @@ CLASS="LITERAL"
 ><P
 >        The seconds field, including fractional parts (0 -
         59<A
-NAME="AEN14087"
-HREF="#FTN.AEN14087"
+NAME="AEN14748"
+HREF="#FTN.AEN14748"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN
@@ -2156,17 +2605,17 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        The number of the week of the year that the day is in.  By definition
-        (<ACRONYM
+>        The number of the <ACRONYM
 CLASS="ACRONYM"
 >ISO</ACRONYM
-> 8601), weeks start on Mondays and the first
+> 8601 week-numbering week of
+        the year.  By definition, ISO weeks start on Mondays and the first
         week of a year contains January 4 of that year.  In other words, the
         first Thursday of a year is in week 1 of that year.
        </P
 ><P
->        In the ISO definition, it is possible for early-January dates to be
-        part of the 52nd or 53rd week of the previous year, and for
+>        In the ISO week-numbering system, it is possible for early-January
+        dates to be part of the 52nd or 53rd week of the previous year, and for
         late-December dates to be part of the first week of the next year.
         For example, <TT
 CLASS="LITERAL"
@@ -2543,7 +2992,7 @@ CLASS="LITERAL"
 > construct allows conversions
     of time stamps to different time zones.  <A
 HREF="functions-datetime.html#FUNCTIONS-DATETIME-ZONECONVERT-TABLE"
->Table 9-28</A
+>Table 9-29</A
 > shows its
     variants.
    </P
@@ -2554,7 +3003,7 @@ NAME="FUNCTIONS-DATETIME-ZONECONVERT-TABLE"
 ></A
 ><P
 ><B
->Table 9-28. <TT
+>Table 9-29. <TT
 CLASS="LITERAL"
 >AT TIME ZONE</TT
 > Variants</B
@@ -3044,7 +3493,7 @@ NAME="FUNCTIONS-DATETIME-DELAY"
 >9.9.5. Delaying Execution</A
 ></H2
 ><P
->    The following function is available to delay execution of the server
+>    The following functions are available to delay execution of the server
     process:
 </P><PRE
 CLASS="SYNOPSIS"
@@ -3053,6 +3502,14 @@ CLASS="REPLACEABLE"
 ><I
 >seconds</I
 ></TT
+>)
+pg_sleep_for(<TT
+CLASS="TYPE"
+>interval</TT
+>)
+pg_sleep_until(<TT
+CLASS="TYPE"
+>timestamp with time zone</TT
 >)</PRE
 ><P>
 
@@ -3076,11 +3533,26 @@ CLASS="REPLACEABLE"
 CLASS="TYPE"
 >double precision</TT
 >, so fractional-second delays can be specified.
+    <CODE
+CLASS="FUNCTION"
+>pg_sleep_for</CODE
+> is a convenience function for larger
+    sleep times specified as an <TT
+CLASS="TYPE"
+>interval</TT
+>.
+    <CODE
+CLASS="FUNCTION"
+>pg_sleep_until</CODE
+> is a convenience function for when
+    a specific wake-up time is desired.
     For example:
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->SELECT pg_sleep(1.5);</PRE
+>SELECT pg_sleep(1.5);
+SELECT pg_sleep_for('5 minutes');
+SELECT pg_sleep_until('tomorrow 03:00');</PRE
 ><P>
    </P
 ><DIV
@@ -3093,6 +3565,11 @@ CLASS="NOTE"
 >      The effective resolution of the sleep interval is platform-specific;
       0.01 seconds is a common value.  The sleep delay will be at least as long
       as specified. It might be longer depending on factors such as server load.
+      In particular, <CODE
+CLASS="FUNCTION"
+>pg_sleep_until</CODE
+> is not guaranteed to
+      wake up exactly at the specified time, but it will not wake up any earlier.
      </P
 ></BLOCKQUOTE
 ></DIV
@@ -3119,9 +3596,9 @@ ALIGN="LEFT"
       when calling <CODE
 CLASS="FUNCTION"
 >pg_sleep</CODE
->.  Otherwise other sessions
-      might have to wait for your sleeping process, slowing down the entire
-      system.
+> or its variants.  Otherwise
+      other sessions might have to wait for your sleeping process, slowing down
+      the entire system.
      </P
 ></TD
 ></TR
@@ -3142,8 +3619,8 @@ ALIGN="LEFT"
 VALIGN="TOP"
 WIDTH="5%"
 ><A
-NAME="FTN.AEN14087"
-HREF="functions-datetime.html#AEN14087"
+NAME="FTN.AEN14748"
+HREF="functions-datetime.html#AEN14748"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN

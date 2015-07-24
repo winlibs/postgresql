@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="PREVIOUS"
 TITLE="Bibliography"
@@ -20,7 +20,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="INDEX"
 ><DIV
@@ -33,12 +33,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -86,85 +86,85 @@ NAME="BOOKINDEX"
 ><P
 CLASS="INDEXDIV-QUICKLINKS"
 ><A
-HREF="bookindex.html#AEN155617"
+HREF="bookindex.html#AEN167265"
 >Symbols</A
 > | <A
-HREF="bookindex.html#AEN155647"
+HREF="bookindex.html#AEN167298"
 >A</A
 > | <A
-HREF="bookindex.html#AEN156044"
+HREF="bookindex.html#AEN167717"
 >B</A
 > | <A
-HREF="bookindex.html#AEN156189"
+HREF="bookindex.html#AEN167865"
 >C</A
 > | <A
-HREF="bookindex.html#AEN156759"
+HREF="bookindex.html#AEN168450"
 >D</A
 > | <A
-HREF="bookindex.html#AEN157203"
+HREF="bookindex.html#AEN168905"
 >E</A
 > | <A
-HREF="bookindex.html#AEN157422"
+HREF="bookindex.html#AEN169126"
 >F</A
 > | <A
-HREF="bookindex.html#AEN157576"
+HREF="bookindex.html#AEN169283"
 >G</A
 > | <A
-HREF="bookindex.html#AEN157672"
+HREF="bookindex.html#AEN169382"
 >H</A
 > | <A
-HREF="bookindex.html#AEN157778"
+HREF="bookindex.html#AEN169495"
 >I</A
 > | <A
-HREF="bookindex.html#AEN158046"
+HREF="bookindex.html#AEN169763"
 >J</A
 > | <A
-HREF="bookindex.html#AEN158117"
+HREF="bookindex.html#AEN169906"
 >K</A
 > | <A
-HREF="bookindex.html#AEN158137"
+HREF="bookindex.html#AEN169920"
 >L</A
 > | <A
-HREF="bookindex.html#AEN158514"
+HREF="bookindex.html#AEN170312"
 >M</A
 > | <A
-HREF="bookindex.html#AEN158630"
+HREF="bookindex.html#AEN170456"
 >N</A
 > | <A
-HREF="bookindex.html#AEN158781"
+HREF="bookindex.html#AEN170607"
 >O</A
 > | <A
-HREF="bookindex.html#AEN158889"
+HREF="bookindex.html#AEN170732"
 >P</A
 > | <A
-HREF="bookindex.html#AEN160380"
+HREF="bookindex.html#AEN172284"
 >Q</A
 > | <A
-HREF="bookindex.html#AEN160429"
+HREF="bookindex.html#AEN172333"
 >R</A
 > | <A
-HREF="bookindex.html#AEN160751"
+HREF="bookindex.html#AEN172669"
 >S</A
 > | <A
-HREF="bookindex.html#AEN161489"
+HREF="bookindex.html#AEN173423"
 >T</A
 > | <A
-HREF="bookindex.html#AEN161908"
+HREF="bookindex.html#AEN173869"
 >U</A
 > | <A
-HREF="bookindex.html#AEN162024"
+HREF="bookindex.html#AEN173985"
 >V</A
 > | <A
-HREF="bookindex.html#AEN162122"
+HREF="bookindex.html#AEN174090"
 >W</A
 > | <A
-HREF="bookindex.html#AEN162199"
+HREF="bookindex.html#AEN174182"
 >X</A
 > | <A
-HREF="bookindex.html#AEN162281"
+HREF="bookindex.html#AEN174264"
 >Y</A
 > | <A
-HREF="bookindex.html#AEN162286"
+HREF="bookindex.html#AEN174269"
 >Z</A
 ></P
 ><DIV
@@ -172,7 +172,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN155617"
+NAME="AEN167265"
 >Symbols</A
 ></H2
 ><DL
@@ -193,8 +193,8 @@ HREF="xfunc-c.html#XFUNC-C-DYNLOAD"
 ><DT
 >$libdir/plugins,
     <A
-HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-OTHER"
->Other Defaults</A
+HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-PRELOAD"
+>Shared Library Preloading</A
 >,
     <A
 HREF="sql-load.html#SQL-LOAD-DESCRIPTION"
@@ -243,6 +243,13 @@ HREF="xfunc-c.html#XFUNC-C-DYNLOAD"
 >Dynamic Loading</A
 >
   </DT
+><DT
+>_PG_output_plugin_init,
+    <A
+HREF="logicaldecoding.html"
+>Logical Decoding</A
+>
+  </DT
 ></DL
 ></DIV
 ><DIV
@@ -250,7 +257,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN155647"
+NAME="AEN167298"
 >A</A
 ></H2
 ><DL
@@ -353,10 +360,65 @@ HREF="sql-expressions.html#SYNTAX-AGGREGATES"
 ></DL
 ></DD
 ><DT
+>moving aggregate,
+    <A
+HREF="xaggr.html#XAGGR-MOVING-AGGREGATES"
+>Moving-Aggregate Mode</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
+>ordered set,
+    <A
+HREF="xaggr.html#XAGGR-ORDERED-SET-AGGREGATES"
+>Ordered-Set Aggregates</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
+>polymorphic,
+    <A
+HREF="xaggr.html#XAGGR-POLYMORPHIC-AGGREGATES"
+>Polymorphic and Variadic Aggregates</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
+>support functions for,
+    <A
+HREF="xaggr.html#XAGGR-SUPPORT-FUNCTIONS"
+>Support Functions for Aggregates</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
 >user-defined,
     <A
 HREF="xaggr.html"
 >User-defined Aggregates</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
+>variadic,
+    <A
+HREF="xaggr.html#XAGGR-POLYMORPHIC-AGGREGATES"
+>Polymorphic and Variadic Aggregates</A
 >
   </DT
 ><DD
@@ -397,7 +459,7 @@ HREF="kernel-resources.html#SYSVIPC"
 ><DT
 >akeys,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
@@ -632,6 +694,13 @@ HREF="sql-alterserver.html"
 >
   </DT
 ><DT
+>ALTER SYSTEM,
+    <A
+HREF="sql-altersystem.html"
+>ALTER SYSTEM</A
+>
+  </DT
+><DT
 >ALTER TABLE,
     <A
 HREF="sql-altertable.html"
@@ -846,7 +915,7 @@ HREF="functions-geometry.html"
 ><DT
 >armor,
     <A
-HREF="pgcrypto.html#AEN149246"
+HREF="pgcrypto.html#AEN160643"
 >armor(), dearmor()</A
 >
   </DT
@@ -971,7 +1040,7 @@ HREF="functions-aggregate.html"
 >Aggregate Functions</A
 >,
     <A
-HREF="intagg.html#AEN147461"
+HREF="intagg.html#AEN158841"
 >Functions</A
 >
   </DT
@@ -1132,7 +1201,7 @@ HREF="auth-delay.html"
 ><DT
 >auth_delay.milliseconds configuration parameter,
     <A
-HREF="auth-delay.html#AEN145006"
+HREF="auth-delay.html#AEN156361"
 >Configuration Parameters</A
 >
   </DT
@@ -1239,6 +1308,13 @@ HREF="runtime-config-autovacuum.html"
 >
   </DT
 ><DT
+>autovacuum_multixact_freeze_max_age configuration parameter,
+    <A
+HREF="runtime-config-autovacuum.html"
+>Automatic Vacuuming</A
+>
+  </DT
+><DT
 >autovacuum_naptime configuration parameter,
     <A
 HREF="runtime-config-autovacuum.html"
@@ -1274,6 +1350,13 @@ HREF="runtime-config-autovacuum.html"
 >
   </DT
 ><DT
+>autovacuum_work_mem configuration parameter,
+    <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-MEMORY"
+>Memory</A
+>
+  </DT
+><DT
 >auto_explain,
     <A
 HREF="auto-explain.html"
@@ -1283,56 +1366,63 @@ HREF="auto-explain.html"
 ><DT
 >auto_explain.log_analyze configuration parameter,
     <A
-HREF="auto-explain.html#AEN145037"
+HREF="auto-explain.html#AEN156393"
 >Configuration Parameters</A
 >
   </DT
 ><DT
 >auto_explain.log_buffers configuration parameter,
     <A
-HREF="auto-explain.html#AEN145037"
+HREF="auto-explain.html#AEN156393"
 >Configuration Parameters</A
 >
   </DT
 ><DT
 >auto_explain.log_format configuration parameter,
     <A
-HREF="auto-explain.html#AEN145037"
+HREF="auto-explain.html#AEN156393"
 >Configuration Parameters</A
 >
   </DT
 ><DT
 >auto_explain.log_min_duration configuration parameter,
     <A
-HREF="auto-explain.html#AEN145037"
+HREF="auto-explain.html#AEN156393"
 >Configuration Parameters</A
 >
   </DT
 ><DT
 >auto_explain.log_nested_statements configuration parameter,
     <A
-HREF="auto-explain.html#AEN145037"
+HREF="auto-explain.html#AEN156393"
 >Configuration Parameters</A
 >
   </DT
 ><DT
 >auto_explain.log_timing configuration parameter,
     <A
-HREF="auto-explain.html#AEN145037"
+HREF="auto-explain.html#AEN156393"
+>Configuration Parameters</A
+>
+  </DT
+><DT
+>auto_explain.log_triggers configuration parameter,
+    <A
+HREF="auto-explain.html#AEN156393"
 >Configuration Parameters</A
 >
   </DT
 ><DT
 >auto_explain.log_verbose configuration parameter,
     <A
-HREF="auto-explain.html#AEN145037"
+HREF="auto-explain.html#AEN156393"
 >Configuration Parameters</A
 >
   </DT
 ><DT
 >avals,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
@@ -1357,7 +1447,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN156044"
+NAME="AEN167717"
 >B</A
 ></H2
 ><DL
@@ -1407,6 +1497,13 @@ HREF="backup.html"
     <A
 HREF="extend-type-system.html"
 >The PostgreSQL Type System</A
+>
+  </DT
+><DT
+>BASE_BACKUP,
+    <A
+HREF="protocol-replication.html"
+>Streaming Replication Protocol</A
 >
   </DT
 ><DT
@@ -1705,7 +1802,7 @@ HREF="functions-geometry.html"
 ><DT
 >box (data type),
     <A
-HREF="datatype-geometric.html#AEN6592"
+HREF="datatype-geometric.html#AEN6814"
 >Boxes</A
 >
   </DT
@@ -1744,21 +1841,21 @@ HREF="functions-binarystring.html"
 ><DT
 >bt_metap,
     <A
-HREF="pageinspect.html#AEN148648"
+HREF="pageinspect.html#AEN160034"
 >Functions</A
 >
   </DT
 ><DT
 >bt_page_items,
     <A
-HREF="pageinspect.html#AEN148648"
+HREF="pageinspect.html#AEN160034"
 >Functions</A
 >
   </DT
 ><DT
 >bt_page_stats,
     <A
-HREF="pageinspect.html#AEN148648"
+HREF="pageinspect.html#AEN160034"
 >Functions</A
 >
   </DT
@@ -1783,7 +1880,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN156189"
+NAME="AEN167865"
 >C</A
 ></H2
 ><DL
@@ -1823,6 +1920,13 @@ HREF="libpq-cancel.html"
 ></DD
 ></DL
 ></DD
+><DT
+>cardinality,
+    <A
+HREF="functions-array.html"
+>Array Functions and Operators</A
+>
+  </DT
 ><DT
 >CASCADE
   </DT
@@ -2054,6 +2158,13 @@ HREF="ddl-constraints.html#DDL-CONSTRAINTS-CHECK-CONSTRAINTS"
 >
   </DT
 ><DT
+>CHECK OPTION,
+    <A
+HREF="sql-createview.html"
+>CREATE VIEW</A
+>
+  </DT
+><DT
 >checkpoint,
     <A
 HREF="wal-configuration.html"
@@ -2130,7 +2241,7 @@ HREF="datatype-net-types.html#DATATYPE-CIDR"
 ><DT
 >circle,
     <A
-HREF="datatype-geometric.html#AEN6679"
+HREF="datatype-geometric.html#DATATYPE-CIRCLE"
 >Circles</A
 >,
     <A
@@ -2280,7 +2391,7 @@ HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-COLLATION"
 ><DT
 >in SQL functions,
     <A
-HREF="xfunc-sql.html#AEN52942"
+HREF="xfunc-sql.html#AEN55256"
 >SQL Functions with Collations</A
 >
   </DT
@@ -2335,7 +2446,7 @@ HREF="ddl-alter.html#DDL-ALTER-REMOVING-A-COLUMN"
 ><DT
 >renaming,
     <A
-HREF="ddl-alter.html#AEN2800"
+HREF="ddl-alter.html#AEN2878"
 >Renaming a Column</A
 >
   </DT
@@ -2364,7 +2475,7 @@ HREF="ddl-system-columns.html"
 ><DT
 >changing,
     <A
-HREF="ddl-alter.html#AEN2790"
+HREF="ddl-alter.html#AEN2868"
 >Changing a Column's Data Type</A
 >
   </DT
@@ -2464,6 +2575,17 @@ HREF="runtime-config-wal.html#RUNTIME-CONFIG-WAL-SETTINGS"
 ><DD
 ><DL
 ><DT
+>composite type,
+    <A
+HREF="functions-comparisons.html"
+>Row and Array Comparisons</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
 >operators,
     <A
 HREF="functions-comparison.html"
@@ -2475,7 +2597,7 @@ HREF="functions-comparison.html"
 ></DL
 ></DD
 ><DT
->row-wise,
+>row constructor,
     <A
 HREF="functions-comparisons.html"
 >Row and Array Comparisons</A
@@ -2530,9 +2652,20 @@ HREF="extend-type-system.html"
 ><DD
 ><DL
 ><DT
+>comparison,
+    <A
+HREF="functions-comparisons.html"
+>Row and Array Comparisons</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
 >constant,
     <A
-HREF="rowtypes.html#AEN7360"
+HREF="rowtypes.html#AEN7815"
 >Composite Value Input</A
 >
   </DT
@@ -2658,11 +2791,11 @@ HREF="functions-logical.html"
 ><DT
 >connectby,
     <A
-HREF="tablefunc.html#AEN151301"
+HREF="tablefunc.html#AEN162799"
 >Functions Provided</A
 >,
     <A
-HREF="tablefunc.html#AEN151539"
+HREF="tablefunc.html#AEN163037"
 >connectby</A
 >
   </DT
@@ -2754,7 +2887,7 @@ HREF="ddl-constraints.html#DDL-CONSTRAINTS-CHECK-CONSTRAINTS"
 ><DT
 >NOT NULL,
     <A
-HREF="ddl-constraints.html#AEN2463"
+HREF="ddl-constraints.html#AEN2541"
 >Not-Null Constraints</A
 >
   </DT
@@ -2823,7 +2956,7 @@ HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-OTHER"
 ><DT
 >in PL/pgSQL,
     <A
-HREF="plpgsql-control-structures.html#AEN58344"
+HREF="plpgsql-control-structures.html#AEN60786"
 >CONTINUE</A
 >
   </DT
@@ -2843,7 +2976,7 @@ HREF="backup.html"
 ><DT
 >control file,
     <A
-HREF="extend-extensions.html#AEN54879"
+HREF="extend-extensions.html#AEN57299"
 >Extension Files</A
 >
   </DT
@@ -3288,6 +3421,13 @@ HREF="app-createuser.html"
 >
   </DT
 ><DT
+>CREATE_REPLICATION_SLOT,
+    <A
+HREF="protocol-replication.html"
+>Streaming Replication Protocol</A
+>
+  </DT
+><DT
 >cross compilation,
     <A
 HREF="install-procedure.html"
@@ -3304,22 +3444,22 @@ HREF="queries-table-expressions.html#QUERIES-JOIN"
 ><DT
 >crosstab,
     <A
-HREF="tablefunc.html#AEN151384"
+HREF="tablefunc.html#AEN162882"
 >crosstab(text)</A
 >,
     <A
-HREF="tablefunc.html#AEN151430"
+HREF="tablefunc.html#AEN162928"
 >crosstabN(text)</A
 >,
     <A
-HREF="tablefunc.html#AEN151471"
+HREF="tablefunc.html#AEN162969"
 >crosstab(text, text)</A
 >
   </DT
 ><DT
 >crypt,
     <A
-HREF="pgcrypto.html#AEN148982"
+HREF="pgcrypto.html#AEN160369"
 >crypt()</A
 >
   </DT
@@ -3337,7 +3477,7 @@ HREF="ddl-system-columns.html"
 >System Columns</A
 >,
     <A
-HREF="rules-views.html#AEN56724"
+HREF="rules-views.html#AEN59150"
 >View Rules in Non-SELECT Statements</A
 >
   </DT
@@ -3355,6 +3495,21 @@ HREF="functions-window.html"
 >Window Functions</A
 >
   </DT
+><DD
+><DL
+><DT
+>hypothetical,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
 ><DT
 >current_catalog,
     <A
@@ -3537,7 +3692,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN156759"
+NAME="AEN168450"
 >D</A
 ></H2
 ><DL
@@ -3741,6 +3896,13 @@ HREF="creating-cluster.html"
 >
   </DT
 ><DT
+>data_checksums configuration parameter,
+    <A
+HREF="runtime-config-preset.html"
+>Preset Options</A
+>
+  </DT
+><DT
 >data_directory configuration parameter,
     <A
 HREF="runtime-config-file-locations.html"
@@ -3754,7 +3916,7 @@ HREF="datatype-datetime.html"
 >Date/Time Types</A
 >,
     <A
-HREF="datatype-datetime.html#AEN5618"
+HREF="datatype-datetime.html#AEN5796"
 >Dates</A
 >
   </DT
@@ -3763,7 +3925,7 @@ HREF="datatype-datetime.html#AEN5618"
 ><DT
 >constants,
     <A
-HREF="datatype-datetime.html#AEN5861"
+HREF="datatype-datetime.html#AEN6039"
 >Special Values</A
 >
   </DT
@@ -4009,7 +4171,7 @@ HREF="sql-deallocate.html"
 ><DT
 >dearmor,
     <A
-HREF="pgcrypto.html#AEN149246"
+HREF="pgcrypto.html#AEN160643"
 >armor(), dearmor()</A
 >
   </DT
@@ -4103,14 +4265,14 @@ HREF="plperl-builtins.html#PLPERL-UTILITY-FUNCTIONS"
 ><DT
 >decrypt,
     <A
-HREF="pgcrypto.html#AEN149344"
+HREF="pgcrypto.html#AEN160741"
 >Raw Encryption Functions</A
 >
   </DT
 ><DT
 >decrypt_iv,
     <A
-HREF="pgcrypto.html#AEN149344"
+HREF="pgcrypto.html#AEN160741"
 >Raw Encryption Functions</A
 >
   </DT
@@ -4126,7 +4288,7 @@ HREF="ddl-default.html"
 ><DT
 >changing,
     <A
-HREF="ddl-alter.html#AEN2780"
+HREF="ddl-alter.html#AEN2858"
 >Changing a Column's Default Value</A
 >
   </DT
@@ -4217,7 +4379,7 @@ HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-STATEMENT"
 ><DT
 >defined,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
@@ -4250,7 +4412,7 @@ HREF="sql-delete.html"
 >DELETE</A
 >,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
@@ -4268,6 +4430,21 @@ HREF="functions-window.html"
 >Window Functions</A
 >
   </DT
+><DD
+><DL
+><DT
+>hypothetical,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
 ><DT
 >diameter,
     <A
@@ -4292,14 +4469,14 @@ HREF="dict-xsyn.html"
 ><DT
 >difference,
     <A
-HREF="fuzzystrmatch.html#AEN146851"
+HREF="fuzzystrmatch.html#AEN158231"
 >Soundex</A
 >
   </DT
 ><DT
 >digest,
     <A
-HREF="pgcrypto.html#AEN148881"
+HREF="pgcrypto.html#AEN160268"
 >digest()</A
 >
   </DT
@@ -4375,14 +4552,14 @@ HREF="functions-math.html"
 ><DT
 >dmetaphone,
     <A
-HREF="fuzzystrmatch.html#AEN146894"
+HREF="fuzzystrmatch.html#AEN158274"
 >Double Metaphone</A
 >
   </DT
 ><DT
 >dmetaphone_alt,
     <A
-HREF="fuzzystrmatch.html#AEN146894"
+HREF="fuzzystrmatch.html#AEN158274"
 >Double Metaphone</A
 >
   </DT
@@ -4712,9 +4889,16 @@ HREF="app-dropuser.html"
 >
   </DT
 ><DT
+>DROP_REPLICATION_SLOT,
+    <A
+HREF="protocol-replication.html"
+>Streaming Replication Protocol</A
+>
+  </DT
+><DT
 >DTD,
     <A
-HREF="datatype-xml.html#AEN7043"
+HREF="datatype-xml.html#AEN7266"
 >Creating XML Values</A
 >
   </DT
@@ -4775,6 +4959,13 @@ HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-OTHER"
 >Other Defaults</A
 >
   </DT
+><DT
+>dynamic_shared_memory_type configuration parameter,
+    <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-MEMORY"
+>Memory</A
+>
+  </DT
 ></DL
 ></DIV
 ><DIV
@@ -4782,21 +4973,21 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN157203"
+NAME="AEN168905"
 >E</A
 ></H2
 ><DL
 ><DT
 >each,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
 ><DT
 >earth,
     <A
-HREF="earthdistance.html#AEN146620"
+HREF="earthdistance.html#AEN157991"
 >Cube-based Earth Distances</A
 >
   </DT
@@ -4810,14 +5001,14 @@ HREF="earthdistance.html"
 ><DT
 >earth_box,
     <A
-HREF="earthdistance.html#AEN146620"
+HREF="earthdistance.html#AEN157991"
 >Cube-based Earth Distances</A
 >
   </DT
 ><DT
 >earth_distance,
     <A
-HREF="earthdistance.html#AEN146620"
+HREF="earthdistance.html#AEN157991"
 >Cube-based Earth Distances</A
 >
   </DT
@@ -5078,7 +5269,7 @@ HREF="plperl-builtins.html#PLPERL-UTILITY-FUNCTIONS"
 ><DT
 >encrypt,
     <A
-HREF="pgcrypto.html#AEN149344"
+HREF="pgcrypto.html#AEN160741"
 >Raw Encryption Functions</A
 >
   </DT
@@ -5107,7 +5298,7 @@ HREF="pgcrypto.html"
 ><DT
 >encrypt_iv,
     <A
-HREF="pgcrypto.html#AEN149344"
+HREF="pgcrypto.html#AEN160741"
 >Raw Encryption Functions</A
 >
   </DT
@@ -5266,6 +5457,17 @@ HREF="event-trigger-interface.html"
 ><DL
 ></DL
 ></DD
+><DT
+>in PL/Tcl,
+    <A
+HREF="pltcl-event-trigger.html"
+>Event Trigger Procedures in PL/Tcl</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
 ></DL
 ></DD
 ><DT
@@ -5324,7 +5526,7 @@ HREF="sql-execute.html"
 ><DT
 >exist,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
@@ -5343,7 +5545,7 @@ HREF="functions-subquery.html"
 ><DT
 >in PL/pgSQL,
     <A
-HREF="plpgsql-control-structures.html#AEN58312"
+HREF="plpgsql-control-structures.html#AEN60754"
 >EXIT</A
 >
   </DT
@@ -5468,7 +5670,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN157422"
+NAME="AEN169126"
 >F</A
 ></H2
 ><DL
@@ -5544,6 +5746,13 @@ HREF="sql-expressions.html#FIELD-SELECTION"
     <A
 HREF="file-fdw.html"
 >file_fdw</A
+>
+  </DT
+><DT
+>FILTER,
+    <A
+HREF="sql-expressions.html#SYNTAX-AGGREGATES"
+>Aggregate Expressions</A
 >
   </DT
 ><DT
@@ -5759,7 +5968,7 @@ HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-OTHER"
 ><DT
 >fsm_page_contents,
     <A
-HREF="pageinspect.html#AEN148648"
+HREF="pageinspect.html#AEN160034"
 >Functions</A
 >
   </DT
@@ -6021,14 +6230,14 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN157576"
+NAME="AEN169283"
 >G</A
 ></H2
 ><DL
 ><DT
 >gc_to_sec,
     <A
-HREF="earthdistance.html#AEN146620"
+HREF="earthdistance.html#AEN157991"
 >Cube-based Earth Distances</A
 >
   </DT
@@ -6056,14 +6265,21 @@ HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-GEQO"
 ><DT
 >gen_random_bytes,
     <A
-HREF="pgcrypto.html#AEN149407"
+HREF="pgcrypto.html#AEN160804"
+>Random-Data Functions</A
+>
+  </DT
+><DT
+>gen_random_uuid,
+    <A
+HREF="pgcrypto.html#AEN160804"
 >Random-Data Functions</A
 >
   </DT
 ><DT
 >gen_salt,
     <A
-HREF="pgcrypto.html#AEN148998"
+HREF="pgcrypto.html#AEN160385"
 >gen_salt()</A
 >
   </DT
@@ -6149,7 +6365,7 @@ HREF="functions-textsearch.html"
 ><DT
 >get_raw_page,
     <A
-HREF="pageinspect.html#AEN148648"
+HREF="pageinspect.html#AEN160034"
 >Functions</A
 >
   </DT
@@ -6286,7 +6502,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN157672"
+NAME="AEN169382"
 >H</A
 ></H2
 ><DL
@@ -6397,7 +6613,7 @@ HREF="runtime-config-file-locations.html"
 ><DT
 >heap_page_items,
     <A
-HREF="pageinspect.html#AEN148648"
+HREF="pageinspect.html#AEN160034"
 >Functions</A
 >
   </DT
@@ -6443,7 +6659,7 @@ HREF="history.html"
 ><DT
 >hmac,
     <A
-HREF="pgcrypto.html#AEN148901"
+HREF="pgcrypto.html#AEN160288"
 >hmac()</A
 >
   </DT
@@ -6536,38 +6752,63 @@ HREF="hstore.html"
 >hstore</A
 >,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
 ><DT
 >hstore_to_array,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
 ><DT
 >hstore_to_json,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
 ><DT
 >hstore_to_json_loose,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
 ><DT
 >hstore_to_matrix,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
+><DT
+>huge_pages configuration parameter,
+    <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-MEMORY"
+>Memory</A
+>
+  </DT
+><DT
+>hypothetical-set aggregate
+  </DT
+><DD
+><DL
+><DT
+>built-in,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
 ></DL
 ></DIV
 ><DIV
@@ -6575,14 +6816,14 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN157778"
+NAME="AEN169495"
 >I</A
 ></H2
 ><DL
 ><DT
 >icount,
     <A
-HREF="intarray.html#AEN147504"
+HREF="intarray.html#AEN158884"
 >intarray Functions and Operators</A
 >
   </DT
@@ -6623,6 +6864,13 @@ HREF="sql-syntax-lexical.html#SQL-SYNTAX-IDENTIFIERS"
 ></DL
 ></DD
 ><DT
+>IDENTIFY_SYSTEM,
+    <A
+HREF="protocol-replication.html"
+>Streaming Replication Protocol</A
+>
+  </DT
+><DT
 >ident_file configuration parameter,
     <A
 HREF="runtime-config-file-locations.html"
@@ -6632,7 +6880,7 @@ HREF="runtime-config-file-locations.html"
 ><DT
 >idx,
     <A
-HREF="intarray.html#AEN147504"
+HREF="intarray.html#AEN158884"
 >intarray Functions and Operators</A
 >
   </DT
@@ -6684,7 +6932,7 @@ HREF="functions-comparisons.html"
 >in configuration file,
     <A
 HREF="config-setting.html#CONFIG-INCLUDES"
->Configuration File Includes</A
+>Managing Configuration File Contents</A
 >
   </DT
 ><DD
@@ -6702,7 +6950,7 @@ HREF="config-setting.html#CONFIG-INCLUDES"
 >in configuration file,
     <A
 HREF="config-setting.html#CONFIG-INCLUDES"
->Configuration File Includes</A
+>Managing Configuration File Contents</A
 >
   </DT
 ><DD
@@ -6720,7 +6968,7 @@ HREF="config-setting.html#CONFIG-INCLUDES"
 >in configuration file,
     <A
 HREF="config-setting.html#CONFIG-INCLUDES"
->Configuration File Includes</A
+>Managing Configuration File Contents</A
 >
   </DT
 ><DD
@@ -6736,7 +6984,7 @@ HREF="indexes.html"
 >Indexes</A
 >,
     <A
-HREF="ltree.html#AEN148168"
+HREF="ltree.html#AEN159554"
 >Operators and Functions</A
 >
   </DT
@@ -7085,7 +7333,7 @@ HREF="install-windows.html"
 ><DT
 >instr,
     <A
-HREF="plpgsql-porting.html#AEN59527"
+HREF="plpgsql-porting.html#AEN62007"
 >Porting Examples</A
 >
   </DT
@@ -7218,53 +7466,31 @@ HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-FORMAT"
 ><DT
 >intset,
     <A
-HREF="intarray.html#AEN147504"
+HREF="intarray.html#AEN158884"
 >intarray Functions and Operators</A
 >
   </DT
 ><DT
 >int_array_aggregate,
     <A
-HREF="intagg.html#AEN147461"
+HREF="intagg.html#AEN158841"
 >Functions</A
 >
   </DT
 ><DT
 >int_array_enum,
     <A
-HREF="intagg.html#AEN147461"
+HREF="intagg.html#AEN158841"
 >Functions</A
 >
   </DT
 ><DT
->IRIX
-  </DT
-><DD
-><DL
-><DT
->installation on,
+>inverse distribution,
     <A
-HREF="installation-platform-notes.html#INSTALLATION-NOTES-IRIX"
->IRIX</A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
 >
   </DT
-><DD
-><DL
-></DL
-></DD
-><DT
->shared library,
-    <A
-HREF="xfunc-c.html#DFUNC"
->Compiling and Linking Dynamically-loaded Functions</A
->
-  </DT
-><DD
-><DL
-></DL
-></DD
-></DL
-></DD
 ><DT
 >IS DISTINCT FROM,
     <A
@@ -7279,7 +7505,7 @@ HREF="functions-comparisons.html"
 ><DT
 >IS DOCUMENT,
     <A
-HREF="functions-xml.html#AEN16136"
+HREF="functions-xml.html#AEN16825"
 >IS DOCUMENT</A
 >
   </DT
@@ -7392,7 +7618,7 @@ HREF="functions-comparison.html"
 ><DT
 >isn_weak,
     <A
-HREF="isn.html#AEN147903"
+HREF="isn.html#AEN159283"
 >Functions and Operators</A
 >
   </DT
@@ -7424,7 +7650,7 @@ HREF="plperl-builtins.html#PLPERL-UTILITY-FUNCTIONS"
 ><DT
 >is_valid,
     <A
-HREF="isn.html#AEN147903"
+HREF="isn.html#AEN159283"
 >Functions and Operators</A
 >
   </DT
@@ -7435,7 +7661,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN158046"
+NAME="AEN169763"
 >J</A
 ></H2
 ><DL
@@ -7546,13 +7772,13 @@ HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-OTHER"
 >JSON,
     <A
 HREF="datatype-json.html"
->JSON Type</A
+>JSON Types</A
 >
   </DT
 ><DD
 ><DL
 ><DT
->Functions and operators,
+>functions and operators,
     <A
 HREF="functions-json.html"
 >JSON Functions and Operators</A
@@ -7564,6 +7790,141 @@ HREF="functions-json.html"
 ></DD
 ></DL
 ></DD
+><DT
+>JSONB,
+    <A
+HREF="datatype-json.html"
+>JSON Types</A
+>
+  </DT
+><DD
+><DL
+><DT
+>containment,
+    <A
+HREF="datatype-json.html#JSON-CONTAINMENT"
+>jsonb Containment and Existence</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
+>existence,
+    <A
+HREF="datatype-json.html#JSON-CONTAINMENT"
+>jsonb Containment and Existence</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
+>indexes on,
+    <A
+HREF="datatype-json.html#JSON-INDEXING"
+>jsonb Indexing</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
+><DT
+>jsonb_array_elements,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_array_elements_text,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_array_length,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_each,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_each_text,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_extract_path,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_extract_path_text,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_object_keys,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_populate_record,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_populate_recordset,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_to_record,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_to_recordset,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>jsonb_typeof,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
 ><DT
 >json_agg,
     <A
@@ -7579,7 +7940,28 @@ HREF="functions-json.html"
 >
   </DT
 ><DT
+>json_array_elements_text,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
 >json_array_length,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>json_build_array,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>json_build_object,
     <A
 HREF="functions-json.html"
 >JSON Functions and Operators</A
@@ -7614,6 +7996,20 @@ HREF="functions-json.html"
 >
   </DT
 ><DT
+>json_object,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>json_object_agg,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
+>
+  </DT
+><DT
 >json_object_keys,
     <A
 HREF="functions-json.html"
@@ -7629,6 +8025,27 @@ HREF="functions-json.html"
   </DT
 ><DT
 >json_populate_recordset,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>json_to_record,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>json_to_recordset,
+    <A
+HREF="functions-json.html"
+>JSON Functions and Operators</A
+>
+  </DT
+><DT
+>json_typeof,
     <A
 HREF="functions-json.html"
 >JSON Functions and Operators</A
@@ -7669,17 +8086,10 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN158117"
+NAME="AEN169906"
 >K</A
 ></H2
 ><DL
-><DT
->Kerberos,
-    <A
-HREF="auth-methods.html#KERBEROS-AUTH"
->Kerberos Authentication</A
->
-  </DT
 ><DT
 >key word
   </DT
@@ -7723,13 +8133,6 @@ HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SECURITY"
 >Security and Authentication</A
 >
   </DT
-><DT
->krb_srvname configuration parameter,
-    <A
-HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SECURITY"
->Security and Authentication</A
->
-  </DT
 ></DL
 ></DIV
 ><DIV
@@ -7737,7 +8140,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN158137"
+NAME="AEN169920"
 >L</A
 ></H2
 ><DL
@@ -7806,14 +8209,14 @@ HREF="queries-table-expressions.html#QUERIES-LATERAL"
 ><DT
 >latitude,
     <A
-HREF="earthdistance.html#AEN146620"
+HREF="earthdistance.html#AEN157991"
 >Cube-based Earth Distances</A
 >
   </DT
 ><DT
 >lca,
     <A
-HREF="ltree.html#AEN148168"
+HREF="ltree.html#AEN159554"
 >Operators and Functions</A
 >
   </DT
@@ -7880,7 +8283,7 @@ HREF="libpq-ldap.html"
 ><DT
 >ldconfig,
     <A
-HREF="install-post.html#AEN25596"
+HREF="install-post.html#AEN27318"
 >Shared Libraries</A
 >
   </DT
@@ -7978,14 +8381,14 @@ HREF="textsearch-features.html#TEXTSEARCH-MANIPULATE-TSVECTOR"
 ><DT
 >levenshtein,
     <A
-HREF="fuzzystrmatch.html#AEN146867"
+HREF="fuzzystrmatch.html#AEN158247"
 >Levenshtein</A
 >
   </DT
 ><DT
 >levenshtein_less_equal,
     <A
-HREF="fuzzystrmatch.html#AEN146867"
+HREF="fuzzystrmatch.html#AEN158247"
 >Levenshtein</A
 >
   </DT
@@ -8083,7 +8486,7 @@ HREF="functions-matching.html#FUNCTIONS-LIKE"
 ><DT
 >and locales,
     <A
-HREF="locale.html#AEN33113"
+HREF="locale.html#AEN35078"
 >Behavior</A
 >
   </DT
@@ -8101,9 +8504,16 @@ HREF="queries-limit.html"
 >
   </DT
 ><DT
+>line,
+    <A
+HREF="datatype-geometric.html#DATATYPE-LINE"
+>Lines</A
+>
+  </DT
+><DT
 >line segment,
     <A
-HREF="datatype-geometric.html#AEN6559"
+HREF="datatype-geometric.html#DATATYPE-LSEG"
 >Line Segments</A
 >
   </DT
@@ -8171,7 +8581,7 @@ HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SETTINGS"
 ><DT
 >ll_to_earth,
     <A
-HREF="earthdistance.html#AEN146620"
+HREF="earthdistance.html#AEN157991"
 >Cube-based Earth Distances</A
 >
   </DT
@@ -8231,8 +8641,8 @@ HREF="functions-datetime.html"
 ><DT
 >local_preload_libraries configuration parameter,
     <A
-HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-OTHER"
->Other Defaults</A
+HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-PRELOAD"
+>Shared Library Preloading</A
 >
   </DT
 ><DT
@@ -8302,6 +8712,17 @@ HREF="high-availability.html"
     <A
 HREF="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHERE"
 >Where To Log</A
+>
+  </DT
+><DT
+>Logical Decoding,
+    <A
+HREF="logicaldecoding.html"
+>Logical Decoding</A
+>,
+    <A
+HREF="logicaldecoding-explanation.html#AEN66438"
+>Logical Decoding</A
 >
   </DT
 ><DT
@@ -8503,7 +8924,7 @@ HREF="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHERE"
 ><DT
 >longitude,
     <A
-HREF="earthdistance.html#AEN146620"
+HREF="earthdistance.html#AEN157991"
 >Cube-based Earth Distances</A
 >
   </DT
@@ -8559,7 +8980,7 @@ HREF="functions-range.html"
 ><DT
 >and locales,
     <A
-HREF="locale.html#AEN33113"
+HREF="locale.html#AEN35078"
 >Behavior</A
 >
   </DT
@@ -8613,10 +9034,6 @@ HREF="lo-funcs.html"
     <A
 HREF="lo-interfaces.html#LO-CREATE"
 >Creating a Large Object</A
->,
-    <A
-HREF="lo-funcs.html"
->Server-side Functions</A
 >
   </DT
 ><DT
@@ -8625,6 +9042,20 @@ HREF="lo-funcs.html"
 HREF="lo-interfaces.html#LO-EXPORT"
 >Exporting a Large Object</A
 >,
+    <A
+HREF="lo-funcs.html"
+>Server-side Functions</A
+>
+  </DT
+><DT
+>lo_from_bytea,
+    <A
+HREF="lo-funcs.html"
+>Server-side Functions</A
+>
+  </DT
+><DT
+>lo_get,
     <A
 HREF="lo-funcs.html"
 >Server-side Functions</A
@@ -8667,6 +9098,13 @@ HREF="lo-interfaces.html#LO-SEEK"
     <A
 HREF="lo-interfaces.html#LO-OPEN"
 >Opening an Existing Large Object</A
+>
+  </DT
+><DT
+>lo_put,
+    <A
+HREF="lo-funcs.html"
+>Server-side Functions</A
 >
   </DT
 ><DT
@@ -8732,7 +9170,7 @@ HREF="functions-string.html"
 ><DT
 >lseg,
     <A
-HREF="datatype-geometric.html#AEN6559"
+HREF="datatype-geometric.html#DATATYPE-LSEG"
 >Line Segments</A
 >,
     <A
@@ -8750,7 +9188,7 @@ HREF="ltree.html"
 ><DT
 >ltree2text,
     <A
-HREF="ltree.html#AEN148168"
+HREF="ltree.html#AEN159554"
 >Operators and Functions</A
 >
   </DT
@@ -8768,7 +9206,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN158514"
+NAME="AEN170312"
 >M</A
 ></H2
 ><DL
@@ -8779,35 +9217,6 @@ NAME="AEN158514"
 ><DL
 ><DT
 >see macaddr</DT
-></DL
-></DD
-><DT
->Mac OS X
-  </DT
-><DD
-><DL
-><DT
->IPC configuration,
-    <A
-HREF="kernel-resources.html#SYSVIPC"
->Shared Memory and Semaphores</A
->
-  </DT
-><DD
-><DL
-></DL
-></DD
-><DT
->shared library,
-    <A
-HREF="xfunc-c.html#DFUNC"
->Compiling and Linking Dynamically-loaded Functions</A
->
-  </DT
-><DD
-><DL
-></DL
-></DD
 ></DL
 ></DD
 ><DT
@@ -8846,16 +9255,51 @@ HREF="install-requirements.html"
 >
   </DT
 ><DT
+>make_date,
+    <A
+HREF="functions-datetime.html"
+>Date/Time Functions and Operators</A
+>
+  </DT
+><DT
+>make_interval,
+    <A
+HREF="functions-datetime.html"
+>Date/Time Functions and Operators</A
+>
+  </DT
+><DT
+>make_time,
+    <A
+HREF="functions-datetime.html"
+>Date/Time Functions and Operators</A
+>
+  </DT
+><DT
+>make_timestamp,
+    <A
+HREF="functions-datetime.html"
+>Date/Time Functions and Operators</A
+>
+  </DT
+><DT
+>make_timestamptz,
+    <A
+HREF="functions-datetime.html"
+>Date/Time Functions and Operators</A
+>
+  </DT
+><DT
 >make_valid,
     <A
-HREF="isn.html#AEN147903"
+HREF="isn.html#AEN159283"
 >Functions and Operators</A
 >
   </DT
 ><DT
 >MANPATH,
     <A
-HREF="install-post.html#AEN25650"
+HREF="install-post.html#AEN27371"
 >Environment Variables</A
 >
   </DT
@@ -8955,6 +9399,13 @@ HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-MEMORY"
 >
   </DT
 ><DT
+>max_replication_slots configuration parameter,
+    <A
+HREF="runtime-config-replication.html#RUNTIME-CONFIG-REPLICATION-SENDER"
+>Sending Server(s)</A
+>
+  </DT
+><DT
 >max_stack_depth configuration parameter,
     <A
 HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-MEMORY"
@@ -8983,6 +9434,13 @@ HREF="runtime-config-replication.html#RUNTIME-CONFIG-REPLICATION-SENDER"
 >
   </DT
 ><DT
+>max_worker_processes configuration parameter,
+    <A
+HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-ASYNC-BEHAVIOR"
+>Asynchronous Behavior</A
+>
+  </DT
+><DT
 >md5,
     <A
 HREF="functions-string.html"
@@ -8995,6 +9453,13 @@ HREF="functions-binarystring.html"
     <A
 HREF="auth-methods.html#AUTH-PASSWORD"
 >Password Authentication</A
+>
+  </DT
+><DT
+>median,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
 >
   </DT
 ><DT
@@ -9018,7 +9483,7 @@ HREF="spi-memory.html"
 ><DT
 >metaphone,
     <A
-HREF="fuzzystrmatch.html#AEN146882"
+HREF="fuzzystrmatch.html#AEN158262"
 >Metaphone</A
 >
   </DT
@@ -9055,6 +9520,24 @@ HREF="functions-math.html"
 >
   </DT
 ><DT
+>mode
+  </DT
+><DD
+><DL
+><DT
+>statistical,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
+><DT
 >monitoring
   </DT
 ><DD
@@ -9080,10 +9563,24 @@ HREF="sql-move.html"
 >
   </DT
 ><DT
+>moving-aggregate mode,
+    <A
+HREF="xaggr.html#XAGGR-MOVING-AGGREGATES"
+>Moving-Aggregate Mode</A
+>
+  </DT
+><DT
 >Multiversion Concurrency Control,
     <A
 HREF="mvcc-intro.html"
 >Introduction</A
+>
+  </DT
+><DT
+>MultiXactId,
+    <A
+HREF="routine-vacuuming.html#VACUUM-FOR-MULTIXACT-WRAPAROUND"
+>Multixacts and Wraparound</A
 >
   </DT
 ><DT
@@ -9100,7 +9597,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN158630"
+NAME="AEN170456"
 >N</A
 ></H2
 ><DL
@@ -9271,7 +9768,7 @@ HREF="functions-sequence.html"
 ><DT
 >nlevel,
     <A
-HREF="ltree.html#AEN148168"
+HREF="ltree.html#AEN159554"
 >Operators and Functions</A
 >
   </DT
@@ -9303,7 +9800,7 @@ HREF="transaction-iso.html"
 ><DT
 >normal_rand,
     <A
-HREF="tablefunc.html#AEN151370"
+HREF="tablefunc.html#AEN162868"
 >normal_rand</A
 >
   </DT
@@ -9357,7 +9854,7 @@ HREF="functions-comparisons.html"
 ><DT
 >not-null constraint,
     <A
-HREF="ddl-constraints.html#AEN2463"
+HREF="ddl-constraints.html#AEN2541"
 >Not-Null Constraints</A
 >
   </DT
@@ -9542,7 +10039,7 @@ HREF="plperl-funcs.html"
 ><DT
 >in PL/Python,
     <A
-HREF="plpython-data.html#AEN60864"
+HREF="plpython-data.html#AEN63396"
 >Null, None</A
 >
   </DT
@@ -9627,7 +10124,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN158781"
+NAME="AEN170607"
 >O</A
 ></H2
 ><DL
@@ -9928,8 +10425,30 @@ HREF="queries-order.html"
 ><DT
 >and locales,
     <A
-HREF="locale.html#AEN33113"
+HREF="locale.html#AEN35078"
 >Behavior</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
+><DT
+>ordered-set aggregate,
+    <A
+HREF="sql-expressions.html#SYNTAX-AGGREGATES"
+>Aggregate Expressions</A
+>
+  </DT
+><DD
+><DL
+><DT
+>built-in,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
 >
   </DT
 ><DD
@@ -9945,6 +10464,42 @@ HREF="xindex.html#XINDEX-OPCLASS-DEPENDENCIES"
 >System Dependencies on Operator Classes</A
 >
   </DT
+><DT
+>ordinality,
+    <A
+HREF="functions-srf.html"
+>Set Returning Functions</A
+>
+  </DT
+><DT
+>OS X
+  </DT
+><DD
+><DL
+><DT
+>IPC configuration,
+    <A
+HREF="kernel-resources.html#SYSVIPC"
+>Shared Memory and Semaphores</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
+>shared library,
+    <A
+HREF="xfunc-c.html#DFUNC"
+>Compiling and Linking Dynamically-loaded Functions</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
 ><DT
 >outer join,
     <A
@@ -9964,6 +10519,13 @@ HREF="xtypes.html"
     <A
 HREF="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS"
 >Window Function Calls</A
+>
+  </DT
+><DT
+>OVERLAPS,
+    <A
+HREF="functions-datetime.html"
+>Date/Time Functions and Operators</A
 >
   </DT
 ><DT
@@ -10020,7 +10582,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN158889"
+NAME="AEN170732"
 >P</A
 ></H2
 ><DL
@@ -10034,14 +10596,14 @@ HREF="pageinspect.html"
 ><DT
 >page_header,
     <A
-HREF="pageinspect.html#AEN148648"
+HREF="pageinspect.html#AEN160034"
 >Functions</A
 >
   </DT
 ><DT
 >palloc,
     <A
-HREF="xfunc-c.html#AEN53548"
+HREF="xfunc-c.html#AEN55862"
 >Writing Code</A
 >
   </DT
@@ -10149,7 +10711,7 @@ HREF="functions-geometry.html"
 >Geometric Functions and Operators</A
 >,
     <A
-HREF="install-post.html#AEN25650"
+HREF="install-post.html#AEN27371"
 >Environment Variables</A
 >
   </DT
@@ -10171,7 +10733,7 @@ HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-STATEMENT"
 ><DT
 >path (data type),
     <A
-HREF="datatype-geometric.html#AEN6621"
+HREF="datatype-geometric.html#AEN6843"
 >Paths</A
 >
   </DT
@@ -10222,12 +10784,56 @@ HREF="auth-methods.html#AUTH-PEER"
 >
   </DT
 ><DT
+>percentile
+  </DT
+><DD
+><DL
+><DT
+>continuous,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
+>discrete,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
+><DT
 >percent_rank,
     <A
 HREF="functions-window.html"
 >Window Functions</A
 >
   </DT
+><DD
+><DL
+><DT
+>hypothetical,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
 ><DT
 >performance,
     <A
@@ -10258,7 +10864,7 @@ HREF="plperl.html"
 ><DT
 >pfree,
     <A
-HREF="xfunc-c.html#AEN53548"
+HREF="xfunc-c.html#AEN55862"
 >Writing Code</A
 >
   </DT
@@ -10412,63 +11018,63 @@ HREF="libpq-envars.html"
 ><DT
 >pgp_key_id,
     <A
-HREF="pgcrypto.html#AEN149225"
+HREF="pgcrypto.html#AEN160622"
 >pgp_key_id()</A
 >
   </DT
 ><DT
 >pgp_pub_decrypt,
     <A
-HREF="pgcrypto.html#AEN149208"
+HREF="pgcrypto.html#AEN160605"
 >pgp_pub_decrypt()</A
 >
   </DT
 ><DT
 >pgp_pub_decrypt_bytea,
     <A
-HREF="pgcrypto.html#AEN149208"
+HREF="pgcrypto.html#AEN160605"
 >pgp_pub_decrypt()</A
 >
   </DT
 ><DT
 >pgp_pub_encrypt,
     <A
-HREF="pgcrypto.html#AEN149195"
+HREF="pgcrypto.html#AEN160592"
 >pgp_pub_encrypt()</A
 >
   </DT
 ><DT
 >pgp_pub_encrypt_bytea,
     <A
-HREF="pgcrypto.html#AEN149195"
+HREF="pgcrypto.html#AEN160592"
 >pgp_pub_encrypt()</A
 >
   </DT
 ><DT
 >pgp_sym_decrypt,
     <A
-HREF="pgcrypto.html#AEN149180"
+HREF="pgcrypto.html#AEN160577"
 >pgp_sym_decrypt()</A
 >
   </DT
 ><DT
 >pgp_sym_decrypt_bytea,
     <A
-HREF="pgcrypto.html#AEN149180"
+HREF="pgcrypto.html#AEN160577"
 >pgp_sym_decrypt()</A
 >
   </DT
 ><DT
 >pgp_sym_encrypt,
     <A
-HREF="pgcrypto.html#AEN149168"
+HREF="pgcrypto.html#AEN160565"
 >pgp_sym_encrypt()</A
 >
   </DT
 ><DT
 >pgp_sym_encrypt_bytea,
     <A
-HREF="pgcrypto.html#AEN149168"
+HREF="pgcrypto.html#AEN160565"
 >pgp_sym_encrypt()</A
 >
   </DT
@@ -10507,7 +11113,7 @@ HREF="pgrowlocks.html"
 >pgrowlocks</A
 >,
     <A
-HREF="pgrowlocks.html#AEN149648"
+HREF="pgrowlocks.html#AEN161076"
 >Overview</A
 >
   </DT
@@ -10570,14 +11176,14 @@ HREF="libpq-envars.html"
 ><DT
 >pgstatginindex,
     <A
-HREF="pgstattuple.html#AEN149987"
+HREF="pgstattuple.html#AEN161451"
 >Functions</A
 >
   </DT
 ><DT
 >pgstatindex,
     <A
-HREF="pgstattuple.html#AEN149987"
+HREF="pgstattuple.html#AEN161451"
 >Functions</A
 >
   </DT
@@ -10588,7 +11194,7 @@ HREF="pgstattuple.html"
 >pgstattuple</A
 >,
     <A
-HREF="pgstattuple.html#AEN149987"
+HREF="pgstattuple.html#AEN161451"
 >Functions</A
 >
   </DT
@@ -10864,7 +11470,7 @@ HREF="libpq-build.html"
 ><DT
 >with user-defined C functions,
     <A
-HREF="xfunc-c.html#AEN53548"
+HREF="xfunc-c.html#AEN55862"
 >Writing Code</A
 >
   </DT
@@ -10907,6 +11513,20 @@ HREF="catalog-pg-conversion.html"
     <A
 HREF="functions-info.html"
 >System Information Functions</A
+>
+  </DT
+><DT
+>pg_create_logical_replication_slot,
+    <A
+HREF="functions-admin.html#FUNCTIONS-REPLICATION"
+>Replication Functions</A
+>
+  </DT
+><DT
+>pg_create_physical_replication_slot,
+    <A
+HREF="functions-admin.html#FUNCTIONS-REPLICATION"
+>Replication Functions</A
 >
   </DT
 ><DT
@@ -11006,6 +11626,13 @@ HREF="catalog-pg-description.html"
 >
   </DT
 ><DT
+>pg_drop_replication_slot,
+    <A
+HREF="functions-admin.html#FUNCTIONS-REPLICATION"
+>Replication Functions</A
+>
+  </DT
+><DT
 >pg_dump,
     <A
 HREF="app-pgdump.html"
@@ -11024,8 +11651,8 @@ HREF="app-pg-dumpall.html"
 ><DT
 >use during upgrade,
     <A
-HREF="upgrading.html#UPGRADE-METHODS-PGDUMP"
->Upgrading Data via pg_dump</A
+HREF="upgrading.html#UPGRADING-VIA-PGDUMPALL"
+>Upgrading Data via pg_dumpall</A
 >
   </DT
 ><DD
@@ -11072,8 +11699,15 @@ HREF="catalog-pg-extension.html"
 ><DT
 >pg_extension_config_dump,
     <A
-HREF="extend-extensions.html#AEN55038"
+HREF="extend-extensions.html#AEN57458"
 >Extension Configuration Tables</A
+>
+  </DT
+><DT
+>pg_filenode_relation,
+    <A
+HREF="functions-admin.html#FUNCTIONS-ADMIN-DBOBJECT"
+>Database Object Management Functions</A
 >
   </DT
 ><DT
@@ -11100,7 +11734,7 @@ HREF="catalog-pg-foreign-table.html"
 ><DT
 >pg_freespace,
     <A
-HREF="pgfreespacemap.html#AEN149611"
+HREF="pgfreespacemap.html#AEN161011"
 >Functions</A
 >
   </DT
@@ -11364,6 +11998,41 @@ HREF="view-pg-locks.html"
 >
   </DT
 ><DT
+>pg_logical_slot_get_binary_changes,
+    <A
+HREF="functions-admin.html#FUNCTIONS-REPLICATION"
+>Replication Functions</A
+>
+  </DT
+><DT
+>pg_logical_slot_get_changes,
+    <A
+HREF="functions-admin.html#FUNCTIONS-REPLICATION"
+>Replication Functions</A
+>
+  </DT
+><DT
+>pg_logical_slot_peek_binary_changes,
+    <A
+HREF="functions-admin.html#FUNCTIONS-REPLICATION"
+>Replication Functions</A
+>
+  </DT
+><DT
+>pg_logical_slot_peek_changes,
+    <A
+HREF="functions-admin.html#FUNCTIONS-REPLICATION"
+>Replication Functions</A
+>
+  </DT
+><DT
+>pg_lsn,
+    <A
+HREF="datatype-pg-lsn.html"
+>pg_lsn Type</A
+>
+  </DT
+><DT
 >pg_ls_dir,
     <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-GENFILE"
@@ -11394,7 +12063,7 @@ HREF="catalog-pg-namespace.html"
 ><DT
 >pg_notify,
     <A
-HREF="sql-notify.html#AEN78706"
+HREF="sql-notify.html#AEN82055"
 >pg_notify</A
 >
   </DT
@@ -11476,6 +12145,13 @@ HREF="view-pg-prepared-xacts.html"
 >
   </DT
 ><DT
+>pg_prewarm,
+    <A
+HREF="pgprewarm.html"
+>pg_prewarm</A
+>
+  </DT
+><DT
 >pg_proc,
     <A
 HREF="catalog-pg-proc.html"
@@ -11511,6 +12187,13 @@ HREF="app-pgreceivexlog.html"
 >
   </DT
 ><DT
+>pg_recvlogical,
+    <A
+HREF="app-pgrecvlogical.html"
+>pg_recvlogical</A
+>
+  </DT
+><DT
 >pg_relation_filenode,
     <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-DBOBJECT"
@@ -11541,8 +12224,15 @@ HREF="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL"
 ><DT
 >pg_relpages,
     <A
-HREF="pgstattuple.html#AEN149987"
+HREF="pgstattuple.html#AEN161451"
 >Functions</A
+>
+  </DT
+><DT
+>pg_replication_slots,
+    <A
+HREF="catalog-pg-replication-slots.html"
+>pg_replication_slots</A
 >
   </DT
 ><DT
@@ -11652,6 +12342,20 @@ HREF="functions-admin.html#FUNCTIONS-ADMIN-DBOBJECT"
   </DT
 ><DT
 >pg_sleep,
+    <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-DELAY"
+>Delaying Execution</A
+>
+  </DT
+><DT
+>pg_sleep_for,
+    <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-DELAY"
+>Delaying Execution</A
+>
+  </DT
+><DT
+>pg_sleep_until,
     <A
 HREF="functions-datetime.html#FUNCTIONS-DATETIME-DELAY"
 >Delaying Execution</A
@@ -11778,6 +12482,13 @@ HREF="monitoring-stats.html#MONITORING-STATS-VIEWS"
 >
   </DT
 ><DT
+>pg_stat_archiver,
+    <A
+HREF="monitoring-stats.html#MONITORING-STATS-VIEWS"
+>Viewing Collected Statistics</A
+>
+  </DT
+><DT
 >pg_stat_bgwriter,
     <A
 HREF="monitoring-stats.html#MONITORING-STATS-VIEWS"
@@ -11861,10 +12572,25 @@ HREF="pgstatstatements.html"
 >pg_stat_statements</A
 >
   </DT
+><DD
+><DL
+><DT
+>function,
+    <A
+HREF="pgstatstatements.html#AEN161358"
+>Functions</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
 ><DT
 >pg_stat_statements_reset,
     <A
-HREF="pgstatstatements.html#AEN149908"
+HREF="pgstatstatements.html#AEN161358"
 >Functions</A
 >
   </DT
@@ -12448,7 +13174,7 @@ HREF="plpgsql-implementation.html#PLPGSQL-VAR-SUBST"
 ><DT
 >point,
     <A
-HREF="datatype-geometric.html#AEN6545"
+HREF="datatype-geometric.html#AEN6730"
 >Points</A
 >,
     <A
@@ -12466,7 +13192,7 @@ HREF="backup.html"
 ><DT
 >polygon,
     <A
-HREF="datatype-geometric.html#AEN6654"
+HREF="datatype-geometric.html#DATATYPE-POLYGON"
 >Polygons</A
 >,
     <A
@@ -12498,7 +13224,7 @@ HREF="functions-geometry.html"
 ><DT
 >populate_record,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
@@ -12565,10 +13291,17 @@ HREF="history.html#HISTORY-POSTGRES95"
 >
   </DT
 ><DT
+>postgresql.auto.conf,
+    <A
+HREF="config-setting.html#CONFIG-SETTING-CONFIGURATION-FILE"
+>Parameter Interaction via the Configuration File</A
+>
+  </DT
+><DT
 >postgresql.conf,
     <A
 HREF="config-setting.html#CONFIG-SETTING-CONFIGURATION-FILE"
->Setting Parameters via the Configuration File</A
+>Parameter Interaction via the Configuration File</A
 >
   </DT
 ><DT
@@ -13616,7 +14349,7 @@ HREF="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING"
 ><DT
 >in PL/Python,
     <A
-HREF="plpython-database.html#AEN61048"
+HREF="plpython-database.html#AEN63580"
 >Database Access Functions</A
 >
   </DT
@@ -13653,6 +14386,13 @@ HREF="ddl-constraints.html#DDL-CONSTRAINTS-PRIMARY-KEYS"
   </DT
 ><DT
 >primary_conninfo recovery parameter,
+    <A
+HREF="standby-settings.html"
+>Standby Server Settings</A
+>
+  </DT
+><DT
+>primary_slot_name recovery parameter,
     <A
 HREF="standby-settings.html"
 >Standby Server Settings</A
@@ -13807,7 +14547,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN160380"
+NAME="AEN172284"
 >Q</A
 ></H2
 ><DL
@@ -13996,7 +14736,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN160429"
+NAME="AEN172333"
 >R</A
 ></H2
 ><DL
@@ -14086,6 +14826,21 @@ HREF="functions-window.html"
 >Window Functions</A
 >
   </DT
+><DD
+><DL
+><DT
+>hypothetical,
+    <A
+HREF="functions-aggregate.html"
+>Aggregate Functions</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
 ><DT
 >read committed,
     <A
@@ -14165,6 +14920,20 @@ HREF="archive-recovery-settings.html"
 >
   </DT
 ><DT
+>recovery_min_apply_delay recovery parameter,
+    <A
+HREF="standby-settings.html"
+>Standby Server Settings</A
+>
+  </DT
+><DT
+>recovery_target recovery parameter,
+    <A
+HREF="recovery-target-settings.html"
+>Recovery Target Settings</A
+>
+  </DT
+><DT
 >recovery_target_inclusive recovery parameter,
     <A
 HREF="recovery-target-settings.html"
@@ -14202,7 +14971,7 @@ HREF="recovery-target-settings.html"
 ><DT
 >rectangle,
     <A
-HREF="datatype-geometric.html#AEN6592"
+HREF="datatype-geometric.html#AEN6814"
 >Boxes</A
 >
   </DT
@@ -14440,7 +15209,7 @@ HREF="functions-matching.html#FUNCTIONS-POSIX-REGEXP"
 ><DT
 >and locales,
     <A
-HREF="locale.html#AEN33113"
+HREF="locale.html#AEN35078"
 >Behavior</A
 >
   </DT
@@ -14517,6 +15286,35 @@ HREF="high-availability.html"
 >High Availability, Load Balancing, and Replication</A
 >
   </DT
+><DT
+>replication slot
+  </DT
+><DD
+><DL
+><DT
+>logical replication,
+    <A
+HREF="logicaldecoding-explanation.html#AEN66446"
+>Replication Slots</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
+>streaming replication,
+    <A
+HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
+>Replication Slots</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
 ><DT
 >reporting errors
   </DT
@@ -14600,7 +15398,7 @@ HREF="ddl-constraints.html#DDL-CONSTRAINTS-FK"
 ><DT
 >in PL/pgSQL,
     <A
-HREF="plpgsql-control-structures.html#AEN58077"
+HREF="plpgsql-control-structures.html#AEN60519"
 >RETURN NEXT and RETURN QUERY</A
 >
   </DT
@@ -14618,7 +15416,7 @@ HREF="plpgsql-control-structures.html#AEN58077"
 ><DT
 >in PL/pgSQL,
     <A
-HREF="plpgsql-control-structures.html#AEN58077"
+HREF="plpgsql-control-structures.html#AEN60519"
 >RETURN NEXT and RETURN QUERY</A
 >
   </DT
@@ -14979,7 +15777,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN160751"
+NAME="AEN172669"
 >S</A
 ></H2
 ><DL
@@ -15207,7 +16005,7 @@ HREF="sql-security-label.html"
 ><DT
 >sec_to_gc,
     <A
-HREF="earthdistance.html#AEN146620"
+HREF="earthdistance.html#AEN157991"
 >Cube-based Earth Distances</A
 >
   </DT
@@ -15441,6 +16239,13 @@ HREF="runtime-config-preset.html"
 >
   </DT
 ><DT
+>session_preload_libraries configuration parameter,
+    <A
+HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-PRELOAD"
+>Shared Library Preloading</A
+>
+  </DT
+><DT
 >session_replication_role configuration parameter,
     <A
 HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-STATEMENT"
@@ -15595,7 +16400,7 @@ HREF="functions-admin.html#FUNCTIONS-ADMIN-SET"
 ><DT
 >set_limit,
     <A
-HREF="pgtrgm.html#AEN150245"
+HREF="pgtrgm.html#AEN161721"
 >Functions and Operators</A
 >
   </DT
@@ -15609,7 +16414,7 @@ HREF="functions-net.html"
 ><DT
 >shared library,
     <A
-HREF="install-post.html#AEN25596"
+HREF="install-post.html#AEN27318"
 >Shared Libraries</A
 >,
     <A
@@ -15634,15 +16439,15 @@ HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-MEMORY"
 ><DT
 >shared_preload_libraries,
     <A
-HREF="xfunc-c.html#AEN53973"
+HREF="xfunc-c.html#AEN56275"
 >Shared Memory and LWLocks</A
 >
   </DT
 ><DT
 >shared_preload_libraries configuration parameter,
     <A
-HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-KERNEL"
->Kernel Resource Usage</A
+HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-PRELOAD"
+>Shared Library Preloading</A
 >
   </DT
 ><DT
@@ -15666,14 +16471,14 @@ HREF="sql-show.html"
 ><DT
 >show_limit,
     <A
-HREF="pgtrgm.html#AEN150245"
+HREF="pgtrgm.html#AEN161721"
 >Functions and Operators</A
 >
   </DT
 ><DT
 >show_trgm,
     <A
-HREF="pgtrgm.html#AEN150245"
+HREF="pgtrgm.html#AEN161721"
 >Functions and Operators</A
 >
   </DT
@@ -15688,7 +16493,7 @@ HREF="server-shutdown.html"
 >SIGHUP,
     <A
 HREF="config-setting.html#CONFIG-SETTING-CONFIGURATION-FILE"
->Setting Parameters via the Configuration File</A
+>Parameter Interaction via the Configuration File</A
 >,
     <A
 HREF="auth-pg-hba-conf.html"
@@ -15762,7 +16567,7 @@ HREF="functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP"
 ><DT
 >similarity,
     <A
-HREF="pgtrgm.html#AEN150245"
+HREF="pgtrgm.html#AEN161721"
 >Functions and Operators</A
 >
   </DT
@@ -15774,9 +16579,16 @@ HREF="functions-math.html"
 >
   </DT
 ><DT
+>single-user mode,
+    <A
+HREF="app-postgres.html#AEN94190"
+>Options for Single-User Mode</A
+>
+  </DT
+><DT
 >skeys,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
@@ -15790,7 +16602,7 @@ HREF="functions-datetime.html#FUNCTIONS-DATETIME-DELAY"
 ><DT
 >slice,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
@@ -15886,7 +16698,7 @@ HREF="functions-comparisons.html"
 ><DT
 >sort,
     <A
-HREF="intarray.html#AEN147504"
+HREF="intarray.html#AEN158884"
 >intarray Functions and Operators</A
 >
   </DT
@@ -15900,21 +16712,21 @@ HREF="queries-order.html"
 ><DT
 >sort_asc,
     <A
-HREF="intarray.html#AEN147504"
+HREF="intarray.html#AEN158884"
 >intarray Functions and Operators</A
 >
   </DT
 ><DT
 >sort_desc,
     <A
-HREF="intarray.html#AEN147504"
+HREF="intarray.html#AEN158884"
 >intarray Functions and Operators</A
 >
   </DT
 ><DT
 >soundex,
     <A
-HREF="fuzzystrmatch.html#AEN146851"
+HREF="fuzzystrmatch.html#AEN158231"
 >Soundex</A
 >
   </DT
@@ -16251,12 +17063,23 @@ HREF="spi-spi-keepplan.html"
 >
   </DT
 ><DT
->spi_lastoid,
+>spi_lastoid
+  </DT
+><DD
+><DL
+><DT
+>in PL/Tcl,
     <A
 HREF="pltcl-dbaccess.html"
 >Database Access from PL/Tcl</A
 >
   </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
 ><DT
 >SPI_modifytuple,
     <A
@@ -16558,7 +17381,7 @@ HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SECURITY"
 ><DT
 >ssl_cipher,
     <A
-HREF="sslinfo.html#AEN151212"
+HREF="sslinfo.html#AEN162710"
 >Functions Provided</A
 >
   </DT
@@ -16572,28 +17395,28 @@ HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SECURITY"
 ><DT
 >ssl_client_cert_present,
     <A
-HREF="sslinfo.html#AEN151212"
+HREF="sslinfo.html#AEN162710"
 >Functions Provided</A
 >
   </DT
 ><DT
 >ssl_client_dn,
     <A
-HREF="sslinfo.html#AEN151212"
+HREF="sslinfo.html#AEN162710"
 >Functions Provided</A
 >
   </DT
 ><DT
 >ssl_client_dn_field,
     <A
-HREF="sslinfo.html#AEN151212"
+HREF="sslinfo.html#AEN162710"
 >Functions Provided</A
 >
   </DT
 ><DT
 >ssl_client_serial,
     <A
-HREF="sslinfo.html#AEN151212"
+HREF="sslinfo.html#AEN162710"
 >Functions Provided</A
 >
   </DT
@@ -16605,28 +17428,42 @@ HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SECURITY"
 >
   </DT
 ><DT
+>ssl_ecdh_curve configuration parameter,
+    <A
+HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SECURITY"
+>Security and Authentication</A
+>
+  </DT
+><DT
 >ssl_issuer_dn,
     <A
-HREF="sslinfo.html#AEN151212"
+HREF="sslinfo.html#AEN162710"
 >Functions Provided</A
 >
   </DT
 ><DT
 >ssl_issuer_field,
     <A
-HREF="sslinfo.html#AEN151212"
+HREF="sslinfo.html#AEN162710"
 >Functions Provided</A
 >
   </DT
 ><DT
 >ssl_is_used,
     <A
-HREF="sslinfo.html#AEN151212"
+HREF="sslinfo.html#AEN162710"
 >Functions Provided</A
 >
   </DT
 ><DT
 >ssl_key_file configuration parameter,
+    <A
+HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SECURITY"
+>Security and Authentication</A
+>
+  </DT
+><DT
+>ssl_prefer_server_ciphers configuration parameter,
     <A
 HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SECURITY"
 >Security and Authentication</A
@@ -16642,7 +17479,7 @@ HREF="runtime-config-connection.html#RUNTIME-CONFIG-CONNECTION-SECURITY"
 ><DT
 >ssl_version,
     <A
-HREF="sslinfo.html#AEN151212"
+HREF="sslinfo.html#AEN162710"
 >Functions Provided</A
 >
   </DT
@@ -16719,6 +17556,13 @@ HREF="standby-settings.html"
     <A
 HREF="sql-start-transaction.html"
 >START TRANSACTION</A
+>
+  </DT
+><DT
+>START_REPLICATION,
+    <A
+HREF="protocol-replication.html"
+>Streaming Replication Protocol</A
 >
   </DT
 ><DT
@@ -16898,21 +17742,21 @@ HREF="functions-string.html"
 ><DT
 >subarray,
     <A
-HREF="intarray.html#AEN147504"
+HREF="intarray.html#AEN158884"
 >intarray Functions and Operators</A
 >
   </DT
 ><DT
 >subltree,
     <A
-HREF="ltree.html#AEN148168"
+HREF="ltree.html#AEN159554"
 >Operators and Functions</A
 >
   </DT
 ><DT
 >subpath,
     <A
-HREF="ltree.html#AEN148168"
+HREF="ltree.html#AEN159554"
 >Operators and Functions</A
 >
   </DT
@@ -17003,7 +17847,7 @@ HREF="functions-trigger.html"
 ><DT
 >svals,
     <A
-HREF="hstore.html#AEN146946"
+HREF="hstore.html#AEN158326"
 >hstore Operators and Functions</A
 >
   </DT
@@ -17068,7 +17912,7 @@ HREF="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHERE"
 >
   </DT
 ><DT
->syslog_identity configuration parameter,
+>syslog_ident configuration parameter,
     <A
 HREF="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHERE"
 >Where To Log</A
@@ -17099,7 +17943,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN161489"
+NAME="AEN173423"
 >T</A
 ></H2
 ><DL
@@ -17174,7 +18018,7 @@ HREF="ddl-basics.html"
 ><DT
 >renaming,
     <A
-HREF="ddl-alter.html#AEN2807"
+HREF="ddl-alter.html#AEN2885"
 >Renaming a Table</A
 >
   </DT
@@ -17348,10 +18192,24 @@ HREF="regress.html"
 >
   </DT
 ><DT
+>test_decoding,
+    <A
+HREF="test-decoding.html"
+>test_decoding</A
+>
+  </DT
+><DT
 >test_parser,
     <A
 HREF="test-parser.html"
 >test_parser</A
+>
+  </DT
+><DT
+>test_shm_mq,
+    <A
+HREF="test-shm-mq.html"
+>test_shm_mq</A
 >
   </DT
 ><DT
@@ -17412,7 +18270,7 @@ HREF="textsearch-indexes.html"
 ><DT
 >text2ltree,
     <A
-HREF="ltree.html#AEN148168"
+HREF="ltree.html#AEN159554"
 >Operators and Functions</A
 >
   </DT
@@ -17448,7 +18306,7 @@ HREF="datatype-datetime.html"
 >Date/Time Types</A
 >,
     <A
-HREF="datatype-datetime.html#AEN5691"
+HREF="datatype-datetime.html#AEN5869"
 >Times</A
 >
   </DT
@@ -17457,7 +18315,7 @@ HREF="datatype-datetime.html#AEN5691"
 ><DT
 >constants,
     <A
-HREF="datatype-datetime.html#AEN5861"
+HREF="datatype-datetime.html#AEN6039"
 >Special Values</A
 >
   </DT
@@ -17505,7 +18363,7 @@ HREF="datatype-datetime.html"
 >Date/Time Types</A
 >,
     <A
-HREF="datatype-datetime.html#AEN5691"
+HREF="datatype-datetime.html#AEN5869"
 >Times</A
 >
   </DT
@@ -17516,7 +18374,7 @@ HREF="datatype-datetime.html"
 >Date/Time Types</A
 >,
     <A
-HREF="datatype-datetime.html#AEN5691"
+HREF="datatype-datetime.html#AEN5869"
 >Times</A
 >
   </DT
@@ -17579,6 +18437,13 @@ HREF="backup.html"
 >
   </DT
 ><DT
+>TIMELINE_HISTORY,
+    <A
+HREF="protocol-replication.html"
+>Streaming Replication Protocol</A
+>
+  </DT
+><DT
 >timeofday,
     <A
 HREF="functions-datetime.html"
@@ -17621,7 +18486,7 @@ HREF="datatype-datetime.html"
 >Date/Time Types</A
 >,
     <A
-HREF="datatype-datetime.html#AEN5811"
+HREF="datatype-datetime.html#AEN5989"
 >Time Stamps</A
 >
   </DT
@@ -17632,7 +18497,7 @@ HREF="datatype-datetime.html"
 >Date/Time Types</A
 >,
     <A
-HREF="datatype-datetime.html#AEN5811"
+HREF="datatype-datetime.html#AEN5989"
 >Time Stamps</A
 >
   </DT
@@ -17643,7 +18508,7 @@ HREF="datatype-datetime.html"
 >Date/Time Types</A
 >,
     <A
-HREF="datatype-datetime.html#AEN5811"
+HREF="datatype-datetime.html#AEN5989"
 >Time Stamps</A
 >
   </DT
@@ -17691,7 +18556,7 @@ HREF="xtypes.html"
 ><DT
 >per-column storage settings,
     <A
-HREF="sql-altertable.html#AEN66622"
+HREF="sql-altertable.html#AEN69599"
 >Description</A
 >
   </DT
@@ -17738,7 +18603,7 @@ HREF="functions-formatting.html"
 ><DT
 >and locales,
     <A
-HREF="locale.html#AEN33113"
+HREF="locale.html#AEN35078"
 >Behavior</A
 >
   </DT
@@ -17774,6 +18639,48 @@ HREF="functions-json.html"
     <A
 HREF="functions-formatting.html"
 >Data Type Formatting Functions</A
+>
+  </DT
+><DT
+>to_regclass,
+    <A
+HREF="functions-info.html"
+>System Information Functions</A
+>
+  </DT
+><DT
+>to_regoper,
+    <A
+HREF="functions-info.html"
+>System Information Functions</A
+>
+  </DT
+><DT
+>to_regoperator,
+    <A
+HREF="functions-info.html"
+>System Information Functions</A
+>
+  </DT
+><DT
+>to_regproc,
+    <A
+HREF="functions-info.html"
+>System Information Functions</A
+>
+  </DT
+><DT
+>to_regprocedure,
+    <A
+HREF="functions-info.html"
+>System Information Functions</A
+>
+  </DT
+><DT
+>to_regtype,
+    <A
+HREF="functions-info.html"
+>System Information Functions</A
 >
   </DT
 ><DT
@@ -18419,7 +19326,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN161908"
+NAME="AEN173869"
 >U</A
 ></H2
 ><DL
@@ -18441,7 +19348,7 @@ HREF="unaccent.html"
 >unaccent</A
 >,
     <A
-HREF="unaccent.html#AEN151792"
+HREF="unaccent.html#AEN163314"
 >Functions</A
 >
   </DT
@@ -18499,7 +19406,7 @@ HREF="typeconv-union-case.html"
 ><DT
 >uniq,
     <A
-HREF="intarray.html#AEN147504"
+HREF="intarray.html#AEN158884"
 >intarray Functions and Operators</A
 >
   </DT
@@ -18658,7 +19565,7 @@ HREF="functions-range.html"
 ><DT
 >and locales,
     <A
-HREF="locale.html#AEN33113"
+HREF="locale.html#AEN35078"
 >Behavior</A
 >
   </DT
@@ -18750,21 +19657,21 @@ HREF="uuid-ossp.html"
 ><DT
 >uuid_generate_v1,
     <A
-HREF="uuid-ossp.html#AEN151814"
+HREF="uuid-ossp.html#AEN163334"
 >uuid-ossp Functions</A
 >
   </DT
 ><DT
 >uuid_generate_v1mc,
     <A
-HREF="uuid-ossp.html#AEN151814"
+HREF="uuid-ossp.html#AEN163334"
 >uuid-ossp Functions</A
 >
   </DT
 ><DT
 >uuid_generate_v3,
     <A
-HREF="uuid-ossp.html#AEN151814"
+HREF="uuid-ossp.html#AEN163334"
 >uuid-ossp Functions</A
 >
   </DT
@@ -18775,7 +19682,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN162024"
+NAME="AEN173985"
 >V</A
 ></H2
 ><DL
@@ -18855,6 +19762,20 @@ HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-STATEMENT"
   </DT
 ><DT
 >vacuum_freeze_table_age configuration parameter,
+    <A
+HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-STATEMENT"
+>Statement Behavior</A
+>
+  </DT
+><DT
+>vacuum_multixact_freeze_min_age configuration parameter,
+    <A
+HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-STATEMENT"
+>Statement Behavior</A
+>
+  </DT
+><DT
+>vacuum_multixact_freeze_table_age configuration parameter,
     <A
 HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-STATEMENT"
 >Statement Behavior</A
@@ -19077,6 +19998,10 @@ HREF="xfunc-volatility.html"
     <A
 HREF="install-procedure.html"
 >Installation Procedure</A
+>,
+    <A
+HREF="extend-pgxs.html"
+>Extension Building Infrastructure</A
 >
   </DT
 ></DL
@@ -19086,7 +20011,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN162122"
+NAME="AEN174090"
 >W</A
 ></H2
 ><DL
@@ -19127,6 +20052,13 @@ HREF="runtime-config-replication.html#RUNTIME-CONFIG-REPLICATION-SENDER"
   </DT
 ><DT
 >wal_level configuration parameter,
+    <A
+HREF="runtime-config-wal.html#RUNTIME-CONFIG-WAL-SETTINGS"
+>Settings</A
+>
+  </DT
+><DT
+>wal_log_hints configuration parameter,
     <A
 HREF="runtime-config-wal.html#RUNTIME-CONFIG-WAL-SETTINGS"
 >Settings</A
@@ -19203,7 +20135,7 @@ HREF="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHERE"
 ><DT
 >in PL/pgSQL,
     <A
-HREF="plpgsql-control-structures.html#AEN58366"
+HREF="plpgsql-control-structures.html#AEN60808"
 >WHILE</A
 >
   </DT
@@ -19294,6 +20226,20 @@ HREF="sql-select.html"
 ></DL
 ></DD
 ><DT
+>WITH CHECK OPTION,
+    <A
+HREF="sql-createview.html"
+>CREATE VIEW</A
+>
+  </DT
+><DT
+>WITHIN GROUP,
+    <A
+HREF="sql-expressions.html#SYNTAX-AGGREGATES"
+>Aggregate Expressions</A
+>
+  </DT
+><DT
 >witness server,
     <A
 HREF="high-availability.html"
@@ -19307,6 +20253,35 @@ HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-MEMORY"
 >Memory</A
 >
   </DT
+><DT
+>wraparound
+  </DT
+><DD
+><DL
+><DT
+>of multixact IDs,
+    <A
+HREF="routine-vacuuming.html#VACUUM-FOR-MULTIXACT-WRAPAROUND"
+>Multixacts and Wraparound</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+><DT
+>of transaction IDs,
+    <A
+HREF="routine-vacuuming.html#VACUUM-FOR-WRAPAROUND"
+>Preventing Transaction ID Wraparound Failures</A
+>
+  </DT
+><DD
+><DL
+></DL
+></DD
+></DL
+></DD
 ></DL
 ></DIV
 ><DIV
@@ -19314,7 +20289,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN162199"
+NAME="AEN174182"
 >X</A
 ></H2
 ><DL
@@ -19356,7 +20331,7 @@ HREF="functions-xml.html#FUNCTIONS-XML-MAPPING"
 ><DT
 >XML option,
     <A
-HREF="datatype-xml.html#AEN7043"
+HREF="datatype-xml.html#AEN7266"
 >Creating XML Values</A
 >,
     <A
@@ -19392,21 +20367,21 @@ HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-STATEMENT"
 ><DT
 >xmlcomment,
     <A
-HREF="functions-xml.html#AEN15996"
+HREF="functions-xml.html#AEN16685"
 >xmlcomment</A
 >
   </DT
 ><DT
 >xmlconcat,
     <A
-HREF="functions-xml.html#AEN16012"
+HREF="functions-xml.html#AEN16701"
 >xmlconcat</A
 >
   </DT
 ><DT
 >xmlelement,
     <A
-HREF="functions-xml.html#AEN16030"
+HREF="functions-xml.html#AEN16719"
 >xmlelement</A
 >
   </DT
@@ -19420,7 +20395,7 @@ HREF="functions-xml.html#XML-EXISTS"
 ><DT
 >xmlforest,
     <A
-HREF="functions-xml.html#AEN16062"
+HREF="functions-xml.html#AEN16751"
 >xmlforest</A
 >
   </DT
@@ -19434,28 +20409,28 @@ HREF="runtime-config-client.html#RUNTIME-CONFIG-CLIENT-STATEMENT"
 ><DT
 >xmlparse,
     <A
-HREF="datatype-xml.html#AEN7043"
+HREF="datatype-xml.html#AEN7266"
 >Creating XML Values</A
 >
   </DT
 ><DT
 >xmlpi,
     <A
-HREF="functions-xml.html#AEN16083"
+HREF="functions-xml.html#AEN16772"
 >xmlpi</A
 >
   </DT
 ><DT
 >xmlroot,
     <A
-HREF="functions-xml.html#AEN16098"
+HREF="functions-xml.html#AEN16787"
 >xmlroot</A
 >
   </DT
 ><DT
 >xmlserialize,
     <A
-HREF="datatype-xml.html#AEN7043"
+HREF="datatype-xml.html#AEN7266"
 >Creating XML Values</A
 >
   </DT
@@ -19497,14 +20472,14 @@ HREF="functions-xml.html#FUNCTIONS-XML-PROCESSING"
 ><DT
 >xpath_table,
     <A
-HREF="xml2.html#AEN151989"
+HREF="xml2.html#AEN163531"
 >xpath_table</A
 >
   </DT
 ><DT
 >xslt_process,
     <A
-HREF="xml2.html#AEN152068"
+HREF="xml2.html#AEN163610"
 >xslt_process</A
 >
   </DT
@@ -19515,7 +20490,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN162281"
+NAME="AEN174264"
 >Y</A
 ></H2
 ><DL
@@ -19533,7 +20508,7 @@ CLASS="INDEXDIV"
 ><H2
 CLASS="INDEXDIV"
 ><A
-NAME="AEN162286"
+NAME="AEN174269"
 >Z</A
 ></H2
 ><DL

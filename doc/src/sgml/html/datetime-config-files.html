@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Date/Time Support"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -147,7 +147,7 @@ CLASS="SYNOPSIS"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->time_zone_name</I
+>zone_abbreviation</I
 ></TT
 > <TT
 CLASS="REPLACEABLE"
@@ -158,7 +158,7 @@ CLASS="REPLACEABLE"
 <TT
 CLASS="REPLACEABLE"
 ><I
->time_zone_name</I
+>zone_abbreviation</I
 ></TT
 > <TT
 CLASS="REPLACEABLE"
@@ -166,6 +166,17 @@ CLASS="REPLACEABLE"
 >offset</I
 ></TT
 > D
+<TT
+CLASS="REPLACEABLE"
+><I
+>zone_abbreviation</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>time_zone_name</I
+></TT
+>
 @INCLUDE <TT
 CLASS="REPLACEABLE"
 ><I
@@ -179,7 +190,7 @@ CLASS="REPLACEABLE"
 >    A <TT
 CLASS="REPLACEABLE"
 ><I
->time_zone_name</I
+>zone_abbreviation</I
 ></TT
 > is just the abbreviation
     being defined.  The <TT
@@ -187,16 +198,25 @@ CLASS="REPLACEABLE"
 ><I
 >offset</I
 ></TT
-> is the zone's
+> is the equivalent
     offset in seconds from UTC, positive being east from Greenwich and
     negative being west.  For example, -18000 would be five hours west
     of Greenwich, or North American east coast standard time.  <TT
 CLASS="LITERAL"
 >D</TT
 >
-    indicates that the zone name represents local daylight-savings time
-    rather than standard time. Since all known time zone offsets are on
-    15 minute boundaries, the number of seconds has to be a multiple of 900.
+    indicates that the zone name represents local daylight-savings time rather
+    than standard time.  Alternatively, a <TT
+CLASS="REPLACEABLE"
+><I
+>time_zone_name</I
+></TT
+> can
+    be given, in which case that time zone definition is consulted, and the
+    abbreviation's meaning in that zone is used.  This alternative is
+    recommended only for abbreviations whose meaning has historically varied,
+    as looking up the meaning is noticeably more expensive than just using
+    a fixed integer value.
    </P
 ><P
 >    The <TT
@@ -214,9 +234,9 @@ CLASS="FILENAME"
 CLASS="LITERAL"
 >@OVERRIDE</TT
 > syntax indicates that subsequent entries in the
-    file can override previous entries (i.e., entries obtained from included
-    files).  Without this, conflicting definitions of the same timezone
-    abbreviation are considered an error.
+    file can override previous entries (typically, entries obtained from
+    included files).  Without this, conflicting definitions of the same
+    timezone abbreviation are considered an error.
    </P
 ><P
 >    In an unmodified installation, the file <TT
@@ -235,7 +255,7 @@ CLASS="FILENAME"
     <TT
 CLASS="LITERAL"
 >Default</TT
-> file and then add or modify timezones as needed.
+> file and then add or modify abbreviations as needed.
    </P
 ><P
 >    For reference purposes, a standard installation also contains files
@@ -247,10 +267,7 @@ CLASS="FILENAME"
 >America.txt</TT
 >, etc, containing
     information about every time zone abbreviation known to be in use
-    according to the <TT
-CLASS="LITERAL"
->zoneinfo</TT
-> timezone database.  The zone name
+    according to the IANA timezone database.  The zone name
     definitions found in these files can be copied and pasted into a custom
     configuration file as needed.  Note that these files cannot be directly
     referenced as <TT
@@ -266,9 +283,9 @@ CLASS="NOTE"
 ><P
 ><B
 >Note: </B
->     If an error occurs while reading the time zone data sets, no new value is
-     applied but the old set is kept. If the error occurs while starting the
-     database, startup fails.
+>     If an error occurs while reading the time zone abbreviation set, no new
+     value is applied and the old set is kept. If the error occurs while
+     starting the database, startup fails.
     </P
 ></BLOCKQUOTE
 ></DIV

@@ -2,12 +2,12 @@
 .\"     Title: CREATE ROLE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "CREATE ROLE" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "CREATE ROLE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_ROLE \- define a new database role
-.\" CREATE ROLE
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -78,7 +77,9 @@ Note that roles are defined at the database cluster level, and so are valid in a
 The name of the new role\&.
 .RE
 .PP
-SUPERUSER, NOSUPERUSER
+SUPERUSER
+.br
+NOSUPERUSER
 .RS 4
 These clauses determine whether the new role is a
 \(lqsuperuser\(rq, who can override all access restrictions within the database\&. Superuser status is dangerous and should be used only when really needed\&. You must yourself be a superuser to create a new superuser\&. If not specified,
@@ -86,7 +87,9 @@ NOSUPERUSER
 is the default\&.
 .RE
 .PP
-CREATEDB, NOCREATEDB
+CREATEDB
+.br
+NOCREATEDB
 .RS 4
 These clauses define a role\*(Aqs ability to create databases\&. If
 CREATEDB
@@ -97,7 +100,9 @@ NOCREATEDB
 is the default\&.
 .RE
 .PP
-CREATEROLE, NOCREATEROLE
+CREATEROLE
+.br
+NOCREATEROLE
 .RS 4
 These clauses determine whether a role will be permitted to create new roles (that is, execute
 \fBCREATE ROLE\fR)\&. A role with
@@ -107,7 +112,9 @@ NOCREATEROLE
 is the default\&.
 .RE
 .PP
-CREATEUSER, NOCREATEUSER
+CREATEUSER
+.br
+NOCREATEUSER
 .RS 4
 These clauses are an obsolete, but still accepted, spelling of
 SUPERUSER
@@ -119,7 +126,9 @@ CREATEROLE
 as one might naively expect!
 .RE
 .PP
-INHERIT, NOINHERIT
+INHERIT
+.br
+NOINHERIT
 .RS 4
 These clauses determine whether a role
 \(lqinherits\(rq
@@ -133,7 +142,9 @@ INHERIT
 is the default\&.
 .RE
 .PP
-LOGIN, NOLOGIN
+LOGIN
+.br
+NOLOGIN
 .RS 4
 These clauses determine whether a role is allowed to log in; that is, whether the role can be given as the initial session authorization name during client connection\&. A role having the
 LOGIN
@@ -145,7 +156,9 @@ is invoked through its alternative spelling
 CREATE USER (\fBCREATE_USER\fR(7))\&.
 .RE
 .PP
-REPLICATION, NOREPLICATION
+REPLICATION
+.br
+NOREPLICATION
 .RS 4
 These clauses determine whether a role is allowed to initiate streaming replication or put the system in and out of backup mode\&. A role having the
 REPLICATION
@@ -167,7 +180,9 @@ attribute, but you can nonetheless define one for roles without it\&.) If you do
 PASSWORD NULL\&.
 .RE
 .PP
-ENCRYPTED, UNENCRYPTED
+ENCRYPTED
+.br
+UNENCRYPTED
 .RS 4
 These key words control whether the password is stored encrypted in the system catalogs\&. (If neither is specified, the default behavior is determined by the configuration parameter
 password_encryption\&.) If the presented password string is already in MD5\-encrypted format, then it is stored encrypted as\-is, regardless of whether

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Recovery Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -96,10 +96,57 @@ NAME="RECOVERY-TARGET-SETTINGS"
 >26.2. Recovery Target Settings</A
 ></H1
 ><P
+>      By default, recovery will recover to the end of the WAL log. The
+      following parameters can be used to specify an earlier stopping point.
+      At most one of <TT
+CLASS="VARNAME"
+>recovery_target</TT
+>,
+      <TT
+CLASS="VARNAME"
+>recovery_target_name</TT
+>, <TT
+CLASS="VARNAME"
+>recovery_target_time</TT
+>, or
+      <TT
+CLASS="VARNAME"
+>recovery_target_xid</TT
+> can be used; if more than one of these
+      is specified in the configuration file, the last entry will be used.
+     </P
+><P
 ></P
 ><DIV
 CLASS="VARIABLELIST"
 ><DL
+><DT
+><A
+NAME="RECOVERY-TARGET"
+></A
+><TT
+CLASS="VARNAME"
+>recovery_target</TT
+><TT
+CLASS="LITERAL"
+> = 'immediate'</TT
+>
+      </DT
+><DD
+><P
+>        This parameter specifies that recovery should end as soon as a
+        consistent state is reached, i.e. as early as possible. When restoring
+        from an online backup, this means the point where taking the backup
+        ended.
+       </P
+><P
+>        Technically, this is a string parameter, but <TT
+CLASS="LITERAL"
+>'immediate'</TT
+>
+        is currently the only allowed value.
+       </P
+></DD
 ><DT
 ><A
 NAME="RECOVERY-TARGET-NAME"
@@ -107,31 +154,18 @@ NAME="RECOVERY-TARGET-NAME"
 ><TT
 CLASS="VARNAME"
 >recovery_target_name</TT
->
-           (<TT
+> (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
->        This parameter specifies the named restore point, created with
+>        This parameter specifies the named restore point (created with
         <CODE
 CLASS="FUNCTION"
 >pg_create_restore_point()</CODE
-> to which recovery will proceed.
-        At most one of <TT
-CLASS="VARNAME"
->recovery_target_name</TT
->,
-        <A
-HREF="recovery-target-settings.html#RECOVERY-TARGET-TIME"
->recovery_target_time</A
-> or
-        <A
-HREF="recovery-target-settings.html#RECOVERY-TARGET-XID"
->recovery_target_xid</A
-> can be specified.  The default is to
-        recover to the end of the WAL log.
+>) to which recovery will proceed.
        </P
 ></DD
 ><DT
@@ -141,28 +175,15 @@ NAME="RECOVERY-TARGET-TIME"
 ><TT
 CLASS="VARNAME"
 >recovery_target_time</TT
->
-           (<TT
+> (<TT
 CLASS="TYPE"
 >timestamp</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        This parameter specifies the time stamp up to which recovery
         will proceed.
-        At most one of <TT
-CLASS="VARNAME"
->recovery_target_time</TT
->,
-        <A
-HREF="recovery-target-settings.html#RECOVERY-TARGET-NAME"
->recovery_target_name</A
-> or
-        <A
-HREF="recovery-target-settings.html#RECOVERY-TARGET-XID"
->recovery_target_xid</A
-> can be specified.
-        The default is to recover to the end of the WAL log.
         The precise stopping point is also influenced by
         <A
 HREF="recovery-target-settings.html#RECOVERY-TARGET-INCLUSIVE"
@@ -180,7 +201,8 @@ CLASS="VARNAME"
 > (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        This parameter specifies the transaction ID up to which recovery
@@ -189,19 +211,6 @@ CLASS="TYPE"
         start, transactions can complete in a different numeric order.
         The transactions that will be recovered are those that committed
         before (and optionally including) the specified one.
-        At most one of <TT
-CLASS="VARNAME"
->recovery_target_xid</TT
->,
-        <A
-HREF="recovery-target-settings.html#RECOVERY-TARGET-NAME"
->recovery_target_name</A
-> or
-        <A
-HREF="recovery-target-settings.html#RECOVERY-TARGET-TIME"
->recovery_target_time</A
-> can be specified.
-        The default is to recover to the end of the WAL log.
         The precise stopping point is also influenced by
         <A
 HREF="recovery-target-settings.html#RECOVERY-TARGET-INCLUSIVE"
@@ -209,6 +218,17 @@ HREF="recovery-target-settings.html#RECOVERY-TARGET-INCLUSIVE"
 >.
        </P
 ></DD
+></DL
+></DIV
+><P
+>       The following options further specify the recovery target, and affect
+       what happens when the target is reached:
+     </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
 ><DT
 ><A
 NAME="RECOVERY-TARGET-INCLUSIVE"
@@ -216,14 +236,14 @@ NAME="RECOVERY-TARGET-INCLUSIVE"
 ><TT
 CLASS="VARNAME"
 >recovery_target_inclusive</TT
->
-        (<TT
+> (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
->        Specifies whether we stop just after the specified recovery target
+>        Specifies whether to stop just after the specified recovery target
         (<TT
 CLASS="LITERAL"
 >true</TT
@@ -232,15 +252,15 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >false</TT
 >).
-        Applies to both <A
+        Applies when either <A
 HREF="recovery-target-settings.html#RECOVERY-TARGET-TIME"
 >recovery_target_time</A
 >
-        and <A
+        or <A
 HREF="recovery-target-settings.html#RECOVERY-TARGET-XID"
 >recovery_target_xid</A
->, whichever one is
-        specified for this recovery.  This indicates whether transactions
+> is specified.
+        This setting controls whether transactions
         having exactly the target commit time or ID, respectively, will
         be included in the recovery.  Default is <TT
 CLASS="LITERAL"
@@ -255,11 +275,11 @@ NAME="RECOVERY-TARGET-TIMELINE"
 ><TT
 CLASS="VARNAME"
 >recovery_target_timeline</TT
->
-        (<TT
+> (<TT
 CLASS="TYPE"
 >string</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies recovering into a particular timeline.  The default is
@@ -285,11 +305,11 @@ NAME="PAUSE-AT-RECOVERY-TARGET"
 ><TT
 CLASS="VARNAME"
 >pause_at_recovery_target</TT
->
-        (<TT
+> (<TT
 CLASS="TYPE"
 >boolean</TT
->)</DT
+>)
+      </DT
 ><DD
 ><P
 >        Specifies whether recovery should pause when the recovery target
@@ -300,13 +320,13 @@ CLASS="TYPE"
         <CODE
 CLASS="FUNCTION"
 >pg_xlog_replay_resume()</CODE
-> (See
+> (see
         <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL-TABLE"
->Table 9-62</A
+>Table 9-67</A
 >), which then
         causes recovery to end. If this recovery target is not the
-        desired stopping point, then shutdown the server, change the
+        desired stopping point, then shut down the server, change the
         recovery target settings to a later target and restart to
         continue recovery.
        </P

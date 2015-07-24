@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -269,7 +269,7 @@ CLASS="REPLACEABLE"
 >) ]</TT
 ></TD
 ><TD
->12 bytes</TD
+>16 bytes</TD
 ><TD
 >time interval</TD
 ><TD
@@ -301,11 +301,7 @@ CLASS="TYPE"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > honors that
-     behavior.  (Releases prior to 7.3 treated it as <TT
-CLASS="TYPE"
->timestamp
-     with time zone</TT
->.)  <TT
+     behavior.  <TT
 CLASS="TYPE"
 >timestamptz</TT
 > is accepted as an
@@ -616,7 +612,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN5618"
+NAME="AEN5796"
 >8.5.1.1. Dates</A
 ></H3
 ><P
@@ -791,7 +787,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN5691"
+NAME="AEN5869"
 >8.5.1.2. Times</A
 ></H3
 ><P
@@ -1095,7 +1091,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN5811"
+NAME="AEN5989"
 >8.5.1.3. Time Stamps</A
 ></H3
 ><P
@@ -1286,7 +1282,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN5861"
+NAME="AEN6039"
 >8.5.1.4. Special Values</A
 ></H3
 ><P
@@ -1563,8 +1559,16 @@ CLASS="TYPE"
      <TT
 CLASS="TYPE"
 >time</TT
-> types is of course only the date or time part
-     in accordance with the given examples.
+> types is generally only the date or time part
+     in accordance with the given examples.  However, the
+     <SPAN
+CLASS="PRODUCTNAME"
+>POSTGRES</SPAN
+> style outputs date-only values in
+     <ACRONYM
+CLASS="ACRONYM"
+>ISO</ACRONYM
+> format.
     </P
 ><DIV
 CLASS="TABLE"
@@ -1847,17 +1851,14 @@ NAME="DATATYPE-TIMEZONES"
 ><P
 >    Time zones, and time-zone conventions, are influenced by
     political decisions, not just earth geometry. Time zones around the
-    world became somewhat standardized during the 1900's,
+    world became somewhat standardized during the 1900s,
     but continue to be prone to arbitrary changes, particularly with
     respect to daylight-savings rules.
     <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > uses the widely-used
-    <TT
-CLASS="LITERAL"
->zoneinfo</TT
-> (Olson) time zone database for information about
+    IANA (Olson) time zone database for information about
     historical time zone rules.  For times in the future, the assumption
     is that the latest known rules for a given time zone will
     continue to be observed indefinitely far into the future.
@@ -1975,16 +1976,13 @@ CLASS="LITERAL"
 >pg_timezone_names</TT
 > view (see <A
 HREF="view-pg-timezone-names.html"
->Section 47.71</A
+>Section 48.72</A
 >).
         <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> uses the widely-used
-        <TT
-CLASS="LITERAL"
->zoneinfo</TT
-> time zone data for this purpose, so the same
+> uses the widely-used IANA
+        time zone data for this purpose, so the same time zone
         names are also recognized by much other software.
        </P
 ></LI
@@ -2002,7 +2000,7 @@ CLASS="LITERAL"
 >pg_timezone_abbrevs</TT
 > view (see <A
 HREF="view-pg-timezone-abbrevs.html"
->Section 47.70</A
+>Section 48.71</A
 >).  You cannot set the
         configuration parameters <A
 HREF="runtime-config-client.html#GUC-TIMEZONE"
@@ -2077,13 +2075,16 @@ CLASS="LITERAL"
 >EST5EDT</TT
 >
         were not already a recognized zone name, it would be accepted and would
-        be functionally equivalent to United States East Coast time.  When a
-        daylight-savings zone name is present, it is assumed to be used
-        according to the same daylight-savings transition rules used in the
-        <TT
+        be functionally equivalent to United States East Coast time.  In this
+        syntax, a zone abbreviation can be a string of letters, or an
+        arbitrary string surrounded by angle brackets (<TT
 CLASS="LITERAL"
->zoneinfo</TT
-> time zone database's <TT
+>&lt;&gt;</TT
+>).
+        When a daylight-savings zone abbreviation is present,
+        it is assumed to be used
+        according to the same daylight-savings transition rules used in the
+        IANA time zone database's <TT
 CLASS="FILENAME"
 >posixrules</TT
 > entry.
@@ -2110,9 +2111,42 @@ CLASS="FILENAME"
 ><P>
 
      In short, this is the difference between abbreviations
-     and full names: abbreviations always represent a fixed offset from
-     UTC, whereas most of the full names imply a local daylight-savings time
-     rule, and so have two possible UTC offsets.
+     and full names: abbreviations represent a specific offset from UTC,
+     whereas many of the full names imply a local daylight-savings time
+     rule, and so have two possible UTC offsets.  As an example,
+     <TT
+CLASS="LITERAL"
+>2014-06-04 12:00 America/New_York</TT
+> represents noon local
+     time in New York, which for this particular date was Eastern Daylight
+     Time (UTC-4).  So <TT
+CLASS="LITERAL"
+>2014-06-04 12:00 EDT</TT
+> specifies that
+     same time instant.  But <TT
+CLASS="LITERAL"
+>2014-06-04 12:00 EST</TT
+> specifies
+     noon Eastern Standard Time (UTC-5), regardless of whether daylight
+     savings was nominally in effect on that date.
+    </P
+><P
+>     To complicate matters, some jurisdictions have used the same timezone
+     abbreviation to mean different UTC offsets at different times; for
+     example, in Moscow <TT
+CLASS="LITERAL"
+>MSK</TT
+> has meant UTC+3 in some years and
+     UTC+4 in others.  <SPAN
+CLASS="APPLICATION"
+>PostgreSQL</SPAN
+> interprets such
+     abbreviations according to whatever they meant (or had most recently
+     meant) on the specified date; but, as with the <TT
+CLASS="LITERAL"
+>EST</TT
+> example
+     above, this is not necessarily the same as local civil time on that date.
     </P
 ><P
 >     One should be wary that the POSIX-style time zone feature can
@@ -2145,15 +2179,16 @@ CLASS="EMPHASIS"
      of Greenwich.
     </P
 ><P
->     In all cases, timezone names are recognized case-insensitively.
-     (This is a change from <SPAN
+>     In all cases, timezone names and abbreviations are recognized
+     case-insensitively.  (This is a change from <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> versions
-     prior to 8.2, which were case-sensitive in some contexts but not others.)
+>
+     versions prior to 8.2, which were case-sensitive in some contexts but
+     not others.)
     </P
 ><P
->     Neither full names nor abbreviations are hard-wired into the server;
+>     Neither timezone names nor abbreviations are hard-wired into the server;
      they are obtained from configuration files stored under
      <TT
 CLASS="FILENAME"

@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="SQL-DISCARD">
+ <indexterm zone="sql-discard">
+  <primary>DISCARD</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle>DISCARD</refentrytitle>
   <manvolnum>7</manvolnum>
@@ -15,13 +19,9 @@ PostgreSQL documentation
   <refpurpose>discard session state</refpurpose>
  </refnamediv>
 
- <indexterm zone="sql-discard">
-  <primary>DISCARD</primary>
- </indexterm>
-
  <refsynopsisdiv>
 <synopsis>
-DISCARD { ALL | PLANS | TEMPORARY | TEMP }
+DISCARD { ALL | PLANS | SEQUENCES | TEMPORARY | TEMP }
 </synopsis>
  </refsynopsisdiv>
 
@@ -30,16 +30,10 @@ DISCARD { ALL | PLANS | TEMPORARY | TEMP }
 
   <para>
    <command>DISCARD</> releases internal resources associated with a
-   database session. These resources are normally released at the end
-   of the session.
-  </para>
-
-  <para>
-   <command>DISCARD TEMP</> drops all temporary tables created in the
-   current session.  <command>DISCARD PLANS</> releases all internally
-   cached query plans.  <command>DISCARD ALL</> resets a session to
-   its original state, discarding temporary resources and resetting
-   session-local configuration changes.
+   database session.  This command is useful for partially or fully
+   resetting the session's state.  There are several subcommands to
+   release different types of resources; the <command>DISCARD ALL</>
+   variant subsumes all the others, and also resets additional state.
   </para>
  </refsect1>
 
@@ -49,19 +43,34 @@ DISCARD { ALL | PLANS | TEMPORARY | TEMP }
   <variablelist>
 
    <varlistentry>
-    <term><literal>TEMPORARY</literal> or <literal>TEMP</literal></term>
+    <term><literal>PLANS</literal></term>
     <listitem>
      <para>
-      Drops all temporary tables created in the current session.
+      Releases all cached query plans, forcing re-planning to occur
+      the next time the associated prepared statement is used.
      </para>
     </listitem>
    </varlistentry>
 
    <varlistentry>
-    <term><literal>PLANS</literal></term>
+    <term><literal>SEQUENCES</literal></term>
     <listitem>
      <para>
-      Releases all cached query plans.
+      Discards all cached sequence-related state,
+      including <function>currval()</>/<function>lastval()</>
+      information and any preallocated sequence values that have not
+      yet been returned by <function>nextval()</>.
+      (See <xref linkend="sql-createsequence"> for a description of
+      preallocated sequence values.)
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><literal>TEMPORARY</literal> or <literal>TEMP</literal></term>
+    <listitem>
+     <para>
+      Drops all temporary tables created in the current session.
      </para>
     </listitem>
    </varlistentry>
@@ -82,6 +91,7 @@ CLOSE ALL;
 UNLISTEN *;
 SELECT pg_advisory_unlock_all();
 DISCARD PLANS;
+DISCARD SEQUENCES;
 DISCARD TEMP;
 </programlisting></para>
     </listitem>

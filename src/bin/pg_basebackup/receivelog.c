@@ -5,40 +5,72 @@
  *
  * Author: Magnus Hagander <magnus@hagander.net>
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *		  src/bin/pg_basebackup/receivelog.c
  *-------------------------------------------------------------------------
  */
+
 #include "postgres_fe.h"
 
 #include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/types.h>
 #include <unistd.h>
-/* for ntohl/htonl */
-#include <netinet/in.h>
-#include <arpa/inet.h>
+
+/* local includes */
+#include "receivelog.h"
+#include "streamutil.h"
 
 #include "libpq-fe.h"
 #include "access/xlog_internal.h"
-
-#include "receivelog.h"
-#include "streamutil.h"
 
 
 /* fd and filename for currently open WAL file */
 static int	walfile = -1;
 static char current_walfile_name[MAXPGPATH] = "";
+static bool reportFlushPosition = false;
+static XLogRecPtr lastFlushPosition = InvalidXLogRecPtr;
 
 static PGresult *HandleCopyStream(PGconn *conn, XLogRecPtr startpos,
 				 uint32 timeline, char *basedir,
 			   stream_stop_callback stream_stop, int standby_message_timeout,
-				 char *partial_suffix, XLogRecPtr *stoppos);
+				 char *partial_suffix, XLogRecPtr *stoppos,
+				 bool mark_done);
 
 static bool ReadEndOfStreamingResult(PGresult *res, XLogRecPtr *startpos,
 						 uint32 *timeline);
+
+static bool
+mark_file_as_archived(const char *basedir, const char *fname)
+{
+	int fd;
+	static char tmppath[MAXPGPATH];
+
+	snprintf(tmppath, sizeof(tmppath), "%s/archive_status/%s.done",
+			 basedir, fname);
+
+	fd = open(tmppath, O_WRONLY | O_CREAT | PG_BINARY, S_IRUSR | S_IWUSR);
+	if (fd < 0)
+	{
+		fprintf(stderr, _("%s: could not create archive status file \"%s\": %s\n"),
+				progname, tmppath, strerror(errno));
+		return false;
+	}
+
+	if (fsync(fd) != 0)
+	{
+		fprintf(stderr, _("%s: could not fsync file \"%s\": %s\n"),
+				progname, tmppath, strerror(errno));
+
+		close(fd);
+
+		return false;
+	}
+
+	close(fd);
+
+	return true;
+}
 
 /*
  * Open a new WAL file in the specified directory.
@@ -133,7 +165,7 @@ open_walfile(XLogRecPtr startpoint, uint32 timeline, char *basedir,
  * and returns false, otherwise returns true.
  */
 static bool
-close_walfile(char *basedir, char *partial_suffix)
+close_walfile(char *basedir, char *partial_suffix, XLogRecPtr pos, bool mark_done)
 {
 	off_t		currpos;
 
@@ -187,66 +219,23 @@ close_walfile(char *basedir, char *partial_suffix)
 				_("%s: not renaming \"%s%s\", segment is not complete\n"),
 				progname, current_walfile_name, partial_suffix);
 
+	/*
+	 * Mark file as archived if requested by the caller - pg_basebackup needs
+	 * to do so as files can otherwise get archived again after promotion of a
+	 * new node. This is in line with walreceiver.c always doing a
+	 * XLogArchiveForceDone() after a complete segment.
+	 */
+	if (currpos == XLOG_SEG_SIZE && mark_done)
+	{
+		/* writes error message if failed */
+		if (!mark_file_as_archived(basedir, current_walfile_name))
+			return false;
+	}
+
+	lastFlushPosition = pos;
 	return true;
 }
 
-
-/*
- * Local version of GetCurrentTimestamp(), since we are not linked with
- * backend code. The protocol always uses integer timestamps, regardless of
- * server setting.
- */
-static int64
-localGetCurrentTimestamp(void)
-{
-	int64		result;
-	struct timeval tp;
-
-	gettimeofday(&tp, NULL);
-
-	result = (int64) tp.tv_sec -
-		((POSTGRES_EPOCH_JDATE - UNIX_EPOCH_JDATE) * SECS_PER_DAY);
-
-	result = (result * USECS_PER_SEC) + tp.tv_usec;
-
-	return result;
-}
-
-/*
- * Local version of TimestampDifference(), since we are not linked with
- * backend code.
- */
-static void
-localTimestampDifference(int64 start_time, int64 stop_time,
-						 long *secs, int *microsecs)
-{
-	int64		diff = stop_time - start_time;
-
-	if (diff <= 0)
-	{
-		*secs = 0;
-		*microsecs = 0;
-	}
-	else
-	{
-		*secs = (long) (diff / USECS_PER_SEC);
-		*microsecs = (int) (diff % USECS_PER_SEC);
-	}
-}
-
-/*
- * Local version of TimestampDifferenceExceeds(), since we are not
- * linked with backend code.
- */
-static bool
-localTimestampDifferenceExceeds(int64 start_time,
-								int64 stop_time,
-								int msec)
-{
-	int64		diff = stop_time - start_time;
-
-	return (diff >= msec * INT64CONST(1000));
-}
 
 /*
  * Check if a timeline history file exists.
@@ -285,7 +274,8 @@ existsTimeLineHistoryFile(char *basedir, TimeLineID tli)
 }
 
 static bool
-writeTimeLineHistoryFile(char *basedir, TimeLineID tli, char *filename, char *content)
+writeTimeLineHistoryFile(char *basedir, TimeLineID tli, char *filename,
+						 char *content, bool mark_done)
 {
 	int			size = strlen(content);
 	char		path[MAXPGPATH];
@@ -364,48 +354,15 @@ writeTimeLineHistoryFile(char *basedir, TimeLineID tli, char *filename, char *co
 		return false;
 	}
 
+	/* Maintain archive_status, check close_walfile() for details. */
+	if (mark_done)
+	{
+		/* writes error message if failed */
+		if (!mark_file_as_archived(basedir, histfname))
+			return false;
+	}
+
 	return true;
-}
-
-/*
- * Converts an int64 to network byte order.
- */
-static void
-sendint64(int64 i, char *buf)
-{
-	uint32		n32;
-
-	/* High order half first, since we're doing MSB-first */
-	n32 = (uint32) (i >> 32);
-	n32 = htonl(n32);
-	memcpy(&buf[0], &n32, 4);
-
-	/* Now the low order half */
-	n32 = (uint32) i;
-	n32 = htonl(n32);
-	memcpy(&buf[4], &n32, 4);
-}
-
-/*
- * Converts an int64 from network byte order to native format.
- */
-static int64
-recvint64(char *buf)
-{
-	int64		result;
-	uint32		h32;
-	uint32		l32;
-
-	memcpy(&h32, buf, 4);
-	memcpy(&l32, buf + 4, 4);
-	h32 = ntohl(h32);
-	l32 = ntohl(l32);
-
-	result = h32;
-	result <<= 32;
-	result |= l32;
-
-	return result;
 }
 
 /*
@@ -419,13 +376,16 @@ sendFeedback(PGconn *conn, XLogRecPtr blockpos, int64 now, bool replyRequested)
 
 	replybuf[len] = 'r';
 	len += 1;
-	sendint64(blockpos, &replybuf[len]);		/* write */
+	fe_sendint64(blockpos, &replybuf[len]);		/* write */
 	len += 8;
-	sendint64(InvalidXLogRecPtr, &replybuf[len]);		/* flush */
+	if (reportFlushPosition)
+		fe_sendint64(lastFlushPosition, &replybuf[len]);		/* flush */
+	else
+		fe_sendint64(InvalidXLogRecPtr, &replybuf[len]);		/* flush */
 	len += 8;
-	sendint64(InvalidXLogRecPtr, &replybuf[len]);		/* apply */
+	fe_sendint64(InvalidXLogRecPtr, &replybuf[len]);	/* apply */
 	len += 8;
-	sendint64(now, &replybuf[len]);		/* sendTime */
+	fe_sendint64(now, &replybuf[len]);	/* sendTime */
 	len += 8;
 	replybuf[len] = replyRequested ? 1 : 0;		/* replyRequested */
 	len += 1;
@@ -462,14 +422,24 @@ CheckServerVersionForStreaming(PGconn *conn)
 	minServerMajor = 903;
 	maxServerMajor = PG_VERSION_NUM / 100;
 	serverMajor = PQserverVersion(conn) / 100;
-	if (serverMajor < minServerMajor || serverMajor > maxServerMajor)
+	if (serverMajor < minServerMajor)
 	{
 		const char *serverver = PQparameterStatus(conn, "server_version");
 
-		fprintf(stderr, _("%s: incompatible server version %s; streaming is only supported with server version %s\n"),
+		fprintf(stderr, _("%s: incompatible server version %s; client does not support streaming from server versions older than %s\n"),
 				progname,
 				serverver ? serverver : "'unknown'",
 				"9.3");
+		return false;
+	}
+	else if (serverMajor > maxServerMajor)
+	{
+		const char *serverver = PQparameterStatus(conn, "server_version");
+
+		fprintf(stderr, _("%s: incompatible server version %s; client does not support streaming from server versions newer than %s\n"),
+				progname,
+				serverver ? serverver : "'unknown'",
+				PG_VERSION);
 		return false;
 	}
 	return true;
@@ -508,9 +478,11 @@ bool
 ReceiveXlogStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 				  char *sysidentifier, char *basedir,
 				  stream_stop_callback stream_stop,
-				  int standby_message_timeout, char *partial_suffix)
+				  int standby_message_timeout, char *partial_suffix,
+				  bool mark_done)
 {
 	char		query[128];
+	char		slotcmd[128];
 	PGresult   *res;
 	XLogRecPtr	stoppos;
 
@@ -520,6 +492,29 @@ ReceiveXlogStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 	 */
 	if (!CheckServerVersionForStreaming(conn))
 		return false;
+
+	if (replication_slot != NULL)
+	{
+		/*
+		 * Report the flush position, so the primary can know what WAL we'll
+		 * possibly re-request, and remove older WAL safely.
+		 *
+		 * We only report it when a slot has explicitly been used, because
+		 * reporting the flush position makes one eligible as a synchronous
+		 * replica. People shouldn't include generic names in
+		 * synchronous_standby_names, but we've protected them against it so
+		 * far, so let's continue to do so in the situations when possible. If
+		 * they've got a slot, though, we need to report the flush position,
+		 * so that the master can remove WAL.
+		 */
+		reportFlushPosition = true;
+		sprintf(slotcmd, "SLOT \"%s\" ", replication_slot);
+	}
+	else
+	{
+		reportFlushPosition = false;
+		slotcmd[0] = 0;
+	}
 
 	if (sysidentifier != NULL)
 	{
@@ -533,10 +528,10 @@ ReceiveXlogStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 			PQclear(res);
 			return false;
 		}
-		if (PQnfields(res) != 3 || PQntuples(res) != 1)
+		if (PQntuples(res) != 1 || PQnfields(res) < 3)
 		{
 			fprintf(stderr,
-					_("%s: could not identify system: got %d rows and %d fields, expected %d rows and %d fields\n"),
+					_("%s: could not identify system: got %d rows and %d fields, expected %d rows and %d or more fields\n"),
 					progname, PQntuples(res), PQnfields(res), 1, 3);
 			PQclear(res);
 			return false;
@@ -559,6 +554,12 @@ ReceiveXlogStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 		}
 		PQclear(res);
 	}
+
+	/*
+	 * initialize flush position to starting point, it's the caller's
+	 * responsibility that that's sane.
+	 */
+	lastFlushPosition = startpos;
 
 	while (1)
 	{
@@ -593,7 +594,8 @@ ReceiveXlogStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 			/* Write the history file to disk */
 			writeTimeLineHistoryFile(basedir, timeline,
 									 PQgetvalue(res, 0, 0),
-									 PQgetvalue(res, 0, 1));
+									 PQgetvalue(res, 0, 1),
+									 mark_done);
 
 			PQclear(res);
 		}
@@ -606,7 +608,8 @@ ReceiveXlogStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 			return true;
 
 		/* Initiate the replication stream at specified location */
-		snprintf(query, sizeof(query), "START_REPLICATION %X/%X TIMELINE %u",
+		snprintf(query, sizeof(query), "START_REPLICATION %s%X/%X TIMELINE %u",
+				 slotcmd,
 				 (uint32) (startpos >> 32), (uint32) startpos,
 				 timeline);
 		res = PQexec(conn, query);
@@ -622,7 +625,7 @@ ReceiveXlogStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 		/* Stream the WAL */
 		res = HandleCopyStream(conn, startpos, timeline, basedir, stream_stop,
 							   standby_message_timeout, partial_suffix,
-							   &stoppos);
+							   &stoppos, mark_done);
 		if (res == NULL)
 			goto error;
 
@@ -680,6 +683,7 @@ ReceiveXlogStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 				fprintf(stderr,
 				   _("%s: unexpected termination of replication stream: %s"),
 						progname, PQresultErrorMessage(res));
+				PQclear(res);
 				goto error;
 			}
 			PQclear(res);
@@ -694,6 +698,8 @@ ReceiveXlogStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 		}
 		else if (PQresultStatus(res) == PGRES_COMMAND_OK)
 		{
+			PQclear(res);
+
 			/*
 			 * End of replication (ie. controlled shut down of the server).
 			 *
@@ -715,6 +721,7 @@ ReceiveXlogStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 			fprintf(stderr,
 					_("%s: unexpected termination of replication stream: %s"),
 					progname, PQresultErrorMessage(res));
+			PQclear(res);
 			goto error;
 		}
 	}
@@ -783,7 +790,7 @@ static PGresult *
 HandleCopyStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 				 char *basedir, stream_stop_callback stream_stop,
 				 int standby_message_timeout, char *partial_suffix,
-				 XLogRecPtr *stoppos)
+				 XLogRecPtr *stoppos, bool mark_done)
 {
 	char	   *copybuf = NULL;
 	int64		last_status = -1;
@@ -810,7 +817,7 @@ HandleCopyStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 		 */
 		if (still_sending && stream_stop(blockpos, timeline, false))
 		{
-			if (!close_walfile(basedir, partial_suffix))
+			if (!close_walfile(basedir, partial_suffix, blockpos, mark_done))
 			{
 				/* Potential error message is written by close_walfile */
 				goto error;
@@ -827,10 +834,10 @@ HandleCopyStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 		/*
 		 * Potentially send a status message to the master
 		 */
-		now = localGetCurrentTimestamp();
+		now = feGetCurrentTimestamp();
 		if (still_sending && standby_message_timeout > 0 &&
-			localTimestampDifferenceExceeds(last_status, now,
-											standby_message_timeout))
+			feTimestampDifferenceExceeds(last_status, now,
+										 standby_message_timeout))
 		{
 			/* Time to send feedback! */
 			if (!sendFeedback(conn, blockpos, now, false))
@@ -858,10 +865,10 @@ HandleCopyStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 				int			usecs;
 
 				targettime = last_status + (standby_message_timeout - 1) * ((int64) 1000);
-				localTimestampDifference(now,
-										 targettime,
-										 &secs,
-										 &usecs);
+				feTimestampDifference(now,
+									  targettime,
+									  &secs,
+									  &usecs);
 				if (secs <= 0)
 					timeout.tv_sec = 1; /* Always sleep at least 1 sec */
 				else
@@ -909,9 +916,10 @@ HandleCopyStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 			 */
 			if (still_sending)
 			{
-				if (!close_walfile(basedir, partial_suffix))
+				if (!close_walfile(basedir, partial_suffix, blockpos, mark_done))
 				{
 					/* Error message written in close_walfile() */
+					PQclear(res);
 					goto error;
 				}
 				if (PQresultStatus(res) == PGRES_COPY_IN)
@@ -921,8 +929,10 @@ HandleCopyStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 						fprintf(stderr,
 								_("%s: could not send copy-end packet: %s"),
 								progname, PQerrorMessage(conn));
+						PQclear(res);
 						goto error;
 					}
+					PQclear(res);
 					res = PQgetResult(conn);
 				}
 				still_sending = false;
@@ -965,7 +975,26 @@ HandleCopyStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 			/* If the server requested an immediate reply, send one. */
 			if (replyRequested && still_sending)
 			{
-				now = localGetCurrentTimestamp();
+				if (reportFlushPosition && lastFlushPosition < blockpos &&
+					walfile != -1)
+				{
+					/*
+					 * If a valid flush location needs to be reported,
+					 * flush the current WAL file so that the latest flush
+					 * location is sent back to the server. This is necessary to
+					 * see whether the last WAL data has been successfully
+					 * replicated or not, at the normal shutdown of the server.
+					 */
+					if (fsync(walfile) != 0)
+					{
+						fprintf(stderr, _("%s: could not fsync file \"%s\": %s\n"),
+								progname, current_walfile_name, strerror(errno));
+						goto error;
+					}
+					lastFlushPosition = blockpos;
+				}
+
+				now = feGetCurrentTimestamp();
 				if (!sendFeedback(conn, blockpos, now, false))
 					goto error;
 				last_status = now;
@@ -995,7 +1024,7 @@ HandleCopyStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 						progname, r);
 				goto error;
 			}
-			blockpos = recvint64(&copybuf[1]);
+			blockpos = fe_recvint64(&copybuf[1]);
 
 			/* Extract WAL location for this block */
 			xlogoff = blockpos % XLOG_SEG_SIZE;
@@ -1074,13 +1103,13 @@ HandleCopyStream(PGconn *conn, XLogRecPtr startpos, uint32 timeline,
 				/* Did we reach the end of a WAL segment? */
 				if (blockpos % XLOG_SEG_SIZE == 0)
 				{
-					if (!close_walfile(basedir, partial_suffix))
+					if (!close_walfile(basedir, partial_suffix, blockpos, mark_done))
 						/* Error message written in close_walfile() */
 						goto error;
 
 					xlogoff = 0;
 
-					if (still_sending && stream_stop(blockpos, timeline, false))
+					if (still_sending && stream_stop(blockpos, timeline, true))
 					{
 						if (PQputCopyEnd(conn, NULL) <= 0 || PQflush(conn))
 						{

@@ -43,7 +43,10 @@
 
 PG_MODULE_MAGIC;
 
+PG_FUNCTION_INFO_V1(worker_spi_launch);
+
 void		_PG_init(void);
+void		worker_spi_main(Datum);
 
 /* flags set by signal handlers */
 static volatile sig_atomic_t got_sighup = false;
@@ -79,15 +82,19 @@ worker_spi_sigterm(SIGNAL_ARGS)
 
 /*
  * Signal handler for SIGHUP
- *		Set a flag to let the main loop to reread the config file, and set
+ *		Set a flag to tell the main loop to reread the config file, and set
  *		our latch to wake it up.
  */
 static void
 worker_spi_sighup(SIGNAL_ARGS)
 {
+	int			save_errno = errno;
+
 	got_sighup = true;
 	if (MyProc)
 		SetLatch(&MyProc->procLatch);
+
+	errno = save_errno;
 }
 
 /*
@@ -153,7 +160,7 @@ initialize_worker_spi(worktable *table)
 	pgstat_report_activity(STATE_IDLE, NULL);
 }
 
-static void
+void
 worker_spi_main(Datum main_arg)
 {
 	int			index = DatumGetInt32(main_arg);
@@ -181,7 +188,7 @@ worker_spi_main(Datum main_arg)
 	initialize_worker_spi(table);
 
 	/*
-	 * Quote identifiers passed to us.	Note that this must be done after
+	 * Quote identifiers passed to us.  Note that this must be done after
 	 * initialize_worker_spi, because that routine assumes the names are not
 	 * quoted.
 	 *
@@ -243,7 +250,7 @@ worker_spi_main(Datum main_arg)
 		 * StartTransactionCommand() call should be preceded by a
 		 * SetCurrentStatementStartTimestamp() call, which sets both the time
 		 * for the statement we're about the run, and also the transaction
-		 * start time.	Also, each other query sent to SPI should probably be
+		 * start time.  Also, each other query sent to SPI should probably be
 		 * preceded by SetCurrentStatementStartTimestamp(), so that statement
 		 * start time is always up to date.
 		 *
@@ -290,7 +297,7 @@ worker_spi_main(Datum main_arg)
 		pgstat_report_activity(STATE_IDLE, NULL);
 	}
 
-	proc_exit(0);
+	proc_exit(1);
 }
 
 /*
@@ -318,6 +325,10 @@ _PG_init(void)
 							NULL,
 							NULL,
 							NULL);
+
+	if (!process_shared_preload_libraries_in_progress)
+		return;
+
 	DefineCustomIntVariable("worker_spi.total_workers",
 							"Number of workers.",
 							NULL,
@@ -337,6 +348,7 @@ _PG_init(void)
 	worker.bgw_start_time = BgWorkerStart_RecoveryFinished;
 	worker.bgw_restart_time = BGW_NEVER_RESTART;
 	worker.bgw_main = worker_spi_main;
+	worker.bgw_notify_pid = 0;
 
 	/*
 	 * Now fill in worker-specific data, and do the actual registrations.
@@ -348,4 +360,48 @@ _PG_init(void)
 
 		RegisterBackgroundWorker(&worker);
 	}
+}
+
+/*
+ * Dynamically launch an SPI worker.
+ */
+Datum
+worker_spi_launch(PG_FUNCTION_ARGS)
+{
+	int32		i = PG_GETARG_INT32(0);
+	BackgroundWorker worker;
+	BackgroundWorkerHandle *handle;
+	BgwHandleStatus status;
+	pid_t		pid;
+
+	worker.bgw_flags = BGWORKER_SHMEM_ACCESS |
+		BGWORKER_BACKEND_DATABASE_CONNECTION;
+	worker.bgw_start_time = BgWorkerStart_RecoveryFinished;
+	worker.bgw_restart_time = BGW_NEVER_RESTART;
+	worker.bgw_main = NULL;		/* new worker might not have library loaded */
+	sprintf(worker.bgw_library_name, "worker_spi");
+	sprintf(worker.bgw_function_name, "worker_spi_main");
+	snprintf(worker.bgw_name, BGW_MAXLEN, "worker %d", i);
+	worker.bgw_main_arg = Int32GetDatum(i);
+	/* set bgw_notify_pid so that we can use WaitForBackgroundWorkerStartup */
+	worker.bgw_notify_pid = MyProcPid;
+
+	if (!RegisterDynamicBackgroundWorker(&worker, &handle))
+		PG_RETURN_NULL();
+
+	status = WaitForBackgroundWorkerStartup(handle, &pid);
+
+	if (status == BGWH_STOPPED)
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_RESOURCES),
+				 errmsg("could not start background process"),
+			   errhint("More details may be available in the server log.")));
+	if (status == BGWH_POSTMASTER_DIED)
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_RESOURCES),
+			  errmsg("cannot start background processes without postmaster"),
+				 errhint("Kill all remaining database processes and restart the database.")));
+	Assert(status == BGWH_STARTED);
+
+	PG_RETURN_INT32(pid);
 }

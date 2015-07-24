@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Internals"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="CHAPTER"
 ><A
 NAME="PLHANDLER"
 ></A
->Chapter 51. Writing A Procedural Language Handler</H1
+>Chapter 52. Writing A Procedural Language Handler</H1
 ><P
 >    All calls to functions that are written in a language other than
     the current <SPAN
@@ -379,7 +379,16 @@ CLASS="CLASSNAME"
 >pg_proc</CODE
 >
     row.  The validator must fetch this row in the usual way, and do
-    whatever checking is appropriate.  Typical checks include verifying
+    whatever checking is appropriate.
+    First, call <CODE
+CLASS="FUNCTION"
+>CheckFunctionValidatorAccess()</CODE
+> to diagnose
+    explicit calls to the validator that the user could not achieve through
+    <TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+>.  Typical checks then include verifying
     that the function's argument and result types are supported by the
     language, and that the function's body is syntactically correct
     in the language.  If the validator finds the function to be okay,
@@ -396,14 +405,16 @@ CLASS="FUNCTION"
 HREF="runtime-config-client.html#GUC-CHECK-FUNCTION-BODIES"
 >check_function_bodies</A
 > parameter: if it is turned off then
-    any expensive or context-sensitive checking should be skipped.
-    In particular, this parameter is turned off by <SPAN
+    any expensive or context-sensitive checking should be skipped.  If the
+    language provides for code execution at compilation time, the validator
+    must suppress checks that would induce such execution.  In particular,
+    this parameter is turned off by <SPAN
 CLASS="APPLICATION"
 >pg_dump</SPAN
->
-    so that it can load procedural language functions without worrying
-    about possible dependencies of the function bodies on other database
-    objects.  (Because of this requirement, the call handler should avoid
+> so that it can
+    load procedural language functions without worrying about side effects or
+    dependencies of the function bodies on other database objects.
+    (Because of this requirement, the call handler should avoid
     assuming that the validator has fully checked the function.  The point
     of having a validator is not to let the call handler omit checks, but
     to notify the user immediately if there are obvious errors in a

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Type Conversion"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -198,8 +198,8 @@ CLASS="LITERAL"
 >CAST</TT
 > specification.
   <A
-NAME="AEN21330"
-HREF="#FTN.AEN21330"
+NAME="AEN22900"
+HREF="#FTN.AEN22900"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN
@@ -228,9 +228,15 @@ candidate remains, use it; else continue to the next step.</P
 ><LI
 CLASS="STEP"
 ><P
+>If any input argument is of a domain type, treat it as being of the
+domain's base type for all subsequent steps.  This ensures that domains
+act like their base types for purposes of ambiguous-function resolution.</P
+></LI
+><LI
+CLASS="STEP"
+><P
 >Run through all candidates and keep those with the most exact matches
-on input types.  (Domains are considered the same as their base type
-for this purpose.)  Keep all candidates if none have exact matches.
+on input types.  Keep all candidates if none have exact matches.
 If only one candidate remains, use it; else continue to the next step.</P
 ></LI
 ><LI
@@ -299,11 +305,11 @@ Some examples follow.</P
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN21354"
+NAME="AEN22926"
 ></A
 ><P
 ><B
->Example 10-5. Rounding Function Argument Type Resolution</B
+>Example 10-6. Rounding Function Argument Type Resolution</B
 ></P
 ><P
 >There is only one <CODE
@@ -358,11 +364,11 @@ CLASS="SCREEN"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN21367"
+NAME="AEN22939"
 ></A
 ><P
 ><B
->Example 10-6. Substring Function Type Resolution</B
+>Example 10-7. Substring Function Type Resolution</B
 ></P
 ><P
 >There are several <CODE
@@ -493,8 +499,8 @@ ALIGN="LEFT"
 VALIGN="TOP"
 WIDTH="5%"
 ><A
-NAME="FTN.AEN21330"
-HREF="typeconv-func.html#AEN21330"
+NAME="FTN.AEN22900"
+HREF="typeconv-func.html#AEN22900"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN

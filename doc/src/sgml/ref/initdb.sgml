@@ -4,6 +4,10 @@ PostgreSQL documentation
 -->
 
 <refentry id="APP-INITDB">
+ <indexterm zone="app-initdb">
+  <primary>initdb</primary>
+ </indexterm>
+
  <refmeta>
   <refentrytitle>initdb</refentrytitle>
   <manvolnum>1</manvolnum>
@@ -14,10 +18,6 @@ PostgreSQL documentation
   <refname>initdb</refname>
   <refpurpose>create a new <productname>PostgreSQL</productname> database cluster</refpurpose>
  </refnamediv>
-
- <indexterm zone="app-initdb">
-  <primary>initdb</primary>
- </indexterm>
 
  <refsynopsisdiv>
   <cmdsynopsis>
@@ -410,6 +410,18 @@ PostgreSQL documentation
      <para>
       Specifies the directory where the database cluster is to be
       stored; can be overridden using the <option>-D</option> option.
+     </para>
+    </listitem>
+   </varlistentry>
+
+   <varlistentry>
+    <term><envar>TZ</envar></term>
+
+    <listitem>
+     <para>
+      Specifies the default time zone of the created database cluster.  The
+      value should be a full time zone name
+      (see <xref linkend="datatype-timezones">).
      </para>
     </listitem>
    </varlistentry>

@@ -4,7 +4,7 @@
  *	  POSTGRES heap tuple header definitions.
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/htup_details.h
@@ -17,6 +17,7 @@
 #include "access/htup.h"
 #include "access/tupdesc.h"
 #include "access/tupmacs.h"
+#include "access/transam.h"
 #include "storage/bufpage.h"
 
 /*
@@ -69,7 +70,7 @@
  *
  * We store five "virtual" fields Xmin, Cmin, Xmax, Cmax, and Xvac in three
  * physical fields.  Xmin and Xmax are always really stored, but Cmin, Cmax
- * and Xvac share a field.	This works because we know that Cmin and Cmax
+ * and Xvac share a field.  This works because we know that Cmin and Cmax
  * are only interesting for the lifetime of the inserting and deleting
  * transaction respectively.  If a tuple is inserted and deleted in the same
  * transaction, we store a "combo" command id that can be mapped to the real
@@ -81,7 +82,7 @@
  * ie, an insert-in-progress or delete-in-progress tuple.)
  *
  * A word about t_ctid: whenever a new tuple is stored on disk, its t_ctid
- * is initialized with its own TID (location).	If the tuple is ever updated,
+ * is initialized with its own TID (location).  If the tuple is ever updated,
  * its t_ctid is changed to point to the replacement version of the tuple.
  * Thus, a tuple is the latest version of its row iff XMAX is invalid or
  * t_ctid points to itself (in which case, if XMAX is valid, the tuple is
@@ -96,10 +97,10 @@
  * check fails, one may assume that there is no live descendant version.
  *
  * Following the fixed header fields, the nulls bitmap is stored (beginning
- * at t_bits).	The bitmap is *not* stored if t_infomask shows that there
+ * at t_bits).  The bitmap is *not* stored if t_infomask shows that there
  * are no nulls in the tuple.  If an OID field is present (as indicated by
  * t_infomask), then it is stored just before the user data, which begins at
- * the offset shown by t_hoff.	Note that t_hoff must be a multiple of
+ * the offset shown by t_hoff.  Note that t_hoff must be a multiple of
  * MAXALIGN.
  */
 
@@ -175,6 +176,7 @@ struct HeapTupleHeaderData
 						 HEAP_XMAX_KEYSHR_LOCK)
 #define HEAP_XMIN_COMMITTED		0x0100	/* t_xmin committed */
 #define HEAP_XMIN_INVALID		0x0200	/* t_xmin invalid/aborted */
+#define HEAP_XMIN_FROZEN		(HEAP_XMIN_COMMITTED|HEAP_XMIN_INVALID)
 #define HEAP_XMAX_COMMITTED		0x0400	/* t_xmax committed */
 #define HEAP_XMAX_INVALID		0x0800	/* t_xmax invalid/aborted */
 #define HEAP_XMAX_IS_MULTI		0x1000	/* t_xmax is a MultiXactId */
@@ -240,18 +242,66 @@ struct HeapTupleHeaderData
 /*
  * HeapTupleHeader accessor macros
  *
- * Note: beware of multiple evaluations of "tup" argument.	But the Set
+ * Note: beware of multiple evaluations of "tup" argument.  But the Set
  * macros evaluate their other argument only once.
  */
 
-#define HeapTupleHeaderGetXmin(tup) \
+/*
+ * HeapTupleHeaderGetRawXmin returns the "raw" xmin field, which is the xid
+ * originally used to insert the tuple.  However, the tuple might actually
+ * be frozen (via HeapTupleHeaderSetXminFrozen) in which case the tuple's xmin
+ * is visible to every snapshot.  Prior to PostgreSQL 9.4, we actually changed
+ * the xmin to FrozenTransactionId, and that value may still be encountered
+ * on disk.
+ */
+#define HeapTupleHeaderGetRawXmin(tup) \
 ( \
 	(tup)->t_choice.t_heap.t_xmin \
+)
+
+#define HeapTupleHeaderGetXmin(tup) \
+( \
+	HeapTupleHeaderXminFrozen(tup) ? \
+		FrozenTransactionId : HeapTupleHeaderGetRawXmin(tup) \
 )
 
 #define HeapTupleHeaderSetXmin(tup, xid) \
 ( \
 	(tup)->t_choice.t_heap.t_xmin = (xid) \
+)
+
+#define HeapTupleHeaderXminCommitted(tup) \
+( \
+	(tup)->t_infomask & HEAP_XMIN_COMMITTED \
+)
+
+#define HeapTupleHeaderXminInvalid(tup) \
+( \
+	((tup)->t_infomask & (HEAP_XMIN_COMMITTED|HEAP_XMIN_INVALID)) == \
+		HEAP_XMIN_INVALID \
+)
+
+#define HeapTupleHeaderXminFrozen(tup) \
+( \
+	((tup)->t_infomask & (HEAP_XMIN_FROZEN)) == HEAP_XMIN_FROZEN \
+)
+
+#define HeapTupleHeaderSetXminCommitted(tup) \
+( \
+	AssertMacro(!HeapTupleHeaderXminInvalid(tup)), \
+	((tup)->t_infomask |= HEAP_XMIN_COMMITTED) \
+)
+
+#define HeapTupleHeaderSetXminInvalid(tup) \
+( \
+	AssertMacro(!HeapTupleHeaderXminCommitted(tup)), \
+	((tup)->t_infomask |= HEAP_XMIN_INVALID) \
+)
+
+#define HeapTupleHeaderSetXminFrozen(tup) \
+( \
+	AssertMacro(!HeapTupleHeaderXminInvalid(tup)), \
+	((tup)->t_infomask |= HEAP_XMIN_FROZEN) \
 )
 
 /*
@@ -374,7 +424,8 @@ do { \
 #define HeapTupleHeaderIsHotUpdated(tup) \
 ( \
 	((tup)->t_infomask2 & HEAP_HOT_UPDATED) != 0 && \
-	((tup)->t_infomask & (HEAP_XMIN_INVALID | HEAP_XMAX_INVALID)) == 0 \
+	((tup)->t_infomask & HEAP_XMAX_INVALID) == 0 && \
+	!HeapTupleHeaderXminInvalid(tup) \
 )
 
 #define HeapTupleHeaderSetHotUpdated(tup) \
@@ -425,6 +476,9 @@ do { \
 	(tup)->t_infomask2 = ((tup)->t_infomask2 & ~HEAP_NATTS_MASK) | (natts) \
 )
 
+#define HeapTupleHeaderHasExternal(tup) \
+		(((tup)->t_infomask & HEAP_HASEXTERNAL) != 0)
+
 
 /*
  * BITMAPLEN(NATTS) -
@@ -474,7 +528,7 @@ do { \
  * MinimalTuple is an alternative representation that is used for transient
  * tuples inside the executor, in places where transaction status information
  * is not required, the tuple rowtype is known, and shaving off a few bytes
- * is worthwhile because we need to store many tuples.	The representation
+ * is worthwhile because we need to store many tuples.  The representation
  * is chosen so that tuple access routines can work with either full or
  * minimal tuples via a HeapTupleData pointer structure.  The access routines
  * see no difference, except that they must not access the transaction status
@@ -498,7 +552,7 @@ do { \
  * the MINIMAL_TUPLE_OFFSET distance.  t_len does not include that, however.
  *
  * MINIMAL_TUPLE_DATA_OFFSET is the offset to the first useful (non-pad) data
- * other than the length word.	tuplesort.c and tuplestore.c use this to avoid
+ * other than the length word.  tuplesort.c and tuplestore.c use this to avoid
  * writing the padding to disk.
  */
 #define MINIMAL_TUPLE_OFFSET \
@@ -644,7 +698,7 @@ extern Datum fastgetattr(HeapTuple tup, int attnum, TupleDesc tupleDesc,
  *		and set *isnull == true.  Otherwise, we set *isnull == false.
  *
  *		<tup> is the pointer to the heap tuple.  <attnum> is the attribute
- *		number of the column (field) caller wants.	<tupleDesc> is a
+ *		number of the column (field) caller wants.  <tupleDesc> is a
  *		pointer to the structure describing the row and all its fields.
  * ----------------
  */
@@ -679,6 +733,7 @@ extern Datum heap_getsysattr(HeapTuple tup, int attnum, TupleDesc tupleDesc,
 				bool *isnull);
 extern HeapTuple heap_copytuple(HeapTuple tuple);
 extern void heap_copytuple_with_tuple(HeapTuple src, HeapTuple dest);
+extern Datum heap_copy_tuple_as_datum(HeapTuple tuple, TupleDesc tupleDesc);
 extern HeapTuple heap_form_tuple(TupleDesc tupleDescriptor,
 				Datum *values, bool *isnull);
 extern HeapTuple heap_modify_tuple(HeapTuple tuple,

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.3.2 Documentation"
+TITLE="PostgreSQL 9.4.4 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2013-12-02T21:10:18"></HEAD
+CONTENT="2015-06-09T19:38:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -39,12 +39,12 @@ CELLPADDING="0"
 CELLSPACING="0"
 ><TR
 ><TH
-COLSPAN="5"
+COLSPAN="4"
 ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.3.2 Documentation</A
+>PostgreSQL 9.4.4 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -117,7 +117,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN18444"
+NAME="AEN19674"
 >9.23.1. <TT
 CLASS="LITERAL"
 >IN</TT
@@ -193,7 +193,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN18460"
+NAME="AEN19690"
 >9.23.2. <TT
 CLASS="LITERAL"
 >NOT IN</TT
@@ -296,7 +296,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN18482"
+NAME="AEN19712"
 >9.23.3. <TT
 CLASS="LITERAL"
 >ANY</TT
@@ -399,7 +399,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN18505"
+NAME="AEN19735"
 >9.23.4. <TT
 CLASS="LITERAL"
 >ALL</TT
@@ -475,7 +475,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="ROW-WISE-COMPARISON"
->9.23.5. Row-wise Comparison</A
+>9.23.5. Row Constructor Comparison</A
 ></H2
 ><PRE
 CLASS="SYNOPSIS"
@@ -502,8 +502,8 @@ HREF="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS"
 >Section 4.2.13</A
 >.
    The two row values must have the same number of fields.
-   Each side is evaluated and they are compared row-wise.  Row comparisons
-   are allowed when the <TT
+   Each side is evaluated and they are compared row-wise.  Row constructor
+   comparisons are allowed when the <TT
 CLASS="REPLACEABLE"
 ><I
 >operator</I
@@ -532,15 +532,22 @@ CLASS="LITERAL"
    <TT
 CLASS="LITERAL"
 >&gt;=</TT
->,
-   or has semantics similar to one of these.  (To be specific, an operator
-   can be a row comparison operator if it is a member of a B-tree operator
-   class, or is the negator of the <TT
-CLASS="LITERAL"
->=</TT
-> member of a B-tree operator
-   class.)
+>.
+   Every row element must be of a type which has a default B-tree operator
+   class or the attempted comparison may generate an error.
   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>    Errors related to the number or types of elements might not occur if
+    the comparison is resolved using earlier columns.
+   </P
+></BLOCKQUOTE
+></DIV
 ><P
 >   The <TT
 CLASS="LITERAL"
@@ -668,31 +675,139 @@ CLASS="LITERAL"
    nulls are considered equal (not distinct).  Thus the result will always
    be either true or false, never null.
   </P
+></DIV
 ><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="COMPOSITE-TYPE-COMPARISON"
+>9.23.6. Composite Type Comparison</A
+></H2
+><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>record</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>operator</I
+></TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>record</I
+></TT
+></PRE
 ><P
-><B
->Note: </B
->    The SQL specification requires row-wise comparison to return NULL if the
-    result depends on comparing two NULL values or a NULL and a non-NULL.
-    <SPAN
+>   The SQL specification requires row-wise comparison to return NULL if the
+   result depends on comparing two NULL values or a NULL and a non-NULL.
+   <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > does this only when comparing the
-    results of two row constructors or comparing a row constructor to the
-    output of a subquery (as in <A
+   results of two row constructors (as in
+   <A
+HREF="functions-comparisons.html#ROW-WISE-COMPARISON"
+>Section 9.23.5</A
+>) or comparing a row constructor
+   to the output of a subquery (as in <A
 HREF="functions-subquery.html"
 >Section 9.22</A
 >).
-    In other contexts where two composite-type values are compared, two
-    NULL field values are considered equal, and a NULL is considered larger
-    than a non-NULL.  This is necessary in order to have consistent sorting
-    and indexing behavior for composite types.
-   </P
-></BLOCKQUOTE
-></DIV
+   In other contexts where two composite-type values are compared, two
+   NULL field values are considered equal, and a NULL is considered larger
+   than a non-NULL.  This is necessary in order to have consistent sorting
+   and indexing behavior for composite types.
+  </P
+><P
+>   Each side is evaluated and they are compared row-wise.  Composite type
+   comparisons are allowed when the <TT
+CLASS="REPLACEABLE"
+><I
+>operator</I
+></TT
+> is
+   <TT
+CLASS="LITERAL"
+>=</TT
+>,
+   <TT
+CLASS="LITERAL"
+>&lt;&gt;</TT
+>,
+   <TT
+CLASS="LITERAL"
+>&lt;</TT
+>,
+   <TT
+CLASS="LITERAL"
+>&lt;=</TT
+>,
+   <TT
+CLASS="LITERAL"
+>&gt;</TT
+> or
+   <TT
+CLASS="LITERAL"
+>&gt;=</TT
+>,
+   or has semantics similar to one of these.  (To be specific, an operator
+   can be a row comparison operator if it is a member of a B-tree operator
+   class, or is the negator of the <TT
+CLASS="LITERAL"
+>=</TT
+> member of a B-tree operator
+   class.)  The default behavior of the above operators is the same as for
+   <TT
+CLASS="LITERAL"
+>IS [ NOT ] DISTINCT FROM</TT
+> for row constructors (see
+   <A
+HREF="functions-comparisons.html#ROW-WISE-COMPARISON"
+>Section 9.23.5</A
+>).
+  </P
+><P
+>   To support matching of rows which include elements without a default
+   B-tree operator class, the following operators are defined for composite
+   type comparison:
+   <TT
+CLASS="LITERAL"
+>*=</TT
+>,
+   <TT
+CLASS="LITERAL"
+>*&lt;&gt;</TT
+>,
+   <TT
+CLASS="LITERAL"
+>*&lt;</TT
+>,
+   <TT
+CLASS="LITERAL"
+>*&lt;=</TT
+>,
+   <TT
+CLASS="LITERAL"
+>*&gt;</TT
+>, and
+   <TT
+CLASS="LITERAL"
+>*&gt;=</TT
+>.
+   These operators compare the internal binary representation of the two
+   rows.  Two rows might have a different binary representation even
+   though comparisons of the two rows with the equality operator is true.
+   The ordering of rows under these comparison operators is deterministic
+   but not otherwise meaningful.  These operators are used internally for
+   materialized views and might be useful for other specialized purposes
+   such as replication but are not intended to be generally useful for
+   writing queries.
+  </P
 ></DIV
 ></DIV
 ><DIV

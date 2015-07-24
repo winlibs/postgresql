@@ -3,7 +3,7 @@
  * nodeLockRows.c
  *	  Routines to handle FOR UPDATE/FOR SHARE row locking
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -170,7 +170,7 @@ lnext:
 				}
 
 				/* updated, so fetch and lock the updated version */
-				copyTuple = EvalPlanQualFetch(estate, erm->relation, lockmode,
+				copyTuple = EvalPlanQualFetch(estate, erm->relation, lockmode, erm->noWait,
 											  &hufd.ctid, hufd.xmax);
 
 				if (copyTuple == NULL)
@@ -182,12 +182,34 @@ lnext:
 				tuple.t_self = copyTuple->t_self;
 
 				/*
-				 * Need to run a recheck subquery.	Initialize EPQ state if we
+				 * Need to run a recheck subquery.  Initialize EPQ state if we
 				 * didn't do so already.
 				 */
 				if (!epq_started)
 				{
+					ListCell   *lc2;
+
 					EvalPlanQualBegin(&node->lr_epqstate, estate);
+
+					/*
+					 * Ensure that rels with already-visited rowmarks are told
+					 * not to return tuples during the first EPQ test.  We can
+					 * exit this loop once it reaches the current rowmark;
+					 * rels appearing later in the list will be set up
+					 * correctly by the EvalPlanQualSetTuple call at the top
+					 * of the loop.
+					 */
+					foreach(lc2, node->lr_arowMarks)
+					{
+						ExecAuxRowMark *aerm2 = (ExecAuxRowMark *) lfirst(lc2);
+
+						if (lc2 == lc)
+							break;
+						EvalPlanQualSetTuple(&node->lr_epqstate,
+											 aerm2->rowmark->rti,
+											 NULL);
+					}
+
 					epq_started = true;
 				}
 
@@ -213,7 +235,7 @@ lnext:
 	{
 		/*
 		 * First, fetch a copy of any rows that were successfully locked
-		 * without any update having occurred.	(We do this in a separate pass
+		 * without any update having occurred.  (We do this in a separate pass
 		 * so as to avoid overhead in the common case where there are no
 		 * concurrent updates.)
 		 */
@@ -318,7 +340,7 @@ ExecInitLockRows(LockRows *node, EState *estate, int eflags)
 
 	/*
 	 * Locate the ExecRowMark(s) that this node is responsible for, and
-	 * construct ExecAuxRowMarks for them.	(InitPlan should already have
+	 * construct ExecAuxRowMarks for them.  (InitPlan should already have
 	 * built the global list of ExecRowMarks.)
 	 */
 	lrstate->lr_arowMarks = NIL;
@@ -340,7 +362,7 @@ ExecInitLockRows(LockRows *node, EState *estate, int eflags)
 		aerm = ExecBuildAuxRowMark(erm, outerPlan->targetlist);
 
 		/*
-		 * Only locking rowmarks go into our own list.	Non-locking marks are
+		 * Only locking rowmarks go into our own list.  Non-locking marks are
 		 * passed off to the EvalPlanQual machinery.  This is because we don't
 		 * want to bother fetching non-locked rows unless we actually have to
 		 * do an EPQ recheck.

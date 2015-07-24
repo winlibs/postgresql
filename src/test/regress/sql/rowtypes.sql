@@ -186,6 +186,34 @@ select * from price;
 rollback;
 
 --
+-- Test case derived from bug #9085: check * qualification of composite
+-- parameters for SQL functions
+--
+
+create temp table compos (f1 int, f2 text);
+
+create function fcompos1(v compos) returns void as $$
+insert into compos values (v);  -- fail
+$$ language sql;
+
+create function fcompos1(v compos) returns void as $$
+insert into compos values (v.*);
+$$ language sql;
+
+create function fcompos2(v compos) returns void as $$
+select fcompos1(v);
+$$ language sql;
+
+create function fcompos3(v compos) returns void as $$
+select fcompos1(fcompos3.v.*);
+$$ language sql;
+
+select fcompos1(row(1,'one'));
+select fcompos2(row(2,'two'));
+select fcompos3(row(3,'three'));
+select * from compos;
+
+--
 -- We allow I/O conversion casts from composite types to strings to be
 -- invoked via cast syntax, but not functional syntax.  This is because
 -- the latter is too prone to be invoked unintentionally.
@@ -199,3 +227,47 @@ select cast (row('Jim', 'Beam') as text);
 select (row('Jim', 'Beam'))::text;
 select text(row('Jim', 'Beam'));  -- error
 select (row('Jim', 'Beam')).text;  -- error
+
+--
+-- Test that composite values are seen to have the correct column names
+-- (bug #11210 and other reports)
+--
+
+select row_to_json(i) from int8_tbl i;
+select row_to_json(i) from int8_tbl i(x,y);
+
+create temp view vv1 as select * from int8_tbl;
+select row_to_json(i) from vv1 i;
+select row_to_json(i) from vv1 i(x,y);
+
+select row_to_json(ss) from
+  (select q1, q2 from int8_tbl) as ss;
+select row_to_json(ss) from
+  (select q1, q2 from int8_tbl offset 0) as ss;
+select row_to_json(ss) from
+  (select q1 as a, q2 as b from int8_tbl) as ss;
+select row_to_json(ss) from
+  (select q1 as a, q2 as b from int8_tbl offset 0) as ss;
+select row_to_json(ss) from
+  (select q1 as a, q2 as b from int8_tbl) as ss(x,y);
+select row_to_json(ss) from
+  (select q1 as a, q2 as b from int8_tbl offset 0) as ss(x,y);
+
+explain (costs off)
+select row_to_json(q) from
+  (select thousand, tenthous from tenk1
+   where thousand = 42 and tenthous < 2000 offset 0) q;
+select row_to_json(q) from
+  (select thousand, tenthous from tenk1
+   where thousand = 42 and tenthous < 2000 offset 0) q;
+select row_to_json(q) from
+  (select thousand as x, tenthous as y from tenk1
+   where thousand = 42 and tenthous < 2000 offset 0) q;
+select row_to_json(q) from
+  (select thousand as x, tenthous as y from tenk1
+   where thousand = 42 and tenthous < 2000 offset 0) q(a,b);
+
+create temp table tt1 as select * from int8_tbl limit 2;
+create temp table tt2 () inherits(tt1);
+insert into tt2 values(0,0);
+select row_to_json(r) from (select q2,q1 from tt1 offset 0) r;

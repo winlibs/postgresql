@@ -4,7 +4,7 @@
  *		Internal definitions for parser
  *
  *
- * Portions Copyright (c) 1996-2013, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/parser/parse_node.h
@@ -39,6 +39,7 @@ typedef enum ParseExprKind
 	EXPR_KIND_FROM_FUNCTION,	/* function in FROM clause */
 	EXPR_KIND_WHERE,			/* WHERE */
 	EXPR_KIND_HAVING,			/* HAVING */
+	EXPR_KIND_FILTER,			/* FILTER */
 	EXPR_KIND_WINDOW_PARTITION, /* window definition PARTITION BY */
 	EXPR_KIND_WINDOW_ORDER,		/* window definition ORDER BY */
 	EXPR_KIND_WINDOW_FRAME_RANGE,		/* window frame clause with RANGE */
@@ -86,7 +87,7 @@ typedef Node *(*CoerceParamHook) (ParseState *pstate, Param *param,
  * links to current parse state of outer query.
  *
  * p_sourcetext: source string that generated the raw parsetree being
- * analyzed, or NULL if not available.	(The string is used only to
+ * analyzed, or NULL if not available.  (The string is used only to
  * generate cursor positions in error messages: we need it to convert
  * byte-wise locations in parse structures to character-wise cursor
  * positions.)
@@ -115,7 +116,7 @@ typedef Node *(*CoerceParamHook) (ParseState *pstate, Param *param,
  * is not an RTE, rather "visibility" means you could make an RTE from it.
  *
  * p_future_ctes: list of CommonTableExprs (WITH items) that are not yet
- * visible due to scope rules.	This is used to help improve error messages.
+ * visible due to scope rules.  This is used to help improve error messages.
  *
  * p_parent_cte: CommonTableExpr that immediately contains the current query,
  * if any.
@@ -181,11 +182,12 @@ struct ParseState
  *
  * While processing the FROM clause, namespace items may appear with
  * p_lateral_only set, meaning they are visible only to LATERAL
- * subexpressions.	(The pstate's p_lateral_active flag tells whether we are
+ * subexpressions.  (The pstate's p_lateral_active flag tells whether we are
  * inside such a subexpression at the moment.)	If p_lateral_ok is not set,
  * it's an error to actually use such a namespace item.  One might think it
  * would be better to just exclude such items from visibility, but the wording
- * of SQL:2008 requires us to do it this way.
+ * of SQL:2008 requires us to do it this way.  We also use p_lateral_ok to
+ * forbid LATERAL references to an UPDATE/DELETE target table.
  *
  * At no time should a namespace list contain two entries that conflict
  * according to the rules in checkNameSpaceConflicts; but note that those

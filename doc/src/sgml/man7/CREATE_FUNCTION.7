@@ -2,12 +2,12 @@
 .\"     Title: CREATE FUNCTION
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2013
-.\"    Manual: PostgreSQL 9.3.2 Documentation
-.\"    Source: PostgreSQL 9.3.2
+.\"      Date: 2015
+.\"    Manual: PostgreSQL 9.4.4 Documentation
+.\"    Source: PostgreSQL 9.4.4
 .\"  Language: English
 .\"
-.TH "CREATE FUNCTION" "7" "2013" "PostgreSQL 9.3.2" "PostgreSQL 9.3.2 Documentation"
+.TH "CREATE FUNCTION" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -29,7 +29,6 @@
 .\" -----------------------------------------------------------------
 .SH "NAME"
 CREATE_FUNCTION \- define a new function
-.\" CREATE FUNCTION
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -187,10 +186,11 @@ syntax\&.
 .PP
 \fIlang_name\fR
 .RS 4
-The name of the language that the function is implemented in\&. Can be
-SQL,
-C,
-internal, or the name of a user\-defined procedural language\&. For backward compatibility, the name can be enclosed by single quotes\&.
+The name of the language that the function is implemented in\&. It can be
+sql,
+c,
+internal, or the name of a user\-defined procedural language, e\&.g\&.
+plpgsql\&. Enclosing the name in single quotes is deprecated and requires matching case\&.
 .RE
 .PP
 WINDOW
@@ -203,7 +203,11 @@ WINDOW
 attribute cannot be changed when replacing an existing function definition\&.
 .RE
 .PP
-IMMUTABLE, STABLE, VOLATILE
+IMMUTABLE
+.br
+STABLE
+.br
+VOLATILE
 .RS 4
 These attributes inform the query optimizer about the behavior of the function\&. At most one choice can be specified\&. If none of these appear,
 VOLATILE
@@ -242,7 +246,11 @@ and
 Section 38.5, \(lqRules and Privileges\(rq, in the documentation\&. This option can only be set by the superuser\&.
 .RE
 .PP
-CALLED ON NULL INPUT, RETURNS NULL ON NULL INPUT, STRICT
+CALLED ON NULL INPUT
+.br
+RETURNS NULL ON NULL INPUT
+.br
+STRICT
 .RS 4
 CALLED ON NULL INPUT
 (the default) indicates that the function will be called normally when some of its arguments are null\&. It is then the function author\*(Aqs responsibility to check for null values if necessary and respond appropriately\&.
@@ -253,7 +261,9 @@ STRICT
 indicates that the function always returns null whenever any of its arguments are null\&. If this parameter is specified, the function is not executed when there are null arguments; instead a null result is assumed automatically\&.
 .RE
 .PP
-[EXTERNAL] SECURITY INVOKER, [EXTERNAL] SECURITY DEFINER
+[EXTERNAL] SECURITY INVOKER
+.br
+[EXTERNAL] SECURITY DEFINER
 .RS 4
 SECURITY INVOKER
 indicates that the function is to be executed with the privileges of the user that calls it\&. That is the default\&.
@@ -276,7 +286,9 @@ cpu_operator_cost\&. If the function returns a set, this is the cost per returne
 A positive number giving the estimated number of rows that the planner should expect the function to return\&. This is only allowed when the function is declared to return a set\&. The default assumption is 1000 rows\&.
 .RE
 .PP
-\fIconfiguration_parameter\fR, \fIvalue\fR
+\fIconfiguration_parameter\fR
+.br
+\fIvalue\fR
 .RS 4
 The
 SET
@@ -507,14 +519,13 @@ function is different from the preceding examples, because it actually returns a
 \fIset\fR
 of records, not just one record\&.
 .SH "WRITING SECURITY DEFINER FUNCTIONS SAFELY"
-.\" search_path configuration parameter: use in securing functions
 .PP
 Because a
 SECURITY DEFINER
 function is executed with the privileges of the user that created it, care is needed to ensure that the function cannot be misused\&. For security,
 search_path
 should be set to exclude any schemas writable by untrusted users\&. This prevents malicious users from creating objects that mask objects used by the function\&. Particularly important in this regard is the temporary\-table schema, which is searched first by default, and is normally writable by anyone\&. A secure arrangement can be had by forcing the temporary schema to be searched last\&. To do this, write
-pg_temp.\" pg_temp: securing functions
+pg_temp
 as the last entry in
 \fIsearch_path\fR\&. This function illustrates safe usage:
 .sp

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.4 Documentation"
+TITLE="PostgreSQL 9.4.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-06-09T19:38:55"></HEAD
+CONTENT="2015-10-05T19:28:19"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.4 Documentation</A
+>PostgreSQL 9.4.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -122,7 +122,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN161164"
+NAME="AEN162435"
 >F.29.1. The <TT
 CLASS="STRUCTNAME"
 >pg_stat_statements</TT
@@ -606,7 +606,7 @@ CLASS="VARNAME"
   </P
 ><P
 >   Consumers of <TT
-CLASS="LITERAL"
+CLASS="STRUCTNAME"
 >pg_stat_statements</TT
 > may wish to use
    <TT
@@ -631,7 +631,7 @@ CLASS="STRUCTFIELD"
    things, the internal object identifiers appearing in this representation.
    This has some counterintuitive implications.  For example,
    <TT
-CLASS="LITERAL"
+CLASS="FILENAME"
 >pg_stat_statements</TT
 > will consider two apparently-identical
    queries to be distinct, if they reference a table that was dropped
@@ -667,13 +667,41 @@ CLASS="STRUCTFIELD"
    not be a useful identifier for accumulating costs across a set of logical
    replicas.  If in doubt, direct testing is recommended.
   </P
+><P
+>   The representative query texts are kept in an external disk file, and do
+   not consume shared memory.  Therefore, even very lengthy query texts can
+   be stored successfully.  However, if many long query texts are
+   accumulated, the external file might grow unmanageably large.  As a
+   recovery method if that happens, <TT
+CLASS="FILENAME"
+>pg_stat_statements</TT
+> may
+   choose to discard the query texts, whereupon all existing entries in
+   the <TT
+CLASS="STRUCTNAME"
+>pg_stat_statements</TT
+> view will show
+   null <TT
+CLASS="STRUCTFIELD"
+>query</TT
+> fields, though the statistics associated with
+   each <TT
+CLASS="STRUCTFIELD"
+>queryid</TT
+> are preserved.  If this happens, consider
+   reducing <TT
+CLASS="VARNAME"
+>pg_stat_statements.max</TT
+> to prevent
+   recurrences.
+  </P
 ></DIV
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN161358"
+NAME="AEN162635"
 >F.29.2. Functions</A
 ></H2
 ><P
@@ -757,7 +785,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN161386"
+NAME="AEN162663"
 >F.29.3. Configuration Parameters</A
 ></H2
 ><P
@@ -931,7 +959,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN161437"
+NAME="AEN162714"
 >F.29.4. Sample Output</A
 ></H2
 ><PRE
@@ -981,7 +1009,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN161440"
+NAME="AEN162717"
 >F.29.5. Authors</A
 ></H2
 ><P

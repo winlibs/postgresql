@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
 .\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.4 Documentation
-.\"    Source: PostgreSQL 9.4.4
+.\"    Manual: PostgreSQL 9.4.5 Documentation
+.\"    Source: PostgreSQL 9.4.5
 .\"  Language: English
 .\"
-.TH "PG_ARCHIVECLEANUP" "1" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
+.TH "PG_ARCHIVECLEANUP" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -134,10 +134,6 @@ version and exit\&.
 .RS 4
 When using the program as a standalone utility, provide an extension that will be stripped from all file names before deciding if they should be deleted\&. This is typically useful for cleaning up archives that have been compressed during storage, and therefore have had an extension added by the compression program\&. For example:
 \-x \&.gz\&.
-.sp
-Note that the
-\&.backup
-file name passed to the program should not include the extension\&.
 .RE
 .PP
 \fB\-?\fR

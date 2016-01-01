@@ -30,9 +30,9 @@ ADD_SECLIB=bufferoverflowU.lib
 OPT=/Od /Zi /MDd
 LOPT=/DEBUG
 DEBUGDEF=/D _DEBUG
-OUTFILENAME=libpq_debug
+OUTFILENAME=libpqd
 !ELSE
-OPT=/O2 /Zi /MD
+OPT=/O2 /MD
 LOPT=
 DEBUGDEF=/D NDEBUG
 OUTFILENAME=libpq
@@ -116,7 +116,6 @@ CLEAN :
 	-@erase "$(INTDIR)\system.obj"
 	-@erase "$(INTDIR)\win32error.obj"
 	-@erase "$(INTDIR)\win32setlocale.obj"
-	-@erase "$(INTDIR)\fe_memutils.obj"
 	-@erase "$(OUTDIR)\$(OUTFILENAME).lib"
 	-@erase "$(OUTDIR)\$(OUTFILENAME)dll.lib"
 	-@erase "$(OUTDIR)\libpq.res"
@@ -164,8 +163,7 @@ LIB32_OBJS= \
 	"$(INTDIR)\system.obj" \
 	"$(INTDIR)\win32error.obj" \
 	"$(INTDIR)\win32setlocale.obj" \
-	"$(INTDIR)\pthread-win32.obj" \
-	"$(INTDIR)\fe_memutils.obj"
+	"$(INTDIR)\pthread-win32.obj"
 
 
 config: ..\..\include\pg_config.h ..\..\include\pg_config_ext.h pg_config_paths.h  ..\..\include\pg_config_os.h
@@ -188,7 +186,7 @@ pg_config_paths.h: win32.mak
 CPP_PROJ=/nologo /W3 /EHsc $(OPT) /I "..\..\include" /I "..\..\include\port\win32" /I "..\..\include\port\win32_msvc" /I "..\..\port" /I. /I "$(SSL_INC)" \
  /D "FRONTEND" $(DEBUGDEF) \
  /D "WIN32" /D "_WINDOWS" /Fp"$(INTDIR)\libpq.pch" \
- /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\$(OUTFILENAME).pdb" /FD /c  \
+ /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c  \
  /D "_CRT_SECURE_NO_DEPRECATE" $(ADD_DEFINES)
 
 !IFDEF USE_SSL
@@ -212,7 +210,7 @@ RSC_PROJ=/l 0x409 /fo"$(INTDIR)\libpq.res"
 LINK32=link.exe
 LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib shell32.lib wsock32.lib ws2_32.lib secur32.lib $(SSL_LIBS)  $(KFW_LIB) $(ADD_SECLIB) \
  /nologo /subsystem:windows /dll $(LOPT) /incremental:no \
- /pdb:"$(OUTDIR)\libpq_debug.pdb" /machine:$(CPU) \
+ /pdb:"$(OUTDIR)\libpqdll.pdb" /machine:$(CPU) \
  /out:"$(OUTDIR)\$(OUTFILENAME).dll"\
  /implib:"$(OUTDIR)\$(OUTFILENAME)dll.lib"  \
  /libpath:"$(SSL_LIB_PATH)" /libpath:"$(KFW_LIB_PATH)" \
@@ -239,9 +237,7 @@ LINK32_OBJS= \
 # Inclusion of manifest
 !IF "$(_NMAKE_VER)" != "6.00.8168.0" && "$(_NMAKE_VER)" != "7.00.9466"
 !IF "$(_NMAKE_VER)" != "6.00.9782.0" && "$(_NMAKE_VER)" != "7.10.3077"
-!IF EXIST ($(OUTDIR)\$(OUTFILENAME).dll.manifest)
         mt -manifest $(OUTDIR)\$(OUTFILENAME).dll.manifest -outputresource:$(OUTDIR)\$(OUTFILENAME).dll;2
-!ENDIF
 !ENDIF
 !ENDIF
 
@@ -354,11 +350,6 @@ LINK32_OBJS= \
 "$(INTDIR)\win32setlocale.obj" : ..\..\port\win32setlocale.c
 	$(CPP) @<<
 	$(CPP_PROJ) /I"." ..\..\port\win32setlocale.c
-<<
-
-"$(INTDIR)\fe_memutils.obj" : ..\..\common\fe_memutils.c
-	$(CPP) @<<
-	$(CPP_PROJ) /I"." ..\..\common\fe_memutils.c
 <<
 
 .c{$(CPP_OBJS)}.obj:

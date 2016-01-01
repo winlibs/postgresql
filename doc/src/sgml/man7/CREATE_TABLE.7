@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
 .\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.4 Documentation
-.\"    Source: PostgreSQL 9.4.4
+.\"    Manual: PostgreSQL 9.4.5 Documentation
+.\"    Source: PostgreSQL 9.4.5
 .\"  Language: English
 .\"
-.TH "CREATE TABLE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
+.TH "CREATE TABLE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -672,9 +672,7 @@ Custom
 autovacuum_freeze_max_age
 parameter\&. Note that autovacuum will ignore attempts to set a per\-table
 autovacuum_freeze_max_age
-larger than the system\-wide setting (it can only be set smaller)\&. Note that while you can set
-autovacuum_freeze_max_age
-very small, or even zero, this is usually unwise since it will force frequent vacuuming\&.
+larger than the system\-wide setting (it can only be set smaller)\&.
 .RE
 .PP
 autovacuum_freeze_table_age, toast\&.autovacuum_freeze_table_age (integer)
@@ -701,9 +699,7 @@ Custom
 autovacuum_multixact_freeze_max_age
 parameter\&. Note that autovacuum will ignore attempts to set a per\-table
 autovacuum_multixact_freeze_max_age
-larger than the system\-wide setting (it can only be set smaller)\&. Note that while you can set
-autovacuum_multixact_freeze_max_age
-very small, or even zero, this is usually unwise since it will force frequent vacuuming\&.
+larger than the system\-wide setting (it can only be set smaller)\&.
 .RE
 .PP
 autovacuum_multixact_freeze_table_age, toast\&.autovacuum_multixact_freeze_table_age (integer)

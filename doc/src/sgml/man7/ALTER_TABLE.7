@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
 .\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.4 Documentation
-.\"    Source: PostgreSQL 9.4.4
+.\"    Manual: PostgreSQL 9.4.5 Documentation
+.\"    Source: PostgreSQL 9.4.5
 .\"  Language: English
 .\"
-.TH "ALTER TABLE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
+.TH "ALTER TABLE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -646,7 +646,7 @@ Adding a
 CHECK
 or
 NOT NULL
-constraint requires scanning the table to verify that existing rows meet the constraint\&.
+constraint requires scanning the table to verify that existing rows meet the constraint, but does not require a table rewrite\&.
 .PP
 The main reason for providing the option to specify multiple changes in a single
 \fBALTER TABLE\fR
@@ -658,10 +658,15 @@ form does not physically remove the column, but simply makes it invisible to SQL
 oid
 column; that is done with an immediate rewrite\&.)
 .PP
-To force an immediate rewrite of the table, you can use
-VACUUM FULL,
-\fBCLUSTER\fR(7)
-or one of the forms of ALTER TABLE that forces a rewrite\&. This results in no semantically\-visible change in the table, but gets rid of no\-longer\-useful data\&.
+To force immediate reclamation of space occupied by a dropped column, you can execute one of the forms of
+\fBALTER TABLE\fR
+that performs a rewrite of the whole table\&. This results in reconstructing each row with the dropped column replaced by a null value\&.
+.PP
+The rewriting forms of
+\fBALTER TABLE\fR
+are not MVCC\-safe\&. After a table rewrite, the table will appear empty to concurrent transactions, if they are using a snapshot taken before the rewrite occurred\&. See
+Section 13.5, \(lqCaveats\(rq, in the documentation
+for more details\&.
 .PP
 The
 USING

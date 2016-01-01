@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.4 Documentation"
+TITLE="PostgreSQL 9.4.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-06-09T19:38:55"></HEAD
+CONTENT="2015-10-05T19:28:19"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.4 Documentation</A
+>PostgreSQL 9.4.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERTABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN69529"
+NAME="AEN69583"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN69529"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN69532"
+NAME="AEN69586"
 ></A
 ><H2
 >Synopsis</H2
@@ -497,7 +497,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69599"
+NAME="AEN69653"
 ></A
 ><H2
 >Description</H2
@@ -1472,7 +1472,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >DEFAULT</TT
 >
-      (the default for non-system tables) records the 
+      (the default for non-system tables) records the
       old values of the columns of the primary key, if any.  <TT
 CLASS="LITERAL"
 >USING INDEX</TT
@@ -1578,7 +1578,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69917"
+NAME="AEN69971"
 ></A
 ><H2
 >Parameters</H2
@@ -1838,7 +1838,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70018"
+NAME="AEN70072"
 ></A
 ><H2
 >Notes</H2
@@ -1895,7 +1895,8 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >NOT NULL</TT
 > constraint requires
-    scanning the table to verify that existing rows meet the constraint.
+    scanning the table to verify that existing rows meet the constraint,
+    but does not require a table rewrite.
    </P
 ><P
 >    The main reason for providing the option to specify multiple changes
@@ -1923,17 +1924,25 @@ CLASS="LITERAL"
     with an immediate rewrite.)
    </P
 ><P
->    To force an immediate rewrite of the table, you can use
-    <A
-HREF="sql-vacuum.html"
->VACUUM FULL</A
->, <A
-HREF="sql-cluster.html"
->CLUSTER</A
->
-    or one of the forms of ALTER TABLE that forces a rewrite.  This results in
-    no semantically-visible change in the table, but gets rid of
-    no-longer-useful data.
+>    To force immediate reclamation of space occupied by a dropped column,
+    you can execute one of the forms of <TT
+CLASS="COMMAND"
+>ALTER TABLE</TT
+> that
+    performs a rewrite of the whole table.  This results in reconstructing
+    each row with the dropped column replaced by a null value.
+   </P
+><P
+>    The rewriting forms of <TT
+CLASS="COMMAND"
+>ALTER TABLE</TT
+> are not MVCC-safe.
+    After a table rewrite, the table will appear empty to concurrent
+    transactions, if they are using a snapshot taken before the rewrite
+    occurred.  See <A
+HREF="mvcc-caveats.html"
+>Section 13.5</A
+> for more details.
    </P
 ><P
 >    The <TT
@@ -2053,7 +2062,7 @@ HREF="ddl.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70069"
+NAME="AEN70125"
 ></A
 ><H2
 >Examples</H2
@@ -2233,7 +2242,7 @@ ALTER TABLE distributors DROP CONSTRAINT distributors_pkey,
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70115"
+NAME="AEN70171"
 ></A
 ><H2
 >Compatibility</H2
@@ -2282,7 +2291,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70128"
+NAME="AEN70184"
 ></A
 ><H2
 >See Also</H2

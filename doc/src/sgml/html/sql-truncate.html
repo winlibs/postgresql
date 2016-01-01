@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.4 Documentation"
+TITLE="PostgreSQL 9.4.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-06-09T19:38:55"></HEAD
+CONTENT="2015-10-05T19:28:19"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.4 Documentation</A
+>PostgreSQL 9.4.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-TRUNCATE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN85021"
+NAME="AEN85075"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN85021"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN85024"
+NAME="AEN85078"
 ></A
 ><H2
 >Synopsis</H2
@@ -120,7 +120,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85027"
+NAME="AEN85081"
 ></A
 ><H2
 >Description</H2
@@ -145,7 +145,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85033"
+NAME="AEN85087"
 ></A
 ><H2
 >Parameters</H2
@@ -233,7 +233,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85065"
+NAME="AEN85119"
 ></A
 ><H2
 >Notes</H2
@@ -310,55 +310,18 @@ CLASS="LITERAL"
    to be processed (first those listed in the command, and then any
    that were added due to cascading).
   </P
-><DIV
-CLASS="WARNING"
 ><P
-></P
-><TABLE
-CLASS="WARNING"
-BORDER="1"
-WIDTH="100%"
-><TR
-><TD
-ALIGN="CENTER"
-><B
->Warning</B
-></TD
-></TR
-><TR
-><TD
-ALIGN="LEFT"
-><P
->    <TT
+>   <TT
 CLASS="COMMAND"
 >TRUNCATE</TT
-> is not MVCC-safe (see <A
-HREF="mvcc.html"
->Chapter 13</A
->
-     for general information about MVCC).  After truncation, the table
-     will appear empty to all concurrent transactions, even if they
-     are using a snapshot taken before the truncation occurred.  This
-     will only be an issue for a transaction that did not access the
-     truncated table before the truncation happened &mdash; any
-     transaction that has done so would hold at least an
-     <TT
-CLASS="LITERAL"
->ACCESS SHARE</TT
-> lock, which would block
-     <TT
-CLASS="COMMAND"
->TRUNCATE</TT
-> until that transaction completes.  So
-     truncation will not cause any apparent inconsistency in the table
-     contents for successive queries on the same table, but it could
-     cause visible inconsistency between the contents of the truncated
-     table and other tables in the database.
-   </P
-></TD
-></TR
-></TABLE
-></DIV
+> is not MVCC-safe.  After truncation, the table will
+   appear empty to concurrent transactions, if they are using a snapshot
+   taken before the truncation occurred.
+   See <A
+HREF="mvcc-caveats.html"
+>Section 13.5</A
+> for more details.
+  </P
 ><P
 >   <TT
 CLASS="COMMAND"
@@ -404,7 +367,7 @@ CLASS="FUNCTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85099"
+NAME="AEN85150"
 ></A
 ><H2
 >Examples</H2
@@ -450,7 +413,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85111"
+NAME="AEN85162"
 ></A
 ><H2
 >Compatibility</H2

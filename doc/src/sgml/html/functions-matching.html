@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.4 Documentation"
+TITLE="PostgreSQL 9.4.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-06-09T19:38:55"></HEAD
+CONTENT="2015-10-05T19:28:19"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.4 Documentation</A
+>PostgreSQL 9.4.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -135,6 +135,57 @@ CLASS="TIP"
      consider writing a user-defined function in Perl or Tcl.
     </P
 ></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="CAUTION"
+><P
+></P
+><TABLE
+CLASS="CAUTION"
+BORDER="1"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Caution</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>     While most regular-expression searches can be executed very quickly,
+     regular expressions can be contrived that take arbitrary amounts of
+     time and memory to process.  Be wary of accepting regular-expression
+     search patterns from hostile sources.  If you must do so, it is
+     advisable to impose a statement timeout.
+    </P
+><P
+>     Searches using <CODE
+CLASS="FUNCTION"
+>SIMILAR TO</CODE
+> patterns have the same
+     security hazards, since <CODE
+CLASS="FUNCTION"
+>SIMILAR TO</CODE
+> provides many
+     of the same capabilities as <ACRONYM
+CLASS="ACRONYM"
+>POSIX</ACRONYM
+>-style regular
+     expressions.
+    </P
+><P
+>     <CODE
+CLASS="FUNCTION"
+>LIKE</CODE
+> searches, being much simpler than the other
+     two options, are safer to use with possibly-hostile pattern sources.
+    </P
+></TD
+></TR
+></TABLE
 ></DIV
 ><DIV
 CLASS="SECT2"
@@ -2762,7 +2813,10 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >ESC</TT
 >,
-       or failing that, the character with octal value 033 </TD
+       or failing that, the character with octal value <TT
+CLASS="LITERAL"
+>033</TT
+> </TD
 ></TR
 ><TR
 ><TD
@@ -2818,16 +2872,17 @@ CLASS="REPLACEABLE"
 >wxyz</I
 ></TT
 > is exactly four hexadecimal digits)
-       the UTF16 (Unicode, 16-bit) character <TT
+       the character whose hexadecimal value is
+       <TT
 CLASS="LITERAL"
->U+</TT
+>0x</TT
 ><TT
 CLASS="REPLACEABLE"
 ><I
 >wxyz</I
 ></TT
 >
-       in the local byte ordering </TD
+       </TD
 ></TR
 ><TR
 ><TD
@@ -2848,7 +2903,16 @@ CLASS="REPLACEABLE"
 ></TT
 > is exactly eight hexadecimal
        digits)
-       reserved for a hypothetical Unicode extension to 32 bits
+       the character whose hexadecimal value is
+       <TT
+CLASS="LITERAL"
+>0x</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>stuvwxyz</I
+></TT
+>
        </TD
 ></TR
 ><TR
@@ -3001,6 +3065,22 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >7</TT
 >.
+   </P
+><P
+>    Numeric character-entry escapes specifying values outside the ASCII range
+    (0-127) have meanings dependent on the database encoding.  When the
+    encoding is UTF-8, escape values are equivalent to Unicode code points,
+    for example <TT
+CLASS="LITERAL"
+>\u1234</TT
+> means the character <TT
+CLASS="LITERAL"
+>U+1234</TT
+>.
+    For other multibyte encodings, character-entry escapes usually just
+    specify the concatenation of the byte values for the character.  If the
+    escape value does not correspond to any legal character in the database
+    encoding, no error will be raised, but it will never match any data.
    </P
 ><P
 >    The character-entry escapes are always taken as ordinary characters.
@@ -3997,9 +4077,66 @@ CLASS="LITERAL"
 >
     can be used to force greediness or non-greediness, respectively,
     on a subexpression or a whole RE.
+    This is useful when you need the whole RE to have a greediness attribute
+    different from what's deduced from its elements.  As an example,
+    suppose that we are trying to separate a string containing some digits
+    into the digits and the parts before and after them.  We might try to
+    do that like this:
+</P><PRE
+CLASS="SCREEN"
+>SELECT regexp_matches('abc01234xyz', '(.*)(\d+)(.*)');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>{abc0123,4,xyz}</SAMP
+></PRE
+><P>
+    That didn't work: the first <TT
+CLASS="LITERAL"
+>.*</TT
+> is greedy so
+    it <SPAN
+CLASS="QUOTE"
+>"eats"</SPAN
+> as much as it can, leaving the <TT
+CLASS="LITERAL"
+>\d+</TT
+> to
+    match at the last possible place, the last digit.  We might try to fix
+    that by making it non-greedy:
+</P><PRE
+CLASS="SCREEN"
+>SELECT regexp_matches('abc01234xyz', '(.*?)(\d+)(.*)');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>{abc,0,""}</SAMP
+></PRE
+><P>
+    That didn't work either, because now the RE as a whole is non-greedy
+    and so it ends the overall match as soon as possible.  We can get what
+    we want by forcing the RE as a whole to be greedy:
+</P><PRE
+CLASS="SCREEN"
+>SELECT regexp_matches('abc01234xyz', '(?:(.*?)(\d+)(.*)){1,1}');
+<I
+CLASS="LINEANNOTATION"
+>Result: </I
+><SAMP
+CLASS="COMPUTEROUTPUT"
+>{abc,01234,xyz}</SAMP
+></PRE
+><P>
+    Controlling the RE's overall greediness separately from its components'
+    greediness allows great flexibility in handling variable-length patterns.
    </P
 ><P
->    Match lengths are measured in characters, not collating elements.
+>    When deciding what is a longer or shorter match,
+    match lengths are measured in characters, not collating elements.
     An empty string is considered longer than no match at all.
     For example:
     <TT

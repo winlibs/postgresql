@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
 .\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.4 Documentation
-.\"    Source: PostgreSQL 9.4.4
+.\"    Manual: PostgreSQL 9.4.5 Documentation
+.\"    Source: PostgreSQL 9.4.5
 .\"  Language: English
 .\"
-.TH "TRUNCATE" "7" "2015" "PostgreSQL 9.4.4" "PostgreSQL 9.4.4 Documentation"
+.TH "TRUNCATE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -112,30 +112,12 @@ BEFORE TRUNCATE
 triggers are fired before any truncation happens, and all
 AFTER TRUNCATE
 triggers are fired after the last truncation is performed and any sequences are reset\&. The triggers will fire in the order that the tables are to be processed (first those listed in the command, and then any that were added due to cascading)\&.
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBWarning\fR
-.ps -1
-.br
 .PP
 
 \fBTRUNCATE\fR
-is not MVCC\-safe (see
-Chapter 13, Concurrency Control, in the documentation
-for general information about MVCC)\&. After truncation, the table will appear empty to all concurrent transactions, even if they are using a snapshot taken before the truncation occurred\&. This will only be an issue for a transaction that did not access the truncated table before the truncation happened \(em any transaction that has done so would hold at least an
-ACCESS SHARE
-lock, which would block
-\fBTRUNCATE\fR
-until that transaction completes\&. So truncation will not cause any apparent inconsistency in the table contents for successive queries on the same table, but it could cause visible inconsistency between the contents of the truncated table and other tables in the database\&.
-.sp .5v
-.RE
+is not MVCC\-safe\&. After truncation, the table will appear empty to concurrent transactions, if they are using a snapshot taken before the truncation occurred\&. See
+Section 13.5, \(lqCaveats\(rq, in the documentation
+for more details\&.
 .PP
 
 \fBTRUNCATE\fR

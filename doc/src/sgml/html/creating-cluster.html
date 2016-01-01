@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.4 Documentation"
+TITLE="PostgreSQL 9.4.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-06-09T19:38:55"></HEAD
+CONTENT="2015-10-05T19:28:19"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.4 Documentation</A
+>PostgreSQL 9.4.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -101,10 +101,10 @@ NAME="CREATING-CLUSTER"
 CLASS="FIRSTTERM"
 >database cluster</I
 >.
-   (<ACRONYM
+   (The <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
-> uses the term catalog cluster.) A
+> standard uses the term catalog cluster.) A
    database cluster is a collection of databases that is managed by a
    single instance of a running database server. After initialization, a
    database cluster will contain a database named <TT
@@ -131,7 +131,7 @@ HREF="managing-databases.html"
    information about creating new databases within a cluster.)
   </P
 ><P
->   In file system terms, a database cluster will be a single directory
+>   In file system terms, a database cluster is a single directory
    under which all data will be stored. We call this the <I
 CLASS="FIRSTTERM"
 >data
@@ -242,24 +242,30 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >initdb</TT
 > will attempt to create the directory you
-   specify if it does not already exist. It is likely that it will not
-   have the permission to do so (if you followed our advice and created
-   an unprivileged account). In that case you should create the
-   directory yourself (as root) and change the owner to be the
+   specify if it does not already exist.  Of course, this will fail if
+   <TT
+CLASS="COMMAND"
+>initdb</TT
+> does not have permissions to write in the
+   parent directory.  It's generally recommendable that the
    <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> user. Here is how this might
-   be done:
+> user own not just the data
+   directory but its parent directory as well, so that this should not
+   be a problem.  If the desired parent directory doesn't exist either,
+   you will need to create it first, using root privileges if the
+   grandparent directory isn't writable.  So the process might look
+   like this:
 </P><PRE
 CLASS="SCREEN"
 >root# <KBD
 CLASS="USERINPUT"
->mkdir /usr/local/pgsql/data</KBD
+>mkdir /usr/local/pgsql</KBD
 >
 root# <KBD
 CLASS="USERINPUT"
->chown postgres /usr/local/pgsql/data</KBD
+>chown postgres /usr/local/pgsql</KBD
 >
 root# <KBD
 CLASS="USERINPUT"
@@ -276,7 +282,9 @@ CLASS="USERINPUT"
 CLASS="COMMAND"
 >initdb</TT
 > will refuse to run if the data directory
-   looks like it has already been initialized.</P
+   exists and already contains files; this is to prevent accidentally
+   overwriting an existing installation.
+  </P
 ><P
 >   Because the data directory contains all the data stored in the
    database, it is essential that it be secured from unauthorized
@@ -391,12 +399,42 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="CREATING-CLUSTER-NFS"
->17.2.1. Network File Systems</A
+NAME="CREATING-CLUSTER-MOUNT-POINTS"
+>17.2.1. Use of Secondary File Systems</A
 ></H2
 ><P
->    Many installations create database clusters on network file systems.
-    Sometimes this is done directly via <ACRONYM
+>    Many installations create their database clusters on file systems
+    (volumes) other than the machine's <SPAN
+CLASS="QUOTE"
+>"root"</SPAN
+> volume.  If you
+    choose to do this, it is not advisable to try to use the secondary
+    volume's topmost directory (mount point) as the data directory.
+    Best practice is to create a directory within the mount-point
+    directory that is owned by the <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+    user, and then create the data directory within that.  This avoids
+    permissions problems, particularly for operations such
+    as <SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+>, and it also ensures clean failures if
+    the secondary volume is taken offline.
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="CREATING-CLUSTER-NFS"
+>17.2.2. Use of Network File Systems</A
+></H2
+><P
+>    Many installations create their database clusters on network file
+    systems.  Sometimes this is done via <ACRONYM
 CLASS="ACRONYM"
 >NFS</ACRONYM
 >, or by using a
@@ -418,15 +456,12 @@ CLASS="ACRONYM"
     <ACRONYM
 CLASS="ACRONYM"
 >NFS</ACRONYM
-> behaves exactly like locally-connected drives
-    (<ACRONYM
-CLASS="ACRONYM"
->DAS</ACRONYM
->, Direct Attached Storage).  If client and server
-    <ACRONYM
+> behaves exactly like locally-connected drives.
+    If the client or server <ACRONYM
 CLASS="ACRONYM"
 >NFS</ACRONYM
-> implementations have non-standard semantics, this can
+> implementation does not
+    provide standard file system semantics, this can
     cause reliability problems (see <A
 HREF="http://www.time-travellers.org/shane/papers/NFS_considered_harmful.html"
 TARGET="_top"
@@ -436,23 +471,33 @@ TARGET="_top"
 CLASS="ACRONYM"
 >NFS</ACRONYM
 >
-    server can cause reliability problems;   if possible, mount
+    server can cause data corruption problems.  If possible, mount the
     <ACRONYM
 CLASS="ACRONYM"
 >NFS</ACRONYM
-> file systems synchronously (without caching) to avoid
-    this.  Also, soft-mounting <ACRONYM
+> file system synchronously (without caching) to avoid
+    this hazard.  Also, soft-mounting the <ACRONYM
 CLASS="ACRONYM"
 >NFS</ACRONYM
-> is not recommended.
-    (Storage Area Networks (<ACRONYM
+> file system is
+    not recommended.
+   </P
+><P
+>    Storage Area Networks (<ACRONYM
 CLASS="ACRONYM"
 >SAN</ACRONYM
->) use a low-level
-    communication protocol rather than <ACRONYM
+>) typically use communication
+    protocols other than <ACRONYM
 CLASS="ACRONYM"
 >NFS</ACRONYM
->.)
+>, and may or may not be subject
+    to hazards of this sort.  It's advisable to consult the vendor's
+    documentation concerning data consistency guarantees.
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> cannot be more reliable than
+    the file system it's using.
    </P
 ></DIV
 ></DIV

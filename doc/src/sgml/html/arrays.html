@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.4 Documentation"
+TITLE="PostgreSQL 9.4.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-06-09T19:38:55"></HEAD
+CONTENT="2015-10-05T19:28:19"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.4 Documentation</A
+>PostgreSQL 9.4.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -622,7 +622,7 @@ CLASS="FUNCTION"
 CLASS="PROGRAMLISTING"
 >SELECT cardinality(schedule) FROM sal_emp WHERE name = 'Carol';
 
- cardinality 
+ cardinality
 -------------
            4
 (1 row)</PRE
@@ -834,11 +834,7 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >array_cat</CODE
 > supports multidimensional arrays.
-
-  Note that the concatenation operator discussed above is preferred over
-  direct use of these functions. In fact, these functions primarily exist for use
-  in implementing the concatenation operator. However, they might be directly
-  useful in the creation of user-defined aggregates. Some examples:
+  Some examples:
 
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -871,6 +867,54 @@ SELECT array_cat(ARRAY[5,6], ARRAY[[1,2],[3,4]]);
 ---------------------
  {{5,6},{1,2},{3,4}}</PRE
 ><P>
+ </P
+><P
+>  In simple cases, the concatenation operator discussed above is preferred
+  over direct use of these functions.  However, because the concatenation
+  operator is overloaded to serve all three cases, there are situations where
+  use of one of the functions is helpful to avoid ambiguity.  For example
+  consider:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT ARRAY[1, 2] || '{3, 4}';  -- the untyped literal is taken as an array
+ ?column?
+-----------
+ {1,2,3,4}
+
+SELECT ARRAY[1, 2] || '7';                 -- so is this one
+ERROR:  malformed array literal: "7"
+
+SELECT ARRAY[1, 2] || NULL;                -- so is an undecorated NULL
+ ?column?
+----------
+ {1,2}
+(1 row)
+
+SELECT array_append(ARRAY[1, 2], NULL);    -- this might have been meant
+ array_append
+--------------
+ {1,2,NULL}</PRE
+><P>
+
+  In the examples above, the parser sees an integer array on one side of the
+  concatenation operator, and a constant of undetermined type on the other.
+  The heuristic it uses to resolve the constant's type is to assume it's of
+  the same type as the operator's other input &mdash; in this case,
+  integer array.  So the concatenation operator is presumed to
+  represent <CODE
+CLASS="FUNCTION"
+>array_cat</CODE
+>, not <CODE
+CLASS="FUNCTION"
+>array_append</CODE
+>.  When
+  that's the wrong choice, it could be fixed by casting the constant to the
+  array's element type; but explicit use of <CODE
+CLASS="FUNCTION"
+>array_append</CODE
+> might
+  be a preferable solution.
  </P
 ></DIV
 ><DIV

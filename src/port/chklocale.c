@@ -203,7 +203,12 @@ win32_langinfo(const char *ctype)
 {
 	char	   *r = NULL;
 
-#if (_MSC_VER >= 1700)
+#if (_MSC_VER >= 1900)
+	r = malloc(16);			/* excess */
+
+	if (r != NULL)
+		sprintf(r, "CP%d", _getmbcp());
+#elif (_MSC_VER >= 1700)
 	_locale_t	loct = NULL;
 
 	loct = _create_locale(LC_CTYPE, ctype);

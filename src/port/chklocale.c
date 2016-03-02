@@ -211,7 +211,11 @@ win32_langinfo(const char *ctype)
 	{
 		r = malloc(16);			/* excess */
 		if (r != NULL)
+#if (_MSC_VER >= 1900)
+			sprintf(r, "CP%u", ((__crt_locale_data_public *)loct->locinfo)->_locale_lc_codepage);
+#else
 			sprintf(r, "CP%u", loct->locinfo->lc_codepage);
+#endif
 		_free_locale(loct);
 	}
 #else

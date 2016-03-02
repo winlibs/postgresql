@@ -1,5 +1,5 @@
 diff --git a/src/interfaces/libpq/win32.mak b/src/interfaces/libpq/win32.mak
-index 4e4a60e..a34b870 100644
+index 1b71ebd..076ef50 100644
 --- a/src/interfaces/libpq/win32.mak
 +++ b/src/interfaces/libpq/win32.mak
 @@ -30,9 +30,9 @@ ADD_SECLIB=bufferoverflowU.lib
@@ -22,17 +22,20 @@ index 4e4a60e..a34b870 100644
  	-@erase "$(OUTDIR)\$(OUTFILENAME).lib"
  	-@erase "$(OUTDIR)\$(OUTFILENAME)dll.lib"
  	-@erase "$(OUTDIR)\libpq.res"
-@@ -163,7 +164,8 @@ LIB32_OBJS= \
+@@ -166,9 +167,10 @@ LIB32_OBJS= \
  	"$(INTDIR)\system.obj" \
  	"$(INTDIR)\win32error.obj" \
  	"$(INTDIR)\win32setlocale.obj" \
 -	"$(INTDIR)\pthread-win32.obj"
 +	"$(INTDIR)\pthread-win32.obj" \
 +	"$(INTDIR)\fe_memutils.obj"
+ !IFDEF USE_OPENSSL
+-	LIB32_OBJS=$(LIB32_OBJS) "$(INTDIR)\fe-secure-openssl.obj"
++LIB32_OBJS=$(LIB32_OBJS) "$(INTDIR)\fe-secure-openssl.obj"
+ !ENDIF
  
  
- config: ..\..\include\pg_config.h ..\..\include\pg_config_ext.h pg_config_paths.h  ..\..\include\pg_config_os.h
-@@ -186,7 +188,7 @@ pg_config_paths.h: win32.mak
+@@ -192,7 +194,7 @@ pg_config_paths.h: win32.mak
  CPP_PROJ=/nologo /W3 /EHsc $(OPT) /I "..\..\include" /I "..\..\include\port\win32" /I "..\..\include\port\win32_msvc" /I "..\..\port" /I. /I "$(SSL_INC)" \
   /D "FRONTEND" $(DEBUGDEF) \
   /D "WIN32" /D "_WINDOWS" /Fp"$(INTDIR)\libpq.pch" \
@@ -40,17 +43,17 @@ index 4e4a60e..a34b870 100644
 + /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\$(OUTFILENAME).pdb" /FD /c  \
   /D "_CRT_SECURE_NO_DEPRECATE" $(ADD_DEFINES)
  
- !IFDEF USE_SSL
-@@ -210,7 +212,7 @@ RSC_PROJ=/l 0x409 /fo"$(INTDIR)\libpq.res"
+ !IFDEF USE_OPENSSL
+@@ -216,7 +218,7 @@ RSC_PROJ=/l 0x409 /fo"$(INTDIR)\libpq.res"
  LINK32=link.exe
- LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib shell32.lib wsock32.lib ws2_32.lib secur32.lib $(SSL_LIBS)  $(KFW_LIB) $(ADD_SECLIB) \
+ LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib shell32.lib ws2_32.lib secur32.lib $(SSL_LIBS)  $(KFW_LIB) $(ADD_SECLIB) \
   /nologo /subsystem:windows /dll $(LOPT) /incremental:no \
 - /pdb:"$(OUTDIR)\libpqdll.pdb" /machine:$(CPU) \
 + /pdb:"$(OUTDIR)\libpq_debug.pdb" /machine:$(CPU) \
   /out:"$(OUTDIR)\$(OUTFILENAME).dll"\
   /implib:"$(OUTDIR)\$(OUTFILENAME)dll.lib"  \
   /libpath:"$(SSL_LIB_PATH)" /libpath:"$(KFW_LIB_PATH)" \
-@@ -237,9 +239,11 @@ LINK32_OBJS= \
+@@ -243,9 +245,11 @@ LINK32_OBJS= \
  # Inclusion of manifest
  !IF "$(_NMAKE_VER)" != "6.00.8168.0" && "$(_NMAKE_VER)" != "7.00.9466"
  !IF "$(_NMAKE_VER)" != "6.00.9782.0" && "$(_NMAKE_VER)" != "7.10.3077"
@@ -62,7 +65,7 @@ index 4e4a60e..a34b870 100644
  
  "$(INTDIR)\getaddrinfo.obj" : ..\..\port\getaddrinfo.c
  	$(CPP) @<<
-@@ -352,6 +356,11 @@ LINK32_OBJS= \
+@@ -358,6 +362,11 @@ LINK32_OBJS= \
  	$(CPP_PROJ) /I"." ..\..\port\win32setlocale.c
  <<
  

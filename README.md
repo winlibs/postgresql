@@ -17,7 +17,7 @@ All prebuilt libraries are available in the php-libs
 ## Compilation
 
 	cd src
-    nmake /f win32.mak USE_SSL=1 SSL_INC=<ssl include> SSL_LIB_PATH=<ssl lib>
+    nmake /f win32.mak USE_OPENSSL=1 SSL_INC=<ssl include> SSL_LIB_PATH=<ssl lib>
   
 - for debug add DEBUG=1
 - for x64 add CPU=AMD64

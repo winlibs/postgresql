@@ -3,7 +3,7 @@
  * schemapg.h
  *    Schema_pg_xxx macros for use by relcache.c
  *
- * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2015, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * NOTES
@@ -42,10 +42,11 @@
 { 1255, {"proargmodes"}, 1002, -1, -1, 21, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
 { 1255, {"proargnames"}, 1009, -1, -1, 22, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
 { 1255, {"proargdefaults"}, 194, -1, -1, 23, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
-{ 1255, {"prosrc"}, 25, -1, -1, 24, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
-{ 1255, {"probin"}, 25, -1, -1, 25, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
-{ 1255, {"proconfig"}, 1009, -1, -1, 26, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
-{ 1255, {"proacl"}, 1034, -1, -1, 27, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }
+{ 1255, {"protrftypes"}, 1028, -1, -1, 24, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
+{ 1255, {"prosrc"}, 25, -1, -1, 25, 0, -1, -1, false, 'x', 'i', true, false, false, true, 0, 100 }, \
+{ 1255, {"probin"}, 25, -1, -1, 26, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
+{ 1255, {"proconfig"}, 1009, -1, -1, 27, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
+{ 1255, {"proacl"}, 1034, -1, -1, 28, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }
 
 #define Schema_pg_type \
 { 1247, {"typname"}, 19, -1, NAMEDATALEN, 1, 0, -1, -1, false, 'p', 'c', true, false, false, true, 0, 0 }, \
@@ -126,12 +127,14 @@
 { 1259, {"relhasrules"}, 16, -1, 1, 21, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
 { 1259, {"relhastriggers"}, 16, -1, 1, 22, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
 { 1259, {"relhassubclass"}, 16, -1, 1, 23, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relispopulated"}, 16, -1, 1, 24, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relreplident"}, 18, -1, 1, 25, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1259, {"relfrozenxid"}, 28, -1, 4, 26, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
-{ 1259, {"relminmxid"}, 28, -1, 4, 27, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
-{ 1259, {"relacl"}, 1034, -1, -1, 28, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
-{ 1259, {"reloptions"}, 1009, -1, -1, 29, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }
+{ 1259, {"relrowsecurity"}, 16, -1, 1, 24, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relforcerowsecurity"}, 16, -1, 1, 25, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relispopulated"}, 16, -1, 1, 26, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relreplident"}, 18, -1, 1, 27, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1259, {"relfrozenxid"}, 28, -1, 4, 28, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
+{ 1259, {"relminmxid"}, 28, -1, 4, 29, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
+{ 1259, {"relacl"}, 1034, -1, -1, 30, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
+{ 1259, {"reloptions"}, 1009, -1, -1, 31, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }
 
 #define Schema_pg_index \
 { 2610, {"indexrelid"}, 26, -1, 4, 1, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
@@ -175,9 +178,9 @@
 { 1260, {"rolinherit"}, 16, -1, 1, 3, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
 { 1260, {"rolcreaterole"}, 16, -1, 1, 4, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
 { 1260, {"rolcreatedb"}, 16, -1, 1, 5, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1260, {"rolcatupdate"}, 16, -1, 1, 6, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1260, {"rolcanlogin"}, 16, -1, 1, 7, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1260, {"rolreplication"}, 16, -1, 1, 8, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1260, {"rolcanlogin"}, 16, -1, 1, 6, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1260, {"rolreplication"}, 16, -1, 1, 7, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1260, {"rolbypassrls"}, 16, -1, 1, 8, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
 { 1260, {"rolconnlimit"}, 23, -1, 4, 9, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
 { 1260, {"rolpassword"}, 25, -1, -1, 10, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
 { 1260, {"rolvaliduntil"}, 1184, -1, 8, 11, 0, -1, -1, FLOAT8PASSBYVAL, 'p', 'd', false, false, false, true, 0, 0 }

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -141,7 +141,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60551"
+NAME="AEN62491"
 >40.6.1.1. <TT
 CLASS="COMMAND"
 >RETURN</TT
@@ -241,7 +241,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60573"
+NAME="AEN62513"
 >40.6.1.2. <TT
 CLASS="COMMAND"
 >RETURN NEXT</TT
@@ -600,7 +600,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60658"
+NAME="AEN62598"
 >40.6.2.1. <TT
 CLASS="LITERAL"
 >IF-THEN</TT
@@ -655,7 +655,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60671"
+NAME="AEN62611"
 >40.6.2.2. <TT
 CLASS="LITERAL"
 >IF-THEN-ELSE</TT
@@ -724,7 +724,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60684"
+NAME="AEN62624"
 >40.6.2.3. <TT
 CLASS="LITERAL"
 >IF-THEN-ELSIF</TT
@@ -888,7 +888,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60718"
+NAME="AEN62658"
 >40.6.2.4. Simple <TT
 CLASS="LITERAL"
 >CASE</TT
@@ -1036,7 +1036,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60750"
+NAME="AEN62690"
 >40.6.2.5. Searched <TT
 CLASS="LITERAL"
 >CASE</TT
@@ -1206,7 +1206,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60792"
+NAME="AEN62732"
 >40.6.3.1. <TT
 CLASS="LITERAL"
 >LOOP</TT
@@ -1273,7 +1273,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60808"
+NAME="AEN62748"
 >40.6.3.2. <TT
 CLASS="LITERAL"
 >EXIT</TT
@@ -1410,7 +1410,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60840"
+NAME="AEN62780"
 >40.6.3.3. <TT
 CLASS="LITERAL"
 >CONTINUE</TT
@@ -1497,7 +1497,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN60862"
+NAME="AEN62802"
 >40.6.3.4. <TT
 CLASS="LITERAL"
 >WHILE</TT
@@ -1797,10 +1797,8 @@ BEGIN
         -- Now "mviews" has one record from cs_materialized_views
 
         RAISE NOTICE 'Refreshing materialized view %s ...', quote_ident(mviews.mv_name);
-        EXECUTE 'TRUNCATE TABLE ' || quote_ident(mviews.mv_name);
-        EXECUTE 'INSERT INTO '
-                   || quote_ident(mviews.mv_name) || ' '
-                   || mviews.mv_query;
+        EXECUTE format('TRUNCATE TABLE %I', mviews.mv_name);
+        EXECUTE format('INSERT INTO %I %s', mviews.mv_name, mviews.mv_query);
     END LOOP;
 
     RAISE NOTICE 'Done refreshing materialized views.';
@@ -2306,11 +2304,12 @@ CLASS="LITERAL"
      <TT
 CLASS="LITERAL"
 >QUERY_CANCELED</TT
->.  (It is possible, but often unwise,
-     to trap <TT
+> and <TT
 CLASS="LITERAL"
->QUERY_CANCELED</TT
-> by name.)  Condition names are
+>ASSERT_FAILURE</TT
+>.
+     (It is possible, but often unwise, to trap those two error types
+     by name.)  Condition names are
      not case-sensitive.  Also, an error condition can be specified
      by <TT
 CLASS="LITERAL"
@@ -2444,7 +2443,20 @@ CLASS="COMMAND"
 > or <TT
 CLASS="COMMAND"
 >INSERT</TT
->, as appropriate:
+>, as appropriate.  It is
+    recommended that applications use <TT
+CLASS="COMMAND"
+>INSERT</TT
+> with
+    <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+> rather than actually using
+    this pattern.  This example serves primarily to illustrate use of
+    <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> control flow structures:
 
 </P><PRE
 CLASS="PROGRAMLISTING"

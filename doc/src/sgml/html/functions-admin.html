@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -113,7 +113,7 @@ NAME="FUNCTIONS-ADMIN-SET"
 ><P
 >    <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-SET-TABLE"
->Table 9-63</A
+>Table 9-66</A
 > shows the functions
     available to query and alter run-time configuration parameters.
    </P
@@ -124,7 +124,7 @@ NAME="FUNCTIONS-ADMIN-SET-TABLE"
 ></A
 ><P
 ><B
->Table 9-63. Configuration Settings Functions</B
+>Table 9-66. Configuration Settings Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -274,7 +274,7 @@ NAME="FUNCTIONS-ADMIN-SIGNAL"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE"
->Table 9-64</A
+>Table 9-67</A
 > send control signals to
     other server processes.  Use of these functions is usually restricted
     to superusers, with noted exceptions.
@@ -286,7 +286,7 @@ NAME="FUNCTIONS-ADMIN-SIGNAL-TABLE"
 ></A
 ><P
 ><B
->Table 9-64. Server Signaling Functions</B
+>Table 9-67. Server Signaling Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -324,9 +324,9 @@ CLASS="TYPE"
 >boolean</TT
 ></TD
 ><TD
->Cancel a backend's current query.  You can execute this against
-        another backend that has exactly the same role as the user calling the
-        function.  In all other cases, you must be a superuser.
+>Cancel a backend's current query.  This is also allowed if the
+        calling role is a member of the role whose backend is being canceled,
+        however only superusers can cancel superuser backends.
         </TD
 ></TR
 ><TR
@@ -387,10 +387,9 @@ CLASS="TYPE"
 >boolean</TT
 ></TD
 ><TD
->Terminate a backend.  You can execute this against
-        another backend that has exactly the same role as the user
-        calling the function.  In all other cases, you must be a
-        superuser.
+>Terminate a backend.  This is also allowed if the calling role
+        is a member of the role whose backend is being terminated, however only
+        superusers can terminate superuser backends.
        </TD
 ></TR
 ></TBODY
@@ -488,7 +487,7 @@ NAME="FUNCTIONS-ADMIN-BACKUP"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-65</A
+>Table 9-68</A
 > assist in making on-line backups.
     These functions cannot be executed during recovery (except
     <CODE
@@ -510,7 +509,7 @@ NAME="FUNCTIONS-ADMIN-BACKUP-TABLE"
 ></A
 ><P
 ><B
->Table 9-65. Backup Control Functions</B
+>Table 9-68. Backup Control Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -785,11 +784,18 @@ CLASS="FUNCTION"
     writes a backup label file (<TT
 CLASS="FILENAME"
 >backup_label</TT
->) into the
-    database cluster's data directory, performs a checkpoint,
-    and then returns the backup's starting transaction log location as text.
-    The user can ignore this result value, but it is
-    provided in case it is useful.
+>) and, if there
+    are any links in the <TT
+CLASS="FILENAME"
+>pg_tblspc/</TT
+> directory, a tablespace map
+    file (<TT
+CLASS="FILENAME"
+>tablespace_map</TT
+>) into the database cluster's data
+    directory, performs a checkpoint, and then returns the backup's starting
+    transaction log location as text.  The user can ignore this result value,
+    but it is provided in case it is useful.
 </P><PRE
 CLASS="PROGRAMLISTING"
 >postgres=# select pg_start_backup('label_goes_here');
@@ -816,7 +822,11 @@ CLASS="FUNCTION"
 >    <CODE
 CLASS="FUNCTION"
 >pg_stop_backup</CODE
-> removes the label file created by
+> removes the label file and, if it exists,
+    the <TT
+CLASS="FILENAME"
+>tablespace_map</TT
+> file created by
     <CODE
 CLASS="FUNCTION"
 >pg_start_backup</CODE
@@ -922,7 +932,7 @@ CLASS="STRUCTNAME"
 > or some functions shown in
     <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-65</A
+>Table 9-68</A
 > to get the replication lag.
    </P
 ><P
@@ -944,7 +954,7 @@ NAME="FUNCTIONS-RECOVERY-CONTROL"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-INFO-TABLE"
->Table 9-66</A
+>Table 9-69</A
 > provide information
     about the current status of the standby.
     These functions may be executed both during recovery and in normal running.
@@ -956,7 +966,7 @@ NAME="FUNCTIONS-RECOVERY-INFO-TABLE"
 ></A
 ><P
 ><B
->Table 9-66. Recovery Information Functions</B
+>Table 9-69. Recovery Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1073,7 +1083,7 @@ CLASS="TYPE"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL-TABLE"
->Table 9-67</A
+>Table 9-70</A
 > control the progress of recovery.
     These functions may be executed only during recovery.
    </P
@@ -1084,7 +1094,7 @@ NAME="FUNCTIONS-RECOVERY-CONTROL-TABLE"
 ></A
 ><P
 ><B
->Table 9-67. Recovery Control Functions</B
+>Table 9-70. Recovery Control Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1229,7 +1239,7 @@ CLASS="FUNCTION"
 > function,
     shown in <A
 HREF="functions-admin.html#FUNCTIONS-SNAPSHOT-SYNCHRONIZATION-TABLE"
->Table 9-68</A
+>Table 9-71</A
 >, and
     imported with the <A
 HREF="sql-set-transaction.html"
@@ -1243,7 +1253,7 @@ NAME="FUNCTIONS-SNAPSHOT-SYNCHRONIZATION-TABLE"
 ></A
 ><P
 ><B
->Table 9-68. Snapshot Synchronization Functions</B
+>Table 9-71. Snapshot Synchronization Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1324,39 +1334,49 @@ NAME="FUNCTIONS-REPLICATION"
 >9.26.6. Replication Functions</A
 ></H2
 ><P
->    The functions shown in <A
+>    The functions shown
+    in <A
 HREF="functions-admin.html#FUNCTIONS-REPLICATION-TABLE"
->Table 9-69</A
-> are
-    for controlling and interacting with replication features.
+>Table 9-72</A
+> are for
+    controlling and interacting with replication features.
     See <A
 HREF="warm-standby.html#STREAMING-REPLICATION"
 >Section 25.2.5</A
->
-    and <A
+>,
+    <A
 HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
 >Section 25.2.6</A
-> for information about the
-    underlying features.  Use of these functions is restricted to superusers.
+>, and
+    <A
+HREF="replication-origins.html"
+>Chapter 47</A
+>
+    for information about the underlying features.  Use of these
+    functions is restricted to superusers.
    </P
 ><P
 >    Many of these functions have equivalent commands in the replication
     protocol; see <A
 HREF="protocol-replication.html"
->Section 49.3</A
+>Section 50.3</A
 >.
    </P
 ><P
->    The functions described in <A
-HREF="functions-admin.html#FUNCTIONS-SNAPSHOT-SYNCHRONIZATION"
->Section 9.26.5</A
->, <A
-HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL"
->Section 9.26.4</A
->, and <A
+>    The functions described in
+    <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP"
 >Section 9.26.3</A
-> are also relevant for replication.
+>,
+    <A
+HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL"
+>Section 9.26.4</A
+>, and
+    <A
+HREF="functions-admin.html#FUNCTIONS-SNAPSHOT-SYNCHRONIZATION"
+>Section 9.26.5</A
+>
+    are also relevant for replication.
    </P
 ><DIV
 CLASS="TABLE"
@@ -1365,7 +1385,7 @@ NAME="FUNCTIONS-REPLICATION-TABLE"
 ></A
 ><P
 ><B
->Table 9-69. Replication <ACRONYM
+>Table 9-72. Replication <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions</B
@@ -1424,7 +1444,7 @@ CLASS="PARAMETER"
 >. Streaming changes from a physical slot
         is only possible with the streaming-replication protocol - see <A
 HREF="protocol-replication.html"
->Section 49.3</A
+>Section 50.3</A
 >. Corresponds to the replication protocol
         command <TT
 CLASS="LITERAL"
@@ -1811,6 +1831,349 @@ CLASS="TYPE"
         on future calls.
        </TD
 ></TR
+><TR
+><A
+NAME="PG-REPLICATION-ORIGIN-CREATE"
+></A
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_replication_origin_create(<TT
+CLASS="PARAMETER"
+>node_name</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        <TT
+CLASS="TYPE"
+>oid</TT
+>
+       </TD
+><TD
+>        Create a replication origin with the given external
+        name, and return the internal id assigned to it.
+       </TD
+></TR
+><TR
+><A
+NAME="PG-REPLICATION-ORIGIN-DROP"
+></A
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_replication_origin_drop(<TT
+CLASS="PARAMETER"
+>node_name</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        void
+       </TD
+><TD
+>        Delete a previously created replication origin, including any
+        associated replay progress.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_replication_origin_oid(<TT
+CLASS="PARAMETER"
+>node_name</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        <TT
+CLASS="TYPE"
+>oid</TT
+>
+       </TD
+><TD
+>        Lookup a replication origin by name and return the internal id. If no
+        corresponding replication origin is found an error is thrown.
+       </TD
+></TR
+><TR
+><A
+NAME="PG-REPLICATION-ORIGIN-SESSION-SETUP"
+></A
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_replication_origin_session_setup(<TT
+CLASS="PARAMETER"
+>node_name</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        void
+       </TD
+><TD
+>        Mark the current session as replaying from the given
+        origin, allowing replay progress to be tracked.  Use
+        <CODE
+CLASS="FUNCTION"
+>pg_replication_origin_session_reset</CODE
+> to revert.
+        Can only be used if no previous origin is configured.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_replication_origin_session_reset()</CODE
+></TT
+>
+       </TD
+><TD
+>        void
+       </TD
+><TD
+>        Cancel the effects
+        of <CODE
+CLASS="FUNCTION"
+>pg_replication_origin_session_setup()</CODE
+>.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_replication_origin_session_is_setup()</CODE
+></TT
+>
+       </TD
+><TD
+>        <TT
+CLASS="TYPE"
+>bool</TT
+>
+       </TD
+><TD
+>        Has a replication origin been configured in the current session?
+       </TD
+></TR
+><TR
+><A
+NAME="PG-REPLICATION-ORIGIN-SESSION-PROGRESS"
+></A
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_replication_origin_session_progress(<TT
+CLASS="PARAMETER"
+>flush</TT
+> <TT
+CLASS="TYPE"
+>bool</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>
+       </TD
+><TD
+>        Return the replay position for the replication origin configured in
+        the current session. The parameter <TT
+CLASS="PARAMETER"
+>flush</TT
+>
+        determines whether the corresponding local transaction will be
+        guaranteed to have been flushed to disk or not.
+       </TD
+></TR
+><TR
+><A
+NAME="PG-REPLICATION-ORIGIN-XACT-SETUP"
+></A
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_replication_origin_xact_setup(<TT
+CLASS="PARAMETER"
+>origin_lsn</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>, <TT
+CLASS="PARAMETER"
+>origin_timestamp</TT
+> <TT
+CLASS="TYPE"
+>timestamptz</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        void
+       </TD
+><TD
+>        Mark the current transaction as replaying a transaction that has
+        committed at the given <ACRONYM
+CLASS="ACRONYM"
+>LSN</ACRONYM
+> and timestamp. Can
+        only be called when a replication origin has previously been
+        configured using
+        <CODE
+CLASS="FUNCTION"
+>pg_replication_origin_session_setup()</CODE
+>.
+       </TD
+></TR
+><TR
+><A
+NAME="PG-REPLICATION-ORIGIN-XACT-RESET"
+></A
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_replication_origin_xact_reset()</CODE
+></TT
+>
+       </TD
+><TD
+>        void
+       </TD
+><TD
+>        Cancel the effects of
+        <CODE
+CLASS="FUNCTION"
+>pg_replication_origin_xact_setup()</CODE
+>.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+>pg_replication_origin_advance<CODE
+CLASS="FUNCTION"
+>(<TT
+CLASS="PARAMETER"
+>node_name</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>pos</TT
+> <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        void
+       </TD
+><TD
+>        Set replication progress for the given node to the given
+        position. This primarily is useful for setting up the initial position
+        or a new position after configuration changes and similar. Be aware
+        that careless use of this function can lead to inconsistently
+        replicated data.
+       </TD
+></TR
+><TR
+><A
+NAME="PG-REPLICATION-ORIGIN-PROGRESS"
+></A
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_replication_origin_progress(<TT
+CLASS="PARAMETER"
+>node_name</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>flush</TT
+> <TT
+CLASS="TYPE"
+>bool</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>
+       </TD
+><TD
+>        Return the replay position for the given replication origin. The
+        parameter <TT
+CLASS="PARAMETER"
+>flush</TT
+> determines whether the
+        corresponding local transaction will be guaranteed to have been
+        flushed to disk or not.
+       </TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -1826,7 +2189,7 @@ NAME="FUNCTIONS-ADMIN-DBOBJECT"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-DBSIZE"
->Table 9-70</A
+>Table 9-73</A
 > calculate
     the disk space usage of database objects.
    </P
@@ -1837,7 +2200,7 @@ NAME="FUNCTIONS-ADMIN-DBSIZE"
 ></A
 ><P
 ><B
->Table 9-70. Database Object Size Functions</B
+>Table 9-73. Database Object Size Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2258,7 +2621,7 @@ CLASS="LITERAL"
 > returns the size of the Free Space Map
        (see <A
 HREF="storage-fsm.html"
->Section 59.3</A
+>Section 63.3</A
 >) associated with the relation.
       </P
 ></LI
@@ -2270,7 +2633,7 @@ CLASS="LITERAL"
 > returns the size of the Visibility Map
        (see <A
 HREF="storage-vm.html"
->Section 59.4</A
+>Section 63.4</A
 >) associated with the relation.
       </P
 ></LI
@@ -2324,7 +2687,7 @@ CLASS="ACRONYM"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-DBLOCATION"
->Table 9-71</A
+>Table 9-74</A
 > assist
     in identifying the specific disk files associated with database objects.
    </P
@@ -2335,7 +2698,7 @@ NAME="FUNCTIONS-ADMIN-DBLOCATION"
 ></A
 ><P
 ><B
->Table 9-71. Database Object Location Functions</B
+>Table 9-74. Database Object Location Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2447,7 +2810,7 @@ CLASS="QUOTE"
     currently assigned to it.  The filenode is the base component of the file
     name(s) used for the relation (see <A
 HREF="storage-file-layout.html"
->Section 59.1</A
+>Section 63.1</A
 >
     for more information).  For most tables the result is the same as
     <TT
@@ -2503,13 +2866,90 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
+NAME="FUNCTIONS-ADMIN-INDEX"
+>9.26.8. Index Maintenance Functions</A
+></H2
+><P
+>    <A
+HREF="functions-admin.html#FUNCTIONS-ADMIN-INDEX-TABLE"
+>Table 9-75</A
+> shows the functions
+    available for index maintenance tasks.
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-ADMIN-INDEX-TABLE"
+></A
+><P
+><B
+>Table 9-75. Index Maintenance Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Name</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>brin_summarize_new_values(<TT
+CLASS="PARAMETER"
+>index_oid</TT
+> <TT
+CLASS="TYPE"
+>regclass</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>summarize page ranges not already summarized</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    <CODE
+CLASS="FUNCTION"
+>brin_summarize_new_values</CODE
+> receives a BRIN index OID as
+    argument and inspects the index to find page ranges in the base table
+    that are not currently summarized by the index; for any such range
+    it creates a new summary index tuple by scanning the table pages.
+    It returns the number of new page range summaries that were inserted
+    into the index.
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
 NAME="FUNCTIONS-ADMIN-GENFILE"
->9.26.8. Generic File Access Functions</A
+>9.26.9. Generic File Access Functions</A
 ></H2
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-GENFILE-TABLE"
->Table 9-72</A
+>Table 9-76</A
 > provide native access to
     files on the machine hosting the server. Only files within the
     database cluster directory and the <TT
@@ -2530,7 +2970,7 @@ NAME="FUNCTIONS-ADMIN-GENFILE-TABLE"
 ></A
 ><P
 ><B
->Table 9-72. Generic File Access Functions</B
+>Table 9-76. Generic File Access Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2558,7 +2998,19 @@ CLASS="PARAMETER"
 > <TT
 CLASS="TYPE"
 >text</TT
->)</CODE
+> [, <TT
+CLASS="PARAMETER"
+>missing_ok</TT
+> <TT
+CLASS="TYPE"
+>boolean</TT
+>, <TT
+CLASS="PARAMETER"
+>include_dot_dirs</TT
+> <TT
+CLASS="TYPE"
+>boolean</TT
+>])</CODE
 ></TT
 >
        </TD
@@ -2568,7 +3020,8 @@ CLASS="TYPE"
 >setof text</TT
 ></TD
 ><TD
->List the contents of a directory</TD
+>        List the contents of a directory.
+       </TD
 ></TR
 ><TR
 ><TD
@@ -2594,7 +3047,13 @@ CLASS="PARAMETER"
 > <TT
 CLASS="TYPE"
 >bigint</TT
->])</CODE
+> [, <TT
+CLASS="PARAMETER"
+>missing_ok</TT
+> <TT
+CLASS="TYPE"
+>boolean</TT
+>] ])</CODE
 ></TT
 >
        </TD
@@ -2604,7 +3063,8 @@ CLASS="TYPE"
 >text</TT
 ></TD
 ><TD
->Return the contents of a text file</TD
+>        Return the contents of a text file.
+       </TD
 ></TR
 ><TR
 ><TD
@@ -2630,7 +3090,13 @@ CLASS="PARAMETER"
 > <TT
 CLASS="TYPE"
 >bigint</TT
->])</CODE
+> [, <TT
+CLASS="PARAMETER"
+>missing_ok</TT
+> <TT
+CLASS="TYPE"
+>boolean</TT
+>] ])</CODE
 ></TT
 >
        </TD
@@ -2640,7 +3106,8 @@ CLASS="TYPE"
 >bytea</TT
 ></TD
 ><TD
->Return the contents of a file</TD
+>        Return the contents of a file.
+       </TD
 ></TR
 ><TR
 ><TD
@@ -2654,7 +3121,13 @@ CLASS="PARAMETER"
 > <TT
 CLASS="TYPE"
 >text</TT
->)</CODE
+>[, <TT
+CLASS="PARAMETER"
+>missing_ok</TT
+> <TT
+CLASS="TYPE"
+>boolean</TT
+>])</CODE
 ></TT
 >
        </TD
@@ -2664,30 +3137,62 @@ CLASS="TYPE"
 >record</TT
 ></TD
 ><TD
->Return information about a file</TD
+>        Return information about a file.
+       </TD
 ></TR
 ></TBODY
 ></TABLE
 ></DIV
 ><P
+>    All of these functions take an optional <TT
+CLASS="PARAMETER"
+>missing_ok</TT
+> parameter,
+    which specifies the behavior when the file or directory does not exist.
+    If <TT
+CLASS="LITERAL"
+>true</TT
+>, the function returns NULL (except
+    <CODE
+CLASS="FUNCTION"
+>pg_ls_dir</CODE
+>, which returns an empty result set). If
+    <TT
+CLASS="LITERAL"
+>false</TT
+>, an error is raised. The default is <TT
+CLASS="LITERAL"
+>false</TT
+>.
+   </P
+><P
 >    <CODE
 CLASS="FUNCTION"
 >pg_ls_dir</CODE
-> returns all the names in the specified
-    directory, except the special entries <SPAN
+> returns the names of all files (and directories
+    and other special files) in the specified directory. The <TT
+CLASS="PARAMETER"
+>    include_dot_dirs</TT
+> indicates whether <SPAN
 CLASS="QUOTE"
->"<TT
-CLASS="LITERAL"
->.</TT
->"</SPAN
-> and
-    <SPAN
+>"."</SPAN
+> and <SPAN
 CLASS="QUOTE"
->"<TT
+>".."</SPAN
+> are
+    included in the result set. The default is to exclude them
+    (<TT
 CLASS="LITERAL"
->..</TT
->"</SPAN
->.
+>false</TT
+>), but including them can be useful when
+    <TT
+CLASS="PARAMETER"
+>missing_ok</TT
+> is <TT
+CLASS="LITERAL"
+>true</TT
+>, to distinguish an
+    empty directory from an non-existent directory.
    </P
 ><P
 >    <CODE
@@ -2765,12 +3270,12 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="FUNCTIONS-ADVISORY-LOCKS"
->9.26.9. Advisory Lock Functions</A
+>9.26.10. Advisory Lock Functions</A
 ></H2
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADVISORY-LOCKS-TABLE"
->Table 9-73</A
+>Table 9-77</A
 >
     manage advisory locks.  For details about proper use of these functions,
     see <A
@@ -2785,7 +3290,7 @@ NAME="FUNCTIONS-ADVISORY-LOCKS-TABLE"
 ></A
 ><P
 ><B
->Table 9-73. Advisory Lock Functions</B
+>Table 9-77. Advisory Lock Functions</B
 ></P
 ><TABLE
 BORDER="1"

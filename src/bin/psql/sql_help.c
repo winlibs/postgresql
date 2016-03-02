@@ -21,7 +21,8 @@ sql_help_ALTER_AGGREGATE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER AGGREGATE %s ( %s ) RENAME TO %s\n"
-					  "ALTER AGGREGATE %s ( %s ) OWNER TO %s\n"
+					  "ALTER AGGREGATE %s ( %s )\n"
+					  "                OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER AGGREGATE %s ( %s ) SET SCHEMA %s\n"
 					  "\n"
 					  "%s\n"
@@ -55,7 +56,7 @@ sql_help_ALTER_COLLATION(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER COLLATION %s RENAME TO %s\n"
-					  "ALTER COLLATION %s OWNER TO %s\n"
+					  "ALTER COLLATION %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER COLLATION %s SET SCHEMA %s",
 					  _("name"),
 					  _("new_name"),
@@ -70,7 +71,7 @@ sql_help_ALTER_CONVERSION(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER CONVERSION %s RENAME TO %s\n"
-					  "ALTER CONVERSION %s OWNER TO %s\n"
+					  "ALTER CONVERSION %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER CONVERSION %s SET SCHEMA %s",
 					  _("name"),
 					  _("new_name"),
@@ -88,11 +89,13 @@ sql_help_ALTER_DATABASE(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
+					  "    ALLOW_CONNECTIONS %s\n"
 					  "    CONNECTION LIMIT %s\n"
+					  "    IS_TEMPLATE %s\n"
 					  "\n"
 					  "ALTER DATABASE %s RENAME TO %s\n"
 					  "\n"
-					  "ALTER DATABASE %s OWNER TO %s\n"
+					  "ALTER DATABASE %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "\n"
 					  "ALTER DATABASE %s SET TABLESPACE %s\n"
 					  "\n"
@@ -103,7 +106,9 @@ sql_help_ALTER_DATABASE(PQExpBuffer buf)
 					  _("name"),
 					  _("option"),
 					  _("where option can be:"),
+					  _("allowconn"),
 					  _("connlimit"),
+					  _("istemplate"),
 					  _("name"),
 					  _("new_name"),
 					  _("name"),
@@ -205,7 +210,7 @@ sql_help_ALTER_DOMAIN(PQExpBuffer buf)
 					  "ALTER DOMAIN %s\n"
 					  "    VALIDATE CONSTRAINT %s\n"
 					  "ALTER DOMAIN %s\n"
-					  "    OWNER TO %s\n"
+					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER DOMAIN %s\n"
 					  "    RENAME TO %s\n"
 					  "ALTER DOMAIN %s\n"
@@ -236,7 +241,7 @@ sql_help_ALTER_EVENT_TRIGGER(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "ALTER EVENT TRIGGER %s DISABLE\n"
 					  "ALTER EVENT TRIGGER %s ENABLE [ REPLICA | ALWAYS ]\n"
-					  "ALTER EVENT TRIGGER %s OWNER TO %s\n"
+					  "ALTER EVENT TRIGGER %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER EVENT TRIGGER %s RENAME TO %s",
 					  _("name"),
 					  _("name"),
@@ -279,6 +284,7 @@ sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 					  "  TEXT SEARCH DICTIONARY %s |\n"
 					  "  TEXT SEARCH PARSER %s |\n"
 					  "  TEXT SEARCH TEMPLATE %s |\n"
+					  "  TRANSFORM FOR %s LANGUAGE %s |\n"
 					  "  TYPE %s |\n"
 					  "  VIEW %s\n"
 					  "\n"
@@ -327,6 +333,8 @@ sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
+					  _("type_name"),
+					  _("lang_name"),
 					  _("object_name"),
 					  _("object_name"),
 					  _("and aggregate_signature is:"),
@@ -349,7 +357,7 @@ sql_help_ALTER_FOREIGN_DATA_WRAPPER(PQExpBuffer buf)
 					  "    [ HANDLER %s | NO HANDLER ]\n"
 					  "    [ VALIDATOR %s | NO VALIDATOR ]\n"
 					  "    [ OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ]) ]\n"
-					  "ALTER FOREIGN DATA WRAPPER %s OWNER TO %s\n"
+					  "ALTER FOREIGN DATA WRAPPER %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER FOREIGN DATA WRAPPER %s RENAME TO %s",
 					  _("name"),
 					  _("handler_function"),
@@ -366,9 +374,9 @@ void
 sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER FOREIGN TABLE [ IF EXISTS ] %s\n"
+					  "ALTER FOREIGN TABLE [ IF EXISTS ] [ ONLY ] %s [ * ]\n"
 					  "    %s [, ... ]\n"
-					  "ALTER FOREIGN TABLE [ IF EXISTS ] %s\n"
+					  "ALTER FOREIGN TABLE [ IF EXISTS ] [ ONLY ] %s [ * ]\n"
 					  "    RENAME [ COLUMN ] %s TO %s\n"
 					  "ALTER FOREIGN TABLE [ IF EXISTS ] %s\n"
 					  "    RENAME TO %s\n"
@@ -379,19 +387,27 @@ sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf)
 					  "\n"
 					  "    ADD [ COLUMN ] %s %s [ COLLATE %s ] [ %s [ ... ] ]\n"
 					  "    DROP [ COLUMN ] [ IF EXISTS ] %s [ RESTRICT | CASCADE ]\n"
-					  "    ALTER [ COLUMN ] %s [ SET DATA ] TYPE %s\n"
+					  "    ALTER [ COLUMN ] %s [ SET DATA ] TYPE %s [ COLLATE %s ]\n"
 					  "    ALTER [ COLUMN ] %s SET DEFAULT %s\n"
 					  "    ALTER [ COLUMN ] %s DROP DEFAULT\n"
 					  "    ALTER [ COLUMN ] %s { SET | DROP } NOT NULL\n"
 					  "    ALTER [ COLUMN ] %s SET STATISTICS %s\n"
 					  "    ALTER [ COLUMN ] %s SET ( %s = %s [, ... ] )\n"
 					  "    ALTER [ COLUMN ] %s RESET ( %s [, ... ] )\n"
+					  "    ALTER [ COLUMN ] %s SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }\n"
 					  "    ALTER [ COLUMN ] %s OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ])\n"
+					  "    ADD %s [ NOT VALID ]\n"
+					  "    VALIDATE CONSTRAINT %s\n"
+					  "    DROP CONSTRAINT [ IF EXISTS ]  %s [ RESTRICT | CASCADE ]\n"
 					  "    DISABLE TRIGGER [ %s | ALL | USER ]\n"
 					  "    ENABLE TRIGGER [ %s | ALL | USER ]\n"
 					  "    ENABLE REPLICA TRIGGER %s\n"
 					  "    ENABLE ALWAYS TRIGGER %s\n"
-					  "    OWNER TO %s\n"
+					  "    SET WITH OIDS\n"
+					  "    SET WITHOUT OIDS\n"
+					  "    INHERIT %s\n"
+					  "    NO INHERIT %s\n"
+					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "    OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ])",
 					  _("name"),
 					  _("action"),
@@ -410,6 +426,7 @@ sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf)
 					  _("column_name"),
 					  _("column_name"),
 					  _("data_type"),
+					  _("collation"),
 					  _("column_name"),
 					  _("expression"),
 					  _("column_name"),
@@ -422,12 +439,18 @@ sql_help_ALTER_FOREIGN_TABLE(PQExpBuffer buf)
 					  _("column_name"),
 					  _("attribute_option"),
 					  _("column_name"),
+					  _("column_name"),
 					  _("option"),
 					  _("value"),
+					  _("table_constraint"),
+					  _("constraint_name"),
+					  _("constraint_name"),
 					  _("trigger_name"),
 					  _("trigger_name"),
 					  _("trigger_name"),
 					  _("trigger_name"),
+					  _("parent_table"),
+					  _("parent_table"),
 					  _("new_owner"),
 					  _("option"),
 					  _("value"));
@@ -442,7 +465,7 @@ sql_help_ALTER_FUNCTION(PQExpBuffer buf)
 					  "ALTER FUNCTION %s ( [ [ %s ] [ %s ] %s [, ...] ] )\n"
 					  "    RENAME TO %s\n"
 					  "ALTER FUNCTION %s ( [ [ %s ] [ %s ] %s [, ...] ] )\n"
-					  "    OWNER TO %s\n"
+					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER FUNCTION %s ( [ [ %s ] [ %s ] %s [, ...] ] )\n"
 					  "    SET SCHEMA %s\n"
 					  "\n"
@@ -493,11 +516,19 @@ sql_help_ALTER_GROUP(PQExpBuffer buf)
 					  "ALTER GROUP %s ADD USER %s [, ... ]\n"
 					  "ALTER GROUP %s DROP USER %s [, ... ]\n"
 					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    %s\n"
+					  "  | CURRENT_USER\n"
+					  "  | SESSION_USER\n"
+					  "\n"
 					  "ALTER GROUP %s RENAME TO %s",
-					  _("group_name"),
+					  _("role_specification"),
 					  _("user_name"),
-					  _("group_name"),
+					  _("role_specification"),
 					  _("user_name"),
+					  _("where role_specification can be:"),
+					  _("role_name"),
 					  _("group_name"),
 					  _("new_name"));
 }
@@ -531,7 +562,7 @@ sql_help_ALTER_LANGUAGE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER [ PROCEDURAL ] LANGUAGE %s RENAME TO %s\n"
-					  "ALTER [ PROCEDURAL ] LANGUAGE %s OWNER TO %s",
+					  "ALTER [ PROCEDURAL ] LANGUAGE %s OWNER TO { %s | CURRENT_USER | SESSION_USER }",
 					  _("name"),
 					  _("new_name"),
 					  _("name"),
@@ -542,7 +573,7 @@ void
 sql_help_ALTER_LARGE_OBJECT(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER LARGE OBJECT %s OWNER TO %s",
+					  "ALTER LARGE OBJECT %s OWNER TO { %s | CURRENT_USER | SESSION_USER }",
 					  _("large_object_oid"),
 					  _("new_owner"));
 }
@@ -572,7 +603,7 @@ sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf)
 					  "    SET WITHOUT CLUSTER\n"
 					  "    SET ( %s = %s [, ... ] )\n"
 					  "    RESET ( %s [, ... ] )\n"
-					  "    OWNER TO %s\n"
+					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "    SET TABLESPACE %s",
 					  _("name"),
 					  _("action"),
@@ -607,8 +638,11 @@ void
 sql_help_ALTER_OPERATOR(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER OPERATOR %s ( { %s | NONE } , { %s | NONE } ) OWNER TO %s\n"
-					  "ALTER OPERATOR %s ( { %s | NONE } , { %s | NONE } ) SET SCHEMA %s",
+					  "ALTER OPERATOR %s ( { %s | NONE } , { %s | NONE } )\n"
+					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "\n"
+					  "ALTER OPERATOR %s ( { %s | NONE } , { %s | NONE } )\n"
+					  "    SET SCHEMA %s",
 					  _("name"),
 					  _("left_type"),
 					  _("right_type"),
@@ -623,9 +657,14 @@ void
 sql_help_ALTER_OPERATOR_CLASS(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER OPERATOR CLASS %s USING %s RENAME TO %s\n"
-					  "ALTER OPERATOR CLASS %s USING %s OWNER TO %s\n"
-					  "ALTER OPERATOR CLASS %s USING %s SET SCHEMA %s",
+					  "ALTER OPERATOR CLASS %s USING %s\n"
+					  "    RENAME TO %s\n"
+					  "\n"
+					  "ALTER OPERATOR CLASS %s USING %s\n"
+					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "\n"
+					  "ALTER OPERATOR CLASS %s USING %s\n"
+					  "    SET SCHEMA %s",
 					  _("name"),
 					  _("index_method"),
 					  _("new_name"),
@@ -642,16 +681,25 @@ sql_help_ALTER_OPERATOR_FAMILY(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER OPERATOR FAMILY %s USING %s ADD\n"
-					  "  {  OPERATOR %s %s ( %s, %s ) [ FOR SEARCH | FOR ORDER BY %s ]\n"
-					  "   | FUNCTION %s [ ( %s [ , %s ] ) ] %s ( %s [, ...] )\n"
+					  "  {  OPERATOR %s %s ( %s, %s )\n"
+					  "              [ FOR SEARCH | FOR ORDER BY %s ]\n"
+					  "   | FUNCTION %s [ ( %s [ , %s ] ) ]\n"
+					  "              %s ( %s [, ...] )\n"
 					  "  } [, ... ]\n"
+					  "\n"
 					  "ALTER OPERATOR FAMILY %s USING %s DROP\n"
 					  "  {  OPERATOR %s ( %s [ , %s ] )\n"
 					  "   | FUNCTION %s ( %s [ , %s ] )\n"
 					  "  } [, ... ]\n"
-					  "ALTER OPERATOR FAMILY %s USING %s RENAME TO %s\n"
-					  "ALTER OPERATOR FAMILY %s USING %s OWNER TO %s\n"
-					  "ALTER OPERATOR FAMILY %s USING %s SET SCHEMA %s",
+					  "\n"
+					  "ALTER OPERATOR FAMILY %s USING %s\n"
+					  "    RENAME TO %s\n"
+					  "\n"
+					  "ALTER OPERATOR FAMILY %s USING %s\n"
+					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "\n"
+					  "ALTER OPERATOR FAMILY %s USING %s\n"
+					  "    SET SCHEMA %s",
 					  _("name"),
 					  _("index_method"),
 					  _("strategy_number"),
@@ -684,10 +732,30 @@ sql_help_ALTER_OPERATOR_FAMILY(PQExpBuffer buf)
 }
 
 void
+sql_help_ALTER_POLICY(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "ALTER POLICY %s ON %s RENAME TO %s\n"
+					  "\n"
+					  "ALTER POLICY %s ON %s\n"
+					  "    [ TO { %s | PUBLIC | CURRENT_USER | SESSION_USER } [, ...] ]\n"
+					  "    [ USING ( %s ) ]\n"
+					  "    [ WITH CHECK ( %s ) ]",
+					  _("name"),
+					  _("table_name"),
+					  _("new_name"),
+					  _("name"),
+					  _("table_name"),
+					  _("role_name"),
+					  _("using_expression"),
+					  _("check_expression"));
+}
+
+void
 sql_help_ALTER_ROLE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER ROLE %s [ [ WITH ] %s [ ... ] ]\n"
+					  "ALTER ROLE %s [ WITH ] %s [ ... ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -698,17 +766,24 @@ sql_help_ALTER_ROLE(PQExpBuffer buf)
 					  "    | INHERIT | NOINHERIT\n"
 					  "    | LOGIN | NOLOGIN\n"
 					  "    | REPLICATION | NOREPLICATION\n"
+					  "    | BYPASSRLS | NOBYPASSRLS\n"
 					  "    | CONNECTION LIMIT %s\n"
 					  "    | [ ENCRYPTED | UNENCRYPTED ] PASSWORD '%s'\n"
 					  "    | VALID UNTIL '%s'\n"
 					  "\n"
 					  "ALTER ROLE %s RENAME TO %s\n"
 					  "\n"
-					  "ALTER ROLE %s [ IN DATABASE %s ] SET %s { TO | = } { %s | DEFAULT }\n"
+					  "ALTER ROLE { %s | ALL } [ IN DATABASE %s ] SET %s { TO | = } { %s | DEFAULT }\n"
 					  "ALTER ROLE { %s | ALL } [ IN DATABASE %s ] SET %s FROM CURRENT\n"
 					  "ALTER ROLE { %s | ALL } [ IN DATABASE %s ] RESET %s\n"
-					  "ALTER ROLE { %s | ALL } [ IN DATABASE %s ] RESET ALL",
-					  _("name"),
+					  "ALTER ROLE { %s | ALL } [ IN DATABASE %s ] RESET ALL\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    [ GROUP ] %s\n"
+					  "  | CURRENT_USER\n"
+					  "  | SESSION_USER",
+					  _("role_specification"),
 					  _("option"),
 					  _("where option can be:"),
 					  _("connlimit"),
@@ -716,18 +791,20 @@ sql_help_ALTER_ROLE(PQExpBuffer buf)
 					  _("timestamp"),
 					  _("name"),
 					  _("new_name"),
-					  _("name"),
+					  _("role_specification"),
 					  _("database_name"),
 					  _("configuration_parameter"),
 					  _("value"),
-					  _("name"),
+					  _("role_specification"),
 					  _("database_name"),
 					  _("configuration_parameter"),
-					  _("name"),
+					  _("role_specification"),
 					  _("database_name"),
 					  _("configuration_parameter"),
-					  _("name"),
-					  _("database_name"));
+					  _("role_specification"),
+					  _("database_name"),
+					  _("where role_specification can be:"),
+					  _("role_name"));
 }
 
 void
@@ -745,7 +822,7 @@ sql_help_ALTER_SCHEMA(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER SCHEMA %s RENAME TO %s\n"
-					  "ALTER SCHEMA %s OWNER TO %s",
+					  "ALTER SCHEMA %s OWNER TO { %s | CURRENT_USER | SESSION_USER }",
 					  _("name"),
 					  _("new_name"),
 					  _("name"),
@@ -762,7 +839,7 @@ sql_help_ALTER_SEQUENCE(PQExpBuffer buf)
 					  "    [ RESTART [ [ WITH ] %s ] ]\n"
 					  "    [ CACHE %s ] [ [ NO ] CYCLE ]\n"
 					  "    [ OWNED BY { %s.%s | NONE } ]\n"
-					  "ALTER SEQUENCE [ IF EXISTS ] %s OWNER TO %s\n"
+					  "ALTER SEQUENCE [ IF EXISTS ] %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER SEQUENCE [ IF EXISTS ] %s RENAME TO %s\n"
 					  "ALTER SEQUENCE [ IF EXISTS ] %s SET SCHEMA %s",
 					  _("name"),
@@ -788,7 +865,7 @@ sql_help_ALTER_SERVER(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "ALTER SERVER %s [ VERSION '%s' ]\n"
 					  "    [ OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ] ) ]\n"
-					  "ALTER SERVER %s OWNER TO %s\n"
+					  "ALTER SERVER %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER SERVER %s RENAME TO %s",
 					  _("name"),
 					  _("new_version"),
@@ -856,19 +933,24 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  "    ENABLE RULE %s\n"
 					  "    ENABLE REPLICA RULE %s\n"
 					  "    ENABLE ALWAYS RULE %s\n"
+					  "    DISABLE ROW LEVEL SECURITY\n"
+					  "    ENABLE ROW LEVEL SECURITY\n"
+					  "    FORCE ROW LEVEL SECURITY\n"
+					  "    NO FORCE ROW LEVEL SECURITY\n"
 					  "    CLUSTER ON %s\n"
 					  "    SET WITHOUT CLUSTER\n"
 					  "    SET WITH OIDS\n"
 					  "    SET WITHOUT OIDS\n"
+					  "    SET TABLESPACE %s\n"
+					  "    SET { LOGGED | UNLOGGED }\n"
 					  "    SET ( %s = %s [, ... ] )\n"
 					  "    RESET ( %s [, ... ] )\n"
 					  "    INHERIT %s\n"
 					  "    NO INHERIT %s\n"
 					  "    OF %s\n"
 					  "    NOT OF\n"
-					  "    OWNER TO %s\n"
-					  "    SET TABLESPACE %s\n"
-					  "    REPLICA IDENTITY {DEFAULT | USING INDEX %s | FULL | NOTHING}\n"
+					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
+					  "    REPLICA IDENTITY { DEFAULT | USING INDEX %s | FULL | NOTHING }\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -926,6 +1008,7 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  _("rewrite_rule_name"),
 					  _("rewrite_rule_name"),
 					  _("index_name"),
+					  _("new_tablespace"),
 					  _("storage_parameter"),
 					  _("value"),
 					  _("storage_parameter"),
@@ -933,7 +1016,6 @@ sql_help_ALTER_TABLE(PQExpBuffer buf)
 					  _("parent_table"),
 					  _("type_name"),
 					  _("new_owner"),
-					  _("new_tablespace"),
 					  _("index_name"),
 					  _("and table_constraint_using_index is:"),
 					  _("constraint_name"),
@@ -945,7 +1027,7 @@ sql_help_ALTER_TABLESPACE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER TABLESPACE %s RENAME TO %s\n"
-					  "ALTER TABLESPACE %s OWNER TO %s\n"
+					  "ALTER TABLESPACE %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER TABLESPACE %s SET ( %s = %s [, ... ] )\n"
 					  "ALTER TABLESPACE %s RESET ( %s [, ... ] )",
 					  _("name"),
@@ -974,7 +1056,7 @@ sql_help_ALTER_TEXT_SEARCH_CONFIGURATION(PQExpBuffer buf)
 					  "ALTER TEXT SEARCH CONFIGURATION %s\n"
 					  "    DROP MAPPING [ IF EXISTS ] FOR %s [, ... ]\n"
 					  "ALTER TEXT SEARCH CONFIGURATION %s RENAME TO %s\n"
-					  "ALTER TEXT SEARCH CONFIGURATION %s OWNER TO %s\n"
+					  "ALTER TEXT SEARCH CONFIGURATION %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER TEXT SEARCH CONFIGURATION %s SET SCHEMA %s",
 					  _("name"),
 					  _("token_type"),
@@ -1007,7 +1089,7 @@ sql_help_ALTER_TEXT_SEARCH_DICTIONARY(PQExpBuffer buf)
 					  "    %s [ = %s ] [, ... ]\n"
 					  ")\n"
 					  "ALTER TEXT SEARCH DICTIONARY %s RENAME TO %s\n"
-					  "ALTER TEXT SEARCH DICTIONARY %s OWNER TO %s\n"
+					  "ALTER TEXT SEARCH DICTIONARY %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER TEXT SEARCH DICTIONARY %s SET SCHEMA %s",
 					  _("name"),
 					  _("option"),
@@ -1059,7 +1141,7 @@ sql_help_ALTER_TYPE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "ALTER TYPE %s %s [, ... ]\n"
-					  "ALTER TYPE %s OWNER TO %s\n"
+					  "ALTER TYPE %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER TYPE %s RENAME ATTRIBUTE %s TO %s [ CASCADE | RESTRICT ]\n"
 					  "ALTER TYPE %s RENAME TO %s\n"
 					  "ALTER TYPE %s SET SCHEMA %s\n"
@@ -1098,7 +1180,7 @@ void
 sql_help_ALTER_USER(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER USER %s [ [ WITH ] %s [ ... ] ]\n"
+					  "ALTER USER %s [ WITH ] %s [ ... ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
@@ -1109,6 +1191,7 @@ sql_help_ALTER_USER(PQExpBuffer buf)
 					  "    | INHERIT | NOINHERIT\n"
 					  "    | LOGIN | NOLOGIN\n"
 					  "    | REPLICATION | NOREPLICATION\n"
+					  "    | BYPASSRLS | NOBYPASSRLS\n"
 					  "    | CONNECTION LIMIT %s\n"
 					  "    | [ ENCRYPTED | UNENCRYPTED ] PASSWORD '%s'\n"
 					  "    | VALID UNTIL '%s'\n"
@@ -1118,8 +1201,14 @@ sql_help_ALTER_USER(PQExpBuffer buf)
 					  "ALTER USER %s SET %s { TO | = } { %s | DEFAULT }\n"
 					  "ALTER USER %s SET %s FROM CURRENT\n"
 					  "ALTER USER %s RESET %s\n"
-					  "ALTER USER %s RESET ALL",
-					  _("name"),
+					  "ALTER USER %s RESET ALL\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    [ GROUP ] %s\n"
+					  "  | CURRENT_USER\n"
+					  "  | SESSION_USER",
+					  _("role_specification"),
 					  _("option"),
 					  _("where option can be:"),
 					  _("connlimit"),
@@ -1127,21 +1216,23 @@ sql_help_ALTER_USER(PQExpBuffer buf)
 					  _("timestamp"),
 					  _("name"),
 					  _("new_name"),
-					  _("name"),
+					  _("role_specification"),
 					  _("configuration_parameter"),
 					  _("value"),
-					  _("name"),
+					  _("role_specification"),
 					  _("configuration_parameter"),
-					  _("name"),
+					  _("role_specification"),
 					  _("configuration_parameter"),
-					  _("name"));
+					  _("role_specification"),
+					  _("where role_specification can be:"),
+					  _("role_name"));
 }
 
 void
 sql_help_ALTER_USER_MAPPING(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "ALTER USER MAPPING FOR { %s | USER | CURRENT_USER | PUBLIC }\n"
+					  "ALTER USER MAPPING FOR { %s | USER | CURRENT_USER | SESSION_USER | PUBLIC }\n"
 					  "    SERVER %s\n"
 					  "    OPTIONS ( [ ADD | SET | DROP ] %s ['%s'] [, ... ] )",
 					  _("user_name"),
@@ -1156,7 +1247,7 @@ sql_help_ALTER_VIEW(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "ALTER VIEW [ IF EXISTS ] %s ALTER [ COLUMN ] %s SET DEFAULT %s\n"
 					  "ALTER VIEW [ IF EXISTS ] %s ALTER [ COLUMN ] %s DROP DEFAULT\n"
-					  "ALTER VIEW [ IF EXISTS ] %s OWNER TO %s\n"
+					  "ALTER VIEW [ IF EXISTS ] %s OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
 					  "ALTER VIEW [ IF EXISTS ] %s RENAME TO %s\n"
 					  "ALTER VIEW [ IF EXISTS ] %s SET SCHEMA %s\n"
 					  "ALTER VIEW [ IF EXISTS ] %s SET ( %s [= %s] [, ... ] )\n"
@@ -1239,6 +1330,7 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  "  COLLATION %s |\n"
 					  "  COLUMN %s.%s |\n"
 					  "  CONSTRAINT %s ON %s |\n"
+					  "  CONSTRAINT %s ON DOMAIN %s |\n"
 					  "  CONVERSION %s |\n"
 					  "  DATABASE %s |\n"
 					  "  DOMAIN %s |\n"
@@ -1253,6 +1345,7 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  "  OPERATOR %s (%s, %s) |\n"
 					  "  OPERATOR CLASS %s USING %s |\n"
 					  "  OPERATOR FAMILY %s USING %s |\n"
+					  "  POLICY %s ON %s |\n"
 					  "  [ PROCEDURAL ] LANGUAGE %s |\n"
 					  "  ROLE %s |\n"
 					  "  RULE %s ON %s |\n"
@@ -1265,6 +1358,7 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  "  TEXT SEARCH DICTIONARY %s |\n"
 					  "  TEXT SEARCH PARSER %s |\n"
 					  "  TEXT SEARCH TEMPLATE %s |\n"
+					  "  TRANSFORM FOR %s LANGUAGE %s |\n"
 					  "  TRIGGER %s ON %s |\n"
 					  "  TYPE %s |\n"
 					  "  VIEW %s\n"
@@ -1284,6 +1378,8 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  _("column_name"),
 					  _("constraint_name"),
 					  _("table_name"),
+					  _("constraint_name"),
+					  _("domain_name"),
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
@@ -1305,6 +1401,8 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  _("index_method"),
 					  _("object_name"),
 					  _("index_method"),
+					  _("policy_name"),
+					  _("table_name"),
 					  _("object_name"),
 					  _("object_name"),
 					  _("rule_name"),
@@ -1318,6 +1416,8 @@ sql_help_COMMENT(PQExpBuffer buf)
 					  _("object_name"),
 					  _("object_name"),
 					  _("object_name"),
+					  _("type_name"),
+					  _("lang_name"),
 					  _("trigger_name"),
 					  _("table_name"),
 					  _("object_name"),
@@ -1564,7 +1664,9 @@ sql_help_CREATE_DATABASE(PQExpBuffer buf)
 					  "           [ LC_COLLATE [=] %s ]\n"
 					  "           [ LC_CTYPE [=] %s ]\n"
 					  "           [ TABLESPACE [=] %s ]\n"
-					  "           [ CONNECTION LIMIT [=] %s ] ]",
+					  "           [ ALLOW_CONNECTIONS [=] %s ]\n"
+					  "           [ CONNECTION LIMIT [=] %s ] ]\n"
+					  "           [ IS_TEMPLATE [=] %s ]",
 					  _("name"),
 					  _("user_name"),
 					  _("template"),
@@ -1572,7 +1674,9 @@ sql_help_CREATE_DATABASE(PQExpBuffer buf)
 					  _("lc_collate"),
 					  _("lc_ctype"),
 					  _("tablespace_name"),
-					  _("connlimit"));
+					  _("allowconn"),
+					  _("connlimit"),
+					  _("istemplate"));
 }
 
 void
@@ -1603,9 +1707,9 @@ sql_help_CREATE_EVENT_TRIGGER(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE EVENT TRIGGER %s\n"
-					  "  ON %s\n"
-					  "  [ WHEN %s IN (filter_value [, ... ]) [ AND ... ] ]\n"
-					  "  EXECUTE PROCEDURE %s()",
+					  "    ON %s\n"
+					  "    [ WHEN %s IN (filter_value [, ... ]) [ AND ... ] ]\n"
+					  "    EXECUTE PROCEDURE %s()",
 					  _("name"),
 					  _("event"),
 					  _("filter_variable"),
@@ -1646,9 +1750,11 @@ sql_help_CREATE_FOREIGN_TABLE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE FOREIGN TABLE [ IF NOT EXISTS ] %s ( [\n"
-					  "    %s %s [ OPTIONS ( %s '%s' [, ... ] ) ] [ COLLATE %s ] [ %s [ ... ] ]\n"
+					  "  { %s %s [ OPTIONS ( %s '%s' [, ... ] ) ] [ COLLATE %s ] [ %s [ ... ] ]\n"
+					  "    | %s }\n"
 					  "    [, ... ]\n"
 					  "] )\n"
+					  "[ INHERITS ( %s [, ... ] ) ]\n"
 					  "  SERVER %s\n"
 					  "[ OPTIONS ( %s '%s' [, ... ] ) ]\n"
 					  "\n"
@@ -1657,7 +1763,13 @@ sql_help_CREATE_FOREIGN_TABLE(PQExpBuffer buf)
 					  "[ CONSTRAINT %s ]\n"
 					  "{ NOT NULL |\n"
 					  "  NULL |\n"
-					  "  DEFAULT %s }",
+					  "  CHECK ( %s ) [ NO INHERIT ] |\n"
+					  "  DEFAULT %s }\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "[ CONSTRAINT %s ]\n"
+					  "CHECK ( %s ) [ NO INHERIT ]",
 					  _("table_name"),
 					  _("column_name"),
 					  _("data_type"),
@@ -1665,12 +1777,18 @@ sql_help_CREATE_FOREIGN_TABLE(PQExpBuffer buf)
 					  _("value"),
 					  _("collation"),
 					  _("column_constraint"),
+					  _("table_constraint"),
+					  _("parent_table"),
 					  _("server_name"),
 					  _("option"),
 					  _("value"),
 					  _("where column_constraint is:"),
 					  _("constraint_name"),
-					  _("default_expr"));
+					  _("expression"),
+					  _("default_expr"),
+					  _("and table_constraint is:"),
+					  _("constraint_name"),
+					  _("expression"));
 }
 
 void
@@ -1682,6 +1800,7 @@ sql_help_CREATE_FUNCTION(PQExpBuffer buf)
 					  "    [ RETURNS %s\n"
 					  "      | RETURNS TABLE ( %s %s [, ...] ) ]\n"
 					  "  { LANGUAGE %s\n"
+					  "    | TRANSFORM { FOR TYPE %s } [, ... ]\n"
 					  "    | WINDOW\n"
 					  "    | IMMUTABLE | STABLE | VOLATILE | [ NOT ] LEAKPROOF\n"
 					  "    | CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT\n"
@@ -1702,6 +1821,7 @@ sql_help_CREATE_FUNCTION(PQExpBuffer buf)
 					  _("column_name"),
 					  _("column_type"),
 					  _("lang_name"),
+					  _("type_name"),
 					  _("execution_cost"),
 					  _("result_rows"),
 					  _("configuration_parameter"),
@@ -1752,7 +1872,7 @@ void
 sql_help_CREATE_INDEX(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ %s ] ON %s [ USING %s ]\n"
+					  "CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] %s ] ON %s [ USING %s ]\n"
 					  "    ( { %s | ( %s ) } [ COLLATE %s ] [ %s ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] [, ...] )\n"
 					  "    [ WITH ( %s = %s [, ... ] ) ]\n"
 					  "    [ TABLESPACE %s ]\n"
@@ -1788,7 +1908,7 @@ void
 sql_help_CREATE_MATERIALIZED_VIEW(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE MATERIALIZED VIEW %s\n"
+					  "CREATE MATERIALIZED VIEW [ IF NOT EXISTS ] %s\n"
 					  "    [ (%s [, ...] ) ]\n"
 					  "    [ WITH ( %s [= %s] [, ... ] ) ]\n"
 					  "    [ TABLESPACE %s ]\n"
@@ -1860,6 +1980,22 @@ sql_help_CREATE_OPERATOR_FAMILY(PQExpBuffer buf)
 }
 
 void
+sql_help_CREATE_POLICY(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "CREATE POLICY %s ON %s\n"
+					  "    [ FOR { ALL | SELECT | INSERT | UPDATE | DELETE } ]\n"
+					  "    [ TO { %s | PUBLIC | CURRENT_USER | SESSION_USER } [, ...] ]\n"
+					  "    [ USING ( %s ) ]\n"
+					  "    [ WITH CHECK ( %s ) ]",
+					  _("name"),
+					  _("table_name"),
+					  _("role_name"),
+					  _("using_expression"),
+					  _("check_expression"));
+}
+
+void
 sql_help_CREATE_ROLE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
@@ -1874,6 +2010,7 @@ sql_help_CREATE_ROLE(PQExpBuffer buf)
 					  "    | INHERIT | NOINHERIT\n"
 					  "    | LOGIN | NOLOGIN\n"
 					  "    | REPLICATION | NOREPLICATION\n"
+					  "    | BYPASSRLS | NOBYPASSRLS\n"
 					  "    | CONNECTION LIMIT %s\n"
 					  "    | [ ENCRYPTED | UNENCRYPTED ] PASSWORD '%s'\n"
 					  "    | VALID UNTIL '%s'\n"
@@ -1925,14 +2062,22 @@ sql_help_CREATE_SCHEMA(PQExpBuffer buf)
 					  "CREATE SCHEMA %s [ AUTHORIZATION %s ] [ %s [ ... ] ]\n"
 					  "CREATE SCHEMA AUTHORIZATION %s [ %s [ ... ] ]\n"
 					  "CREATE SCHEMA IF NOT EXISTS %s [ AUTHORIZATION %s ]\n"
-					  "CREATE SCHEMA IF NOT EXISTS AUTHORIZATION %s",
+					  "CREATE SCHEMA IF NOT EXISTS AUTHORIZATION %s\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    [ GROUP ] %s\n"
+					  "  | CURRENT_USER\n"
+					  "  | SESSION_USER",
 					  _("schema_name"),
-					  _("user_name"),
+					  _("role_specification"),
 					  _("schema_element"),
-					  _("user_name"),
+					  _("role_specification"),
 					  _("schema_element"),
 					  _("schema_name"),
-					  _("user_name"),
+					  _("role_specification"),
+					  _("role_specification"),
+					  _("where role_specification can be:"),
 					  _("user_name"));
 }
 
@@ -1940,7 +2085,7 @@ void
 sql_help_CREATE_SEQUENCE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE [ TEMPORARY | TEMP ] SEQUENCE %s [ INCREMENT [ BY ] %s ]\n"
+					  "CREATE [ TEMPORARY | TEMP ] SEQUENCE [ IF NOT EXISTS ] %s [ INCREMENT [ BY ] %s ]\n"
 					  "    [ MINVALUE %s | NO MINVALUE ] [ MAXVALUE %s | NO MAXVALUE ]\n"
 					  "    [ START [ WITH ] %s ] [ CACHE %s ] [ [ NO ] CYCLE ]\n"
 					  "    [ OWNED BY { %s.%s | NONE } ]",
@@ -2092,7 +2237,7 @@ void
 sql_help_CREATE_TABLE_AS(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE %s\n"
+					  "CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE [ IF NOT EXISTS ] %s\n"
 					  "    [ (%s [, ...] ) ]\n"
 					  "    [ WITH ( %s [= %s] [, ... ] ) | WITH OIDS | WITHOUT OIDS ]\n"
 					  "    [ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]\n"
@@ -2112,11 +2257,11 @@ sql_help_CREATE_TABLESPACE(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE TABLESPACE %s\n"
-					  "    [ OWNER %s ]\n"
+					  "    [ OWNER { %s | CURRENT_USER | SESSION_USER } ]\n"
 					  "    LOCATION '%s'\n"
 					  "    [ WITH ( %s = %s [, ... ] ) ]",
 					  _("tablespace_name"),
-					  _("user_name"),
+					  _("new_owner"),
 					  _("directory"),
 					  _("tablespace_option"),
 					  _("value"));
@@ -2182,13 +2327,29 @@ sql_help_CREATE_TEXT_SEARCH_TEMPLATE(PQExpBuffer buf)
 }
 
 void
+sql_help_CREATE_TRANSFORM(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "CREATE [ OR REPLACE ] TRANSFORM FOR %s LANGUAGE %s (\n"
+					  "    FROM SQL WITH FUNCTION %s (%s [, ...]),\n"
+					  "    TO SQL WITH FUNCTION %s (%s [, ...])\n"
+					  ");",
+					  _("type_name"),
+					  _("lang_name"),
+					  _("from_sql_function_name"),
+					  _("argument_type"),
+					  _("to_sql_function_name"),
+					  _("argument_type"));
+}
+
+void
 sql_help_CREATE_TRIGGER(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "CREATE [ CONSTRAINT ] TRIGGER %s { BEFORE | AFTER | INSTEAD OF } { %s [ OR ... ] }\n"
 					  "    ON %s\n"
 					  "    [ FROM %s ]\n"
-					  "    [ NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED } ]\n"
+					  "    [ NOT DEFERRABLE | [ DEFERRABLE ] [ INITIALLY IMMEDIATE | INITIALLY DEFERRED ] ]\n"
 					  "    [ FOR [ EACH ] { ROW | STATEMENT } ]\n"
 					  "    [ WHEN ( %s ) ]\n"
 					  "    EXECUTE PROCEDURE %s ( %s )\n"
@@ -2298,6 +2459,7 @@ sql_help_CREATE_USER(PQExpBuffer buf)
 					  "    | INHERIT | NOINHERIT\n"
 					  "    | LOGIN | NOLOGIN\n"
 					  "    | REPLICATION | NOREPLICATION\n"
+					  "    | BYPASSRLS | NOBYPASSRLS\n"
 					  "    | CONNECTION LIMIT %s\n"
 					  "    | [ ENCRYPTED | UNENCRYPTED ] PASSWORD '%s'\n"
 					  "    | VALID UNTIL '%s'\n"
@@ -2576,8 +2738,17 @@ void
 sql_help_DROP_OWNED(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "DROP OWNED BY %s [, ...] [ CASCADE | RESTRICT ]",
+					  "DROP OWNED BY { %s | CURRENT_USER | SESSION_USER } [, ...] [ CASCADE | RESTRICT ]",
 					  _("name"));
+}
+
+void
+sql_help_DROP_POLICY(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "DROP POLICY [ IF EXISTS ] %s ON %s",
+					  _("name"),
+					  _("table_name"));
 }
 
 void
@@ -2667,6 +2838,15 @@ sql_help_DROP_TEXT_SEARCH_TEMPLATE(PQExpBuffer buf)
 	appendPQExpBuffer(buf,
 					  "DROP TEXT SEARCH TEMPLATE [ IF EXISTS ] %s [ CASCADE | RESTRICT ]",
 					  _("name"));
+}
+
+void
+sql_help_DROP_TRANSFORM(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "DROP TRANSFORM [ IF EXISTS ] FOR %s LANGUAGE %s",
+					  _("type_name"),
+					  _("lang_name"));
 }
 
 void
@@ -2793,97 +2973,123 @@ sql_help_GRANT(PQExpBuffer buf)
 					  "    [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON { [ TABLE ] %s [, ...]\n"
 					  "         | ALL TABLES IN SCHEMA %s [, ...] }\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { { SELECT | INSERT | UPDATE | REFERENCES } ( %s [, ...] )\n"
 					  "    [, ...] | ALL [ PRIVILEGES ] ( %s [, ...] ) }\n"
 					  "    ON [ TABLE ] %s [, ...]\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { { USAGE | SELECT | UPDATE }\n"
 					  "    [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON { SEQUENCE %s [, ...]\n"
 					  "         | ALL SEQUENCES IN SCHEMA %s [, ...] }\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { { CREATE | CONNECT | TEMPORARY | TEMP } [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON DATABASE %s [, ...]\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON DOMAIN %s [, ...]\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON FOREIGN DATA WRAPPER %s [, ...]\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON FOREIGN SERVER %s [, ...]\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { EXECUTE | ALL [ PRIVILEGES ] }\n"
 					  "    ON { FUNCTION %s ( [ [ %s ] [ %s ] %s [, ...] ] ) [, ...]\n"
 					  "         | ALL FUNCTIONS IN SCHEMA %s [, ...] }\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON LANGUAGE %s [, ...]\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { { SELECT | UPDATE } [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON LARGE OBJECT %s [, ...]\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { { CREATE | USAGE } [, ...] | ALL [ PRIVILEGES ] }\n"
 					  "    ON SCHEMA %s [, ...]\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { CREATE | ALL [ PRIVILEGES ] }\n"
 					  "    ON TABLESPACE %s [, ...]\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
 					  "\n"
 					  "GRANT { USAGE | ALL [ PRIVILEGES ] }\n"
 					  "    ON TYPE %s [, ...]\n"
-					  "    TO { [ GROUP ] %s | PUBLIC } [, ...] [ WITH GRANT OPTION ]\n"
+					  "    TO %s [, ...] [ WITH GRANT OPTION ]\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    [ GROUP ] %s\n"
+					  "  | PUBLIC\n"
+					  "  | CURRENT_USER\n"
+					  "  | SESSION_USER\n"
 					  "\n"
 					  "GRANT %s [, ...] TO %s [, ...] [ WITH ADMIN OPTION ]",
 					  _("table_name"),
 					  _("schema_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("column_name"),
 					  _("column_name"),
 					  _("table_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("sequence_name"),
 					  _("schema_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("database_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("domain_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("fdw_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("server_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("function_name"),
 					  _("argmode"),
 					  _("arg_name"),
 					  _("arg_type"),
 					  _("schema_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("lang_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("loid"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("schema_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("tablespace_name"),
-					  _("role_name"),
+					  _("role_specification"),
 					  _("type_name"),
+					  _("role_specification"),
+					  _("where role_specification can be:"),
 					  _("role_name"),
 					  _("role_name"),
 					  _("role_name"));
+}
+
+void
+sql_help_IMPORT_FOREIGN_SCHEMA(PQExpBuffer buf)
+{
+	appendPQExpBuffer(buf,
+					  "IMPORT FOREIGN SCHEMA %s\n"
+					  "    [ { LIMIT TO | EXCEPT } ( %s [, ...] ) ]\n"
+					  "    FROM SERVER %s\n"
+					  "    INTO %s\n"
+					  "    [ OPTIONS ( %s '%s' [, ... ] ) ]",
+					  _("remote_schema"),
+					  _("table_name"),
+					  _("server_name"),
+					  _("local_schema"),
+					  _("option"),
+					  _("value"));
 }
 
 void
@@ -2891,16 +3097,49 @@ sql_help_INSERT(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
-					  "INSERT INTO %s [ ( %s [, ...] ) ]\n"
+					  "INSERT INTO %s [ AS %s ] [ ( %s [, ...] ) ]\n"
 					  "    { DEFAULT VALUES | VALUES ( { %s | DEFAULT } [, ...] ) [, ...] | %s }\n"
-					  "    [ RETURNING * | %s [ [ AS ] %s ] [, ...] ]",
+					  "    [ ON CONFLICT [ %s ] %s ]\n"
+					  "    [ RETURNING * | %s [ [ AS ] %s ] [, ...] ]\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    ( { %s | ( %s ) } [ COLLATE %s ] [ %s ] [, ...] ) [ WHERE %s ]\n"
+					  "    ON CONSTRAINT %s\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
+					  "    DO NOTHING\n"
+					  "    DO UPDATE SET { %s = { %s | DEFAULT } |\n"
+					  "                    ( %s [, ...] ) = ( { %s | DEFAULT } [, ...] ) |\n"
+					  "                    ( %s [, ...] ) = ( %s )\n"
+					  "                  } [, ...]\n"
+					  "              [ WHERE %s ]",
 					  _("with_query"),
 					  _("table_name"),
+					  _("alias"),
 					  _("column_name"),
 					  _("expression"),
 					  _("query"),
+					  _("conflict_target"),
+					  _("conflict_action"),
 					  _("output_expression"),
-					  _("output_name"));
+					  _("output_name"),
+					  _("where conflict_target can be one of:"),
+					  _("index_column_name"),
+					  _("index_expression"),
+					  _("collation"),
+					  _("opclass"),
+					  _("index_predicate"),
+					  _("constraint_name"),
+					  _("and conflict_action is one of:"),
+					  _("column_name"),
+					  _("expression"),
+					  _("column_name"),
+					  _("expression"),
+					  _("column_name"),
+					  _("sub-SELECT"),
+					  _("condition"));
 }
 
 void
@@ -2997,7 +3236,8 @@ void
 sql_help_REASSIGN_OWNED(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "REASSIGN OWNED BY %s [, ...] TO %s",
+					  "REASSIGN OWNED BY { %s | CURRENT_USER | SESSION_USER } [, ...]\n"
+					  "               TO { %s | CURRENT_USER | SESSION_USER }",
 					  _("old_role"),
 					  _("new_role"));
 }
@@ -3015,7 +3255,7 @@ void
 sql_help_REINDEX(PQExpBuffer buf)
 {
 	appendPQExpBuffer(buf,
-					  "REINDEX { INDEX | TABLE | DATABASE | SYSTEM } %s [ FORCE ]",
+					  "REINDEX [ ( VERBOSE ) ] { INDEX | TABLE | SCHEMA | DATABASE | SYSTEM } %s",
 					  _("name"));
 }
 
@@ -3279,11 +3519,12 @@ sql_help_SELECT(PQExpBuffer buf)
 					  "    [ LIMIT { %s | ALL } ]\n"
 					  "    [ OFFSET %s [ ROW | ROWS ] ]\n"
 					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } ONLY ]\n"
-					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT ] [...] ]\n"
+					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT | SKIP LOCKED ] [...] ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
 					  "    [ ONLY ] %s [ * ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
+					  "                [ TABLESAMPLE %s ( %s [, ...] ) [ REPEATABLE ( %s ) ] ]\n"
 					  "    [ LATERAL ] ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
 					  "    %s [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
 					  "    [ LATERAL ] %s ( [ %s [, ...] ] )\n"
@@ -3296,6 +3537,15 @@ sql_help_SELECT(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
+					  "    ( )\n"
+					  "    %s\n"
+					  "    ( %s [, ...] )\n"
+					  "    ROLLUP ( { %s | ( %s [, ...] ) } [, ...] )\n"
+					  "    CUBE ( { %s | ( %s [, ...] ) } [, ...] )\n"
+					  "    GROUPING SETS ( %s [, ...] )\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
 					  "    %s [ ( %s [, ...] ) ] AS ( %s | %s | %s | %s | %s )\n"
 					  "\n"
 					  "TABLE [ ONLY ] %s [ * ]",
@@ -3305,7 +3555,7 @@ sql_help_SELECT(PQExpBuffer buf)
 					  _("output_name"),
 					  _("from_item"),
 					  _("condition"),
-					  _("expression"),
+					  _("grouping_element"),
 					  _("condition"),
 					  _("window_name"),
 					  _("window_definition"),
@@ -3320,6 +3570,9 @@ sql_help_SELECT(PQExpBuffer buf)
 					  _("table_name"),
 					  _("alias"),
 					  _("column_alias"),
+					  _("sampling_method"),
+					  _("argument"),
+					  _("seed"),
 					  _("select"),
 					  _("alias"),
 					  _("column_alias"),
@@ -3347,6 +3600,14 @@ sql_help_SELECT(PQExpBuffer buf)
 					  _("from_item"),
 					  _("join_condition"),
 					  _("join_column"),
+					  _("and grouping_element can be one of:"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("grouping_element"),
 					  _("and with_query is:"),
 					  _("with_query_name"),
 					  _("column_name"),
@@ -3497,11 +3758,12 @@ sql_help_TABLE(PQExpBuffer buf)
 					  "    [ LIMIT { %s | ALL } ]\n"
 					  "    [ OFFSET %s [ ROW | ROWS ] ]\n"
 					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } ONLY ]\n"
-					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT ] [...] ]\n"
+					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT | SKIP LOCKED ] [...] ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
 					  "    [ ONLY ] %s [ * ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
+					  "                [ TABLESAMPLE %s ( %s [, ...] ) [ REPEATABLE ( %s ) ] ]\n"
 					  "    [ LATERAL ] ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
 					  "    %s [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
 					  "    [ LATERAL ] %s ( [ %s [, ...] ] )\n"
@@ -3514,6 +3776,15 @@ sql_help_TABLE(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
+					  "    ( )\n"
+					  "    %s\n"
+					  "    ( %s [, ...] )\n"
+					  "    ROLLUP ( { %s | ( %s [, ...] ) } [, ...] )\n"
+					  "    CUBE ( { %s | ( %s [, ...] ) } [, ...] )\n"
+					  "    GROUPING SETS ( %s [, ...] )\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
 					  "    %s [ ( %s [, ...] ) ] AS ( %s | %s | %s | %s | %s )\n"
 					  "\n"
 					  "TABLE [ ONLY ] %s [ * ]",
@@ -3523,7 +3794,7 @@ sql_help_TABLE(PQExpBuffer buf)
 					  _("output_name"),
 					  _("from_item"),
 					  _("condition"),
-					  _("expression"),
+					  _("grouping_element"),
 					  _("condition"),
 					  _("window_name"),
 					  _("window_definition"),
@@ -3538,6 +3809,9 @@ sql_help_TABLE(PQExpBuffer buf)
 					  _("table_name"),
 					  _("alias"),
 					  _("column_alias"),
+					  _("sampling_method"),
+					  _("argument"),
+					  _("seed"),
 					  _("select"),
 					  _("alias"),
 					  _("column_alias"),
@@ -3565,6 +3839,14 @@ sql_help_TABLE(PQExpBuffer buf)
 					  _("from_item"),
 					  _("join_condition"),
 					  _("join_column"),
+					  _("and grouping_element can be one of:"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("grouping_element"),
 					  _("and with_query is:"),
 					  _("with_query_name"),
 					  _("column_name"),
@@ -3600,7 +3882,9 @@ sql_help_UPDATE(PQExpBuffer buf)
 					  "[ WITH [ RECURSIVE ] %s [, ...] ]\n"
 					  "UPDATE [ ONLY ] %s [ * ] [ [ AS ] %s ]\n"
 					  "    SET { %s = { %s | DEFAULT } |\n"
-					  "          ( %s [, ...] ) = ( { %s | DEFAULT } [, ...] ) } [, ...]\n"
+					  "          ( %s [, ...] ) = ( { %s | DEFAULT } [, ...] ) |\n"
+					  "          ( %s [, ...] ) = ( %s )\n"
+					  "        } [, ...]\n"
 					  "    [ FROM %s ]\n"
 					  "    [ WHERE %s | WHERE CURRENT OF %s ]\n"
 					  "    [ RETURNING * | %s [ [ AS ] %s ] [, ...] ]",
@@ -3611,6 +3895,8 @@ sql_help_UPDATE(PQExpBuffer buf)
 					  _("expression"),
 					  _("column_name"),
 					  _("expression"),
+					  _("column_name"),
+					  _("sub-SELECT"),
 					  _("from_list"),
 					  _("condition"),
 					  _("cursor_name"),
@@ -3666,11 +3952,12 @@ sql_help_WITH(PQExpBuffer buf)
 					  "    [ LIMIT { %s | ALL } ]\n"
 					  "    [ OFFSET %s [ ROW | ROWS ] ]\n"
 					  "    [ FETCH { FIRST | NEXT } [ %s ] { ROW | ROWS } ONLY ]\n"
-					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT ] [...] ]\n"
+					  "    [ FOR { UPDATE | NO KEY UPDATE | SHARE | KEY SHARE } [ OF %s [, ...] ] [ NOWAIT | SKIP LOCKED ] [...] ]\n"
 					  "\n"
 					  "%s\n"
 					  "\n"
 					  "    [ ONLY ] %s [ * ] [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
+					  "                [ TABLESAMPLE %s ( %s [, ...] ) [ REPEATABLE ( %s ) ] ]\n"
 					  "    [ LATERAL ] ( %s ) [ AS ] %s [ ( %s [, ...] ) ]\n"
 					  "    %s [ [ AS ] %s [ ( %s [, ...] ) ] ]\n"
 					  "    [ LATERAL ] %s ( [ %s [, ...] ] )\n"
@@ -3683,6 +3970,15 @@ sql_help_WITH(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
+					  "    ( )\n"
+					  "    %s\n"
+					  "    ( %s [, ...] )\n"
+					  "    ROLLUP ( { %s | ( %s [, ...] ) } [, ...] )\n"
+					  "    CUBE ( { %s | ( %s [, ...] ) } [, ...] )\n"
+					  "    GROUPING SETS ( %s [, ...] )\n"
+					  "\n"
+					  "%s\n"
+					  "\n"
 					  "    %s [ ( %s [, ...] ) ] AS ( %s | %s | %s | %s | %s )\n"
 					  "\n"
 					  "TABLE [ ONLY ] %s [ * ]",
@@ -3692,7 +3988,7 @@ sql_help_WITH(PQExpBuffer buf)
 					  _("output_name"),
 					  _("from_item"),
 					  _("condition"),
-					  _("expression"),
+					  _("grouping_element"),
 					  _("condition"),
 					  _("window_name"),
 					  _("window_definition"),
@@ -3707,6 +4003,9 @@ sql_help_WITH(PQExpBuffer buf)
 					  _("table_name"),
 					  _("alias"),
 					  _("column_alias"),
+					  _("sampling_method"),
+					  _("argument"),
+					  _("seed"),
 					  _("select"),
 					  _("alias"),
 					  _("column_alias"),
@@ -3734,6 +4033,14 @@ sql_help_WITH(PQExpBuffer buf)
 					  _("from_item"),
 					  _("join_condition"),
 					  _("join_column"),
+					  _("and grouping_element can be one of:"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("expression"),
+					  _("grouping_element"),
 					  _("and with_query is:"),
 					  _("with_query_name"),
 					  _("column_name"),

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="LTREE"
->F.21. ltree</A
+>F.20. ltree</A
 ></H1
 ><P
 >  This module implements a data type <TT
@@ -108,8 +108,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN160710"
->F.21.1. Definitions</A
+NAME="AEN169965"
+>F.20.1. Definitions</A
 ></H2
 ><P
 >   A <I
@@ -529,8 +529,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN160825"
->F.21.2. Operators and Functions</A
+NAME="AEN170080"
+>F.20.2. Operators and Functions</A
 ></H2
 ><P
 >   Type <TT
@@ -1581,8 +1581,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN161236"
->F.21.3. Indexes</A
+NAME="AEN170491"
+>F.20.3. Indexes</A
 ></H2
 ><P
 >   <TT
@@ -1708,8 +1708,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN161275"
->F.21.4. Example</A
+NAME="AEN170530"
+>F.20.4. Example</A
 ></H2
 ><P
 >   This example uses the following data (also available in file
@@ -1734,8 +1734,8 @@ INSERT INTO test VALUES ('Top.Collections.Pictures.Astronomy');
 INSERT INTO test VALUES ('Top.Collections.Pictures.Astronomy.Stars');
 INSERT INTO test VALUES ('Top.Collections.Pictures.Astronomy.Galaxies');
 INSERT INTO test VALUES ('Top.Collections.Pictures.Astronomy.Astronauts');
-CREATE INDEX path_gist_idx ON test USING gist(path);
-CREATE INDEX path_idx ON test USING btree(path);</PRE
+CREATE INDEX path_gist_idx ON test USING GIST (path);
+CREATE INDEX path_idx ON test USING BTREE (path);</PRE
 ><P
 >   Now, we have a table <TT
 CLASS="STRUCTNAME"
@@ -1852,8 +1852,45 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN161293"
->F.21.5. Authors</A
+NAME="AEN170548"
+>F.20.5. Transforms</A
+></H2
+><P
+>   Additional extensions are available that implement transforms for
+   the <TT
+CLASS="TYPE"
+>ltree</TT
+> type for PL/Python.  The extensions are
+   called <TT
+CLASS="LITERAL"
+>ltree_plpythonu</TT
+>, <TT
+CLASS="LITERAL"
+>ltree_plpython2u</TT
+>,
+   and <TT
+CLASS="LITERAL"
+>ltree_plpython3u</TT
+>
+   (see <A
+HREF="plpython-python23.html"
+>Section 43.1</A
+> for the PL/Python naming
+   convention).  If you install these transforms and specify them when
+   creating a function, <TT
+CLASS="TYPE"
+>ltree</TT
+> values are mapped to Python lists.
+   (The reverse is currently not supported, however.)
+  </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN170557"
+>F.20.6. Authors</A
 ></H2
 ><P
 >   All work was done by Teodor Sigaev (<CODE

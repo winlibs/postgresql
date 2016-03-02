@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Coding Conventions"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 50. PostgreSQL Coding Conventions</TD
+>Chapter 51. PostgreSQL Coding Conventions</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="ERROR-STYLE-GUIDE"
->50.3. Error Message Style Guide</A
+>51.3. Error Message Style Guide</A
 ></H1
 ><P
 >    This style guide is offered in the hope of maintaining a consistent,
@@ -108,8 +108,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104890"
->50.3.1. What Goes Where</A
+NAME="AEN110679"
+>51.3.1. What Goes Where</A
 ></H2
 ><P
 >    The primary message should be short, factual, and avoid reference to
@@ -158,8 +158,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104899"
->50.3.2. Formatting</A
+NAME="AEN110688"
+>51.3.2. Formatting</A
 ></H2
 ><P
 >    Don't put any specific assumptions about formatting into the message
@@ -181,8 +181,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104903"
->50.3.3. Quotation Marks</A
+NAME="AEN110692"
+>51.3.3. Quotation Marks</A
 ></H2
 ><P
 >    English text should use double quotes when quoting is appropriate.
@@ -204,8 +204,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104907"
->50.3.4. Use of Quotes</A
+NAME="AEN110696"
+>51.3.4. Use of Quotes</A
 ></H2
 ><P
 >    Use quotes always to delimit file names, user-supplied identifiers, and
@@ -232,8 +232,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104913"
->50.3.5. Grammar and Punctuation</A
+NAME="AEN110702"
+>51.3.5. Grammar and Punctuation</A
 ></H2
 ><P
 >    The rules are different for primary error messages and for detail/hint
@@ -270,8 +270,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104920"
->50.3.6. Upper Case vs. Lower Case</A
+NAME="AEN110709"
+>51.3.6. Upper Case vs. Lower Case</A
 ></H2
 ><P
 >    Use lower case for message wording, including the first letter of a
@@ -288,8 +288,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104924"
->50.3.7. Avoid Passive Voice</A
+NAME="AEN110713"
+>51.3.7. Avoid Passive Voice</A
 ></H2
 ><P
 >    Use the active voice.  Use complete sentences when there is an acting
@@ -312,8 +312,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104930"
->50.3.8. Present vs. Past Tense</A
+NAME="AEN110719"
+>51.3.8. Present vs. Past Tense</A
 ></H2
 ><P
 >    Use past tense if an attempt to do something failed, but could perhaps
@@ -360,8 +360,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104940"
->50.3.9. Type of the Object</A
+NAME="AEN110729"
+>51.3.9. Type of the Object</A
 ></H2
 ><P
 >    When citing the name of an object, state what kind of object it is.
@@ -379,8 +379,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104945"
->50.3.10. Brackets</A
+NAME="AEN110734"
+>51.3.10. Brackets</A
 ></H2
 ><P
 >    Square brackets are only to be used (1) in command synopses to denote
@@ -396,8 +396,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104949"
->50.3.11. Assembling Error Messages</A
+NAME="AEN110738"
+>51.3.11. Assembling Error Messages</A
 ></H2
 ><P
 >   When a message includes text that is generated elsewhere, embed it in
@@ -420,8 +420,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104954"
->50.3.12. Reasons for Errors</A
+NAME="AEN110743"
+>51.3.12. Reasons for Errors</A
 ></H2
 ><P
 >    Messages should always state the reason why an error occurred.
@@ -439,8 +439,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104958"
->50.3.13. Function Names</A
+NAME="AEN110747"
+>51.3.13. Function Names</A
 ></H2
 ><P
 >    Don't include the name of the reporting routine in the error text. We have
@@ -474,8 +474,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN104965"
->50.3.14. Tricky Words to Avoid</A
+NAME="AEN110754"
+>51.3.14. Tricky Words to Avoid</A
 ></H2
 ><DIV
 CLASS="FORMALPARA"
@@ -619,8 +619,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN105008"
->50.3.15. Proper Spelling</A
+NAME="AEN110797"
+>51.3.15. Proper Spelling</A
 ></H2
 ><P
 >    Spell out words in full.  For instance, avoid:
@@ -664,14 +664,14 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN105023"
->50.3.16. Localization</A
+NAME="AEN110812"
+>51.3.16. Localization</A
 ></H2
 ><P
 >    Keep in mind that error message texts need to be translated into other
     languages.  Follow the guidelines in <A
 HREF="nls-programmer.html#NLS-GUIDELINES"
->Section 51.2.2</A
+>Section 52.2.2</A
 >
     to avoid making life difficult for translators.
    </P

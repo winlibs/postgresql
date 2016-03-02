@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Backup and Restore"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -255,14 +255,22 @@ CLASS="APPLICATION"
 >rsync</SPAN
 >
    while the database server is running, then shutting down the database
-   server just long enough to do a second <SPAN
-CLASS="APPLICATION"
->rsync</SPAN
->.  The
+   server long enough to do an <TT
+CLASS="COMMAND"
+>rsync --checksum</TT
+>.
+   (<TT
+CLASS="OPTION"
+>--checksum</TT
+> is necessary because <TT
+CLASS="COMMAND"
+>rsync</TT
+> only
+   has file modification-time granularity of one second.)  The
    second <SPAN
 CLASS="APPLICATION"
 >rsync</SPAN
-> will be much quicker than the first,
+> will be quicker than the first,
    because it has relatively little data to transfer, and the end result
    will be consistent because the server was down.  This method
    allows a file system backup to be performed with minimal downtime.

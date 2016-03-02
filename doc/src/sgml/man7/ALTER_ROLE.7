@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER ROLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER ROLE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER ROLE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ ALTER_ROLE \- change a database role
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER ROLE \fIname\fR [ [ WITH ] \fIoption\fR [ \&.\&.\&. ] ]
+ALTER ROLE \fIrole_specification\fR [ WITH ] \fIoption\fR [ \&.\&.\&. ]
 
 where \fIoption\fR can be:
 
@@ -43,20 +43,26 @@ where \fIoption\fR can be:
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
     | REPLICATION | NOREPLICATION
+    | BYPASSRLS | NOBYPASSRLS
     | CONNECTION LIMIT \fIconnlimit\fR
     | [ ENCRYPTED | UNENCRYPTED ] PASSWORD \*(Aq\fIpassword\fR\*(Aq
     | VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq
 
 ALTER ROLE \fIname\fR RENAME TO \fInew_name\fR
 
-ALTER ROLE \fIname\fR [ IN DATABASE \fIdatabase_name\fR ] SET \fIconfiguration_parameter\fR { TO | = } { \fIvalue\fR | DEFAULT }
-ALTER ROLE { \fIname\fR | ALL } [ IN DATABASE \fIdatabase_name\fR ] SET \fIconfiguration_parameter\fR FROM CURRENT
-ALTER ROLE { \fIname\fR | ALL } [ IN DATABASE \fIdatabase_name\fR ] RESET \fIconfiguration_parameter\fR
-ALTER ROLE { \fIname\fR | ALL } [ IN DATABASE \fIdatabase_name\fR ] RESET ALL
+ALTER ROLE { \fIrole_specification\fR | ALL } [ IN DATABASE \fIdatabase_name\fR ] SET \fIconfiguration_parameter\fR { TO | = } { \fIvalue\fR | DEFAULT }
+ALTER ROLE { \fIrole_specification\fR | ALL } [ IN DATABASE \fIdatabase_name\fR ] SET \fIconfiguration_parameter\fR FROM CURRENT
+ALTER ROLE { \fIrole_specification\fR | ALL } [ IN DATABASE \fIdatabase_name\fR ] RESET \fIconfiguration_parameter\fR
+ALTER ROLE { \fIrole_specification\fR | ALL } [ IN DATABASE \fIdatabase_name\fR ] RESET ALL
+
+where \fIrole_specification\fR can be:
+
+    [ GROUP ] \fIrole_name\fR
+  | CURRENT_USER
+  | SESSION_USER
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER ROLE\fR
 changes the attributes of a
 PostgreSQL
@@ -108,6 +114,16 @@ privilege can change defaults for non\-superuser roles\&. Ordinary roles can onl
 The name of the role whose attributes are to be altered\&.
 .RE
 .PP
+CURRENT_USER
+.RS 4
+Alter the current user instead of an explicitly identified role\&.
+.RE
+.PP
+SESSION_USER
+.RS 4
+Alter the current session user instead of an explicitly identified role\&.
+.RE
+.PP
 SUPERUSER
 .br
 NOSUPERUSER
@@ -135,6 +151,10 @@ NOLOGIN
 REPLICATION
 .br
 NOREPLICATION
+.br
+BYPASSRLS
+.br
+NOBYPASSRLS
 .br
 CONNECTION LIMIT \fIconnlimit\fR
 .br
@@ -200,7 +220,6 @@ to add new roles, and
 DROP ROLE (\fBDROP_ROLE\fR(7))
 to remove a role\&.
 .PP
-
 \fBALTER ROLE\fR
 cannot change a role\*(Aqs memberships\&. Use
 \fBGRANT\fR(7)

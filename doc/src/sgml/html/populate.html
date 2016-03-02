@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Performance Tips"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -343,17 +343,18 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="POPULATE-CHECKPOINT-SEGMENTS"
+NAME="POPULATE-MAX-WAL-SIZE"
 >14.4.6. Increase <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
+>max_wal_size</TT
 ></A
 ></H2
 ><P
 >    Temporarily increasing the <A
-HREF="runtime-config-wal.html#GUC-CHECKPOINT-SEGMENTS"
->checkpoint_segments</A
-> configuration variable can also
+HREF="runtime-config-wal.html#GUC-MAX-WAL-SIZE"
+>max_wal_size</A
+>
+    configuration variable can also
     make large data loads faster.  This is because loading a large
     amount of data into <SPAN
 CLASS="PRODUCTNAME"
@@ -368,7 +369,7 @@ CLASS="VARNAME"
     pages must be flushed to disk. By increasing
     <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
+>max_wal_size</TT
 > temporarily during bulk
     data loads, the number of checkpoints that are required can be
     reduced.
@@ -593,7 +594,7 @@ CLASS="VARNAME"
 > and
        <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
+>max_wal_size</TT
 >.
       </P
 ></LI
@@ -702,8 +703,8 @@ CLASS="COMMAND"
     keys.
 
      <A
-NAME="AEN26415"
-HREF="#FTN.AEN26415"
+NAME="AEN27484"
+HREF="#FTN.AEN27484"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN
@@ -714,7 +715,7 @@ CLASS="footnote"
     indexes and foreign keys if you wish to use those techniques.
     It's still useful to increase <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
+>max_wal_size</TT
 >
     while loading the data, but don't bother increasing
     <TT
@@ -750,8 +751,8 @@ ALIGN="LEFT"
 VALIGN="TOP"
 WIDTH="5%"
 ><A
-NAME="FTN.AEN26415"
-HREF="populate.html#AEN26415"
+NAME="FTN.AEN27484"
+HREF="populate.html#AEN27484"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN

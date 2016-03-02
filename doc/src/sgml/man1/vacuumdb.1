@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: vacuumdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "VACUUMDB" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "VACUUMDB" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,6 @@ vacuumdb \- garbage\-collect and analyze a PostgreSQL database
 \fBvacuumdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-\-all\fR | \fB\-a\fR 
 .SH "DESCRIPTION"
 .PP
-
 vacuumdb
 is a utility for cleaning a
 PostgreSQL
@@ -46,13 +45,11 @@ will also generate internal statistics used by the
 PostgreSQL
 query optimizer\&.
 .PP
-
 vacuumdb
 is a wrapper around the SQL command
 \fBVACUUM\fR(7)\&. There is no effective difference between vacuuming and analyzing databases via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
-
 vacuumdb
 accepts the following command\-line arguments:
 .PP
@@ -99,6 +96,26 @@ vacuuming\&.
 Aggressively
 \(lqfreeze\(rq
 tuples\&.
+.RE
+.PP
+\fB\-j \fR\fB\fInjobs\fR\fR
+.br
+\fB\-\-jobs=\fR\fB\fInjobs\fR\fR
+.RS 4
+Execute the vacuum or analyze commands in parallel by running
+\fInjobs\fR
+commands simultaneously\&. This option reduces the time of the processing but it also increases the load on the database server\&.
+.sp
+vacuumdb
+will open
+\fInjobs\fR
+connections to the database, so make sure your
+max_connections
+setting is high enough to accommodate all connections\&.
+.sp
+Note that using this mode together with the
+\fB\-f\fR
+(FULL) option might cause deadlock failures if certain system catalogs are processed in parallel\&.
 .RE
 .PP
 \fB\-q\fR
@@ -186,7 +203,6 @@ vacuumdb
 command line arguments, and exit\&.
 .RE
 .PP
-
 vacuumdb
 also accepts the following command\-line arguments for connection parameters:
 .PP
@@ -275,7 +291,6 @@ libpq
 front\-end library will apply\&.
 .SH "NOTES"
 .PP
-
 vacuumdb
 might need to connect several times to the
 PostgreSQL

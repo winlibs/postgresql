@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -305,7 +305,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN61210"
+NAME="AEN63153"
 >40.7.2.1. <TT
 CLASS="COMMAND"
 >OPEN FOR</TT
@@ -393,7 +393,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN61231"
+NAME="AEN63174"
 >40.7.2.2. <TT
 CLASS="COMMAND"
 >OPEN FOR EXECUTE</TT
@@ -452,7 +452,11 @@ HREF="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING"
 CLASS="COMMAND"
 >EXECUTE</TT
 >, parameter values
-          can be inserted into the dynamic command via <TT
+          can be inserted into the dynamic command via
+          <TT
+CLASS="LITERAL"
+>format()</TT
+> and <TT
 CLASS="LITERAL"
 >USING</TT
 >.
@@ -470,22 +474,21 @@ CLASS="LITERAL"
 >        An example:
 </P><PRE
 CLASS="PROGRAMLISTING"
->OPEN curs1 FOR EXECUTE 'SELECT * FROM ' || quote_ident(tabname)
-                                        || ' WHERE col1 = $1' USING keyvalue;</PRE
+>OPEN curs1 FOR EXECUTE format('SELECT * FROM %I WHERE col1 = $1',tabname) USING keyvalue;</PRE
 ><P>
-        In this example, the table name is inserted into the query textually,
-        so use of <CODE
+        In this example, the table name is inserted into the query via
+        <CODE
 CLASS="FUNCTION"
->quote_ident()</CODE
-> is recommended to guard against
-        SQL injection.  The comparison value for <TT
+>format()</CODE
+>.  The comparison value for <TT
 CLASS="LITERAL"
 >col1</TT
-> is inserted
-        via a <TT
+>
+        is inserted via a <TT
 CLASS="LITERAL"
 >USING</TT
-> parameter, so it needs no quoting.
+> parameter, so it needs
+        no quoting.
        </P
 ></DIV
 ><DIV
@@ -659,7 +662,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN61293"
+NAME="AEN63237"
 >40.7.3.1. <TT
 CLASS="LITERAL"
 >FETCH</TT
@@ -812,7 +815,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN61328"
+NAME="AEN63272"
 >40.7.3.2. <TT
 CLASS="LITERAL"
 >MOVE</TT
@@ -975,7 +978,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN61367"
+NAME="AEN63311"
 >40.7.3.3. <TT
 CLASS="LITERAL"
 >UPDATE/DELETE WHERE CURRENT OF</TT
@@ -1033,7 +1036,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN61380"
+NAME="AEN63324"
 >40.7.3.4. <TT
 CLASS="LITERAL"
 >CLOSE</TT
@@ -1068,7 +1071,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN61389"
+NAME="AEN63333"
 >40.7.3.5. Returning Cursors</A
 ></H3
 ><P

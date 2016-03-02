@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Routine Database Maintenance Tasks"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1157,7 +1157,20 @@ CLASS="STRUCTFIELD"
 HREF="runtime-config-client.html#GUC-VACUUM-MULTIXACT-FREEZE-TABLE-AGE"
 >vacuum_multixact_freeze_table_age</A
 >, a whole-table
-     scan is forced.  Whole-table <TT
+     scan is forced.  <CODE
+CLASS="FUNCTION"
+>mxid_age()</CODE
+> can be used on
+     <TT
+CLASS="STRUCTNAME"
+>pg_class</TT
+>.<TT
+CLASS="STRUCTFIELD"
+>relminmxid</TT
+> to find its age.
+    </P
+><P
+>     Whole-table <TT
 CLASS="COMMAND"
 >VACUUM</TT
 > scans, regardless of
@@ -1175,7 +1188,7 @@ HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
 >.  Whole-table
      vacuum scans will also occur progressively for all tables, starting with
      those that have the oldest multixact-age, if the amount of used member
-     storage space exceeds the amount 50% of the addressible storage space.
+     storage space exceeds the amount 50% of the addressable storage space.
      Both of these kinds of whole-table scans will occur even if autovacuum is
      nominally disabled.
     </P
@@ -1272,17 +1285,17 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >ANALYZE</TT
 > as needed.
-    <TT
-CLASS="VARNAME"
->log_autovacuum_min_duration</TT
-> can be used to monitor
-    autovacuum activity.
+    <A
+HREF="runtime-config-autovacuum.html#GUC-LOG-AUTOVACUUM-MIN-DURATION"
+>log_autovacuum_min_duration</A
+> can be set to monitor
+    autovacuum workers' activity.
    </P
 ><P
 >    If several large tables all become eligible for vacuuming in a short
     amount of time, all autovacuum workers might become occupied with
     vacuuming those tables for a long period.  This would result
-    in other tables and databases not being vacuumed until a worker became
+    in other tables and databases not being vacuumed until a worker becomes
     available. There is no limit on how many workers might be in a
     single database, but workers do try to avoid repeating work that has
     already been done by other workers. Note that the number of running
@@ -1385,92 +1398,42 @@ CLASS="COMMAND"
 CLASS="FILENAME"
 >postgresql.conf</TT
 >, but it is possible to override them
-    on a table-by-table basis; see
+    (and many other autovacuum control parameters) on a per-table basis; see
     <A
 HREF="sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS"
 ><I
 >Storage Parameters</I
 ></A
 > for more information.
-    If a setting
-    has been changed via storage parameters, that value is used; otherwise the
-    global settings are used. See <A
+    If a setting has been changed via a table's storage parameters, that value
+    is used when processing that table; otherwise the global settings are
+    used. See <A
 HREF="runtime-config-autovacuum.html"
 >Section 18.10</A
-> for
-    more details on the global settings.
+> for more details on
+    the global settings.
    </P
 ><P
->    Besides the base threshold values and scale factors, there are six
-    more autovacuum parameters that can be set for each table via
-    storage parameters.
-    The first parameter, <TT
-CLASS="LITERAL"
->autovacuum_enabled</TT
->,
-    can be set to <TT
-CLASS="LITERAL"
->false</TT
-> to instruct the autovacuum daemon
-    to skip that particular table entirely.  In this case
-    autovacuum will only touch the table if it must do so
-    to prevent transaction ID wraparound.
-    Another two parameters,
-    <TT
-CLASS="VARNAME"
->autovacuum_vacuum_cost_delay</TT
-> and
-    <TT
-CLASS="VARNAME"
->autovacuum_vacuum_cost_limit</TT
->, are used to set
-    table-specific values for the cost-based vacuum delay feature
+>    When multiple workers are running, the autovacuum cost delay parameters
     (see <A
 HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-VACUUM-COST"
 >Section 18.4.4</A
->).
-    <TT
-CLASS="VARNAME"
->autovacuum_freeze_min_age</TT
->,
-    <TT
-CLASS="VARNAME"
->autovacuum_freeze_max_age</TT
-> and
-    <TT
-CLASS="VARNAME"
->autovacuum_freeze_table_age</TT
-> are used to set
-    values for <A
-HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-MIN-AGE"
->vacuum_freeze_min_age</A
->,
-    <A
-HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-FREEZE-MAX-AGE"
->autovacuum_freeze_max_age</A
-> and
-    <A
-HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-TABLE-AGE"
->vacuum_freeze_table_age</A
-> respectively.
-   </P
-><P
->    When multiple workers are running, the cost delay parameters are
+>) are
     <SPAN
 CLASS="QUOTE"
 >"balanced"</SPAN
 > among all the running workers, so that the
     total I/O impact on the system is the same regardless of the number
     of workers actually running.  However, any workers processing tables whose
-    <TT
+    per-table <TT
 CLASS="LITERAL"
 >autovacuum_vacuum_cost_delay</TT
 > or
     <TT
 CLASS="LITERAL"
 >autovacuum_vacuum_cost_limit</TT
-> have been set are not considered
-    in the balancing algorithm.
+> storage parameters have been set
+    are not considered in the balancing algorithm.
    </P
 ></DIV
 ></DIV

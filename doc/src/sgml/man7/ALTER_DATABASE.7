@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER DATABASE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER DATABASE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER DATABASE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,11 +36,13 @@ ALTER DATABASE \fIname\fR [ [ WITH ] \fIoption\fR [ \&.\&.\&. ] ]
 
 where \fIoption\fR can be:
 
+    ALLOW_CONNECTIONS \fIallowconn\fR
     CONNECTION LIMIT \fIconnlimit\fR
+    IS_TEMPLATE \fIistemplate\fR
 
 ALTER DATABASE \fIname\fR RENAME TO \fInew_name\fR
 
-ALTER DATABASE \fIname\fR OWNER TO \fInew_owner\fR
+ALTER DATABASE \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
 
 ALTER DATABASE \fIname\fR SET TABLESPACE \fInew_tablespace\fR
 
@@ -51,7 +53,6 @@ ALTER DATABASE \fIname\fR RESET ALL
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER DATABASE\fR
 changes the attributes of a database\&.
 .PP
@@ -65,7 +66,7 @@ The third form changes the owner of the database\&. To alter the owner, you must
 CREATEDB
 privilege\&. (Note that superusers have all these privileges automatically\&.)
 .PP
-The fourth form changes the default tablespace of the database\&. Only the database owner or a superuser can do this; you must also have create privilege for the new tablespace\&. This command physically moves any tables or indexes in the database\*(Aqs old default tablespace to the new tablespace\&. Note that tables and indexes in non\-default tablespaces are not affected\&.
+The fourth form changes the default tablespace of the database\&. Only the database owner or a superuser can do this; you must also have create privilege for the new tablespace\&. This command physically moves any tables or indexes in the database\*(Aqs old default tablespace to the new tablespace\&. The new default tablespace must be empty for this database, and no one can be connected to the database\&. Tables and indexes in non\-default tablespaces are unaffected\&.
 .PP
 The remaining forms change the session default for a run\-time configuration variable for a
 PostgreSQL
@@ -81,9 +82,21 @@ command line\&. Only the database owner or a superuser can change the session de
 The name of the database whose attributes are to be altered\&.
 .RE
 .PP
+\fIallowconn\fR
+.RS 4
+If false then no one can connect to this database\&.
+.RE
+.PP
 \fIconnlimit\fR
 .RS 4
 How many concurrent connections can be made to this database\&. \-1 means no limit\&.
+.RE
+.PP
+\fIistemplate\fR
+.RS 4
+If true, then this database can be cloned by any user with
+CREATEDB
+privileges; if false, then only superusers or the owner of the database can clone it\&.
 .RE
 .PP
 \fInew_name\fR

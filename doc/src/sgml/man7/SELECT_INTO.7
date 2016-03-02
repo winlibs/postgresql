@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SELECT INTO
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "SELECT INTO" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "SELECT INTO" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -50,7 +50,6 @@ SELECT [ ALL | DISTINCT [ ON ( \fIexpression\fR [, \&.\&.\&.] ) ] ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBSELECT INTO\fR
 creates a new table and fills it with data computed by a query\&. The data is not returned to the client, as it is with a normal
 \fBSELECT\fR\&. The new table\*(Aqs columns have the names and data types associated with the output columns of the
@@ -80,7 +79,6 @@ All other parameters are described in detail under
 \fBSELECT\fR(7)\&.
 .SH "NOTES"
 .PP
-
 CREATE TABLE AS (\fBCREATE_TABLE_AS\fR(7))
 is functionally similar to
 \fBSELECT INTO\fR\&.

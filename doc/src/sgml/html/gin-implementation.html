@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="GIN Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 58. GIN Indexes</TD
+>Chapter 61. GIN Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="GIN-IMPLEMENTATION"
->58.4. Implementation</A
+>61.4. Implementation</A
 ></H1
 ><P
 >  Internally, a <ACRONYM
@@ -140,7 +140,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="GIN-FAST-UPDATE"
->58.4.1. GIN Fast Update Technique</A
+>61.4.1. GIN Fast Update Technique</A
 ></H2
 ><P
 >   Updating a <ACRONYM
@@ -158,11 +158,11 @@ CLASS="ACRONYM"
 >GIN</ACRONYM
 > is capable of postponing much of this work by inserting
    new tuples into a temporary, unsorted list of pending entries.
-   When the table is vacuumed, or if the pending list becomes too large
-   (larger than <A
-HREF="runtime-config-resource.html#GUC-WORK-MEM"
->work_mem</A
->), the entries are moved to the
+   When the table is vacuumed, or if the pending list becomes larger than
+   <A
+HREF="runtime-config-client.html#GUC-GIN-PENDING-LIST-LIMIT"
+>gin_pending_list_limit</A
+>, the entries are moved to the
    main <ACRONYM
 CLASS="ACRONYM"
 >GIN</ACRONYM
@@ -192,7 +192,7 @@ CLASS="QUOTE"
    use of pending entries can be disabled by turning off the
    <TT
 CLASS="LITERAL"
->FASTUPDATE</TT
+>fastupdate</TT
 > storage parameter for a
    <ACRONYM
 CLASS="ACRONYM"
@@ -210,7 +210,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="GIN-PARTIAL-MATCH"
->58.4.2. Partial Match Algorithm</A
+>61.4.2. Partial Match Algorithm</A
 ></H2
 ><P
 >   GIN can support <SPAN

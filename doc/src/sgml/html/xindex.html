@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -149,7 +149,7 @@ CLASS="CLASSNAME"
 > &mdash; but that is
    beyond the scope of this chapter (see <A
 HREF="indexam.html"
->Chapter 55</A
+>Chapter 58</A
 >).
   </P
 ><P
@@ -738,14 +738,14 @@ CLASS="CALSTABLE"
 ></TABLE
 ></DIV
 ><P
->   GiST indexes require seven support functions, with an optional eighth, as
-   shown in <A
+>   GiST indexes have nine support functions, two of which are optional,
+   as shown in <A
 HREF="xindex.html#XINDEX-GIST-SUPPORT-TABLE"
 >Table 35-9</A
 >.
    (For more information see <A
 HREF="gist.html"
->Chapter 56</A
+>Chapter 59</A
 >.)
   </P
 ><DIV
@@ -864,6 +864,18 @@ CLASS="FUNCTION"
 ><TD
 >8</TD
 ></TR
+><TR
+><TD
+><CODE
+CLASS="FUNCTION"
+>fetch</CODE
+></TD
+><TD
+>compute original representation of a compressed key for
+       index-only scans (optional)</TD
+><TD
+>9</TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -875,7 +887,7 @@ HREF="xindex.html#XINDEX-SPGIST-SUPPORT-TABLE"
 >.
    (For more information see <A
 HREF="spgist.html"
->Chapter 57</A
+>Chapter 60</A
 >.)
   </P
 ><DIV
@@ -962,14 +974,14 @@ CLASS="FUNCTION"
 ></TABLE
 ></DIV
 ><P
->   GIN indexes require four support functions, with an optional fifth, as
-   shown in <A
+>   GIN indexes have six support functions, three of which are optional,
+   as shown in <A
 HREF="xindex.html#XINDEX-GIN-SUPPORT-TABLE"
 >Table 35-11</A
 >.
    (For more information see <A
 HREF="gin.html"
->Chapter 58</A
+>Chapter 61</A
 >.)
   </P
 ><DIV

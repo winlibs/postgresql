@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_test_timing
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PG_TEST_TIMING" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PG_TEST_TIMING" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,14 +34,12 @@ pg_test_timing \- measure timing overhead
 \fBpg_test_timing\fR [\fIoption\fR...]
 .SH "DESCRIPTION"
 .PP
-
 pg_test_timing
 is a tool to measure the timing overhead on your system and confirm that the system time never moves backwards\&. Systems that are slow to collect timing data can give less accurate
 \fBEXPLAIN ANALYZE\fR
 results\&.
 .SH "OPTIONS"
 .PP
-
 pg_test_timing
 accepts the following command\-line options:
 .PP
@@ -206,9 +204,5 @@ The High Precision Event Timer (HPET) is the preferred timer on systems where it
 Advanced Configuration and Power Interface (ACPI) provides a Power Management (PM) Timer, which Linux refers to as the acpi_pm\&. The clock derived from acpi_pm will at best provide 300 nanosecond resolution\&.
 .PP
 Timers used on older PC hardware include the 8254 Programmable Interval Timer (PIT), the real\-time clock (RTC), the Advanced Programmable Interrupt Controller (APIC) timer, and the Cyclone timer\&. These timers aim for millisecond resolution\&.
-.SH "AUTHOR"
-.PP
-Ants Aasma
-<ants\&.aasma@eesti\&.ee>
 .SH "SEE ALSO"
 \fBEXPLAIN\fR(7)

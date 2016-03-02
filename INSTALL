@@ -72,21 +72,15 @@ make --version
        library must be a shared library also on most platforms. This
        appears to be the default in recent Perl versions, but it was not
        in earlier versions, and in any case it is the choice of whomever
-       installed Perl at your site. If you intend to make more than
-       incidental use of PL/Perl, you should ensure that the Perl
-       installation was built with the usemultiplicity option enabled
-       (perl -V will show whether this is the case).
-       If you don't have the shared library but you need one, a message
-       like this will appear during the PostgreSQL build to point out this
-       fact:
-*** Cannot build PL/Perl because libperl is not a shared library.
-*** You might have to rebuild your Perl installation.  Refer to
-*** the documentation for details.
-       (If you don't follow the on-screen output you will merely notice
-       that the PL/Perl library object, "plperl.so" or similar, will not
-       be installed.) If you see this, you will have to rebuild and
-       install Perl manually to be able to build PL/Perl. During the
-       configuration process for Perl, request a shared library.
+       installed Perl at your site. "configure" will fail if building
+       PL/Perl is selected but it cannot find a shared "libperl". In that
+       case, you will have to rebuild and install Perl manually to be able
+       to build PL/Perl. During the configuration process for Perl,
+       request a shared library.
+       If you intend to make more than incidental use of PL/Perl, you
+       should ensure that the Perl installation was built with the
+       usemultiplicity option enabled (perl -V will show whether this is
+       the case).
      * To build the PL/Python server programming language, you need a
        Python installation with the header files and the distutils module.
        The minimum required version is Python 2.3. (To work with function
@@ -97,20 +91,13 @@ make --version
        documentation when using Python 3.
        Since PL/Python will be a shared library, the "libpython" library
        must be a shared library also on most platforms. This is not the
-       case in a default Python installation. If after building and
-       installing PostgreSQL you have a file called "plpython.so"
-       (possibly a different extension), then everything went well.
-       Otherwise you should have seen a notice like this flying by:
-*** Cannot build PL/Python because libpython is not a shared library.
-*** You might have to rebuild your Python installation.  Refer to
-*** the documentation for details.
-       That means you have to rebuild (part of) your Python installation
-       to create this shared library.
-       If you have problems, run Python 2.3 or later's configure using the
-       --enable-shared flag. On some operating systems you don't have to
-       build a shared library, but you will have to convince the
-       PostgreSQL build system of this. Consult the "Makefile" in the
-       "src/pl/plpython" directory for details.
+       case in a default Python installation built from source, but a
+       shared library is available in many operating system distributions.
+       "configure" will fail if building PL/Python is selected but it
+       cannot find a shared "libpython". That might mean that you either
+       have to install additional packages or rebuild (part of) your
+       Python installation to provide this shared library. When building
+       from source, run Python's configure with the --enable-shared flag.
      * To build the PL/Tcl procedural language, you of course need a Tcl
        installation. If you are using a pre-8.4 release of Tcl, ensure
        that it was built without multithreading support.
@@ -797,8 +784,8 @@ Shared Libraries
 
    On some systems with shared libraries you need to tell the system how
    to find the newly installed shared libraries. The systems on which this
-   is *not* necessary include FreeBSD, HP-UX, Linux, NetBSD, OpenBSD,
-   Tru64 UNIX (formerly Digital UNIX), and Solaris.
+   is *not* necessary include FreeBSD, HP-UX, Linux, NetBSD, OpenBSD, and
+   Solaris.
 
    The method to set the shared library search path varies between
    platforms, but the most widely-used method is to set the environment
@@ -960,20 +947,20 @@ psql testdb
 
    In general, PostgreSQL can be expected to work on these CPU
    architectures: x86, x86_64, IA64, PowerPC, PowerPC 64, S/390, S/390x,
-   Sparc, Sparc 64, Alpha, ARM, MIPS, MIPSEL, M68K, and PA-RISC. Code
-   support exists for M32R and VAX, but these architectures are not known
-   to have been tested recently. It is often possible to build on an
-   unsupported CPU type by configuring with "--disable-spinlocks", but
-   performance will be poor.
+   Sparc, Sparc 64, ARM, MIPS, MIPSEL, M68K, and PA-RISC. Code support
+   exists for M32R and VAX, but these architectures are not known to have
+   been tested recently. It is often possible to build on an unsupported
+   CPU type by configuring with "--disable-spinlocks", but performance
+   will be poor.
 
    PostgreSQL can be expected to work on these operating systems: Linux
    (all recent distributions), Windows (Win2000 SP4 and later), FreeBSD,
-   OpenBSD, NetBSD, OS X, AIX, HP/UX, Solaris, Tru64 Unix, and UnixWare.
-   Other Unix-like systems may also work but are not currently being
-   tested. In most cases, all CPU architectures supported by a given
-   operating system will work. Look in the the Section called
-   Platform-specific Notes below to see if there is information specific
-   to your operating system, particularly if using an older system.
+   OpenBSD, NetBSD, OS X, AIX, HP/UX, Solaris, and UnixWare. Other
+   Unix-like systems may also work but are not currently being tested. In
+   most cases, all CPU architectures supported by a given operating system
+   will work. Look in the the Section called Platform-specific Notes below
+   to see if there is information specific to your operating system,
+   particularly if using an older system.
 
    If you have installation problems on a platform that is known to be
    supported according to recent build farm results, please report it to
@@ -1305,7 +1292,7 @@ MinGW/Native Windows
 
    To build 64 bit binaries using MinGW, install the 64 bit tool set from
    http://mingw-w64.sourceforge.net/, put its bin directory in the PATH,
-   and run "configure" with the "--host=x86_64-w64-mingw" option.
+   and run "configure" with the "--host=x86_64-w64-mingw32" option.
 
    After you have everything installed, it is suggested that you run psql
    under "CMD.EXE", as the MSYS console has buffering issues.

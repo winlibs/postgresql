@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -256,7 +256,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >hot_standby</TT
 >, plus information needed to allow
-        extracting logical changesets from the WAL. Using a level of
+        extracting logical change sets from the WAL. Using a level of
         <TT
 CLASS="LITERAL"
 >logical</TT
@@ -740,6 +740,46 @@ CLASS="LITERAL"
 ></DD
 ><DT
 ><A
+NAME="GUC-WAL-COMPRESSION"
+></A
+><TT
+CLASS="VARNAME"
+>wal_compression</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)
+      </DT
+><DD
+><P
+>        When this parameter is <TT
+CLASS="LITERAL"
+>on</TT
+>, the <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        server compresses a full page image written to WAL when
+        <A
+HREF="runtime-config-wal.html#GUC-FULL-PAGE-WRITES"
+>full_page_writes</A
+> is on or during a base backup.
+        A compressed page image will be decompressed during WAL replay.
+        The default value is <TT
+CLASS="LITERAL"
+>off</TT
+>.
+        Only superusers can change this setting.
+       </P
+><P
+>        Turning this parameter on can reduce the WAL volume without
+        increasing the risk of unrecoverable data corruption,
+        but at the cost of some extra CPU spent on the compression during
+        WAL logging and on the decompression during WAL replay.
+       </P
+></DD
+><DT
+><A
 NAME="GUC-WAL-BUFFERS"
 ></A
 ><TT
@@ -930,31 +970,6 @@ CLASS="VARIABLELIST"
 ><DL
 ><DT
 ><A
-NAME="GUC-CHECKPOINT-SEGMENTS"
-></A
-><TT
-CLASS="VARNAME"
->checkpoint_segments</TT
-> (<TT
-CLASS="TYPE"
->integer</TT
->)
-      </DT
-><DD
-><P
->        Maximum number of log file segments between automatic WAL
-        checkpoints (each segment is normally 16 megabytes). The default
-        is three segments.  Increasing this parameter can increase the
-        amount of time needed for crash recovery.
-        This parameter can only be set in the <TT
-CLASS="FILENAME"
->postgresql.conf</TT
->
-        file or on the server command line.
-       </P
-></DD
-><DT
-><A
 NAME="GUC-CHECKPOINT-TIMEOUT"
 ></A
 ><TT
@@ -967,8 +982,9 @@ CLASS="TYPE"
       </DT
 ><DD
 ><P
->        Maximum time between automatic WAL checkpoints, in
-        seconds. The default is five minutes (<TT
+>        Maximum time between automatic WAL checkpoints, in seconds.
+        The valid range is between 30 seconds and one hour.
+        The default is five minutes (<TT
 CLASS="LITERAL"
 >5min</TT
 >).
@@ -997,7 +1013,6 @@ CLASS="TYPE"
 ><P
 >        Specifies the target of checkpoint completion, as a fraction of
         total time between checkpoints. The default is 0.5.
-
         This parameter can only be set in the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
@@ -1024,7 +1039,7 @@ CLASS="TYPE"
         than this many seconds (which suggests that
         <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
+>max_wal_size</TT
 > ought to be raised).  The default is
         30 seconds (<TT
 CLASS="LITERAL"
@@ -1038,6 +1053,69 @@ CLASS="VARNAME"
 CLASS="VARNAME"
 >checkpoint_warning</TT
 >.
+        This parameter can only be set in the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>
+        file or on the server command line.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-MAX-WAL-SIZE"
+></A
+><TT
+CLASS="VARNAME"
+>max_wal_size</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        Maximum size to let the WAL grow to between automatic WAL
+        checkpoints. This is a soft limit; WAL size can exceed
+        <TT
+CLASS="VARNAME"
+>max_wal_size</TT
+> under special circumstances, like
+        under heavy load, a failing <TT
+CLASS="VARNAME"
+>archive_command</TT
+>, or a high
+        <TT
+CLASS="VARNAME"
+>wal_keep_segments</TT
+> setting. The default is 1 GB.
+        Increasing this parameter can increase the amount of time needed for
+        crash recovery.
+        This parameter can only be set in the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>
+        file or on the server command line.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-MIN-WAL-SIZE"
+></A
+><TT
+CLASS="VARNAME"
+>min_wal_size</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        As long as WAL disk usage stays below this setting, old WAL files are
+        always recycled for future use at a checkpoint, rather than removed.
+        This can be used to ensure that enough WAL space is reserved to
+        handle spikes in WAL usage, for example when running large batch
+        jobs. The default is 80 MB.
         This parameter can only be set in the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
@@ -1070,7 +1148,7 @@ CLASS="VARNAME"
 >archive_mode</TT
 > (<TT
 CLASS="TYPE"
->boolean</TT
+>enum</TT
 >)
       </DT
 ><DD
@@ -1083,8 +1161,35 @@ CLASS="VARNAME"
         <A
 HREF="runtime-config-wal.html#GUC-ARCHIVE-COMMAND"
 >archive_command</A
->.
+>. In addition to <TT
+CLASS="LITERAL"
+>off</TT
+>,
+        to disable, there are two modes: <TT
+CLASS="LITERAL"
+>on</TT
+>, and
         <TT
+CLASS="LITERAL"
+>always</TT
+>. During normal operation, there is no
+        difference between the two modes, but when set to <TT
+CLASS="LITERAL"
+>always</TT
+>
+        the WAL archiver is enabled also during archive recovery or standby
+        mode. In <TT
+CLASS="LITERAL"
+>always</TT
+> mode, all files restored from the archive
+        or streamed with streaming replication will be archived (again). See
+        <A
+HREF="warm-standby.html#CONTINUOUS-ARCHIVING-IN-STANDBY"
+>Section 25.2.9</A
+> for details.
+       </P
+><P
+>        <TT
 CLASS="VARNAME"
 >archive_mode</TT
 > and <TT

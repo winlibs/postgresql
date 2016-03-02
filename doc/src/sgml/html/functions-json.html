@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -150,7 +150,8 @@ CLASS="TYPE"
 >int</TT
 ></TD
 ><TD
->Get JSON array element (indexed from zero)</TD
+>Get JSON array element (indexed from zero, negative
+        integers count from the end)</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -324,7 +325,10 @@ CLASS="TYPE"
 >, which coerce the value to text.
     The field/element/path extraction operators return NULL, rather than
     failing, if the JSON input does not have the right structure to match
-    the request; for example if no such element exists.
+    the request; for example if no such element exists.  The
+    field/element/path extraction operators that accept integer JSON
+    array subscripts all support negative subscripting from the end of
+    arrays.
    </P
 ></BLOCKQUOTE
 ></DIV
@@ -415,7 +419,8 @@ CLASS="TYPE"
 >jsonb</TT
 ></TD
 ><TD
->Does the left JSON value contain within it the right value?</TD
+>Does the left JSON value contain the right JSON
+        path/value entries at the top level?</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -434,7 +439,8 @@ CLASS="TYPE"
 >jsonb</TT
 ></TD
 ><TD
->Is the left JSON value contained within the right value?</TD
+>Are the left JSON path/value entries contained at the top level within
+        the right JSON value?</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -453,14 +459,14 @@ CLASS="TYPE"
 >text</TT
 ></TD
 ><TD
->Does the key/element <SPAN
+>Does the <SPAN
 CLASS="emphasis"
 ><I
 CLASS="EMPHASIS"
 >string</I
 ></SPAN
-> exist within
-        the JSON value?</TD
+> exist as a top-level
+        key within the JSON value?</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -479,13 +485,14 @@ CLASS="TYPE"
 >text[]</TT
 ></TD
 ><TD
->Do any of these key/element <SPAN
+>Do any of these array <SPAN
 CLASS="emphasis"
 ><I
 CLASS="EMPHASIS"
 >strings</I
 ></SPAN
-> exist?</TD
+>
+        exist as top-level keys?</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -504,21 +511,132 @@ CLASS="TYPE"
 >text[]</TT
 ></TD
 ><TD
->Do all of these key/element <SPAN
+>Do all of these array <SPAN
 CLASS="emphasis"
 ><I
 CLASS="EMPHASIS"
 >strings</I
 ></SPAN
-> exist?</TD
+> exist
+        as top-level keys?</TD
 ><TD
 ><TT
 CLASS="LITERAL"
 >'["a", "b"]'::jsonb ?&amp; array['a', 'b']</TT
 ></TD
 ></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>||</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>jsonb</TT
+></TD
+><TD
+>Concatenate two <TT
+CLASS="TYPE"
+>jsonb</TT
+> values into a new <TT
+CLASS="TYPE"
+>jsonb</TT
+> value</TD
+><TD
+><TT
+CLASS="LITERAL"
+>'["a", "b"]'::jsonb || '["c", "d"]'::jsonb</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>-</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Delete key/value pair or <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>string</I
+></SPAN
+>
+        element from left operand.  Key/value pairs are matched based
+        on their key value.</TD
+><TD
+><TT
+CLASS="LITERAL"
+>'{"a": "b"}'::jsonb - 'a' </TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>-</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>Delete the array element with specified index (Negative
+        integers count from the end).  Throws an error if top level
+        container is not an array.</TD
+><TD
+><TT
+CLASS="LITERAL"
+>'["a", "b"]'::jsonb - 1 </TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>#-</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text[]</TT
+></TD
+><TD
+>Delete the field or element with specified path (for
+        JSON arrays, negative integers count from the end)</TD
+><TD
+><TT
+CLASS="LITERAL"
+>'["a", {"b":1}]'::jsonb #- '{1,b}'</TT
+></TD
+></TR
 ></TBODY
 ></TABLE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>    The <TT
+CLASS="LITERAL"
+>||</TT
+> operator concatenates the elements at the top level of
+    each of its operands. It does not operate recursively. For example, if
+    both operands are objects with a common key field name, the value of the
+    field in the result will just be the value from the right hand operand.
+   </P
+></BLOCKQUOTE
 ></DIV
 ><P
 >   <A
@@ -528,15 +646,25 @@ HREF="functions-json.html#FUNCTIONS-JSON-CREATION-TABLE"
    available for creating <TT
 CLASS="TYPE"
 >json</TT
+> and <TT
+CLASS="TYPE"
+>jsonb</TT
 > values.
-   (Currently, there are no equivalent functions for <TT
+   (There are no equivalent functions for <TT
 CLASS="TYPE"
 >jsonb</TT
->, but you
-   can cast the result of one of these functions to <TT
-CLASS="TYPE"
->jsonb</TT
->.)
+>, of the <TT
+CLASS="LITERAL"
+>row_to_json</TT
+>
+   and <TT
+CLASS="LITERAL"
+>array_to_json</TT
+> functions. However, the <TT
+CLASS="LITERAL"
+>to_jsonb</TT
+>
+   function supplies much the same functionality as these functions would.)
   </P
 ><DIV
 CLASS="TABLE"
@@ -565,22 +693,43 @@ CLASS="CALSTABLE"
 ><TBODY
 ><TR
 ><TD
->         <TT
+><P
+><TT
 CLASS="LITERAL"
 >to_json(anyelement)</TT
 >
-       </TD
+          </P
+><P
+><TT
+CLASS="LITERAL"
+>to_jsonb(anyelement)</TT
+>
+       </P
+></TD
 ><TD
->         Returns the value as JSON.  Arrays and composites are converted
+>         Returns the value as <TT
+CLASS="TYPE"
+>json</TT
+> or <TT
+CLASS="TYPE"
+>jsonb</TT
+>.
+         Arrays and composites are converted
          (recursively) to arrays and objects; otherwise, if there is a cast
          from the type to <TT
 CLASS="TYPE"
 >json</TT
 >, the cast function will be used to
-         perform the conversion; otherwise, a JSON scalar value is produced.
+         perform the conversion; otherwise, a scalar value is produced.
          For any scalar type other than a number, a Boolean, or a null value,
-         the text representation will be used, properly quoted and escaped
-         so that it is a valid JSON string.
+         the text representation will be used, in such a fashion that it is a
+         valid <TT
+CLASS="TYPE"
+>json</TT
+> or <TT
+CLASS="TYPE"
+>jsonb</TT
+> value.
        </TD
 ><TD
 ><TT
@@ -646,11 +795,19 @@ CLASS="LITERAL"
 ></TR
 ><TR
 ><TD
->         <TT
+><P
+><TT
 CLASS="LITERAL"
 >json_build_array(VARIADIC "any")</TT
 >
-       </TD
+          </P
+><P
+><TT
+CLASS="LITERAL"
+>jsonb_build_array(VARIADIC "any")</TT
+>
+       </P
+></TD
 ><TD
 >         Builds a possibly-heterogeneously-typed JSON array out of a variadic
          argument list.
@@ -668,11 +825,19 @@ CLASS="LITERAL"
 ></TR
 ><TR
 ><TD
->         <TT
+><P
+><TT
 CLASS="LITERAL"
 >json_build_object(VARIADIC "any")</TT
 >
-       </TD
+          </P
+><P
+><TT
+CLASS="LITERAL"
+>jsonb_build_object(VARIADIC "any")</TT
+>
+       </P
+></TD
 ><TD
 >         Builds a JSON object out of a variadic argument list.  By
          convention, the argument list consists of alternating
@@ -691,11 +856,19 @@ CLASS="LITERAL"
 ></TR
 ><TR
 ><TD
->         <TT
+><P
+><TT
 CLASS="LITERAL"
 >json_object(text[])</TT
 >
-       </TD
+          </P
+><P
+><TT
+CLASS="LITERAL"
+>jsonb_object(text[])</TT
+>
+       </P
+></TD
 ><TD
 >         Builds a JSON object out of a text array.  The array must have either
          exactly one dimension with an even number of members, in which case
@@ -724,11 +897,19 @@ CLASS="LITERAL"
 ></TR
 ><TR
 ><TD
->         <TT
+><P
+><TT
 CLASS="LITERAL"
 >json_object(keys text[], values text[])</TT
 >
-       </TD
+          </P
+><P
+><TT
+CLASS="LITERAL"
+>jsonb_object(keys text[], values text[])</TT
+>
+       </P
+></TD
 ><TD
 >         This form of <CODE
 CLASS="FUNCTION"
@@ -1438,6 +1619,203 @@ CLASS="PROGRAMLISTING"
 >
        </TD
 ></TR
+><TR
+><TD
+><P
+><TT
+CLASS="LITERAL"
+>json_strip_nulls(from_json json)</TT
+>
+         </P
+><P
+><TT
+CLASS="LITERAL"
+>jsonb_strip_nulls(from_json jsonb)</TT
+>
+       </P
+></TD
+><TD
+><P
+><TT
+CLASS="TYPE"
+>json</TT
+></P
+><P
+><TT
+CLASS="TYPE"
+>jsonb</TT
+></P
+></TD
+><TD
+>         Returns <TT
+CLASS="REPLACEABLE"
+><I
+>from_json</I
+></TT
+>
+         with all object fields that have null values omitted. Other null values
+         are untouched.
+       </TD
+><TD
+><TT
+CLASS="LITERAL"
+>json_strip_nulls('[{"f1":1,"f2":null},2,null,3]')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>[{"f1":1},2,null,3]</TT
+></TD
+></TR
+><TR
+><TD
+><P
+><TT
+CLASS="LITERAL"
+>jsonb_set(target jsonb, path text[], new_value jsonb[<SPAN
+CLASS="OPTIONAL"
+>, <TT
+CLASS="PARAMETER"
+>create_missing</TT
+> <TT
+CLASS="TYPE"
+>boolean</TT
+></SPAN
+>])</TT
+>
+         </P
+></TD
+><TD
+><P
+><TT
+CLASS="TYPE"
+>jsonb</TT
+></P
+></TD
+><TD
+>         Returns <TT
+CLASS="REPLACEABLE"
+><I
+>target</I
+></TT
+>
+         with the section designated by <TT
+CLASS="REPLACEABLE"
+><I
+>path</I
+></TT
+>
+         replaced by <TT
+CLASS="REPLACEABLE"
+><I
+>new_value</I
+></TT
+>, or with
+         <TT
+CLASS="REPLACEABLE"
+><I
+>new_value</I
+></TT
+> added if
+         <TT
+CLASS="REPLACEABLE"
+><I
+>create_missing</I
+></TT
+> is true ( default is
+         <TT
+CLASS="LITERAL"
+>true</TT
+>) and the item
+         designated by <TT
+CLASS="REPLACEABLE"
+><I
+>path</I
+></TT
+> does not exist.
+         As with the path orientated operators, negative integers that
+         appear in <TT
+CLASS="REPLACEABLE"
+><I
+>path</I
+></TT
+> count from the end
+         of JSON arrays.
+       </TD
+><TD
+><P
+><TT
+CLASS="LITERAL"
+>jsonb_set('[{"f1":1,"f2":null},2,null,3]', '{0,f1}','[2,3,4]', false)</TT
+>
+         </P
+><P
+><TT
+CLASS="LITERAL"
+>jsonb_set('[{"f1":1,"f2":null},2]', '{0,f3}','[2,3,4]')</TT
+>
+         </P
+></TD
+><TD
+><P
+><TT
+CLASS="LITERAL"
+>[{"f1":[2,3,4],"f2":null},2,null,3]</TT
+>
+         </P
+><P
+><TT
+CLASS="LITERAL"
+>[{"f1": 1, "f2": null, "f3": [2, 3, 4]}, 2]</TT
+>
+        </P
+></TD
+></TR
+><TR
+><TD
+><P
+><TT
+CLASS="LITERAL"
+>jsonb_pretty(from_json jsonb)</TT
+>
+         </P
+></TD
+><TD
+><P
+><TT
+CLASS="TYPE"
+>text</TT
+></P
+></TD
+><TD
+>         Returns <TT
+CLASS="REPLACEABLE"
+><I
+>from_json</I
+></TT
+>
+         as indented JSON text.
+       </TD
+><TD
+><TT
+CLASS="LITERAL"
+>jsonb_pretty('[{"f1":1,"f2":null},2,null,3]')</TT
+></TD
+><TD
+><PRE
+CLASS="PROGRAMLISTING"
+>[
+    {
+        "f1": 1,
+        "f2": null
+    },
+    2,
+    null,
+    3
+]</PRE
+>
+        </TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -1504,6 +1882,50 @@ CLASS="NOTE"
 ><P
 ><B
 >Note: </B
+>      All the items of the <TT
+CLASS="LITERAL"
+>path</TT
+> parameter of <TT
+CLASS="LITERAL"
+>jsonb_set</TT
+>
+      must be present in the <TT
+CLASS="LITERAL"
+>target</TT
+>, unless
+      <TT
+CLASS="LITERAL"
+>create_missing</TT
+> is true, in which case all but the last item
+      must be present. If these conditions are not met the <TT
+CLASS="LITERAL"
+>target</TT
+>
+      is returned unchanged.
+    </P
+><P
+>      If the last path item is an object key, it will be created if it
+      is absent and given the new value. If the last path item is an array
+      index, if it is positive the item to set is found by counting from
+      the left, and if negative by counting from the right - <TT
+CLASS="LITERAL"
+>-1</TT
+>
+      designates the rightmost element, and so on.
+      If the item is out of the range -array_length .. array_length -1,
+      and create_missing is true, the new value is added at the beginning
+      of the array if the item is negative, and at the end of the array if
+      it is positive.
+    </P
+></BLOCKQUOTE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
 >      The <TT
 CLASS="LITERAL"
 >json_typeof</TT
@@ -1527,6 +1949,30 @@ CLASS="LITERAL"
     </P
 ></BLOCKQUOTE
 ></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>      If the argument to <TT
+CLASS="LITERAL"
+>json_strip_nulls</TT
+> contains duplicate
+      field names in any object, the result could be semantically somewhat
+      different, depending on the order in which they occur. This is not an
+      issue for <TT
+CLASS="LITERAL"
+>jsonb_strip_nulls</TT
+> since <TT
+CLASS="TYPE"
+>jsonb</TT
+> values never have
+      duplicate object field names.
+    </P
+></BLOCKQUOTE
+></DIV
 ><P
 >    See also <A
 HREF="functions-aggregate.html"
@@ -1541,7 +1987,17 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >json_object_agg</CODE
 > which aggregates pairs of values
-    into a JSON object.
+    into a JSON object, and their <TT
+CLASS="TYPE"
+>jsonb</TT
+> equivalents,
+    <CODE
+CLASS="FUNCTION"
+>jsonb_agg</CODE
+> and <CODE
+CLASS="FUNCTION"
+>jsonb_object_agg</CODE
+>.
   </P
 ></DIV
 ><DIV

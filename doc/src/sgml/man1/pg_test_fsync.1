@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_test_fsync
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PG_TEST_FSYNC" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PG_TEST_FSYNC" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -28,13 +28,12 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-pg_test_fsync \- determine fastest wal_sync_method for PostgreSQL
+pg_test_fsync \- determine fastest \fIwal_sync_method\fR for PostgreSQL
 .SH "SYNOPSIS"
 .HP \w'\fBpg_test_fsync\fR\ 'u
 \fBpg_test_fsync\fR [\fIoption\fR...]
 .SH "DESCRIPTION"
 .PP
-
 pg_test_fsync
 is intended to give you a reasonable idea of what the fastest
 wal_sync_method
@@ -47,7 +46,6 @@ wal_sync_method, which can also be used to inform efforts to optimize the value 
 commit_delay\&.
 .SH "OPTIONS"
 .PP
-
 pg_test_fsync
 accepts the following command\-line options:
 .PP
@@ -89,9 +87,5 @@ Show help about
 pg_test_fsync
 command line arguments, and exit\&.
 .RE
-.SH "AUTHOR"
-.PP
-Bruce Momjian
-<bruce@momjian\&.us>
 .SH "SEE ALSO"
 \fBpostgres\fR(1)

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="The Rule System"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -169,11 +169,71 @@ CLASS="LITERAL"
     create zero or more new query trees and can throw away the
     original one.</P
 ><DIV
+CLASS="CAUTION"
+><P
+></P
+><TABLE
+CLASS="CAUTION"
+BORDER="1"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Caution</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>  In many cases, tasks that could be performed by rules
+  on <TT
+CLASS="COMMAND"
+>INSERT</TT
+>/<TT
+CLASS="COMMAND"
+>UPDATE</TT
+>/<TT
+CLASS="COMMAND"
+>DELETE</TT
+> are better done
+  with triggers.  Triggers are notationally a bit more complicated, but their
+  semantics are much simpler to understand.  Rules tend to have surprising
+  results when the original query contains volatile functions: volatile
+  functions may get executed more times than expected in the process of
+  carrying out the rules.
+ </P
+><P
+>  Also, there are some cases that are not supported by these types of rules at
+  all, notably including <TT
+CLASS="LITERAL"
+>WITH</TT
+> clauses in the original query and
+  multiple-assignment sub-<TT
+CLASS="LITERAL"
+>SELECT</TT
+>s in the <TT
+CLASS="LITERAL"
+>SET</TT
+> list
+  of <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> queries.  This is because copying these constructs
+  into a rule query would result in multiple evaluations of the sub-query,
+  contrary to the express intent of the query's author.
+ </P
+></TD
+></TR
+></TABLE
+></DIV
+><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN59382"
+NAME="AEN61313"
 >38.4.1. How Update Rules Work</A
 ></H2
 ><P
@@ -410,7 +470,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN59442"
+NAME="AEN61373"
 >38.4.1.1. A First Rule Step by Step</A
 ></H3
 ><P

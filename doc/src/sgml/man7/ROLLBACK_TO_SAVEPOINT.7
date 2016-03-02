@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ROLLBACK TO SAVEPOINT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ROLLBACK TO SAVEPOINT" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ROLLBACK TO SAVEPOINT" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,7 +38,6 @@ ROLLBACK [ WORK | TRANSACTION ] TO [ SAVEPOINT ] \fIsavepoint_name\fR
 .PP
 Roll back all commands that were executed after the savepoint was established\&. The savepoint remains valid and can be rolled back to again later, if needed\&.
 .PP
-
 \fBROLLBACK TO SAVEPOINT\fR
 implicitly destroys all savepoints that were established after the named savepoint\&.
 .SH "PARAMETERS"

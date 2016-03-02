@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEDOMAIN"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN73055"
+NAME="AEN75386"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN73055"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN73058"
+NAME="AEN75389"
 ></A
 ><H2
 >Synopsis</H2
@@ -168,7 +168,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73069"
+NAME="AEN75400"
 ></A
 ><H2
 >Description</H2
@@ -210,7 +210,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73078"
+NAME="AEN75409"
 ></A
 ><H2
 >Parameters</H2
@@ -316,15 +316,8 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        Values of this domain are normally prevented from being null.
-        However, it is still possible for a domain with this constraint
-        to take a null value if it is assigned a matching domain type
-        that has become null, e.g. via a LEFT OUTER JOIN, or
-        <TT
-CLASS="COMMAND"
->INSERT INTO tab (domcol) VALUES ((SELECT domcol FROM
-        tab WHERE false))</TT
->.
+>        Values of this domain are prevented from being null
+        (but see notes below).
        </P
 ></DD
 ><DT
@@ -364,7 +357,10 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >VALUE</TT
 >
-      to refer to the value being tested.
+      to refer to the value being tested.  Expressions evaluating
+      to TRUE or UNKNOWN succeed.  If the expression produces a FALSE result,
+      an error is reported and the value is not allowed to be converted
+      to the domain type.
      </P
 ><P
 >      Currently, <TT
@@ -376,6 +372,21 @@ CLASS="LITERAL"
 >VALUE</TT
 >.
      </P
+><P
+>      When a domain has multiple <TT
+CLASS="LITERAL"
+>CHECK</TT
+> constraints,
+      they will be tested in alphabetical order by name.
+      (<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> versions before 9.5 did not honor any
+      particular firing order for <TT
+CLASS="LITERAL"
+>CHECK</TT
+> constraints.)
+     </P
 ></DD
 ></DL
 ></DIV
@@ -383,7 +394,43 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73134"
+NAME="AEN75468"
+></A
+><H2
+>Notes</H2
+><P
+>   Domain constraints, particularly <TT
+CLASS="LITERAL"
+>NOT NULL</TT
+>, are checked when
+   converting a value to the domain type.  It is possible for a column that
+   is nominally of the domain type to read as null despite there being such
+   a constraint.  For example, this can happen in an outer-join query, if
+   the domain column is on the nullable side of the outer join.  A more
+   subtle example is
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO tab (domcol) VALUES ((SELECT domcol FROM tab WHERE false));</PRE
+><P>
+   The empty scalar sub-SELECT will produce a null value that is considered
+   to be of the domain type, so no further constraint checking is applied
+   to it, and the insertion will succeed.
+  </P
+><P
+>   It is very difficult to avoid such problems, because of SQL's general
+   assumption that a null value is a valid value of every data type.  Best practice
+   therefore is to design a domain's constraints so that a null value is allowed,
+   and then to apply column <TT
+CLASS="LITERAL"
+>NOT NULL</TT
+> constraints to columns of
+   the domain type as needed, rather than directly to the domain type.
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN75475"
 ></A
 ><H2
 >Examples</H2

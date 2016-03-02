@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATERULE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN75173"
+NAME="AEN77878"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN75173"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN75176"
+NAME="AEN77881"
 ></A
 ><H2
 >Synopsis</H2
@@ -166,7 +166,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75187"
+NAME="AEN77892"
 ></A
 ><H2
 >Description</H2
@@ -335,7 +335,7 @@ HREF="sql-createtrigger.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75224"
+NAME="AEN77929"
 ></A
 ><H2
 >Parameters</H2
@@ -382,7 +382,23 @@ CLASS="LITERAL"
       <TT
 CLASS="LITERAL"
 >DELETE</TT
->.
+>.  Note that an
+      <TT
+CLASS="COMMAND"
+>INSERT</TT
+> containing an <TT
+CLASS="LITERAL"
+>ON
+      CONFLICT</TT
+> clause cannot be used on tables that have
+      either <TT
+CLASS="LITERAL"
+>INSERT</TT
+> or <TT
+CLASS="LITERAL"
+>UPDATE</TT
+>
+      rules.  Consider using an updatable view instead.
      </P
 ></DD
 ><DT
@@ -561,7 +577,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75294"
+NAME="AEN78003"
 ></A
 ><H2
 >Notes</H2
@@ -700,7 +716,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75326"
+NAME="AEN78035"
 ></A
 ><H2
 >Compatibility</H2
@@ -719,7 +735,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75331"
+NAME="AEN78040"
 ></A
 ><H2
 >See Also</H2

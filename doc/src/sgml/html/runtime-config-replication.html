@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -287,6 +287,31 @@ CLASS="FILENAME"
 >postgresql.conf</TT
 > file or on the server command line.
         The default value is 60 seconds.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-TRACK-COMMIT-TIMESTAMP"
+></A
+><TT
+CLASS="VARNAME"
+>track_commit_timestamp</TT
+> (<TT
+CLASS="TYPE"
+>bool</TT
+>)
+      </DT
+><DD
+><P
+>        Record commit time of transactions. This parameter
+        can only be set in <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file or on the server
+        command line. The default value is <TT
+CLASS="LITERAL"
+>off</TT
+>.
        </P
 ></DD
 ></DL
@@ -714,6 +739,45 @@ CLASS="FILENAME"
 >postgresql.conf</TT
 > file or on the server command line.
         The default value is 60 seconds.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-WAL-RETRIEVE-RETRY-INTERVAL"
+></A
+><TT
+CLASS="VARNAME"
+>wal_retrieve_retry_interval</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        Specify how long the standby server should wait when WAL data is not
+        available from any sources (streaming replication,
+        local <TT
+CLASS="FILENAME"
+>pg_xlog</TT
+> or WAL archive) before retrying to
+        retrieve WAL data.  This parameter can only be set in the
+        <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file or on the server command line.
+        The default value is 5 seconds. Units are milliseconds if not specified.
+       </P
+><P
+>        This parameter is useful in configurations where a node in recovery
+        needs to control the amount of time to wait for new WAL data to be
+        available. For example, in archive recovery, it is possible to
+        make the recovery more responsive in the detection of a new WAL
+        log file by reducing the value of this parameter. On a system with
+        low WAL activity, increasing it reduces the amount of requests necessary
+        to access WAL archives, something useful for example in cloud
+        environments where the amount of times an infrastructure is accessed
+        is taken into account.
        </P
 ></DD
 ></DL

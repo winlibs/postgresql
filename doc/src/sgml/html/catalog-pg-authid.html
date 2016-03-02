@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 48. System Catalogs</TD
+>Chapter 49. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOG-PG-AUTHID"
->48.8. <TT
+>49.8. <TT
 CLASS="STRUCTNAME"
 >pg_authid</TT
 ></A
@@ -165,11 +165,11 @@ CLASS="STRUCTNAME"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN95943"
+NAME="AEN101267"
 ></A
 ><P
 ><B
->Table 48-8. <TT
+>Table 49-8. <TT
 CLASS="STRUCTNAME"
 >pg_authid</TT
 > Columns</B
@@ -277,22 +277,6 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
->rolcatupdate</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->       Role can update system catalogs directly.  (Even a superuser cannot do
-       this unless this column is true)
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
 >rolcanlogin</TT
 ></TD
 ><TD
@@ -330,6 +314,25 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >pg_stop_backup</CODE
 >
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>rolbypassrls</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bool</TT
+></TD
+><TD
+>       Role bypasses every row level security policy, see
+       <A
+HREF="ddl-rowsecurity.html"
+>Section 5.7</A
+> for more information.
       </TD
 ></TR
 ><TR

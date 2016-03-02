@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="  Installation from Source Code"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -352,8 +352,34 @@ CLASS="PRODUCTNAME"
 >Perl</SPAN
 > versions, but it was not
       in earlier versions, and in any case it is the choice of whomever
-      installed Perl at your site.
-      If you intend to make more than incidental use of
+      installed Perl at your site.  <TT
+CLASS="FILENAME"
+>configure</TT
+> will fail
+      if building <SPAN
+CLASS="APPLICATION"
+>PL/Perl</SPAN
+> is selected but it cannot
+      find a shared <TT
+CLASS="FILENAME"
+>libperl</TT
+>.  In that case, you will have
+      to rebuild and install <SPAN
+CLASS="PRODUCTNAME"
+>Perl</SPAN
+> manually to be
+      able to build <SPAN
+CLASS="APPLICATION"
+>PL/Perl</SPAN
+>.  During the
+      configuration process for <SPAN
+CLASS="PRODUCTNAME"
+>Perl</SPAN
+>, request a
+      shared library.
+     </P
+><P
+>      If you intend to make more than incidental use of
       <SPAN
 CLASS="APPLICATION"
 >PL/Perl</SPAN
@@ -370,43 +396,6 @@ CLASS="LITERAL"
 >perl -V</TT
 >
       will show whether this is the case).
-     </P
-><P
->      If you don't have the shared library but you need one, a message
-      like this will appear during the <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
-      build to point out this fact:
-</P><PRE
-CLASS="SCREEN"
->*** Cannot build PL/Perl because libperl is not a shared library.
-*** You might have to rebuild your Perl installation.  Refer to
-*** the documentation for details.</PRE
-><P>
-      (If you don't follow the on-screen output you will merely notice
-      that the <SPAN
-CLASS="APPLICATION"
->PL/Perl</SPAN
-> library object,
-      <TT
-CLASS="FILENAME"
->plperl.so</TT
-> or similar, will not be
-      installed.)  If you see this, you will have to rebuild and
-      install <SPAN
-CLASS="PRODUCTNAME"
->Perl</SPAN
-> manually to be able to
-      build <SPAN
-CLASS="APPLICATION"
->PL/Perl</SPAN
->.  During the
-      configuration process for <SPAN
-CLASS="PRODUCTNAME"
->Perl</SPAN
->,
-      request a shared library.
      </P
 ></LI
 ><LI
@@ -467,52 +456,33 @@ CLASS="FILENAME"
       <SPAN
 CLASS="PRODUCTNAME"
 >Python</SPAN
-> installation.  If after
-      building and installing <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> you have a file called
-      <TT
+> installation built from source, but a
+      shared library is available in many operating system
+      distributions.  <TT
 CLASS="FILENAME"
->plpython.so</TT
-> (possibly a different
-      extension), then everything went well.  Otherwise you should
-      have seen a notice like this flying by:
-</P><PRE
-CLASS="SCREEN"
->*** Cannot build PL/Python because libpython is not a shared library.
-*** You might have to rebuild your Python installation.  Refer to
-*** the documentation for details.</PRE
-><P>
-      That means you have to rebuild (part of) your
+>configure</TT
+> will fail if
+      building <SPAN
+CLASS="APPLICATION"
+>PL/Python</SPAN
+> is selected but it cannot
+      find a shared <TT
+CLASS="FILENAME"
+>libpython</TT
+>.  That might mean that you
+      either have to install additional packages or rebuild (part of) your
       <SPAN
 CLASS="PRODUCTNAME"
 >Python</SPAN
-> installation to create this
-      shared library.
-     </P
-><P
->      If you have problems, run <SPAN
+> installation to provide this shared
+      library.  When building from source, run <SPAN
 CLASS="PRODUCTNAME"
 >Python</SPAN
-> 2.3 or later's
-      configure using the <TT
+>'s
+      configure with the <TT
 CLASS="LITERAL"
 >--enable-shared</TT
-> flag.  On some
-      operating systems you don't have to build a shared library, but
-      you will have to convince the <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> build
-      system of this.  Consult the <TT
-CLASS="FILENAME"
->Makefile</TT
-> in
-      the <TT
-CLASS="FILENAME"
->src/pl/plpython</TT
-> directory for details.
+> flag.
      </P
 ></LI
 ><LI

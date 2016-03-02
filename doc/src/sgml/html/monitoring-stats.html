@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Monitoring Database Activity"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -114,9 +114,11 @@ CLASS="FIRSTTERM"
 >   <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> also supports reporting of the exact
-   command currently being executed by other server processes.  This
-   facility is independent of the collector process.
+> also supports reporting dynamic
+   information about exactly what is going on in the system right now, such as
+   the exact command currently being executed by other server processes, and
+   which other connections exist in the system.  This facility is independent
+   of the collector process.
   </P
 ><DIV
 CLASS="SECT2"
@@ -220,13 +222,18 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="MONITORING-STATS-VIEWS"
->27.2.2. Viewing Collected Statistics</A
+>27.2.2. Viewing Statistics</A
 ></H2
 ><P
 >   Several predefined views, listed in <A
-HREF="monitoring-stats.html#MONITORING-STATS-VIEWS-TABLE"
+HREF="monitoring-stats.html#MONITORING-STATS-DYNAMIC-VIEWS-TABLE"
 >Table 27-1</A
->, are available to show the results
+>, are available to show
+   the current state of the system. There are also several other
+   views, listed in <A
+HREF="monitoring-stats.html#MONITORING-STATS-VIEWS-TABLE"
+>Table 27-2</A
+>, available to show the results
    of statistics collection.  Alternatively, one can
    build custom views using the underlying statistics functions, as discussed
    in <A
@@ -235,7 +242,7 @@ HREF="monitoring-stats.html#MONITORING-STATS-FUNCTIONS"
 >.
   </P
 ><P
->   When using the statistics to monitor current activity, it is important
+>   When using the statistics to monitor collected data, it is important
    to realize that the information does not update instantaneously.
    Each individual server process transmits new statistical counts to
    the collector just before going idle; so a query or transaction still in
@@ -297,11 +304,11 @@ CLASS="STRUCTNAME"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="MONITORING-STATS-VIEWS-TABLE"
+NAME="MONITORING-STATS-DYNAMIC-VIEWS-TABLE"
 ></A
 ><P
 ><B
->Table 27-1. Standard Statistics Views</B
+>Table 27-1. Dynamic Statistics Views</B
 ></P
 ><TABLE
 BORDER="1"
@@ -332,6 +339,60 @@ HREF="monitoring-stats.html#PG-STAT-ACTIVITY-VIEW"
 > for details.
       </TD
 ></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTNAME"
+>pg_stat_replication</TT
+></TD
+><TD
+>One row per WAL sender process, showing statistics about
+       replication to that sender's connected standby server.
+       See <A
+HREF="monitoring-stats.html#PG-STAT-REPLICATION-VIEW"
+>pg_stat_replication</A
+> for details.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTNAME"
+>pg_stat_ssl</TT
+></TD
+><TD
+>One row per connection (regular and replication), showing information about
+       SSL used on this connection.
+       See <A
+HREF="monitoring-stats.html#PG-STAT-SSL-VIEW"
+>pg_stat_ssl</A
+> for details.
+      </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><DIV
+CLASS="TABLE"
+><A
+NAME="MONITORING-STATS-VIEWS-TABLE"
+></A
+><P
+><B
+>Table 27-2. Collected Statistics Views</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>View Name</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
 ><TR
 ><TD
 ><TT
@@ -373,6 +434,21 @@ CLASS="STRUCTNAME"
        <A
 HREF="monitoring-stats.html#PG-STAT-DATABASE-VIEW"
 >pg_stat_database</A
+> for details.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTNAME"
+>pg_stat_database_conflicts</TT
+></TD
+><TD
+>       One row per database, showing database-wide statistics about
+       query cancels due to conflict with recovery on standby servers.
+       See <A
+HREF="monitoring-stats.html#PG-STAT-DATABASE-CONFLICTS-VIEW"
+>pg_stat_database_conflicts</A
 > for details.
       </TD
 ></TR
@@ -671,36 +747,6 @@ CLASS="STRUCTNAME"
 >pg_stat_user_functions</TT
 >).</TD
 ></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTNAME"
->pg_stat_replication</TT
-></TD
-><TD
->One row per WAL sender process, showing statistics about
-       replication to that sender's connected standby server.
-       See <A
-HREF="monitoring-stats.html#PG-STAT-REPLICATION-VIEW"
->pg_stat_replication</A
-> for details.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTNAME"
->pg_stat_database_conflicts</TT
-></TD
-><TD
->       One row per database, showing database-wide statistics about
-       query cancels due to conflict with recovery on standby servers.
-       See <A
-HREF="monitoring-stats.html#PG-STAT-DATABASE-CONFLICTS-VIEW"
->pg_stat_database_conflicts</A
-> for details.
-      </TD
-></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -746,7 +792,7 @@ NAME="PG-STAT-ACTIVITY-VIEW"
 ></A
 ><P
 ><B
->Table 27-2. <TT
+>Table 27-3. <TT
 CLASS="STRUCTNAME"
 >pg_stat_activity</TT
 > View</B
@@ -1183,11 +1229,463 @@ CLASS="STRUCTFIELD"
 ><DIV
 CLASS="TABLE"
 ><A
+NAME="PG-STAT-REPLICATION-VIEW"
+></A
+><P
+><B
+>Table 27-4. <TT
+CLASS="STRUCTNAME"
+>pg_stat_replication</TT
+> View</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Column</TH
+><TH
+>Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>pid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>Process ID of a WAL sender process</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>usesysid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD
+>OID of the user logged into this WAL sender process</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>usename</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>name</TT
+></TD
+><TD
+>Name of the user logged into this WAL sender process</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>application_name</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Name of the application that is connected
+      to this WAL sender</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>client_addr</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>inet</TT
+></TD
+><TD
+>IP address of the client connected to this WAL sender.
+      If this field is null, it indicates that the client is
+      connected via a Unix socket on the server machine.
+     </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>client_hostname</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Host name of the connected client, as reported by a
+      reverse DNS lookup of <TT
+CLASS="STRUCTFIELD"
+>client_addr</TT
+>. This field will
+      only be non-null for IP connections, and only when <A
+HREF="runtime-config-logging.html#GUC-LOG-HOSTNAME"
+>log_hostname</A
+> is enabled.
+     </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>client_port</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>TCP port number that the client is using for communication
+      with this WAL sender, or <TT
+CLASS="LITERAL"
+>-1</TT
+> if a Unix socket is used
+     </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>backend_start</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>Time when this process was started, i.e., when the
+      client connected to this WAL sender
+     </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>backend_xmin</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+><TD
+>This standby's <TT
+CLASS="LITERAL"
+>xmin</TT
+> horizon reported
+     by <A
+HREF="runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK"
+>hot_standby_feedback</A
+>.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>state</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Current WAL sender state</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>sent_location</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+><TD
+>Last transaction log position sent on this connection</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>write_location</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+><TD
+>Last transaction log position written to disk by this standby
+      server</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>flush_location</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+><TD
+>Last transaction log position flushed to disk by this standby
+      server</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>replay_location</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+><TD
+>Last transaction log position replayed into the database on this
+      standby server</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>sync_priority</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>Priority of this standby server for being chosen as the
+      synchronous standby</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>sync_state</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Synchronous state of this standby server</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   The <TT
+CLASS="STRUCTNAME"
+>pg_stat_replication</TT
+> view will contain one row
+   per WAL sender process, showing statistics about replication to that
+   sender's connected standby server.  Only directly connected standbys are
+   listed; no information is available about downstream standby servers.
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="PG-STAT-SSL-VIEW"
+></A
+><P
+><B
+>Table 27-5. <TT
+CLASS="STRUCTNAME"
+>pg_stat_ssl</TT
+> View</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Column</TH
+><TH
+>Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>pid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>Process ID of a backend or WAL sender process</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>ssl</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>True if SSL is used on this connection</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>version</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Version of SSL in use, or NULL if SSL is not in use
+      on this connection</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>cipher</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Name of SSL cipher in use, or NULL if SSL is not in use
+      on this connection</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>bits</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>Number of bits in the encryption algorithm used, or NULL
+     if SSL is not used on this connection</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>compression</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>True if SSL compression is in use, false if not,
+      or NULL if SSL is not in use on this connection</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>clientdn</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Distinguished Name (DN) field from the client certificate
+      used, or NULL if no client certificate was supplied or if SSL
+      is not in use on this connection. This field is truncated if the
+      DN field is longer than <TT
+CLASS="SYMBOL"
+>NAMEDATALEN</TT
+> (64 characters
+      in a standard build)
+     </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   The <TT
+CLASS="STRUCTNAME"
+>pg_stat_ssl</TT
+> view will contain one row per
+   backend or WAL sender process, showing statistics about SSL usage on
+   this connection. It can be joined to <TT
+CLASS="STRUCTNAME"
+>pg_stat_activity</TT
+>
+   or <TT
+CLASS="STRUCTNAME"
+>pg_stat_replication</TT
+> on the
+   <TT
+CLASS="STRUCTFIELD"
+>pid</TT
+> column to get more details about the
+   connection.
+  </P
+><DIV
+CLASS="TABLE"
+><A
 NAME="PG-STAT-ARCHIVER-VIEW"
 ></A
 ><P
 ><B
->Table 27-3. <TT
+>Table 27-6. <TT
 CLASS="STRUCTNAME"
 >pg_stat_archiver</TT
 > View</B
@@ -1321,7 +1819,7 @@ NAME="PG-STAT-BGWRITER-VIEW"
 ></A
 ><P
 ><B
->Table 27-4. <TT
+>Table 27-7. <TT
 CLASS="STRUCTNAME"
 >pg_stat_bgwriter</TT
 > View</B
@@ -1522,7 +2020,7 @@ NAME="PG-STAT-DATABASE-VIEW"
 ></A
 ><P
 ><B
->Table 27-5. <TT
+>Table 27-8. <TT
 CLASS="STRUCTNAME"
 >pg_stat_database</TT
 > View</B
@@ -1850,11 +2348,153 @@ CLASS="STRUCTNAME"
 ><DIV
 CLASS="TABLE"
 ><A
+NAME="PG-STAT-DATABASE-CONFLICTS-VIEW"
+></A
+><P
+><B
+>Table 27-9. <TT
+CLASS="STRUCTNAME"
+>pg_stat_database_conflicts</TT
+> View</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Column</TH
+><TH
+>Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>datid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD
+>OID of a database</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>datname</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>name</TT
+></TD
+><TD
+>Name of this database</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>confl_tablespace</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of queries in this database that have been canceled due to
+      dropped tablespaces</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>confl_lock</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of queries in this database that have been canceled due to
+      lock timeouts</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>confl_snapshot</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of queries in this database that have been canceled due to
+      old snapshots</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>confl_bufferpin</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of queries in this database that have been canceled due to
+      pinned buffers</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>confl_deadlock</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of queries in this database that have been canceled due to
+      deadlocks</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   The <TT
+CLASS="STRUCTNAME"
+>pg_stat_database_conflicts</TT
+> view will contain
+   one row per database, showing database-wide statistics about
+   query cancels occurring due to conflicts with recovery on standby servers.
+   This view will only contain information on standby servers, since
+   conflicts do not occur on master servers.
+  </P
+><DIV
+CLASS="TABLE"
+><A
 NAME="PG-STAT-ALL-TABLES-VIEW"
 ></A
 ><P
 ><B
->Table 27-6. <TT
+>Table 27-10. <TT
 CLASS="STRUCTNAME"
 >pg_stat_all_tables</TT
 > View</B
@@ -1997,7 +2637,7 @@ CLASS="TYPE"
 >bigint</TT
 ></TD
 ><TD
->Number of rows updated</TD
+>Number of rows updated (includes HOT updated rows)</TD
 ></TR
 ><TR
 ><TD
@@ -2222,7 +2862,7 @@ NAME="PG-STAT-ALL-INDEXES-VIEW"
 ></A
 ><P
 ><B
->Table 27-7. <TT
+>Table 27-11. <TT
 CLASS="STRUCTNAME"
 >pg_stat_all_indexes</TT
 > View</B
@@ -2376,11 +3016,11 @@ CLASS="STRUCTNAME"
    but filtered to only show user and system indexes respectively.
   </P
 ><P
->   Indexes can be used via either simple index scans or <SPAN
+>   Indexes can be used by simple index scans, <SPAN
 CLASS="QUOTE"
 >"bitmap"</SPAN
->
-   index scans.  In a bitmap scan
+> index scans,
+   and the optimizer.  In a bitmap scan
    the output of several indexes can be combined via AND or OR rules,
    so it is difficult to associate individual heap row fetches
    with specific indexes when a bitmap scan is used.  Therefore, a bitmap
@@ -2408,6 +3048,9 @@ CLASS="STRUCTNAME"
 CLASS="STRUCTFIELD"
 >idx_tup_fetch</TT
 >.
+   The optimizer also accesses indexes to check for supplied constants
+   whose values are outside the recorded range of the optimizer statistics
+   because the optimizer statistics might be stale.
   </P
 ><DIV
 CLASS="NOTE"
@@ -2445,7 +3088,7 @@ NAME="PG-STATIO-ALL-TABLES-VIEW"
 ></A
 ><P
 ><B
->Table 27-8. <TT
+>Table 27-12. <TT
 CLASS="STRUCTNAME"
 >pg_statio_all_tables</TT
 > View</B
@@ -2646,7 +3289,7 @@ NAME="PG-STATIO-ALL-INDEXES-VIEW"
 ></A
 ><P
 ><B
->Table 27-9. <TT
+>Table 27-13. <TT
 CLASS="STRUCTNAME"
 >pg_statio_all_indexes</TT
 > View</B
@@ -2791,7 +3434,7 @@ NAME="PG-STATIO-ALL-SEQUENCES-VIEW"
 ></A
 ><P
 ><B
->Table 27-10. <TT
+>Table 27-14. <TT
 CLASS="STRUCTNAME"
 >pg_statio_all_sequences</TT
 > View</B
@@ -2898,7 +3541,7 @@ NAME="PG-STAT-USER-FUNCTIONS-VIEW"
 ></A
 ><P
 ><B
->Table 27-11. <TT
+>Table 27-15. <TT
 CLASS="STRUCTNAME"
 >pg_stat_user_functions</TT
 > View</B
@@ -3018,441 +3661,6 @@ HREF="runtime-config-statistics.html#GUC-TRACK-FUNCTIONS"
 > parameter
    controls exactly which functions are tracked.
   </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="PG-STAT-REPLICATION-VIEW"
-></A
-><P
-><B
->Table 27-12. <TT
-CLASS="STRUCTNAME"
->pg_stat_replication</TT
-> View</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><THEAD
-><TR
-><TH
->Column</TH
-><TH
->Type</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->pid</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->integer</TT
-></TD
-><TD
->Process ID of a WAL sender process</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->usesysid</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid</TT
-></TD
-><TD
->OID of the user logged into this WAL sender process</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->usename</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->name</TT
-></TD
-><TD
->Name of the user logged into this WAL sender process</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->application_name</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text</TT
-></TD
-><TD
->Name of the application that is connected
-      to this WAL sender</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->client_addr</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->inet</TT
-></TD
-><TD
->IP address of the client connected to this WAL sender.
-      If this field is null, it indicates that the client is
-      connected via a Unix socket on the server machine.
-     </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->client_hostname</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text</TT
-></TD
-><TD
->Host name of the connected client, as reported by a
-      reverse DNS lookup of <TT
-CLASS="STRUCTFIELD"
->client_addr</TT
->. This field will
-      only be non-null for IP connections, and only when <A
-HREF="runtime-config-logging.html#GUC-LOG-HOSTNAME"
->log_hostname</A
-> is enabled.
-     </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->client_port</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->integer</TT
-></TD
-><TD
->TCP port number that the client is using for communication
-      with this WAL sender, or <TT
-CLASS="LITERAL"
->-1</TT
-> if a Unix socket is used
-     </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->backend_start</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->timestamp with time zone</TT
-></TD
-><TD
->Time when this process was started, i.e., when the
-      client connected to this WAL sender
-     </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->backend_xmin</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->xid</TT
-></TD
-><TD
->This standby's <TT
-CLASS="LITERAL"
->xmin</TT
-> horizon reported
-     by <A
-HREF="runtime-config-replication.html#GUC-HOT-STANDBY-FEEDBACK"
->hot_standby_feedback</A
->.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->state</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text</TT
-></TD
-><TD
->Current WAL sender state</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->sent_location</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->pg_lsn</TT
-></TD
-><TD
->Last transaction log position sent on this connection</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->write_location</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->pg_lsn</TT
-></TD
-><TD
->Last transaction log position written to disk by this standby
-      server</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->flush_location</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->pg_lsn</TT
-></TD
-><TD
->Last transaction log position flushed to disk by this standby
-      server</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->replay_location</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->pg_lsn</TT
-></TD
-><TD
->Last transaction log position replayed into the database on this
-      standby server</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->sync_priority</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->integer</TT
-></TD
-><TD
->Priority of this standby server for being chosen as the
-      synchronous standby</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->sync_state</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text</TT
-></TD
-><TD
->Synchronous state of this standby server</TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   The <TT
-CLASS="STRUCTNAME"
->pg_stat_replication</TT
-> view will contain one row
-   per WAL sender process, showing statistics about replication to that
-   sender's connected standby server.  Only directly connected standbys are
-   listed; no information is available about downstream standby servers.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="PG-STAT-DATABASE-CONFLICTS-VIEW"
-></A
-><P
-><B
->Table 27-13. <TT
-CLASS="STRUCTNAME"
->pg_stat_database_conflicts</TT
-> View</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><THEAD
-><TR
-><TH
->Column</TH
-><TH
->Type</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->datid</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid</TT
-></TD
-><TD
->OID of a database</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->datname</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->name</TT
-></TD
-><TD
->Name of this database</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->confl_tablespace</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bigint</TT
-></TD
-><TD
->Number of queries in this database that have been canceled due to
-      dropped tablespaces</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->confl_lock</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bigint</TT
-></TD
-><TD
->Number of queries in this database that have been canceled due to
-      lock timeouts</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->confl_snapshot</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bigint</TT
-></TD
-><TD
->Number of queries in this database that have been canceled due to
-      old snapshots</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->confl_bufferpin</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bigint</TT
-></TD
-><TD
->Number of queries in this database that have been canceled due to
-      pinned buffers</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->confl_deadlock</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bigint</TT
-></TD
-><TD
->Number of queries in this database that have been canceled due to
-      deadlocks</TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   The <TT
-CLASS="STRUCTNAME"
->pg_stat_database_conflicts</TT
-> view will contain
-   one row per database, showing database-wide statistics about
-   query cancels occurring due to conflicts with recovery on standby servers.
-   This view will only contain information on standby servers, since
-   conflicts do not occur on master servers.
-  </P
 ></DIV
 ><DIV
 CLASS="SECT2"
@@ -3484,7 +3692,7 @@ CLASS="LITERAL"
 ><P
 >   Additional functions related to statistics collection are listed in <A
 HREF="monitoring-stats.html#MONITORING-STATS-FUNCS-TABLE"
->Table 27-14</A
+>Table 27-16</A
 >.
   </P
 ><DIV
@@ -3494,7 +3702,7 @@ NAME="MONITORING-STATS-FUNCS-TABLE"
 ></A
 ><P
 ><B
->Table 27-14. Additional Statistics Functions</B
+>Table 27-16. Additional Statistics Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3556,6 +3764,24 @@ CLASS="SYMBOL"
 CLASS="STRUCTNAME"
 >pg_stat_activity</TT
 > view.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_stat_get_snapshot_timestamp()</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>       Returns the timestamp of the current statistics snapshot
       </TD
 ></TR
 ><TR
@@ -3685,7 +3911,7 @@ CLASS="STRUCTNAME"
    information.  In such cases, an older set of per-backend statistics
    access functions can be used; these are shown in <A
 HREF="monitoring-stats.html#MONITORING-STATS-BACKEND-FUNCS-TABLE"
->Table 27-15</A
+>Table 27-17</A
 >.
    These access functions use a backend ID number, which ranges from one
    to the number of currently active backends.
@@ -3714,7 +3940,7 @@ NAME="MONITORING-STATS-BACKEND-FUNCS-TABLE"
 ></A
 ><P
 ><B
->Table 27-15. Per-Backend Statistics Functions</B
+>Table 27-17. Per-Backend Statistics Functions</B
 ></P
 ><TABLE
 BORDER="1"

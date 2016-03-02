@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP EXTENSION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "DROP EXTENSION" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "DROP EXTENSION" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,6 @@ DROP EXTENSION [ IF EXISTS ] \fIname\fR [, \&.\&.\&.] [ CASCADE | RESTRICT ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBDROP EXTENSION\fR
 removes extensions from the database\&. Dropping an extension causes its component objects to be dropped as well\&.
 .PP
@@ -89,7 +88,6 @@ CASCADE
 option to forcibly remove those dependent objects as well\&.
 .SH "COMPATIBILITY"
 .PP
-
 \fBDROP EXTENSION\fR
 is a
 PostgreSQL

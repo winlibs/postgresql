@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER FOREIGN TABLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER FOREIGN TABLE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER FOREIGN TABLE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,9 +32,9 @@ ALTER_FOREIGN_TABLE \- change the definition of a foreign table
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER FOREIGN TABLE [ IF EXISTS ] \fIname\fR
+ALTER FOREIGN TABLE [ IF EXISTS ] [ ONLY ] \fIname\fR [ * ]
     \fIaction\fR [, \&.\&.\&. ]
-ALTER FOREIGN TABLE [ IF EXISTS ] \fIname\fR
+ALTER FOREIGN TABLE [ IF EXISTS ] [ ONLY ] \fIname\fR [ * ]
     RENAME [ COLUMN ] \fIcolumn_name\fR TO \fInew_column_name\fR
 ALTER FOREIGN TABLE [ IF EXISTS ] \fIname\fR
     RENAME TO \fInew_name\fR
@@ -45,24 +45,31 @@ where \fIaction\fR is one of:
 
     ADD [ COLUMN ] \fIcolumn_name\fR \fIdata_type\fR [ COLLATE \fIcollation\fR ] [ \fIcolumn_constraint\fR [ \&.\&.\&. ] ]
     DROP [ COLUMN ] [ IF EXISTS ] \fIcolumn_name\fR [ RESTRICT | CASCADE ]
-    ALTER [ COLUMN ] \fIcolumn_name\fR [ SET DATA ] TYPE \fIdata_type\fR
+    ALTER [ COLUMN ] \fIcolumn_name\fR [ SET DATA ] TYPE \fIdata_type\fR [ COLLATE \fIcollation\fR ]
     ALTER [ COLUMN ] \fIcolumn_name\fR SET DEFAULT \fIexpression\fR
     ALTER [ COLUMN ] \fIcolumn_name\fR DROP DEFAULT
     ALTER [ COLUMN ] \fIcolumn_name\fR { SET | DROP } NOT NULL
     ALTER [ COLUMN ] \fIcolumn_name\fR SET STATISTICS \fIinteger\fR
     ALTER [ COLUMN ] \fIcolumn_name\fR SET ( \fIattribute_option\fR = \fIvalue\fR [, \&.\&.\&. ] )
     ALTER [ COLUMN ] \fIcolumn_name\fR RESET ( \fIattribute_option\fR [, \&.\&.\&. ] )
+    ALTER [ COLUMN ] \fIcolumn_name\fR SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
     ALTER [ COLUMN ] \fIcolumn_name\fR OPTIONS ( [ ADD | SET | DROP ] \fIoption\fR [\*(Aq\fIvalue\fR\*(Aq] [, \&.\&.\&. ])
+    ADD \fItable_constraint\fR [ NOT VALID ]
+    VALIDATE CONSTRAINT \fIconstraint_name\fR
+    DROP CONSTRAINT [ IF EXISTS ]  \fIconstraint_name\fR [ RESTRICT | CASCADE ]
     DISABLE TRIGGER [ \fItrigger_name\fR | ALL | USER ]
     ENABLE TRIGGER [ \fItrigger_name\fR | ALL | USER ]
     ENABLE REPLICA TRIGGER \fItrigger_name\fR
     ENABLE ALWAYS TRIGGER \fItrigger_name\fR
-    OWNER TO \fInew_owner\fR
+    SET WITH OIDS
+    SET WITHOUT OIDS
+    INHERIT \fIparent_table\fR
+    NO INHERIT \fIparent_table\fR
+    OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
     OPTIONS ( [ ADD | SET | DROP ] \fIoption\fR [\*(Aq\fIvalue\fR\*(Aq] [, \&.\&.\&. ])
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER FOREIGN TABLE\fR
 changes the definition of an existing foreign table\&. There are several subforms:
 .PP
@@ -81,14 +88,11 @@ IF EXISTS
 is specified and the column does not exist, no error is thrown\&. In this case a notice is issued instead\&.
 .RE
 .PP
-IF EXISTS
-.RS 4
-Do not throw an error if the foreign table does not exist\&. A notice is issued in this case\&.
-.RE
-.PP
 SET DATA TYPE
 .RS 4
-This form changes the type of a column of a foreign table\&.
+This form changes the type of a column of a foreign table\&. Again, this has no effect on any underlying storage: this action simply changes the type that
+PostgreSQL
+believes the column to have\&.
 .RE
 .PP
 SET/DROP DEFAULT
@@ -123,6 +127,38 @@ ALTER TABLE (\fBALTER_TABLE\fR(7))
 for more details\&.
 .RE
 .PP
+SET STORAGE
+.RS 4
+This form sets the storage mode for a column\&. See the similar form of
+ALTER TABLE (\fBALTER_TABLE\fR(7))
+for more details\&. Note that the storage mode has no effect unless the table\*(Aqs foreign\-data wrapper chooses to pay attention to it\&.
+.RE
+.PP
+ADD \fItable_constraint\fR [ NOT VALID ]
+.RS 4
+This form adds a new constraint to a foreign table, using the same syntax as
+CREATE FOREIGN TABLE (\fBCREATE_FOREIGN_TABLE\fR(7))\&. Currently only
+CHECK
+constraints are supported\&.
+.sp
+Unlike the case when adding a constraint to a regular table, nothing is done to verify the constraint is correct; rather, this action simply declares that some new condition should be assumed to hold for all rows in the foreign table\&. (See the discussion in
+CREATE FOREIGN TABLE (\fBCREATE_FOREIGN_TABLE\fR(7))\&.) If the constraint is marked
+NOT VALID, then it isn\*(Aqt assumed to hold, but is only recorded for possible future use\&.
+.RE
+.PP
+VALIDATE CONSTRAINT
+.RS 4
+This form marks as valid a constraint that was previously marked as
+NOT VALID\&. No action is taken to verify the constraint, but future queries will assume that it holds\&.
+.RE
+.PP
+DROP CONSTRAINT [ IF EXISTS ]
+.RS 4
+This form drops the specified constraint on a foreign table\&. If
+IF EXISTS
+is specified and the constraint does not exist, no error is thrown\&. In this case a notice is issued instead\&.
+.RE
+.PP
 DISABLE/ENABLE [ REPLICA | ALWAYS ] TRIGGER
 .RS 4
 These forms configure the firing of trigger(s) belonging to the foreign table\&. See the similar form of
@@ -130,9 +166,54 @@ ALTER TABLE (\fBALTER_TABLE\fR(7))
 for more details\&.
 .RE
 .PP
+SET WITH OIDS
+.RS 4
+This form adds an
+oid
+system column to the table (see
+Section 5.4, \(lqSystem Columns\(rq, in the documentation)\&. It does nothing if the table already has OIDs\&. Unless the table\*(Aqs foreign\-data wrapper supports OIDs, this column will simply read as zeroes\&.
+.sp
+Note that this is not equivalent to
+ADD COLUMN oid oid; that would add a normal column that happened to be named
+oid, not a system column\&.
+.RE
+.PP
+SET WITHOUT OIDS
+.RS 4
+This form removes the
+oid
+system column from the table\&. This is exactly equivalent to
+DROP COLUMN oid RESTRICT, except that it will not complain if there is already no
+oid
+column\&.
+.RE
+.PP
+INHERIT \fIparent_table\fR
+.RS 4
+This form adds the target foreign table as a new child of the specified parent table\&. See the similar form of
+ALTER TABLE (\fBALTER_TABLE\fR(7))
+for more details\&.
+.RE
+.PP
+NO INHERIT \fIparent_table\fR
+.RS 4
+This form removes the target foreign table from the list of children of the specified parent table\&.
+.RE
+.PP
 OWNER
 .RS 4
 This form changes the owner of the foreign table to the specified user\&.
+.RE
+.PP
+OPTIONS ( [ ADD | SET | DROP ] \fIoption\fR [\*(Aq\fIvalue\fR\*(Aq] [, \&.\&.\&. ] )
+.RS 4
+Change options for the foreign table or one of its columns\&.
+ADD,
+SET, and
+DROP
+specify the action to be performed\&.
+ADD
+is assumed if no operation is explicitly specified\&. Duplicate option names are not allowed (although it\*(Aqs OK for a table option and a column option to have the same name)\&. Option names and values are also validated using the foreign data wrapper library\&.
 .RE
 .PP
 RENAME
@@ -147,22 +228,15 @@ SET SCHEMA
 This form moves the foreign table into another schema\&.
 .RE
 .PP
-OPTIONS ( [ ADD | SET | DROP ] \fIoption\fR [\*(Aq\fIvalue\fR\*(Aq] [, \&.\&.\&. ] )
-.RS 4
-Change options for the foreign table or one of its columns\&.
-ADD,
-SET, and
-DROP
-specify the action to be performed\&.
-ADD
-is assumed if no operation is explicitly specified\&. Duplicate option names are not allowed (although it\*(Aqs OK for a table option and a column option to have the same name)\&. Option names and values are also validated using the foreign data wrapper library\&.
-.RE
-.PP
 All the actions except
 RENAME
 and
 SET SCHEMA
 can be combined into a list of multiple alterations to apply in parallel\&. For example, it is possible to add several columns and/or alter the type of several columns in a single command\&.
+.PP
+If the command is written as
+ALTER FOREIGN TABLE IF EXISTS \&.\&.\&.
+and the foreign table does not exist, no error is thrown\&. A notice is issued in this case\&.
 .PP
 You must own the table to use
 \fBALTER FOREIGN TABLE\fR\&. To change the schema of a foreign table, you must also have
@@ -176,7 +250,13 @@ privilege on the data type\&.
 .PP
 \fIname\fR
 .RS 4
-The name (possibly schema\-qualified) of an existing foreign table to alter\&.
+The name (possibly schema\-qualified) of an existing foreign table to alter\&. If
+ONLY
+is specified before the table name, only that table is altered\&. If
+ONLY
+is not specified, the table and all its descendant tables (if any) are altered\&. Optionally,
+*
+can be specified after the table name to explicitly indicate that descendant tables are included\&.
 .RE
 .PP
 \fIcolumn_name\fR
@@ -199,14 +279,24 @@ New name for the table\&.
 Data type of the new column, or new data type for an existing column\&.
 .RE
 .PP
+\fItable_constraint\fR
+.RS 4
+New table constraint for the foreign table\&.
+.RE
+.PP
+\fIconstraint_name\fR
+.RS 4
+Name of an existing constraint to drop\&.
+.RE
+.PP
 CASCADE
 .RS 4
-Automatically drop objects that depend on the dropped column (for example, views referencing the column)\&.
+Automatically drop objects that depend on the dropped column or constraint (for example, views referencing the column)\&.
 .RE
 .PP
 RESTRICT
 .RS 4
-Refuse to drop the column if there are any dependent objects\&. This is the default behavior\&.
+Refuse to drop the column or constraint if there are any dependent objects\&. This is the default behavior\&.
 .RE
 .PP
 \fItrigger_name\fR
@@ -222,6 +312,11 @@ Disable or enable all triggers belonging to the foreign table\&. (This requires 
 USER
 .RS 4
 Disable or enable all triggers belonging to the foreign table except for internally generated triggers\&.
+.RE
+.PP
+\fIparent_table\fR
+.RS 4
+A parent table to associate or de\-associate with this foreign table\&.
 .RE
 .PP
 \fInew_owner\fR
@@ -244,6 +339,8 @@ ADD COLUMN
 or
 DROP COLUMN, a
 NOT NULL
+or
+CHECK
 constraint is added, or a column type is changed with
 SET DATA TYPE\&. It is the user\*(Aqs responsibility to ensure that the table definition matches the remote side\&.
 .PP
@@ -270,7 +367,7 @@ To change options of a foreign table:
 .RS 4
 .\}
 .nf
-ALTER FOREIGN TABLE myschema\&.distributors OPTIONS (ADD opt1 \*(Aqvalue\*(Aq, SET opt2, \*(Aqvalue2\*(Aq, DROP opt3 \*(Aqvalue3\*(Aq);
+ALTER FOREIGN TABLE myschema\&.distributors OPTIONS (ADD opt1 \*(Aqvalue\*(Aq, SET opt2 \*(Aqvalue2\*(Aq, DROP opt3 \*(Aqvalue3\*(Aq);
 .fi
 .if n \{\
 .RE
@@ -287,6 +384,7 @@ extensions of the SQL standard\&. Also, the ability to specify more than one man
 \fBALTER FOREIGN TABLE\fR
 command is an extension\&.
 .PP
-
 \fBALTER FOREIGN TABLE DROP COLUMN\fR
 can be used to drop the only column of a foreign table, leaving a zero\-column table\&. This is an extension of SQL, which disallows zero\-column foreign tables\&.
+.SH "SEE ALSO"
+CREATE FOREIGN TABLE (\fBCREATE_FOREIGN_TABLE\fR(7)), DROP FOREIGN TABLE (\fBDROP_FOREIGN_TABLE\fR(7))

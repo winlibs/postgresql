@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER TABLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER TABLE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER TABLE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -70,19 +70,24 @@ where \fIaction\fR is one of:
     ENABLE RULE \fIrewrite_rule_name\fR
     ENABLE REPLICA RULE \fIrewrite_rule_name\fR
     ENABLE ALWAYS RULE \fIrewrite_rule_name\fR
+    DISABLE ROW LEVEL SECURITY
+    ENABLE ROW LEVEL SECURITY
+    FORCE ROW LEVEL SECURITY
+    NO FORCE ROW LEVEL SECURITY
     CLUSTER ON \fIindex_name\fR
     SET WITHOUT CLUSTER
     SET WITH OIDS
     SET WITHOUT OIDS
+    SET TABLESPACE \fInew_tablespace\fR
+    SET { LOGGED | UNLOGGED }
     SET ( \fIstorage_parameter\fR = \fIvalue\fR [, \&.\&.\&. ] )
     RESET ( \fIstorage_parameter\fR [, \&.\&.\&. ] )
     INHERIT \fIparent_table\fR
     NO INHERIT \fIparent_table\fR
     OF \fItype_name\fR
     NOT OF
-    OWNER TO \fInew_owner\fR
-    SET TABLESPACE \fInew_tablespace\fR
-    REPLICA IDENTITY {DEFAULT | USING INDEX \fIindex_name\fR | FULL | NOTHING}
+    OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+    REPLICA IDENTITY { DEFAULT | USING INDEX \fIindex_name\fR | FULL | NOTHING }
 
 and \fItable_constraint_using_index\fR is:
 
@@ -92,7 +97,6 @@ and \fItable_constraint_using_index\fR is:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER TABLE\fR
 changes the definition of an existing table\&. There are several subforms described below\&. Note that the lock level required may differ for each subform\&. An
 ACCESS EXCLUSIVE
@@ -111,11 +115,6 @@ CASCADE
 if anything outside the table depends on the column, for example, foreign key references or views\&. If
 IF EXISTS
 is specified and the column does not exist, no error is thrown\&. In this case a notice is issued instead\&.
-.RE
-.PP
-IF EXISTS
-.RS 4
-Do not throw an error if the table does not exist\&. A notice is issued in this case\&.
 .RE
 .PP
 SET DATA TYPE
@@ -154,7 +153,8 @@ PostgreSQL
 query planner, refer to
 Section 14.2, \(lqStatistics Used by the Planner\(rq, in the documentation\&.
 .sp
-SET STATISTICS acquires a
+SET STATISTICS
+acquires a
 SHARE UPDATE EXCLUSIVE
 lock\&.
 .RE
@@ -212,7 +212,7 @@ bytea
 values run faster, at the penalty of increased storage space\&. Note that
 SET STORAGE
 doesn\*(Aqt itself change anything in the table, it just sets the strategy to be pursued during future table updates\&. See
-Section 59.2, \(lqTOAST\(rq, in the documentation
+Section 63.2, \(lqTOAST\(rq, in the documentation
 for more information\&.
 .RE
 .PP
@@ -313,6 +313,10 @@ will only fire if the session is in
 mode, and triggers configured as
 ENABLE ALWAYS
 will fire regardless of the current replication mode\&.
+.sp
+This command acquires a
+SHARE ROW EXCLUSIVE
+lock\&.
 .RE
 .PP
 DISABLE/ENABLE [ REPLICA | ALWAYS ] RULE
@@ -320,6 +324,18 @@ DISABLE/ENABLE [ REPLICA | ALWAYS ] RULE
 These forms configure the firing of rewrite rules belonging to the table\&. A disabled rule is still known to the system, but is not applied during query rewriting\&. The semantics are as for disabled/enabled triggers\&. This configuration is ignored for
 ON SELECT
 rules, which are always applied in order to keep views working even if the current session is in a non\-default replication role\&.
+.RE
+.PP
+DISABLE/ENABLE ROW LEVEL SECURITY
+.RS 4
+These forms control the application of row security policies belonging to the table\&. If enabled and no policies exist for the table, then a default\-deny policy is applied\&. Note that policies can exist for a table even if row level security is disabled \- in this case, the policies will NOT be applied and the policies will be ignored\&. See also
+CREATE POLICY (\fBCREATE_POLICY\fR(7))\&.
+.RE
+.PP
+NO FORCE/FORCE ROW LEVEL SECURITY
+.RS 4
+These forms control the application of row security policies belonging to the table when the user is the table owner\&. If enabled, row level security policies will be applied when the user is the table owner\&. If disabled (the default) then row level security will not be applied when the user is the table owner\&. See also
+CREATE POLICY (\fBCREATE_POLICY\fR(7))\&.
 .RE
 .PP
 CLUSTER ON
@@ -364,6 +380,31 @@ system column from the table\&. This is exactly equivalent to
 DROP COLUMN oid RESTRICT, except that it will not complain if there is already no
 oid
 column\&.
+.RE
+.PP
+SET TABLESPACE
+.RS 4
+This form changes the table\*(Aqs tablespace to the specified tablespace and moves the data file(s) associated with the table to the new tablespace\&. Indexes on the table, if any, are not moved; but they can be moved separately with additional
+SET TABLESPACE
+commands\&. All tables in the current database in a tablespace can be moved by using the
+ALL IN TABLESPACE
+form, which will lock all tables to be moved first and then move each one\&. This form also supports
+OWNED BY, which will only move tables owned by the roles specified\&. If the
+NOWAIT
+option is specified then the command will fail if it is unable to acquire all of the locks required immediately\&. Note that system catalogs are not moved by this command, use
+\fBALTER DATABASE\fR
+or explicit
+\fBALTER TABLE\fR
+invocations instead if desired\&. The
+information_schema
+relations are not considered part of the system catalogs and will be moved\&. See also
+CREATE TABLESPACE (\fBCREATE_TABLESPACE\fR(7))\&.
+.RE
+.PP
+SET { LOGGED | UNLOGGED }
+.RS 4
+This form changes the table from unlogged to logged or vice\-versa (see
+UNLOGGED)\&. It cannot be applied to a temporary table\&.
 .RE
 .PP
 SET ( \fIstorage_parameter\fR = \fIvalue\fR [, \&.\&.\&. ] )
@@ -457,25 +498,6 @@ OWNER
 This form changes the owner of the table, sequence, view, materialized view, or foreign table to the specified user\&.
 .RE
 .PP
-SET TABLESPACE
-.RS 4
-This form changes the table\*(Aqs tablespace to the specified tablespace and moves the data file(s) associated with the table to the new tablespace\&. Indexes on the table, if any, are not moved; but they can be moved separately with additional
-SET TABLESPACE
-commands\&. All tables in the current database in a tablespace can be moved by using the
-ALL IN TABLESPACE
-form, which will lock all tables to be moved first and then move each one\&. This form also supports
-OWNED BY, which will only move tables owned by the roles specified\&. If the
-NOWAIT
-option is specified then the command will fail if it is unable to acquire all of the locks required immediately\&. Note that system catalogs are not moved by this command, use
-\fBALTER DATABASE\fR
-or explicit
-\fBALTER TABLE\fR
-invocations instead if desired\&. The
-information_schema
-relations are not considered part of the system catalogs and will be moved\&. See also
-CREATE TABLESPACE (\fBCREATE_TABLESPACE\fR(7))\&.
-.RE
-.PP
 REPLICA IDENTITY
 .RS 4
 This form changes the information which is written to the write\-ahead log to identify rows which are updated or deleted\&. This option has no effect except when logical replication is in use\&.
@@ -520,6 +542,11 @@ clause, you must also have
 USAGE
 privilege on the data type\&.
 .SH "PARAMETERS"
+.PP
+IF EXISTS
+.RS 4
+Do not throw an error if the table does not exist\&. A notice is issued in this case\&.
+.RE
 .PP
 \fIname\fR
 .RS 4
@@ -758,7 +785,7 @@ ALTER TABLE distributors
 .RE
 .\}
 .PP
-To change an integer column containing UNIX timestamps to
+To change an integer column containing Unix timestamps to
 timestamp with time zone
 via a
 USING
@@ -1008,7 +1035,6 @@ extensions of the SQL standard\&. Also, the ability to specify more than one man
 \fBALTER TABLE\fR
 command is an extension\&.
 .PP
-
 \fBALTER TABLE DROP COLUMN\fR
 can be used to drop the only column of a table, leaving a zero\-column table\&. This is an extension of SQL, which disallows zero\-column tables\&.
 .SH "SEE ALSO"

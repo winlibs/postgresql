@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Internals"
 HREF="internals.html"><LINK
 REL="PREVIOUS"
-TITLE="Examples"
-HREF="gin-examples.html"><LINK
+TITLE="Extensibility"
+HREF="brin-extensibility.html"><LINK
 REL="NEXT"
 TITLE="Database File Layout"
 HREF="storage-file-layout.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="Examples"
-HREF="gin-examples.html"
+TITLE="Extensibility"
+HREF="brin-extensibility.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -93,7 +93,7 @@ CLASS="CHAPTER"
 ><A
 NAME="STORAGE"
 ></A
->Chapter 59. Database Physical Storage</H1
+>Chapter 63. Database Physical Storage</H1
 ><DIV
 CLASS="TOC"
 ><DL
@@ -102,32 +102,46 @@ CLASS="TOC"
 >Table of Contents</B
 ></DT
 ><DT
->59.1. <A
+>63.1. <A
 HREF="storage-file-layout.html"
 >Database File Layout</A
 ></DT
 ><DT
->59.2. <A
+>63.2. <A
 HREF="storage-toast.html"
 >TOAST</A
 ></DT
+><DD
+><DL
 ><DT
->59.3. <A
+>63.2.1. <A
+HREF="storage-toast.html#STORAGE-TOAST-ONDISK"
+>Out-of-line, on-disk TOAST storage</A
+></DT
+><DT
+>63.2.2. <A
+HREF="storage-toast.html#STORAGE-TOAST-INMEMORY"
+>Out-of-line, in-memory TOAST storage</A
+></DT
+></DL
+></DD
+><DT
+>63.3. <A
 HREF="storage-fsm.html"
 >Free Space Map</A
 ></DT
 ><DT
->59.4. <A
+>63.4. <A
 HREF="storage-vm.html"
 >Visibility Map</A
 ></DT
 ><DT
->59.5. <A
+>63.5. <A
 HREF="storage-init.html"
 >The Initialization Fork</A
 ></DT
 ><DT
->59.6. <A
+>63.6. <A
 HREF="storage-page-layout.html"
 >Database Page Layout</A
 ></DT
@@ -156,7 +170,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="gin-examples.html"
+HREF="brin-extensibility.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -184,7 +198,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Examples</TD
+>Extensibility</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

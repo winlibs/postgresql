@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -288,7 +288,10 @@ CLASS="LITERAL"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > 8.0 and earlier, it
-        was on by default.
+        was <TT
+CLASS="LITERAL"
+>on</TT
+> by default.
        </P
 ><P
 >        The use of OIDs in user tables is considered deprecated, so
@@ -395,6 +398,41 @@ CLASS="LITERAL"
 ></DD
 ><DT
 ><A
+NAME="GUC-OPERATOR-PRECEDENCE-WARNING"
+></A
+><TT
+CLASS="VARNAME"
+>operator_precedence_warning</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)
+      </DT
+><DD
+><P
+>        When on, the parser will emit a warning for any construct that might
+        have changed meanings since <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.4 as a result
+        of changes in operator precedence.  This is useful for auditing
+        applications to see if precedence changes have broken anything; but it
+        is not meant to be kept turned on in production, since it will warn
+        about some perfectly valid, standard-compliant SQL code.
+        The default is <TT
+CLASS="LITERAL"
+>off</TT
+>.
+       </P
+><P
+>        See <A
+HREF="sql-syntax-lexical.html#SQL-PRECEDENCE"
+>Section 4.1.6</A
+> for more information.
+       </P
+></DD
+><DT
+><A
 NAME="GUC-QUOTE-ALL-IDENTIFIERS"
 ></A
 ><TT
@@ -477,7 +515,7 @@ CLASS="PRODUCTNAME"
 > releases prior to 7.1.
         See <A
 HREF="ddl-inherit.html"
->Section 5.8</A
+>Section 5.9</A
 > for more information.
        </P
 ><P

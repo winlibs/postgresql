@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="HSTORE"
->F.16. hstore</A
+>F.15. hstore</A
 ></H1
 ><P
 >  This module implements the <TT
@@ -113,8 +113,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN159566"
->F.16.1. <TT
+NAME="AEN168778"
+>F.15.1. <TT
 CLASS="TYPE"
 >hstore</TT
 > External Representation</A
@@ -254,8 +254,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN159597"
->F.16.2. <TT
+NAME="AEN168809"
+>F.15.2. <TT
 CLASS="TYPE"
 >hstore</TT
 > Operators and Functions</A
@@ -1022,11 +1022,43 @@ CLASS="TYPE"
 > as a <TT
 CLASS="TYPE"
 >json</TT
-> value</TD
+> value, converting
+       all non-null values to JSON strings</TD
 ><TD
 ><TT
 CLASS="LITERAL"
 >hstore_to_json('"a key"=&gt;1, b=&gt;t, c=&gt;null, d=&gt;12345, e=&gt;012345, f=&gt;1.234, g=&gt;2.345e+4')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>{"a key": "1", "b": "t", "c": null, "d": "12345", "e": "012345", "f": "1.234", "g": "2.345e+4"}</TT
+></TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="FUNCTION"
+>hstore_to_jsonb(hstore)</CODE
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>jsonb</TT
+></TD
+><TD
+>get <TT
+CLASS="TYPE"
+>hstore</TT
+> as a <TT
+CLASS="TYPE"
+>jsonb</TT
+> value, converting
+       all non-null values to JSON strings</TD
+><TD
+><TT
+CLASS="LITERAL"
+>hstore_to_jsonb('"a key"=&gt;1, b=&gt;t, c=&gt;null, d=&gt;12345, e=&gt;012345, f=&gt;1.234, g=&gt;2.345e+4')</TT
 ></TD
 ><TD
 ><TT
@@ -1057,6 +1089,36 @@ CLASS="TYPE"
 ><TT
 CLASS="LITERAL"
 >hstore_to_json_loose('"a key"=&gt;1, b=&gt;t, c=&gt;null, d=&gt;12345, e=&gt;012345, f=&gt;1.234, g=&gt;2.345e+4')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>{"a key": 1, "b": true, "c": null, "d": 12345, "e": "012345", "f": 1.234, "g": 2.345e+4}</TT
+></TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="FUNCTION"
+>hstore_to_jsonb_loose(hstore)</CODE
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>jsonb</TT
+></TD
+><TD
+>get <TT
+CLASS="TYPE"
+>hstore</TT
+> as a <TT
+CLASS="TYPE"
+>jsonb</TT
+> value, but attempt to distinguish numerical and Boolean values so they are unquoted in the JSON</TD
+><TD
+><TT
+CLASS="LITERAL"
+>hstore_to_jsonb_loose('"a key"=&gt;1, b=&gt;t, c=&gt;null, d=&gt;12345, e=&gt;012345, f=&gt;1.234, g=&gt;2.345e+4')</TT
 ></TD
 ><TD
 ><TT
@@ -1287,13 +1349,24 @@ CLASS="NOTE"
 >     The function <CODE
 CLASS="FUNCTION"
 >hstore_to_json</CODE
-> is used when an <TT
+> is used when
+     an <TT
 CLASS="TYPE"
 >hstore</TT
->
-     value is cast to <TT
+> value is cast to <TT
 CLASS="TYPE"
 >json</TT
+>.
+     Likewise, <CODE
+CLASS="FUNCTION"
+>hstore_to_jsonb</CODE
+> is used when
+     an <TT
+CLASS="TYPE"
+>hstore</TT
+> value is cast to <TT
+CLASS="TYPE"
+>jsonb</TT
 >.
    </P
 ></BLOCKQUOTE
@@ -1326,8 +1399,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN160038"
->F.16.3. Indexes</A
+NAME="AEN169281"
+>F.15.3. Indexes</A
 ></H2
 ><P
 >   <TT
@@ -1406,8 +1479,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN160060"
->F.16.4. Examples</A
+NAME="AEN169303"
+>F.15.4. Examples</A
 ></H2
 ><P
 >   Add a key, or update an existing key with a new value:
@@ -1486,8 +1559,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN160077"
->F.16.5. Statistics</A
+NAME="AEN169320"
+>F.15.5. Statistics</A
 ></H2
 ><P
 >   The <TT
@@ -1540,8 +1613,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN160087"
->F.16.6. Compatibility</A
+NAME="AEN169330"
+>F.15.6. Compatibility</A
 ></H2
 ><P
 >   As of PostgreSQL 9.0, <TT
@@ -1584,8 +1657,58 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN160097"
->F.16.7. Authors</A
+NAME="AEN169340"
+>F.15.7. Transforms</A
+></H2
+><P
+>   Additional extensions are available that implement transforms for
+   the <TT
+CLASS="TYPE"
+>hstore</TT
+> type for the languages PL/Perl and PL/Python.  The
+   extensions for PL/Perl are called <TT
+CLASS="LITERAL"
+>hstore_plperl</TT
+>
+   and <TT
+CLASS="LITERAL"
+>hstore_plperlu</TT
+>, for trusted and untrusted PL/Perl.
+   If you install these transforms and specify them when creating a
+   function, <TT
+CLASS="TYPE"
+>hstore</TT
+> values are mapped to Perl hashes.  The
+   extensions for PL/Python are
+   called <TT
+CLASS="LITERAL"
+>hstore_plpythonu</TT
+>, <TT
+CLASS="LITERAL"
+>hstore_plpython2u</TT
+>,
+   and <TT
+CLASS="LITERAL"
+>hstore_plpython3u</TT
+>
+   (see <A
+HREF="plpython-python23.html"
+>Section 43.1</A
+> for the PL/Python naming
+   convention).  If you use them, <TT
+CLASS="TYPE"
+>hstore</TT
+> values are mapped to
+   Python dictionaries.
+  </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN169352"
+>F.15.8. Authors</A
 ></H2
 ><P
 >   Oleg Bartunov <CODE

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dropuser
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "DROPUSER" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "DROPUSER" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,6 @@ dropuser \- remove a PostgreSQL user account
 \fBdropuser\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\fIusername\fR]
 .SH "DESCRIPTION"
 .PP
-
 dropuser
 removes an existing
 PostgreSQL
@@ -44,7 +43,6 @@ privilege can remove
 PostgreSQL
 users\&. (To remove a superuser, you must yourself be a superuser\&.)
 .PP
-
 dropuser
 is a wrapper around the
 SQL
@@ -52,7 +50,6 @@ command
 DROP ROLE (\fBDROP_ROLE\fR(7))\&. There is no effective difference between dropping users via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
-
 dropuser
 accepts the following command\-line arguments:
 .PP
@@ -104,7 +101,6 @@ dropuser
 command line arguments, and exit\&.
 .RE
 .PP
-
 dropuser
 also accepts the following command\-line arguments for connection parameters:
 .PP

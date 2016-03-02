@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="High Availability, Load Balancing, and Replication"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -722,11 +722,11 @@ CLASS="FUNCTION"
 > on the standby,
      respectively (see <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-65</A
+>Table 9-68</A
 > and
      <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-INFO-TABLE"
->Table 9-66</A
+>Table 9-69</A
 > for details).
      The last WAL receive location in the standby is also displayed in the
      process status of the WAL receiver process, displayed using the
@@ -846,7 +846,7 @@ CLASS="STRUCTNAME"
 >     Slots can be created and dropped either via the streaming replication
      protocol (see <A
 HREF="protocol-replication.html"
->Section 49.3</A
+>Section 50.3</A
 >) or via SQL
      functions (see <A
 HREF="functions-admin.html#FUNCTIONS-REPLICATION"
@@ -1244,6 +1244,68 @@ CLASS="LITERAL"
     requests will wait forever for the standby to appear.
    </P
 ></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="CONTINUOUS-ARCHIVING-IN-STANDBY"
+>25.2.9. Continuous archiving in standby</A
+></H2
+><P
+>     When continuous WAL archiving is used in a standby, there are two
+     different scenarios: the WAL archive can be shared between the primary
+     and the standby, or the standby can have its own WAL archive. When
+     the standby has its own WAL archive, set <TT
+CLASS="VARNAME"
+>archive_mode</TT
+>
+     to <TT
+CLASS="LITERAL"
+>always</TT
+>, and the standby will call the archive
+     command for every WAL segment it receives, whether it's by restoring
+     from the archive or by streaming replication. The shared archive can
+     be handled similarly, but the <TT
+CLASS="VARNAME"
+>archive_command</TT
+> must
+     test if the file being archived exists already, and if the existing file
+     has identical contents. This requires more care in the
+     <TT
+CLASS="VARNAME"
+>archive_command</TT
+>, as it must
+     be careful to not overwrite an existing file with different contents,
+     but return success if the exactly same file is archived twice. And
+     all that must be done free of race conditions, if two servers attempt
+     to archive the same file at the same time.
+   </P
+><P
+>     If <TT
+CLASS="VARNAME"
+>archive_mode</TT
+> is set to <TT
+CLASS="LITERAL"
+>on</TT
+>, the
+     archiver is not enabled during recovery or standby mode. If the standby
+     server is promoted, it will start archiving after the promotion, but
+     will not archive any WAL it did not generate itself. To get a complete
+     series of WAL files in the archive, you must ensure that all WAL is
+     archived, before it reaches the standby. This is inherently true with
+     file-based log shipping, as the standby can only restore files that
+     are found in the archive, but not if streaming replication is enabled.
+     When a server is not in recovery mode, there is no difference between
+     <TT
+CLASS="LITERAL"
+>on</TT
+> and <TT
+CLASS="LITERAL"
+>always</TT
+> modes.
+   </P
 ></DIV
 ></DIV
 ><DIV

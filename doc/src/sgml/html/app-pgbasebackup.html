@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="ecpg"
 HREF="app-ecpg.html"><LINK
 REL="NEXT"
-TITLE="pg_config"
-HREF="app-pgconfig.html"><LINK
+TITLE="pgbench"
+HREF="pgbench.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="pg_config"
-HREF="app-pgconfig.html"
+TITLE="pgbench"
+HREF="pgbench.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -95,7 +95,7 @@ NAME="APP-PGBASEBACKUP"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN87400"
+NAME="AEN90769"
 ></A
 ><H2
 >Name</H2
@@ -106,7 +106,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN87404"
+NAME="AEN90773"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87409"
+NAME="AEN90778"
 ></A
 ><H2
 >   Description
@@ -270,7 +270,7 @@ CLASS="VARNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87447"
+NAME="AEN90816"
 ></A
 ><H2
 >Options</H2
@@ -676,7 +676,7 @@ CLASS="LITERAL"
 >            Stream the transaction log while the backup is created. This will
             open a second connection to the server and start streaming the
             transaction log in parallel while running the backup. Therefore,
-            it will use up two slots configured by the
+            it will use up two connections configured by the
             <A
 HREF="runtime-config-replication.html#GUC-MAX-WAL-SENDERS"
 >max_wal_senders</A
@@ -1112,7 +1112,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87726"
+NAME="AEN91095"
 ></A
 ><H2
 >Environment</H2
@@ -1134,7 +1134,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87732"
+NAME="AEN91101"
 ></A
 ><H2
 >Notes</H2
@@ -1145,7 +1145,7 @@ NAME="AEN87732"
    copied.  Symbolic links (other than those used for tablespaces) and special
    device files are skipped.  (See <A
 HREF="protocol-replication.html"
->Section 49.3</A
+>Section 50.3</A
 > for
    the precise details.)
   </P
@@ -1153,10 +1153,8 @@ HREF="protocol-replication.html"
 >   Tablespaces will in plain format by default be backed up to the same path
    they have on the server, unless the
    option <TT
-CLASS="REPLACEABLE"
-><I
->--tablespace-mapping</I
-></TT
+CLASS="LITERAL"
+>--tablespace-mapping</TT
 > is used.  Without
    this option, running a plain format base backup on the same host as the
    server will not work if tablespaces are in use, because the backup would
@@ -1164,18 +1162,40 @@ CLASS="REPLACEABLE"
    tablespaces.
   </P
 ><P
+>   When tar format mode is used, it is the user's responsibility to unpack each
+   tar file before starting the PostgreSQL server. If there are additional tablespaces, the
+   tar files for them need to be unpacked in the correct locations. In this
+   case the symbolic links for those tablespaces will be created by the server
+   according to the contents of the <TT
+CLASS="FILENAME"
+>tablespace_map</TT
+> file that is
+   included in the <TT
+CLASS="FILENAME"
+>base.tar</TT
+> file.
+  </P
+><P
 >   <SPAN
 CLASS="APPLICATION"
 >pg_basebackup</SPAN
 > works with servers of the same
-   or an older major version, down to 9.1. However, WAL streaming mode (-X
-   stream) only works with server version 9.3 and later.
+   or an older major version, down to 9.1. However, WAL streaming mode (<TT
+CLASS="LITERAL"
+>-X
+   stream</TT
+>) only works with server version 9.3 and later, and tar format mode
+   (<TT
+CLASS="LITERAL"
+>--format=tar</TT
+>) of the current version only works with server version 9.5
+   or later.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87740"
+NAME="AEN91114"
 ></A
 ><H2
 >Examples</H2
@@ -1262,7 +1282,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87764"
+NAME="AEN91138"
 ></A
 ><H2
 >See Also</H2
@@ -1304,7 +1324,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="app-pgconfig.html"
+HREF="pgbench.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -1331,7 +1351,10 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->pg_config</TD
+><SPAN
+CLASS="APPLICATION"
+>pgbench</SPAN
+></TD
 ></TR
 ></TABLE
 ></DIV

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-TRUNCATE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN85075"
+NAME="AEN88421"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN85075"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN85078"
+NAME="AEN88424"
 ></A
 ><H2
 >Synopsis</H2
@@ -120,7 +120,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85081"
+NAME="AEN88427"
 ></A
 ><H2
 >Description</H2
@@ -145,7 +145,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85087"
+NAME="AEN88433"
 ></A
 ><H2
 >Parameters</H2
@@ -233,7 +233,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85119"
+NAME="AEN88465"
 ></A
 ><H2
 >Notes</H2
@@ -363,11 +363,19 @@ CLASS="FUNCTION"
 > after
    a failed transaction.
   </P
+><P
+>   <TT
+CLASS="COMMAND"
+>TRUNCATE</TT
+> is not currently supported for foreign tables.
+   This implies that if a specified table has any descendant tables that are
+   foreign, the command will fail.
+  </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85150"
+NAME="AEN88498"
 ></A
 ><H2
 >Examples</H2
@@ -413,7 +421,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85162"
+NAME="AEN88510"
 ></A
 ><H2
 >Compatibility</H2

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: COMMENT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "COMMENT" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "COMMENT" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,6 +39,7 @@ COMMENT ON
   COLLATION \fIobject_name\fR |
   COLUMN \fIrelation_name\fR\&.\fIcolumn_name\fR |
   CONSTRAINT \fIconstraint_name\fR ON \fItable_name\fR |
+  CONSTRAINT \fIconstraint_name\fR ON DOMAIN \fIdomain_name\fR |
   CONVERSION \fIobject_name\fR |
   DATABASE \fIobject_name\fR |
   DOMAIN \fIobject_name\fR |
@@ -53,6 +54,7 @@ COMMENT ON
   OPERATOR \fIoperator_name\fR (\fIleft_type\fR, \fIright_type\fR) |
   OPERATOR CLASS \fIobject_name\fR USING \fIindex_method\fR |
   OPERATOR FAMILY \fIobject_name\fR USING \fIindex_method\fR |
+  POLICY \fIpolicy_name\fR ON \fItable_name\fR |
   [ PROCEDURAL ] LANGUAGE \fIobject_name\fR |
   ROLE \fIobject_name\fR |
   RULE \fIrule_name\fR ON \fItable_name\fR |
@@ -65,6 +67,7 @@ COMMENT ON
   TEXT SEARCH DICTIONARY \fIobject_name\fR |
   TEXT SEARCH PARSER \fIobject_name\fR |
   TEXT SEARCH TEMPLATE \fIobject_name\fR |
+  TRANSFORM FOR \fItype_name\fR LANGUAGE \fIlang_name\fR |
   TRIGGER \fItrigger_name\fR ON \fItable_name\fR |
   TYPE \fIobject_name\fR |
   VIEW \fIobject_name\fR
@@ -78,7 +81,6 @@ where \fIaggregate_signature\fR is:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCOMMENT\fR
 stores a comment about a database object\&.
 .PP
@@ -104,7 +106,7 @@ uses, namely
 \fBcol_description\fR, and
 \fBshobj_description\fR
 (see
-Table\ \&9.60, \(lqComment Information Functions\(rq)\&.
+Table\ \&9.62, \(lqComment Information Functions\(rq)\&.
 .SH "PARAMETERS"
 .PP
 \fIobject_name\fR
@@ -119,6 +121,8 @@ Table\ \&9.60, \(lqComment Information Functions\(rq)\&.
 .br
 \fIoperator_name\fR
 .br
+\fIpolicy_name\fR
+.br
 \fIrule_name\fR
 .br
 \fItrigger_name\fR
@@ -126,6 +130,13 @@ Table\ \&9.60, \(lqComment Information Functions\(rq)\&.
 The name of the object to be commented\&. Names of tables, aggregates, collations, conversions, domains, foreign tables, functions, indexes, operators, operator classes, operator families, sequences, text search objects, types, and views can be schema\-qualified\&. When commenting on a column,
 \fIrelation_name\fR
 must refer to a table, view, composite type, or foreign table\&.
+.RE
+.PP
+\fItable_name\fR
+.br
+\fIdomain_name\fR
+.RS 4
+When creating a comment on a constraint, a table, a domain or a policy these parameters specify the name of the table or domain on which the constraint is defined\&.
 .RE
 .PP
 \fIsource_type\fR
@@ -187,6 +198,16 @@ PROCEDURAL
 This is a noise word\&.
 .RE
 .PP
+\fItype_name\fR
+.RS 4
+The name of the data type of the transform\&.
+.RE
+.PP
+\fIlang_name\fR
+.RS 4
+The name of the language of the transform\&.
+.RE
+.PP
 \fItext\fR
 .RS 4
 The new comment, written as a string literal; or
@@ -235,6 +256,7 @@ COMMENT ON COLLATION "fr_CA" IS \*(AqCanadian French\*(Aq;
 COMMENT ON COLUMN my_table\&.my_column IS \*(AqEmployee ID number\*(Aq;
 COMMENT ON CONVERSION my_conv IS \*(AqConversion to UTF8\*(Aq;
 COMMENT ON CONSTRAINT bar_col_cons ON bar IS \*(AqConstrains column col\*(Aq;
+COMMENT ON CONSTRAINT dom_col_constr ON DOMAIN dom IS \*(AqConstrains col of domain\*(Aq;
 COMMENT ON DATABASE my_database IS \*(AqDevelopment Database\*(Aq;
 COMMENT ON DOMAIN my_domain IS \*(AqEmail Address Domain\*(Aq;
 COMMENT ON EXTENSION hstore IS \*(Aqimplements the hstore data type\*(Aq;
@@ -249,6 +271,7 @@ COMMENT ON OPERATOR ^ (text, text) IS \*(AqPerforms intersection of two texts\*(
 COMMENT ON OPERATOR \- (NONE, integer) IS \*(AqUnary minus\*(Aq;
 COMMENT ON OPERATOR CLASS int4ops USING btree IS \*(Aq4 byte integer operators for btrees\*(Aq;
 COMMENT ON OPERATOR FAMILY integer_ops USING btree IS \*(Aqall integer operators for btrees\*(Aq;
+COMMENT ON POLICY my_policy ON mytable IS \*(AqFilter rows by users\*(Aq;
 COMMENT ON ROLE my_role IS \*(AqAdministration group for finance tables\*(Aq;
 COMMENT ON RULE my_rule ON my_table IS \*(AqLogs updates of employee records\*(Aq;
 COMMENT ON SCHEMA my_schema IS \*(AqDepartmental data\*(Aq;
@@ -260,6 +283,7 @@ COMMENT ON TEXT SEARCH CONFIGURATION my_config IS \*(AqSpecial word filtering\*(
 COMMENT ON TEXT SEARCH DICTIONARY swedish IS \*(AqSnowball stemmer for Swedish language\*(Aq;
 COMMENT ON TEXT SEARCH PARSER my_parser IS \*(AqSplits text into words\*(Aq;
 COMMENT ON TEXT SEARCH TEMPLATE snowball IS \*(AqSnowball stemmer\*(Aq;
+COMMENT ON TRANSFORM FOR hstore LANGUAGE plpythonu IS \*(AqTransform between hstore and Python dict\*(Aq;
 COMMENT ON TRIGGER my_trigger ON my_table IS \*(AqUsed for RI\*(Aq;
 COMMENT ON TYPE complex IS \*(AqComplex number data type\*(Aq;
 COMMENT ON VIEW my_view IS \*(AqView of departmental costs\*(Aq;

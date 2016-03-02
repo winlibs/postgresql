@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEINDEX"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN73967"
+NAME="AEN76369"
 ></A
 ><H2
 >Name</H2
@@ -103,13 +103,13 @@ NAME="AEN73967"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN73970"
+NAME="AEN76372"
 ></A
 ><H2
 >Synopsis</H2
 ><PRE
 CLASS="SYNOPSIS"
->CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ <TT
+>CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] <TT
 CLASS="REPLACEABLE"
 ><I
 >name</I
@@ -173,7 +173,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73983"
+NAME="AEN76385"
 ></A
 ><H2
 >Description</H2
@@ -211,8 +211,8 @@ CLASS="LITERAL"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > provides the index methods
-   B-tree, hash, GiST, SP-GiST, and GIN.  Users can also define their own index
-   methods, but that is fairly complicated.
+   B-tree, hash, GiST, SP-GiST, GIN, and BRIN.  Users can also define their own
+   index methods, but that is fairly complicated.
   </P
 ><P
 >    When the <TT
@@ -274,7 +274,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74005"
+NAME="AEN76407"
 ></A
 ><H2
 >Parameters</H2
@@ -318,6 +318,22 @@ HREF="sql-createindex.html#SQL-CREATEINDEX-CONCURRENTLY"
 >Building Indexes Concurrently</I
 ></A
 >.
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>IF NOT EXISTS</TT
+></DT
+><DD
+><P
+>        Do not throw an error if a relation with the same name already exists.
+        A notice is issued in this case. Note that there is no guarantee that
+        the existing index is anything like the one that would have been created.
+        Index name is required when <TT
+CLASS="LITERAL"
+>IF NOT EXISTS</TT
+> is specified.
        </P
 ></DD
 ><DT
@@ -374,9 +390,13 @@ CLASS="LITERAL"
 >, <TT
 CLASS="LITERAL"
 >spgist</TT
-> and <TT
+>, <TT
 CLASS="LITERAL"
 >gin</TT
+>, and
+        <TT
+CLASS="LITERAL"
+>brin</TT
 >.
         The default method is <TT
 CLASS="LITERAL"
@@ -568,7 +588,7 @@ CLASS="VARIABLELIST"
 ><DT
 ><TT
 CLASS="LITERAL"
->FILLFACTOR</TT
+>fillfactor</TT
 ></DT
 ><DD
 ><P
@@ -600,14 +620,14 @@ CLASS="VARIABLELIST"
 ><DT
 ><TT
 CLASS="LITERAL"
->BUFFERING</TT
+>buffering</TT
 ></DT
 ><DD
 ><P
 >     Determines whether the buffering build technique described in
      <A
 HREF="gist-implementation.html#GIST-BUFFERING-BUILD"
->Section 56.4.1</A
+>Section 59.4.1</A
 > is used to build the index. With
      <TT
 CLASS="LITERAL"
@@ -632,7 +652,7 @@ CLASS="LITERAL"
 ></DL
 ></DIV
 ><P
->    GIN indexes accept a different parameter:
+>    GIN indexes accept different parameters:
    </P
 ><P
 ></P
@@ -642,14 +662,14 @@ CLASS="VARIABLELIST"
 ><DT
 ><TT
 CLASS="LITERAL"
->FASTUPDATE</TT
+>fastupdate</TT
 ></DT
 ><DD
 ><P
 >     This setting controls usage of the fast update technique described in
      <A
 HREF="gin-implementation.html#GIN-FAST-UPDATE"
->Section 58.4.1</A
+>Section 61.4.1</A
 >.  It is a Boolean parameter:
      <TT
 CLASS="LITERAL"
@@ -683,7 +703,7 @@ CLASS="NOTE"
 >Note: </B
 >      Turning <TT
 CLASS="LITERAL"
->FASTUPDATE</TT
+>fastupdate</TT
 > off via <TT
 CLASS="COMMAND"
 >ALTER INDEX</TT
@@ -698,6 +718,61 @@ CLASS="COMMAND"
      </P
 ></BLOCKQUOTE
 ></DIV
+></DD
+></DL
+></DIV
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>gin_pending_list_limit</TT
+></DT
+><DD
+><P
+>     Custom <A
+HREF="runtime-config-client.html#GUC-GIN-PENDING-LIST-LIMIT"
+>gin_pending_list_limit</A
+> parameter.
+     This value is specified in kilobytes.
+    </P
+></DD
+></DL
+></DIV
+><P
+>    <ACRONYM
+CLASS="ACRONYM"
+>BRIN</ACRONYM
+> indexes accept a different parameter:
+   </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>pages_per_range</TT
+></DT
+><DD
+><P
+>     Defines the number of table blocks that make up one block range for
+     each entry of a <ACRONYM
+CLASS="ACRONYM"
+>BRIN</ACRONYM
+> index (see <A
+HREF="brin-intro.html"
+>Section 62.1</A
+>
+     for more details).  The default is <TT
+CLASS="LITERAL"
+>128</TT
+>.
+    </P
 ></DD
 ></DL
 ></DIV
@@ -758,7 +833,7 @@ CLASS="PRODUCTNAME"
     scan starts.   Concurrent index creation serially waits for each old
     transaction to complete using the method outlined in section <A
 HREF="view-pg-locks.html"
->Section 48.60</A
+>Section 49.65</A
 >.
    </P
 ><P
@@ -847,7 +922,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74175"
+NAME="AEN76602"
 ></A
 ><H2
 >Notes</H2
@@ -887,14 +962,15 @@ CLASS="COMMAND"
     Also, changes to hash indexes are not replicated over streaming or
     file-based replication after the initial base backup, so they
     give wrong answers to queries that subsequently use them.
-    For these reasons, hash index use is presently discouraged.
+    Hash indexes are also not properly restored during point-in-time
+    recovery.  For these reasons, hash index use is presently discouraged.
    </P
 ></TD
 ></TR
 ></TABLE
 ></DIV
 ><P
->   Currently, only the B-tree, GiST and GIN index methods support
+>   Currently, only the B-tree, GiST, GIN, and BRIN index methods support
    multicolumn indexes. Up to 32 fields can be specified by default.
    (This limit can be altered when building
    <SPAN
@@ -1036,7 +1112,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74213"
+NAME="AEN76640"
 ></A
 ><H2
 >Examples</H2
@@ -1098,7 +1174,7 @@ CLASS="ACRONYM"
 > index with fast updates disabled:
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE INDEX gin_idx ON documents_table USING gin (locations) WITH (fastupdate = off);</PRE
+>CREATE INDEX gin_idx ON documents_table USING GIN (locations) WITH (fastupdate = off);</PRE
 ><P>
   </P
 ><P
@@ -1141,7 +1217,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74241"
+NAME="AEN76668"
 ></A
 ><H2
 >Compatibility</H2
@@ -1160,7 +1236,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74246"
+NAME="AEN76673"
 ></A
 ><H2
 >See Also</H2

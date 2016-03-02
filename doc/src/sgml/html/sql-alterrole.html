@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
 REL="PREVIOUS"
-TITLE="ALTER OPERATOR FAMILY"
-HREF="sql-alteropfamily.html"><LINK
+TITLE="ALTER POLICY"
+HREF="sql-alterpolicy.html"><LINK
 REL="NEXT"
 TITLE="ALTER RULE"
 HREF="sql-alterrule.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="ALTER OPERATOR FAMILY"
-HREF="sql-alteropfamily.html"
+TITLE="ALTER POLICY"
+HREF="sql-alterpolicy.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-ALTERROLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN68924"
+NAME="AEN71172"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN68924"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN68927"
+NAME="AEN71175"
 ></A
 ><H2
 >Synopsis</H2
@@ -112,14 +112,14 @@ CLASS="SYNOPSIS"
 >ALTER ROLE <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>role_specification</I
 ></TT
-> [ [ WITH ] <TT
+> [ WITH ] <TT
 CLASS="REPLACEABLE"
 ><I
 >option</I
 ></TT
-> [ ... ] ]
+> [ ... ]
 
 <SPAN
 CLASS="phrase"
@@ -141,6 +141,7 @@ CLASS="REPLACEABLE"
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
     | REPLICATION | NOREPLICATION
+    | BYPASSRLS | NOBYPASSRLS
     | CONNECTION LIMIT <TT
 CLASS="REPLACEABLE"
 ><I
@@ -172,12 +173,12 @@ CLASS="REPLACEABLE"
 ></TT
 >
 
-ALTER ROLE <TT
+ALTER ROLE { <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>role_specification</I
 ></TT
-> [ IN DATABASE <TT
+> | ALL } [ IN DATABASE <TT
 CLASS="REPLACEABLE"
 ><I
 >database_name</I
@@ -196,7 +197,7 @@ CLASS="REPLACEABLE"
 ALTER ROLE { <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>role_specification</I
 ></TT
 > | ALL } [ IN DATABASE <TT
 CLASS="REPLACEABLE"
@@ -212,7 +213,7 @@ CLASS="REPLACEABLE"
 ALTER ROLE { <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>role_specification</I
 ></TT
 > | ALL } [ IN DATABASE <TT
 CLASS="REPLACEABLE"
@@ -228,19 +229,41 @@ CLASS="REPLACEABLE"
 ALTER ROLE { <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>role_specification</I
 ></TT
 > | ALL } [ IN DATABASE <TT
 CLASS="REPLACEABLE"
 ><I
 >database_name</I
 ></TT
-> ] RESET ALL</PRE
+> ] RESET ALL
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>where <TT
+CLASS="REPLACEABLE"
+><I
+>role_specification</I
+></TT
+> can be:</SPAN
+></SPAN
+>
+
+    [ GROUP ] <TT
+CLASS="REPLACEABLE"
+><I
+>role_name</I
+></TT
+>
+  | CURRENT_USER
+  | SESSION_USER</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68950"
+NAME="AEN71201"
 ></A
 ><H2
 >Description</H2
@@ -364,7 +387,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68977"
+NAME="AEN71228"
 ></A
 ><H2
 >Parameters</H2
@@ -383,6 +406,21 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        The name of the role whose attributes are to be altered.
+       </P
+></DD
+><DT
+>CURRENT_USER</DT
+><DD
+><P
+>        Alter the current user instead of an explicitly identified role.
+       </P
+></DD
+><DT
+>SESSION_USER</DT
+><DD
+><P
+>        Alter the current session user instead of an explicitly identified
+        role.
        </P
 ></DD
 ><DT
@@ -428,6 +466,12 @@ CLASS="LITERAL"
 ><BR><TT
 CLASS="LITERAL"
 >NOREPLICATION</TT
+><BR><TT
+CLASS="LITERAL"
+>BYPASSRLS</TT
+><BR><TT
+CLASS="LITERAL"
+>NOBYPASSRLS</TT
 ><BR><TT
 CLASS="LITERAL"
 >CONNECTION LIMIT</TT
@@ -571,7 +615,7 @@ HREF="runtime-config.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69060"
+NAME="AEN71323"
 ></A
 ><H2
 >Notes</H2
@@ -632,7 +676,7 @@ HREF="sql-alterdatabase.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69074"
+NAME="AEN71337"
 ></A
 ><H2
 >Examples</H2
@@ -706,7 +750,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69093"
+NAME="AEN71356"
 ></A
 ><H2
 >Compatibility</H2
@@ -724,7 +768,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69098"
+NAME="AEN71361"
 ></A
 ><H2
 >See Also</H2
@@ -757,7 +801,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="sql-alteropfamily.html"
+HREF="sql-alterpolicy.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -785,7 +829,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->ALTER OPERATOR FAMILY</TD
+>ALTER POLICY</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

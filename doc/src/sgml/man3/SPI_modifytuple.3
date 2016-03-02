@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SPI_modifytuple
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "SPI_MODIFYTUPLE" "3" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "SPI_MODIFYTUPLE" "3" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,7 +37,6 @@ HeapTuple SPI_modifytuple(Relation \fIrel\fR, HeapTuple \fIrow\fR, int \fIncols\
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBSPI_modifytuple\fR
 creates a new row by substituting new values for selected columns, copying the original row\*(Aqs columns at other positions\&. The input row is not modified\&.
 .SH "ARGUMENTS"

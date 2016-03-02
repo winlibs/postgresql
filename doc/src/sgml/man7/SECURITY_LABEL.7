@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SECURITY LABEL
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "SECURITY LABEL" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "SECURITY LABEL" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -61,7 +61,6 @@ where \fIaggregate_signature\fR is:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBSECURITY LABEL\fR
 applies a security label to a database object\&. An arbitrary number of security labels, one per label provider, can be associated with a given database object\&. Label providers are loadable modules which register themselves by using the function
 \fBregister_label_provider\fR\&.
@@ -78,7 +77,6 @@ applies a security label to a database object\&. An arbitrary number of security
 .ps -1
 .br
 .PP
-
 \fBregister_label_provider\fR
 is not an SQL function; it can only be called from C code loaded into the backend\&.
 .sp .5v
@@ -171,4 +169,4 @@ There is no
 \fBSECURITY LABEL\fR
 command in the SQL standard\&.
 .SH "SEE ALSO"
-sepgsql, dummy_seclabel
+sepgsql, src/test/modules/dummy_seclabel

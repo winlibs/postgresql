@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 48. System Catalogs</TD
+>Chapter 49. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="VIEWS-OVERVIEW"
->48.54. System Views</A
+>49.58. System Views</A
 ></H1
 ><P
 >   In addition to the system catalogs, <SPAN
@@ -121,13 +121,13 @@ CLASS="PRODUCTNAME"
 ><P
 >   <A
 HREF="views-overview.html#VIEW-TABLE"
->Table 48-55</A
+>Table 49-59</A
 > lists the system views described here.
    More detailed documentation of each view follows below.
    There are some additional views that provide access to the results of
    the statistics collector; they are described in <A
 HREF="monitoring-stats.html#MONITORING-STATS-VIEWS-TABLE"
->Table 27-1</A
+>Table 27-2</A
 >.
   </P
 ><P
@@ -140,7 +140,7 @@ NAME="VIEW-TABLE"
 ></A
 ><P
 ><B
->Table 48-55. System Views</B
+>Table 49-59. System Views</B
 ></P
 ><TABLE
 BORDER="1"
@@ -193,6 +193,18 @@ CLASS="STRUCTNAME"
 ><TR
 ><TD
 ><A
+HREF="view-pg-file-settings.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_file_settings</TT
+></A
+></TD
+><TD
+>summary of configuration file contents</TD
+></TR
+><TR
+><TD
+><A
 HREF="view-pg-group.html"
 ><TT
 CLASS="STRUCTNAME"
@@ -237,6 +249,18 @@ CLASS="STRUCTNAME"
 ></TD
 ><TD
 >materialized views</TD
+></TR
+><TR
+><TD
+><A
+HREF="view-pg-policies.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_policies</TT
+></A
+></TD
+><TD
+>policies</TD
 ></TR
 ><TR
 ><TD

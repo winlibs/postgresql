@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
 HREF="contrib.html"><LINK
 REL="PREVIOUS"
-TITLE="tsearch2"
-HREF="tsearch2.html"><LINK
+TITLE="tsm_system_time"
+HREF="tsm-system-time.html"><LINK
 REL="NEXT"
 TITLE="uuid-ossp"
 HREF="uuid-ossp.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="tsearch2"
-HREF="tsearch2.html"
+TITLE="tsm_system_time"
+HREF="tsm-system-time.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="UNACCENT"
->F.43. unaccent</A
+>F.42. unaccent</A
 ></H1
 ><P
 >  <TT
@@ -121,8 +121,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN164574"
->F.43.1. Configuration</A
+NAME="AEN174124"
+>F.42.1. Configuration</A
 ></H2
 ><P
 >   An <TT
@@ -170,9 +170,9 @@ CLASS="LITERAL"
 ><UL
 ><LI
 ><P
->     Each line represents a pair, consisting of a character with accent
-     followed by a character without accent.  The first is translated into
-     the second.  For example,
+>     Each line represents one translation rule, consisting of a character with
+     accent followed by a character without accent.  The first is translated
+     into the second.  For example,
 </P><PRE
 CLASS="PROGRAMLISTING"
 >&Agrave;        A
@@ -183,6 +183,41 @@ CLASS="PROGRAMLISTING"
 &Aring;        A
 &AElig;        A</PRE
 ><P>
+     The two characters must be separated by whitespace, and any leading or
+     trailing whitespace on a line is ignored.
+    </P
+></LI
+><LI
+><P
+>     Alternatively, if only one character is given on a line, instances of
+     that character are deleted; this is useful in languages where accents
+     are represented by separate characters.
+    </P
+></LI
+><LI
+><P
+>     Actually, each <SPAN
+CLASS="QUOTE"
+>"character"</SPAN
+> can be any string not containing
+     whitespace, so <TT
+CLASS="FILENAME"
+>unaccent</TT
+> dictionaries could be used for
+     other sorts of substring substitutions besides diacritic removal.
+    </P
+></LI
+><LI
+><P
+>     As with other <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> text search configuration files,
+     the rules file must be stored in UTF-8 encoding.  The data is
+     automatically translated into the current database's encoding when
+     loaded.  Any lines containing untranslatable characters are silently
+     ignored, so that rules files can contain rules that are not applicable in
+     the current encoding.
     </P
 ></LI
 ></UL
@@ -207,8 +242,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN164596"
->F.43.2. Usage</A
+NAME="AEN174155"
+>F.42.2. Usage</A
 ></H2
 ><P
 >   Installing the <TT
@@ -291,19 +326,19 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN164611"
->F.43.3. Functions</A
+NAME="AEN174170"
+>F.42.3. Functions</A
 ></H2
 ><P
 >  The <CODE
 CLASS="FUNCTION"
 >unaccent()</CODE
 > function removes accents (diacritic signs) from
-  a given string.  Basically, it's a wrapper around the
+  a given string.  Basically, it's a wrapper around
   <TT
 CLASS="FILENAME"
 >unaccent</TT
-> dictionary, but it can be used outside normal
+>-type dictionaries, but it can be used outside normal
   text search contexts.
  </P
 ><PRE
@@ -325,6 +360,18 @@ CLASS="REPLACEABLE"
 CLASS="TYPE"
 >text</TT
 ></PRE
+><P
+>  If the <TT
+CLASS="REPLACEABLE"
+><I
+>dictionary</I
+></TT
+> argument is
+  omitted, <TT
+CLASS="LITERAL"
+>unaccent</TT
+> is assumed.
+ </P
 ><P
 >  For example:
 </P><PRE
@@ -351,7 +398,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="tsearch2.html"
+HREF="tsm-system-time.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -379,7 +426,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->tsearch2</TD
+>tsm_system_time</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

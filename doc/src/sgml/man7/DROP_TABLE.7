@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP TABLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "DROP TABLE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "DROP TABLE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,14 +36,12 @@ DROP TABLE [ IF EXISTS ] \fIname\fR [, \&.\&.\&.] [ CASCADE | RESTRICT ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBDROP TABLE\fR
 removes tables from the database\&. Only the table owner, the schema owner, and superuser can drop a table\&. To empty a table of rows without destroying the table, use
 \fBDELETE\fR(7)
 or
 \fBTRUNCATE\fR(7)\&.
 .PP
-
 \fBDROP TABLE\fR
 always removes any indexes, rules, triggers, and constraints that exist for the target table\&. However, to drop a table that is referenced by a view or a foreign\-key constraint of another table,
 CASCADE

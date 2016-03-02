@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE SEQUENCE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATE SEQUENCE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATE SEQUENCE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,14 +32,13 @@ CREATE_SEQUENCE \- define a new sequence generator
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE [ TEMPORARY | TEMP ] SEQUENCE \fIname\fR [ INCREMENT [ BY ] \fIincrement\fR ]
+CREATE [ TEMPORARY | TEMP ] SEQUENCE [ IF NOT EXISTS ] \fIname\fR [ INCREMENT [ BY ] \fIincrement\fR ]
     [ MINVALUE \fIminvalue\fR | NO MINVALUE ] [ MAXVALUE \fImaxvalue\fR | NO MAXVALUE ]
     [ START [ WITH ] \fIstart\fR ] [ CACHE \fIcache\fR ] [ [ NO ] CYCLE ]
     [ OWNED BY { \fItable_name\fR\&.\fIcolumn_name\fR | NONE } ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCREATE SEQUENCE\fR
 creates a new sequence number generator\&. This involves creating and initializing a new special single\-row table with the name
 \fIname\fR\&. The generator will be owned by the user issuing the command\&.
@@ -75,6 +74,11 @@ calls\&.)
 TEMPORARY or TEMP
 .RS 4
 If specified, the sequence object is created only for this session, and is automatically dropped on session exit\&. Existing permanent sequences with the same name are not visible (in this session) while the temporary sequence exists, unless they are referenced with schema\-qualified names\&.
+.RE
+.PP
+IF NOT EXISTS
+.RS 4
+Do not throw an error if a relation with the same name already exists\&. A notice is issued in this case\&. Note that there is no guarantee that the existing relation is anything like the sequence that would have been created \- it might not even be a sequence\&.
 .RE
 .PP
 \fIname\fR
@@ -286,7 +290,6 @@ END;
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBCREATE SEQUENCE\fR
 conforms to the
 SQL

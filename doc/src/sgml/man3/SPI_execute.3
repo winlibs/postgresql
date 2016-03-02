@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SPI_execute
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "SPI_EXECUTE" "3" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "SPI_EXECUTE" "3" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,6 @@ int SPI_execute(const char * \fIcommand\fR, bool \fIread_only\fR, long \fIcount\
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBSPI_execute\fR
 executes the specified SQL command for
 \fIcount\fR
@@ -168,7 +167,6 @@ typedef struct
 .RE
 .\}
 .sp
-
 vals
 is an array of pointers to rows\&. (The number of valid entries is given by
 \fISPI_processed\fR\&.)
@@ -179,7 +177,6 @@ alloced, and
 free
 are internal fields not intended for use by SPI callers\&.
 .PP
-
 \fBSPI_finish\fR
 frees all
 SPITupleTables allocated during the current procedure\&. You can free a particular result table earlier, if you are done with it, by calling

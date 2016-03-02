@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERDATABASE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN67018"
+NAME="AEN69066"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN67018"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN67021"
+NAME="AEN69069"
 ></A
 ><H2
 >Synopsis</H2
@@ -134,10 +134,22 @@ CLASS="REPLACEABLE"
 ></SPAN
 >
 
+    ALLOW_CONNECTIONS <TT
+CLASS="REPLACEABLE"
+><I
+>allowconn</I
+></TT
+>
     CONNECTION LIMIT <TT
 CLASS="REPLACEABLE"
 ><I
 >connlimit</I
+></TT
+>
+    IS_TEMPLATE <TT
+CLASS="REPLACEABLE"
+><I
+>istemplate</I
 ></TT
 >
 
@@ -158,12 +170,12 @@ CLASS="REPLACEABLE"
 ><I
 >name</I
 ></TT
-> OWNER TO <TT
+> OWNER TO { <TT
 CLASS="REPLACEABLE"
 ><I
 >new_owner</I
 ></TT
->
+> | CURRENT_USER | SESSION_USER }
 
 ALTER DATABASE <TT
 CLASS="REPLACEABLE"
@@ -225,7 +237,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67042"
+NAME="AEN69092"
 ></A
 ><H2
 >Description</H2
@@ -266,8 +278,10 @@ CLASS="LITERAL"
    Only the database owner or a superuser can do this; you must also have
    create privilege for the new tablespace.
    This command physically moves any tables or indexes in the database's old
-   default tablespace to the new tablespace.  Note that tables and indexes
-   in non-default tablespaces are not affected.
+   default tablespace to the new tablespace.  The new default tablespace
+   must be empty for this database, and no one can be connected to
+   the database.  Tables and indexes in non-default tablespaces are
+   unaffected.
   </P
 ><P
 >   The remaining forms change the session default for a run-time
@@ -294,7 +308,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67056"
+NAME="AEN69106"
 ></A
 ><H2
 >Parameters</H2
@@ -319,6 +333,18 @@ CLASS="REPLACEABLE"
 ><TT
 CLASS="REPLACEABLE"
 ><I
+>allowconn</I
+></TT
+></DT
+><DD
+><P
+>         If false then no one can connect to this database.
+        </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
 >connlimit</I
 ></TT
 ></DT
@@ -327,6 +353,23 @@ CLASS="REPLACEABLE"
 >        How many concurrent connections can be made
         to this database.  -1 means no limit.
        </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>istemplate</I
+></TT
+></DT
+><DD
+><P
+>         If true, then this database can be cloned by any user with <TT
+CLASS="LITERAL"
+>CREATEDB</TT
+>
+         privileges; if false, then only superusers or the owner of the
+         database can clone it.
+        </P
 ></DD
 ><DT
 ><TT
@@ -423,7 +466,7 @@ HREF="runtime-config.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67099"
+NAME="AEN69160"
 ></A
 ><H2
 >Notes</H2
@@ -441,7 +484,7 @@ HREF="sql-alterrole.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67103"
+NAME="AEN69164"
 ></A
 ><H2
 >Examples</H2
@@ -460,7 +503,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67108"
+NAME="AEN69169"
 ></A
 ><H2
 >Compatibility</H2
@@ -478,7 +521,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67113"
+NAME="AEN69174"
 ></A
 ><H2
 >See Also</H2

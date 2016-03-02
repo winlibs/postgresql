@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/Python - Python Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -117,7 +117,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN63634"
+NAME="AEN65624"
 >43.7.1. Database Access Functions</A
 ></H2
 ><P
@@ -404,13 +404,6 @@ CLASS="PROGRAMLISTING"
 HREF="plpython-data.html"
 >Section 43.3</A
 >.
-      The exception is that composite types are currently not supported: They
-      will be rejected as query parameters and are converted to strings when
-      appearing in a query result.  As a workaround for the latter problem, the
-      query can sometimes be rewritten so that the composite type result
-      appears as a result row rather than as a field of the result row.
-      Alternatively, the resulting string could be parsed apart by hand, but
-      this approach is not recommended because it is not future-proof.
      </P
 ><P
 >      When you prepare a plan using the PL/Python module it is automatically

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: GRANT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "GRANT" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "GRANT" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,59 +36,66 @@ GRANT { { SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER }
     [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON { [ TABLE ] \fItable_name\fR [, \&.\&.\&.]
          | ALL TABLES IN SCHEMA \fIschema_name\fR [, \&.\&.\&.] }
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { { SELECT | INSERT | UPDATE | REFERENCES } ( \fIcolumn_name\fR [, \&.\&.\&.] )
     [, \&.\&.\&.] | ALL [ PRIVILEGES ] ( \fIcolumn_name\fR [, \&.\&.\&.] ) }
     ON [ TABLE ] \fItable_name\fR [, \&.\&.\&.]
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { { USAGE | SELECT | UPDATE }
     [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON { SEQUENCE \fIsequence_name\fR [, \&.\&.\&.]
          | ALL SEQUENCES IN SCHEMA \fIschema_name\fR [, \&.\&.\&.] }
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { { CREATE | CONNECT | TEMPORARY | TEMP } [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON DATABASE \fIdatabase_name\fR [, \&.\&.\&.]
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON DOMAIN \fIdomain_name\fR [, \&.\&.\&.]
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON FOREIGN DATA WRAPPER \fIfdw_name\fR [, \&.\&.\&.]
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON FOREIGN SERVER \fIserver_name\fR [, \&.\&.\&.]
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { EXECUTE | ALL [ PRIVILEGES ] }
     ON { FUNCTION \fIfunction_name\fR ( [ [ \fIargmode\fR ] [ \fIarg_name\fR ] \fIarg_type\fR [, \&.\&.\&.] ] ) [, \&.\&.\&.]
          | ALL FUNCTIONS IN SCHEMA \fIschema_name\fR [, \&.\&.\&.] }
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON LANGUAGE \fIlang_name\fR [, \&.\&.\&.]
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { { SELECT | UPDATE } [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON LARGE OBJECT \fIloid\fR [, \&.\&.\&.]
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { { CREATE | USAGE } [, \&.\&.\&.] | ALL [ PRIVILEGES ] }
     ON SCHEMA \fIschema_name\fR [, \&.\&.\&.]
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { CREATE | ALL [ PRIVILEGES ] }
     ON TABLESPACE \fItablespace_name\fR [, \&.\&.\&.]
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON TYPE \fItype_name\fR [, \&.\&.\&.]
-    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+    TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
+
+where \fIrole_specification\fR can be:
+
+    [ GROUP ] \fIrole_name\fR
+  | PUBLIC
+  | CURRENT_USER
+  | SESSION_USER
 
 GRANT \fIrole_name\fR [, \&.\&.\&.] TO \fIrole_name\fR [, \&.\&.\&.] [ WITH ADMIN OPTION ]
 .fi
@@ -334,7 +341,6 @@ or
 \fBREVOKE\fR
 command, the command is performed as though it were issued by the owner of the affected object\&. In particular, privileges granted via such a command will appear to have been granted by the object owner\&. (For role membership, the membership appears to have been granted by the containing role itself\&.)
 .PP
-
 \fBGRANT\fR
 and
 \fBREVOKE\fR
@@ -520,7 +526,6 @@ key word in
 ALL PRIVILEGES
 is required\&. The SQL standard does not support setting the privileges on more than one object per command\&.
 .PP
-
 PostgreSQL
 allows an object owner to revoke his own ordinary privileges: for example, a table owner can make the table read\-only to himself by revoking his own
 INSERT,

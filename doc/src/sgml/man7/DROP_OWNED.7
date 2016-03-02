@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP OWNED
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "DROP OWNED" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "DROP OWNED" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,11 +32,10 @@ DROP_OWNED \- remove database objects owned by a database role
 .SH "SYNOPSIS"
 .sp
 .nf
-DROP OWNED BY \fIname\fR [, \&.\&.\&.] [ CASCADE | RESTRICT ]
+DROP OWNED BY { \fIname\fR | CURRENT_USER | SESSION_USER } [, \&.\&.\&.] [ CASCADE | RESTRICT ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBDROP OWNED\fR
 drops all the objects within the current database that are owned by one of the specified roles\&. Any privileges granted to the given roles on objects in the current database and on shared objects (databases, tablespaces) will also be revoked\&.
 .SH "PARAMETERS"
@@ -57,7 +56,6 @@ Refuse to drop the objects owned by a role if any other database objects depend 
 .RE
 .SH "NOTES"
 .PP
-
 \fBDROP OWNED\fR
 is often used to prepare for the removal of one or more roles\&. Because
 \fBDROP OWNED\fR
@@ -69,14 +67,20 @@ option might make the command recurse to objects owned by other users\&.
 .PP
 The
 REASSIGN OWNED (\fBREASSIGN_OWNED\fR(7))
-command is an alternative that reassigns the ownership of all the database objects owned by one or more roles\&.
+command is an alternative that reassigns the ownership of all the database objects owned by one or more roles\&. However,
+\fBREASSIGN OWNED\fR
+does not deal with privileges for other objects\&.
 .PP
 Databases and tablespaces owned by the role(s) will not be removed\&.
+.PP
+See
+Section 20.4, \(lqDropping Roles\(rq, in the documentation
+for more discussion\&.
 .SH "COMPATIBILITY"
 .PP
 The
 \fBDROP OWNED\fR
-statement is a
+command is a
 PostgreSQL
 extension\&.
 .SH "SEE ALSO"

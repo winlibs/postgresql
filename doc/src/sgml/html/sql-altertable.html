@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERTABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN69583"
+NAME="AEN71846"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN69583"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN69586"
+NAME="AEN71849"
 ></A
 ><H2
 >Synopsis</H2
@@ -403,6 +403,10 @@ CLASS="REPLACEABLE"
 >rewrite_rule_name</I
 ></TT
 >
+    DISABLE ROW LEVEL SECURITY
+    ENABLE ROW LEVEL SECURITY
+    FORCE ROW LEVEL SECURITY
+    NO FORCE ROW LEVEL SECURITY
     CLUSTER ON <TT
 CLASS="REPLACEABLE"
 ><I
@@ -412,6 +416,13 @@ CLASS="REPLACEABLE"
     SET WITHOUT CLUSTER
     SET WITH OIDS
     SET WITHOUT OIDS
+    SET TABLESPACE <TT
+CLASS="REPLACEABLE"
+><I
+>new_tablespace</I
+></TT
+>
+    SET { LOGGED | UNLOGGED }
     SET ( <TT
 CLASS="REPLACEABLE"
 ><I
@@ -448,24 +459,18 @@ CLASS="REPLACEABLE"
 ></TT
 >
     NOT OF
-    OWNER TO <TT
+    OWNER TO { <TT
 CLASS="REPLACEABLE"
 ><I
 >new_owner</I
 ></TT
->
-    SET TABLESPACE <TT
-CLASS="REPLACEABLE"
-><I
->new_tablespace</I
-></TT
->
-    REPLICA IDENTITY {DEFAULT | USING INDEX <TT
+> | CURRENT_USER | SESSION_USER }
+    REPLICA IDENTITY { DEFAULT | USING INDEX <TT
 CLASS="REPLACEABLE"
 ><I
 >index_name</I
 ></TT
-> | FULL | NOTHING}
+> | FULL | NOTHING }
 
 <SPAN
 CLASS="phrase"
@@ -497,7 +502,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69653"
+NAME="AEN71916"
 ></A
 ><H2
 >Description</H2
@@ -554,17 +559,6 @@ CLASS="LITERAL"
 > is specified and the column
       does not exist, no error is thrown. In this case a notice
       is issued instead.
-     </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->IF EXISTS</TT
-></DT
-><DD
-><P
->      Do not throw an error if the table does not exist. A notice is issued
-      in this case.
      </P
 ></DD
 ><DT
@@ -668,7 +662,11 @@ HREF="planner-stats.html"
 >.
      </P
 ><P
->      SET STATISTICS acquires a <TT
+>      <TT
+CLASS="LITERAL"
+>SET STATISTICS</TT
+> acquires a
+      <TT
 CLASS="LITERAL"
 >SHARE UPDATE EXCLUSIVE</TT
 > lock.
@@ -819,7 +817,7 @@ CLASS="LITERAL"
       it just sets the strategy to be pursued during future table updates.
       See <A
 HREF="storage-toast.html"
->Section 59.2</A
+>Section 63.2</A
 > for more information.
      </P
 ></DD
@@ -1064,6 +1062,12 @@ CLASS="LITERAL"
 > will
       fire regardless of the current replication mode.
      </P
+><P
+>      This command acquires a <TT
+CLASS="LITERAL"
+>SHARE ROW EXCLUSIVE</TT
+> lock.
+     </P
 ></DD
 ><DT
 ><TT
@@ -1084,6 +1088,50 @@ CLASS="LITERAL"
 > rules, which
       are always applied in order to keep views working even if the current
       session is in a non-default replication role.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>DISABLE</TT
+>/<TT
+CLASS="LITERAL"
+>ENABLE ROW LEVEL SECURITY</TT
+></DT
+><DD
+><P
+>      These forms control the application of row security policies belonging
+      to the table.  If enabled and no policies exist for the table, then a
+      default-deny policy is applied.  Note that policies can exist for a table
+      even if row level security is disabled - in this case, the policies will
+      NOT be applied and the policies will be ignored.
+      See also
+      <A
+HREF="sql-createpolicy.html"
+>CREATE POLICY</A
+>.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>NO FORCE</TT
+>/<TT
+CLASS="LITERAL"
+>FORCE ROW LEVEL SECURITY</TT
+></DT
+><DD
+><P
+>      These forms control the application of row security policies belonging
+      to the table when the user is the table owner.  If enabled, row level
+      security policies will be applied when the user is the table owner.  If
+      disabled (the default) then row level security will not be applied when
+      the user is the table owner.
+      See also
+      <A
+HREF="sql-createpolicy.html"
+>CREATE POLICY</A
+>.
      </P
 ></DD
 ><DT
@@ -1179,6 +1227,77 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >oid</TT
 > column.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>SET TABLESPACE</TT
+></DT
+><DD
+><P
+>      This form changes the table's tablespace to the specified tablespace and
+      moves the data file(s) associated with the table to the new tablespace.
+      Indexes on the table, if any, are not moved; but they can be moved
+      separately with additional <TT
+CLASS="LITERAL"
+>SET TABLESPACE</TT
+> commands.
+      All tables in the current database in a tablespace can be moved by using
+      the <TT
+CLASS="LITERAL"
+>ALL IN TABLESPACE</TT
+> form, which will lock all tables
+      to be moved first and then move each one.  This form also supports
+      <TT
+CLASS="LITERAL"
+>OWNED BY</TT
+>, which will only move tables owned by the
+      roles specified.  If the <TT
+CLASS="LITERAL"
+>NOWAIT</TT
+> option is specified
+      then the command will fail if it is unable to acquire all of the locks
+      required immediately.  Note that system catalogs are not moved by this
+      command, use <TT
+CLASS="COMMAND"
+>ALTER DATABASE</TT
+> or explicit
+      <TT
+CLASS="COMMAND"
+>ALTER TABLE</TT
+> invocations instead if desired.  The
+      <TT
+CLASS="LITERAL"
+>information_schema</TT
+> relations are not considered part
+      of the system catalogs and will be moved.
+      See also
+      <A
+HREF="sql-createtablespace.html"
+>CREATE TABLESPACE</A
+>.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>SET { LOGGED | UNLOGGED }</TT
+></DT
+><DD
+><P
+>      This form changes the table from unlogged to logged or vice-versa
+      (see <A
+HREF="sql-createtable.html#SQL-CREATETABLE-UNLOGGED"
+><I
+CLASS="TERM"
+><TT
+CLASS="LITERAL"
+>UNLOGGED</TT
+></I
+></A
+>).  It cannot be applied
+      to a temporary table.
      </P
 ></DD
 ><DT
@@ -1407,56 +1526,6 @@ CLASS="LITERAL"
      </P
 ></DD
 ><DT
-><TT
-CLASS="LITERAL"
->SET TABLESPACE</TT
-></DT
-><DD
-><P
->      This form changes the table's tablespace to the specified tablespace and
-      moves the data file(s) associated with the table to the new tablespace.
-      Indexes on the table, if any, are not moved; but they can be moved
-      separately with additional <TT
-CLASS="LITERAL"
->SET TABLESPACE</TT
-> commands.
-      All tables in the current database in a tablespace can be moved by using
-      the <TT
-CLASS="LITERAL"
->ALL IN TABLESPACE</TT
-> form, which will lock all tables
-      to be moved first and then move each one.  This form also supports
-      <TT
-CLASS="LITERAL"
->OWNED BY</TT
->, which will only move tables owned by the
-      roles specified.  If the <TT
-CLASS="LITERAL"
->NOWAIT</TT
-> option is specified
-      then the command will fail if it is unable to acquire all of the locks
-      required immediately.  Note that system catalogs are not moved by this
-      command, use <TT
-CLASS="COMMAND"
->ALTER DATABASE</TT
-> or explicit
-      <TT
-CLASS="COMMAND"
->ALTER TABLE</TT
-> invocations instead if desired.  The
-      <TT
-CLASS="LITERAL"
->information_schema</TT
-> relations are not considered part
-      of the system catalogs and will be moved.
-      See also
-      <A
-HREF="sql-createtablespace.html"
->CREATE TABLESPACE</A
->.
-     </P
-></DD
-><DT
 ><A
 NAME="SQL-CREATETABLE-REPLICA-IDENTITY"
 ></A
@@ -1578,7 +1647,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN69971"
+NAME="AEN72252"
 ></A
 ><H2
 >Parameters</H2
@@ -1587,6 +1656,17 @@ NAME="AEN69971"
 ><DIV
 CLASS="VARIABLELIST"
 ><DL
+><DT
+><TT
+CLASS="LITERAL"
+>IF EXISTS</TT
+></DT
+><DD
+><P
+>        Do not throw an error if the table does not exist. A notice is issued
+        in this case.
+       </P
+></DD
 ><DT
 ><TT
 CLASS="REPLACEABLE"
@@ -1838,7 +1918,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70072"
+NAME="AEN72358"
 ></A
 ><H2
 >Notes</H2
@@ -2062,7 +2142,7 @@ HREF="ddl.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70125"
+NAME="AEN72411"
 ></A
 ><H2
 >Examples</H2
@@ -2093,7 +2173,7 @@ CLASS="PROGRAMLISTING"
 ><P>
   </P
 ><P
->   To change an integer column containing UNIX timestamps to <TT
+>   To change an integer column containing Unix timestamps to <TT
 CLASS="TYPE"
 >timestamp
    with time zone</TT
@@ -2242,7 +2322,7 @@ ALTER TABLE distributors DROP CONSTRAINT distributors_pkey,
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70171"
+NAME="AEN72457"
 ></A
 ><H2
 >Compatibility</H2
@@ -2291,7 +2371,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70184"
+NAME="AEN72470"
 ></A
 ><H2
 >See Also</H2

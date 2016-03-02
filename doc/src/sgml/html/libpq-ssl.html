@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -199,19 +199,15 @@ CLASS="LITERAL"
 >   In <TT
 CLASS="LITERAL"
 >verify-full</TT
-> mode, the <TT
-CLASS="LITERAL"
->cn</TT
-> (Common Name) attribute
-   of the certificate is matched against the host name. If the <TT
-CLASS="LITERAL"
->cn</TT
->
-   attribute starts with an asterisk (<TT
+> mode, the host name is matched against the
+   certificate's Subject Alternative Name attribute(s), or against the
+   Common Name attribute if no Subject Alternative Name of type dNSName is
+   present.  If the certificate's name attribute starts with an asterisk
+   (<TT
 CLASS="LITERAL"
 >*</TT
->), it will be treated as
-   a wildcard, and will match all characters <SPAN
+>), the asterisk will be treated as
+   a wildcard, which will match all characters <SPAN
 CLASS="emphasis"
 ><I
 CLASS="EMPHASIS"

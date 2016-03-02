@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="ALTER OPERATOR CLASS"
 HREF="sql-alteropclass.html"><LINK
 REL="NEXT"
-TITLE="ALTER ROLE"
-HREF="sql-alterrole.html"><LINK
+TITLE="ALTER POLICY"
+HREF="sql-alterpolicy.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="ALTER ROLE"
-HREF="sql-alterrole.html"
+TITLE="ALTER POLICY"
+HREF="sql-alterpolicy.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-ALTEROPFAMILY"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN68751"
+NAME="AEN70919"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN68751"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN68754"
+NAME="AEN70922"
 ></A
 ><H2
 >Synopsis</H2
@@ -140,7 +140,8 @@ CLASS="REPLACEABLE"
 ><I
 >op_type</I
 ></TT
-> ) [ FOR SEARCH | FOR ORDER BY <TT
+> )
+              [ FOR SEARCH | FOR ORDER BY <TT
 CLASS="REPLACEABLE"
 ><I
 >sort_family_name</I
@@ -161,7 +162,8 @@ CLASS="REPLACEABLE"
 ><I
 >op_type</I
 ></TT
-> ] ) ] <TT
+> ] ) ]
+              <TT
 CLASS="REPLACEABLE"
 ><I
 >function_name</I
@@ -173,6 +175,7 @@ CLASS="REPLACEABLE"
 ></TT
 > [, ...] )
   } [, ... ]
+
 ALTER OPERATOR FAMILY <TT
 CLASS="REPLACEABLE"
 ><I
@@ -217,6 +220,7 @@ CLASS="REPLACEABLE"
 ></TT
 > ] )
   } [, ... ]
+
 ALTER OPERATOR FAMILY <TT
 CLASS="REPLACEABLE"
 ><I
@@ -227,12 +231,14 @@ CLASS="REPLACEABLE"
 ><I
 >index_method</I
 ></TT
-> RENAME TO <TT
+>
+    RENAME TO <TT
 CLASS="REPLACEABLE"
 ><I
 >new_name</I
 ></TT
 >
+
 ALTER OPERATOR FAMILY <TT
 CLASS="REPLACEABLE"
 ><I
@@ -243,12 +249,14 @@ CLASS="REPLACEABLE"
 ><I
 >index_method</I
 ></TT
-> OWNER TO <TT
+>
+    OWNER TO { <TT
 CLASS="REPLACEABLE"
 ><I
 >new_owner</I
 ></TT
->
+> | CURRENT_USER | SESSION_USER }
+
 ALTER OPERATOR FAMILY <TT
 CLASS="REPLACEABLE"
 ><I
@@ -259,7 +267,8 @@ CLASS="REPLACEABLE"
 ><I
 >index_method</I
 ></TT
-> SET SCHEMA <TT
+>
+    SET SCHEMA <TT
 CLASS="REPLACEABLE"
 ><I
 >new_schema</I
@@ -269,7 +278,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68785"
+NAME="AEN70953"
 ></A
 ><H2
 >Description</H2
@@ -340,7 +349,7 @@ HREF="xindex.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68800"
+NAME="AEN70968"
 ></A
 ><H2
 >Parameters</H2
@@ -570,7 +579,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68879"
+NAME="AEN71047"
 ></A
 ><H2
 >Notes</H2
@@ -627,7 +636,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68892"
+NAME="AEN71060"
 ></A
 ><H2
 >Examples</H2
@@ -687,7 +696,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68900"
+NAME="AEN71068"
 ></A
 ><H2
 >Compatibility</H2
@@ -702,7 +711,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68904"
+NAME="AEN71072"
 ></A
 ><H2
 >See Also</H2
@@ -756,7 +765,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="sql-alterrole.html"
+HREF="sql-alterpolicy.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -780,7 +789,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->ALTER ROLE</TD
+>ALTER POLICY</TD
 ></TR
 ></TABLE
 ></DIV

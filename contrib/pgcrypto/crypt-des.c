@@ -61,6 +61,7 @@
  */
 
 #include "postgres.h"
+#include "miscadmin.h"
 
 #include "px-crypt.h"
 
@@ -540,6 +541,8 @@ do_des(uint32 l_in, uint32 r_in, uint32 *l_out, uint32 *r_out, int count)
 
 	while (count--)
 	{
+		CHECK_FOR_INTERRUPTS();
+
 		/*
 		 * Do each round.
 		 */
@@ -718,7 +721,7 @@ px_crypt_des(const char *key, const char *setting)
 			if (des_setkey((char *) keybuf))
 				return (NULL);
 		}
-		strncpy(output, setting, 9);
+		StrNCpy(output, setting, 10);
 
 		/*
 		 * Double check that we weren't given a short setting. If we were, the
@@ -726,7 +729,6 @@ px_crypt_des(const char *key, const char *setting)
 		 * salt, but we don't really care. Just make sure the output string
 		 * doesn't have an extra NUL in it.
 		 */
-		output[9] = '\0';
 		p = output + strlen(output);
 	}
 	else

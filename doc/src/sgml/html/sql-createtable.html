@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN75727"
+NAME="AEN78444"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN75727"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN75730"
+NAME="AEN78447"
 ></A
 ><H2
 >Synopsis</H2
@@ -555,7 +555,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75810"
+NAME="AEN78527"
 ></A
 ><H2
 >Parameters</H2
@@ -785,7 +785,7 @@ CLASS="LITERAL"
 >INHERITS</TT
 > clause specifies a list of
       tables from which the new table automatically inherits all
-      columns.
+      columns.  Parent tables can be plain tables or foreign tables.
      </P
 ><P
 >      Use of <TT
@@ -813,7 +813,7 @@ CLASS="LITERAL"
       error will be reported.
      </P
 ><P
-><TT
+>      <TT
 CLASS="LITERAL"
 >CHECK</TT
 > constraints are merged in essentially the same way as
@@ -936,7 +936,7 @@ CLASS="LITERAL"
 > settings, see
       <A
 HREF="storage-toast.html"
->Section 59.2</A
+>Section 63.2</A
 >.
      </P
 ><P
@@ -1053,7 +1053,7 @@ CLASS="LITERAL"
       Boolean result which new or updated rows must satisfy for an
       insert or update operation to succeed.  Expressions evaluating
       to TRUE or UNKNOWN succeed.  Should any row of an insert or
-      update operation produce a FALSE result an error exception is
+      update operation produce a FALSE result, an error exception is
       raised and the insert or update does not alter the database.  A
       check constraint specified as a column constraint should
       reference that column's value only, while an expression
@@ -1077,6 +1077,25 @@ CLASS="LITERAL"
 >NO INHERIT</TT
 > will not propagate to
       child tables.
+     </P
+><P
+>      When a table has multiple <TT
+CLASS="LITERAL"
+>CHECK</TT
+> constraints,
+      they will be tested for each row in alphabetical order by name,
+      after checking <TT
+CLASS="LITERAL"
+>NOT NULL</TT
+> constraints.
+      (<SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> versions before 9.5 did not honor any
+      particular firing order for <TT
+CLASS="LITERAL"
+>CHECK</TT
+> constraints.)
      </P
 ></DD
 ><DT
@@ -1158,32 +1177,35 @@ CLASS="REPLACEABLE"
 > (table constraint)</DT
 ><DD
 ><P
->      The primary key constraint specifies that a column or columns of a table
-      can contain only unique (non-duplicate), nonnull values.
-      Technically, <TT
+>      The <TT
 CLASS="LITERAL"
 >PRIMARY KEY</TT
-> is merely a
-      combination of <TT
+> constraint specifies that a column or
+      columns of a table can contain only unique (non-duplicate), nonnull
+      values. Only one primary key can be specified for a table, whether as a
+      column constraint or a table constraint.
+     </P
+><P
+>      The primary key constraint should name a set of columns that is
+      different from the set of columns named by any unique
+      constraint defined for the same table.  (Otherwise, the unique
+      constraint is redundant and will be discarded.)
+     </P
+><P
+>      <TT
+CLASS="LITERAL"
+>PRIMARY KEY</TT
+> enforces the same data constraints as
+      a combination of <TT
 CLASS="LITERAL"
 >UNIQUE</TT
 > and <TT
 CLASS="LITERAL"
 >NOT NULL</TT
 >, but
-      identifying a set of columns as primary key also provides
-      metadata about the design of the schema, as a primary key
-      implies that other tables
-      can rely on this set of columns as a unique identifier for rows.
-     </P
-><P
->      Only one primary key can be specified for a table, whether as a
-      column constraint or a table constraint.
-     </P
-><P
->      The primary key constraint should name a set of columns that is
-      different from other sets of columns named by any unique
-      constraint defined for the same table.
+      identifying a set of columns as the primary key also provides metadata
+      about the design of the schema, since a primary key implies that other
+      tables can rely on this set of columns as a unique identifier for rows.
      </P
 ></DD
 ><DT
@@ -1284,7 +1306,7 @@ CLASS="LITERAL"
 >amgettuple</TT
 > (see <A
 HREF="indexam.html"
->Chapter 55</A
+>Chapter 58</A
 >); at present this means <ACRONYM
 CLASS="ACRONYM"
 >GIN</ACRONYM
@@ -1586,7 +1608,15 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >CHECK</TT
 > constraints are not
-      deferrable.
+      deferrable.  Note that deferrable constraints cannot be used as
+      conflict arbitrators in an <TT
+CLASS="COMMAND"
+>INSERT</TT
+> statement that
+      includes an <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+> clause.
      </P
 ></DD
 ><DT
@@ -1884,29 +1914,26 @@ HREF="sql-createindex.html"
 >CREATE INDEX</A
 >.
     The storage parameters currently
-    available for tables are listed below.  For each parameter, unless noted,
-    there is an additional parameter with the same name prefixed with
+    available for tables are listed below.  For many of these parameters, as
+    shown, there is an additional parameter with the same name prefixed with
     <TT
 CLASS="LITERAL"
 >toast.</TT
->, which can be used to control the behavior of the
+>, which controls the behavior of the
     table's secondary <ACRONYM
 CLASS="ACRONYM"
 >TOAST</ACRONYM
 > table, if any
     (see <A
 HREF="storage-toast.html"
->Section 59.2</A
+>Section 63.2</A
 > for more information about TOAST).
-    Note that the TOAST table inherits the
-    <TT
+    If a table parameter value is set and the
+    equivalent <TT
 CLASS="LITERAL"
->autovacuum_*</TT
-> values from its parent table, if there are
-    no <TT
-CLASS="LITERAL"
->toast.autovacuum_*</TT
-> settings set.
+>toast.</TT
+> parameter is not, the TOAST table
+    will use the table's parameter value.
    </P
 ><P
 ></P
@@ -1954,45 +1981,40 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->     Enables or disables the autovacuum daemon on a particular table.
-     If true, the autovacuum daemon will initiate a <TT
+>     Enables or disables the autovacuum daemon for a particular table.
+     If true, the autovacuum daemon will perform automatic <TT
 CLASS="COMMAND"
 >VACUUM</TT
-> operation
-     on a particular table when the number of updated or deleted tuples exceeds
-     <TT
-CLASS="LITERAL"
->autovacuum_vacuum_threshold</TT
-> plus
-     <TT
-CLASS="LITERAL"
->autovacuum_vacuum_scale_factor</TT
-> times the number of live tuples
-     currently estimated to be in the relation.
-     Similarly, it will initiate an <TT
+>
+     and/or <TT
 CLASS="COMMAND"
 >ANALYZE</TT
-> operation when the
-     number of inserted, updated or deleted tuples exceeds
-     <TT
-CLASS="LITERAL"
->autovacuum_analyze_threshold</TT
-> plus
-     <TT
-CLASS="LITERAL"
->autovacuum_analyze_scale_factor</TT
-> times the number of live tuples
-     currently estimated to be in the relation.
+> operations on this table following the rules
+     discussed in <A
+HREF="routine-vacuuming.html#AUTOVACUUM"
+>Section 23.1.6</A
+>.
      If false, this table will not be autovacuumed, except to prevent
-     transaction Id wraparound. See <A
+     transaction ID wraparound. See <A
 HREF="routine-vacuuming.html#VACUUM-FOR-WRAPAROUND"
 >Section 23.1.5</A
 > for
      more about wraparound prevention.
-     Observe that this variable inherits its value from the <A
+     Note that the autovacuum daemon does not run at all (except to prevent
+     transaction ID wraparound) if the <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM"
 >autovacuum</A
-> setting.
+>
+     parameter is false; setting individual tables' storage parameters does
+     not override that.  Therefore there is seldom much point in explicitly
+     setting this storage parameter to <TT
+CLASS="LITERAL"
+>true</TT
+>, only
+     to <TT
+CLASS="LITERAL"
+>false</TT
+>.
      </P
 ></DD
 ><DT
@@ -2008,11 +2030,11 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->     Minimum number of updated or deleted tuples before initiate a
-     <TT
-CLASS="COMMAND"
->VACUUM</TT
-> operation on a particular table.
+>      Per-table value for <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-VACUUM-THRESHOLD"
+>autovacuum_vacuum_threshold</A
+>
+      parameter.
      </P
 ></DD
 ><DT
@@ -2028,14 +2050,11 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->     Multiplier for <TT
-CLASS="STRUCTFIELD"
->reltuples</TT
-> to add to
-     <TT
-CLASS="LITERAL"
->autovacuum_vacuum_threshold</TT
->.
+>      Per-table value for <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-VACUUM-SCALE-FACTOR"
+>autovacuum_vacuum_scale_factor</A
+>
+      parameter.
      </P
 ></DD
 ><DT
@@ -2048,11 +2067,11 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->     Minimum number of inserted, updated, or deleted tuples before initiate an
-     <TT
-CLASS="COMMAND"
->ANALYZE</TT
-> operation on a particular table.
+>      Per-table value for <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-ANALYZE-THRESHOLD"
+>autovacuum_analyze_threshold</A
+>
+      parameter.
      </P
 ></DD
 ><DT
@@ -2065,14 +2084,11 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->     Multiplier for <TT
-CLASS="STRUCTFIELD"
->reltuples</TT
-> to add to
-     <TT
-CLASS="LITERAL"
->autovacuum_analyze_threshold</TT
->.
+>      Per-table value for <A
+HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-ANALYZE-SCALE-FACTOR"
+>autovacuum_analyze_scale_factor</A
+>
+      parameter.
      </P
 ></DD
 ><DT
@@ -2088,10 +2104,11 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->     Custom <A
+>      Per-table value for <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-VACUUM-COST-DELAY"
 >autovacuum_vacuum_cost_delay</A
-> parameter.
+>
+      parameter.
      </P
 ></DD
 ><DT
@@ -2107,10 +2124,11 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->     Custom <A
+>      Per-table value for <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-VACUUM-COST-LIMIT"
 >autovacuum_vacuum_cost_limit</A
-> parameter.
+>
+      parameter.
      </P
 ></DD
 ><DT
@@ -2126,16 +2144,17 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->     Custom <A
+>      Per-table value for <A
 HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-MIN-AGE"
 >vacuum_freeze_min_age</A
-> parameter. Note that
-     autovacuum will ignore attempts to set a per-table
-     <TT
+>
+      parameter.  Note that autovacuum will ignore
+      per-table <TT
 CLASS="LITERAL"
 >autovacuum_freeze_min_age</TT
-> larger than half the system-wide
-     <A
+> parameters that are
+      larger than half the
+      system-wide <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-FREEZE-MAX-AGE"
 >autovacuum_freeze_max_age</A
 > setting.
@@ -2154,16 +2173,16 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->     Custom <A
+>      Per-table value for <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-FREEZE-MAX-AGE"
 >autovacuum_freeze_max_age</A
-> parameter. Note that
-     autovacuum will ignore attempts to set a per-table
-     <TT
+>
+      parameter.  Note that autovacuum will ignore
+      per-table <TT
 CLASS="LITERAL"
 >autovacuum_freeze_max_age</TT
-> larger than the system-wide setting
-     (it can only be set smaller).
+> parameters that are
+      larger than the system-wide setting (it can only be set smaller).
      </P
 ></DD
 ><DT
@@ -2179,10 +2198,11 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->      Custom <A
+>      Per-table value for <A
 HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-TABLE-AGE"
 >vacuum_freeze_table_age</A
-> parameter.
+>
+      parameter.
      </P
 ></DD
 ><DT
@@ -2198,15 +2218,16 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->      Custom <A
+>      Per-table value for <A
 HREF="runtime-config-client.html#GUC-VACUUM-MULTIXACT-FREEZE-MIN-AGE"
 >vacuum_multixact_freeze_min_age</A
-> parameter.
-      Note that autovacuum will ignore attempts to set a per-table
-      <TT
+>
+      parameter.  Note that autovacuum will ignore
+      per-table <TT
 CLASS="LITERAL"
 >autovacuum_multixact_freeze_min_age</TT
-> larger than half the
+> parameters
+      that are larger than half the
       system-wide <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
 >autovacuum_multixact_freeze_max_age</A
@@ -2227,16 +2248,18 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->      Custom <A
+>      Per-table value
+      for <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
 >autovacuum_multixact_freeze_max_age</A
-> parameter. Note
-      that autovacuum will ignore attempts to set a per-table
-      <TT
+> parameter.
+      Note that autovacuum will ignore
+      per-table <TT
 CLASS="LITERAL"
 >autovacuum_multixact_freeze_max_age</TT
-> larger than the
-      system-wide setting (it can only be set smaller).
+> parameters
+      that are larger than the system-wide setting (it can only be set
+      smaller).
      </P
 ></DD
 ><DT
@@ -2252,10 +2275,31 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->      Custom <A
+>      Per-table value
+      for <A
 HREF="runtime-config-client.html#GUC-VACUUM-MULTIXACT-FREEZE-TABLE-AGE"
 >vacuum_multixact_freeze_table_age</A
 > parameter.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>log_autovacuum_min_duration</TT
+>, <TT
+CLASS="LITERAL"
+>toast.log_autovacuum_min_duration</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</DT
+><DD
+><P
+>      Per-table value for <A
+HREF="runtime-config-autovacuum.html#GUC-LOG-AUTOVACUUM-MIN-DURATION"
+>log_autovacuum_min_duration</A
+>
+      parameter.
      </P
 ></DD
 ><DT
@@ -2268,12 +2312,13 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->      Declare a table as an additional catalog table, e.g. for the purpose of
+>      Declare the table as an additional catalog table for purposes of
       logical replication. See
       <A
 HREF="logicaldecoding-output-plugin.html#LOGICALDECODING-CAPABILITIES"
 >Section 46.6.2</A
 > for details.
+      This parameter cannot be set for TOAST tables.
      </P
 ></DD
 ></DL
@@ -2627,7 +2672,7 @@ CLASS="ACRONYM"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN76392"
+NAME="AEN79121"
 ></A
 ><H3
 >Temporary Tables</H3
@@ -2726,7 +2771,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN76415"
+NAME="AEN79144"
 ></A
 ><H3
 >Non-deferred Uniqueness Constraints</H3
@@ -2761,7 +2806,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN76423"
+NAME="AEN79152"
 ></A
 ><H3
 >Column Check Constraints</H3
@@ -2785,7 +2830,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN76429"
+NAME="AEN79158"
 ></A
 ><H3
 ><TT
@@ -2806,7 +2851,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN76435"
+NAME="AEN79164"
 ></A
 ><H3
 ><TT
@@ -2840,7 +2885,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN76444"
+NAME="AEN79173"
 ></A
 ><H3
 >Inheritance</H3
@@ -2865,7 +2910,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN76450"
+NAME="AEN79179"
 ></A
 ><H3
 >Zero-column Tables</H3
@@ -2890,7 +2935,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN76456"
+NAME="AEN79185"
 ></A
 ><H3
 ><TT
@@ -2911,7 +2956,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN76462"
+NAME="AEN79191"
 ></A
 ><H3
 >Tablespaces</H3
@@ -2933,7 +2978,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN76468"
+NAME="AEN79197"
 ></A
 ><H3
 >Typed Tables</H3
@@ -2953,7 +2998,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76472"
+NAME="AEN79201"
 ></A
 ><H2
 >See Also</H2

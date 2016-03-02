@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
 HREF="reference-server.html"><LINK
 REL="PREVIOUS"
-TITLE="pg_resetxlog"
-HREF="app-pgresetxlog.html"><LINK
+TITLE="pg_xlogdump"
+HREF="pgxlogdump.html"><LINK
 REL="NEXT"
 TITLE="postmaster"
 HREF="app-postmaster.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="pg_resetxlog"
-HREF="app-pgresetxlog.html"
+TITLE="pg_xlogdump"
+HREF="pgxlogdump.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN93954"
+NAME="AEN99259"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN93958"
+NAME="AEN99263"
 ></A
 ><H2
 >Synopsis</H2
@@ -127,7 +127,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN93963"
+NAME="AEN99268"
 ></A
 ><H2
 >Description</H2
@@ -269,7 +269,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN93995"
+NAME="AEN99300"
 ></A
 ><H3
 >General Purpose</H3
@@ -278,22 +278,6 @@ NAME="AEN93995"
 ><DIV
 CLASS="VARIABLELIST"
 ><DL
-><DT
-><TT
-CLASS="OPTION"
->-A 0|1</TT
-></DT
-><DD
-><P
->        Enables run-time assertion checks, which is a debugging aid to
-        detect programming mistakes.  This option is only available if
-        assertions were enabled when <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> was
-        compiled. If so, the default is on.
-       </P
-></DD
 ><DT
 ><TT
 CLASS="OPTION"
@@ -655,7 +639,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        The command-line-style options specified in <TT
+>        The command-line-style arguments specified in <TT
 CLASS="REPLACEABLE"
 ><I
 >extra-options</I
@@ -665,8 +649,28 @@ CLASS="REPLACEABLE"
         <TT
 CLASS="COMMAND"
 >postgres</TT
-> process.  If the option string contains
-        any spaces, the entire string must be quoted.
+> process.
+       </P
+><P
+>        Spaces within <TT
+CLASS="REPLACEABLE"
+><I
+>extra-options</I
+></TT
+> are
+        considered to separate arguments, unless escaped with a backslash
+        (<TT
+CLASS="LITERAL"
+>\</TT
+>); write <TT
+CLASS="LITERAL"
+>\\</TT
+> to represent a literal
+        backslash.  Multiple arguments can also be specified via multiple
+        uses of <TT
+CLASS="OPTION"
+>-o</TT
+>.
        </P
 ><P
 >        The use of this option is obsolete; all command-line options
@@ -825,7 +829,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN94176"
+NAME="AEN99480"
 ></A
 ><H3
 >Semi-internal Options</H3
@@ -1035,7 +1039,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN94241"
+NAME="AEN99545"
 ></A
 ><H3
 >Options for Single-User Mode</H3
@@ -1120,7 +1124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94274"
+NAME="AEN99578"
 ></A
 ><H2
 >Environment</H2
@@ -1191,7 +1195,7 @@ CLASS="ENVAR"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94303"
+NAME="AEN99607"
 ></A
 ><H2
 >Diagnostics</H2
@@ -1277,7 +1281,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94323"
+NAME="AEN99627"
 ></A
 ><H2
 >Notes</H2
@@ -1439,7 +1443,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94362"
+NAME="AEN99666"
 ></A
 ><H2
 >Usage</H2
@@ -1636,7 +1640,7 @@ CLASS="FILENAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94414"
+NAME="AEN99718"
 ></A
 ><H2
 >See Also</H2
@@ -1670,7 +1674,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="app-pgresetxlog.html"
+HREF="pgxlogdump.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -1700,7 +1704,7 @@ ALIGN="left"
 VALIGN="top"
 ><SPAN
 CLASS="APPLICATION"
->pg_resetxlog</SPAN
+>pg_xlogdump</SPAN
 ></TD
 ><TD
 WIDTH="34%"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN92472"
+NAME="AEN96699"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN92476"
+NAME="AEN96703"
 ></A
 ><H2
 >Synopsis</H2
@@ -122,7 +122,26 @@ CLASS="REPLACEABLE"
 ><I
 >connection-option</I
 ></TT
+>...] [<TT
+CLASS="REPLACEABLE"
+><I
+>option</I
+></TT
 >...]       [       <TT
+CLASS="OPTION"
+>--schema</TT
+> | <TT
+CLASS="OPTION"
+>-S</TT
+> 
+     <TT
+CLASS="REPLACEABLE"
+><I
+>schema</I
+></TT
+>
+    ]
+   ...        [       <TT
 CLASS="OPTION"
 >--table</TT
 > | <TT
@@ -165,6 +184,11 @@ CLASS="REPLACEABLE"
 ><I
 >connection-option</I
 ></TT
+>...] [<TT
+CLASS="REPLACEABLE"
+><I
+>option</I
+></TT
 >...]  <TT
 CLASS="OPTION"
 >--all</TT
@@ -180,6 +204,11 @@ CLASS="COMMAND"
 CLASS="REPLACEABLE"
 ><I
 >connection-option</I
+></TT
+>...] [<TT
+CLASS="REPLACEABLE"
+><I
+>option</I
 ></TT
 >...]  <TT
 CLASS="OPTION"
@@ -197,7 +226,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92519"
+NAME="AEN96760"
 ></A
 ><H2
 >Description</H2
@@ -227,7 +256,7 @@ HREF="sql-reindex.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92527"
+NAME="AEN96768"
 ></A
 ><H2
 >Options</H2
@@ -377,6 +406,39 @@ CLASS="OPTION"
 ><DT
 ><TT
 CLASS="OPTION"
+>-S <TT
+CLASS="REPLACEABLE"
+><I
+>schema</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--schema=<TT
+CLASS="REPLACEABLE"
+><I
+>schema</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        Reindex <TT
+CLASS="REPLACEABLE"
+><I
+>schema</I
+></TT
+> only.
+        Multiple schemas can be reindexed by writing multiple
+        <TT
+CLASS="OPTION"
+>-S</TT
+> switches.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-t <TT
 CLASS="REPLACEABLE"
 ><I
@@ -406,6 +468,19 @@ CLASS="OPTION"
 >-t</TT
 > switches.
        </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-v</TT
+><BR><TT
+CLASS="OPTION"
+>--verbose</TT
+></DT
+><DD
+><P
+>       Print detailed information during processing.
+      </P
 ></DD
 ><DT
 ><TT
@@ -618,7 +693,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92671"
+NAME="AEN96930"
 ></A
 ><H2
 >Environment</H2
@@ -666,7 +741,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92689"
+NAME="AEN96948"
 ></A
 ><H2
 >Diagnostics</H2
@@ -695,7 +770,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92695"
+NAME="AEN96954"
 ></A
 ><H2
 >Notes</H2
@@ -721,7 +796,7 @@ HREF="libpq-pgpass.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92702"
+NAME="AEN96961"
 ></A
 ><H2
 >Examples</H2
@@ -767,7 +842,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92716"
+NAME="AEN96975"
 ></A
 ><H2
 >See Also</H2

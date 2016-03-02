@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DECLARE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "DECLARE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "DECLARE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,7 +37,6 @@ DECLARE \fIname\fR [ BINARY ] [ INSENSITIVE ] [ [ NO ] SCROLL ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBDECLARE\fR
 allows a user to create cursors, which can be used to retrieve a small number of rows at a time out of a larger query\&. After the cursor is created, rows are fetched from it using
 \fBFETCH\fR(7)\&.
@@ -179,7 +178,6 @@ is closed when an explicit
 \fBCLOSE\fR
 command is issued on it, or the session ends\&. In the current implementation, the rows represented by a held cursor are copied into a temporary file or memory area so that they remain available for subsequent transactions\&.
 .PP
-
 WITH HOLD
 may not be specified when the query includes
 FOR UPDATE

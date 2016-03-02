@@ -1,4 +1,4 @@
-; DEF file for Borland C++ Builder
+; DEF file for bcc32.mak (Borland C++ Builder)
 LIBRARY BLIBECPG
 EXPORTS
     _ECPGallocate_desc                @ 1

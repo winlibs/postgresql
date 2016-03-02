@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Index Access Method Interface Definition"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 55. Index Access Method Interface Definition</TD
+>Chapter 58. Index Access Method Interface Definition</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="INDEX-FUNCTIONS"
->55.2. Index Access Method Functions</A
+>58.2. Index Access Method Functions</A
 ></H1
 ><P
 >   The index construction and maintenance functions that an index access
@@ -174,7 +174,7 @@ CLASS="LITERAL"
    perform.  This varies depending on whether the unique constraint is
    deferrable; see <A
 HREF="index-unique-checks.html"
->Section 55.5</A
+>Section 58.5</A
 > for details.
    Normally the access method only needs the <TT
 CLASS="LITERAL"
@@ -343,26 +343,27 @@ CLASS="LITERAL"
 ></P><PRE
 CLASS="PROGRAMLISTING"
 >bool
-amcanreturn (Relation indexRelation);</PRE
+amcanreturn (Relation indexRelation, int attno);</PRE
 ><P>
    Check whether the index can support <I
 CLASS="FIRSTTERM"
 >index-only scans</I
-> by
-   returning the indexed column values for an index entry in the form of an
-   <TT
+> on the
+   given column, by returning the indexed column values for an index entry in
+   the form of an <TT
 CLASS="STRUCTNAME"
 >IndexTuple</TT
->.  Return TRUE if so, else FALSE.  If the index AM can never
-   support index-only scans (an example is hash, which stores only
-   the hash values not the original data), it is sufficient to set its
-   <TT
+>.  The attribute number
+   is 1-based, i.e. the first columns attno is 1. Returns TRUE if supported,
+   else FALSE.  If the access method does not support index-only scans at all,
+   the <TT
 CLASS="STRUCTFIELD"
 >amcanreturn</TT
-> field to zero in <TT
+> field in its <TT
 CLASS="STRUCTNAME"
 >pg_am</TT
->.
+> row can
+   be set to zero.
   </P
 ><P
 ></P><PRE
@@ -379,7 +380,7 @@ amcostestimate (PlannerInfo *root,
    Estimate the costs of an index scan.  This function is described fully
    in <A
 HREF="index-cost-estimation.html"
->Section 55.6</A
+>Section 58.6</A
 >, below.
   </P
 ><P
@@ -465,7 +466,7 @@ CLASS="FIRSTTERM"
 >.  The semantics of
    index scanning are described more fully in <A
 HREF="index-scanning.html"
->Section 55.3</A
+>Section 58.3</A
 >,
    below.  An index access method can support <SPAN
 CLASS="QUOTE"
@@ -687,7 +688,7 @@ CLASS="FUNCTION"
 >, as explained
    in <A
 HREF="index-scanning.html"
->Section 55.3</A
+>Section 58.3</A
 >.
   </P
 ><P

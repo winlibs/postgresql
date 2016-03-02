@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEDATABASE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN72904"
+NAME="AEN75220"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN72904"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN72907"
+NAME="AEN75223"
 ></A
 ><H2
 >Synopsis</H2
@@ -151,17 +151,29 @@ CLASS="REPLACEABLE"
 >tablespace_name</I
 ></TT
 > ]
+           [ ALLOW_CONNECTIONS [=] <TT
+CLASS="REPLACEABLE"
+><I
+>allowconn</I
+></TT
+> ]
            [ CONNECTION LIMIT [=] <TT
 CLASS="REPLACEABLE"
 ><I
 >connlimit</I
 ></TT
-> ] ]</PRE
+> ] ]
+           [ IS_TEMPLATE [=] <TT
+CLASS="REPLACEABLE"
+><I
+>istemplate</I
+></TT
+> ]</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72917"
+NAME="AEN75235"
 ></A
 ><H2
 >Description</H2
@@ -222,7 +234,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72932"
+NAME="AEN75250"
 ></A
 ><H2
 >Parameters</H2
@@ -378,6 +390,26 @@ HREF="sql-createtablespace.html"
 ><TT
 CLASS="REPLACEABLE"
 ><I
+>allowconn</I
+></TT
+></DT
+><DD
+><P
+>         If false then no one can connect to this database.  The default is
+         true, allowing connections (except as restricted by other mechanisms,
+         such as <TT
+CLASS="LITERAL"
+>GRANT</TT
+>/<TT
+CLASS="LITERAL"
+>REVOKE CONNECT</TT
+>).
+        </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
 >connlimit</I
 ></TT
 ></DT
@@ -386,6 +418,23 @@ CLASS="REPLACEABLE"
 >        How many concurrent connections can be made
         to this database.  -1 (the default) means no limit.
        </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>istemplate</I
+></TT
+></DT
+><DD
+><P
+>         If true, then this database can be cloned by any user with <TT
+CLASS="LITERAL"
+>CREATEDB</TT
+>
+         privileges; if false (the default), then only superusers or the owner
+         of the database can clone it.
+        </P
 ></DD
 ></DL
 ></DIV
@@ -397,7 +446,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72987"
+NAME="AEN75318"
 ></A
 ><H2
 >Notes</H2
@@ -537,7 +586,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73021"
+NAME="AEN75352"
 ></A
 ><H2
 >Examples</H2
@@ -600,7 +649,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73037"
+NAME="AEN75368"
 ></A
 ><H2
 >Compatibility</H2
@@ -616,7 +665,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73041"
+NAME="AEN75372"
 ></A
 ><H2
 >See Also</H2

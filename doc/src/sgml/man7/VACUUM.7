@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: VACUUM
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "VACUUM" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "VACUUM" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,7 +38,6 @@ VACUUM [ FULL ] [ FREEZE ] [ VERBOSE ] ANALYZE [ \fItable_name\fR [ (\fIcolumn_n
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBVACUUM\fR
 reclaims storage occupied by dead tuples\&. In normal
 PostgreSQL
@@ -54,7 +53,6 @@ processes every table in the current database that the current user has permissi
 \fBVACUUM\fR
 processes only that table\&.
 .PP
-
 \fBVACUUM ANALYZE\fR
 performs a
 \fBVACUUM\fR
@@ -136,7 +134,6 @@ can only be performed by a superuser\&.)
 \fBVACUUM\fR
 will skip over any tables that the calling user does not have permission to vacuum\&.
 .PP
-
 \fBVACUUM\fR
 cannot be executed inside a transaction block\&.
 .PP
@@ -147,7 +144,7 @@ indexes,
 (in any form) also completes any pending index insertions, by moving pending index entries to the appropriate places in the main
 GIN
 index structure\&. See
-Section 58.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation
+Section 61.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation
 for details\&.
 .PP
 We recommend that active production databases be vacuumed frequently (at least nightly), in order to remove dead rows\&. After adding or deleting a large number of rows, it might be a good idea to issue a
@@ -164,13 +161,11 @@ will usually shrink the table more than a plain
 \fBVACUUM\fR
 would\&.
 .PP
-
 \fBVACUUM\fR
 causes a substantial increase in I/O traffic, which might cause poor performance for other active sessions\&. Therefore, it is sometimes advisable to use the cost\-based vacuum delay feature\&. See
 Section 18.4.4, \(lqCost-based Vacuum Delay\(rq, in the documentation
 for details\&.
 .PP
-
 PostgreSQL
 includes an
 \(lqautovacuum\(rq
@@ -209,6 +204,7 @@ DETAIL:  CPU 0\&.01s/0\&.06u sec elapsed 0\&.07 sec\&.
 INFO:  "onek": found 3000 removable, 1000 nonremovable tuples in 143 pages
 DETAIL:  0 dead tuples cannot be removed yet\&.
 There were 0 unused item pointers\&.
+Skipped 0 pages due to buffer pins\&.
 0 pages are entirely empty\&.
 CPU 0\&.07s/0\&.39u sec elapsed 1\&.56 sec\&.
 INFO:  analyzing "public\&.onek"

@@ -60,15 +60,17 @@ static char *forward_name = NULL;
 struct ECPGtype ecpg_no_indicator = {ECPGt_NO_INDICATOR, NULL, NULL, NULL, {NULL}, 0};
 struct variable no_indicator = {"no_indicator", &ecpg_no_indicator, 0, NULL};
 
-struct ECPGtype ecpg_query = {ECPGt_char_variable, NULL, NULL, NULL, {NULL}, 0};
+static struct ECPGtype ecpg_query = {ECPGt_char_variable, NULL, NULL, NULL, {NULL}, 0};
+
+static void vmmerror(int error_code, enum errortype type, const char *error, va_list ap) pg_attribute_printf(3, 0);
 
 /*
  * Handle parsing errors and warnings
  */
-static void __attribute__((format(PG_PRINTF_ATTRIBUTE, 3, 0)))
+static void
 vmmerror(int error_code, enum errortype type, const char *error, va_list ap)
 {
-	/* internationalize the error message string */
+	/* localize the error message string */
 	error = _(error);
 
 	fprintf(stderr, "%s:%d: ", input_filename, yylineno);
@@ -605,7 +607,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
                 SQL_LONG SQL_NULLABLE SQL_OCTET_LENGTH
                 SQL_OPEN SQL_OUTPUT SQL_REFERENCE
                 SQL_RETURNED_LENGTH SQL_RETURNED_OCTET_LENGTH SQL_SCALE
-                SQL_SECTION SQL_SHORT SQL_SIGNED SQL_SQL SQL_SQLERROR
+                SQL_SECTION SQL_SHORT SQL_SIGNED SQL_SQLERROR
                 SQL_SQLPRINT SQL_SQLWARNING SQL_START SQL_STOP
                 SQL_STRUCT SQL_UNSIGNED SQL_VAR SQL_WHENEVER
 
@@ -788,10 +790,22 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> AlterForeignServerStmt
 %type <str> CreateForeignTableStmt
 %type <str> AlterForeignTableStmt
+%type <str> ImportForeignSchemaStmt
+%type <str> import_qualification_type
+%type <str> import_qualification
 %type <str> CreateUserMappingStmt
 %type <str> auth_ident
 %type <str> DropUserMappingStmt
 %type <str> AlterUserMappingStmt
+%type <str> CreatePolicyStmt
+%type <str> AlterPolicyStmt
+%type <str> DropPolicyStmt
+%type <str> RowSecurityOptionalExpr
+%type <str> RowSecurityOptionalWithCheck
+%type <str> RowSecurityDefaultToRole
+%type <str> RowSecurityOptionalToRole
+%type <str> RowSecurityDefaultForCmd
+%type <str> row_security_cmd
 %type <str> CreateTrigStmt
 %type <str> TriggerActionTime
 %type <str> TriggerEvents
@@ -846,6 +860,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> any_name_list
 %type <str> any_name
 %type <str> attrs
+%type <str> type_name_list
 %type <str> TruncateStmt
 %type <str> opt_restart_seqs
 %type <str> CommentStmt
@@ -909,6 +924,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> common_func_opt_item
 %type <str> createfunc_opt_item
 %type <str> func_as
+%type <str> transform_type_list
 %type <str> opt_definition
 %type <str> table_func_column
 %type <str> table_func_column_list
@@ -927,9 +943,14 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> cast_context
 %type <str> DropCastStmt
 %type <str> opt_if_exists
+%type <str> CreateTransformStmt
+%type <str> transform_element_list
+%type <str> DropTransformStmt
 %type <str> ReindexStmt
-%type <str> reindex_type
-%type <str> opt_force
+%type <str> reindex_target_type
+%type <str> reindex_target_multitable
+%type <str> reindex_option_list
+%type <str> reindex_option_elem
 %type <str> AlterTblSpcStmt
 %type <str> RenameStmt
 %type <str> opt_column
@@ -958,12 +979,12 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> LoadStmt
 %type <str> CreatedbStmt
 %type <str> createdb_opt_list
+%type <str> createdb_opt_items
 %type <str> createdb_opt_item
+%type <str> createdb_opt_name
 %type <str> opt_equal
 %type <str> AlterDatabaseStmt
 %type <str> AlterDatabaseSetStmt
-%type <str> alterdb_opt_list
-%type <str> alterdb_opt_item
 %type <str> DropdbStmt
 %type <str> AlterSystemStmt
 %type <str> CreateDomainStmt
@@ -971,6 +992,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> opt_as
 %type <str> AlterTSDictionaryStmt
 %type <str> AlterTSConfigurationStmt
+%type <str> any_with
 %type <str> CreateConversionStmt
 %type <str> ClusterStmt
 %type <str> cluster_index_specification
@@ -995,9 +1017,12 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> ExecuteStmt
 %type <str> execute_param_clause
 %type <str> InsertStmt
+%type <str> insert_target
 %type <str> insert_rest
 %type <str> insert_column_list
 %type <str> insert_column_item
+%type <str> opt_on_conflict
+%type <str> opt_conf_expr
 %type <str> returning_clause
 %type <str> DeleteStmt
 %type <str> using_clause
@@ -1005,6 +1030,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> opt_lock
 %type <str> lock_type
 %type <str> opt_nowait
+%type <str> opt_nowait_or_skip
 %type <str> UpdateStmt
 %type <str> set_clause_list
 %type <str> set_clause
@@ -1028,8 +1054,9 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> into_clause
 %type <str> OptTempTableName
 %type <str> opt_table
-%type <str> opt_all
-%type <str> opt_distinct
+%type <str> all_or_distinct
+%type <str> distinct_clause
+%type <str> opt_all_clause
 %type <str> opt_sort_clause
 %type <str> sort_clause
 %type <str> sortby_list
@@ -1045,6 +1072,12 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> row_or_rows
 %type <str> first_or_next
 %type <str> group_clause
+%type <str> group_by_list
+%type <str> group_by_item
+%type <str> empty_grouping_set
+%type <str> rollup_clause
+%type <str> cube_clause
+%type <str> grouping_sets_clause
 %type <str> having_clause
 %type <str> for_locking_clause
 %type <str> opt_for_locking_clause
@@ -1066,6 +1099,8 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> relation_expr
 %type <str> relation_expr_list
 %type <str> relation_expr_opt_alias
+%type <str> tablesample_clause
+%type <str> opt_repeatable_clause
 %type <str> func_table
 %type <str> rowsfrom_item
 %type <str> rowsfrom_list
@@ -1128,6 +1163,8 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> frame_extent
 %type <str> frame_bound
 %type <str> row
+%type <str> explicit_row
+%type <str> implicit_row
 %type <str> sub_type
 %type <str> all_Op
 %type <str> MathOp
@@ -1178,9 +1215,10 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> func_name
 %type <str> AexprConst
 %type <str> Iconst
-%type <str> RoleId
-%type <str> role_list
 %type <str> SignedIconst
+%type <str> RoleId
+%type <str> RoleSpec
+%type <str> role_list
 %type <str> NonReservedWord
 %type <str> unreserved_keyword
 %type <str> col_name_keyword
@@ -1335,7 +1373,8 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 /* orig_tokens */
  %token IDENT FCONST SCONST BCONST XCONST Op
  %token ICONST PARAM
- %token TYPECAST DOT_DOT COLON_EQUALS
+ %token TYPECAST DOT_DOT COLON_EQUALS EQUALS_GREATER
+ %token LESS_EQUALS GREATER_EQUALS NOT_EQUALS
 
 
 
@@ -1355,9 +1394,9 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
  CACHE CALLED CASCADE CASCADED CASE CAST CATALOG_P CHAIN CHAR_P
  CHARACTER CHARACTERISTICS CHECK CHECKPOINT CLASS CLOSE
  CLUSTER COALESCE COLLATE COLLATION COLUMN COMMENT COMMENTS COMMIT
- COMMITTED CONCURRENTLY CONFIGURATION CONNECTION CONSTRAINT CONSTRAINTS
- CONTENT_P CONTINUE_P CONVERSION_P COPY COST CREATE
- CROSS CSV CURRENT_P
+ COMMITTED CONCURRENTLY CONFIGURATION CONFLICT CONNECTION CONSTRAINT
+ CONSTRAINTS CONTENT_P CONTINUE_P CONVERSION_P COPY COST CREATE
+ CROSS CSV CUBE CURRENT_P
  CURRENT_CATALOG CURRENT_DATE CURRENT_ROLE CURRENT_SCHEMA
  CURRENT_TIME CURRENT_TIMESTAMP CURRENT_USER CURSOR CYCLE
 
@@ -1372,11 +1411,11 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
  FALSE_P FAMILY FETCH FILTER FIRST_P FLOAT_P FOLLOWING FOR
  FORCE FOREIGN FORWARD FREEZE FROM FULL FUNCTION FUNCTIONS
 
- GLOBAL GRANT GRANTED GREATEST GROUP_P
+ GLOBAL GRANT GRANTED GREATEST GROUP_P GROUPING
 
  HANDLER HAVING HEADER_P HOLD HOUR_P
 
- IDENTITY_P IF_P ILIKE IMMEDIATE IMMUTABLE IMPLICIT_P IN_P
+ IDENTITY_P IF_P ILIKE IMMEDIATE IMMUTABLE IMPLICIT_P IMPORT_P IN_P
  INCLUDING INCREMENT INDEX INDEXES INHERIT INHERITS INITIALLY INLINE_P
  INNER_P INOUT INPUT_P INSENSITIVE INSERT INSTEAD INT_P INTEGER
  INTERSECT INTERVAL INTO INVOKER IS ISNULL ISOLATION
@@ -1385,9 +1424,9 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 
  KEY
 
- LABEL LANGUAGE LARGE_P LAST_P LATERAL_P LC_COLLATE_P LC_CTYPE_P
+ LABEL LANGUAGE LARGE_P LAST_P LATERAL_P
  LEADING LEAKPROOF LEAST LEFT LEVEL LIKE LIMIT LISTEN LOAD LOCAL
- LOCALTIME LOCALTIMESTAMP LOCATION LOCK_P
+ LOCALTIME LOCALTIMESTAMP LOCATION LOCK_P LOCKED LOGGED
 
  MAPPING MATCH MATERIALIZED MAXVALUE MINUTE_P MINVALUE MODE MONTH_P MOVE
 
@@ -1398,7 +1437,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
  OBJECT_P OF OFF OFFSET OIDS ON ONLY OPERATOR OPTION OPTIONS OR
  ORDER ORDINALITY OUT_P OUTER_P OVER OVERLAPS OVERLAY OWNED OWNER
 
- PARSER PARTIAL PARTITION PASSING PASSWORD PLACING PLANS POSITION
+ PARSER PARTIAL PARTITION PASSING PASSWORD PLACING PLANS POLICY POSITION
  PRECEDING PRECISION PRESERVE PREPARE PREPARED PRIMARY
  PRIOR PRIVILEGES PROCEDURAL PROCEDURE PROGRAM
 
@@ -1406,17 +1445,17 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 
  RANGE READ REAL REASSIGN RECHECK RECURSIVE REF REFERENCES REFRESH REINDEX
  RELATIVE_P RELEASE RENAME REPEATABLE REPLACE REPLICA
- RESET RESTART RESTRICT RETURNING RETURNS REVOKE RIGHT ROLE ROLLBACK
+ RESET RESTART RESTRICT RETURNING RETURNS REVOKE RIGHT ROLE ROLLBACK ROLLUP
  ROW ROWS RULE
 
  SAVEPOINT SCHEMA SCROLL SEARCH SECOND_P SECURITY SELECT SEQUENCE SEQUENCES
- SERIALIZABLE SERVER SESSION SESSION_USER SET SETOF SHARE
- SHOW SIMILAR SIMPLE SMALLINT SNAPSHOT SOME STABLE STANDALONE_P START
+ SERIALIZABLE SERVER SESSION SESSION_USER SET SETS SETOF SHARE SHOW
+ SIMILAR SIMPLE SKIP SMALLINT SNAPSHOT SOME SQL_P STABLE STANDALONE_P START
  STATEMENT STATISTICS STDIN STDOUT STORAGE STRICT_P STRIP_P SUBSTRING
  SYMMETRIC SYSID SYSTEM_P
 
- TABLE TABLES TABLESPACE TEMP TEMPLATE TEMPORARY TEXT_P THEN TIME TIMESTAMP
- TO TRAILING TRANSACTION TREAT TRIGGER TRIM TRUE_P
+ TABLE TABLES TABLESAMPLE TABLESPACE TEMP TEMPLATE TEMPORARY TEXT_P THEN
+ TIME TIMESTAMP TO TRAILING TRANSACTION TRANSFORM TREAT TRIGGER TRIM TRUE_P
  TRUNCATE TRUSTED TYPE_P TYPES_P
 
  UNBOUNDED UNCOMMITTED UNENCRYPTED UNION UNIQUE UNKNOWN UNLISTEN UNLOGGED
@@ -1439,7 +1478,12 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 
 
 
- %token NULLS_FIRST NULLS_LAST WITH_ORDINALITY WITH_TIME
+
+
+
+
+
+ %token NOT_LA NULLS_LA WITH_LA
 
 
 
@@ -1449,14 +1493,16 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
  %left OR
  %left AND
  %right NOT
- %right '='
- %nonassoc '<' '>'
- %nonassoc LIKE ILIKE SIMILAR
+ %nonassoc IS ISNULL NOTNULL
+ %nonassoc '<' '>' '=' LESS_EQUALS GREATER_EQUALS NOT_EQUALS
+ %nonassoc BETWEEN IN_P LIKE ILIKE SIMILAR NOT_LA
  %nonassoc ESCAPE
- %nonassoc OVERLAPS
- %nonassoc BETWEEN
- %nonassoc IN_P
  %left POSTFIXOP
+
+
+
+
+
 
 
 
@@ -1480,11 +1526,8 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
  %nonassoc UNBOUNDED
  %nonassoc IDENT
 %nonassoc CSTRING
-%nonassoc UIDENT NULL_P PARTITION RANGE ROWS PRECEDING FOLLOWING
+%nonassoc UIDENT NULL_P PARTITION RANGE ROWS PRECEDING FOLLOWING CUBE ROLLUP
  %left Op OPERATOR
- %nonassoc NOTNULL
- %nonassoc ISNULL
- %nonassoc IS
  %left '+' '-'
  %left '*' '/' '%'
  %left '^'
@@ -1540,6 +1583,8 @@ prog: statements;
 |  AlterObjectSchemaStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  AlterOwnerStmt
+ { output_statement($1, 0, ECPGst_normal); }
+|  AlterPolicyStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  AlterSeqStmt
  { output_statement($1, 0, ECPGst_normal); }
@@ -1625,6 +1670,8 @@ prog: statements;
  { output_statement($1, 0, ECPGst_normal); }
 |  AlterOpFamilyStmt
  { output_statement($1, 0, ECPGst_normal); }
+|  CreatePolicyStmt
+ { output_statement($1, 0, ECPGst_normal); }
 |  CreatePLangStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  CreateSchemaStmt
@@ -1634,6 +1681,8 @@ prog: statements;
 |  CreateStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  CreateTableSpaceStmt
+ { output_statement($1, 0, ECPGst_normal); }
+|  CreateTransformStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  CreateTrigStmt
  { output_statement($1, 0, ECPGst_normal); }
@@ -1677,6 +1726,8 @@ prog: statements;
  { output_statement($1, 0, ECPGst_normal); }
 |  DropOwnedStmt
  { output_statement($1, 0, ECPGst_normal); }
+|  DropPolicyStmt
+ { output_statement($1, 0, ECPGst_normal); }
 |  DropPLangStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  DropRuleStmt
@@ -1684,6 +1735,8 @@ prog: statements;
 |  DropStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  DropTableSpaceStmt
+ { output_statement($1, 0, ECPGst_normal); }
+|  DropTransformStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  DropTrigStmt
  { output_statement($1, 0, ECPGst_normal); }
@@ -1704,6 +1757,8 @@ prog: statements;
 |  GrantStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  GrantRoleStmt
+ { output_statement($1, 0, ECPGst_normal); }
+|  ImportForeignSchemaStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  IndexStmt
  { output_statement($1, 0, ECPGst_normal); }
@@ -1928,6 +1983,10 @@ prog: statements;
  { 
  $$ = mm_strdup("with");
 }
+|  WITH_LA
+ { 
+ $$ = mm_strdup("with");
+}
 | 
  { 
  $$=EMPTY; }
@@ -2033,7 +2092,7 @@ prog: statements;
 
 
  AlterRoleStmt:
- ALTER ROLE RoleId opt_with AlterOptRoleList
+ ALTER ROLE RoleSpec opt_with AlterOptRoleList
  { 
  $$ = cat_str(4,mm_strdup("alter role"),$3,$4,$5);
 }
@@ -2052,7 +2111,7 @@ prog: statements;
 
 
  AlterRoleSetStmt:
- ALTER ROLE RoleId opt_in_database SetResetClause
+ ALTER ROLE RoleSpec opt_in_database SetResetClause
  { 
  $$ = cat_str(4,mm_strdup("alter role"),$3,$4,$5);
 }
@@ -2064,7 +2123,7 @@ prog: statements;
 
 
  AlterUserStmt:
- ALTER USER RoleId opt_with AlterOptRoleList
+ ALTER USER RoleSpec opt_with AlterOptRoleList
  { 
  $$ = cat_str(4,mm_strdup("alter user"),$3,$4,$5);
 }
@@ -2072,7 +2131,7 @@ prog: statements;
 
 
  AlterUserSetStmt:
- ALTER USER RoleId SetResetClause
+ ALTER USER RoleSpec SetResetClause
  { 
  $$ = cat_str(3,mm_strdup("alter user"),$3,$4);
 }
@@ -2112,7 +2171,7 @@ prog: statements;
 
 
  AlterGroupStmt:
- ALTER GROUP_P RoleId add_drop USER role_list
+ ALTER GROUP_P RoleSpec add_drop USER role_list
  { 
  $$ = cat_str(5,mm_strdup("alter group"),$3,$4,mm_strdup("user"),$6);
 }
@@ -2144,7 +2203,7 @@ prog: statements;
 
 
  CreateSchemaStmt:
- CREATE SCHEMA OptSchemaName AUTHORIZATION RoleId OptSchemaEltList
+ CREATE SCHEMA OptSchemaName AUTHORIZATION RoleSpec OptSchemaEltList
  { 
  $$ = cat_str(5,mm_strdup("create schema"),$3,mm_strdup("authorization"),$5,$6);
 }
@@ -2152,7 +2211,7 @@ prog: statements;
  { 
  $$ = cat_str(3,mm_strdup("create schema"),$3,$4);
 }
-|  CREATE SCHEMA IF_P NOT EXISTS OptSchemaName AUTHORIZATION RoleId OptSchemaEltList
+|  CREATE SCHEMA IF_P NOT EXISTS OptSchemaName AUTHORIZATION RoleSpec OptSchemaEltList
  { 
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  $$ = cat_str(5,mm_strdup("create schema if not exists"),$6,mm_strdup("authorization"),$8,$9);
@@ -2404,9 +2463,9 @@ ECPGColId
  { 
  $$ = cat_str(3,$1,$2,$3);
 }
-|  ConstInterval '(' Iconst ')' ecpg_sconst opt_interval
+|  ConstInterval '(' Iconst ')' ecpg_sconst
  { 
- $$ = cat_str(6,$1,mm_strdup("("),$3,mm_strdup(")"),$5,$6);
+ $$ = cat_str(5,$1,mm_strdup("("),$3,mm_strdup(")"),$5);
 }
 |  NumericOnly
  { 
@@ -2772,6 +2831,14 @@ SHOW var_name ecpg_into
  { 
  $$ = mm_strdup("set without cluster");
 }
+|  SET LOGGED
+ { 
+ $$ = mm_strdup("set logged");
+}
+|  SET UNLOGGED
+ { 
+ $$ = mm_strdup("set unlogged");
+}
 |  ENABLE_P TRIGGER name
  { 
  $$ = cat_str(2,mm_strdup("enable trigger"),$3);
@@ -2836,7 +2903,7 @@ SHOW var_name ecpg_into
  { 
  $$ = mm_strdup("not of");
 }
-|  OWNER TO RoleId
+|  OWNER TO RoleSpec
  { 
  $$ = cat_str(2,mm_strdup("owner to"),$3);
 }
@@ -2855,6 +2922,22 @@ SHOW var_name ecpg_into
 |  REPLICA IDENTITY_P replica_identity
  { 
  $$ = cat_str(2,mm_strdup("replica identity"),$3);
+}
+|  ENABLE_P ROW LEVEL SECURITY
+ { 
+ $$ = mm_strdup("enable row level security");
+}
+|  DISABLE_P ROW LEVEL SECURITY
+ { 
+ $$ = mm_strdup("disable row level security");
+}
+|  FORCE ROW LEVEL SECURITY
+ { 
+ $$ = mm_strdup("force row level security");
+}
+|  NO FORCE ROW LEVEL SECURITY
+ { 
+ $$ = mm_strdup("no force row level security");
 }
 |  alter_generic_options
  { 
@@ -3871,6 +3954,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(7,mm_strdup("create"),$2,mm_strdup("materialized view"),$5,mm_strdup("as"),$7,$8);
 }
+|  CREATE OptNoLog MATERIALIZED VIEW IF_P NOT EXISTS create_mv_target AS SelectStmt opt_with_data
+ { 
+ $$ = cat_str(7,mm_strdup("create"),$2,mm_strdup("materialized view if not exists"),$8,mm_strdup("as"),$10,$11);
+}
 ;
 
 
@@ -3905,6 +3992,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  CREATE OptTemp SEQUENCE qualified_name OptSeqOptList
  { 
  $$ = cat_str(5,mm_strdup("create"),$2,mm_strdup("sequence"),$4,$5);
+}
+|  CREATE OptTemp SEQUENCE IF_P NOT EXISTS qualified_name OptSeqOptList
+ { 
+ $$ = cat_str(5,mm_strdup("create"),$2,mm_strdup("sequence if not exists"),$7,$8);
 }
 ;
 
@@ -4136,7 +4227,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  OptTableSpaceOwner:
- OWNER name
+ OWNER RoleSpec
  { 
  $$ = cat_str(2,mm_strdup("owner"),$2);
 }
@@ -4241,7 +4332,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(5,mm_strdup("alter extension"),$3,$4,mm_strdup("conversion"),$6);
 }
-|  ALTER EXTENSION name add_drop DOMAIN_P any_name
+|  ALTER EXTENSION name add_drop DOMAIN_P Typename
  { 
  $$ = cat_str(5,mm_strdup("alter extension"),$3,$4,mm_strdup("domain"),$6);
 }
@@ -4317,7 +4408,11 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(5,mm_strdup("alter extension"),$3,$4,mm_strdup("server"),$6);
 }
-|  ALTER EXTENSION name add_drop TYPE_P any_name
+|  ALTER EXTENSION name add_drop TRANSFORM FOR Typename LANGUAGE name
+ { 
+ $$ = cat_str(7,mm_strdup("alter extension"),$3,$4,mm_strdup("transform for"),$7,mm_strdup("language"),$9);
+}
+|  ALTER EXTENSION name add_drop TYPE_P Typename
  { 
  $$ = cat_str(5,mm_strdup("alter extension"),$3,$4,mm_strdup("type"),$6);
 }
@@ -4557,13 +4652,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  CreateForeignTableStmt:
- CREATE FOREIGN TABLE qualified_name '(' OptTableElementList ')' SERVER name create_generic_options
+ CREATE FOREIGN TABLE qualified_name '(' OptTableElementList ')' OptInherit SERVER name create_generic_options
  { 
- $$ = cat_str(7,mm_strdup("create foreign table"),$4,mm_strdup("("),$6,mm_strdup(") server"),$9,$10);
+ $$ = cat_str(9,mm_strdup("create foreign table"),$4,mm_strdup("("),$6,mm_strdup(")"),$8,mm_strdup("server"),$10,$11);
 }
-|  CREATE FOREIGN TABLE IF_P NOT EXISTS qualified_name '(' OptTableElementList ')' SERVER name create_generic_options
+|  CREATE FOREIGN TABLE IF_P NOT EXISTS qualified_name '(' OptTableElementList ')' OptInherit SERVER name create_generic_options
  { 
- $$ = cat_str(7,mm_strdup("create foreign table if not exists"),$7,mm_strdup("("),$9,mm_strdup(") server"),$12,$13);
+ $$ = cat_str(9,mm_strdup("create foreign table if not exists"),$7,mm_strdup("("),$9,mm_strdup(")"),$11,mm_strdup("server"),$13,$14);
 }
 ;
 
@@ -4580,6 +4675,37 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 ;
 
 
+ ImportForeignSchemaStmt:
+ IMPORT_P FOREIGN SCHEMA name import_qualification FROM SERVER name INTO name create_generic_options
+ { 
+ $$ = cat_str(8,mm_strdup("import foreign schema"),$4,$5,mm_strdup("from server"),$8,mm_strdup("into"),$10,$11);
+}
+;
+
+
+ import_qualification_type:
+ LIMIT TO
+ { 
+ $$ = mm_strdup("limit to");
+}
+|  EXCEPT
+ { 
+ $$ = mm_strdup("except");
+}
+;
+
+
+ import_qualification:
+ import_qualification_type '(' relation_expr_list ')'
+ { 
+ $$ = cat_str(4,$1,mm_strdup("("),$3,mm_strdup(")"));
+}
+| 
+ { 
+ $$=EMPTY; }
+;
+
+
  CreateUserMappingStmt:
  CREATE USER MAPPING FOR auth_ident SERVER name create_generic_options
  { 
@@ -4589,17 +4715,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  auth_ident:
- CURRENT_USER
+ RoleSpec
  { 
- $$ = mm_strdup("current_user");
+ $$ = $1;
 }
 |  USER
  { 
  $$ = mm_strdup("user");
-}
-|  RoleId
- { 
- $$ = $1;
 }
 ;
 
@@ -4620,6 +4742,113 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  ALTER USER MAPPING FOR auth_ident SERVER name alter_generic_options
  { 
  $$ = cat_str(5,mm_strdup("alter user mapping for"),$5,mm_strdup("server"),$7,$8);
+}
+;
+
+
+ CreatePolicyStmt:
+ CREATE POLICY name ON qualified_name RowSecurityDefaultForCmd RowSecurityDefaultToRole RowSecurityOptionalExpr RowSecurityOptionalWithCheck
+ { 
+ $$ = cat_str(8,mm_strdup("create policy"),$3,mm_strdup("on"),$5,$6,$7,$8,$9);
+}
+;
+
+
+ AlterPolicyStmt:
+ ALTER POLICY name ON qualified_name RowSecurityOptionalToRole RowSecurityOptionalExpr RowSecurityOptionalWithCheck
+ { 
+ $$ = cat_str(7,mm_strdup("alter policy"),$3,mm_strdup("on"),$5,$6,$7,$8);
+}
+;
+
+
+ DropPolicyStmt:
+ DROP POLICY name ON any_name opt_drop_behavior
+ { 
+ $$ = cat_str(5,mm_strdup("drop policy"),$3,mm_strdup("on"),$5,$6);
+}
+|  DROP POLICY IF_P EXISTS name ON any_name opt_drop_behavior
+ { 
+ $$ = cat_str(5,mm_strdup("drop policy if exists"),$5,mm_strdup("on"),$7,$8);
+}
+;
+
+
+ RowSecurityOptionalExpr:
+ USING '(' a_expr ')'
+ { 
+ $$ = cat_str(3,mm_strdup("using ("),$3,mm_strdup(")"));
+}
+| 
+ { 
+ $$=EMPTY; }
+;
+
+
+ RowSecurityOptionalWithCheck:
+ WITH CHECK '(' a_expr ')'
+ { 
+ $$ = cat_str(3,mm_strdup("with check ("),$4,mm_strdup(")"));
+}
+| 
+ { 
+ $$=EMPTY; }
+;
+
+
+ RowSecurityDefaultToRole:
+ TO role_list
+ { 
+ $$ = cat_str(2,mm_strdup("to"),$2);
+}
+| 
+ { 
+ $$=EMPTY; }
+;
+
+
+ RowSecurityOptionalToRole:
+ TO role_list
+ { 
+ $$ = cat_str(2,mm_strdup("to"),$2);
+}
+| 
+ { 
+ $$=EMPTY; }
+;
+
+
+ RowSecurityDefaultForCmd:
+ FOR row_security_cmd
+ { 
+ $$ = cat_str(2,mm_strdup("for"),$2);
+}
+| 
+ { 
+ $$=EMPTY; }
+;
+
+
+ row_security_cmd:
+ ALL
+ { 
+ $$ = mm_strdup("all");
+}
+|  SELECT
+ { 
+ $$ = mm_strdup("select");
+}
+|  INSERT
+ { 
+ $$ = mm_strdup("insert");
+}
+|  UPDATE
+ { 
+ $$ = mm_strdup("update");
+}
+|  DELETE_P
+ { 
+ $$ = mm_strdup("delete");
 }
 ;
 
@@ -5284,7 +5513,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  ReassignOwnedStmt:
- REASSIGN OWNED BY role_list TO name
+ REASSIGN OWNED BY role_list TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("reassign owned by"),$4,mm_strdup("to"),$6);
 }
@@ -5299,6 +5528,22 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  DROP drop_type any_name_list opt_drop_behavior
  { 
  $$ = cat_str(4,mm_strdup("drop"),$2,$3,$4);
+}
+|  DROP TYPE_P type_name_list opt_drop_behavior
+ { 
+ $$ = cat_str(3,mm_strdup("drop type"),$3,$4);
+}
+|  DROP TYPE_P IF_P EXISTS type_name_list opt_drop_behavior
+ { 
+ $$ = cat_str(3,mm_strdup("drop type if exists"),$5,$6);
+}
+|  DROP DOMAIN_P type_name_list opt_drop_behavior
+ { 
+ $$ = cat_str(3,mm_strdup("drop domain"),$3,$4);
+}
+|  DROP DOMAIN_P IF_P EXISTS type_name_list opt_drop_behavior
+ { 
+ $$ = cat_str(3,mm_strdup("drop domain if exists"),$5,$6);
 }
 |  DROP INDEX CONCURRENTLY any_name_list opt_drop_behavior
  { 
@@ -5339,14 +5584,6 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  EVENT TRIGGER
  { 
  $$ = mm_strdup("event trigger");
-}
-|  TYPE_P
- { 
- $$ = mm_strdup("type");
-}
-|  DOMAIN_P
- { 
- $$ = mm_strdup("domain");
 }
 |  COLLATION
  { 
@@ -5419,7 +5656,12 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 ;
 
 
- TruncateStmt:
+ type_name_list:
+ Typename
+ { 
+ $$ = $1;
+}
+|  type_name_list ',' Typename TruncateStmt:
  TRUNCATE opt_table relation_expr_list opt_restart_seqs opt_drop_behavior
  { 
  $$ = cat_str(5,mm_strdup("truncate"),$2,$3,$4,$5);
@@ -5447,6 +5689,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(5,mm_strdup("comment on"),$3,$4,mm_strdup("is"),$6);
 }
+|  COMMENT ON TYPE_P Typename IS comment_text
+ { 
+ $$ = cat_str(4,mm_strdup("comment on type"),$4,mm_strdup("is"),$6);
+}
+|  COMMENT ON DOMAIN_P Typename IS comment_text
+ { 
+ $$ = cat_str(4,mm_strdup("comment on domain"),$4,mm_strdup("is"),$6);
+}
 |  COMMENT ON AGGREGATE func_name aggr_args IS comment_text
  { 
  $$ = cat_str(5,mm_strdup("comment on aggregate"),$4,$5,mm_strdup("is"),$7);
@@ -5463,6 +5713,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(6,mm_strdup("comment on constraint"),$4,mm_strdup("on"),$6,mm_strdup("is"),$8);
 }
+|  COMMENT ON CONSTRAINT name ON DOMAIN_P any_name IS comment_text
+ { 
+ $$ = cat_str(6,mm_strdup("comment on constraint"),$4,mm_strdup("on domain"),$7,mm_strdup("is"),$9);
+}
+|  COMMENT ON POLICY name ON any_name IS comment_text
+ { 
+ $$ = cat_str(6,mm_strdup("comment on policy"),$4,mm_strdup("on"),$6,mm_strdup("is"),$8);
+}
 |  COMMENT ON RULE name ON any_name IS comment_text
  { 
  $$ = cat_str(6,mm_strdup("comment on rule"),$4,mm_strdup("on"),$6,mm_strdup("is"),$8);
@@ -5470,6 +5728,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  COMMENT ON RULE name IS comment_text
  { 
  $$ = cat_str(4,mm_strdup("comment on rule"),$4,mm_strdup("is"),$6);
+}
+|  COMMENT ON TRANSFORM FOR Typename LANGUAGE name IS comment_text
+ { 
+ $$ = cat_str(6,mm_strdup("comment on transform for"),$5,mm_strdup("language"),$7,mm_strdup("is"),$9);
 }
 |  COMMENT ON TRIGGER name ON any_name IS comment_text
  { 
@@ -5522,14 +5784,6 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  TABLE
  { 
  $$ = mm_strdup("table");
-}
-|  DOMAIN_P
- { 
- $$ = mm_strdup("domain");
-}
-|  TYPE_P
- { 
- $$ = mm_strdup("type");
 }
 |  VIEW
  { 
@@ -5611,6 +5865,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(7,mm_strdup("security label"),$3,mm_strdup("on"),$5,$6,mm_strdup("is"),$8);
 }
+|  SECURITY LABEL opt_provider ON TYPE_P Typename IS security_label
+ { 
+ $$ = cat_str(6,mm_strdup("security label"),$3,mm_strdup("on type"),$6,mm_strdup("is"),$8);
+}
+|  SECURITY LABEL opt_provider ON DOMAIN_P Typename IS security_label
+ { 
+ $$ = cat_str(6,mm_strdup("security label"),$3,mm_strdup("on domain"),$6,mm_strdup("is"),$8);
+}
 |  SECURITY LABEL opt_provider ON AGGREGATE func_name aggr_args IS security_label
  { 
  $$ = cat_str(7,mm_strdup("security label"),$3,mm_strdup("on aggregate"),$6,$7,mm_strdup("is"),$9);
@@ -5670,10 +5932,6 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("table");
 }
-|  DOMAIN_P
- { 
- $$ = mm_strdup("domain");
-}
 |  ROLE
  { 
  $$ = mm_strdup("role");
@@ -5681,10 +5939,6 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  TABLESPACE
  { 
  $$ = mm_strdup("tablespace");
-}
-|  TYPE_P
- { 
- $$ = mm_strdup("type");
 }
 |  VIEW
  { 
@@ -6136,11 +6390,11 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  grantee:
- RoleId
+ RoleSpec
  { 
  $$ = $1;
 }
-|  GROUP_P RoleId
+|  GROUP_P RoleSpec
  { 
  $$ = cat_str(2,mm_strdup("group"),$2);
 }
@@ -6210,7 +6464,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  opt_granted_by:
- GRANTED BY RoleId
+ GRANTED BY RoleSpec
  { 
  $$ = cat_str(2,mm_strdup("granted by"),$3);
 }
@@ -6295,6 +6549,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  CREATE opt_unique INDEX opt_concurrently opt_index_name ON qualified_name access_method_clause '(' index_params ')' opt_reloptions OptTableSpace where_clause
  { 
  $$ = cat_str(14,mm_strdup("create"),$2,mm_strdup("index"),$4,$5,mm_strdup("on"),$7,$8,mm_strdup("("),$10,mm_strdup(")"),$12,$13,$14);
+}
+|  CREATE opt_unique INDEX opt_concurrently IF_P NOT EXISTS index_name ON qualified_name access_method_clause '(' index_params ')' opt_reloptions OptTableSpace where_clause
+ { 
+ $$ = cat_str(15,mm_strdup("create"),$2,mm_strdup("index"),$4,mm_strdup("if not exists"),$8,mm_strdup("on"),$10,$11,mm_strdup("("),$13,mm_strdup(")"),$15,$16,$17);
 }
 ;
 
@@ -6413,11 +6671,11 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  opt_nulls_order:
- NULLS_FIRST
+ NULLS_LA FIRST_P
  { 
  $$ = mm_strdup("nulls first");
 }
-|  NULLS_LAST
+|  NULLS_LA LAST_P
  { 
  $$ = mm_strdup("nulls last");
 }
@@ -6724,6 +6982,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(2,mm_strdup("language"),$2);
 }
+|  TRANSFORM transform_type_list
+ { 
+ $$ = cat_str(2,mm_strdup("transform"),$2);
+}
 |  WINDOW
  { 
  $$ = mm_strdup("window");
@@ -6743,6 +7005,18 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  ecpg_sconst ',' ecpg_sconst
  { 
  $$ = cat_str(3,$1,mm_strdup(","),$3);
+}
+;
+
+
+ transform_type_list:
+ FOR TYPE_P Typename
+ { 
+ $$ = cat_str(2,mm_strdup("for type"),$3);
+}
+|  transform_type_list ',' FOR TYPE_P Typename
+ { 
+ $$ = cat_str(3,$1,mm_strdup(", for type"),$5);
 }
 ;
 
@@ -6959,23 +7233,63 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 ;
 
 
- ReindexStmt:
- REINDEX reindex_type qualified_name opt_force
+ CreateTransformStmt:
+ CREATE opt_or_replace TRANSFORM FOR Typename LANGUAGE name '(' transform_element_list ')'
  { 
- $$ = cat_str(4,mm_strdup("reindex"),$2,$3,$4);
-}
-|  REINDEX SYSTEM_P name opt_force
- { 
- $$ = cat_str(3,mm_strdup("reindex system"),$3,$4);
-}
-|  REINDEX DATABASE name opt_force
- { 
- $$ = cat_str(3,mm_strdup("reindex database"),$3,$4);
+ $$ = cat_str(9,mm_strdup("create"),$2,mm_strdup("transform for"),$5,mm_strdup("language"),$7,mm_strdup("("),$9,mm_strdup(")"));
 }
 ;
 
 
- reindex_type:
+ transform_element_list:
+ FROM SQL_P WITH FUNCTION function_with_argtypes ',' TO SQL_P WITH FUNCTION function_with_argtypes
+ { 
+ $$ = cat_str(4,mm_strdup("from sql with function"),$5,mm_strdup(", to sql with function"),$11);
+}
+|  TO SQL_P WITH FUNCTION function_with_argtypes ',' FROM SQL_P WITH FUNCTION function_with_argtypes
+ { 
+ $$ = cat_str(4,mm_strdup("to sql with function"),$5,mm_strdup(", from sql with function"),$11);
+}
+|  FROM SQL_P WITH FUNCTION function_with_argtypes
+ { 
+ $$ = cat_str(2,mm_strdup("from sql with function"),$5);
+}
+|  TO SQL_P WITH FUNCTION function_with_argtypes
+ { 
+ $$ = cat_str(2,mm_strdup("to sql with function"),$5);
+}
+;
+
+
+ DropTransformStmt:
+ DROP TRANSFORM opt_if_exists FOR Typename LANGUAGE name opt_drop_behavior
+ { 
+ $$ = cat_str(7,mm_strdup("drop transform"),$3,mm_strdup("for"),$5,mm_strdup("language"),$7,$8);
+}
+;
+
+
+ ReindexStmt:
+ REINDEX reindex_target_type qualified_name
+ { 
+ $$ = cat_str(3,mm_strdup("reindex"),$2,$3);
+}
+|  REINDEX reindex_target_multitable name
+ { 
+ $$ = cat_str(3,mm_strdup("reindex"),$2,$3);
+}
+|  REINDEX '(' reindex_option_list ')' reindex_target_type qualified_name
+ { 
+ $$ = cat_str(5,mm_strdup("reindex ("),$3,mm_strdup(")"),$5,$6);
+}
+|  REINDEX '(' reindex_option_list ')' reindex_target_multitable name
+ { 
+ $$ = cat_str(5,mm_strdup("reindex ("),$3,mm_strdup(")"),$5,$6);
+}
+;
+
+
+ reindex_target_type:
  INDEX
  { 
  $$ = mm_strdup("index");
@@ -6987,14 +7301,39 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 ;
 
 
- opt_force:
- FORCE
+ reindex_target_multitable:
+ SCHEMA
  { 
- $$ = mm_strdup("force");
+ $$ = mm_strdup("schema");
 }
-| 
+|  SYSTEM_P
  { 
- $$=EMPTY; }
+ $$ = mm_strdup("system");
+}
+|  DATABASE
+ { 
+ $$ = mm_strdup("database");
+}
+;
+
+
+ reindex_option_list:
+ reindex_option_elem
+ { 
+ $$ = $1;
+}
+|  reindex_option_list ',' reindex_option_elem
+ { 
+ $$ = cat_str(3,$1,mm_strdup(","),$3);
+}
+;
+
+
+ reindex_option_elem:
+ VERBOSE
+ { 
+ $$ = mm_strdup("verbose");
+}
 ;
 
 
@@ -7058,6 +7397,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  ALTER OPERATOR FAMILY any_name USING access_method RENAME TO name
  { 
  $$ = cat_str(6,mm_strdup("alter operator family"),$4,mm_strdup("using"),$6,mm_strdup("rename to"),$9);
+}
+|  ALTER POLICY name ON qualified_name RENAME TO name
+ { 
+ $$ = cat_str(6,mm_strdup("alter policy"),$3,mm_strdup("on"),$5,mm_strdup("rename to"),$8);
+}
+|  ALTER POLICY IF_P EXISTS name ON qualified_name RENAME TO name
+ { 
+ $$ = cat_str(6,mm_strdup("alter policy if exists"),$5,mm_strdup("on"),$7,mm_strdup("rename to"),$10);
 }
 |  ALTER SCHEMA name RENAME TO name
  { 
@@ -7134,6 +7481,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  ALTER TABLE relation_expr RENAME CONSTRAINT name TO name
  { 
  $$ = cat_str(6,mm_strdup("alter table"),$3,mm_strdup("rename constraint"),$6,mm_strdup("to"),$8);
+}
+|  ALTER TABLE IF_P EXISTS relation_expr RENAME CONSTRAINT name TO name
+ { 
+ $$ = cat_str(6,mm_strdup("alter table if exists"),$5,mm_strdup("rename constraint"),$8,mm_strdup("to"),$10);
 }
 |  ALTER FOREIGN TABLE relation_expr RENAME opt_column name TO name
  { 
@@ -7317,79 +7668,79 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  AlterOwnerStmt:
- ALTER AGGREGATE func_name aggr_args OWNER TO RoleId
+ ALTER AGGREGATE func_name aggr_args OWNER TO RoleSpec
  { 
  $$ = cat_str(5,mm_strdup("alter aggregate"),$3,$4,mm_strdup("owner to"),$7);
 }
-|  ALTER COLLATION any_name OWNER TO RoleId
+|  ALTER COLLATION any_name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter collation"),$3,mm_strdup("owner to"),$6);
 }
-|  ALTER CONVERSION_P any_name OWNER TO RoleId
+|  ALTER CONVERSION_P any_name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter conversion"),$3,mm_strdup("owner to"),$6);
 }
-|  ALTER DATABASE database_name OWNER TO RoleId
+|  ALTER DATABASE database_name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter database"),$3,mm_strdup("owner to"),$6);
 }
-|  ALTER DOMAIN_P any_name OWNER TO RoleId
+|  ALTER DOMAIN_P any_name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter domain"),$3,mm_strdup("owner to"),$6);
 }
-|  ALTER FUNCTION function_with_argtypes OWNER TO RoleId
+|  ALTER FUNCTION function_with_argtypes OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter function"),$3,mm_strdup("owner to"),$6);
 }
-|  ALTER opt_procedural LANGUAGE name OWNER TO RoleId
+|  ALTER opt_procedural LANGUAGE name OWNER TO RoleSpec
  { 
  $$ = cat_str(6,mm_strdup("alter"),$2,mm_strdup("language"),$4,mm_strdup("owner to"),$7);
 }
-|  ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleId
+|  ALTER LARGE_P OBJECT_P NumericOnly OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter large object"),$4,mm_strdup("owner to"),$7);
 }
-|  ALTER OPERATOR any_operator oper_argtypes OWNER TO RoleId
+|  ALTER OPERATOR any_operator oper_argtypes OWNER TO RoleSpec
  { 
  $$ = cat_str(5,mm_strdup("alter operator"),$3,$4,mm_strdup("owner to"),$7);
 }
-|  ALTER OPERATOR CLASS any_name USING access_method OWNER TO RoleId
+|  ALTER OPERATOR CLASS any_name USING access_method OWNER TO RoleSpec
  { 
  $$ = cat_str(6,mm_strdup("alter operator class"),$4,mm_strdup("using"),$6,mm_strdup("owner to"),$9);
 }
-|  ALTER OPERATOR FAMILY any_name USING access_method OWNER TO RoleId
+|  ALTER OPERATOR FAMILY any_name USING access_method OWNER TO RoleSpec
  { 
  $$ = cat_str(6,mm_strdup("alter operator family"),$4,mm_strdup("using"),$6,mm_strdup("owner to"),$9);
 }
-|  ALTER SCHEMA name OWNER TO RoleId
+|  ALTER SCHEMA name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter schema"),$3,mm_strdup("owner to"),$6);
 }
-|  ALTER TYPE_P any_name OWNER TO RoleId
+|  ALTER TYPE_P any_name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter type"),$3,mm_strdup("owner to"),$6);
 }
-|  ALTER TABLESPACE name OWNER TO RoleId
+|  ALTER TABLESPACE name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter tablespace"),$3,mm_strdup("owner to"),$6);
 }
-|  ALTER TEXT_P SEARCH DICTIONARY any_name OWNER TO RoleId
+|  ALTER TEXT_P SEARCH DICTIONARY any_name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter text search dictionary"),$5,mm_strdup("owner to"),$8);
 }
-|  ALTER TEXT_P SEARCH CONFIGURATION any_name OWNER TO RoleId
+|  ALTER TEXT_P SEARCH CONFIGURATION any_name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter text search configuration"),$5,mm_strdup("owner to"),$8);
 }
-|  ALTER FOREIGN DATA_P WRAPPER name OWNER TO RoleId
+|  ALTER FOREIGN DATA_P WRAPPER name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter foreign data wrapper"),$5,mm_strdup("owner to"),$8);
 }
-|  ALTER SERVER name OWNER TO RoleId
+|  ALTER SERVER name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter server"),$3,mm_strdup("owner to"),$6);
 }
-|  ALTER EVENT TRIGGER name OWNER TO RoleId
+|  ALTER EVENT TRIGGER name OWNER TO RoleSpec
  { 
  $$ = cat_str(4,mm_strdup("alter event trigger"),$4,mm_strdup("owner to"),$7);
 }
@@ -7737,9 +8088,9 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  createdb_opt_list:
- createdb_opt_list createdb_opt_item
+ createdb_opt_items
  { 
- $$ = cat_str(2,$1,$2);
+ $$ = $1;
 }
 | 
  { 
@@ -7747,70 +8098,62 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 ;
 
 
+ createdb_opt_items:
+ createdb_opt_item
+ { 
+ $$ = $1;
+}
+|  createdb_opt_items createdb_opt_item
+ { 
+ $$ = cat_str(2,$1,$2);
+}
+;
+
+
  createdb_opt_item:
- TABLESPACE opt_equal name
+ createdb_opt_name opt_equal SignedIconst
  { 
- $$ = cat_str(3,mm_strdup("tablespace"),$2,$3);
+ $$ = cat_str(3,$1,$2,$3);
 }
-|  TABLESPACE opt_equal DEFAULT
+|  createdb_opt_name opt_equal opt_boolean_or_string
  { 
- $$ = cat_str(3,mm_strdup("tablespace"),$2,mm_strdup("default"));
+ $$ = cat_str(3,$1,$2,$3);
 }
-|  LOCATION opt_equal ecpg_sconst
+|  createdb_opt_name opt_equal DEFAULT
  { 
- $$ = cat_str(3,mm_strdup("location"),$2,$3);
+ $$ = cat_str(3,$1,$2,mm_strdup("default"));
 }
-|  LOCATION opt_equal DEFAULT
+;
+
+
+ createdb_opt_name:
+ ecpg_ident
  { 
- $$ = cat_str(3,mm_strdup("location"),$2,mm_strdup("default"));
+ $$ = $1;
 }
-|  TEMPLATE opt_equal name
+|  CONNECTION LIMIT
  { 
- $$ = cat_str(3,mm_strdup("template"),$2,$3);
+ $$ = mm_strdup("connection limit");
 }
-|  TEMPLATE opt_equal DEFAULT
+|  ENCODING
  { 
- $$ = cat_str(3,mm_strdup("template"),$2,mm_strdup("default"));
+ $$ = mm_strdup("encoding");
 }
-|  ENCODING opt_equal ecpg_sconst
+|  LOCATION
  { 
- $$ = cat_str(3,mm_strdup("encoding"),$2,$3);
+ $$ = mm_strdup("location");
 }
-|  ENCODING opt_equal Iconst
+|  OWNER
  { 
- $$ = cat_str(3,mm_strdup("encoding"),$2,$3);
+ $$ = mm_strdup("owner");
 }
-|  ENCODING opt_equal DEFAULT
+|  TABLESPACE
  { 
- $$ = cat_str(3,mm_strdup("encoding"),$2,mm_strdup("default"));
+ $$ = mm_strdup("tablespace");
 }
-|  LC_COLLATE_P opt_equal ecpg_sconst
+|  TEMPLATE
  { 
- $$ = cat_str(3,mm_strdup("lc_collate"),$2,$3);
-}
-|  LC_COLLATE_P opt_equal DEFAULT
- { 
- $$ = cat_str(3,mm_strdup("lc_collate"),$2,mm_strdup("default"));
-}
-|  LC_CTYPE_P opt_equal ecpg_sconst
- { 
- $$ = cat_str(3,mm_strdup("lc_ctype"),$2,$3);
-}
-|  LC_CTYPE_P opt_equal DEFAULT
- { 
- $$ = cat_str(3,mm_strdup("lc_ctype"),$2,mm_strdup("default"));
-}
-|  CONNECTION LIMIT opt_equal SignedIconst
- { 
- $$ = cat_str(3,mm_strdup("connection limit"),$3,$4);
-}
-|  OWNER opt_equal name
- { 
- $$ = cat_str(3,mm_strdup("owner"),$2,$3);
-}
-|  OWNER opt_equal DEFAULT
- { 
- $$ = cat_str(3,mm_strdup("owner"),$2,mm_strdup("default"));
+ $$ = mm_strdup("template");
 }
 ;
 
@@ -7827,9 +8170,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  AlterDatabaseStmt:
- ALTER DATABASE database_name opt_with alterdb_opt_list
+ ALTER DATABASE database_name WITH createdb_opt_list
  { 
- $$ = cat_str(4,mm_strdup("alter database"),$3,$4,$5);
+ $$ = cat_str(4,mm_strdup("alter database"),$3,mm_strdup("with"),$5);
+}
+|  ALTER DATABASE database_name createdb_opt_list
+ { 
+ $$ = cat_str(3,mm_strdup("alter database"),$3,$4);
 }
 |  ALTER DATABASE database_name SET TABLESPACE name
  { 
@@ -7842,25 +8189,6 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  ALTER DATABASE database_name SetResetClause
  { 
  $$ = cat_str(3,mm_strdup("alter database"),$3,$4);
-}
-;
-
-
- alterdb_opt_list:
- alterdb_opt_list alterdb_opt_item
- { 
- $$ = cat_str(2,$1,$2);
-}
-| 
- { 
- $$=EMPTY; }
-;
-
-
- alterdb_opt_item:
- CONNECTION LIMIT opt_equal SignedIconst
- { 
- $$ = cat_str(3,mm_strdup("connection limit"),$3,$4);
 }
 ;
 
@@ -7949,21 +8277,21 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  AlterTSConfigurationStmt:
- ALTER TEXT_P SEARCH CONFIGURATION any_name ADD_P MAPPING FOR name_list WITH any_name_list
+ ALTER TEXT_P SEARCH CONFIGURATION any_name ADD_P MAPPING FOR name_list any_with any_name_list
  { 
- $$ = cat_str(6,mm_strdup("alter text search configuration"),$5,mm_strdup("add mapping for"),$9,mm_strdup("with"),$11);
+ $$ = cat_str(6,mm_strdup("alter text search configuration"),$5,mm_strdup("add mapping for"),$9,$10,$11);
 }
-|  ALTER TEXT_P SEARCH CONFIGURATION any_name ALTER MAPPING FOR name_list WITH any_name_list
+|  ALTER TEXT_P SEARCH CONFIGURATION any_name ALTER MAPPING FOR name_list any_with any_name_list
  { 
- $$ = cat_str(6,mm_strdup("alter text search configuration"),$5,mm_strdup("alter mapping for"),$9,mm_strdup("with"),$11);
+ $$ = cat_str(6,mm_strdup("alter text search configuration"),$5,mm_strdup("alter mapping for"),$9,$10,$11);
 }
-|  ALTER TEXT_P SEARCH CONFIGURATION any_name ALTER MAPPING REPLACE any_name WITH any_name
+|  ALTER TEXT_P SEARCH CONFIGURATION any_name ALTER MAPPING REPLACE any_name any_with any_name
  { 
- $$ = cat_str(6,mm_strdup("alter text search configuration"),$5,mm_strdup("alter mapping replace"),$9,mm_strdup("with"),$11);
+ $$ = cat_str(6,mm_strdup("alter text search configuration"),$5,mm_strdup("alter mapping replace"),$9,$10,$11);
 }
-|  ALTER TEXT_P SEARCH CONFIGURATION any_name ALTER MAPPING FOR name_list REPLACE any_name WITH any_name
+|  ALTER TEXT_P SEARCH CONFIGURATION any_name ALTER MAPPING FOR name_list REPLACE any_name any_with any_name
  { 
- $$ = cat_str(8,mm_strdup("alter text search configuration"),$5,mm_strdup("alter mapping for"),$9,mm_strdup("replace"),$11,mm_strdup("with"),$13);
+ $$ = cat_str(8,mm_strdup("alter text search configuration"),$5,mm_strdup("alter mapping for"),$9,mm_strdup("replace"),$11,$12,$13);
 }
 |  ALTER TEXT_P SEARCH CONFIGURATION any_name DROP MAPPING FOR name_list
  { 
@@ -7972,6 +8300,18 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  ALTER TEXT_P SEARCH CONFIGURATION any_name DROP MAPPING IF_P EXISTS FOR name_list
  { 
  $$ = cat_str(4,mm_strdup("alter text search configuration"),$5,mm_strdup("drop mapping if exists for"),$11);
+}
+;
+
+
+ any_with:
+ WITH
+ { 
+ $$ = mm_strdup("with");
+}
+|  WITH_LA
+ { 
+ $$ = mm_strdup("with");
 }
 ;
 
@@ -8311,9 +8651,21 @@ EXECUTE prepared_name execute_param_clause execute_rest
 
 
  InsertStmt:
- opt_with_clause INSERT INTO qualified_name insert_rest returning_clause
+ opt_with_clause INSERT INTO insert_target insert_rest opt_on_conflict returning_clause
  { 
- $$ = cat_str(5,$1,mm_strdup("insert into"),$4,$5,$6);
+ $$ = cat_str(6,$1,mm_strdup("insert into"),$4,$5,$6,$7);
+}
+;
+
+
+ insert_target:
+ qualified_name
+ { 
+ $$ = $1;
+}
+|  qualified_name AS ColId
+ { 
+ $$ = cat_str(3,$1,mm_strdup("as"),$3);
 }
 ;
 
@@ -8351,6 +8703,36 @@ EXECUTE prepared_name execute_param_clause execute_rest
  { 
  $$ = cat_str(2,$1,$2);
 }
+;
+
+
+ opt_on_conflict:
+ ON CONFLICT opt_conf_expr DO UPDATE SET set_clause_list where_clause
+ { 
+ $$ = cat_str(5,mm_strdup("on conflict"),$3,mm_strdup("do update set"),$7,$8);
+}
+|  ON CONFLICT opt_conf_expr DO NOTHING
+ { 
+ $$ = cat_str(3,mm_strdup("on conflict"),$3,mm_strdup("do nothing"));
+}
+| 
+ { 
+ $$=EMPTY; }
+;
+
+
+ opt_conf_expr:
+ '(' index_params ')' where_clause
+ { 
+ $$ = cat_str(4,mm_strdup("("),$2,mm_strdup(")"),$4);
+}
+|  ON CONSTRAINT name
+ { 
+ $$ = cat_str(2,mm_strdup("on constraint"),$3);
+}
+| 
+ { 
+ $$=EMPTY; }
 ;
 
 
@@ -8450,6 +8832,21 @@ RETURNING target_list ecpg_into
 ;
 
 
+ opt_nowait_or_skip:
+ NOWAIT
+ { 
+ $$ = mm_strdup("nowait");
+}
+|  SKIP LOCKED
+ { 
+ $$ = mm_strdup("skip locked");
+}
+| 
+ { 
+ $$=EMPTY; }
+;
+
+
  UpdateStmt:
  opt_with_clause UPDATE relation_expr_opt_alias SET set_clause_list from_clause where_or_current_clause returning_clause
  { 
@@ -8492,6 +8889,10 @@ RETURNING target_list ecpg_into
 
  multiple_set_clause:
  '(' set_target_list ')' '=' ctext_row
+ { 
+ $$ = cat_str(4,mm_strdup("("),$2,mm_strdup(") ="),$5);
+}
+|  '(' set_target_list ')' '=' select_with_parens
  { 
  $$ = cat_str(4,mm_strdup("("),$2,mm_strdup(") ="),$5);
 }
@@ -8702,7 +9103,11 @@ RETURNING target_list ecpg_into
 
 
  simple_select:
- SELECT opt_distinct opt_target_list into_clause from_clause where_clause group_clause having_clause window_clause
+ SELECT opt_all_clause opt_target_list into_clause from_clause where_clause group_clause having_clause window_clause
+ { 
+ $$ = cat_str(9,mm_strdup("select"),$2,$3,$4,$5,$6,$7,$8,$9);
+}
+|  SELECT distinct_clause target_list into_clause from_clause where_clause group_clause having_clause window_clause
  { 
  $$ = cat_str(9,mm_strdup("select"),$2,$3,$4,$5,$6,$7,$8,$9);
 }
@@ -8714,15 +9119,15 @@ RETURNING target_list ecpg_into
  { 
  $$ = cat_str(2,mm_strdup("table"),$2);
 }
-|  select_clause UNION opt_all select_clause
+|  select_clause UNION all_or_distinct select_clause
  { 
  $$ = cat_str(4,$1,mm_strdup("union"),$3,$4);
 }
-|  select_clause INTERSECT opt_all select_clause
+|  select_clause INTERSECT all_or_distinct select_clause
  { 
  $$ = cat_str(4,$1,mm_strdup("intersect"),$3,$4);
 }
-|  select_clause EXCEPT opt_all select_clause
+|  select_clause EXCEPT all_or_distinct select_clause
  { 
  $$ = cat_str(4,$1,mm_strdup("except"),$3,$4);
 }
@@ -8731,6 +9136,10 @@ RETURNING target_list ecpg_into
 
  with_clause:
  WITH cte_list
+ { 
+ $$ = cat_str(2,mm_strdup("with"),$2);
+}
+|  WITH_LA cte_list
  { 
  $$ = cat_str(2,mm_strdup("with"),$2);
 }
@@ -8836,7 +9245,7 @@ RETURNING target_list ecpg_into
 ;
 
 
- opt_all:
+ all_or_distinct:
  ALL
  { 
  $$ = mm_strdup("all");
@@ -8851,7 +9260,7 @@ RETURNING target_list ecpg_into
 ;
 
 
- opt_distinct:
+ distinct_clause:
  DISTINCT
  { 
  $$ = mm_strdup("distinct");
@@ -8860,7 +9269,11 @@ RETURNING target_list ecpg_into
  { 
  $$ = cat_str(3,mm_strdup("distinct on ("),$4,mm_strdup(")"));
 }
-|  ALL
+;
+
+
+ opt_all_clause:
+ ALL
  { 
  $$ = mm_strdup("all");
 }
@@ -9041,13 +9454,81 @@ RETURNING target_list ecpg_into
 
 
  group_clause:
- GROUP_P BY expr_list
+ GROUP_P BY group_by_list
  { 
  $$ = cat_str(2,mm_strdup("group by"),$3);
 }
 | 
  { 
  $$=EMPTY; }
+;
+
+
+ group_by_list:
+ group_by_item
+ { 
+ $$ = $1;
+}
+|  group_by_list ',' group_by_item
+ { 
+ $$ = cat_str(3,$1,mm_strdup(","),$3);
+}
+;
+
+
+ group_by_item:
+ a_expr
+ { 
+ $$ = $1;
+}
+|  empty_grouping_set
+ { 
+ $$ = $1;
+}
+|  cube_clause
+ { 
+ $$ = $1;
+}
+|  rollup_clause
+ { 
+ $$ = $1;
+}
+|  grouping_sets_clause
+ { 
+ $$ = $1;
+}
+;
+
+
+ empty_grouping_set:
+ '(' ')'
+ { 
+ $$ = mm_strdup("( )");
+}
+;
+
+
+ rollup_clause:
+ ROLLUP '(' expr_list ')'
+ { 
+ $$ = cat_str(3,mm_strdup("rollup ("),$3,mm_strdup(")"));
+}
+;
+
+
+ cube_clause:
+ CUBE '(' expr_list ')'
+ { 
+ $$ = cat_str(3,mm_strdup("cube ("),$3,mm_strdup(")"));
+}
+;
+
+
+ grouping_sets_clause:
+ GROUPING SETS '(' group_by_list ')'
+ { 
+ $$ = cat_str(3,mm_strdup("grouping sets ("),$4,mm_strdup(")"));
+}
 ;
 
 
@@ -9098,7 +9579,7 @@ RETURNING target_list ecpg_into
 
 
  for_locking_item:
- for_locking_strength locked_rels_list opt_nowait
+ for_locking_strength locked_rels_list opt_nowait_or_skip
  { 
  $$ = cat_str(3,$1,$2,$3);
 }
@@ -9175,6 +9656,10 @@ RETURNING target_list ecpg_into
  relation_expr opt_alias_clause
  { 
  $$ = cat_str(2,$1,$2);
+}
+|  relation_expr opt_alias_clause tablesample_clause
+ { 
+ $$ = cat_str(3,$1,$2,$3);
 }
 |  func_table func_alias_clause
  { 
@@ -9382,6 +9867,25 @@ RETURNING target_list ecpg_into
 ;
 
 
+ tablesample_clause:
+ TABLESAMPLE func_name '(' expr_list ')' opt_repeatable_clause
+ { 
+ $$ = cat_str(6,mm_strdup("tablesample"),$2,mm_strdup("("),$4,mm_strdup(")"),$6);
+}
+;
+
+
+ opt_repeatable_clause:
+ REPEATABLE '(' a_expr ')'
+ { 
+ $$ = cat_str(3,mm_strdup("repeatable ("),$3,mm_strdup(")"));
+}
+| 
+ { 
+ $$=EMPTY; }
+;
+
+
  func_table:
  func_expr_windowless opt_ordinality
  { 
@@ -9426,7 +9930,7 @@ RETURNING target_list ecpg_into
 
 
  opt_ordinality:
- WITH_ORDINALITY
+ WITH_LA ORDINALITY
  { 
  $$ = mm_strdup("with ordinality");
 }
@@ -9573,9 +10077,9 @@ RETURNING target_list ecpg_into
  { 
  $$ = cat_str(2,$1,$2);
 }
-|  ConstInterval '(' Iconst ')' opt_interval
+|  ConstInterval '(' Iconst ')'
  { 
- $$ = cat_str(5,$1,mm_strdup("("),$3,mm_strdup(")"),$5);
+ $$ = cat_str(4,$1,mm_strdup("("),$3,mm_strdup(")"));
 }
 ;
 
@@ -9841,7 +10345,7 @@ RETURNING target_list ecpg_into
 
 
  opt_timezone:
- WITH_TIME ZONE
+ WITH_LA TIME ZONE
  { 
  $$ = mm_strdup("with time zone");
 }
@@ -9987,6 +10491,18 @@ RETURNING target_list ecpg_into
  { 
  $$ = cat_str(3,$1,mm_strdup("="),$3);
 }
+|  a_expr LESS_EQUALS a_expr
+ { 
+ $$ = cat_str(3,$1,mm_strdup("<="),$3);
+}
+|  a_expr GREATER_EQUALS a_expr
+ { 
+ $$ = cat_str(3,$1,mm_strdup(">="),$3);
+}
+|  a_expr NOT_EQUALS a_expr
+ { 
+ $$ = cat_str(3,$1,mm_strdup("<>"),$3);
+}
 |  a_expr qual_Op a_expr %prec Op
  { 
  $$ = cat_str(3,$1,$2,$3);
@@ -10011,19 +10527,23 @@ RETURNING target_list ecpg_into
  { 
  $$ = cat_str(2,mm_strdup("not"),$2);
 }
+|  NOT_LA a_expr %prec NOT
+ { 
+ $$ = cat_str(2,mm_strdup("not"),$2);
+}
 |  a_expr LIKE a_expr
  { 
  $$ = cat_str(3,$1,mm_strdup("like"),$3);
 }
-|  a_expr LIKE a_expr ESCAPE a_expr
+|  a_expr LIKE a_expr ESCAPE a_expr %prec LIKE
  { 
  $$ = cat_str(5,$1,mm_strdup("like"),$3,mm_strdup("escape"),$5);
 }
-|  a_expr NOT LIKE a_expr
+|  a_expr NOT_LA LIKE a_expr %prec NOT_LA
  { 
  $$ = cat_str(3,$1,mm_strdup("not like"),$4);
 }
-|  a_expr NOT LIKE a_expr ESCAPE a_expr
+|  a_expr NOT_LA LIKE a_expr ESCAPE a_expr %prec NOT_LA
  { 
  $$ = cat_str(5,$1,mm_strdup("not like"),$4,mm_strdup("escape"),$6);
 }
@@ -10031,15 +10551,15 @@ RETURNING target_list ecpg_into
  { 
  $$ = cat_str(3,$1,mm_strdup("ilike"),$3);
 }
-|  a_expr ILIKE a_expr ESCAPE a_expr
+|  a_expr ILIKE a_expr ESCAPE a_expr %prec ILIKE
  { 
  $$ = cat_str(5,$1,mm_strdup("ilike"),$3,mm_strdup("escape"),$5);
 }
-|  a_expr NOT ILIKE a_expr
+|  a_expr NOT_LA ILIKE a_expr %prec NOT_LA
  { 
  $$ = cat_str(3,$1,mm_strdup("not ilike"),$4);
 }
-|  a_expr NOT ILIKE a_expr ESCAPE a_expr
+|  a_expr NOT_LA ILIKE a_expr ESCAPE a_expr %prec NOT_LA
  { 
  $$ = cat_str(5,$1,mm_strdup("not ilike"),$4,mm_strdup("escape"),$6);
 }
@@ -10047,15 +10567,15 @@ RETURNING target_list ecpg_into
  { 
  $$ = cat_str(3,$1,mm_strdup("similar to"),$4);
 }
-|  a_expr SIMILAR TO a_expr ESCAPE a_expr
+|  a_expr SIMILAR TO a_expr ESCAPE a_expr %prec SIMILAR
  { 
  $$ = cat_str(5,$1,mm_strdup("similar to"),$4,mm_strdup("escape"),$6);
 }
-|  a_expr NOT SIMILAR TO a_expr %prec SIMILAR
+|  a_expr NOT_LA SIMILAR TO a_expr %prec NOT_LA
  { 
  $$ = cat_str(3,$1,mm_strdup("not similar to"),$5);
 }
-|  a_expr NOT SIMILAR TO a_expr ESCAPE a_expr
+|  a_expr NOT_LA SIMILAR TO a_expr ESCAPE a_expr %prec NOT_LA
  { 
  $$ = cat_str(5,$1,mm_strdup("not similar to"),$5,mm_strdup("escape"),$7);
 }
@@ -10119,19 +10639,19 @@ RETURNING target_list ecpg_into
  { 
  $$ = cat_str(4,$1,mm_strdup("is not of ("),$6,mm_strdup(")"));
 }
-|  a_expr BETWEEN opt_asymmetric b_expr AND b_expr %prec BETWEEN
+|  a_expr BETWEEN opt_asymmetric b_expr AND a_expr %prec BETWEEN
  { 
  $$ = cat_str(6,$1,mm_strdup("between"),$3,$4,mm_strdup("and"),$6);
 }
-|  a_expr NOT BETWEEN opt_asymmetric b_expr AND b_expr %prec BETWEEN
+|  a_expr NOT_LA BETWEEN opt_asymmetric b_expr AND a_expr %prec NOT_LA
  { 
  $$ = cat_str(6,$1,mm_strdup("not between"),$4,$5,mm_strdup("and"),$7);
 }
-|  a_expr BETWEEN SYMMETRIC b_expr AND b_expr %prec BETWEEN
+|  a_expr BETWEEN SYMMETRIC b_expr AND a_expr %prec BETWEEN
  { 
  $$ = cat_str(5,$1,mm_strdup("between symmetric"),$4,mm_strdup("and"),$6);
 }
-|  a_expr NOT BETWEEN SYMMETRIC b_expr AND b_expr %prec BETWEEN
+|  a_expr NOT_LA BETWEEN SYMMETRIC b_expr AND a_expr %prec NOT_LA
  { 
  $$ = cat_str(5,$1,mm_strdup("not between symmetric"),$5,mm_strdup("and"),$7);
 }
@@ -10139,7 +10659,7 @@ RETURNING target_list ecpg_into
  { 
  $$ = cat_str(3,$1,mm_strdup("in"),$3);
 }
-|  a_expr NOT IN_P in_expr
+|  a_expr NOT_LA IN_P in_expr %prec NOT_LA
  { 
  $$ = cat_str(3,$1,mm_strdup("not in"),$4);
 }
@@ -10219,6 +10739,18 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  b_expr '=' b_expr
  { 
  $$ = cat_str(3,$1,mm_strdup("="),$3);
+}
+|  b_expr LESS_EQUALS b_expr
+ { 
+ $$ = cat_str(3,$1,mm_strdup("<="),$3);
+}
+|  b_expr GREATER_EQUALS b_expr
+ { 
+ $$ = cat_str(3,$1,mm_strdup(">="),$3);
+}
+|  b_expr NOT_EQUALS b_expr
+ { 
+ $$ = cat_str(3,$1,mm_strdup("<>"),$3);
 }
 |  b_expr qual_Op b_expr %prec Op
  { 
@@ -10304,9 +10836,17 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(2,mm_strdup("array"),$2);
 }
-|  row
+|  explicit_row
  { 
  $$ = $1;
+}
+|  implicit_row
+ { 
+ $$ = $1;
+}
+|  GROUPING '(' expr_list ')'
+ { 
+ $$ = cat_str(3,mm_strdup("grouping ("),$3,mm_strdup(")"));
 }
 ;
 
@@ -10815,6 +11355,26 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 ;
 
 
+ explicit_row:
+ ROW '(' expr_list ')'
+ { 
+ $$ = cat_str(3,mm_strdup("row ("),$3,mm_strdup(")"));
+}
+|  ROW '(' ')'
+ { 
+ $$ = mm_strdup("row ( )");
+}
+;
+
+
+ implicit_row:
+ '(' expr_list ',' a_expr ')'
+ { 
+ $$ = cat_str(5,mm_strdup("("),$2,mm_strdup(","),$4,mm_strdup(")"));
+}
+;
+
+
  sub_type:
  ANY
  { 
@@ -10880,6 +11440,18 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("=");
 }
+|  LESS_EQUALS
+ { 
+ $$ = mm_strdup("<=");
+}
+|  GREATER_EQUALS
+ { 
+ $$ = mm_strdup(">=");
+}
+|  NOT_EQUALS
+ { 
+ $$ = mm_strdup("<>");
+}
 ;
 
 
@@ -10920,7 +11492,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("like");
 }
-|  NOT LIKE
+|  NOT_LA LIKE
  { 
  $$ = mm_strdup("not like");
 }
@@ -10928,7 +11500,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("ilike");
 }
-|  NOT ILIKE
+|  NOT_LA ILIKE
  { 
  $$ = mm_strdup("not ilike");
 }
@@ -10967,6 +11539,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  param_name COLON_EQUALS a_expr
  { 
  $$ = cat_str(3,$1,mm_strdup(":="),$3);
+}
+|  param_name EQUALS_GREATER a_expr
+ { 
+ $$ = cat_str(3,$1,mm_strdup("=>"),$3);
 }
 ;
 
@@ -11484,9 +12060,9 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(3,$1,$2,$3);
 }
-|  ConstInterval '(' Iconst ')' ecpg_sconst opt_interval
+|  ConstInterval '(' Iconst ')' ecpg_sconst
  { 
- $$ = cat_str(6,$1,mm_strdup("("),$3,mm_strdup(")"),$5,$6);
+ $$ = cat_str(5,$1,mm_strdup("("),$3,mm_strdup(")"),$5);
 }
 |  TRUE_P
  { 
@@ -11511,26 +12087,6 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 ;
 
 
- RoleId:
- NonReservedWord
- { 
- $$ = $1;
-}
-;
-
-
- role_list:
- RoleId
- { 
- $$ = $1;
-}
-|  role_list ',' RoleId
- { 
- $$ = cat_str(3,$1,mm_strdup(","),$3);
-}
-;
-
-
  SignedIconst:
  Iconst
  { 
@@ -11544,6 +12100,42 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  '-' Iconst
  { 
  $$ = cat_str(2,mm_strdup("-"),$2);
+}
+;
+
+
+ RoleId:
+ RoleSpec
+ { 
+ $$ = $1;
+}
+;
+
+
+ RoleSpec:
+ NonReservedWord
+ { 
+ $$ = $1;
+}
+|  CURRENT_USER
+ { 
+ $$ = mm_strdup("current_user");
+}
+|  SESSION_USER
+ { 
+ $$ = mm_strdup("session_user");
+}
+;
+
+
+ role_list:
+ RoleSpec
+ { 
+ $$ = $1;
+}
+|  role_list ',' RoleSpec
+ { 
+ $$ = cat_str(3,$1,mm_strdup(","),$3);
 }
 ;
 
@@ -11709,6 +12301,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("configuration");
 }
+|  CONFLICT
+ { 
+ $$ = mm_strdup("conflict");
+}
 |  CONSTRAINTS
  { 
  $$ = mm_strdup("constraints");
@@ -11736,6 +12332,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  CSV
  { 
  $$ = mm_strdup("csv");
+}
+|  CUBE
+ { 
+ $$ = mm_strdup("cube");
 }
 |  CURSOR
  { 
@@ -11941,6 +12541,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("implicit");
 }
+|  IMPORT_P
+ { 
+ $$ = mm_strdup("import");
+}
 |  INCLUDING
  { 
  $$ = mm_strdup("including");
@@ -12009,14 +12613,6 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("last");
 }
-|  LC_COLLATE_P
- { 
- $$ = mm_strdup("lc_collate");
-}
-|  LC_CTYPE_P
- { 
- $$ = mm_strdup("lc_ctype");
-}
 |  LEAKPROOF
  { 
  $$ = mm_strdup("leakproof");
@@ -12044,6 +12640,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  LOCK_P
  { 
  $$ = mm_strdup("lock");
+}
+|  LOCKED
+ { 
+ $$ = mm_strdup("locked");
+}
+|  LOGGED
+ { 
+ $$ = mm_strdup("logged");
 }
 |  MAPPING
  { 
@@ -12173,6 +12777,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("plans");
 }
+|  POLICY
+ { 
+ $$ = mm_strdup("policy");
+}
 |  PRECEDING
  { 
  $$ = mm_strdup("preceding");
@@ -12297,6 +12905,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("rollback");
 }
+|  ROLLUP
+ { 
+ $$ = mm_strdup("rollup");
+}
 |  ROWS
  { 
  $$ = mm_strdup("rows");
@@ -12349,6 +12961,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("set");
 }
+|  SETS
+ { 
+ $$ = mm_strdup("sets");
+}
 |  SHARE
  { 
  $$ = mm_strdup("share");
@@ -12361,9 +12977,17 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("simple");
 }
+|  SKIP
+ { 
+ $$ = mm_strdup("skip");
+}
 |  SNAPSHOT
  { 
  $$ = mm_strdup("snapshot");
+}
+|  SQL_P
+ { 
+ $$ = mm_strdup("sql");
 }
 |  STABLE
  { 
@@ -12440,6 +13064,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  TRANSACTION
  { 
  $$ = mm_strdup("transaction");
+}
+|  TRANSFORM
+ { 
+ $$ = mm_strdup("transform");
 }
 |  TRIGGER
  { 
@@ -12620,6 +13248,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  GREATEST
  { 
  $$ = mm_strdup("greatest");
+}
+|  GROUPING
+ { 
+ $$ = mm_strdup("grouping");
 }
 |  INOUT
  { 
@@ -12836,6 +13468,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  SIMILAR
  { 
  $$ = mm_strdup("similar");
+}
+|  TABLESAMPLE
+ { 
+ $$ = mm_strdup("tablesample");
 }
 |  VERBOSE
  { 
@@ -14156,7 +14792,7 @@ ecpg_using:	USING using_list	{ $$ = EMPTY; }
 		| using_descriptor		{ $$ = $1; }
 		;
 
-using_descriptor: USING SQL_SQL SQL_DESCRIPTOR quoted_ident_stringvar
+using_descriptor: USING SQL_P SQL_DESCRIPTOR quoted_ident_stringvar
 		{
 			add_variable_to_head(&argsinsert, descriptor_variable($4,0), &no_indicator);
 			$$ = EMPTY;
@@ -14168,7 +14804,7 @@ using_descriptor: USING SQL_SQL SQL_DESCRIPTOR quoted_ident_stringvar
 		}
 		;
 
-into_descriptor: INTO SQL_SQL SQL_DESCRIPTOR quoted_ident_stringvar
+into_descriptor: INTO SQL_P SQL_DESCRIPTOR quoted_ident_stringvar
 		{
 			add_variable_to_head(&argsresult, descriptor_variable($4,1), &no_indicator);
 			$$ = EMPTY;
@@ -14462,7 +15098,7 @@ ECPGTypedef: TYPE_P
 			if (auto_create_c == false)
 				$$ = cat_str(7, mm_strdup("/* exec sql type"), mm_strdup($3), mm_strdup("is"), mm_strdup($5.type_str), mm_strdup($6.str), $7, mm_strdup("*/"));
 			else
-				$$ = cat_str(6, mm_strdup("typedef "), mm_strdup($5.type_str), *$7?mm_strdup("*"):mm_strdup(""), mm_strdup($6.str), mm_strdup($3), mm_strdup(";"));
+				$$ = cat_str(6, mm_strdup("typedef "), mm_strdup($5.type_str), *$7?mm_strdup("*"):mm_strdup(""), mm_strdup($3), mm_strdup($6.str), mm_strdup(";"));
 		}
 		;
 
@@ -14645,7 +15281,6 @@ ECPGKeywords_vanames:  SQL_BREAK		{ $$ = mm_strdup("break"); }
 		| SQL_RETURNED_OCTET_LENGTH	{ $$ = mm_strdup("returned_octet_length"); }
 		| SQL_SCALE					{ $$ = mm_strdup("scale"); }
 		| SQL_SECTION				{ $$ = mm_strdup("section"); }
-		| SQL_SQL				{ $$ = mm_strdup("sql"); }
 		| SQL_SQLERROR				{ $$ = mm_strdup("sqlerror"); }
 		| SQL_SQLPRINT				{ $$ = mm_strdup("sqlprint"); }
 		| SQL_SQLWARNING			{ $$ = mm_strdup("sqlwarning"); }

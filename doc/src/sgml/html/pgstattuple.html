@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PGSTATTUPLE"
->F.30. pgstattuple</A
+>F.29. pgstattuple</A
 ></H1
 ><P
 >  The <TT
@@ -107,8 +107,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN162728"
->F.30.1. Functions</A
+NAME="AEN172125"
+>F.29.1. Functions</A
 ></H2
 ><P
 ></P
@@ -381,7 +381,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN162828"
+NAME="AEN172225"
 ></A
 ><TABLE
 BORDER="1"
@@ -601,7 +601,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN162915"
+NAME="AEN172312"
 ></A
 ><TABLE
 BORDER="1"
@@ -697,6 +697,251 @@ CLASS="FUNCTION"
       the future release.
      </P
 ></DD
+><DT
+>&#13;     <CODE
+CLASS="FUNCTION"
+>pgstattuple_approx(regclass) returns record</CODE
+></DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>pgstattuple_approx</CODE
+> is a faster alternative to
+      <CODE
+CLASS="FUNCTION"
+>pgstattuple</CODE
+> that returns approximate results.
+      The argument is the target relation's OID.
+      For example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>test=&#62; SELECT * FROM pgstattuple_approx('pg_catalog.pg_proc'::regclass);
+-[ RECORD 1 ]--------+-------
+table_len            | 573440
+scanned_percent      | 2
+approx_tuple_count   | 2740
+approx_tuple_len     | 561210
+approx_tuple_percent | 97.87
+dead_tuple_count     | 0
+dead_tuple_len       | 0
+dead_tuple_percent   | 0
+approx_free_space    | 11996
+approx_free_percent  | 2.09</PRE
+><P>
+      The output columns are described in <A
+HREF="pgstattuple.html#PGSTATAPPROX-COLUMNS"
+>Table F-22</A
+>.
+     </P
+><P
+>      Whereas <CODE
+CLASS="FUNCTION"
+>pgstattuple</CODE
+> always performs a
+      full-table scan and returns an exact count of live and dead tuples
+      (and their sizes) and free space, <CODE
+CLASS="FUNCTION"
+>pgstattuple_approx</CODE
+>
+      tries to avoid the full-table scan and returns exact dead tuple
+      statistics along with an approximation of the number and
+      size of live tuples and free space.
+     </P
+><P
+>      It does this by skipping pages that have only visible tuples
+      according to the visibility map (if a page has the corresponding VM
+      bit set, then it is assumed to contain no dead tuples). For such
+      pages, it derives the free space value from the free space map, and
+      assumes that the rest of the space on the page is taken up by live
+      tuples.
+     </P
+><P
+>      For pages that cannot be skipped, it scans each tuple, recording its
+      presence and size in the appropriate counters, and adding up the
+      free space on the page. At the end, it estimates the total number of
+      live tuples based on the number of pages and tuples scanned (in the
+      same way that VACUUM estimates pg_class.reltuples).
+     </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="PGSTATAPPROX-COLUMNS"
+></A
+><P
+><B
+>Table F-22. <CODE
+CLASS="FUNCTION"
+>pgstattuple_approx</CODE
+> Output Columns</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Column</TH
+><TH
+>Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>table_len</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Physical relation length in bytes (exact)</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>scanned_percent</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>Percentage of table scanned</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>approx_tuple_count</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of live tuples (estimated)</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>approx_tuple_len</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Total length of live tuples in bytes (estimated)</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>approx_tuple_percent</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>Percentage of live tuples</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>dead_tuple_count</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Number of dead tuples (exact)</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>dead_tuple_len</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Total length of dead tuples in bytes (exact)</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>dead_tuple_percent</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>Percentage of dead tuples</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>approx_free_space</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>Total free space in bytes (estimated)</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>approx_free_percent</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>Percentage of free space</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>      In the above output, the free space figures may not match the
+      <CODE
+CLASS="FUNCTION"
+>pgstattuple</CODE
+> output exactly, because the free
+      space map gives us an exact figure, but is not guaranteed to be
+      accurate to the byte.
+     </P
+></DD
 ></DL
 ></DIV
 ></DIV
@@ -705,11 +950,11 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN162955"
->F.30.2. Authors</A
+NAME="AEN172440"
+>F.29.2. Authors</A
 ></H2
 ><P
->   Tatsuo Ishii and Satoshi Nagayasu
+>   Tatsuo Ishii, Satoshi Nagayasu and Abhijit Menon-Sen
   </P
 ></DIV
 ></DIV

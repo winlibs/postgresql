@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Recovery Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -300,30 +300,49 @@ HREF="continuous-archiving.html#BACKUP-TIMELINES"
 ></DD
 ><DT
 ><A
-NAME="PAUSE-AT-RECOVERY-TARGET"
+NAME="RECOVERY-TARGET-ACTION"
 ></A
 ><TT
 CLASS="VARNAME"
->pause_at_recovery_target</TT
+>recovery_target_action</TT
 > (<TT
 CLASS="TYPE"
->boolean</TT
+>enum</TT
 >)
       </DT
 ><DD
 ><P
->        Specifies whether recovery should pause when the recovery target
-        is reached. The default is true.
-        This is intended to allow queries to be executed against the
-        database to check if this recovery target is the most desirable
-        point for recovery. The paused state can be resumed by using
-        <CODE
+>        Specifies what action the server should take once the recovery target is
+        reached. The default is <TT
+CLASS="LITERAL"
+>pause</TT
+>, which means recovery will
+        be paused. <TT
+CLASS="LITERAL"
+>promote</TT
+> means the recovery process will finish
+        and the server will start to accept connections.
+        Finally <TT
+CLASS="LITERAL"
+>shutdown</TT
+> will stop the server after reaching the
+        recovery target.
+       </P
+><P
+>        The intended use of the <TT
+CLASS="LITERAL"
+>pause</TT
+> setting is to allow queries
+        to be executed against the database to check if this recovery target
+        is the most desirable point for recovery.
+        The paused state can be resumed by
+        using <CODE
 CLASS="FUNCTION"
 >pg_xlog_replay_resume()</CODE
 > (see
         <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL-TABLE"
->Table 9-67</A
+>Table 9-70</A
 >), which then
         causes recovery to end. If this recovery target is not the
         desired stopping point, then shut down the server, change the
@@ -331,11 +350,46 @@ HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL-TABLE"
         continue recovery.
        </P
 ><P
->        This setting has no effect if <A
+>        The <TT
+CLASS="LITERAL"
+>shutdown</TT
+> setting is useful to have the instance ready
+        at the exact replay point desired.  The instance will still be able to
+        replay more WAL records (and in fact will have to replay WAL records
+        since the last checkpoint next time it is started).
+       </P
+><P
+>        Note that because <TT
+CLASS="FILENAME"
+>recovery.conf</TT
+> will not be renamed when
+        <TT
+CLASS="VARNAME"
+>recovery_target_action</TT
+> is set to <TT
+CLASS="LITERAL"
+>shutdown</TT
+>,
+        any subsequent start will end with immediate shutdown unless the
+        configuration is changed or the <TT
+CLASS="FILENAME"
+>recovery.conf</TT
+> file is
+        removed manually.
+       </P
+><P
+>        This setting has no effect if no recovery target is set.
+        If <A
 HREF="runtime-config-replication.html#GUC-HOT-STANDBY"
 >hot_standby</A
-> is not
-        enabled, or if no recovery target is set.
+> is not enabled, a setting of
+        <TT
+CLASS="LITERAL"
+>pause</TT
+> will act the same as <TT
+CLASS="LITERAL"
+>shutdown</TT
+>.
        </P
 ></DD
 ></DL

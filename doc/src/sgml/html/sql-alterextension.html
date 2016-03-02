@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTEREXTENSION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN67459"
+NAME="AEN69521"
 ></A
 ><H2
 >Name</H2
@@ -104,7 +104,7 @@ NAME="AEN67459"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN67462"
+NAME="AEN69524"
 ></A
 ><H2
 >Synopsis</H2
@@ -345,6 +345,17 @@ CLASS="REPLACEABLE"
 >object_name</I
 ></TT
 > |
+  TRANSFORM FOR <TT
+CLASS="REPLACEABLE"
+><I
+>type_name</I
+></TT
+> LANGUAGE <TT
+CLASS="REPLACEABLE"
+><I
+>lang_name</I
+></TT
+> |
   TYPE <TT
 CLASS="REPLACEABLE"
 ><I
@@ -423,7 +434,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67518"
+NAME="AEN69582"
 ></A
 ><H2
 >Description</H2
@@ -529,7 +540,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67551"
+NAME="AEN69615"
 ></A
 ><H2
 >Parameters</H2
@@ -748,6 +759,30 @@ CLASS="LITERAL"
 >       This is a noise word.
       </P
 ></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>type_name</I
+></TT
+></DT
+><DD
+><P
+>       The name of the data type of the transform.
+      </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>lang_name</I
+></TT
+></DT
+><DD
+><P
+>       The name of the language of the transform.
+      </P
+></DD
 ></DL
 ></DIV
 ><P>
@@ -756,7 +791,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67631"
+NAME="AEN69705"
 ></A
 ><H2
 >Examples</H2
@@ -797,7 +832,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN67643"
+NAME="AEN69717"
 ></A
 ><H2
 >Compatibility</H2

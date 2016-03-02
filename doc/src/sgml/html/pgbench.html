@@ -9,24 +9,24 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
-TITLE="Client Applications"
-HREF="contrib-prog-client.html"><LINK
+TITLE="PostgreSQL Client Applications"
+HREF="reference-client.html"><LINK
 REL="PREVIOUS"
-TITLE="oid2name"
-HREF="oid2name.html"><LINK
+TITLE="pg_basebackup"
+HREF="app-pgbasebackup.html"><LINK
 REL="NEXT"
-TITLE="vacuumlo"
-HREF="vacuumlo.html"><LINK
+TITLE="pg_config"
+HREF="app-pgconfig.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="oid2name"
-HREF="oid2name.html"
+TITLE="pg_basebackup"
+HREF="app-pgbasebackup.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -63,7 +63,7 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="contrib-prog-client.html"
+HREF="reference-client.html"
 ACCESSKEY="U"
 >Up</A
 ></TD
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="vacuumlo"
-HREF="vacuumlo.html"
+TITLE="pg_config"
+HREF="app-pgconfig.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN165111"
+NAME="AEN91151"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN165115"
+NAME="AEN91155"
 ></A
 ><H2
 >Synopsis</H2
@@ -150,7 +150,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN165130"
+NAME="AEN91170"
 ></A
 ><H2
 >Description</H2
@@ -184,7 +184,10 @@ CLASS="COMMAND"
   script files.
  </P
 ><P
->  Typical output from pgbench looks like:
+>  Typical output from <SPAN
+CLASS="APPLICATION"
+>pgbench</SPAN
+> looks like:
 
 </P><PRE
 CLASS="SCREEN"
@@ -379,7 +382,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN165175"
+NAME="AEN91216"
 ></A
 ><H2
 >Options</H2
@@ -783,6 +786,56 @@ CLASS="OPTION"
 ><DT
 ><TT
 CLASS="OPTION"
+>-L</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>limit</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--latency-limit=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>limit</I
+></TT
+></DT
+><DD
+><P
+>        Transaction which last more than <TT
+CLASS="REPLACEABLE"
+><I
+>limit</I
+></TT
+> milliseconds
+        are counted and reported separately, as <I
+CLASS="FIRSTTERM"
+>late</I
+>.
+       </P
+><P
+>        When throttling is used (<TT
+CLASS="OPTION"
+>--rate=...</TT
+>), transactions that
+        lag behind schedule by more than <TT
+CLASS="REPLACEABLE"
+><I
+>limit</I
+></TT
+> ms, and thus
+        have no hope of meeting the latency limit, are not sent to the server
+        at all. They are counted and reported separately as
+        <I
+CLASS="FIRSTTERM"
+>skipped</I
+>.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-M</TT
 > <TT
 CLASS="REPLACEABLE"
@@ -829,7 +882,7 @@ CLASS="LITERAL"
 ><P>
         The default is simple query protocol.  (See <A
 HREF="protocol.html"
->Chapter 49</A
+>Chapter 50</A
 >
         for more information.)
        </P
@@ -987,6 +1040,20 @@ CLASS="REPLACEABLE"
         latency.
        </P
 ><P
+>        If <TT
+CLASS="OPTION"
+>--latency-limit</TT
+> is used together with <TT
+CLASS="OPTION"
+>--rate</TT
+>,
+        a transaction can lag behind so much that it is already over the
+        latency limit when the previous transaction ends, because the latency
+        is calculated from the scheduled start time. Such transactions are
+        not sent to the server, but are skipped altogether and counted
+        separately.
+       </P
+><P
 >        A high schedule lag time is an indication that the system cannot
         process transactions at the specified rate, with the chosen number of
         clients and threads. When the average transaction execution time is
@@ -1117,7 +1184,10 @@ CLASS="OPTION"
 > nor <TT
 CLASS="OPTION"
 >-v</TT
->, pgbench will vacuum the
+>, <SPAN
+CLASS="APPLICATION"
+>pgbench</SPAN
+> will vacuum the
         <TT
 CLASS="STRUCTNAME"
 >pgbench_tellers</TT
@@ -1314,20 +1384,23 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN165508"
+NAME="AEN91568"
 ></A
 ><H2
 >Notes</H2
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN165510"
+NAME="AEN91570"
 ></A
 ><H3
 >What is the <SPAN
 CLASS="QUOTE"
 >"Transaction"</SPAN
-> Actually Performed in pgbench?</H3
+> Actually Performed in <SPAN
+CLASS="APPLICATION"
+>pgbench</SPAN
+>?</H3
 ><P
 >   The default transaction script issues seven commands per transaction:
   </P
@@ -1403,7 +1476,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN165540"
+NAME="AEN91601"
 ></A
 ><H3
 >Custom Scripts</H3
@@ -1459,7 +1532,7 @@ CLASS="OPTION"
    there are a few variables that are preset automatically, listed in
    <A
 HREF="pgbench.html#PGBENCH-AUTOMATIC-VARIABLES"
->Table G-1</A
+>Table 1</A
 >. A value specified for these
    variables using <TT
 CLASS="OPTION"
@@ -1485,7 +1558,7 @@ NAME="PGBENCH-AUTOMATIC-VARIABLES"
 ></A
 ><P
 ><B
->Table G-1. Automatic variables</B
+>Table 1. Automatic variables</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1544,19 +1617,9 @@ CLASS="REPLACEABLE"
 > <TT
 CLASS="REPLACEABLE"
 ><I
->operand1</I
+>expression</I
 ></TT
-> [ <TT
-CLASS="REPLACEABLE"
-><I
->operator</I
 ></TT
-> <TT
-CLASS="REPLACEABLE"
-><I
->operand2</I
-></TT
-> ]</TT
 ></DT
 ><DD
 ><P
@@ -1565,14 +1628,18 @@ CLASS="REPLACEABLE"
 ><I
 >varname</I
 ></TT
-> to a calculated integer value.
-      Each <TT
+> to an integer value calculated
+      from <TT
 CLASS="REPLACEABLE"
 ><I
->operand</I
+>expression</I
 ></TT
-> is either an integer constant or a
-      <TT
+>.
+      The expression may contain integer constants such as <TT
+CLASS="LITERAL"
+>5432</TT
+>,
+      references to variables <TT
 CLASS="LITERAL"
 >:</TT
 ><TT
@@ -1580,14 +1647,12 @@ CLASS="REPLACEABLE"
 ><I
 >variablename</I
 ></TT
-> reference to a variable
-      having an integer value.  The <TT
-CLASS="REPLACEABLE"
-><I
->operator</I
-></TT
-> can be
-      <TT
+>,
+      and expressions composed of unary (<TT
+CLASS="LITERAL"
+>-</TT
+>) or binary operators
+      (<TT
 CLASS="LITERAL"
 >+</TT
 >, <TT
@@ -1596,16 +1661,21 @@ CLASS="LITERAL"
 >, <TT
 CLASS="LITERAL"
 >*</TT
->, or <TT
+>, <TT
 CLASS="LITERAL"
 >/</TT
->.
+>, <TT
+CLASS="LITERAL"
+>%</TT
+>)
+      with their usual associativity, and parentheses.
      </P
 ><P
->      Example:
+>      Examples:
 </P><PRE
 CLASS="PROGRAMLISTING"
->\set ntellers 10 * :scale</PRE
+>\set ntellers 10 * :scale
+\set aid (1021 * :aid) % (100000 * :scale) + 1</PRE
 ><P></P
 ></DD
 ><DT
@@ -1626,7 +1696,12 @@ CLASS="REPLACEABLE"
 ><I
 >max</I
 ></TT
+> [ uniform | { gaussian | exponential } <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
 ></TT
+> ]</TT
 ></DT
 ><DD
 ><P
@@ -1660,10 +1735,223 @@ CLASS="REPLACEABLE"
       having an integer value.
      </P
 ><P
+>      By default, or when <TT
+CLASS="LITERAL"
+>uniform</TT
+> is specified, all values in the
+      range are drawn with equal probability.  Specifying <TT
+CLASS="LITERAL"
+>gaussian</TT
+>
+      or  <TT
+CLASS="LITERAL"
+>exponential</TT
+> options modifies this behavior; each
+      requires a mandatory parameter which determines the precise shape of the
+      distribution.
+     </P
+><P
+>      For a Gaussian distribution, the interval is mapped onto a standard
+      normal distribution (the classical bell-shaped Gaussian curve) truncated
+      at <TT
+CLASS="LITERAL"
+>-parameter</TT
+> on the left and <TT
+CLASS="LITERAL"
+>+parameter</TT
+>
+      on the right.
+      Values in the middle of the interval are more likely to be drawn.
+      To be precise, if <TT
+CLASS="LITERAL"
+>PHI(x)</TT
+> is the cumulative distribution
+      function of the standard normal distribution, with mean <TT
+CLASS="LITERAL"
+>mu</TT
+>
+      defined as <TT
+CLASS="LITERAL"
+>(max + min) / 2.0</TT
+>, with
+<P
+CLASS="LITERALLAYOUT"
+>&nbsp;f(x)&nbsp;=&nbsp;PHI(2.0&nbsp;*&nbsp;parameter&nbsp;*&nbsp;(x&nbsp;-&nbsp;mu)&nbsp;/&nbsp;(max&nbsp;-&nbsp;min&nbsp;+&nbsp;1))&nbsp;/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(2.0&nbsp;*&nbsp;PHI(parameter)&nbsp;-&nbsp;1.0)</P
+>
+      then value <TT
+CLASS="REPLACEABLE"
+><I
+>i</I
+></TT
+> between <TT
+CLASS="REPLACEABLE"
+><I
+>min</I
+></TT
+> and
+      <TT
+CLASS="REPLACEABLE"
+><I
+>max</I
+></TT
+> inclusive is drawn with probability:
+      <TT
+CLASS="LITERAL"
+>f(i + 0.5) - f(i - 0.5)</TT
+>.
+      Intuitively, the larger <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>, the more
+      frequently values close to the middle of the interval are drawn, and the
+      less frequently values close to the <TT
+CLASS="REPLACEABLE"
+><I
+>min</I
+></TT
+> and
+      <TT
+CLASS="REPLACEABLE"
+><I
+>max</I
+></TT
+> bounds. About 67% of values are drawn from the
+      middle <TT
+CLASS="LITERAL"
+>1.0 / parameter</TT
+>, that is a relative
+      <TT
+CLASS="LITERAL"
+>0.5 / parameter</TT
+> around the mean, and 95% in the middle
+      <TT
+CLASS="LITERAL"
+>2.0 / parameter</TT
+>, that is a relative
+      <TT
+CLASS="LITERAL"
+>1.0 / parameter</TT
+> around the mean; for instance, if
+      <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+> is 4.0, 67% of values are drawn from the
+      middle quarter (1.0 / 4.0) of the interval (i.e. from
+      <TT
+CLASS="LITERAL"
+>3.0 / 8.0</TT
+> to <TT
+CLASS="LITERAL"
+>5.0 / 8.0</TT
+>) and 95% from
+      the middle half (<TT
+CLASS="LITERAL"
+>2.0 / 4.0</TT
+>) of the interval (second and
+      third quartiles). The minimum <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+> is 2.0 for
+      performance of the Box-Muller transform.
+     </P
+><P
+>      For an exponential distribution, <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>
+      controls the distribution by truncating a quickly-decreasing
+      exponential distribution at <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>, and then
+      projecting onto integers between the bounds.
+      To be precise, with
+<P
+CLASS="LITERALLAYOUT"
+>f(x)&nbsp;=&nbsp;exp(-parameter&nbsp;*&nbsp;(x&nbsp;-&nbsp;min)&nbsp;/&nbsp;(max&nbsp;-&nbsp;min&nbsp;+&nbsp;1))&nbsp;/&nbsp;(1.0&nbsp;-&nbsp;exp(-parameter))</P
+>
+      Then value <TT
+CLASS="REPLACEABLE"
+><I
+>i</I
+></TT
+> between <TT
+CLASS="REPLACEABLE"
+><I
+>min</I
+></TT
+> and
+      <TT
+CLASS="REPLACEABLE"
+><I
+>max</I
+></TT
+> inclusive is drawn with probability:
+      <TT
+CLASS="LITERAL"
+>f(x) - f(x + 1)</TT
+>.
+      Intuitively, the larger <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>, the more
+      frequently values close to <TT
+CLASS="REPLACEABLE"
+><I
+>min</I
+></TT
+> are accessed, and the
+      less frequently values close to <TT
+CLASS="REPLACEABLE"
+><I
+>max</I
+></TT
+> are accessed.
+      The closer to 0 <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>, the flatter (more uniform)
+      the access distribution.
+      A crude approximation of the distribution is that the most frequent 1%
+      values in the range, close to <TT
+CLASS="REPLACEABLE"
+><I
+>min</I
+></TT
+>, are drawn
+      <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>% of the time.
+      <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+> value must be strictly positive.
+     </P
+><P
 >      Example:
 </P><PRE
 CLASS="PROGRAMLISTING"
->\setrandom aid 1 :naccounts</PRE
+>\setrandom aid 1 :naccounts gaussian 5.0</PRE
 ><P></P
 ></DD
 ><DT
@@ -1849,7 +2137,7 @@ END;</PRE
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN165656"
+NAME="AEN91760"
 ></A
 ><H3
 >Per-Transaction Logging</H3
@@ -1880,7 +2168,10 @@ CLASS="REPLACEABLE"
 ><I
 >nnn</I
 ></TT
-> is the PID of the pgbench process.
+> is the PID of the <SPAN
+CLASS="APPLICATION"
+>pgbench</SPAN
+> process.
    If the <TT
 CLASS="OPTION"
 >-j</TT
@@ -1945,11 +2236,14 @@ CLASS="REPLACEABLE"
 ><I
 >time_us</I
 ></TT
-> [<TT
+> [<SPAN
+CLASS="OPTIONAL"
+><TT
 CLASS="REPLACEABLE"
 ><I
 >schedule_lag</I
 ></TT
+></SPAN
 >]</PRE
 ><P>
 
@@ -1980,31 +2274,68 @@ CLASS="REPLACEABLE"
 >time_us</I
 ></TT
 > are a
-   UNIX epoch format timestamp and an offset
+   Unix epoch format time stamp and an offset
    in microseconds (suitable for creating an ISO 8601
-   timestamp with fractional seconds) showing when
-   the transaction completed. The last field, <TT
+   time stamp with fractional seconds) showing when
+   the transaction completed.
+   Field <TT
 CLASS="REPLACEABLE"
 ><I
 >schedule_lag</I
 ></TT
->, is
-   the difference between the transaction's scheduled start time, and the
-   time it actually started, in microseconds. It is only present when the
-   <TT
+> is the difference between the
+   transaction's scheduled start time, and the time it actually started, in
+   microseconds. It is only present when the <TT
 CLASS="OPTION"
 >--rate</TT
 > option is used.
+   The last field <TT
+CLASS="REPLACEABLE"
+><I
+>skipped_transactions</I
+></TT
+> reports the number of
+   transactions skipped because they were too far behind schedule. It is only
+   present when both options <TT
+CLASS="OPTION"
+>--rate</TT
+> and <TT
+CLASS="OPTION"
+>--latency-limit</TT
+>
+   are used.
   </P
 ><P
->   Here are example outputs:
+>   Here is a snippet of the log file generated:
 </P><PRE
 CLASS="SCREEN"
 > 0 199 2241 0 1175850568 995598
  0 200 2465 0 1175850568 998079
  0 201 2513 0 1175850569 608
  0 202 2038 0 1175850569 2663</PRE
-><P></P
+><P>
+
+   Another example with --rate=100 and --latency-limit=5 (note the additional
+   <TT
+CLASS="REPLACEABLE"
+><I
+>schedule_lag</I
+></TT
+> column):
+</P><PRE
+CLASS="SCREEN"
+> 0 81 4621 0 1412881037 912698 3005
+ 0 82 6173 0 1412881037 914578 4304
+ 0 83 skipped 0 1412881037 914578 5217
+ 0 83 skipped 0 1412881037 914578 5099
+ 0 83 4722 0 1412881037 916203 3108
+ 0 84 4142 0 1412881037 918023 2333
+ 0 85 2465 0 1412881037 919759 740</PRE
+><P>
+   In this example, transaction 82 was late, because it's latency (6.173 ms) was
+   over the 5 ms limit. The next two transactions were skipped, because they
+   were already late before they were even started.
+  </P
 ><P
 >   When running a long test on hardware that can handle a lot of transactions,
    the log files can become very large.  The <TT
@@ -2017,7 +2348,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN165690"
+NAME="AEN91801"
 ></A
 ><H3
 >Aggregated Logging</H3
@@ -2059,7 +2390,9 @@ CLASS="REPLACEABLE"
 ><I
 >max_latency</I
 ></TT
-> [<TT
+> [<SPAN
+CLASS="OPTIONAL"
+><TT
 CLASS="REPLACEABLE"
 ><I
 >lag_sum</I
@@ -2079,6 +2412,15 @@ CLASS="REPLACEABLE"
 ><I
 >max_lag</I
 ></TT
+> [<SPAN
+CLASS="OPTIONAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>skipped_transactions</I
+></TT
+></SPAN
+>]</SPAN
 >]</PRE
 ><P>
 
@@ -2087,8 +2429,8 @@ CLASS="REPLACEABLE"
 ><I
 >interval_start</I
 ></TT
-> is the start of the interval (UNIX epoch
-   format timestamp), <TT
+> is the start of the interval (Unix epoch
+   format time stamp), <TT
 CLASS="REPLACEABLE"
 ><I
 >num_of_transactions</I
@@ -2125,7 +2467,7 @@ CLASS="REPLACEABLE"
 >max_latency</I
 ></TT
 > - maximum latency within the interval. A transaction is
-   counted into the interval when it was committed. The last four fields, 
+   counted into the interval when it was committed. The fields in the end,
    <TT
 CLASS="REPLACEABLE"
 ><I
@@ -2141,12 +2483,26 @@ CLASS="REPLACEABLE"
 ><I
 >min_lag</I
 ></TT
->, and <TT
+>,
+   and <TT
 CLASS="REPLACEABLE"
 ><I
 >max_lag</I
 ></TT
->, are only present if the --rate option is used.
+>, are only present if the <TT
+CLASS="OPTION"
+>--rate</TT
+>
+   option is used. The very last one, <TT
+CLASS="REPLACEABLE"
+><I
+>skipped_transactions</I
+></TT
+>,
+   is only present if the option <TT
+CLASS="OPTION"
+>--latency-limit</TT
+> is present, too.
    They are calculated from the time each transaction had to wait for the
    previous one to finish, i.e. the difference between each transaction's
    scheduled start time and the time it actually started.
@@ -2170,7 +2526,7 @@ CLASS="SCREEN"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN165719"
+NAME="AEN91836"
 ></A
 ><H3
 >Per-Statement Latencies</H3
@@ -2233,7 +2589,7 @@ statement latencies in milliseconds:
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN165728"
+NAME="AEN91845"
 ></A
 ><H3
 >Good Practices</H3
@@ -2337,7 +2693,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="oid2name.html"
+HREF="app-pgbasebackup.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -2355,7 +2711,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="vacuumlo.html"
+HREF="app-pgconfig.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -2365,13 +2721,13 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->oid2name</TD
+>pg_basebackup</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="contrib-prog-client.html"
+HREF="reference-client.html"
 ACCESSKEY="U"
 >Up</A
 ></TD
@@ -2379,10 +2735,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
-><SPAN
-CLASS="APPLICATION"
->vacuumlo</SPAN
-></TD
+>pg_config</TD
 ></TR
 ></TABLE
 ></DIV

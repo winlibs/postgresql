@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_basebackup
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PG_BASEBACKUP" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PG_BASEBACKUP" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,6 @@ pg_basebackup \- take a base backup of a PostgreSQL cluster
 \fBpg_basebackup\fR [\fIoption\fR...]
 .SH "DESCRIPTION"
 .PP
-
 pg_basebackup
 is used to take base backups of a running
 PostgreSQL
@@ -42,7 +41,6 @@ database cluster\&. These are taken without affecting other clients to the datab
 Section 24.3, \(lqContinuous Archiving and Point-in-Time Recovery (PITR)\(rq, in the documentation) and as the starting point for a log shipping or streaming replication standby servers (see
 Section 25.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation)\&.
 .PP
-
 pg_basebackup
 makes a binary copy of the database cluster files, while making sure the system is put in and out of backup mode automatically\&. Backups are always taken of the entire database cluster; it is not possible to back up individual databases or database objects\&. For individual database backups, a tool such as
 \fBpg_dump\fR(1)
@@ -62,13 +60,12 @@ set high enough to leave at least one session available for the backup\&.
 There can be multiple
 \fBpg_basebackup\fRs running at the same time, but it is better from a performance point of view to take only one backup, and copy the result\&.
 .PP
-
 pg_basebackup
 can make a base backup from not only the master but also the standby\&. To take a backup from the standby, set up the standby so that it can accept replication connections (that is, set
 \fImax_wal_senders\fR
 and
 hot_standby, and configure
-host\-based authentication)\&. You will also need to enable
+host-based authentication)\&. You will also need to enable
 full_page_writes
 on the master\&.
 .PP
@@ -265,7 +262,7 @@ s
 .br
 stream
 .RS 4
-Stream the transaction log while the backup is created\&. This will open a second connection to the server and start streaming the transaction log in parallel while running the backup\&. Therefore, it will use up two slots configured by the
+Stream the transaction log while the backup is created\&. This will open a second connection to the server and start streaming the transaction log in parallel while running the backup\&. Therefore, it will use up two connections configured by the
 max_wal_senders
 parameter\&. As long as the client can keep up with transaction log received, using this mode requires no extra transaction logs to be saved on the master\&.
 .RE
@@ -427,16 +424,21 @@ Section 31.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
 .SH "NOTES"
 .PP
 The backup will include all files in the data directory and tablespaces, including the configuration files and any additional files placed in the directory by third parties\&. But only regular files and directories are copied\&. Symbolic links (other than those used for tablespaces) and special device files are skipped\&. (See
-Section 49.3, \(lqStreaming Replication Protocol\(rq, in the documentation
+Section 50.3, \(lqStreaming Replication Protocol\(rq, in the documentation
 for the precise details\&.)
 .PP
 Tablespaces will in plain format by default be backed up to the same path they have on the server, unless the option
-\fI\-\-tablespace\-mapping\fR
+\-\-tablespace\-mapping
 is used\&. Without this option, running a plain format base backup on the same host as the server will not work if tablespaces are in use, because the backup would have to be written to the same directory locations as the original tablespaces\&.
 .PP
-
+When tar format mode is used, it is the user\*(Aqs responsibility to unpack each tar file before starting the PostgreSQL server\&. If there are additional tablespaces, the tar files for them need to be unpacked in the correct locations\&. In this case the symbolic links for those tablespaces will be created by the server according to the contents of the
+tablespace_map
+file that is included in the
+base\&.tar
+file\&.
+.PP
 pg_basebackup
-works with servers of the same or an older major version, down to 9\&.1\&. However, WAL streaming mode (\-X stream) only works with server version 9\&.3 and later\&.
+works with servers of the same or an older major version, down to 9\&.1\&. However, WAL streaming mode (\-X stream) only works with server version 9\&.3 and later, and tar format mode (\-\-format=tar) of the current version only works with server version 9\&.5 or later\&.
 .SH "EXAMPLES"
 .PP
 To create a base backup of the server at

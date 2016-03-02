@@ -4,7 +4,7 @@
  *
  *	Parallel support for the pg_dump archiver
  *
- * Portions Copyright (c) 1996-2014, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2015, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *	The author is not responsible for loss or damages that may
@@ -18,8 +18,8 @@
 
 #include "postgres_fe.h"
 
-#include "pg_backup_utils.h"
 #include "parallel.h"
+#include "pg_backup_utils.h"
 
 #ifndef WIN32
 #include <sys/types.h>
@@ -46,7 +46,6 @@ static int	piperead(int s, char *buf, int len);
 typedef struct
 {
 	ArchiveHandle *AH;
-	RestoreOptions *ropt;
 	int			worker;
 	int			pipeRead;
 	int			pipeWrite;
@@ -77,10 +76,8 @@ static ShutdownInformation shutdown_info;
 static const char *modulename = gettext_noop("parallel archiver");
 
 static ParallelSlot *GetMyPSlot(ParallelState *pstate);
-static void
-parallel_msg_master(ParallelSlot *slot, const char *modulename,
-					const char *fmt, va_list ap)
-__attribute__((format(PG_PRINTF_ATTRIBUTE, 3, 0)));
+static void parallel_msg_master(ParallelSlot *slot, const char *modulename,
+					const char *fmt, va_list ap) pg_attribute_printf(3, 0);
 static void archive_close_connection(int code, void *arg);
 static void ShutdownWorkersHard(ParallelState *pstate);
 static void WaitForTerminatingWorkers(ParallelState *pstate);
@@ -88,8 +85,7 @@ static void WaitForTerminatingWorkers(ParallelState *pstate);
 #ifndef WIN32
 static void sigTermHandler(int signum);
 #endif
-static void SetupWorker(ArchiveHandle *AH, int pipefd[2], int worker,
-			RestoreOptions *ropt);
+static void SetupWorker(ArchiveHandle *AH, int pipefd[2], int worker);
 static bool HasEveryWorkerTerminated(ParallelState *pstate);
 
 static void lockTableNoWait(ArchiveHandle *AH, TocEntry *te);
@@ -435,8 +431,7 @@ sigTermHandler(int signum)
  * worker process.
  */
 static void
-SetupWorker(ArchiveHandle *AH, int pipefd[2], int worker,
-			RestoreOptions *ropt)
+SetupWorker(ArchiveHandle *AH, int pipefd[2], int worker)
 {
 	/*
 	 * Call the setup worker function that's defined in the ArchiveHandle.
@@ -445,7 +440,7 @@ SetupWorker(ArchiveHandle *AH, int pipefd[2], int worker,
 	 * properly when we shut down. This happens only that way when it is
 	 * brought down because of an error.
 	 */
-	(AH->SetupWorkerPtr) ((Archive *) AH, ropt);
+	(AH->SetupWorkerPtr) ((Archive *) AH);
 
 	Assert(AH->connection != NULL);
 
@@ -462,12 +457,11 @@ init_spawned_worker_win32(WorkerInfo *wi)
 	ArchiveHandle *AH;
 	int			pipefd[2] = {wi->pipeRead, wi->pipeWrite};
 	int			worker = wi->worker;
-	RestoreOptions *ropt = wi->ropt;
 
 	AH = CloneArchive(wi->AH);
 
 	free(wi);
-	SetupWorker(AH, pipefd, worker, ropt);
+	SetupWorker(AH, pipefd, worker);
 
 	DeCloneArchive(AH);
 	_endthreadex(0);
@@ -481,7 +475,7 @@ init_spawned_worker_win32(WorkerInfo *wi)
  * of threads while it does a fork() on Unix.
  */
 ParallelState *
-ParallelBackupStart(ArchiveHandle *AH, RestoreOptions *ropt)
+ParallelBackupStart(ArchiveHandle *AH)
 {
 	ParallelState *pstate;
 	int			i;
@@ -543,7 +537,6 @@ ParallelBackupStart(ArchiveHandle *AH, RestoreOptions *ropt)
 		/* Allocate a new structure for every worker */
 		wi = (WorkerInfo *) pg_malloc(sizeof(WorkerInfo));
 
-		wi->ropt = ropt;
 		wi->worker = i;
 		wi->AH = AH;
 		wi->pipeRead = pstate->parallelSlot[i].pipeRevRead = pipeMW[PIPE_READ];
@@ -598,7 +591,7 @@ ParallelBackupStart(ArchiveHandle *AH, RestoreOptions *ropt)
 				closesocket(pstate->parallelSlot[j].pipeWrite);
 			}
 
-			SetupWorker(pstate->parallelSlot[i].args->AH, pipefd, i, ropt);
+			SetupWorker(pstate->parallelSlot[i].args->AH, pipefd, i);
 
 			exit(0);
 		}
@@ -1155,7 +1148,7 @@ select_loop(int maxFd, fd_set *workerset)
 		i = select(maxFd + 1, workerset, NULL, NULL, NULL);
 
 		/*
-		 * If we Ctrl-C the master process , it's likely that we interrupt
+		 * If we Ctrl-C the master process, it's likely that we interrupt
 		 * select() here. The signal handler will set wantAbort == true and
 		 * the shutdown journey starts from here. Note that we'll come back
 		 * here later when we tell all workers to terminate and read their
@@ -1326,7 +1319,8 @@ readMessageFromPipe(int fd)
 static int
 pgpipe(int handles[2])
 {
-	pgsocket		s, tmp_sock;
+	pgsocket	s,
+				tmp_sock;
 	struct sockaddr_in serv_addr;
 	int			len = sizeof(serv_addr);
 

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER DOMAIN
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER DOMAIN" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER DOMAIN" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -45,7 +45,7 @@ ALTER DOMAIN \fIname\fR
 ALTER DOMAIN \fIname\fR
     VALIDATE CONSTRAINT \fIconstraint_name\fR
 ALTER DOMAIN \fIname\fR
-    OWNER TO \fInew_owner\fR
+    OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
 ALTER DOMAIN \fIname\fR
     RENAME TO \fInew_name\fR
 ALTER DOMAIN \fIname\fR
@@ -53,7 +53,6 @@ ALTER DOMAIN \fIname\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER DOMAIN\fR
 changes the definition of an existing domain\&. There are several sub\-forms:
 .PP
@@ -179,10 +178,10 @@ The new schema for the domain\&.
 .SH "NOTES"
 .PP
 Currently,
-\fBALTER DOMAIN ADD CONSTRAINT\fR
-and
+\fBALTER DOMAIN ADD CONSTRAINT\fR,
+\fBALTER DOMAIN VALIDATE CONSTRAINT\fR, and
 \fBALTER DOMAIN SET NOT NULL\fR
-will fail if the named domain or any derived domain is used within a composite\-type column of any table in the database\&. They should eventually be improved to be able to verify the new constraint for such nested columns\&.
+will fail if the validated named domain or any derived domain is used within a composite\-type column of any table in the database\&. They should eventually be improved to be able to verify the new constraint for such nested columns\&.
 .SH "EXAMPLES"
 .PP
 To add a
@@ -262,7 +261,6 @@ ALTER DOMAIN zipcode SET SCHEMA customers;
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBALTER DOMAIN\fR
 conforms to the
 SQL

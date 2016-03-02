@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_dumpall
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PG_DUMPALL" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PG_DUMPALL" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,6 @@ pg_dumpall \- extract a PostgreSQL database cluster into a script file
 \fBpg_dumpall\fR [\fIconnection\-option\fR...] [\fIoption\fR...]
 .SH "DESCRIPTION"
 .PP
-
 pg_dumpall
 is a utility for writing out (\(lqdumping\(rq) all
 PostgreSQL
@@ -55,7 +54,6 @@ reads tables from all databases you will most likely have to connect as a databa
 .PP
 The SQL script will be written to the standard output\&. Use the [\-f|file] option or shell operators to redirect it into a file\&.
 .PP
-
 pg_dumpall
 needs to connect several times to the
 PostgreSQL
@@ -96,13 +94,6 @@ Send output to the specified file\&. If this is omitted, the standard output is 
 \fB\-\-globals\-only\fR
 .RS 4
 Dump only global objects (roles and tablespaces), no databases\&.
-.RE
-.PP
-\fB\-i\fR
-.br
-\fB\-\-ignore\-version\fR
-.RS 4
-A deprecated option that is now ignored\&.
 .RE
 .PP
 \fB\-o\fR
@@ -315,7 +306,7 @@ environment variable, if set, else a Unix domain socket connection is attempted\
 .br
 \fB\-\-database=\fR\fB\fIdbname\fR\fR
 .RS 4
-Specifies the name of the database to connect to to dump global objects and discover what other databases should be dumped\&. If not specified, the
+Specifies the name of the database to connect to for dumping global objects and discovering what other databases should be dumped\&. If not specified, the
 postgres
 database will be used, and if that does not exist,
 template1
@@ -373,8 +364,7 @@ file than to rely on manual password entry\&.
 Specifies a role name to be used to create the dump\&. This option causes
 pg_dumpall
 to issue a
-\fBSET ROLE\fR
-\fIrolename\fR
+\fBSET ROLE\fR\fIrolename\fR
 command after connecting to the database\&. It is useful when the authenticated user (specified by
 \fB\-U\fR) lacks privileges needed by
 pg_dumpall, but can switch to a role with the required rights\&. Some installations have a policy against logging in directly as a superuser, and use of this option allows dumps to be made without violating the policy\&.
@@ -413,7 +403,6 @@ on each database so the optimizer has useful statistics\&. You can also run
 \fBvacuumdb \-a \-z\fR
 to analyze all databases\&.
 .PP
-
 pg_dumpall
 requires all needed tablespace directories to exist before the restore; otherwise, database creation will fail for databases in non\-default locations\&.
 .SH "EXAMPLES"

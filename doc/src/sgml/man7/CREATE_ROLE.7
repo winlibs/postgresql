@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE ROLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATE ROLE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATE ROLE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -43,6 +43,7 @@ where \fIoption\fR can be:
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
     | REPLICATION | NOREPLICATION
+    | BYPASSRLS | NOBYPASSRLS
     | CONNECTION LIMIT \fIconnlimit\fR
     | [ ENCRYPTED | UNENCRYPTED ] PASSWORD \*(Aq\fIpassword\fR\*(Aq
     | VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq
@@ -55,7 +56,6 @@ where \fIoption\fR can be:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCREATE ROLE\fR
 adds a new role to a
 PostgreSQL
@@ -165,6 +165,19 @@ REPLICATION
 attribute is a very highly privileged role, and should only be used on roles actually used for replication\&. If not specified,
 NOREPLICATION
 is the default\&.
+.RE
+.PP
+BYPASSRLS
+.br
+NOBYPASSRLS
+.RS 4
+These clauses determine whether a role bypasses every row\-level security (RLS) policy\&.
+NOBYPASSRLS
+is the default\&. Note that pg_dump will set
+row_security
+to
+OFF
+by default, to ensure all contents of a table are dumped out\&. If the user running pg_dump does not have appropriate permissions, an error will be returned\&. The superuser and owner of the table being dumped always bypass RLS\&.
 .RE
 .PP
 CONNECTION LIMIT \fIconnlimit\fR
@@ -306,7 +319,6 @@ privilege\&. Therefore, regard roles that have the
 CREATEROLE
 privilege as almost\-superuser\-roles\&.
 .PP
-
 PostgreSQL
 includes a program
 \fBcreateuser\fR(1)
@@ -397,7 +409,6 @@ CREATE ROLE \fIname\fR [ WITH ADMIN \fIrole_name\fR ]
 .RE
 .\}
 .sp
-
 Multiple initial administrators, and all the other options of
 \fBCREATE ROLE\fR, are
 PostgreSQL

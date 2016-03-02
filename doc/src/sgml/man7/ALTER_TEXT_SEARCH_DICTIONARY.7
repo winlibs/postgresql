@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER TEXT SEARCH DICTIONARY
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER TEXT SEARCH DICTIONARY" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER TEXT SEARCH DICTIONARY" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,12 +36,11 @@ ALTER TEXT SEARCH DICTIONARY \fIname\fR (
     \fIoption\fR [ = \fIvalue\fR ] [, \&.\&.\&. ]
 )
 ALTER TEXT SEARCH DICTIONARY \fIname\fR RENAME TO \fInew_name\fR
-ALTER TEXT SEARCH DICTIONARY \fIname\fR OWNER TO \fInew_owner\fR
+ALTER TEXT SEARCH DICTIONARY \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
 ALTER TEXT SEARCH DICTIONARY \fIname\fR SET SCHEMA \fInew_schema\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER TEXT SEARCH DICTIONARY\fR
 changes the definition of a text search dictionary\&. You can change the dictionary\*(Aqs template\-specific options, or change the dictionary\*(Aqs name or owner\&.
 .PP

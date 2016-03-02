@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER GROUP
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER GROUP" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER GROUP" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,14 +32,19 @@ ALTER_GROUP \- change role name or membership
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER GROUP \fIgroup_name\fR ADD USER \fIuser_name\fR [, \&.\&.\&. ]
-ALTER GROUP \fIgroup_name\fR DROP USER \fIuser_name\fR [, \&.\&.\&. ]
+ALTER GROUP \fIrole_specification\fR ADD USER \fIuser_name\fR [, \&.\&.\&. ]
+ALTER GROUP \fIrole_specification\fR DROP USER \fIuser_name\fR [, \&.\&.\&. ]
+
+where \fIrole_specification\fR can be:
+
+    \fIrole_name\fR
+  | CURRENT_USER
+  | SESSION_USER
 
 ALTER GROUP \fIgroup_name\fR RENAME TO \fInew_name\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER GROUP\fR
 changes the attributes of a user group\&. This is an obsolete command, though still accepted for backwards compatibility, because groups (and users too) have been superseded by the more general concept of roles\&.
 .PP

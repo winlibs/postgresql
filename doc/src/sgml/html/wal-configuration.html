@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Reliability and the Write-Ahead Log"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -146,13 +146,15 @@ CLASS="ACRONYM"
 ><P
 >   The server's checkpointer process automatically performs
    a checkpoint every so often.  A checkpoint is begun every <A
-HREF="runtime-config-wal.html#GUC-CHECKPOINT-SEGMENTS"
->checkpoint_segments</A
-> log segments, or every <A
 HREF="runtime-config-wal.html#GUC-CHECKPOINT-TIMEOUT"
 >checkpoint_timeout</A
-> seconds, whichever comes first.
-   The default settings are 3 segments and 300 seconds (5 minutes), respectively.
+> seconds, or if
+   <A
+HREF="runtime-config-wal.html#GUC-MAX-WAL-SIZE"
+>max_wal_size</A
+> is about to be exceeded,
+   whichever comes first.
+   The default settings are 5 minutes and 1 GB, respectively.
    If no WAL has been written since the previous checkpoint, new checkpoints
    will be skipped even if <TT
 CLASS="VARNAME"
@@ -174,11 +176,11 @@ CLASS="COMMAND"
 ><P
 >   Reducing <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
+>checkpoint_timeout</TT
 > and/or
    <TT
 CLASS="VARNAME"
->checkpoint_timeout</TT
+>max_wal_size</TT
 > causes checkpoints to occur
    more often. This allows faster after-crash recovery, since less work
    will need to be redone. However, one must balance this against the
@@ -212,7 +214,7 @@ CLASS="VARNAME"
    a message will be output to the server log recommending increasing
    <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
+>max_wal_size</TT
 >.  Occasional appearance of such
    a message is not cause for alarm, but if it appears often then the
    checkpoint control parameters should be increased. Bulk operations such
@@ -222,7 +224,7 @@ CLASS="COMMAND"
 > transfers might cause a number of such warnings
    to appear if you have not set <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
+>max_wal_size</TT
 > high
    enough.
   </P
@@ -236,16 +238,16 @@ HREF="runtime-config-wal.html#GUC-CHECKPOINT-COMPLETION-TARGET"
 >, which is
    given as a fraction of the checkpoint interval.
    The I/O rate is adjusted so that the checkpoint finishes when the
-   given fraction of <TT
-CLASS="VARNAME"
->checkpoint_segments</TT
-> WAL segments
-   have been consumed since checkpoint start, or the given fraction of
+   given fraction of
    <TT
 CLASS="VARNAME"
 >checkpoint_timeout</TT
-> seconds have elapsed,
-   whichever is sooner.  With the default value of 0.5,
+> seconds have elapsed, or before
+   <TT
+CLASS="VARNAME"
+>max_wal_size</TT
+> is exceeded, whichever is sooner.
+   With the default value of 0.5,
    <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
@@ -270,36 +272,64 @@ CLASS="VARNAME"
    unexpected variation in the number of WAL segments needed.
   </P
 ><P
->   There will always be at least one WAL segment file, and will normally
-   not be more than (2 + <TT
+>   The number of WAL segment files in <TT
+CLASS="FILENAME"
+>pg_xlog</TT
+> directory depends on
+   <TT
 CLASS="VARNAME"
->checkpoint_completion_target</TT
->) * <TT
+>min_wal_size</TT
+>, <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
-> + 1
-   or <TT
+>max_wal_size</TT
+> and
+   the amount of WAL generated in previous checkpoint cycles. When old log
+   segment files are no longer needed, they are removed or recycled (that is,
+   renamed to become future segments in the numbered sequence). If, due to a
+   short-term peak of log output rate, <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
-> + <A
+>max_wal_size</TT
+> is
+   exceeded, the unneeded segment files will be removed until the system
+   gets back under this limit. Below that limit, the system recycles enough
+   WAL files to cover the estimated need until the next checkpoint, and
+   removes the rest. The estimate is based on a moving average of the number
+   of WAL files used in previous checkpoint cycles. The moving average
+   is increased immediately if the actual usage exceeds the estimate, so it
+   accommodates peak usage rather average usage to some extent.
+   <TT
+CLASS="VARNAME"
+>min_wal_size</TT
+> puts a minimum on the amount of WAL files
+   recycled for future usage; that much WAL is always recycled for future use,
+   even if the system is idle and the WAL usage estimate suggests that little
+   WAL is needed.
+  </P
+><P
+>   Independently of <TT
+CLASS="VARNAME"
+>max_wal_size</TT
+>,
+   <A
 HREF="runtime-config-replication.html#GUC-WAL-KEEP-SEGMENTS"
 >wal_keep_segments</A
-> + 1
-   files.  Each segment file is normally 16 MB (though this size can be
-   altered when building the server).  You can use this to estimate space
-   requirements for <ACRONYM
-CLASS="ACRONYM"
->WAL</ACRONYM
->.
-   Ordinarily, when old log segment files are no longer needed, they
-   are recycled (that is, renamed to become future segments in the numbered
-   sequence). If, due to a short-term peak of log output rate, there
-   are more than 3 * <TT
+> + 1 most recent WAL files are
+   kept at all times. Also, if WAL archiving is used, old segments can not be
+   removed or recycled until they are archived. If WAL archiving cannot keep up
+   with the pace that WAL is generated, or if <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
-> + 1
-   segment files, the unneeded segment files will be deleted instead
-   of recycled until the system gets back under this limit.
+>archive_command</TT
+>
+   fails repeatedly, old WAL files will accumulate in <TT
+CLASS="FILENAME"
+>pg_xlog</TT
+>
+   until the situation is resolved. A slow or failed standby server that
+   uses a replication slot will have the same effect (see
+   <A
+HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
+>Section 25.2.6</A
+>).
   </P
 ><P
 >   In archive recovery or standby mode, the server periodically performs
@@ -325,12 +355,21 @@ CLASS="FILENAME"
 CLASS="VARNAME"
 >checkpoint_timeout</TT
 > seconds have passed since the last
-   restartpoint. In standby mode, a restartpoint is also triggered if at
-   least <TT
+   restartpoint, or if WAL size is about to exceed
+   <TT
 CLASS="VARNAME"
->checkpoint_segments</TT
-> log segments have been replayed
-   since the last restartpoint.
+>max_wal_size</TT
+>. However, because of limitations on when a
+   restartpoint can be performed, <TT
+CLASS="VARNAME"
+>max_wal_size</TT
+> is often exceeded
+   during recovery, by up to one checkpoint cycle's worth of WAL.
+   (<TT
+CLASS="VARNAME"
+>max_wal_size</TT
+> is never a hard limit anyway, so you should
+   always leave plenty of headroom to avoid running out of disk space.)
   </P
 ><P
 >   There are two commonly used internal <ACRONYM
@@ -339,14 +378,14 @@ CLASS="ACRONYM"
 > functions:
    <CODE
 CLASS="FUNCTION"
->XLogInsert</CODE
+>XLogInsertRecord</CODE
 > and <CODE
 CLASS="FUNCTION"
 >XLogFlush</CODE
 >.
    <CODE
 CLASS="FUNCTION"
->XLogInsert</CODE
+>XLogInsertRecord</CODE
 > is used to place a new record into
    the <ACRONYM
 CLASS="ACRONYM"
@@ -354,7 +393,7 @@ CLASS="ACRONYM"
 > buffers in shared memory. If there is no
    space for the new record, <CODE
 CLASS="FUNCTION"
->XLogInsert</CODE
+>XLogInsertRecord</CODE
 > will have
    to write (move to kernel cache) a few filled <ACRONYM
 CLASS="ACRONYM"
@@ -362,7 +401,7 @@ CLASS="ACRONYM"
 >
    buffers. This is undesirable because <CODE
 CLASS="FUNCTION"
->XLogInsert</CODE
+>XLogInsertRecord</CODE
 >
    is used on every database low level modification (for example, row
    insertion) at a time when an exclusive lock is held on affected
@@ -388,7 +427,7 @@ CLASS="FUNCTION"
 > requests might
    not occur often enough to prevent <CODE
 CLASS="FUNCTION"
->XLogInsert</CODE
+>XLogInsertRecord</CODE
 >
    from having to do writes.  On such systems
    one should increase the number of <ACRONYM
@@ -569,7 +608,7 @@ CLASS="PRODUCTNAME"
    compiled with support for it) will result in each
    <CODE
 CLASS="FUNCTION"
->XLogInsert</CODE
+>XLogInsertRecord</CODE
 > and <CODE
 CLASS="FUNCTION"
 >XLogFlush</CODE

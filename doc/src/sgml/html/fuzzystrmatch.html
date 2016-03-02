@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="FUZZYSTRMATCH"
->F.15. fuzzystrmatch</A
+>F.14. fuzzystrmatch</A
 ></H1
 ><P
 >  The <TT
@@ -146,8 +146,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN159502"
->F.15.1. Soundex</A
+NAME="AEN168709"
+>F.14.1. Soundex</A
 ></H2
 ><P
 >   The Soundex system is a method of matching similar-sounding names
@@ -211,8 +211,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN159518"
->F.15.2. Levenshtein</A
+NAME="AEN168725"
+>F.14.2. Levenshtein</A
 ></H2
 ><P
 >   This function calculates the Levenshtein distance between two strings:
@@ -231,21 +231,37 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >target</TT
 > can be any
-   non-null string, with a maximum of 255 bytes.  The cost parameters
+   non-null string, with a maximum of 255 characters.  The cost parameters
    specify how much to charge for a character insertion, deletion, or
    substitution, respectively.  You can omit the cost parameters, as in
    the second version of the function; in that case they all default to 1.
-   <TT
+  </P
+><P
+>   <CODE
+CLASS="FUNCTION"
+>levenshtein_less_equal</CODE
+> is an accelerated version of the
+   Levenshtein function for use when only small distances are of interest.
+   If the actual distance is less than or equal to <TT
 CLASS="LITERAL"
->levenshtein_less_equal</TT
-> is accelerated version of
-   levenshtein function for low values of distance. If actual distance
-   is less or equal then max_d, then <TT
+>max_d</TT
+>,
+   then <CODE
+CLASS="FUNCTION"
+>levenshtein_less_equal</CODE
+> returns the correct
+   distance; otherwise it returns some value greater than <TT
 CLASS="LITERAL"
->levenshtein_less_equal</TT
->
-   returns accurate value of it. Otherwise this function returns value
-   which is greater than max_d.
+>max_d</TT
+>.
+   If <TT
+CLASS="LITERAL"
+>max_d</TT
+> is negative then the behavior is the same as
+   <CODE
+CLASS="FUNCTION"
+>levenshtein</CODE
+>.
   </P
 ><P
 >   Examples:
@@ -281,8 +297,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN159533"
->F.15.3. Metaphone</A
+NAME="AEN168745"
+>F.14.3. Metaphone</A
 ></H2
 ><P
 >   Metaphone, like Soundex, is based on the idea of constructing a
@@ -323,8 +339,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN159545"
->F.15.4. Double Metaphone</A
+NAME="AEN168757"
+>F.14.4. Double Metaphone</A
 ></H2
 ><P
 >   The Double Metaphone system computes two <SPAN

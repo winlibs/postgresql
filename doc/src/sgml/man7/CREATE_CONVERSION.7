@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE CONVERSION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATE CONVERSION" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATE CONVERSION" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,7 +37,6 @@ CREATE [ DEFAULT ] CONVERSION \fIname\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCREATE CONVERSION\fR
 defines a new conversion between character set encodings\&. Also, conversions that are marked
 DEFAULT
@@ -123,7 +122,6 @@ CREATE CONVERSION myconv FOR \*(AqUTF8\*(Aq TO \*(AqLATIN1\*(Aq FROM myfunc;
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBCREATE CONVERSION\fR
 is a
 PostgreSQL

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Documentation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -208,6 +208,34 @@ CLASS="PRODUCTNAME"
 ></DD
 ><DT
 ><A
+HREF="http://xmlsoft.org/"
+TARGET="_top"
+>Libxml2</A
+> for <TT
+CLASS="COMMAND"
+>xmllint</TT
+></DT
+><DD
+><P
+>       This library and the <TT
+CLASS="COMMAND"
+>xmllint</TT
+> tool it contains are
+       used for processing XML.  Many developers will already
+       have <SPAN
+CLASS="APPLICATION"
+>Libxml2</SPAN
+> installed, because it is also
+       used when building the PostgreSQL code.  Note, however,
+       that <TT
+CLASS="COMMAND"
+>xmllint</TT
+> might need to be installed from a
+       separate subpackage.
+      </P
+></DD
+><DT
+><A
 HREF="http://xmlsoft.org/XSLT/"
 TARGET="_top"
 >Libxslt</A
@@ -286,52 +314,15 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN167208"
->J.2.1. <SPAN
-CLASS="PRODUCTNAME"
->Linux</SPAN
-> <ACRONYM
-CLASS="ACRONYM"
->RPM</ACRONYM
-> Installation</A
+NAME="AEN175305"
+>J.2.1. Installation on Fedora, RHEL, and Derivatives</A
 ></H2
 ><P
->    Most vendors provide a complete RPM set for DocBook processing in
-    their distribution.  Look for an <SPAN
-CLASS="QUOTE"
->"SGML"</SPAN
-> option while
-    installing, or the following packages:
-    <TT
-CLASS="FILENAME"
->sgml-common</TT
->, <TT
-CLASS="FILENAME"
->docbook</TT
->,
-    <TT
-CLASS="FILENAME"
->stylesheets</TT
->, <TT
-CLASS="FILENAME"
->openjade</TT
->
-    (or <TT
-CLASS="FILENAME"
->jade</TT
->).  You may also need <TT
-CLASS="FILENAME"
->sgml-tools</TT
->
-    and either <TT
-CLASS="FILENAME"
->xsltproc</TT
-> or <TT
-CLASS="FILENAME"
->libxslt</TT
->.  If your
-    distributor does not provide these then you should be able to make
-    use of the packages from some other, reasonably compatible vendor.
+>    To install the required packages, use:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>yum install docbook-dtds docbook-style-dsssl docbook-style-xsl libxslt openjade</PRE
+><P>
    </P
 ></DIV
 ><DIV
@@ -339,8 +330,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN167222"
->J.2.2. FreeBSD Installation</A
+NAME="AEN175309"
+>J.2.2. Installation on FreeBSD</A
 ></H2
 ><P
 >    The FreeBSD Documentation Project is itself a heavy user of
@@ -358,21 +349,21 @@ CLASS="QUOTE"
 ><P
 ><TT
 CLASS="FILENAME"
->textproc/sp</TT
+>textproc/docbook-sgml</TT
 ></P
 ></LI
 ><LI
 ><P
 ><TT
 CLASS="FILENAME"
->textproc/openjade</TT
+>textproc/docbook-xml</TT
 ></P
 ></LI
 ><LI
 ><P
 ><TT
 CLASS="FILENAME"
->textproc/iso8879</TT
+>textproc/docbook-xsl</TT
 ></P
 ></LI
 ><LI
@@ -386,7 +377,14 @@ CLASS="FILENAME"
 ><P
 ><TT
 CLASS="FILENAME"
->textproc/docbook-420</TT
+>textproc/libxslt</TT
+></P
+></LI
+><LI
+><P
+><TT
+CLASS="FILENAME"
+>textproc/openjade</TT
 ></P
 ></LI
 ></UL
@@ -407,28 +405,6 @@ CLASS="FILENAME"
     also be of interest.
    </P
 ><P
->    It's possible that the ports do not update the main catalog file
-    in <TT
-CLASS="FILENAME"
->/usr/local/share/sgml/catalog.ports</TT
-> or that the
-    order isn't proper.  Be sure to have the following lines in the beginning
-    of the file:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CATALOG "openjade/catalog"
-CATALOG "iso8879/catalog"
-CATALOG "docbook/dsssl/modular/catalog"
-CATALOG "docbook/4.2/catalog"</PRE
-><P>
-    If you do not want to edit the file you can also set the
-    environment variable <TT
-CLASS="ENVAR"
->SGML_CATALOG_FILES</TT
-> to a
-    colon-separated list of catalog files (such as the one above).
-   </P
-><P
 >    More information about the FreeBSD documentation tools can be
     found in the <A
 HREF="http://www.freebsd.org/doc/en_US.ISO8859-1/books/fdp-primer/tools.html"
@@ -442,7 +418,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN167252"
+NAME="AEN175338"
 >J.2.3. Debian Packages</A
 ></H2
 ><P
@@ -454,7 +430,7 @@ CLASS="PRODUCTNAME"
     To install, simply use:
 </P><PRE
 CLASS="PROGRAMLISTING"
->apt-get install docbook docbook-dsssl docbook-xsl openjade1.3 opensp xsltproc</PRE
+>apt-get install docbook docbook-dsssl docbook-xsl libxml2-utils openjade1.3 opensp xsltproc</PRE
 ><P>
    </P
 ></DIV
@@ -463,7 +439,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN167257"
+NAME="AEN175343"
 >J.2.4. OS X</A
 ></H2
 ><P
@@ -479,7 +455,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN167261"
+NAME="AEN175347"
 >J.2.5. Manual Installation from Source</A
 ></H2
 ><P
@@ -501,7 +477,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN167266"
+NAME="AEN175352"
 >J.2.5.1. Installing OpenJade</A
 ></H3
 ><DIV
@@ -627,7 +603,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN167293"
+NAME="AEN175379"
 >J.2.5.2. Installing the <SPAN
 CLASS="PRODUCTNAME"
 >DocBook</SPAN
@@ -761,7 +737,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN167329"
+NAME="AEN175415"
 >J.2.5.3. Installing the DocBook <ACRONYM
 CLASS="ACRONYM"
 >DSSSL</ACRONYM
@@ -837,7 +813,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN167347"
+NAME="AEN175433"
 >J.2.5.4. Installing <SPAN
 CLASS="PRODUCTNAME"
 >JadeTeX</SPAN

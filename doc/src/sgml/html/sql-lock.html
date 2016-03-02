@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-LOCK"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN81865"
+NAME="AEN85131"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN81865"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN81868"
+NAME="AEN85134"
 ></A
 ><H2
 >Synopsis</H2
@@ -140,7 +140,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81874"
+NAME="AEN85140"
 ></A
 ><H2
 >Description</H2
@@ -179,9 +179,12 @@ CLASS="COMMAND"
 >
    provides for cases when you might need more restrictive locking.
    For example, suppose an application runs a transaction at the
-   Read Committed isolation level and needs to ensure that data in a
-   table remains stable for the duration of the transaction. To
-   achieve this you could obtain <TT
+   <TT
+CLASS="LITERAL"
+>READ COMMITTED</TT
+> isolation level and needs to ensure that
+   data in a table remains stable for the duration of the transaction.
+   To achieve this you could obtain <TT
 CLASS="LITERAL"
 >SHARE</TT
 > lock mode over the
@@ -296,7 +299,7 @@ HREF="explicit-locking.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81909"
+NAME="AEN85176"
 ></A
 ><H2
 >Parameters</H2
@@ -391,7 +394,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81938"
+NAME="AEN85205"
 ></A
 ><H2
 >Notes</H2
@@ -403,18 +406,35 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >SELECT</TT
 >
-    privileges on the target table.  All other forms of <TT
-CLASS="COMMAND"
->LOCK</TT
->
-    require table-level <TT
+    privileges on the target table.  <TT
+CLASS="LITERAL"
+>LOCK TABLE ... IN ROW EXCLUSIVE
+    MODE</TT
+> requires <TT
+CLASS="LITERAL"
+>INSERT</TT
+>, <TT
 CLASS="LITERAL"
 >UPDATE</TT
 >, <TT
 CLASS="LITERAL"
 >DELETE</TT
->, or
+>,
+    or <TT
+CLASS="LITERAL"
+>TRUNCATE</TT
+> privileges on the target table. All other forms of
     <TT
+CLASS="COMMAND"
+>LOCK</TT
+> require table-level <TT
+CLASS="LITERAL"
+>UPDATE</TT
+>, <TT
+CLASS="LITERAL"
+>DELETE</TT
+>,
+    or <TT
 CLASS="LITERAL"
 >TRUNCATE</TT
 > privileges.
@@ -488,7 +508,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81962"
+NAME="AEN85234"
 ></A
 ><H2
 >Examples</H2
@@ -531,7 +551,7 @@ COMMIT WORK;</PRE
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81970"
+NAME="AEN85242"
 ></A
 ><H2
 >Compatibility</H2

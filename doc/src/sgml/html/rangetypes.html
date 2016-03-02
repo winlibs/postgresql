@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -232,7 +232,7 @@ INSERT INTO reservation VALUES
     (1108, '[2010-01-01 14:30, 2010-01-01 15:30)');
 
 -- Containment
-SELECT int4range(10, 20) @&#62; 3;
+SELECT int4range(10, 20) @&gt; 3;
 
 -- Overlaps
 SELECT numrange(11.1, 22.2) &amp;&amp; numrange(20.0, 30.0);
@@ -730,6 +730,11 @@ CLASS="QUOTE"
    function in this example.
   </P
 ><P
+>   Defining your own range type also allows you to specify a different
+   subtype B-tree operator class or collation to use, so as to change the sort
+   ordering that determines which values fall into a given range.
+  </P
+><P
 >   If the subtype is considered to have discrete rather than continuous
    values, the <TT
 CLASS="COMMAND"
@@ -764,52 +769,68 @@ CLASS="TYPE"
    or perhaps throw an error instead.
   </P
 ><P
->   Defining your own range type also allows you to specify a different
-   subtype B-tree operator class or collation to use, so as to change the sort
-   ordering that determines which values fall into a given range.
-  </P
-><P
->   In addition, any range type that is meant to be used with GiST or SP-GiST indexes
-   should define a subtype difference, or <TT
+>   In addition, any range type that is meant to be used with GiST or SP-GiST
+   indexes should define a subtype difference, or <TT
 CLASS="LITERAL"
 >subtype_diff</TT
->, function.
-   (the index will still work without <TT
+>,
+   function.  (The index will still work without <TT
 CLASS="LITERAL"
 >subtype_diff</TT
->, but it is
-   likely to be considerably less efficient than if a difference function is
-   provided.)  The subtype difference function takes two input values of the
-   subtype, and returns their difference (i.e., <TT
+>,
+   but it is likely to be considerably less efficient than if a difference
+   function is provided.)  The subtype difference function takes two input
+   values of the subtype, and returns their difference
+   (i.e., <TT
 CLASS="REPLACEABLE"
 ><I
 >X</I
 ></TT
-> minus
-   <TT
+> minus <TT
 CLASS="REPLACEABLE"
 ><I
 >Y</I
 ></TT
->) represented as a <TT
+>) represented as
+   a <TT
 CLASS="TYPE"
 >float8</TT
-> value.  In our example
-   above, the function that underlies the regular <TT
+> value.  In our example above, the
+   function <CODE
+CLASS="FUNCTION"
+>float8mi</CODE
+> that underlies the regular <TT
 CLASS="TYPE"
 >float8</TT
-> minus
-   operator can be used; but for any other subtype, some type conversion would
-   be necessary.  Some creative thought about how to represent differences as
-   numbers might be needed, too.  To the greatest extent possible, the
-   <TT
+>
+   minus operator can be used; but for any other subtype, some type
+   conversion would be necessary.  Some creative thought about how to
+   represent differences as numbers might be needed, too.  To the greatest
+   extent possible, the <TT
 CLASS="LITERAL"
 >subtype_diff</TT
-> function should agree with the sort ordering
-   implied by the selected operator class and collation; that is, its result
-   should be positive whenever its first argument is greater than its second
-   according to the sort ordering.
+> function should agree with
+   the sort ordering implied by the selected operator class and collation;
+   that is, its result should be positive whenever its first argument is
+   greater than its second according to the sort ordering.
   </P
+><P
+>   A less-oversimplified example of a <TT
+CLASS="LITERAL"
+>subtype_diff</TT
+> function is:
+  </P
+><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION time_subtype_diff(x time, y time) RETURNS float8 AS
+'SELECT EXTRACT(EPOCH FROM (x - y))' LANGUAGE sql STRICT IMMUTABLE;
+
+CREATE TYPE timerange AS RANGE (
+    subtype = time,
+    subtype_diff = time_subtype_diff
+);
+
+SELECT '[11:10, 23:00]'::timerange;</PRE
 ><P
 >   See <A
 HREF="sql-createtype.html"
@@ -831,7 +852,7 @@ NAME="RANGETYPES-INDEXING"
    For instance, to create a GiST index:
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE INDEX reservation_idx ON reservation USING gist (during);</PRE
+>CREATE INDEX reservation_idx ON reservation USING GIST (during);</PRE
 ><P>
    A GiST or SP-GiST index can accelerate queries involving these range operators:
    <TT
@@ -922,7 +943,7 @@ CLASS="QUOTE"
 CLASS="PROGRAMLISTING"
 >CREATE TABLE reservation (
     during tsrange,
-    EXCLUDE USING gist (during WITH &amp;&amp;)
+    EXCLUDE USING GIST (during WITH &amp;&amp;)
 );</PRE
 ><P>
 
@@ -965,7 +986,7 @@ CLASS="PROGRAMLISTING"
 CREATE TABLE room_reservation (
     room text,
     during tsrange,
-    EXCLUDE USING gist (room WITH =, during WITH &amp;&amp;)
+    EXCLUDE USING GIST (room WITH =, during WITH &amp;&amp;)
 );
 
 INSERT INTO room_reservation VALUES

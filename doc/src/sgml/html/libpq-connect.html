@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -309,7 +309,7 @@ CLASS="LITERAL"
 >       If  any  parameter is <TT
 CLASS="SYMBOL"
 >NULL</TT
-> or an emptry string, the corresponding
+> or an empty string, the corresponding
        environment variable (see <A
 HREF="libpq-envars.html"
 >Section 31.14</A
@@ -1402,7 +1402,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN41151"
+NAME="AEN42508"
 >31.1.1.1. Keyword/Value Connection Strings</A
 ></H3
 ><P
@@ -1445,7 +1445,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN41162"
+NAME="AEN42519"
 >31.1.1.2. Connection URIs</A
 ></H3
 ><P
@@ -1851,8 +1851,8 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        Adds command-line options to send to the server at run-time.
-        For example, setting this to <TT
+>        Specifies command-line options to send to the server at connection
+        start.  For example, setting this to <TT
 CLASS="LITERAL"
 >-c geqo=off</TT
 > sets the
@@ -1863,7 +1863,16 @@ CLASS="VARNAME"
         <TT
 CLASS="LITERAL"
 >off</TT
->.  For a detailed discussion of the available
+>.  Spaces within this string are considered to
+        separate command-line arguments, unless escaped with a backslash
+        (<TT
+CLASS="LITERAL"
+>\</TT
+>); write <TT
+CLASS="LITERAL"
+>\\</TT
+> to represent a literal
+        backslash.  For a detailed discussion of the available
         options, consult <A
 HREF="runtime-config.html"
 >Chapter 18</A
@@ -2132,7 +2141,7 @@ CLASS="ACRONYM"
             trusted <ACRONYM
 CLASS="ACRONYM"
 >CA</ACRONYM
-> and that the server host name
+> and that the requested server host name
             matches that in the certificate
            </P
 ></DD

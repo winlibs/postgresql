@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PGTRGM"
->F.31. pg_trgm</A
+>F.30. pg_trgm</A
 ></H1
 ><P
 >  The <TT
@@ -110,8 +110,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN162964"
->F.31.1. Trigram (or Trigraph) Concepts</A
+NAME="AEN172449"
+>F.30.1. Trigram (or Trigraph) Concepts</A
 ></H2
 ><P
 >   A trigram is a group of three consecutive characters taken
@@ -244,8 +244,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN162998"
->F.31.2. Functions and Operators</A
+NAME="AEN172483"
+>F.30.2. Functions and Operators</A
 ></H2
 ><P
 >   The functions provided by the <TT
@@ -254,11 +254,11 @@ CLASS="FILENAME"
 > module
    are shown in <A
 HREF="pgtrgm.html#PGTRGM-FUNC-TABLE"
->Table F-22</A
+>Table F-23</A
 >, the operators
    in <A
 HREF="pgtrgm.html#PGTRGM-OP-TABLE"
->Table F-23</A
+>Table F-24</A
 >.
   </P
 ><DIV
@@ -268,7 +268,7 @@ NAME="PGTRGM-FUNC-TABLE"
 ></A
 ><P
 ><B
->Table F-22. <TT
+>Table F-23. <TT
 CLASS="FILENAME"
 >pg_trgm</TT
 > Functions</B
@@ -372,7 +372,7 @@ NAME="PGTRGM-OP-TABLE"
 ></A
 ><P
 ><B
->Table F-23. <TT
+>Table F-24. <TT
 CLASS="FILENAME"
 >pg_trgm</TT
 > Operators</B
@@ -457,8 +457,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN163078"
->F.31.3. Index Support</A
+NAME="AEN172563"
+>F.30.3. Index Support</A
 ></H2
 ><P
 >   The <TT
@@ -491,12 +491,12 @@ CLASS="LITERAL"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >CREATE TABLE test_trgm (t text);
-CREATE INDEX trgm_idx ON test_trgm USING gist (t gist_trgm_ops);</PRE
+CREATE INDEX trgm_idx ON test_trgm USING GIST (t gist_trgm_ops);</PRE
 ><P>
 or
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE INDEX trgm_idx ON test_trgm USING gin (t gin_trgm_ops);</PRE
+>CREATE INDEX trgm_idx ON test_trgm USING GIN (t gin_trgm_ops);</PRE
 ><P>
   </P
 ><P
@@ -614,8 +614,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN163111"
->F.31.4. Text Search Integration</A
+NAME="AEN172596"
+>F.30.4. Text Search Integration</A
 ></H2
 ><P
 >   Trigram matching is a very useful tool when used in conjunction
@@ -656,7 +656,7 @@ CLASS="FUNCTION"
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE INDEX words_idx ON words USING gin(word gin_trgm_ops);</PRE
+>CREATE INDEX words_idx ON words USING GIN (word gin_trgm_ops);</PRE
 ><P>
 
    Now, a <TT
@@ -690,8 +690,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN163126"
->F.31.5. References</A
+NAME="AEN172611"
+>F.30.5. References</A
 ></H2
 ><P
 >   GiST Development Site
@@ -715,8 +715,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN163132"
->F.31.6. Authors</A
+NAME="AEN172617"
+>F.30.6. Authors</A
 ></H2
 ><P
 >   Oleg Bartunov <CODE

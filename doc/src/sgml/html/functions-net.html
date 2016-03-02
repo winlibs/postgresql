@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -856,6 +856,76 @@ CLASS="LITERAL"
 ><TT
 CLASS="LITERAL"
 >192.168.1.5/32</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>inet_same_family(<TT
+CLASS="TYPE"
+>inet</TT
+>, <TT
+CLASS="TYPE"
+>inet</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>are the addresses from the same family?</TD
+><TD
+><TT
+CLASS="LITERAL"
+>inet_same_family('192.168.1.5/24', '::1')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>false</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>inet_merge(<TT
+CLASS="TYPE"
+>inet</TT
+>, <TT
+CLASS="TYPE"
+>inet</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>cidr</TT
+></TD
+><TD
+>the smallest network which includes both of the given networks</TD
+><TD
+><TT
+CLASS="LITERAL"
+>inet_merge('192.168.1.5/24', '192.168.2.5/24')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>192.168.0.0/22</TT
 ></TD
 ></TR
 ></TBODY

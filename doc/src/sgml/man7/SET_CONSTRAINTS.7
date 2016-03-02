@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SET CONSTRAINTS
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "SET CONSTRAINTS" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "SET CONSTRAINTS" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,6 @@ SET CONSTRAINTS { ALL | \fIname\fR [, \&.\&.\&.] } { DEFERRED | IMMEDIATE }
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBSET CONSTRAINTS\fR
 sets the behavior of constraint checking within the current transaction\&.
 IMMEDIATE
@@ -58,7 +57,6 @@ and is not affected by the
 command\&. The first two classes start every transaction in the indicated mode, but their behavior can be changed within a transaction by
 \fBSET CONSTRAINTS\fR\&.
 .PP
-
 \fBSET CONSTRAINTS\fR
 with a list of constraint names changes the mode of just those constraints (which must all be deferrable)\&. Each constraint name can be schema\-qualified\&. The current schema search path is used to find the first matching name if no schema name is specified\&.
 \fBSET CONSTRAINTS ALL\fR

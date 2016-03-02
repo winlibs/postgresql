@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_restore
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PG_RESTORE" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PG_RESTORE" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,6 @@ pg_restore \- restore a PostgreSQL database from an archive file created by pg_d
 \fBpg_restore\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\fIfilename\fR]
 .SH "DESCRIPTION"
 .PP
-
 pg_restore
 is a utility for restoring a
 PostgreSQL
@@ -44,7 +43,6 @@ in one of the non\-plain\-text formats\&. It will issue the commands necessary t
 pg_restore
 to be selective about what is restored, or even to reorder the items prior to being restored\&. The archive files are designed to be portable across architectures\&.
 .PP
-
 pg_restore
 can operate in two modes\&. If a database name is specified,
 pg_restore
@@ -64,7 +62,6 @@ will not be able to load the data using
 statements\&.
 .SH "OPTIONS"
 .PP
-
 pg_restore
 accepts the following command line arguments\&.
 .PP
@@ -164,13 +161,6 @@ The archive is a
 \fBtar\fR
 archive\&.
 .RE
-.RE
-.PP
-\fB\-i\fR
-.br
-\fB\-\-ignore\-version\fR
-.RS 4
-A deprecated option that is now ignored\&.
 .RE
 .PP
 \fB\-I \fR\fB\fIindex\fR\fR
@@ -368,6 +358,25 @@ PostgreSQL
 superuser\&.
 .RE
 .PP
+\fB\-\-enable\-row\-security\fR
+.RS 4
+This option is relevant only when restoring the contents of a table which has row security\&. By default,
+pg_restore
+will set
+row_security
+to off, to ensure that all data is restored in to the table\&. If the user does not have sufficient privileges to bypass row security, then an error is thrown\&. This parameter instructs
+pg_restore
+to set
+row_security
+to on instead, allowing the user to attempt to restore the contents of the table with row security enabled\&. This might still fail if the user does not have the right to insert the rows from the dump into the table\&.
+.sp
+Note that this option currently also requires the dump be in
+\fBINSERT\fR
+format, as
+\fBCOPY TO\fR
+does not support row security\&.
+.RE
+.PP
 \fB\-\-if\-exists\fR
 .RS 4
 Use conditional commands (i\&.e\&. add an
@@ -426,7 +435,6 @@ pg_restore
 command line arguments, and exit\&.
 .RE
 .PP
-
 pg_restore
 also accepts the following command line arguments for connection parameters:
 .PP
@@ -486,8 +494,7 @@ to avoid the extra connection attempt\&.
 Specifies a role name to be used to perform the restore\&. This option causes
 pg_restore
 to issue a
-\fBSET ROLE\fR
-\fIrolename\fR
+\fBSET ROLE\fR\fIrolename\fR
 command after connecting to the database\&. It is useful when the authenticated user (specified by
 \fB\-U\fR) lacks privileges needed by
 pg_restore, but can switch to a role with the required rights\&. Some installations have a policy against logging in directly as a superuser, and use of this option allows restores to be performed without violating the policy\&.

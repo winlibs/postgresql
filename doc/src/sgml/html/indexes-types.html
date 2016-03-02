@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -100,7 +100,8 @@ NAME="INDEXES-TYPES"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > provides several index types:
-   B-tree, Hash, GiST, SP-GiST and GIN.  Each index type uses a different
+   B-tree, Hash, GiST, SP-GiST, GIN and BRIN.
+   Each index type uses a different
    algorithm that is best suited to different types of queries.
    By default, the <TT
 CLASS="COMMAND"
@@ -256,7 +257,7 @@ CLASS="REPLACEABLE"
 ><I
 >table</I
 ></TT
-> USING hash (<TT
+> USING HASH (<TT
 CLASS="REPLACEABLE"
 ><I
 >column</I
@@ -419,7 +420,7 @@ HREF="functions-geometry.html"
    The GiST operator classes included in the standard distribution are
    documented in <A
 HREF="gist-builtin-opclasses.html#GIST-BUILTIN-OPCLASSES-TABLE"
->Table 56-1</A
+>Table 59-1</A
 >.
    Many other GiST operator
    classes are available in the <TT
@@ -428,7 +429,7 @@ CLASS="LITERAL"
 > collection or as separate
    projects.  For more information see <A
 HREF="gist.html"
->Chapter 56</A
+>Chapter 59</A
 >.
   </P
 ><P
@@ -445,7 +446,7 @@ CLASS="PROGRAMLISTING"
    to do this is again dependent on the particular operator class being used.
    In <A
 HREF="gist-builtin-opclasses.html#GIST-BUILTIN-OPCLASSES-TABLE"
->Table 56-1</A
+>Table 59-1</A
 >, operators that can be
    used in this way are listed in the column <SPAN
 CLASS="QUOTE"
@@ -527,11 +528,11 @@ HREF="functions-geometry.html"
    The SP-GiST operator classes included in the standard distribution are
    documented in <A
 HREF="spgist-builtin-opclasses.html#SPGIST-BUILTIN-OPCLASSES-TABLE"
->Table 57-1</A
+>Table 60-1</A
 >.
    For more information see <A
 HREF="spgist.html"
->Chapter 57</A
+>Chapter 60</A
 >.
   </P
 ><P
@@ -597,7 +598,7 @@ HREF="functions-array.html"
    The GIN operator classes included in the standard distribution are
    documented in <A
 HREF="gin-builtin-opclasses.html#GIN-BUILTIN-OPCLASSES-TABLE"
->Table 58-1</A
+>Table 61-1</A
 >.
    Many other GIN operator
    classes are available in the <TT
@@ -606,7 +607,77 @@ CLASS="LITERAL"
 > collection or as separate
    projects.  For more information see <A
 HREF="gin.html"
->Chapter 58</A
+>Chapter 61</A
+>.
+  </P
+><P
+>   
+   
+   BRIN indexes (a shorthand for Block Range indexes)
+   store summaries about the values stored in consecutive table physical block ranges.
+   Like GiST, SP-GiST and GIN,
+   BRIN can support many different indexing strategies,
+   and the particular operators with which a BRIN index can be used
+   vary depending on the indexing strategy.
+   For data types that have a linear sort order, the indexed data
+   corresponds to the minimum and maximum values of the
+   values in the column for each block range,
+   which support indexed queries using these operators:
+
+   <P
+></P
+><TABLE
+BORDER="0"
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>&lt;</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>&lt;=</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>=</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>&gt;=</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>&gt;</TT
+></TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+>
+
+   The BRIN operator classes included in the standard distribution are
+   documented in <A
+HREF="brin-builtin-opclasses.html#BRIN-BUILTIN-OPCLASSES-TABLE"
+>Table 62-1</A
+>.
+   For more information see <A
+HREF="brin.html"
+>Chapter 62</A
 >.
   </P
 ></DIV

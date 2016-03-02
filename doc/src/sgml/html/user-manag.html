@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Administration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -118,6 +118,11 @@ HREF="role-membership.html"
 ></DT
 ><DT
 >20.4. <A
+HREF="role-removal.html"
+>Dropping Roles</A
+></DT
+><DT
+>20.5. <A
 HREF="perm-functions.html"
 >Function and Trigger Security</A
 ></DT
@@ -133,8 +138,8 @@ CLASS="FIRSTTERM"
 >roles</I
 >.  A role can be thought of as
   either a database user, or a group of database users, depending on how
-  the role is set up.  Roles can own database objects (for example,
-  tables) and can assign privileges on those objects to other roles to
+  the role is set up.  Roles can own database objects (for example, tables
+  and functions) and can assign privileges on those objects to other roles to
   control who has access to which objects.  Furthermore, it is possible
   to grant <I
 CLASS="FIRSTTERM"

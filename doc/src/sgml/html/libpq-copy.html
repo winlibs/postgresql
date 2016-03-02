@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -363,9 +363,9 @@ CLASS="PARAMETER"
 CLASS="PARAMETER"
 >nbytes</TT
 >, to the server.
-       The result is 1 if the data was sent, zero if it was not sent
-       because the attempt would block (this case is only possible if the
-       connection is in nonblocking mode), or -1 if an error occurred.
+       The result is 1 if the data was queued, zero if it was not queued
+       because of full buffers (this will only happen in nonblocking mode),
+       or -1 if an error occurred.
        (Use <CODE
 CLASS="FUNCTION"
 >PQerrorMessage</CODE
@@ -448,15 +448,26 @@ CLASS="COMMAND"
        connections.)
       </P
 ><P
->       The result is 1 if the termination data was sent, zero if it was
-       not sent because the attempt would block (this case is only possible
-       if the connection is in nonblocking mode), or -1 if an error
-       occurred.  (Use <CODE
+>       The result is 1 if the termination message was sent; or in
+       nonblocking mode, this may only indicate that the termination
+       message was successfully queued.  (In nonblocking mode, to be
+       certain that the data has been sent, you should next wait for
+       write-ready and call <CODE
+CLASS="FUNCTION"
+>PQflush</CODE
+>, repeating until it
+       returns zero.)  Zero indicates that the function could not queue
+       the termination message because of full buffers; this will only
+       happen in nonblocking mode.  (In this case, wait for
+       write-ready and try the <CODE
+CLASS="FUNCTION"
+>PQputCopyEnd</CODE
+> call
+       again.)  If a hard error occurs, -1 is returned; you can use
+       <CODE
 CLASS="FUNCTION"
 >PQerrorMessage</CODE
-> to retrieve
-       details if the return value is -1.  If the value is zero, wait for
-       write-ready and try again.)
+> to retrieve details.
       </P
 ><P
 >       After successfully calling <CODE

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: BEGIN
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "BEGIN" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "BEGIN" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -42,7 +42,6 @@ where \fItransaction_mode\fR is one of:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBBEGIN\fR
 initiates a transaction block, that is, all statements after a
 \fBBEGIN\fR
@@ -76,7 +75,6 @@ SET TRANSACTION (\fBSET_TRANSACTION\fR(7))
 for information on the meaning of the other parameters to this statement\&.
 .SH "NOTES"
 .PP
-
 START TRANSACTION (\fBSTART_TRANSACTION\fR(7))
 has the same functionality as
 \fBBEGIN\fR\&.
@@ -110,7 +108,6 @@ BEGIN;
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBBEGIN\fR
 is a
 PostgreSQL
@@ -118,8 +115,7 @@ language extension\&. It is equivalent to the SQL\-standard command
 START TRANSACTION (\fBSTART_TRANSACTION\fR(7)), whose reference page contains additional compatibility information\&.
 .PP
 The
-DEFERRABLE
-\fItransaction_mode\fR
+DEFERRABLE\fItransaction_mode\fR
 is a
 PostgreSQL
 language extension\&.

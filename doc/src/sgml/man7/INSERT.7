@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: INSERT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "INSERT" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "INSERT" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,13 +33,27 @@ INSERT \- create new rows in a table
 .sp
 .nf
 [ WITH [ RECURSIVE ] \fIwith_query\fR [, \&.\&.\&.] ]
-INSERT INTO \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ]
+INSERT INTO \fItable_name\fR [ AS \fIalias\fR ] [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ]
     { DEFAULT VALUES | VALUES ( { \fIexpression\fR | DEFAULT } [, \&.\&.\&.] ) [, \&.\&.\&.] | \fIquery\fR }
+    [ ON CONFLICT [ \fIconflict_target\fR ] \fIconflict_action\fR ]
     [ RETURNING * | \fIoutput_expression\fR [ [ AS ] \fIoutput_name\fR ] [, \&.\&.\&.] ]
+
+where \fIconflict_target\fR can be one of:
+
+    ( { \fIindex_column_name\fR | ( \fIindex_expression\fR ) } [ COLLATE \fIcollation\fR ] [ \fIopclass\fR ] [, \&.\&.\&.] ) [ WHERE \fIindex_predicate\fR ]
+    ON CONSTRAINT \fIconstraint_name\fR
+
+and \fIconflict_action\fR is one of:
+
+    DO NOTHING
+    DO UPDATE SET { \fIcolumn_name\fR = { \fIexpression\fR | DEFAULT } |
+                    ( \fIcolumn_name\fR [, \&.\&.\&.] ) = ( { \fIexpression\fR | DEFAULT } [, \&.\&.\&.] ) |
+                    ( \fIcolumn_name\fR [, \&.\&.\&.] ) = ( \fIsub\-SELECT\fR )
+                  } [, \&.\&.\&.]
+              [ WHERE \fIcondition\fR ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBINSERT\fR
 inserts new rows into a table\&. One can insert one or more rows specified by value expressions, or zero or more rows resulting from a query\&.
 .PP
@@ -60,20 +74,50 @@ Each column not present in the explicit or implicit column list will be filled w
 .PP
 If the expression for any column is not of the correct data type, automatic type conversion will be attempted\&.
 .PP
+ON CONFLICT
+can be used to specify an alternative action to raising a unique constraint or exclusion constraint violation error\&. (See
+ON CONFLICT Clause
+below\&.)
+.PP
 The optional
 RETURNING
 clause causes
 \fBINSERT\fR
-to compute and return value(s) based on each row actually inserted\&. This is primarily useful for obtaining values that were supplied by defaults, such as a serial sequence number\&. However, any expression using the table\*(Aqs columns is allowed\&. The syntax of the
+to compute and return value(s) based on each row actually inserted (or updated, if an
+ON CONFLICT DO UPDATE
+clause was used)\&. This is primarily useful for obtaining values that were supplied by defaults, such as a serial sequence number\&. However, any expression using the table\*(Aqs columns is allowed\&. The syntax of the
 RETURNING
 list is identical to that of the output list of
-\fBSELECT\fR\&.
+\fBSELECT\fR\&. Only rows that were successfully inserted or updated will be returned\&. For example, if a row was locked but not updated because an
+ON CONFLICT DO UPDATE \&.\&.\&. WHERE
+clause
+\fIcondition\fR
+was not satisfied, the row will not be returned\&.
 .PP
 You must have
 INSERT
-privilege on a table in order to insert into it\&. If a column list is specified, you only need
+privilege on a table in order to insert into it\&. If
+ON CONFLICT DO UPDATE
+is present,
+UPDATE
+privilege on the table is also required\&.
+.PP
+If a column list is specified, you only need
 INSERT
-privilege on the listed columns\&. Use of the
+privilege on the listed columns\&. Similarly, when
+ON CONFLICT DO UPDATE
+is specified, you only need
+UPDATE
+privilege on the column(s) that are listed to be updated\&. However,
+ON CONFLICT DO UPDATE
+also requires
+SELECT
+privilege on any column whose values are read in the
+ON CONFLICT DO UPDATE
+expressions or
+\fIcondition\fR\&.
+.PP
+Use of the
 RETURNING
 clause requires
 SELECT
@@ -84,6 +128,13 @@ clause to insert rows from a query, you of course need to have
 SELECT
 privilege on any table or column used in the query\&.
 .SH "PARAMETERS"
+.SS "Inserting"
+.PP
+This section covers parameters that may be used when only inserting new rows\&. Parameters
+\fIexclusively\fR
+used with the
+ON CONFLICT
+clause are described separately\&.
 .PP
 \fIwith_query\fR
 .RS 4
@@ -113,10 +164,22 @@ can be referenced within the
 The name (optionally schema\-qualified) of an existing table\&.
 .RE
 .PP
+\fIalias\fR
+.RS 4
+A substitute name for
+\fItable_name\fR\&. When an alias is provided, it completely hides the actual name of the table\&. This is particularly useful when
+ON CONFLICT DO UPDATE
+targets a table named excluded, since that\*(Aqs also the name of the special table representing rows proposed for insertion\&.
+.RE
+.PP
 \fIcolumn_name\fR
 .RS 4
 The name of a column in the table named by
-\fItable_name\fR\&. The column name can be qualified with a subfield name or array subscript, if needed\&. (Inserting into only some fields of a composite column leaves the other fields null\&.)
+\fItable_name\fR\&. The column name can be qualified with a subfield name or array subscript, if needed\&. (Inserting into only some fields of a composite column leaves the other fields null\&.) When referencing a column with
+ON CONFLICT DO UPDATE, do not include the table\*(Aqs name in the specification of a target column\&. For example,
+INSERT \&.\&.\&. ON CONFLICT DO UPDATE tab SET table_name\&.col = 1
+is invalid (this follows the general behavior for
+\fBUPDATE\fR)\&.
 .RE
 .PP
 DEFAULT VALUES
@@ -146,15 +209,212 @@ statement for a description of the syntax\&.
 .RS 4
 An expression to be computed and returned by the
 \fBINSERT\fR
-command after each row is inserted\&. The expression can use any column names of the table named by
+command after each row is inserted or updated\&. The expression can use any column names of the table named by
 \fItable_name\fR\&. Write
 *
-to return all columns of the inserted row(s)\&.
+to return all columns of the inserted or updated row(s)\&.
 .RE
 .PP
 \fIoutput_name\fR
 .RS 4
 A name to use for a returned column\&.
+.RE
+.SS "ON CONFLICT Clause"
+.PP
+The optional
+ON CONFLICT
+clause specifies an alternative action to raising a unique violation or exclusion constraint violation error\&. For each individual row proposed for insertion, either the insertion proceeds, or, if an
+\fIarbiter\fR
+constraint or index specified by
+\fIconflict_target\fR
+is violated, the alternative
+\fIconflict_action\fR
+is taken\&.
+ON CONFLICT DO NOTHING
+simply avoids inserting a row as its alternative action\&.
+ON CONFLICT DO UPDATE
+updates the existing row that conflicts with the row proposed for insertion as its alternative action\&.
+.PP
+\fIconflict_target\fR
+can perform
+\fIunique index inference\fR\&. When performing inference, it consists of one or more
+\fIindex_column_name\fR
+columns and/or
+\fIindex_expression\fR
+expressions, and an optional
+\fI index_predicate\fR\&. All
+\fItable_name\fR
+unique indexes that, without regard to order, contain exactly the
+\fIconflict_target\fR\-specified columns/expressions are inferred (chosen) as arbiter indexes\&. If an
+\fIindex_predicate\fR
+is specified, it must, as a further requirement for inference, satisfy arbiter indexes\&. Note that this means a non\-partial unique index (a unique index without a predicate) will be inferred (and thus used by
+ON CONFLICT) if such an index satisfying every other criteria is available\&. If an attempt at inference is unsuccessful, an error is raised\&.
+.PP
+ON CONFLICT DO UPDATE
+guarantees an atomic
+\fBINSERT\fR
+or
+\fBUPDATE\fR
+outcome; provided there is no independent error, one of those two outcomes is guaranteed, even under high concurrency\&. This is also known as
+UPSERT
+\(em
+\(lqUPDATE or INSERT\(rq\&.
+.PP
+\fIconflict_target\fR
+.RS 4
+Specifies which conflicts
+ON CONFLICT
+takes the alternative action on by choosing
+arbiter indexes\&. Either performs
+\fIunique index inference\fR, or names a constraint explicitly\&. For
+ON CONFLICT DO NOTHING, it is optional to specify a
+\fIconflict_target\fR; when omitted, conflicts with all usable constraints (and unique indexes) are handled\&. For
+ON CONFLICT DO UPDATE, a
+\fIconflict_target\fR\fImust\fR
+be provided\&.
+.RE
+.PP
+\fIconflict_action\fR
+.RS 4
+\fIconflict_action\fR
+specifies an alternative
+ON CONFLICT
+action\&. It can be either
+DO NOTHING, or a
+DO UPDATE
+clause specifying the exact details of the
+UPDATE
+action to be performed in case of a conflict\&. The
+SET
+and
+WHERE
+clauses in
+ON CONFLICT DO UPDATE
+have access to the existing row using the table\*(Aqs name (or an alias), and to rows proposed for insertion using the special
+\fIexcluded\fR
+table\&.
+SELECT
+privilege is required on any column in the target table where corresponding
+\fIexcluded\fR
+columns are read\&.
+.sp
+Note that the effects of all per\-row
+BEFORE INSERT
+triggers are reflected in
+\fIexcluded\fR
+values, since those effects may have contributed to the row being excluded from insertion\&.
+.RE
+.PP
+\fIindex_column_name\fR
+.RS 4
+The name of a
+\fItable_name\fR
+column\&. Used to infer arbiter indexes\&. Follows
+\fBCREATE INDEX\fR
+format\&.
+SELECT
+privilege on
+\fIindex_column_name\fR
+is required\&.
+.RE
+.PP
+\fIindex_expression\fR
+.RS 4
+Similar to
+\fIindex_column_name\fR, but used to infer expressions on
+\fItable_name\fR
+columns appearing within index definitions (not simple columns)\&. Follows
+\fBCREATE INDEX\fR
+format\&.
+SELECT
+privilege on any column appearing within
+\fIindex_expression\fR
+is required\&.
+.RE
+.PP
+\fIcollation\fR
+.RS 4
+When specified, mandates that corresponding
+\fIindex_column_name\fR
+or
+\fIindex_expression\fR
+use a particular collation in order to be matched during inference\&. Typically this is omitted, as collations usually do not affect whether or not a constraint violation occurs\&. Follows
+\fBCREATE INDEX\fR
+format\&.
+.RE
+.PP
+\fIopclass\fR
+.RS 4
+When specified, mandates that corresponding
+\fIindex_column_name\fR
+or
+\fIindex_expression\fR
+use particular operator class in order to be matched during inference\&. Typically this is omitted, as the
+\fIequality\fR
+semantics are often equivalent across a type\*(Aqs operator classes anyway, or because it\*(Aqs sufficient to trust that the defined unique indexes have the pertinent definition of equality\&. Follows
+\fBCREATE INDEX\fR
+format\&.
+.RE
+.PP
+\fIindex_predicate\fR
+.RS 4
+Used to allow inference of partial unique indexes\&. Any indexes that satisfy the predicate (which need not actually be partial indexes) can be inferred\&. Follows
+\fBCREATE INDEX\fR
+format\&.
+SELECT
+privilege on any column appearing within
+\fIindex_predicate\fR
+is required\&.
+.RE
+.PP
+\fIconstraint_name\fR
+.RS 4
+Explicitly specifies an arbiter
+\fIconstraint\fR
+by name, rather than inferring a constraint or index\&.
+.RE
+.PP
+\fIcondition\fR
+.RS 4
+An expression that returns a value of type
+boolean\&. Only rows for which this expression returns
+true
+will be updated, although all rows will be locked when the
+ON CONFLICT DO UPDATE
+action is taken\&. Note that
+\fIcondition\fR
+is evaluated last, after a conflict has been identified as a candidate to update\&.
+.RE
+.PP
+Note that exclusion constraints are not supported as arbiters with
+ON CONFLICT DO UPDATE\&. In all cases, only
+NOT DEFERRABLE
+constraints and unique indexes are supported as arbiters\&.
+.PP
+\fBINSERT\fR
+with an
+ON CONFLICT DO UPDATE
+clause is a
+\(lqdeterministic\(rq
+statement\&. This means that the command will not be allowed to affect any single existing row more than once; a cardinality violation error will be raised when this situation arises\&. Rows proposed for insertion should not duplicate each other in terms of attributes constrained by an arbiter index or constraint\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBTip\fR
+.ps -1
+.br
+.PP
+It is often preferable to use unique index inference rather than naming a constraint directly using
+ON CONFLICT ON CONSTRAINT\fI constraint_name\fR\&. Inference will continue to work correctly when the underlying index is replaced by another more or less equivalent index in an overlapping way, for example when using
+CREATE UNIQUE INDEX \&.\&.\&. CONCURRENTLY
+before dropping the index being replaced\&.
+.sp .5v
 .RE
 .SH "OUTPUTS"
 .PP
@@ -174,13 +434,13 @@ INSERT \fIoid\fR \fIcount\fR
 .sp
 The
 \fIcount\fR
-is the number of rows inserted\&. If
+is the number of rows inserted or updated\&. If
 \fIcount\fR
 is exactly one, and the target table has OIDs, then
 \fIoid\fR
 is the
 OID
-assigned to the inserted row\&. Otherwise
+assigned to the inserted row\&. The single row must have been inserted rather than updated\&. Otherwise
 \fIoid\fR
 is zero\&.
 .PP
@@ -192,7 +452,7 @@ clause, the result will be similar to that of a
 \fBSELECT\fR
 statement containing the columns and values defined in the
 RETURNING
-list, computed over the row(s) inserted by the command\&.
+list, computed over the row(s) inserted or updated by the command\&.
 .SH "EXAMPLES"
 .PP
 Insert a single row into table
@@ -335,9 +595,89 @@ INSERT INTO employees_log SELECT *, current_timestamp FROM upd;
 .if n \{\
 .RE
 .\}
+.PP
+Insert or update new distributors as appropriate\&. Assumes a unique index has been defined that constrains values appearing in the
+did
+column\&. Note that the special
+\fIexcluded\fR
+table is used to reference values originally proposed for insertion:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+INSERT INTO distributors (did, dname)
+    VALUES (5, \*(AqGizmo Transglobal\*(Aq), (6, \*(AqAssociated Computing, Inc\*(Aq)
+    ON CONFLICT (did) DO UPDATE SET dname = EXCLUDED\&.dname;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Insert a distributor, or do nothing for rows proposed for insertion when an existing, excluded row (a row with a matching constrained column or columns after before row insert triggers fire) exists\&. Example assumes a unique index has been defined that constrains values appearing in the
+did
+column:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+INSERT INTO distributors (did, dname) VALUES (7, \*(AqRedline GmbH\*(Aq)
+    ON CONFLICT (did) DO NOTHING;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Insert or update new distributors as appropriate\&. Example assumes a unique index has been defined that constrains values appearing in the
+did
+column\&.
+WHERE
+clause is used to limit the rows actually updated (any existing row not updated will still be locked, though):
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\-\- Don\*(Aqt update existing distributors based in a certain ZIP code
+INSERT INTO distributors AS d (did, dname) VALUES (8, \*(AqAnvil Distribution\*(Aq)
+    ON CONFLICT (did) DO UPDATE
+    SET dname = EXCLUDED\&.dname || \*(Aq (formerly \*(Aq || d\&.dname || \*(Aq)\*(Aq
+    WHERE d\&.zipcode <> \*(Aq21201\*(Aq;
+
+\-\- Name a constraint directly in the statement (uses associated
+\-\- index to arbitrate taking the DO NOTHING action)
+INSERT INTO distributors (did, dname) VALUES (9, \*(AqAntwerp Design\*(Aq)
+    ON CONFLICT ON CONSTRAINT distributors_pkey DO NOTHING;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Insert new distributor if possible; otherwise
+DO NOTHING\&. Example assumes a unique index has been defined that constrains values appearing in the
+did
+column on a subset of rows where the
+is_active
+Boolean column evaluates to
+true:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+\-\- This statement could infer a partial unique index on "did"
+\-\- with a predicate of "WHERE is_active", but it could also
+\-\- just use a regular unique constraint on "did"
+INSERT INTO distributors (did, dname) VALUES (10, \*(AqConrad International\*(Aq)
+    ON CONFLICT (did) WHERE is_active DO NOTHING;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
 .SH "COMPATIBILITY"
 .PP
-
 \fBINSERT\fR
 conforms to the SQL standard, except that the
 RETURNING
@@ -346,7 +686,8 @@ PostgreSQL
 extension, as is the ability to use
 WITH
 with
-\fBINSERT\fR\&. Also, the case in which a column name list is omitted, but not all the columns are filled from the
+\fBINSERT\fR, and the ability to specify an alternative action with
+ON CONFLICT\&. Also, the case in which a column name list is omitted, but not all the columns are filled from the
 VALUES
 clause or
 \fIquery\fR, is disallowed by the standard\&.

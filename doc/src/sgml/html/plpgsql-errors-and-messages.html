@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -101,6 +101,14 @@ CLASS="SECT1"
 NAME="PLPGSQL-ERRORS-AND-MESSAGES"
 >40.8. Errors and Messages</A
 ></H1
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="PLPGSQL-STATEMENTS-RAISE"
+>40.8.1. Reporting Errors and Messages</A
+></H2
 ><P
 >    Use the <TT
 CLASS="COMMAND"
@@ -319,6 +327,12 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >%</TT
 >.
+    The number of arguments must match the number of <TT
+CLASS="LITERAL"
+>%</TT
+>
+    placeholders in the format string, or an error is raised during
+    the compilation of the function.
    </P
 ><P
 >    In this example, the value of <TT
@@ -582,6 +596,124 @@ CLASS="LITERAL"
      the whole category.
     </P
 ></BLOCKQUOTE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="PLPGSQL-STATEMENTS-ASSERT"
+>40.8.2. Checking Assertions</A
+></H2
+><P
+>    The <TT
+CLASS="COMMAND"
+>ASSERT</TT
+> statement is a convenient shorthand for
+    inserting debugging checks into <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+>
+    functions.
+
+</P><PRE
+CLASS="SYNOPSIS"
+>ASSERT <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+> , <TT
+CLASS="REPLACEABLE"
+><I
+>message</I
+></TT
+> </SPAN
+>];</PRE
+><P>
+
+    The <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> is a Boolean
+    expression that is expected to always evaluate to true; if it does,
+    the <TT
+CLASS="COMMAND"
+>ASSERT</TT
+> statement does nothing further.  If the
+    result is false or null, then an <TT
+CLASS="LITERAL"
+>ASSERT_FAILURE</TT
+> exception
+    is raised.  (If an error occurs while evaluating
+    the <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+>, it is
+    reported as a normal error.)
+   </P
+><P
+>    If the optional <TT
+CLASS="REPLACEABLE"
+><I
+>message</I
+></TT
+> is
+    provided, it is an expression whose result (if not null) replaces the
+    default error message text <SPAN
+CLASS="QUOTE"
+>"assertion failed"</SPAN
+>, should
+    the <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> fail.
+    The <TT
+CLASS="REPLACEABLE"
+><I
+>message</I
+></TT
+> expression is
+    not evaluated in the normal case where the assertion succeeds.
+   </P
+><P
+>    Testing of assertions can be enabled or disabled via the configuration
+    parameter <TT
+CLASS="LITERAL"
+>plpgsql.check_asserts</TT
+>, which takes a Boolean
+    value; the default is <TT
+CLASS="LITERAL"
+>on</TT
+>.  If this parameter
+    is <TT
+CLASS="LITERAL"
+>off</TT
+> then <TT
+CLASS="COMMAND"
+>ASSERT</TT
+> statements do nothing.
+   </P
+><P
+>    Note that <TT
+CLASS="COMMAND"
+>ASSERT</TT
+> is meant for detecting program
+    bugs, not for reporting ordinary error conditions.  Use
+    the <TT
+CLASS="COMMAND"
+>RAISE</TT
+> statement, described above, for that.
+   </P
 ></DIV
 ></DIV
 ><DIV

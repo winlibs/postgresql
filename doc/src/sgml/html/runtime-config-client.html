@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -260,7 +260,57 @@ CLASS="VARNAME"
 ><P
 >        For more information on schema handling, see <A
 HREF="ddl-schemas.html"
->Section 5.7</A
+>Section 5.8</A
+>.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-ROW-SECURITY"
+></A
+><TT
+CLASS="VARNAME"
+>row_security</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)
+      </DT
+><DD
+><P
+>        This variable controls whether to raise an error in lieu of applying a
+        row security policy.  When set to <TT
+CLASS="LITERAL"
+>on</TT
+>, policies apply
+        normally.  When set to <TT
+CLASS="LITERAL"
+>off</TT
+>, queries fail which would
+        otherwise apply at least one policy.  The default is <TT
+CLASS="LITERAL"
+>on</TT
+>.
+        Change to <TT
+CLASS="LITERAL"
+>off</TT
+> where limited row visibility could cause
+        incorrect results; for example, <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> makes that
+        change by default.  This variable has no effect on roles which bypass
+        every row security policy, to wit, superusers and roles with
+        the <TT
+CLASS="LITERAL"
+>BYPASSRLS</TT
+> attribute.
+       </P
+><P
+>        For more information on row security policies,
+        see <A
+HREF="sql-createpolicy.html"
+>CREATE POLICY</A
 >.
        </P
 ></DD
@@ -996,6 +1046,43 @@ CLASS="SYNOPSIS"
         This syntax is also available in PostgreSQL.
        </P
 ></DD
+><DT
+><A
+NAME="GUC-GIN-PENDING-LIST-LIMIT"
+></A
+><TT
+CLASS="VARNAME"
+>gin_pending_list_limit</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        Sets the maximum size of the GIN pending list which is used
+        when <TT
+CLASS="LITERAL"
+>fastupdate</TT
+> is enabled. If the list grows
+        larger than this maximum size, it is cleaned up by moving
+        the entries in it to the main GIN data structure in bulk.
+        The default is four megabytes (<TT
+CLASS="LITERAL"
+>4MB</TT
+>). This setting
+        can be overridden for individual GIN indexes by changing
+        index storage parameters.
+         See <A
+HREF="gin-implementation.html#GIN-FAST-UPDATE"
+>Section 61.4.1</A
+> and <A
+HREF="gin-tips.html"
+>Section 61.5</A
+>
+         for more information.
+       </P
+></DD
 ></DL
 ></DIV
 ></DIV
@@ -1573,8 +1660,9 @@ CLASS="TYPE"
 ><DD
 ><P
 >        This variable specifies one or more shared libraries that are to be
-        preloaded at connection start.  This parameter cannot be changed after
-        the start of a particular session.  If a specified library is not
+        preloaded at connection start.
+        The parameter value only takes effect at the start of the connection.
+        Subsequent changes have no effect.  If a specified library is not
         found, the connection attempt will fail.
        </P
 ><P
@@ -1608,7 +1696,25 @@ CLASS="LITERAL"
 >.
        </P
 ><P
->        Unless a module is specifically designed to be used in this way by
+>        The intent of this feature is to allow unprivileged users to load
+        debugging or performance-measurement libraries into specific sessions
+        without requiring an explicit <TT
+CLASS="COMMAND"
+>LOAD</TT
+> command.  To that end,
+        it would be typical to set this parameter using
+        the <TT
+CLASS="ENVAR"
+>PGOPTIONS</TT
+> environment variable on the client or by
+        using
+        <TT
+CLASS="COMMAND"
+>ALTER ROLE SET</TT
+>.
+       </P
+><P
+>        However, unless a module is specifically designed to be used in this way by
         non-superusers, this is usually not the right setting to use.  Look
         at <A
 HREF="runtime-config-client.html#GUC-SESSION-PRELOAD-LIBRARIES"
@@ -1682,7 +1788,7 @@ CLASS="TYPE"
 ><DD
 ><P
 >        This variable specifies one or more shared libraries to be preloaded at
-        server start.  with commas.  This parameter can only be set at server
+        server start.  This parameter can only be set at server
         start.  If a specified library is not found, the server will fail to
         start.
        </P
@@ -1846,7 +1952,7 @@ CLASS="TYPE"
 >        Soft upper limit of the size of the set returned by GIN index scans. For more
         information see <A
 HREF="gin-tips.html"
->Section 58.5</A
+>Section 61.5</A
 >.
        </P
 ></DD

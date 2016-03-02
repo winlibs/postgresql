@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TRIGGER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATE TRIGGER" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATE TRIGGER" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -35,7 +35,7 @@ CREATE_TRIGGER \- define a new trigger
 CREATE [ CONSTRAINT ] TRIGGER \fIname\fR { BEFORE | AFTER | INSTEAD OF } { \fIevent\fR [ OR \&.\&.\&. ] }
     ON \fItable_name\fR
     [ FROM \fIreferenced_table_name\fR ]
-    [ NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED } ]
+    [ NOT DEFERRABLE | [ DEFERRABLE ] [ INITIALLY IMMEDIATE | INITIALLY DEFERRED ] ]
     [ FOR [ EACH ] { ROW | STATEMENT } ]
     [ WHEN ( \fIcondition\fR ) ]
     EXECUTE PROCEDURE \fIfunction_name\fR ( \fIarguments\fR )
@@ -49,7 +49,6 @@ where \fIevent\fR can be one of:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCREATE TRIGGER\fR
 creates a new trigger\&. The trigger will be associated with the specified table, view, or foreign table and will execute the specified function
 \fIfunction_name\fR
@@ -81,7 +80,15 @@ triggers on the target relation to be called 10 separate times, once for each de
 FOR EACH STATEMENT
 only executes once for any given operation, regardless of how many rows it modifies (in particular, an operation that modifies zero rows will still result in the execution of any applicable
 FOR EACH STATEMENT
-triggers)\&.
+triggers)\&. Note that with an
+\fBINSERT\fR
+with an
+ON CONFLICT DO UPDATE
+clause, both
+\fBINSERT\fR
+and
+\fBUPDATE\fR
+statement level trigger will be fired\&.
 .PP
 Triggers that are specified to fire
 INSTEAD OF
@@ -188,7 +195,6 @@ triggers on tables\&. They can be fired either at the end of the statement causi
 deferred\&. A pending deferred\-trigger firing can also be forced to happen immediately by using
 \fBSET CONSTRAINTS\fR\&. Constraint triggers are expected to raise an exception when the constraints they implement are violated\&.
 .PP
-
 \fBSELECT\fR
 does not modify any rows so you cannot create
 \fBSELECT\fR
@@ -238,7 +244,6 @@ UPDATE OF \fIcolumn_name1\fR [, \fIcolumn_name2\fR \&.\&.\&. ]
 .RE
 .\}
 .sp
-
 The trigger will only fire if at least one of the listed columns is mentioned as a target of the
 \fBUPDATE\fR
 command\&.
@@ -481,7 +486,6 @@ CREATE TRIGGER view_insert
 .RE
 .\}
 .PP
-
 Section 36.4, \(lqA Complete Trigger Example\(rq, in the documentation
 contains a complete example of a trigger function written in C\&.
 .SH "COMPATIBILITY"
@@ -520,7 +524,6 @@ allows trigger procedures to be written in any number of user\-defined languages
 .sp -1
 .IP \(bu 2.3
 .\}
-
 PostgreSQL
 does not allow the old and new tables to be referenced in statement\-level triggers, i\&.e\&., the tables that contain all the old and/or new rows, which are referred to by the
 OLD TABLE
@@ -574,7 +577,6 @@ is a
 PostgreSQL
 extension of the SQL standard, as is the ability to define statement\-level triggers on views\&.
 .PP
-
 \fBCREATE CONSTRAINT TRIGGER\fR
 is a
 PostgreSQL

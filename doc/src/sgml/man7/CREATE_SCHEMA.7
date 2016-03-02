@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE SCHEMA
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATE SCHEMA" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATE SCHEMA" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,14 +32,19 @@ CREATE_SCHEMA \- define a new schema
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE SCHEMA \fIschema_name\fR [ AUTHORIZATION \fIuser_name\fR ] [ \fIschema_element\fR [ \&.\&.\&. ] ]
-CREATE SCHEMA AUTHORIZATION \fIuser_name\fR [ \fIschema_element\fR [ \&.\&.\&. ] ]
-CREATE SCHEMA IF NOT EXISTS \fIschema_name\fR [ AUTHORIZATION \fIuser_name\fR ]
-CREATE SCHEMA IF NOT EXISTS AUTHORIZATION \fIuser_name\fR
+CREATE SCHEMA \fIschema_name\fR [ AUTHORIZATION \fIrole_specification\fR ] [ \fIschema_element\fR [ \&.\&.\&. ] ]
+CREATE SCHEMA AUTHORIZATION \fIrole_specification\fR [ \fIschema_element\fR [ \&.\&.\&. ] ]
+CREATE SCHEMA IF NOT EXISTS \fIschema_name\fR [ AUTHORIZATION \fIrole_specification\fR ]
+CREATE SCHEMA IF NOT EXISTS AUTHORIZATION \fIrole_specification\fR
+
+where \fIrole_specification\fR can be:
+
+    [ GROUP ] \fIuser_name\fR
+  | CURRENT_USER
+  | SESSION_USER
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCREATE SCHEMA\fR
 enters a new schema into the current database\&. The schema name must be distinct from the name of any existing schema in the current database\&.
 .PP

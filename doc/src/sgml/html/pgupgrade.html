@@ -9,11 +9,11 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
-TITLE="Server Applications"
-HREF="contrib-prog-server.html"><LINK
+TITLE="PostgreSQL Server Applications"
+HREF="reference-server.html"><LINK
 REL="PREVIOUS"
 TITLE="pg_test_timing"
 HREF="pgtesttiming.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -63,7 +63,7 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="contrib-prog-server.html"
+HREF="reference-server.html"
 ACCESSKEY="U"
 >Up</A
 ></TD
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN166387"
+NAME="AEN98677"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN166391"
+NAME="AEN98681"
 ></A
 ><H2
 >Synopsis</H2
@@ -159,7 +159,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN166412"
+NAME="AEN98702"
 ></A
 ><H2
 >Description</H2
@@ -218,7 +218,7 @@ CLASS="APPLICATION"
 >.
  </P
 ><P
->   pg_upgrade supports upgrades from 8.3.X and later to the current
+>   pg_upgrade supports upgrades from 8.4.X and later to the current
    major release of <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
@@ -228,7 +228,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN166428"
+NAME="AEN98718"
 ></A
 ><H2
 >Options</H2
@@ -409,7 +409,8 @@ CLASS="REPLACEABLE"
       old <TT
 CLASS="COMMAND"
 >postgres</TT
-> command</P
+> command;  multiple
+      option invocations are appended</P
 ></DD
 ><DT
 ><TT
@@ -435,7 +436,8 @@ CLASS="REPLACEABLE"
       new <TT
 CLASS="COMMAND"
 >postgres</TT
-> command</P
+> command;  multiple
+      option invocations are appended</P
 ></DD
 ><DT
 ><TT
@@ -522,7 +524,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->cluster's super user name; environment
+>cluster's install user name; environment
       variable <TT
 CLASS="ENVAR"
 >PGUSER</TT
@@ -572,7 +574,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN166572"
+NAME="AEN98862"
 ></A
 ><H2
 >Usage</H2
@@ -656,7 +658,11 @@ CLASS="STEP"
 >Install the new PostgreSQL binaries</B
 ></P
 ><P
->     Install the new server's binaries and support files.
+>     Install the new server's binaries and support
+     files.  <SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+> is included in a default installation.
     </P
 ><P
 >     For source installs, if you wish to install the new server in a custom
@@ -669,24 +675,6 @@ CLASS="LITERAL"
 CLASS="PROGRAMLISTING"
 >make prefix=/usr/local/pgsql.new install</PRE
 ><P></P
-></LI
-><LI
-CLASS="STEP"
-><P
-><B
->Install pg_upgrade and pg_upgrade_support</B
-></P
-><P
->     Install the <SPAN
-CLASS="APPLICATION"
->pg_upgrade</SPAN
-> binary and
-     <SPAN
-CLASS="APPLICATION"
->pg_upgrade_support</SPAN
-> library in the new PostgreSQL
-     installation.
-    </P
 ></LI
 ><LI
 CLASS="STEP"
@@ -783,16 +771,32 @@ CLASS="PROGRAMLISTING"
 >NET STOP postgresql-8.4
 NET STOP postgresql-9.0</PRE
 ><P>
-
-     or
-
-</P><PRE
-CLASS="PROGRAMLISTING"
->NET STOP pgsql-8.3  (<SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.3 and older used a different service name)</PRE
-><P></P
+    </P
+><P
+>     Streaming replication and log-shipping standby servers can
+     remain running until a later step.
+    </P
+></LI
+><LI
+CLASS="STEP"
+><P
+><B
+>Verify standby servers</B
+></P
+><P
+>     If you are upgrading Streaming Replication and Log-Shipping standby
+     servers, verify that the old standby servers are caught up by running
+     <SPAN
+CLASS="APPLICATION"
+>pg_controldata</SPAN
+> against the old primary and standby
+     clusters.  Verify that the <SPAN
+CLASS="QUOTE"
+>"Latest checkpoint location"</SPAN
+>
+     values match in all clusters.  (There will be a mismatch if old
+     standby servers were shut down before the old primary.)
+    </P
 ></LI
 ><LI
 CLASS="STEP"
@@ -919,17 +923,248 @@ CLASS="COMMAND"
 > will
      exit and you will have to revert to the old cluster as outlined in <A
 HREF="pgupgrade.html#PGUPGRADE-STEP-REVERT"
->step 14</A
+>step 16</A
 >
      below. To try <TT
 CLASS="COMMAND"
 >pg_upgrade</TT
 > again, you will need to modify the old
      cluster so the pg_upgrade schema restore succeeds. If the problem is a
-     contrib module, you might need to uninstall the contrib module from
+     <TT
+CLASS="FILENAME"
+>contrib</TT
+> module, you might need to uninstall the <TT
+CLASS="FILENAME"
+>contrib</TT
+> module from
      the old cluster and install it in the new cluster after the upgrade,
      assuming the module is not being used to store user data.
     </P
+></LI
+><LI
+CLASS="STEP"
+><P
+><B
+>Upgrade Streaming Replication and Log-Shipping standby
+    servers</B
+></P
+><P
+>     If you have Streaming Replication (see <A
+HREF="warm-standby.html#STREAMING-REPLICATION"
+>Section 25.2.5</A
+>) or Log-Shipping (see <A
+HREF="warm-standby.html"
+>Section 25.2</A
+>) standby servers, follow these steps to
+     upgrade them.  You will not be running <SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+>
+     on the standby servers, but rather <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+>.  Do not
+     start any servers yet.
+    </P
+><OL
+CLASS="SUBSTEPS"
+TYPE="a"
+><LI
+CLASS="STEP"
+><P
+><B
+>Install the new PostgreSQL binaries on standby servers</B
+></P
+><P
+>       Make sure the new binaries and support files are installed on all
+       standby servers.
+      </P
+></LI
+><LI
+CLASS="STEP"
+><P
+><B
+>Make sure the new standby data directories do <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>not</I
+></SPAN
+>
+      exist</B
+></P
+><P
+>       Make sure the new standby data directories do <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>not</I
+></SPAN
+>
+       exist or are empty.  If <SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+> was run, delete
+       the standby server data directories.
+      </P
+></LI
+><LI
+CLASS="STEP"
+><P
+><B
+>Install custom shared object files</B
+></P
+><P
+>       Install the same custom shared object files on the new standbys
+       that you installed in the new master cluster.
+      </P
+></LI
+><LI
+CLASS="STEP"
+><P
+><B
+>Stop standby servers</B
+></P
+><P
+>       If the standby servers are still running, stop them now using the
+       above instructions.
+      </P
+></LI
+><LI
+CLASS="STEP"
+><P
+><B
+>Save configuration files</B
+></P
+><P
+>       Save any configuration files from the standbys you need to keep,
+       e.g.  <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>, <TT
+CLASS="LITERAL"
+>recovery.conf</TT
+>,
+       as these will be overwritten or removed in the next step.
+      </P
+></LI
+><LI
+CLASS="STEP"
+><P
+><B
+>Start and stop the new master cluster</B
+></P
+><P
+>       In the new master cluster, change <TT
+CLASS="VARNAME"
+>wal_level</TT
+> to
+       <TT
+CLASS="LITERAL"
+>hot_standby</TT
+> in the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file
+       and then start and stop the cluster.
+      </P
+></LI
+><LI
+CLASS="STEP"
+><P
+><B
+>Run <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+></B
+></P
+><P
+>       From a directory that is above the old and new database cluster
+       directories, run this for each slave:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>rsync --archive --delete --hard-links --size-only old_pgdata new_pgdata remote_dir</PRE
+><P>
+
+       where <TT
+CLASS="OPTION"
+>old_pgdata</TT
+> and <TT
+CLASS="OPTION"
+>new_pgdata</TT
+> are relative
+       to the current directory, and <TT
+CLASS="OPTION"
+>remote_dir</TT
+> is
+       <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>above</I
+></SPAN
+> the old and new cluster directories on
+       the standby server.  The old and new relative cluster paths
+       must match on the master and standby server.  Consult the
+       <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+> manual page for details on specifying the
+       remote directory, e.g. <TT
+CLASS="LITERAL"
+>standbyhost:/opt/PostgreSQL/</TT
+>.
+       <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+> will be fast when <SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+>'s
+       <TT
+CLASS="OPTION"
+>--link</TT
+> mode is used because it will create hard links
+       on the remote server rather than transferring user data.
+      </P
+><P
+>       If you have tablespaces, you will need to run a similar
+       <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+> command for each tablespace directory.  If you
+       have relocated <TT
+CLASS="FILENAME"
+>pg_xlog</TT
+> outside the data directories,
+       <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+> must be run on those directories too.
+      </P
+></LI
+><LI
+CLASS="STEP"
+><P
+><B
+>Configure streaming replication and log-shipping standby
+      servers</B
+></P
+><P
+>       Configure the servers for log shipping.  (You do not need to run
+       <CODE
+CLASS="FUNCTION"
+>pg_start_backup()</CODE
+> and <CODE
+CLASS="FUNCTION"
+>pg_stop_backup()</CODE
+>
+       or take a file system backup as the slaves are still synchronized
+       with the master.)
+      </P
+></LI
+></OL
 ></LI
 ><LI
 CLASS="STEP"
@@ -950,6 +1185,20 @@ CLASS="FILENAME"
 CLASS="FILENAME"
 >postgresql.conf</TT
 >.
+    </P
+></LI
+><LI
+CLASS="STEP"
+><P
+><B
+>Start the new server</B
+></P
+><P
+>     The new server can now be safely started, and then any
+     <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+>'ed standby servers.
     </P
 ></LI
 ><LI
@@ -1135,7 +1384,7 @@ CLASS="FILENAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN166703"
+NAME="AEN99056"
 ></A
 ><H2
 >Notes</H2
@@ -1216,26 +1465,6 @@ CLASS="ENVAR"
    location.  (This is not relevant on Windows.)
   </P
 ><P
->   A Log-Shipping Standby Server (<A
-HREF="warm-standby.html"
->Section 25.2</A
->) cannot
-   be upgraded because the server must allow writes.  The simplest way
-   is to upgrade the primary and use <TT
-CLASS="COMMAND"
->rsync</TT
-> to rebuild the
-   standbys.  You can run <TT
-CLASS="COMMAND"
->rsync</TT
-> while the primary is down,
-   or as part of a base backup (<A
-HREF="continuous-archiving.html#BACKUP-BASE-BACKUP"
->Section 24.3.2</A
->)
-   which overwrites the old standby cluster.
-  </P
-><P
 >   If you want to use link mode and you do not want your old cluster
    to be modified when the new cluster is started, make a copy of the
    old cluster and upgrade that in link mode. To make a valid copy
@@ -1246,9 +1475,17 @@ CLASS="COMMAND"
    copy of the old cluster while the server is running, then shut down
    the old server and run <TT
 CLASS="COMMAND"
+>rsync --checksum</TT
+> again to update the
+   copy with any changes to make it consistent.  (<TT
+CLASS="OPTION"
+>--checksum</TT
+>
+   is necessary because <TT
+CLASS="COMMAND"
 >rsync</TT
-> again to update the copy with any
-   changes to make it consistent.  You might want to exclude some
+> only has file modification-time
+   granularity of one second.)  You might want to exclude some
    files, e.g. <TT
 CLASS="FILENAME"
 >postmaster.pid</TT
@@ -1261,118 +1498,11 @@ HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
    and copies must be created simultaneously or while the database server
    is down.
   </P
-><DIV
-CLASS="REFSECT2"
-><A
-NAME="AEN166734"
-></A
-><H3
->Limitations in Upgrading from PostgreSQL 8.3</H3
-><P
->   Upgrading <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->from</I
-></SPAN
-> PostgreSQL 8.3 has additional restrictions not present
-   when upgrading from later PostgreSQL releases.  For example,
-   pg_upgrade will not work for upgrading from 8.3 if a user column
-   is defined as:
-   <P
-></P
-></P><UL
-><LI
-><P
->      a <TT
-CLASS="TYPE"
->tsquery</TT
-> data type
-     </P
-></LI
-><LI
-><P
->      data type <TT
-CLASS="TYPE"
->name</TT
-> and is not the first column
-     </P
-></LI
-></UL
-><P>
-  </P
-><P
->   You must drop any such columns and upgrade them manually.
-  </P
-><P
->   pg_upgrade will not work if the <TT
-CLASS="FILENAME"
->ltree</TT
->
-   contrib module is installed in a database.
-  </P
-><P
->   pg_upgrade will require a table rebuild if:
-   <P
-></P
-></P><UL
-><LI
-><P
->      a user column is of data type <TT
-CLASS="TYPE"
->tsvector</TT
->
-     </P
-></LI
-></UL
-><P>
-  </P
-><P
->   pg_upgrade will require a reindex if:
-   <P
-></P
-></P><UL
-><LI
-><P
->      an index is of type hash or GIN
-     </P
-></LI
-><LI
-><P
->      an index uses <CODE
-CLASS="FUNCTION"
->bpchar_pattern_ops</CODE
->
-     </P
-></LI
-></UL
-><P>
-  </P
-><P
->   Also, the default datetime storage format changed to integer after
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.3. pg_upgrade will check that the datetime storage format
-   used by the old and new clusters match. Make sure your new cluster is
-   built with the configure flag <TT
-CLASS="OPTION"
->--disable-integer-datetimes</TT
->.
-  </P
-><P
->   For Windows users, note that due to different integer datetimes settings
-   used by the graphical installer and the MSI installer, it is only
-   possible to upgrade from version 8.3 of the installer distribution to
-   version 8.4 or later of the installer distribution. It is not
-   possible to upgrade from the MSI installer to the new graphical installer.
-  </P
-></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN166764"
+NAME="AEN99084"
 ></A
 ><H2
 >See Also</H2
@@ -1448,7 +1578,7 @@ WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="contrib-prog-server.html"
+HREF="reference-server.html"
 ACCESSKEY="U"
 >Up</A
 ></TD

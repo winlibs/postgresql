@@ -6,7 +6,7 @@
  *	   logical replication slots via SQL.
  *
  *
- * Copyright (c) 2012-2014, PostgreSQL Global Development Group
+ * Copyright (c) 2012-2015, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *	  src/backend/replication/logicalfuncs.c
@@ -20,6 +20,8 @@
 #include "fmgr.h"
 #include "funcapi.h"
 #include "miscadmin.h"
+
+#include "access/xlog_internal.h"
 
 #include "catalog/pg_type.h"
 
@@ -51,7 +53,7 @@ typedef struct DecodingOutputState
 } DecodingOutputState;
 
 /*
- * Prepare for a output plugin write.
+ * Prepare for an output plugin write.
  */
 static void
 LogicalOutputPrepareWrite(LogicalDecodingContext *ctx, XLogRecPtr lsn, TransactionId xid,
@@ -274,24 +276,30 @@ logical_read_local_xlog_page(XLogReaderState *state, XLogRecPtr targetPagePtr,
 static Datum
 pg_logical_slot_get_changes_guts(FunctionCallInfo fcinfo, bool confirm, bool binary)
 {
-	Name		name = PG_GETARG_NAME(0);
+	Name		name;
 	XLogRecPtr	upto_lsn;
 	int32		upto_nchanges;
-
 	ReturnSetInfo *rsinfo = (ReturnSetInfo *) fcinfo->resultinfo;
 	MemoryContext per_query_ctx;
 	MemoryContext oldcontext;
-
 	XLogRecPtr	end_of_wal;
 	XLogRecPtr	startptr;
-
 	LogicalDecodingContext *ctx;
-
 	ResourceOwner old_resowner = CurrentResourceOwner;
 	ArrayType  *arr;
 	Size		ndim;
 	List	   *options = NIL;
 	DecodingOutputState *p;
+
+	check_permissions();
+
+	CheckLogicalDecodingRequirements();
+
+	if (PG_ARGISNULL(0))
+		ereport(ERROR,
+				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
+				 errmsg("slot name must not be null")));
+	name = PG_GETARG_NAME(0);
 
 	if (PG_ARGISNULL(1))
 		upto_lsn = InvalidXLogRecPtr;
@@ -302,6 +310,12 @@ pg_logical_slot_get_changes_guts(FunctionCallInfo fcinfo, bool confirm, bool bin
 		upto_nchanges = InvalidXLogRecPtr;
 	else
 		upto_nchanges = PG_GETARG_INT32(2);
+
+	if (PG_ARGISNULL(3))
+		ereport(ERROR,
+				(errcode(ERRCODE_NULL_VALUE_NOT_ALLOWED),
+				 errmsg("options array must not be null")));
+	arr = PG_GETARG_ARRAYTYPE_P(3);
 
 	/* check to see if caller supports us returning a tuplestore */
 	if (rsinfo == NULL || !IsA(rsinfo, ReturnSetInfo))
@@ -322,16 +336,11 @@ pg_logical_slot_get_changes_guts(FunctionCallInfo fcinfo, bool confirm, bool bin
 	if (get_call_result_type(fcinfo, NULL, &p->tupdesc) != TYPEFUNC_COMPOSITE)
 		elog(ERROR, "return type must be a row type");
 
-	check_permissions();
-
-	CheckLogicalDecodingRequirements();
-
-	arr = PG_GETARG_ARRAYTYPE_P(3);
-	ndim = ARR_NDIM(arr);
-
 	per_query_ctx = rsinfo->econtext->ecxt_per_query_memory;
 	oldcontext = MemoryContextSwitchTo(per_query_ctx);
 
+	/* Deconstruct options array */
+	ndim = ARR_NDIM(arr);
 	if (ndim > 1)
 	{
 		ereport(ERROR,
@@ -380,7 +389,6 @@ pg_logical_slot_get_changes_guts(FunctionCallInfo fcinfo, bool confirm, bool bin
 	else
 		end_of_wal = GetXLogReplayRecPtr(NULL);
 
-	CheckLogicalDecodingRequirements();
 	ReplicationSlotAcquire(NameStr(*name));
 
 	PG_TRY();
@@ -394,14 +402,14 @@ pg_logical_slot_get_changes_guts(FunctionCallInfo fcinfo, bool confirm, bool bin
 		MemoryContextSwitchTo(oldcontext);
 
 		/*
-		 * Check whether the output pluggin writes textual output if that's
+		 * Check whether the output plugin writes textual output if that's
 		 * what we need.
 		 */
 		if (!binary &&
-			ctx->options.output_type != OUTPUT_PLUGIN_TEXTUAL_OUTPUT)
+			ctx->options.output_type !=OUTPUT_PLUGIN_TEXTUAL_OUTPUT)
 			ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-					 errmsg("logical decoding output plugin \"%s\" produces binary output, but \"%s\" expects textual data",
+					 errmsg("logical decoding output plugin \"%s\" produces binary output, but function \"%s\" expects textual data",
 							NameStr(MyReplicationSlot->data.plugin),
 							format_procedure(fcinfo->flinfo->fn_oid))));
 
@@ -431,7 +439,7 @@ pg_logical_slot_get_changes_guts(FunctionCallInfo fcinfo, bool confirm, bool bin
 			 * store the description into our tuplestore.
 			 */
 			if (record != NULL)
-				LogicalDecodingProcessRecord(ctx, record);
+				LogicalDecodingProcessRecord(ctx, ctx->reader);
 
 			/* check limits */
 			if (upto_lsn != InvalidXLogRecPtr &&
@@ -442,6 +450,23 @@ pg_logical_slot_get_changes_guts(FunctionCallInfo fcinfo, bool confirm, bool bin
 				break;
 			CHECK_FOR_INTERRUPTS();
 		}
+
+		tuplestore_donestoring(tupstore);
+
+		CurrentResourceOwner = old_resowner;
+
+		/*
+		 * Next time, start where we left off. (Hunting things, the family
+		 * business..)
+		 */
+		if (ctx->reader->EndRecPtr != InvalidXLogRecPtr && confirm)
+			LogicalConfirmReceivedLocation(ctx->reader->EndRecPtr);
+
+		/* free context, call shutdown callback */
+		FreeDecodingContext(ctx);
+
+		ReplicationSlotRelease();
+		InvalidateSystemCaches();
 	}
 	PG_CATCH();
 	{
@@ -452,23 +477,6 @@ pg_logical_slot_get_changes_guts(FunctionCallInfo fcinfo, bool confirm, bool bin
 	}
 	PG_END_TRY();
 
-	tuplestore_donestoring(tupstore);
-
-	CurrentResourceOwner = old_resowner;
-
-	/*
-	 * Next time, start where we left off. (Hunting things, the family
-	 * business..)
-	 */
-	if (ctx->reader->EndRecPtr != InvalidXLogRecPtr && confirm)
-		LogicalConfirmReceivedLocation(ctx->reader->EndRecPtr);
-
-	/* free context, call shutdown callback */
-	FreeDecodingContext(ctx);
-
-	ReplicationSlotRelease();
-	InvalidateSystemCaches();
-
 	return (Datum) 0;
 }
 
@@ -478,9 +486,7 @@ pg_logical_slot_get_changes_guts(FunctionCallInfo fcinfo, bool confirm, bool bin
 Datum
 pg_logical_slot_get_changes(PG_FUNCTION_ARGS)
 {
-	Datum		ret = pg_logical_slot_get_changes_guts(fcinfo, true, false);
-
-	return ret;
+	return pg_logical_slot_get_changes_guts(fcinfo, true, false);
 }
 
 /*
@@ -489,9 +495,7 @@ pg_logical_slot_get_changes(PG_FUNCTION_ARGS)
 Datum
 pg_logical_slot_peek_changes(PG_FUNCTION_ARGS)
 {
-	Datum		ret = pg_logical_slot_get_changes_guts(fcinfo, false, false);
-
-	return ret;
+	return pg_logical_slot_get_changes_guts(fcinfo, false, false);
 }
 
 /*
@@ -500,9 +504,7 @@ pg_logical_slot_peek_changes(PG_FUNCTION_ARGS)
 Datum
 pg_logical_slot_get_binary_changes(PG_FUNCTION_ARGS)
 {
-	Datum		ret = pg_logical_slot_get_changes_guts(fcinfo, true, true);
-
-	return ret;
+	return pg_logical_slot_get_changes_guts(fcinfo, true, true);
 }
 
 /*
@@ -511,7 +513,5 @@ pg_logical_slot_get_binary_changes(PG_FUNCTION_ARGS)
 Datum
 pg_logical_slot_peek_binary_changes(PG_FUNCTION_ARGS)
 {
-	Datum		ret = pg_logical_slot_get_changes_guts(fcinfo, false, true);
-
-	return ret;
+	return pg_logical_slot_get_changes_guts(fcinfo, false, true);
 }

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETABLESPACE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN76688"
+NAME="AEN79423"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN76688"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN76691"
+NAME="AEN79426"
 ></A
 ><H2
 >Synopsis</H2
@@ -115,12 +115,12 @@ CLASS="REPLACEABLE"
 >tablespace_name</I
 ></TT
 >
-    [ OWNER <TT
+    [ OWNER { <TT
 CLASS="REPLACEABLE"
 ><I
->user_name</I
+>new_owner</I
 ></TT
-> ]
+> | CURRENT_USER | SESSION_USER } ]
     LOCATION '<TT
 CLASS="REPLACEABLE"
 ><I
@@ -142,7 +142,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76698"
+NAME="AEN79433"
 ></A
 ><H2
 >Description</H2
@@ -216,7 +216,7 @@ HREF="manage-ag-tablespaces.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76712"
+NAME="AEN79447"
 ></A
 ><H2
 >Parameters</H2
@@ -314,7 +314,7 @@ HREF="runtime-config-query.html#GUC-RANDOM-PAGE-COST"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76741"
+NAME="AEN79476"
 ></A
 ><H2
 >Notes</H2
@@ -332,7 +332,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76746"
+NAME="AEN79481"
 ></A
 ><H2
 >Examples</H2
@@ -369,7 +369,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76757"
+NAME="AEN79492"
 ></A
 ><H2
 >Compatibility</H2
@@ -387,7 +387,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76762"
+NAME="AEN79497"
 ></A
 ><H2
 >See Also</H2

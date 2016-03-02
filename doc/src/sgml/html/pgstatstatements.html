@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PGSTATSTATEMENTS"
->F.29. pg_stat_statements</A
+>F.28. pg_stat_statements</A
 ></H1
 ><P
 >  The <TT
@@ -117,20 +117,44 @@ CLASS="FILENAME"
 >, because it requires additional shared memory.
   This means that a server restart is needed to add or remove the module.
  </P
+><P
+>   When <TT
+CLASS="FILENAME"
+>pg_stat_statements</TT
+> is loaded, it tracks
+   statistics across all databases of the server.  To access and manipulate
+   these statistics, the module provides a view, <TT
+CLASS="STRUCTNAME"
+>pg_stat_statements</TT
+>,
+   and the utility functions <CODE
+CLASS="FUNCTION"
+>pg_stat_statements_reset</CODE
+> and
+   <CODE
+CLASS="FUNCTION"
+>pg_stat_statements</CODE
+>.  These are not available globally but
+   can be enabled for a specific database with
+   <TT
+CLASS="COMMAND"
+>CREATE EXTENSION pg_stat_statements</TT
+>.
+ </P
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN162435"
->F.29.1. The <TT
+NAME="AEN171809"
+>F.28.1. The <TT
 CLASS="STRUCTNAME"
 >pg_stat_statements</TT
 > View</A
 ></H2
 ><P
 >   The statistics gathered by the module are made available via a
-   system view named <TT
+   view named <TT
 CLASS="STRUCTNAME"
 >pg_stat_statements</TT
 >.  This view
@@ -283,6 +307,70 @@ CLASS="TYPE"
 >&nbsp;</TD
 ><TD
 >Total time spent in the statement, in milliseconds</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>min_time</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>double precision</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>Minimum time spent in the statement, in milliseconds</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>max_time</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>double precision</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>Maximum time spent in the statement, in milliseconds</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>mean_time</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>double precision</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>Mean time spent in the statement, in milliseconds</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>stddev_time</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>double precision</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>Population standard deviation of time spent in the statement, in milliseconds</TD
 ></TR
 ><TR
 ><TD
@@ -506,33 +594,12 @@ HREF="runtime-config-statistics.html#GUC-TRACK-IO-TIMING"
 ></TABLE
 ></DIV
 ><P
->   This view, and the functions <CODE
-CLASS="FUNCTION"
->pg_stat_statements_reset</CODE
->
-   and <CODE
-CLASS="FUNCTION"
->pg_stat_statements</CODE
->, are available only in
-   databases they have been specifically installed into by installing
-   the <TT
-CLASS="LITERAL"
->pg_stat_statements</TT
-> extension.
-   However, statistics are tracked across all databases of the server
-   whenever the <TT
-CLASS="FILENAME"
->pg_stat_statements</TT
-> module is loaded
-   into the server, regardless of presence of the view.
-  </P
-><P
 >   For security reasons, non-superusers are not allowed to see the SQL
    text or <TT
 CLASS="STRUCTFIELD"
 >queryid</TT
-> of queries executed by other users.  They can see
-   the statistics, however, if the view has been installed in their
+> of queries executed by other users.
+   They can see the statistics, however, if the view has been installed in their
    database.
   </P
 ><P
@@ -701,8 +768,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN162635"
->F.29.2. Functions</A
+NAME="AEN172032"
+>F.28.2. Functions</A
 ></H2
 ><P
 ></P
@@ -785,8 +852,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN162663"
->F.29.3. Configuration Parameters</A
+NAME="AEN172060"
+>F.28.3. Configuration Parameters</A
 ></H2
 ><P
 ></P
@@ -959,8 +1026,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN162714"
->F.29.4. Sample Output</A
+NAME="AEN172111"
+>F.28.4. Sample Output</A
 ></H2
 ><PRE
 CLASS="SCREEN"
@@ -1009,8 +1076,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN162717"
->F.29.5. Authors</A
+NAME="AEN172114"
+>F.28.5. Authors</A
 ></H2
 ><P
 >   Takahiro Itagaki <CODE

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CLUSTER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CLUSTER" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CLUSTER" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,7 +37,6 @@ CLUSTER [VERBOSE]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCLUSTER\fR
 instructs
 PostgreSQL
@@ -48,7 +47,7 @@ based on the index specified by
 \fItable_name\fR\&.
 .PP
 When a table is clustered, it is physically reordered based on the index information\&. Clustering is a one\-time operation: when the table is subsequently updated, the changes are not clustered\&. That is, no attempt is made to store new or updated rows according to their index order\&. (If one wishes, one can periodically recluster by issuing the command again\&. Also, setting the table\*(Aqs
-FILLFACTOR
+fillfactor
 storage parameter to less than 100% can aid in preserving cluster ordering during updates, since updated rows are kept on the same page if enough space is available there\&.)
 .PP
 When a table is clustered,
@@ -63,7 +62,6 @@ forms of
 ALTER TABLE (\fBALTER_TABLE\fR(7))
 to set the index to be used for future cluster operations, or to clear any previous setting\&.
 .PP
-
 \fBCLUSTER\fR
 without any parameter reclusters all the previously\-clustered tables in the current database that the calling user owns, or all such tables if called by a superuser\&. This form of
 \fBCLUSTER\fR
@@ -97,7 +95,6 @@ In cases where you are accessing single rows randomly within a table, the actual
 \fBCLUSTER\fR
 will help because once the index identifies the table page for the first row that matches, all other rows that match are probably already on the same table page, and so you save disk accesses and speed up the query\&.
 .PP
-
 \fBCLUSTER\fR
 can re\-sort the table using either an index scan on the specified index, or (if the index is a b\-tree) a sequential scan followed by sorting\&. It will attempt to choose the method that will be faster, based on planner cost parameters and available statistical information\&.
 .PP
@@ -183,7 +180,6 @@ CLUSTER \fIindex_name\fR ON \fItable_name\fR
 .RE
 .\}
 .sp
-
 is also supported for compatibility with pre\-8\&.3
 PostgreSQL
 versions\&.

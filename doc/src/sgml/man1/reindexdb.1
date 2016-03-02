@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: reindexdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "REINDEXDB" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "REINDEXDB" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,26 +31,23 @@
 reindexdb \- reindex a PostgreSQL database
 .SH "SYNOPSIS"
 .HP \w'\fBreindexdb\fR\ 'u
-\fBreindexdb\fR [\fIconnection\-option\fR...] [\ \fB\-\-table\fR\ |\ \fB\-t\fR\ \fItable\fR\ ]...  [\ \fB\-\-index\fR\ |\ \fB\-i\fR\ \fIindex\fR\ ]...  [\fIdbname\fR]
+\fBreindexdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\ \fB\-\-schema\fR\ |\ \fB\-S\fR\ \fIschema\fR\ ]...  [\ \fB\-\-table\fR\ |\ \fB\-t\fR\ \fItable\fR\ ]...  [\ \fB\-\-index\fR\ |\ \fB\-i\fR\ \fIindex\fR\ ]...  [\fIdbname\fR]
 .HP \w'\fBreindexdb\fR\ 'u
-\fBreindexdb\fR [\fIconnection\-option\fR...] \fB\-\-all\fR | \fB\-a\fR 
+\fBreindexdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-\-all\fR | \fB\-a\fR 
 .HP \w'\fBreindexdb\fR\ 'u
-\fBreindexdb\fR [\fIconnection\-option\fR...] \fB\-\-system\fR | \fB\-s\fR  [\fIdbname\fR]
+\fBreindexdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fB\-\-system\fR | \fB\-s\fR  [\fIdbname\fR]
 .SH "DESCRIPTION"
 .PP
-
 reindexdb
 is a utility for rebuilding indexes in a
 PostgreSQL
 database\&.
 .PP
-
 reindexdb
 is a wrapper around the SQL command
 \fBREINDEX\fR(7)\&. There is no effective difference between reindexing databases via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
-
 reindexdb
 accepts the following command\-line arguments:
 .PP
@@ -106,6 +103,17 @@ Do not display progress messages\&.
 Reindex database\*(Aqs system catalogs\&.
 .RE
 .PP
+\fB\-S \fR\fB\fIschema\fR\fR
+.br
+\fB\-\-schema=\fR\fB\fIschema\fR\fR
+.RS 4
+Reindex
+\fIschema\fR
+only\&. Multiple schemas can be reindexed by writing multiple
+\fB\-S\fR
+switches\&.
+.RE
+.PP
 \fB\-t \fR\fB\fItable\fR\fR
 .br
 \fB\-\-table=\fR\fB\fItable\fR\fR
@@ -115,6 +123,13 @@ Reindex
 only\&. Multiple tables can be reindexed by writing multiple
 \fB\-t\fR
 switches\&.
+.RE
+.PP
+\fB\-v\fR
+.br
+\fB\-\-verbose\fR
+.RS 4
+Print detailed information during processing\&.
 .RE
 .PP
 \fB\-V\fR
@@ -135,7 +150,6 @@ reindexdb
 command line arguments, and exit\&.
 .RE
 .PP
-
 reindexdb
 also accepts the following command\-line arguments for connection parameters:
 .PP
@@ -224,7 +238,6 @@ libpq
 front\-end library will apply\&.
 .SH "NOTES"
 .PP
-
 reindexdb
 might need to connect several times to the
 PostgreSQL

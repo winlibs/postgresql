@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/Python - Python Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -109,12 +109,13 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN63391"
+NAME="AEN65378"
 >43.3.1. Data Type Mapping</A
 ></H2
 ><P
->    Function arguments are converted from their PostgreSQL type to a
-    corresponding Python type:
+>    When a PL/Python function is called, its arguments are converted from
+    their PostgreSQL data type to a corresponding Python type:
+
     <P
 ></P
 ></P><UL
@@ -200,7 +201,7 @@ CLASS="LITERAL"
        than <TT
 CLASS="LITERAL"
 >decimal</TT
->.  In Python 3.3,
+>.  In Python 3.3 and up,
        however, <TT
 CLASS="LITERAL"
 >cdecimal</TT
@@ -249,8 +250,9 @@ CLASS="TYPE"
 ><P>
    </P
 ><P
->    Function return values are converted to the declared PostgreSQL
-    return data type as follows:
+>    When a PL/Python function returns, its return value is converted to the
+    function's declared PostgreSQL return data type as follows:
+
     <P
 ></P
 ></P><UL
@@ -282,7 +284,7 @@ CLASS="TYPE"
 >, the
        return value will be converted to a string (Python 2) or bytes
        (Python 3) using the respective Python built-ins, with the
-       result being converted <TT
+       result being converted to <TT
 CLASS="TYPE"
 >bytea</TT
 >.
@@ -290,13 +292,24 @@ CLASS="TYPE"
 ></LI
 ><LI
 ><P
->       For all other PostgreSQL return types, the returned Python
-       value is converted to a string using the Python
-       built-in <TT
+>       For all other PostgreSQL return types, the return value is converted
+       to a string using the Python built-in <TT
 CLASS="LITERAL"
 >str</TT
->, and the result is passed to the
-       input function of the PostgreSQL data type.
+>, and the
+       result is passed to the input function of the PostgreSQL data type.
+       (If the Python value is a <TT
+CLASS="TYPE"
+>float</TT
+>, it is converted using
+       the <TT
+CLASS="LITERAL"
+>repr</TT
+> built-in instead of <TT
+CLASS="LITERAL"
+>str</TT
+>, to
+       avoid loss of precision.)
       </P
 ><P
 >       Strings in Python 2 are required to be in the PostgreSQL server
@@ -327,7 +340,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN63450"
+NAME="AEN65440"
 >43.3.2. Null, None</A
 ></H2
 ><P
@@ -429,7 +442,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN63468"
+NAME="AEN65458"
 >43.3.4. Composite Types</A
 ></H2
 ><P
@@ -585,7 +598,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN63497"
+NAME="AEN65487"
 >43.3.5. Set-returning Functions</A
 ></H2
 ><P

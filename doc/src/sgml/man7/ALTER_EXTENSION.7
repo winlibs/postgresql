@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER EXTENSION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER EXTENSION" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER EXTENSION" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -61,6 +61,7 @@ where \fImember_object\fR is:
   TEXT SEARCH DICTIONARY \fIobject_name\fR |
   TEXT SEARCH PARSER \fIobject_name\fR |
   TEXT SEARCH TEMPLATE \fIobject_name\fR |
+  TRANSFORM FOR \fItype_name\fR LANGUAGE \fIlang_name\fR |
   TYPE \fIobject_name\fR |
   VIEW \fIobject_name\fR
 
@@ -72,7 +73,6 @@ and \fIaggregate_signature\fR is:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER EXTENSION\fR
 changes the definition of an installed extension\&. There are several subforms:
 .PP
@@ -189,6 +189,16 @@ PROCEDURAL
 .RS 4
 This is a noise word\&.
 .RE
+.PP
+\fItype_name\fR
+.RS 4
+The name of the data type of the transform\&.
+.RE
+.PP
+\fIlang_name\fR
+.RS 4
+The name of the language of the transform\&.
+.RE
 .SH "EXAMPLES"
 .PP
 To update the
@@ -235,7 +245,6 @@ ALTER EXTENSION hstore ADD FUNCTION populate_record(anyelement, hstore);
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBALTER EXTENSION\fR
 is a
 PostgreSQL

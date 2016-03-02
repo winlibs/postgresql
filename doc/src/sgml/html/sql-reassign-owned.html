@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-REASSIGN-OWNED"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN82325"
+NAME="AEN85597"
 ></A
 ><H2
 >Name</H2
@@ -103,28 +103,29 @@ NAME="AEN82325"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN82328"
+NAME="AEN85600"
 ></A
 ><H2
 >Synopsis</H2
 ><PRE
 CLASS="SYNOPSIS"
->REASSIGN OWNED BY <TT
+>REASSIGN OWNED BY { <TT
 CLASS="REPLACEABLE"
 ><I
 >old_role</I
 ></TT
-> [, ...] TO <TT
+> | CURRENT_USER | SESSION_USER } [, ...]
+               TO { <TT
 CLASS="REPLACEABLE"
 ><I
 >new_role</I
 ></TT
-></PRE
+> | CURRENT_USER | SESSION_USER }</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82332"
+NAME="AEN85604"
 ></A
 ><H2
 >Description</H2
@@ -133,14 +134,25 @@ NAME="AEN82332"
 CLASS="COMMAND"
 >REASSIGN OWNED</TT
 > instructs the system to change
-   the ownership of database objects owned by one of the
-   old_roles, to new_role.
+   the ownership of database objects owned by any of the
+   <TT
+CLASS="REPLACEABLE"
+><I
+>old_roles</I
+></TT
+> to
+   <TT
+CLASS="REPLACEABLE"
+><I
+>new_role</I
+></TT
+>.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82336"
+NAME="AEN85610"
 ></A
 ><H2
 >Parameters</H2
@@ -188,7 +200,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82350"
+NAME="AEN85624"
 ></A
 ><H2
 >Notes</H2
@@ -217,30 +229,36 @@ CLASS="COMMAND"
 HREF="sql-drop-owned.html"
 >DROP OWNED</A
 > command is an alternative that
-   drops all the database objects owned by one or more roles. Note
-   also that <TT
-CLASS="COMMAND"
->DROP OWNED</TT
-> requires privileges only
-   on the source role(s).
+   simply drops all the database objects owned by one or more roles.
   </P
 ><P
 >   The <TT
 CLASS="COMMAND"
 >REASSIGN OWNED</TT
-> command does not affect the
-   privileges granted to the old_roles in objects that are not owned
-   by them.  Use <TT
+> command does not affect any
+   privileges granted to the <TT
+CLASS="REPLACEABLE"
+><I
+>old_roles</I
+></TT
+> for
+   objects that are not owned by them.  Use <TT
 CLASS="COMMAND"
 >DROP OWNED</TT
-> to revoke those
-   privileges.
+> to
+   revoke such privileges.
+  </P
+><P
+>   See <A
+HREF="role-removal.html"
+>Section 20.4</A
+> for more discussion.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82363"
+NAME="AEN85639"
 ></A
 ><H2
 >Compatibility</H2
@@ -248,7 +266,7 @@ NAME="AEN82363"
 >   The <TT
 CLASS="COMMAND"
 >REASSIGN OWNED</TT
-> statement is a
+> command is a
    <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
@@ -258,7 +276,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82368"
+NAME="AEN85644"
 ></A
 ><H2
 >See Also</H2

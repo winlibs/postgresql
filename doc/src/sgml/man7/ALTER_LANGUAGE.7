@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER LANGUAGE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER LANGUAGE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER LANGUAGE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,11 +33,10 @@ ALTER_LANGUAGE \- change the definition of a procedural language
 .sp
 .nf
 ALTER [ PROCEDURAL ] LANGUAGE \fIname\fR RENAME TO \fInew_name\fR
-ALTER [ PROCEDURAL ] LANGUAGE \fIname\fR OWNER TO \fInew_owner\fR
+ALTER [ PROCEDURAL ] LANGUAGE \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER LANGUAGE\fR
 changes the definition of a procedural language\&. The only functionality is to rename the language or assign a new owner\&. You must be superuser or owner of the language to use
 \fBALTER LANGUAGE\fR\&.

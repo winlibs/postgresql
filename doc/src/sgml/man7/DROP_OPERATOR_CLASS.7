@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP OPERATOR CLASS
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "DROP OPERATOR CLASS" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "DROP OPERATOR CLASS" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,11 +36,9 @@ DROP OPERATOR CLASS [ IF EXISTS ] \fIname\fR USING \fIindex_method\fR [ CASCADE 
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBDROP OPERATOR CLASS\fR
 drops an existing operator class\&. To execute this command you must be the owner of the operator class\&.
 .PP
-
 \fBDROP OPERATOR CLASS\fR
 does not drop any of the operators or functions referenced by the class\&. If there are any indexes depending on the operator class, you will need to specify
 CASCADE
@@ -73,7 +71,6 @@ Refuse to drop the operator class if any objects depend on it\&. This is the def
 .RE
 .SH "NOTES"
 .PP
-
 \fBDROP OPERATOR CLASS\fR
 will not drop the operator family containing the class, even if there is nothing else left in the family (in particular, in the case where the family was implicitly created by
 \fBCREATE OPERATOR CLASS\fR)\&. An empty operator family is harmless, but for the sake of tidiness you might wish to remove the family with

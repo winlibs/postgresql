@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN90220"
+NAME="AEN94369"
 ></A
 ><H2
 >Name</H2
@@ -113,7 +113,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN90225"
+NAME="AEN94374"
 ></A
 ><H2
 >Synopsis</H2
@@ -142,7 +142,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN90234"
+NAME="AEN94383"
 ></A
 ><H2
 >Description</H2
@@ -211,6 +211,27 @@ CLASS="OPTION"
 ><P
 >      Switches to unaligned output mode. (The default output mode is
       otherwise aligned.)
+      </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-b</TT
+><BR><TT
+CLASS="OPTION"
+>--echo-errors</TT
+></DT
+><DD
+><P
+>      Print failed SQL commands to standard error output. This is
+      equivalent to setting the variable <TT
+CLASS="VARNAME"
+>ECHO</TT
+> to
+      <TT
+CLASS="LITERAL"
+>errors</TT
+>.
       </P
 ></DD
 ><DT
@@ -481,7 +502,16 @@ CLASS="REPLACEABLE"
 CLASS="LITERAL"
 >-</TT
 >
-       (hyphen), then standard input is read.
+       (hyphen), then standard input is read until an EOF indication
+       or <TT
+CLASS="COMMAND"
+>\q</TT
+> meta-command.  Note however that Readline
+       is not used in this case (much as if <TT
+CLASS="OPTION"
+>-n</TT
+> had been
+       specified).
       </P
 ><P
 >      Using this option is subtly different from writing <TT
@@ -1187,15 +1217,55 @@ CLASS="OPTION"
 >-?</TT
 ><BR><TT
 CLASS="OPTION"
->--help</TT
+>--help[=<TT
+CLASS="REPLACEABLE"
+><I
+>topic</I
+></TT
+>]</TT
 ></DT
 ><DD
 ><P
 >      Show help about <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> command line
-      arguments, and exit.
+> and exit. The optional
+      <TT
+CLASS="REPLACEABLE"
+><I
+>topic</I
+></TT
+> parameter (defaulting
+      to <TT
+CLASS="LITERAL"
+>options</TT
+>) selects which part of <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> is
+      explained: <TT
+CLASS="LITERAL"
+>commands</TT
+> describes <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>'s
+      backslash commands; <TT
+CLASS="LITERAL"
+>options</TT
+> describes the command-line
+      options that can be passed to <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>;
+      and <TT
+CLASS="LITERAL"
+>variables</TT
+> shows help about about <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> configuration
+      variables.
       </P
 ></DD
 ></DL
@@ -1204,7 +1274,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN90603"
+NAME="AEN94773"
 ></A
 ><H2
 >Exit Status</H2
@@ -1225,7 +1295,7 @@ CLASS="VARNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN90608"
+NAME="AEN94778"
 ></A
 ><H2
 >Usage</H2
@@ -1411,7 +1481,7 @@ CLASS="PROGRAMLISTING"
 CLASS="USERINPUT"
 >psql testdb</KBD
 >
-psql (9.4.5)
+psql (9.5.1)
 Type "help" for help.
 
 testdb=&gt;</PRE
@@ -2198,8 +2268,9 @@ CLASS="REPLACEABLE"
         If <TT
 CLASS="LITERAL"
 >+</TT
-> is appended to the command name, each object
-        is listed with its associated permissions.
+> is appended to the command name, each tablespace
+        is listed with its associated options, on-disk size, permissions and
+        description.
         </P
 ></DD
 ><DT
@@ -3875,6 +3946,24 @@ CLASS="REPLACEABLE"
 > and executes it as
         though it had been typed on the keyboard.
         </P
+><P
+>        If <TT
+CLASS="REPLACEABLE"
+><I
+>filename</I
+></TT
+> is <TT
+CLASS="LITERAL"
+>-</TT
+>
+        (hyphen), then standard input is read until an EOF indication
+        or <TT
+CLASS="COMMAND"
+>\q</TT
+> meta-command.  This can be used to intersperse
+        interactive input with input from files.  Note that Readline behavior
+        will be used only if it is active at the outermost level.
+        </P
 ><DIV
 CLASS="NOTE"
 ><BLOCKQUOTE
@@ -4358,29 +4447,30 @@ CLASS="REPLACEABLE"
 > must be a
           number. In general, the higher
           the number the more borders and lines the tables will have,
-          but this depends on the particular format. In
-          <ACRONYM
+          but details depend on the particular format.
+          In <ACRONYM
 CLASS="ACRONYM"
 >HTML</ACRONYM
 > format, this will translate directly
           into the <TT
 CLASS="LITERAL"
 >border=...</TT
-> attribute; in the
-          other formats only values 0 (no border), 1 (internal dividing lines),
-          and 2 (table frame) make sense.
-          <TT
+> attribute.
+          In most other formats only values 0 (no border), 1 (internal
+          dividing lines), and 2 (table frame) make sense, and values above 2
+          will be treated the same as <TT
+CLASS="LITERAL"
+>border = 2</TT
+>.
+          The <TT
 CLASS="LITERAL"
 >latex</TT
 > and <TT
 CLASS="LITERAL"
 >latex-longtable</TT
 >
-          also support a <TT
-CLASS="LITERAL"
->border</TT
-> value of 3 which adds
-          a dividing line between each row.
+          formats additionally allow a value of 3 to add dividing lines
+          between data rows.
           </P
 ></DD
 ><DT
@@ -4560,6 +4650,9 @@ CLASS="LITERAL"
           <TT
 CLASS="LITERAL"
 >html</TT
+>, <TT
+CLASS="LITERAL"
+>asciidoc</TT
 >,
           <TT
 CLASS="LITERAL"
@@ -4627,6 +4720,9 @@ CLASS="LITERAL"
 >          The <TT
 CLASS="LITERAL"
 >html</TT
+>, <TT
+CLASS="LITERAL"
+>asciidoc</TT
 >, <TT
 CLASS="LITERAL"
 >latex</TT
@@ -4765,8 +4861,11 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >border</TT
 > setting is greater than zero,
-          this option also determines the characters
-          with which the border lines are drawn.
+          the <TT
+CLASS="LITERAL"
+>linestyle</TT
+> option also determines the
+          characters with which the border lines are drawn.
           Plain <ACRONYM
 CLASS="ACRONYM"
 >ASCII</ACRONYM
@@ -4879,6 +4978,22 @@ CLASS="REPLACEABLE"
 ></TT
 >
           toggles pager use on and off.
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>pager_min_lines</TT
+></DT
+><DD
+><P
+>          If <TT
+CLASS="LITERAL"
+>pager_min_lines</TT
+> is set to a number greater than the
+          page height, the pager program will not be called unless there are
+          at least this many lines of output to show. The default setting
+          is 0.
           </P
 ></DD
 ><DT
@@ -5012,6 +5127,69 @@ CLASS="REPLACEABLE"
           Regular output includes extra information such
           as column headers, titles, and various footers. In tuples-only
           mode, only actual table data is shown.
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>unicode_border_linestyle</TT
+></DT
+><DD
+><P
+>          Sets the border drawing style for the <TT
+CLASS="LITERAL"
+>unicode</TT
+>
+          line style to one of <TT
+CLASS="LITERAL"
+>single</TT
+>
+          or <TT
+CLASS="LITERAL"
+>double</TT
+>.
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>unicode_column_linestyle</TT
+></DT
+><DD
+><P
+>          Sets the column drawing style for the <TT
+CLASS="LITERAL"
+>unicode</TT
+>
+          line style to one of <TT
+CLASS="LITERAL"
+>single</TT
+>
+          or <TT
+CLASS="LITERAL"
+>double</TT
+>.
+          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>unicode_header_linestyle</TT
+></DT
+><DD
+><P
+>          Sets the header drawing style for the <TT
+CLASS="LITERAL"
+>unicode</TT
+>
+          line style to one of <TT
+CLASS="LITERAL"
+>single</TT
+>
+          or <TT
+CLASS="LITERAL"
+>double</TT
+>.
           </P
 ></DD
 ></DL
@@ -5575,11 +5753,52 @@ CLASS="REPLACEABLE"
 ><DT
 ><TT
 CLASS="LITERAL"
->\?</TT
+>\? [ <TT
+CLASS="REPLACEABLE"
+><I
+>topic</I
+></TT
+> ]</TT
 ></DT
 ><DD
 ><P
->        Shows help information about the backslash commands.
+>        Shows help information. The optional
+        <TT
+CLASS="REPLACEABLE"
+><I
+>topic</I
+></TT
+> parameter
+        (defaulting to <TT
+CLASS="LITERAL"
+>commands</TT
+>) selects which part of <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> is
+        explained: <TT
+CLASS="LITERAL"
+>commands</TT
+> describes <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>'s
+        backslash commands; <TT
+CLASS="LITERAL"
+>options</TT
+> describes the command-line
+        options that can be passed to <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>;
+        and <TT
+CLASS="LITERAL"
+>variables</TT
+> shows help about about <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> configuration
+        variables.
         </P
 ></DD
 ></DL
@@ -5822,7 +6041,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91872"
+NAME="AEN96089"
 ></A
 ><H3
 >Advanced Features</H3
@@ -6132,7 +6351,20 @@ CLASS="APPLICATION"
         <TT
 CLASS="OPTION"
 >-e</TT
->.
+>. If set to <TT
+CLASS="LITERAL"
+>errors</TT
+>, then only
+        failed queries are displayed on standard error output. The switch
+        for this is <TT
+CLASS="OPTION"
+>-b</TT
+>. If unset, or if set to
+        <TT
+CLASS="LITERAL"
+>none</TT
+> (or any other value than those above) then
+        no queries are displayed.
         </P
 ></DD
 ><DT
@@ -6238,8 +6470,12 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >ignoreboth</TT
 > combines the two options. If
-         unset, or if set to any other value than those above, all lines
-         read in interactive mode are saved on the history list.
+         unset, or if set to <TT
+CLASS="LITERAL"
+>none</TT
+> (or any other value
+         than those above), all lines read in interactive mode are
+         saved on the history list.
         </P
 ><DIV
 CLASS="NOTE"
@@ -6982,6 +7218,19 @@ CLASS="LITERAL"
 ><DT
 ><TT
 CLASS="LITERAL"
+>%l</TT
+></DT
+><DD
+><P
+>          The line number inside the current statement, starting from <TT
+CLASS="LITERAL"
+>1</TT
+>.
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
 >%</TT
 ><TT
 CLASS="REPLACEABLE"
@@ -7133,7 +7382,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT3"
 ><A
-NAME="AEN92265"
+NAME="AEN96492"
 ></A
 ><H4
 >Command-Line Editing</H4
@@ -7421,7 +7670,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92364"
+NAME="AEN96591"
 ></A
 ><H2
 >Files</H2
@@ -7569,7 +7818,7 @@ CLASS="ENVAR"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92405"
+NAME="AEN96632"
 ></A
 ><H2
 >Notes</H2
@@ -7639,7 +7888,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92422"
+NAME="AEN96649"
 ></A
 ><H2
 >Notes for Windows Users</H2

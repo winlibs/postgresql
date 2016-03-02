@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -416,9 +416,9 @@ TARGET="_top"
 >strftime
         </A
 > specification.
-        Note that the system's <SPAN
-CLASS="SYSTEMITEM"
->strftime</SPAN
+        Note that the system's <CODE
+CLASS="FUNCTION"
+>strftime</CODE
 > is not used
         directly, so platform-specific (nonstandard) extensions do not work.
         The default is <TT
@@ -1535,8 +1535,12 @@ CLASS="TYPE"
 ><P
 >        Causes each attempted connection to the server to be logged,
         as well as successful completion of client authentication.
-        This parameter cannot be changed after session start.
-        The default is off.
+        Only superusers can change this parameter at session start,
+        and it cannot be changed at all within a session.
+        The default is <TT
+CLASS="LITERAL"
+>off</TT
+>.
        </P
 ><DIV
 CLASS="NOTE"
@@ -1573,14 +1577,18 @@ CLASS="TYPE"
       </DT
 ><DD
 ><P
->        This outputs a line in the server log similar to
-        <TT
+>        Causes session terminations to be logged.  The log output
+        provides information similar to <TT
 CLASS="VARNAME"
 >log_connections</TT
-> but at session termination,
-        and includes the duration of the session.  This is off by
-        default.
-        This parameter cannot be changed after session start.
+>,
+        plus the duration of the session.
+        Only superusers can change this parameter at session start,
+        and it cannot be changed at all within a session.
+        The default is <TT
+CLASS="LITERAL"
+>off</TT
+>.
        </P
 ></DD
 ><DT
@@ -1775,7 +1783,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN31822"
+NAME="AEN32948"
 ></A
 ><TABLE
 BORDER="1"
@@ -2007,7 +2015,7 @@ CLASS="LITERAL"
 >, use this query:
 </P><PRE
 CLASS="PROGRAMLISTING"
->SELECT to_hex(EXTRACT(EPOCH FROM backend_start)::integer) || '.' ||
+>SELECT to_hex(trunc(EXTRACT(EPOCH FROM backend_start))::integer) || '.' ||
        to_hex(pid)
 FROM pg_stat_activity;</PRE
 ><P>
@@ -2197,6 +2205,32 @@ CLASS="LITERAL"
         </P
 ></BLOCKQUOTE
 ></DIV
+></DD
+><DT
+><A
+NAME="GUC-LOG-REPLICATION-COMMANDS"
+></A
+><TT
+CLASS="VARNAME"
+>log_replication_commands</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)
+      </DT
+><DD
+><P
+>        Causes each replication command to be logged in the server log.
+        See <A
+HREF="protocol-replication.html"
+>Section 50.3</A
+> for more information about
+        replication command. The default value is <TT
+CLASS="LITERAL"
+>off</TT
+>.
+        Only superusers can change this setting.
+       </P
 ></DD
 ><DT
 ><A
@@ -2439,6 +2473,106 @@ CLASS="COMMAND"
 ></OL
 ><P>
       </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN33164"
+>18.8.5. Process Title</A
+></H2
+><P
+>     These settings control how the process title as seen
+     by <TT
+CLASS="COMMAND"
+>ps</TT
+> is modified.  See <A
+HREF="monitoring-ps.html"
+>Section 27.1</A
+>
+     for details.
+    </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A
+NAME="GUC-CLUSTER-NAME"
+></A
+><TT
+CLASS="VARNAME"
+>cluster_name</TT
+> (<TT
+CLASS="TYPE"
+>string</TT
+>)
+      </DT
+><DD
+><P
+>        Sets the cluster name that appears in the process title for all
+        processes in this cluster. The name can be any string of less than
+        <TT
+CLASS="SYMBOL"
+>NAMEDATALEN</TT
+> characters (64 characters in a standard
+        build). Only printable ASCII characters may be used in the
+        <TT
+CLASS="VARNAME"
+>cluster_name</TT
+> value. Other characters will be
+        replaced with question marks (<TT
+CLASS="LITERAL"
+>?</TT
+>).  No name is shown
+        if this parameter is set to the empty string <TT
+CLASS="LITERAL"
+>''</TT
+> (which is
+        the default). This parameter can only be set at server start.
+       </P
+><P
+>        The process title is typically viewed using programs like
+        <SPAN
+CLASS="APPLICATION"
+>ps</SPAN
+> or, on Windows, <SPAN
+CLASS="APPLICATION"
+>Process Explorer</SPAN
+>.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-UPDATE-PROCESS-TITLE"
+></A
+><TT
+CLASS="VARNAME"
+>update_process_title</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)
+      </DT
+><DD
+><P
+>        Enables updating of the process title every time a new SQL command
+        is received by the server.  The process title is typically viewed
+        by the <TT
+CLASS="COMMAND"
+>ps</TT
+> command,
+        or in Windows by using the <SPAN
+CLASS="APPLICATION"
+>Process Explorer</SPAN
+>.
+        Only superusers can change this setting.
+       </P
+></DD
+></DL
+></DIV
 ></DIV
 ></DIV
 ><DIV

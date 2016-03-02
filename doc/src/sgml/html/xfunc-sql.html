@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1127,15 +1127,15 @@ CLASS="LITERAL"
 
 </P><PRE
 CLASS="SCREEN"
->SELECT mleast(VARIADIC arr := ARRAY[10, -1, 5, 4.4]);</PRE
+>SELECT mleast(VARIADIC arr =&#62; ARRAY[10, -1, 5, 4.4]);</PRE
 ><P>
 
      but not these:
 
 </P><PRE
 CLASS="SCREEN"
->SELECT mleast(arr := 10);
-SELECT mleast(arr := ARRAY[10, -1, 5, 4.4]);</PRE
+>SELECT mleast(arr =&#62; 10);
+SELECT mleast(arr =&#62; ARRAY[10, -1, 5, 4.4]);</PRE
 ><P>
     </P
 ></DIV
@@ -1594,7 +1594,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN55284"
+NAME="AEN56784"
 >35.4.10. Polymorphic <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
@@ -1748,7 +1748,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN55310"
+NAME="AEN56810"
 >35.4.11. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM

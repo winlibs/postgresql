@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_archivecleanup
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PG_ARCHIVECLEANUP" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PG_ARCHIVECLEANUP" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,6 @@ pg_archivecleanup \- clean up PostgreSQL WAL archive files
 \fBpg_archivecleanup\fR [\fIoption\fR...] \fIarchivelocation\fR \fIoldestkeptwalfile\fR
 .SH "DESCRIPTION"
 .PP
-
 pg_archivecleanup
 is designed to be used as an
 archive_cleanup_command
@@ -78,9 +77,13 @@ When used as a standalone program all WAL files logically preceding the
 \fIoldestkeptwalfile\fR
 will be removed from
 \fIarchivelocation\fR\&. In this mode, if you specify a
+\&.partial
+or
 \&.backup
 file name, then only the file prefix will be used as the
-\fIoldestkeptwalfile\fR\&. This allows you to remove all WAL files archived prior to a specific base backup without error\&. For example, the following example will remove all files older than WAL file name
+\fIoldestkeptwalfile\fR\&. This treatment of
+\&.backup
+file name allows you to remove all WAL files archived prior to a specific base backup without error\&. For example, the following example will remove all files older than WAL file name
 000000010000003700000010:
 .sp
 .if n \{\
@@ -97,14 +100,12 @@ pg_archivecleanup:  removing file "archive/00000001000000370000000E"
 .RE
 .\}
 .PP
-
 pg_archivecleanup
 assumes that
 \fIarchivelocation\fR
 is a directory readable and writable by the server\-owning user\&.
 .SH "OPTIONS"
 .PP
-
 pg_archivecleanup
 accepts the following command\-line arguments:
 .PP
@@ -146,7 +147,6 @@ command line arguments, and exit\&.
 .RE
 .SH "NOTES"
 .PP
-
 pg_archivecleanup
 is designed to work with
 PostgreSQL
@@ -154,7 +154,6 @@ PostgreSQL
 PostgreSQL
 9\&.0 and later when used as an archive cleanup command\&.
 .PP
-
 pg_archivecleanup
 is written in C and has an easy\-to\-modify source code, with specifically designated sections to modify for your own needs
 .SH "EXAMPLES"
@@ -197,9 +196,5 @@ cleanup\&.log
 .\}
 remove no\-longer\-needed files from the archive directory
 .RE
-.SH "AUTHOR"
-.PP
-Simon Riggs
-<simon@2ndquadrant\&.com>
 .SH "SEE ALSO"
 \fBpg_standby\fR(1)

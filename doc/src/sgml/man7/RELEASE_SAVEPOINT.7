@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: RELEASE SAVEPOINT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "RELEASE SAVEPOINT" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "RELEASE SAVEPOINT" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,14 +36,12 @@ RELEASE [ SAVEPOINT ] \fIsavepoint_name\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBRELEASE SAVEPOINT\fR
 destroys a savepoint previously defined in the current transaction\&.
 .PP
 Destroying a savepoint makes it unavailable as a rollback point, but it has no other user visible behavior\&. It does not undo the effects of commands executed after the savepoint was established\&. (To do that, see
 ROLLBACK TO SAVEPOINT (\fBROLLBACK_TO_SAVEPOINT\fR(7))\&.) Destroying a savepoint when it is no longer needed allows the system to reclaim some resources earlier than transaction end\&.
 .PP
-
 \fBRELEASE SAVEPOINT\fR
 also destroys all savepoints that were established after the named savepoint was established\&.
 .SH "PARAMETERS"

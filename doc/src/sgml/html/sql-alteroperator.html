@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTEROPERATOR"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN68608"
+NAME="AEN70776"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN68608"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN68611"
+NAME="AEN70779"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,12 +124,14 @@ CLASS="REPLACEABLE"
 ><I
 >right_type</I
 ></TT
-> | NONE } ) OWNER TO <TT
+> | NONE } )
+    OWNER TO { <TT
 CLASS="REPLACEABLE"
 ><I
 >new_owner</I
 ></TT
->
+> | CURRENT_USER | SESSION_USER }
+
 ALTER OPERATOR <TT
 CLASS="REPLACEABLE"
 ><I
@@ -145,7 +147,8 @@ CLASS="REPLACEABLE"
 ><I
 >right_type</I
 ></TT
-> | NONE } ) SET SCHEMA <TT
+> | NONE } )
+    SET SCHEMA <TT
 CLASS="REPLACEABLE"
 ><I
 >new_schema</I
@@ -155,7 +158,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68621"
+NAME="AEN70789"
 ></A
 ><H2
 >Description</H2
@@ -185,7 +188,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68628"
+NAME="AEN70796"
 ></A
 ><H2
 >Parameters</H2
@@ -268,7 +271,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68658"
+NAME="AEN70826"
 ></A
 ><H2
 >Examples</H2
@@ -288,7 +291,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68664"
+NAME="AEN70832"
 ></A
 ><H2
 >Compatibility</H2
@@ -303,7 +306,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN68668"
+NAME="AEN70836"
 ></A
 ><H2
 >See Also</H2

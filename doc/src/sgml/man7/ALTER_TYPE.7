@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER TYPE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER TYPE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER TYPE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,7 +33,7 @@ ALTER_TYPE \- change the definition of a type
 .sp
 .nf
 ALTER TYPE \fIname\fR \fIaction\fR [, \&.\&.\&. ]
-ALTER TYPE \fIname\fR OWNER TO \fInew_owner\fR
+ALTER TYPE \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
 ALTER TYPE \fIname\fR RENAME ATTRIBUTE \fIattribute_name\fR TO \fInew_attribute_name\fR [ CASCADE | RESTRICT ]
 ALTER TYPE \fIname\fR RENAME TO \fInew_name\fR
 ALTER TYPE \fIname\fR SET SCHEMA \fInew_schema\fR
@@ -47,7 +47,6 @@ where \fIaction\fR is one of:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER TYPE\fR
 changes the definition of an existing type\&. There are several subforms:
 .PP
@@ -170,7 +169,6 @@ The existing enum value that the new value should be added immediately before or
 .RE
 .SH "NOTES"
 .PP
-
 \fBALTER TYPE \&.\&.\&. ADD VALUE\fR
 (the form that adds a new value to an enum type) cannot be executed inside a transaction block\&.
 .PP

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DELETE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "DELETE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "DELETE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,7 +40,6 @@ DELETE FROM [ ONLY ] \fItable_name\fR [ * ] [ [ AS ] \fIalias\fR ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBDELETE\fR
 deletes rows that satisfy the
 WHERE
@@ -60,7 +59,6 @@ clause is absent, the effect is to delete all rows in the table\&. The result is
 .ps -1
 .br
 .PP
-
 \fBTRUNCATE\fR(7)
 is a
 PostgreSQL
@@ -213,7 +211,6 @@ RETURNING
 list, computed over the row(s) deleted by the command\&.
 .SH "NOTES"
 .PP
-
 PostgreSQL
 lets you reference columns of other tables in the
 WHERE

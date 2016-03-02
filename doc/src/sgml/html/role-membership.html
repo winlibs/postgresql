@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Database Roles"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="Role Attributes"
 HREF="role-attributes.html"><LINK
 REL="NEXT"
-TITLE="Function and Trigger Security"
-HREF="perm-functions.html"><LINK
+TITLE="Dropping Roles"
+HREF="role-removal.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="Function and Trigger Security"
-HREF="perm-functions.html"
+TITLE="Dropping Roles"
+HREF="role-removal.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -392,9 +392,7 @@ CLASS="REPLACEABLE"
 >;</PRE
 ><P>
    Any memberships in the group role are automatically revoked (but the
-   member roles are not otherwise affected).  Note however that any objects
-   owned by the group role must first be dropped or reassigned to other
-   owners; and any permissions granted to the group role must be revoked.
+   member roles are not otherwise affected).
   </P
 ></DIV
 ><DIV
@@ -431,7 +429,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="perm-functions.html"
+HREF="role-removal.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -455,7 +453,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->Function and Trigger Security</TD
+>Dropping Roles</TD
 ></TR
 ></TABLE
 ></DIV

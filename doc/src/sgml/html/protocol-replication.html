@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Frontend/Backend Protocol"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 49. Frontend/Backend Protocol</TD
+>Chapter 50. Frontend/Backend Protocol</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PROTOCOL-REPLICATION"
->49.3. Streaming Replication Protocol</A
+>50.3. Streaming Replication Protocol</A
 ></H1
 ><P
 >To initiate streaming replication, the frontend sends the
@@ -107,6 +107,11 @@ CLASS="LITERAL"
 > tells the backend to go into walsender mode, wherein a
 small set of replication commands can be issued instead of SQL statements. Only
 the simple query protocol can be used in walsender mode.
+Replication commands are logged in the server log when
+<A
+HREF="runtime-config-logging.html#GUC-LOG-REPLICATION-COMMANDS"
+>log_replication_commands</A
+> is enabled.
 Passing <TT
 CLASS="LITERAL"
 >database</TT
@@ -842,6 +847,9 @@ CLASS="REPLACEABLE"
 ><I
 >rate</I
 ></TT
+>] [<TT
+CLASS="LITERAL"
+>TABLESPACE_MAP</TT
 >]
      </DT
 ><DD
@@ -958,6 +966,29 @@ CLASS="REPLACEABLE"
           or it must fall within the range from 32 kB through 1 GB (inclusive).
           If zero is passed or the option is not specified, no restriction is
           imposed on the transfer.
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TABLESPACE_MAP</TT
+></DT
+><DD
+><P
+>          Include information about symbolic links present in the directory
+          <TT
+CLASS="FILENAME"
+>pg_tblspc</TT
+> in a file named
+          <TT
+CLASS="FILENAME"
+>tablespace_map</TT
+>. The tablespace map file includes
+          each symbolic link name as it exists in the directory
+          <TT
+CLASS="FILENAME"
+>pg_tblspc/</TT
+> and the full path of that symbolic link.
          </P
 ></DD
 ></DL

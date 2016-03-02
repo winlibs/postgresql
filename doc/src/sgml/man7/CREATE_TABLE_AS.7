@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TABLE AS
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATE TABLE AS" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATE TABLE AS" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ CREATE_TABLE_AS \- define a new table from the results of a query
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE \fItable_name\fR
+CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE [ IF NOT EXISTS ] \fItable_name\fR
     [ (\fIcolumn_name\fR [, \&.\&.\&.] ) ]
     [ WITH ( \fIstorage_parameter\fR [= \fIvalue\fR] [, \&.\&.\&. ] ) | WITH OIDS | WITHOUT OIDS ]
     [ ON COMMIT { PRESERVE ROWS | DELETE ROWS | DROP } ]
@@ -42,7 +42,6 @@ CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED ] TABLE \fItable_nam
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCREATE TABLE AS\fR
 creates a table and fills it with data computed by a
 \fBSELECT\fR
@@ -50,7 +49,6 @@ command\&. The table columns have the names and data types associated with the o
 \fBSELECT\fR
 (except that you can override the column names by giving an explicit list of new column names)\&.
 .PP
-
 \fBCREATE TABLE AS\fR
 bears some resemblance to creating a view, but it is really quite different: it creates a new table and evaluates the query just once to fill the new table initially\&. The new table will not track subsequent changes to the source tables of the query\&. In contrast, a view re\-evaluates its defining
 \fBSELECT\fR
@@ -74,6 +72,13 @@ for details\&.
 UNLOGGED
 .RS 4
 If specified, the table is created as an unlogged table\&. Refer to
+CREATE TABLE (\fBCREATE_TABLE\fR(7))
+for details\&.
+.RE
+.PP
+IF NOT EXISTS
+.RS 4
+Do not throw an error if a relation with the same name already exists\&. A notice is issued in this case\&. Refer to
 CREATE TABLE (\fBCREATE_TABLE\fR(7))
 for details\&.
 .RE
@@ -237,7 +242,6 @@ CREATE TEMP TABLE films_recent WITH (OIDS) ON COMMIT DROP AS
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBCREATE TABLE AS\fR
 conforms to the
 SQL

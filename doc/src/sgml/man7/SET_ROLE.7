@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SET ROLE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "SET ROLE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "SET ROLE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -77,7 +77,6 @@ In particular, when a superuser chooses to
 \fBSET ROLE\fR
 to a non\-superuser role, she loses her superuser privileges\&.
 .PP
-
 \fBSET ROLE\fR
 has effects comparable to
 SET SESSION AUTHORIZATION (\fBSET_SESSION_AUTHORIZATION\fR(7)), but the privilege checks involved are quite different\&. Also,
@@ -89,13 +88,11 @@ commands, whereas changing roles with
 does not change the set of roles allowed to a later
 \fBSET ROLE\fR\&.
 .PP
-
 \fBSET ROLE\fR
 does not process session variables as specified by the role\*(Aqs
 ALTER ROLE (\fBALTER_ROLE\fR(7))
 settings; this only happens during login\&.
 .PP
-
 \fBSET ROLE\fR
 cannot be used within a
 SECURITY DEFINER
@@ -125,7 +122,6 @@ SELECT SESSION_USER, CURRENT_USER;
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 PostgreSQL
 allows identifier syntax ("rolename"), while the SQL standard requires the role name to be written as a string literal\&. SQL does not allow this command during a transaction;
 PostgreSQL

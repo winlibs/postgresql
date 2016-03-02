@@ -181,6 +181,14 @@
 },
 
 {
+	"invalid_tablesample_argument", ERRCODE_INVALID_TABLESAMPLE_ARGUMENT
+},
+
+{
+	"invalid_tablesample_repeat", ERRCODE_INVALID_TABLESAMPLE_REPEAT
+},
+
+{
 	"invalid_time_zone_displacement_value", ERRCODE_INVALID_TIME_ZONE_DISPLACEMENT_VALUE
 },
 
@@ -434,6 +442,10 @@
 
 {
 	"srf_protocol_violated", ERRCODE_E_R_I_E_SRF_PROTOCOL_VIOLATED
+},
+
+{
+	"event_trigger_protocol_violated", ERRCODE_E_R_I_E_EVENT_TRIGGER_PROTOCOL_VIOLATED
 },
 
 {
@@ -870,6 +882,10 @@
 
 {
 	"too_many_rows", ERRCODE_TOO_MANY_ROWS
+},
+
+{
+	"assert_failure", ERRCODE_ASSERT_FAILURE
 },
 
 {

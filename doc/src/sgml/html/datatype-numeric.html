@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -366,14 +366,19 @@ NAME="DATATYPE-NUMERIC-DECIMAL"
 CLASS="TYPE"
 >numeric</TT
 > can store numbers with a
-     very large number of digits and perform calculations exactly. It is
-     especially recommended for storing monetary amounts and other
-     quantities where exactness is required. However, arithmetic on
-     <TT
+     very large number of digits. It is especially recommended for
+     storing monetary amounts and other quantities where exactness is
+     required.  Calculations with <TT
 CLASS="TYPE"
 >numeric</TT
-> values is very slow compared to the integer
-     types, or to the floating-point types described in the next section.
+> values yield exact
+     results where possible, e.g.  addition, subtraction, multiplication.
+     However, calculations on <TT
+CLASS="TYPE"
+>numeric</TT
+> values are very slow
+     compared to the integer types, or to the floating-point types
+     described in the next section.
     </P
 ><P
 >     We use the following terms below:  The

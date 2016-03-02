@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Syntax"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1795,22 +1795,10 @@ CLASS="PRODUCTNAME"
 >.
     Most operators have the same precedence and are left-associative.
     The precedence and associativity of the operators is hard-wired
-    into the parser.  This can lead to non-intuitive behavior; for
-    example the Boolean operators <TT
-CLASS="LITERAL"
->&lt;</TT
-> and
-    <TT
-CLASS="LITERAL"
->&gt;</TT
-> have a different precedence than the Boolean
-    operators <TT
-CLASS="LITERAL"
->&lt;=</TT
-> and <TT
-CLASS="LITERAL"
->&gt;=</TT
->.  Also, you will
+    into the parser.
+   </P
+><P
+>    You will
     sometimes need to add parentheses when using combinations of
     binary and unary operators.  For instance:
 </P><PRE
@@ -1842,7 +1830,7 @@ NAME="SQL-PRECEDENCE-TABLE"
 ></A
 ><P
 ><B
->Table 4-2. Operator Precedence (decreasing)</B
+>Table 4-2. Operator Precedence (highest to lowest)</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1955,49 +1943,7 @@ CLASS="TOKEN"
 ></TR
 ><TR
 ><TD
-><TT
-CLASS="TOKEN"
->IS</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
-><TT
-CLASS="LITERAL"
->IS TRUE</TT
->, <TT
-CLASS="LITERAL"
->IS FALSE</TT
->, <TT
-CLASS="LITERAL"
->IS NULL</TT
->, etc</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="TOKEN"
->ISNULL</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->test for null</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="TOKEN"
->NOTNULL</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->test for not null</TD
-></TR
-><TR
-><TD
->(any other)</TD
+>(any other operator)</TD
 ><TD
 >left</TD
 ><TD
@@ -2007,38 +1953,11 @@ CLASS="TOKEN"
 ><TD
 ><TT
 CLASS="TOKEN"
->IN</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->set membership</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="TOKEN"
 >BETWEEN</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->range containment</TD
-></TR
-><TR
-><TD
-><TT
+> <TT
 CLASS="TOKEN"
->OVERLAPS</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->time interval overlap</TD
-></TR
-><TR
-><TD
-><TT
+>IN</TT
+> <TT
 CLASS="TOKEN"
 >LIKE</TT
 > <TT
@@ -2051,7 +1970,7 @@ CLASS="TOKEN"
 ><TD
 >&nbsp;</TD
 ><TD
->string pattern matching</TD
+>range containment, set membership, string matching</TD
 ></TR
 ><TR
 ><TD
@@ -2061,22 +1980,53 @@ CLASS="TOKEN"
 > <TT
 CLASS="TOKEN"
 >&gt;</TT
+> <TT
+CLASS="TOKEN"
+>=</TT
+> <TT
+CLASS="TOKEN"
+>&lt;=</TT
+> <TT
+CLASS="TOKEN"
+>&gt;=</TT
+> <TT
+CLASS="TOKEN"
+>&lt;&gt;</TT
 ></TD
 ><TD
 >&nbsp;</TD
 ><TD
->less than, greater than</TD
+>comparison operators</TD
 ></TR
 ><TR
 ><TD
 ><TT
 CLASS="TOKEN"
->=</TT
+>IS</TT
+> <TT
+CLASS="TOKEN"
+>ISNULL</TT
+> <TT
+CLASS="TOKEN"
+>NOTNULL</TT
 ></TD
 ><TD
->right</TD
+>&nbsp;</TD
 ><TD
->equality, assignment</TD
+><TT
+CLASS="LITERAL"
+>IS TRUE</TT
+>, <TT
+CLASS="LITERAL"
+>IS FALSE</TT
+>, <TT
+CLASS="LITERAL"
+>IS
+       NULL</TT
+>, <TT
+CLASS="LITERAL"
+>IS DISTINCT FROM</TT
+>, etc</TD
 ></TR
 ><TR
 ><TD
@@ -2145,15 +2095,73 @@ CLASS="LITERAL"
     shown in <A
 HREF="sql-syntax-lexical.html#SQL-PRECEDENCE-TABLE"
 >Table 4-2</A
-> for <SPAN
+> for
+    <SPAN
 CLASS="QUOTE"
->"any other"</SPAN
-> operator.  This is true no matter
+>"any other operator"</SPAN
+>.  This is true no matter
     which specific operator appears inside <TT
 CLASS="LITERAL"
 >OPERATOR()</TT
 >.
    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>     <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> versions before 9.5 used slightly different
+     operator precedence rules.  In particular, <TT
+CLASS="TOKEN"
+>&lt;=</TT
+>
+     <TT
+CLASS="TOKEN"
+>&gt;=</TT
+> and <TT
+CLASS="TOKEN"
+>&lt;&gt;</TT
+> used to be treated as
+     generic operators; <TT
+CLASS="LITERAL"
+>IS</TT
+> tests used to have higher priority;
+     and <TT
+CLASS="LITERAL"
+>NOT BETWEEN</TT
+> and related constructs acted inconsistently,
+     being taken in some cases as having the precedence of <TT
+CLASS="LITERAL"
+>NOT</TT
+>
+     rather than <TT
+CLASS="LITERAL"
+>BETWEEN</TT
+>.  These rules were changed for better
+     compliance with the SQL standard and to reduce confusion from
+     inconsistent treatment of logically equivalent constructs.  In most
+     cases, these changes will result in no behavioral change, or perhaps
+     in <SPAN
+CLASS="QUOTE"
+>"no such operator"</SPAN
+> failures which can be resolved by adding
+     parentheses.  However there are corner cases in which a query might
+     change behavior without any parsing error being reported.  If you are
+     concerned about whether these changes have silently broken something,
+     you can test your application with the configuration
+     parameter <A
+HREF="runtime-config-compatible.html#GUC-OPERATOR-PRECEDENCE-WARNING"
+>operator_precedence_warning</A
+> turned on
+     to see if any warnings are logged.
+    </P
+></BLOCKQUOTE
+></DIV
 ></DIV
 ></DIV
 ><DIV

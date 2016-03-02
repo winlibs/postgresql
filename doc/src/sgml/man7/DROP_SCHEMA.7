@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: DROP SCHEMA
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "DROP SCHEMA" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "DROP SCHEMA" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,6 @@ DROP SCHEMA [ IF EXISTS ] \fIname\fR [, \&.\&.\&.] [ CASCADE | RESTRICT ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBDROP SCHEMA\fR
 removes schemas from the database\&.
 .PP
@@ -79,7 +78,6 @@ DROP SCHEMA mystuff CASCADE;
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBDROP SCHEMA\fR
 is fully conforming with the SQL standard, except that the standard only allows one schema to be dropped per command, and apart from the
 IF EXISTS

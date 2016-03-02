@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pgbench
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PGBENCH" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PGBENCH" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,6 @@ pgbench \- run a benchmark test on PostgreSQL
 \fBpgbench\fR [\fIoption\fR...] [\fIdbname\fR]
 .SH "DESCRIPTION"
 .PP
-
 pgbench
 is a simple program for running benchmark tests on
 PostgreSQL\&. It runs the same sequence of SQL commands over and over, possibly in multiple concurrent database sessions, and then calculates the average transaction rate (transactions per second)\&. By default,
@@ -47,7 +46,9 @@ tests a scenario that is loosely based on TPC\-B, involving five
 \fBINSERT\fR
 commands per transaction\&. However, it is easy to test other cases by writing your own transaction script files\&.
 .PP
-Typical output from pgbench looks like:
+Typical output from
+pgbench
+looks like:
 .sp
 .if n \{\
 .RS 4
@@ -107,7 +108,6 @@ options to specify how to connect to the database server\&.)
 .ps -1
 .br
 .PP
-
 pgbench \-i
 creates four tables
 pgbench_accounts,
@@ -169,7 +169,6 @@ In nearly all cases, you\*(Aqll need some options to make a useful test\&. The m
 The following is divided into three subsections: Different options are used during database initialization and while running benchmarks, some options are useful in both cases\&.
 .SS "Initialization Options"
 .PP
-
 pgbench
 accepts the following command\-line initialization arguments:
 .PP
@@ -239,7 +238,6 @@ Create all tables as unlogged tables, rather than permanent tables\&.
 .RE
 .SS "Benchmarking Options"
 .PP
-
 pgbench
 accepts the following command\-line benchmarking arguments:
 .PP
@@ -300,6 +298,21 @@ pgbench\&. Using more than one thread can be helpful on multi\-CPU machines\&. T
 Write the time taken by each transaction to a log file\&. See below for details\&.
 .RE
 .PP
+\fB\-L\fR \fIlimit\fR
+.br
+\fB\-\-latency\-limit=\fR\fIlimit\fR
+.RS 4
+Transaction which last more than
+\fIlimit\fR
+milliseconds are counted and reported separately, as
+late\&.
+.sp
+When throttling is used (\fB\-\-rate=\&.\&.\&.\fR), transactions that lag behind schedule by more than
+\fIlimit\fR
+ms, and thus have no hope of meeting the latency limit, are not sent to the server at all\&. They are counted and reported separately as
+skipped\&.
+.RE
+.PP
 \fB\-M\fR \fIquerymode\fR
 .br
 \fB\-\-protocol=\fR\fIquerymode\fR
@@ -340,7 +353,7 @@ prepared: use extended query protocol with prepared statements\&.
 .RE
 .sp
 The default is simple query protocol\&. (See
-Chapter 49, Frontend/Backend Protocol, in the documentation
+Chapter 50, Frontend/Backend Protocol, in the documentation
 for more information\&.)
 .RE
 .PP
@@ -393,6 +406,11 @@ The rate is targeted by starting transactions along a Poisson\-distributed sched
 .sp
 When throttling is active, the transaction latency reported at the end of the run is calculated from the scheduled start times, so it includes the time each transaction had to wait for the previous transaction to finish\&. The wait time is called the schedule lag time, and its average and maximum are also reported separately\&. The transaction latency with respect to the actual transaction start time, i\&.e\&. the time spent executing the transaction in the database, can be computed by subtracting the schedule lag time from the reported latency\&.
 .sp
+If
+\fB\-\-latency\-limit\fR
+is used together with
+\fB\-\-rate\fR, a transaction can lag behind so much that it is already over the latency limit when the previous transaction ends, because the latency is calculated from the scheduled start time\&. Such transactions are not sent to the server, but are skipped altogether and counted separately\&.
+.sp
 A high schedule lag time is an indication that the system cannot process transactions at the specified rate, with the chosen number of clients and threads\&. When the average transaction execution time is longer than the scheduled interval between each transaction, each successive transaction will fall further behind, and the schedule lag time will keep increasing the longer the test run is\&. When that happens, you will have to reduce the specified transaction rate\&.
 .RE
 .PP
@@ -439,7 +457,9 @@ are mutually exclusive\&.
 Vacuum all four standard tables before running the test\&. With neither
 \fB\-n\fR
 nor
-\fB\-v\fR, pgbench will vacuum the
+\fB\-v\fR,
+pgbench
+will vacuum the
 pgbench_tellers
 and
 pgbench_branches
@@ -464,7 +484,6 @@ Remember to take the sampling rate into account when processing the log file\&. 
 .RE
 .SS "Common Options"
 .PP
-
 pgbench
 accepts the following command\-line common arguments:
 .PP
@@ -595,7 +614,6 @@ If you specify
 is issued\&.
 .SS "Custom Scripts"
 .PP
-
 pgbench
 has support for running custom benchmark scenarios by replacing the default transaction script (described above) with a transaction script read from a file (\fB\-f\fR
 option)\&. In this case a
@@ -616,7 +634,7 @@ There is a simple variable\-substitution facility for script files\&. Variables 
 option, explained above, or by the meta commands explained below\&. In addition to any variables preset by
 \fB\-D\fR
 command\-line options, there are a few variables that are preset automatically, listed in
-Table\ \&G.1, \(lqAutomatic variables\(rq\&. A value specified for these variables using
+Table\ \&219, \(lqAutomatic variables\(rq\&. A value specified for these variables using
 \fB\-D\fR
 takes precedence over the automatic presets\&. Once set, a variable\*(Aqs value can be inserted into a SQL command by writing
 :\fIvariablename\fR\&. When running more than one client session, each session has its own set of variables\&.
@@ -625,7 +643,7 @@ takes precedence over the automatic presets\&. Once set, a variable\*(Aqs value 
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&G.1.\ \&Automatic variables
+.B Table\ \&219.\ \&Automatic variables
 .TS
 allbox tab(:);
 lB lB.
@@ -652,36 +670,34 @@ T}
 .PP
 Script file meta commands begin with a backslash (\e)\&. Arguments to a meta command are separated by white space\&. These meta commands are supported:
 .PP
-\eset \fIvarname\fR \fIoperand1\fR [ \fIoperator\fR \fIoperand2\fR ]
+\eset \fIvarname\fR \fIexpression\fR
 .RS 4
 Sets variable
 \fIvarname\fR
-to a calculated integer value\&. Each
-\fIoperand\fR
-is either an integer constant or a
-:\fIvariablename\fR
-reference to a variable having an integer value\&. The
-\fIoperator\fR
-can be
-+,
+to an integer value calculated from
+\fIexpression\fR\&. The expression may contain integer constants such as
+5432, references to variables
+:\fIvariablename\fR, and expressions composed of unary (\-) or binary operators (+,
 \-,
-*, or
-/\&.
+*,
+/,
+%) with their usual associativity, and parentheses\&.
 .sp
-Example:
+Examples:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
 \eset ntellers 10 * :scale
+\eset aid (1021 * :aid) % (100000 * :scale) + 1
 .fi
 .if n \{\
 .RE
 .\}
 .RE
 .PP
-\esetrandom \fIvarname\fR \fImin\fR \fImax\fR
+\esetrandom \fIvarname\fR \fImin\fR \fImax\fR [ uniform | { gaussian | exponential } \fIparameter\fR ]
 .RS 4
 Sets variable
 \fIvarname\fR
@@ -693,13 +709,104 @@ inclusive\&. Each limit can be either an integer constant or a
 :\fIvariablename\fR
 reference to a variable having an integer value\&.
 .sp
+By default, or when
+uniform
+is specified, all values in the range are drawn with equal probability\&. Specifying
+gaussian
+or
+exponential
+options modifies this behavior; each requires a mandatory parameter which determines the precise shape of the distribution\&.
+.sp
+For a Gaussian distribution, the interval is mapped onto a standard normal distribution (the classical bell\-shaped Gaussian curve) truncated at
+\-parameter
+on the left and
++parameter
+on the right\&. Values in the middle of the interval are more likely to be drawn\&. To be precise, if
+PHI(x)
+is the cumulative distribution function of the standard normal distribution, with mean
+mu
+defined as
+(max + min) / 2\&.0, with
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ f(x) = PHI(2\&.0 * parameter * (x \- mu) / (max \- min + 1)) /
+        (2\&.0 * PHI(parameter) \- 1\&.0)
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+then value
+\fIi\fR
+between
+\fImin\fR
+and
+\fImax\fR
+inclusive is drawn with probability:
+f(i + 0\&.5) \- f(i \- 0\&.5)\&. Intuitively, the larger
+\fIparameter\fR, the more frequently values close to the middle of the interval are drawn, and the less frequently values close to the
+\fImin\fR
+and
+\fImax\fR
+bounds\&. About 67% of values are drawn from the middle
+1\&.0 / parameter, that is a relative
+0\&.5 / parameter
+around the mean, and 95% in the middle
+2\&.0 / parameter, that is a relative
+1\&.0 / parameter
+around the mean; for instance, if
+\fIparameter\fR
+is 4\&.0, 67% of values are drawn from the middle quarter (1\&.0 / 4\&.0) of the interval (i\&.e\&. from
+3\&.0 / 8\&.0
+to
+5\&.0 / 8\&.0) and 95% from the middle half (2\&.0 / 4\&.0) of the interval (second and third quartiles)\&. The minimum
+\fIparameter\fR
+is 2\&.0 for performance of the Box\-Muller transform\&.
+.sp
+For an exponential distribution,
+\fIparameter\fR
+controls the distribution by truncating a quickly\-decreasing exponential distribution at
+\fIparameter\fR, and then projecting onto integers between the bounds\&. To be precise, with
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+f(x) = exp(\-parameter * (x \- min) / (max \- min + 1)) / (1\&.0 \- exp(\-parameter))
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Then value
+\fIi\fR
+between
+\fImin\fR
+and
+\fImax\fR
+inclusive is drawn with probability:
+f(x) \- f(x + 1)\&. Intuitively, the larger
+\fIparameter\fR, the more frequently values close to
+\fImin\fR
+are accessed, and the less frequently values close to
+\fImax\fR
+are accessed\&. The closer to 0
+\fIparameter\fR, the flatter (more uniform) the access distribution\&. A crude approximation of the distribution is that the most frequent 1% values in the range, close to
+\fImin\fR, are drawn
+\fIparameter\fR% of the time\&.
+\fIparameter\fR
+value must be strictly positive\&.
+.sp
 Example:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-\esetrandom aid 1 :naccounts
+\esetrandom aid 1 :naccounts gaussian 5\&.0
 .fi
 .if n \{\
 .RE
@@ -809,7 +916,9 @@ pgbench
 writes the time taken by each transaction to a log file\&. The log file will be named
 pgbench_log\&.\fInnn\fR, where
 \fInnn\fR
-is the PID of the pgbench process\&. If the
+is the PID of the
+pgbench
+process\&. If the
 \fB\-j\fR
 option is 2 or higher, creating multiple worker threads, each will have its own log file\&. The first worker will use the same name for its log file as in the standard single worker case\&. The additional log files for the other workers will be named
 pgbench_log\&.\fInnn\fR\&.\fImmm\fR, where
@@ -828,7 +937,6 @@ The format of the log is:
 .RE
 .\}
 .sp
-
 where
 \fItime\fR
 is the total elapsed transaction time in microseconds,
@@ -836,12 +944,19 @@ is the total elapsed transaction time in microseconds,
 identifies which script file was used (useful when multiple scripts were specified with
 \fB\-f\fR), and
 \fItime_epoch\fR/\fItime_us\fR
-are a UNIX epoch format timestamp and an offset in microseconds (suitable for creating an ISO 8601 timestamp with fractional seconds) showing when the transaction completed\&. The last field,
-\fIschedule_lag\fR, is the difference between the transaction\*(Aqs scheduled start time, and the time it actually started, in microseconds\&. It is only present when the
+are a Unix epoch format time stamp and an offset in microseconds (suitable for creating an ISO 8601 time stamp with fractional seconds) showing when the transaction completed\&. Field
+\fIschedule_lag\fR
+is the difference between the transaction\*(Aqs scheduled start time, and the time it actually started, in microseconds\&. It is only present when the
 \fB\-\-rate\fR
-option is used\&.
+option is used\&. The last field
+\fIskipped_transactions\fR
+reports the number of transactions skipped because they were too far behind schedule\&. It is only present when both options
+\fB\-\-rate\fR
+and
+\fB\-\-latency\-limit\fR
+are used\&.
 .PP
-Here are example outputs:
+Here is a snippet of the log file generated:
 .sp
 .if n \{\
 .RS 4
@@ -855,6 +970,28 @@ Here are example outputs:
 .if n \{\
 .RE
 .\}
+.sp
+Another example with \-\-rate=100 and \-\-latency\-limit=5 (note the additional
+\fIschedule_lag\fR
+column):
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ 0 81 4621 0 1412881037 912698 3005
+ 0 82 6173 0 1412881037 914578 4304
+ 0 83 skipped 0 1412881037 914578 5217
+ 0 83 skipped 0 1412881037 914578 5099
+ 0 83 4722 0 1412881037 916203 3108
+ 0 84 4142 0 1412881037 918023 2333
+ 0 85 2465 0 1412881037 919759 740
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+In this example, transaction 82 was late, because it\*(Aqs latency (6\&.173 ms) was over the 5 ms limit\&. The next two transactions were skipped, because they were already late before they were even started\&.
 .PP
 When running a long test on hardware that can handle a lot of transactions, the log files can become very large\&. The
 \fB\-\-sampling\-rate\fR
@@ -869,16 +1006,15 @@ option, the logs use a bit different format:
 .RS 4
 .\}
 .nf
-\fIinterval_start\fR \fInum_of_transactions\fR \fIlatency_sum\fR \fIlatency_2_sum\fR \fImin_latency\fR \fImax_latency\fR [\fIlag_sum\fR \fIlag_2_sum\fR \fImin_lag\fR \fImax_lag\fR]
+\fIinterval_start\fR \fInum_of_transactions\fR \fIlatency_sum\fR \fIlatency_2_sum\fR \fImin_latency\fR \fImax_latency\fR [\fIlag_sum\fR \fIlag_2_sum\fR \fImin_lag\fR \fImax_lag\fR [\fIskipped_transactions\fR]]
 .fi
 .if n \{\
 .RE
 .\}
 .sp
-
 where
 \fIinterval_start\fR
-is the start of the interval (UNIX epoch format timestamp),
+is the start of the interval (Unix epoch format time stamp),
 \fInum_of_transactions\fR
 is the number of transactions within the interval,
 \fIlatency_sum\fR
@@ -890,11 +1026,16 @@ is a sum of 2nd powers of latencies\&. The last two fields are
 \fImin_latency\fR
 \- a minimum latency within the interval, and
 \fImax_latency\fR
-\- maximum latency within the interval\&. A transaction is counted into the interval when it was committed\&. The last four fields,
+\- maximum latency within the interval\&. A transaction is counted into the interval when it was committed\&. The fields in the end,
 \fIlag_sum\fR,
 \fIlag_2_sum\fR,
 \fImin_lag\fR, and
-\fImax_lag\fR, are only present if the \-\-rate option is used\&. They are calculated from the time each transaction had to wait for the previous one to finish, i\&.e\&. the difference between each transaction\*(Aqs scheduled start time and the time it actually started\&.
+\fImax_lag\fR, are only present if the
+\fB\-\-rate\fR
+option is used\&. The very last one,
+\fIskipped_transactions\fR, is only present if the option
+\fB\-\-latency\-limit\fR
+is present, too\&. They are calculated from the time each transaction had to wait for the previous one to finish, i\&.e\&. the difference between each transaction\*(Aqs scheduled start time and the time it actually started\&.
 .PP
 Here is example outputs:
 .sp

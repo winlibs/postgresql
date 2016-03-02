@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="pg_ctl"
 HREF="app-pg-ctl.html"><LINK
 REL="NEXT"
-TITLE="postgres"
-HREF="app-postgres.html"><LINK
+TITLE="pg_rewind"
+HREF="app-pgrewind.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="postgres"
-HREF="app-postgres.html"
+TITLE="pg_rewind"
+HREF="app-pgrewind.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN93834"
+NAME="AEN98240"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN93838"
+NAME="AEN98244"
 ></A
 ><H2
 >Synopsis</H2
@@ -118,6 +118,19 @@ NAME="AEN93838"
 CLASS="COMMAND"
 >pg_resetxlog</TT
 > [<TT
+CLASS="OPTION"
+>-c</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>xid</I
+></TT
+>,<TT
+CLASS="REPLACEABLE"
+><I
+>xid</I
+></TT
+>] [<TT
 CLASS="OPTION"
 >-f</TT
 >] [<TT
@@ -176,12 +189,15 @@ CLASS="REPLACEABLE"
 ><I
 >xlogfile</I
 ></TT
->]  <TT
+>] {[<TT
+CLASS="OPTION"
+>-D</TT
+>] <TT
 CLASS="REPLACEABLE"
 ><I
 >datadir</I
 ></TT
-> </P
+>}</P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
@@ -277,12 +293,18 @@ CLASS="OPTION"
 CLASS="OPTION"
 >-O</TT
 >,
+   <TT
+CLASS="OPTION"
+>-c</TT
+>
    and <TT
 CLASS="OPTION"
 >-l</TT
 >
    options allow the next OID, next transaction ID, next transaction ID's
-   epoch, next and oldest multitransaction ID, next multitransaction offset, and WAL
+   epoch, next and oldest multitransaction ID, next multitransaction offset,
+   oldest and newest transaction IDs for which the commit time can be retrieved,
+   and WAL
    starting address values to be set manually.  These are only needed when
    <TT
 CLASS="COMMAND"
@@ -362,6 +384,27 @@ CLASS="FILENAME"
       data directory, adding one, and then multiplying by 52352.  As above,
       the file names are in hexadecimal.  There is no simple recipe such as
       the ones above of appending zeroes.
+     </P
+></LI
+><LI
+><P
+>      A safe value for the oldest transaction ID for which the commit time can
+      be retrieved (first part of <TT
+CLASS="OPTION"
+>-c</TT
+>) can be determined by looking
+      for the numerically smallest file name in the directory
+      <TT
+CLASS="FILENAME"
+>pg_commit_ts</TT
+> under the data directory.  Conversely, a safe
+      value for the newest transaction ID for which the commit time can be
+      retrieved (second part of <TT
+CLASS="OPTION"
+>-c</TT
+>) can be determined by looking for
+      the numerically greatest file name in the same directory.  As above, the
+      file names are in hexadecimal.
      </P
 ></LI
 ><LI
@@ -447,6 +490,10 @@ CLASS="COMMAND"
       systems such as <SPAN
 CLASS="APPLICATION"
 >Slony-I</SPAN
+> and
+      <SPAN
+CLASS="APPLICATION"
+>Skytools</SPAN
 > work correctly &mdash;
       if so, an appropriate value should be obtainable from the state of
       the downstream replicated database.
@@ -500,7 +547,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN93941"
+NAME="AEN98360"
 ></A
 ><H2
 >Notes</H2
@@ -554,7 +601,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="app-postgres.html"
+HREF="app-pgrewind.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -583,7 +630,7 @@ ALIGN="right"
 VALIGN="top"
 ><SPAN
 CLASS="APPLICATION"
->postgres</SPAN
+>pg_rewind</SPAN
 ></TD
 ></TR
 ></TABLE

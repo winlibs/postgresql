@@ -10,7 +10,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Installation from Source Code on Windows"
@@ -29,7 +29,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -47,7 +47,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -272,7 +272,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN27908"
+NAME="AEN28970"
 >16.1.1. Requirements</A
 ></H2
 ><P
@@ -670,7 +670,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN28027"
+NAME="AEN29089"
 >16.1.2. Special Considerations for 64-bit Windows</A
 ></H2
 ><P
@@ -709,7 +709,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN28035"
+NAME="AEN29097"
 >16.1.3. Building</A
 ></H2
 ><P
@@ -775,7 +775,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN28051"
+NAME="AEN29113"
 >16.1.4. Cleaning and Installing</A
 ></H2
 ><P
@@ -833,7 +833,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN28065"
+NAME="AEN29127"
 >16.1.5. Running the Regression Tests</A
 ></H2
 ><P
@@ -870,11 +870,19 @@ CLASS="USERINPUT"
 >
 <KBD
 CLASS="USERINPUT"
+>vcregress modulescheck</KBD
+>
+<KBD
+CLASS="USERINPUT"
 >vcregress ecpgcheck</KBD
 >
 <KBD
 CLASS="USERINPUT"
 >vcregress isolationcheck</KBD
+>
+<KBD
+CLASS="USERINPUT"
+>vcregress bincheck</KBD
 >
 <KBD
 CLASS="USERINPUT"
@@ -898,13 +906,62 @@ HREF="regress.html"
 >Chapter 30</A
 >.
   </P
+><P
+>   Running the regression tests on client programs, with "vcregress bincheck",
+   requires an additional Perl module to be installed:
+   <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><SPAN
+CLASS="PRODUCTNAME"
+>IPC::Run</SPAN
+></DT
+><DD
+><P
+>      As of this writing, <TT
+CLASS="LITERAL"
+>IPC::Run</TT
+> is not included in the
+      ActiveState Perl installation, nor in the ActiveState Perl Package
+      Manager (PPM) library. To install, download the
+      <TT
+CLASS="FILENAME"
+>IPC-Run-&lt;version&gt;.tar.gz</TT
+> source archive from CPAN,
+      at <A
+HREF="http://search.cpan.org/dist/IPC-Run/"
+TARGET="_top"
+>http://search.cpan.org/dist/IPC-Run/</A
+>, and
+      uncompress. Edit the <TT
+CLASS="FILENAME"
+>buildenv.pl</TT
+> file, and add a PERL5LIB
+      variable to point to the <TT
+CLASS="FILENAME"
+>lib</TT
+> subdirectory from the
+      extracted archive. For example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>$ENV{PERL5LIB}=$ENV{PERL5LIB} . ';c:\IPC-Run-0.94\lib';</PRE
+><P>
+     </P
+></DD
+></DL
+></DIV
+><P>
+  </P
 ></DIV
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN28081"
+NAME="AEN29158"
 >16.1.6. Building the Documentation</A
 ></H2
 ><P

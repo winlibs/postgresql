@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-COMMENT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN71430"
+NAME="AEN73721"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN71430"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN71433"
+NAME="AEN73724"
 ></A
 ><H2
 >Synopsis</H2
@@ -159,6 +159,17 @@ CLASS="REPLACEABLE"
 CLASS="REPLACEABLE"
 ><I
 >table_name</I
+></TT
+> |
+  CONSTRAINT <TT
+CLASS="REPLACEABLE"
+><I
+>constraint_name</I
+></TT
+> ON DOMAIN <TT
+CLASS="REPLACEABLE"
+><I
+>domain_name</I
 ></TT
 > |
   CONVERSION <TT
@@ -280,6 +291,17 @@ CLASS="REPLACEABLE"
 >index_method</I
 ></TT
 > |
+  POLICY <TT
+CLASS="REPLACEABLE"
+><I
+>policy_name</I
+></TT
+> ON <TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+> |
   [ PROCEDURAL ] LANGUAGE <TT
 CLASS="REPLACEABLE"
 ><I
@@ -355,6 +377,17 @@ CLASS="REPLACEABLE"
 CLASS="REPLACEABLE"
 ><I
 >object_name</I
+></TT
+> |
+  TRANSFORM FOR <TT
+CLASS="REPLACEABLE"
+><I
+>type_name</I
+></TT
+> LANGUAGE <TT
+CLASS="REPLACEABLE"
+><I
+>lang_name</I
 ></TT
 > |
   TRIGGER <TT
@@ -452,7 +485,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN71494"
+NAME="AEN73791"
 ></A
 ><H2
 >Description</H2
@@ -514,14 +547,14 @@ CLASS="FUNCTION"
 >
     (see <A
 HREF="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE"
->Table 9-60</A
+>Table 9-62</A
 >).
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN71512"
+NAME="AEN73809"
 ></A
 ><H2
 >Parameters</H2
@@ -569,6 +602,11 @@ CLASS="REPLACEABLE"
 ><BR><TT
 CLASS="REPLACEABLE"
 ><I
+>policy_name</I
+></TT
+><BR><TT
+CLASS="REPLACEABLE"
+><I
 >rule_name</I
 ></TT
 ><BR><TT
@@ -591,6 +629,25 @@ CLASS="REPLACEABLE"
 ></TT
 > must refer
       to a table, view, composite type, or foreign table.
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+><BR><TT
+CLASS="REPLACEABLE"
+><I
+>domain_name</I
+></TT
+></DT
+><DD
+><P
+>      When creating a comment on a constraint, a table, a domain or
+      a policy these parameters specify the name of the table or domain on
+      which the constraint is defined.
      </P
 ></DD
 ><DT
@@ -745,6 +802,30 @@ CLASS="LITERAL"
 ><TT
 CLASS="REPLACEABLE"
 ><I
+>type_name</I
+></TT
+></DT
+><DD
+><P
+>       The name of the data type of the transform.
+      </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>lang_name</I
+></TT
+></DT
+><DD
+><P
+>       The name of the language of the transform.
+      </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
 >text</I
 ></TT
 ></DT
@@ -763,7 +844,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN71596"
+NAME="AEN73912"
 ></A
 ><H2
 >Notes</H2
@@ -780,7 +861,7 @@ NAME="AEN71596"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN71599"
+NAME="AEN73915"
 ></A
 ><H2
 >Examples</H2
@@ -813,6 +894,7 @@ COMMENT ON COLLATION "fr_CA" IS 'Canadian French';
 COMMENT ON COLUMN my_table.my_column IS 'Employee ID number';
 COMMENT ON CONVERSION my_conv IS 'Conversion to UTF8';
 COMMENT ON CONSTRAINT bar_col_cons ON bar IS 'Constrains column col';
+COMMENT ON CONSTRAINT dom_col_constr ON DOMAIN dom IS 'Constrains col of domain';
 COMMENT ON DATABASE my_database IS 'Development Database';
 COMMENT ON DOMAIN my_domain IS 'Email Address Domain';
 COMMENT ON EXTENSION hstore IS 'implements the hstore data type';
@@ -827,6 +909,7 @@ COMMENT ON OPERATOR ^ (text, text) IS 'Performs intersection of two texts';
 COMMENT ON OPERATOR - (NONE, integer) IS 'Unary minus';
 COMMENT ON OPERATOR CLASS int4ops USING btree IS '4 byte integer operators for btrees';
 COMMENT ON OPERATOR FAMILY integer_ops USING btree IS 'all integer operators for btrees';
+COMMENT ON POLICY my_policy ON mytable IS 'Filter rows by users';
 COMMENT ON ROLE my_role IS 'Administration group for finance tables';
 COMMENT ON RULE my_rule ON my_table IS 'Logs updates of employee records';
 COMMENT ON SCHEMA my_schema IS 'Departmental data';
@@ -838,6 +921,7 @@ COMMENT ON TEXT SEARCH CONFIGURATION my_config IS 'Special word filtering';
 COMMENT ON TEXT SEARCH DICTIONARY swedish IS 'Snowball stemmer for Swedish language';
 COMMENT ON TEXT SEARCH PARSER my_parser IS 'Splits text into words';
 COMMENT ON TEXT SEARCH TEMPLATE snowball IS 'Snowball stemmer';
+COMMENT ON TRANSFORM FOR hstore LANGUAGE plpythonu IS 'Transform between hstore and Python dict';
 COMMENT ON TRIGGER my_trigger ON my_table IS 'Used for RI';
 COMMENT ON TYPE complex IS 'Complex number data type';
 COMMENT ON VIEW my_view IS 'View of departmental costs';</PRE
@@ -846,7 +930,7 @@ COMMENT ON VIEW my_view IS 'View of departmental costs';</PRE
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN71607"
+NAME="AEN73923"
 ></A
 ><H2
 >Compatibility</H2

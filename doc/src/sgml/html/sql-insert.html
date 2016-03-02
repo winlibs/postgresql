@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
 REL="PREVIOUS"
-TITLE="GRANT"
-HREF="sql-grant.html"><LINK
+TITLE="IMPORT FOREIGN SCHEMA"
+HREF="sql-importforeignschema.html"><LINK
 REL="NEXT"
 TITLE="LISTEN"
 HREF="sql-listen.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="GRANT"
-HREF="sql-grant.html"
+TITLE="IMPORT FOREIGN SCHEMA"
+HREF="sql-importforeignschema.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-INSERT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN81590"
+NAME="AEN84653"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN81590"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN81593"
+NAME="AEN84656"
 ></A
 ><H2
 >Synopsis</H2
@@ -120,7 +120,12 @@ CLASS="REPLACEABLE"
 ><I
 >table_name</I
 ></TT
-> [ ( <TT
+> [ AS <TT
+CLASS="REPLACEABLE"
+><I
+>alias</I
+></TT
+> ] [ ( <TT
 CLASS="REPLACEABLE"
 ><I
 >column_name</I
@@ -137,6 +142,17 @@ CLASS="REPLACEABLE"
 >query</I
 ></TT
 > }
+    [ ON CONFLICT [ <TT
+CLASS="REPLACEABLE"
+><I
+>conflict_target</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>conflict_action</I
+></TT
+> ]
     [ RETURNING * | <TT
 CLASS="REPLACEABLE"
 ><I
@@ -147,12 +163,113 @@ CLASS="REPLACEABLE"
 ><I
 >output_name</I
 ></TT
-> ] [, ...] ]</PRE
+> ] [, ...] ]
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>where <TT
+CLASS="REPLACEABLE"
+><I
+>conflict_target</I
+></TT
+> can be one of:</SPAN
+></SPAN
+>
+
+    ( { <TT
+CLASS="REPLACEABLE"
+><I
+>index_column_name</I
+></TT
+> | ( <TT
+CLASS="REPLACEABLE"
+><I
+>index_expression</I
+></TT
+> ) } [ COLLATE <TT
+CLASS="REPLACEABLE"
+><I
+>collation</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>opclass</I
+></TT
+> ] [, ...] ) [ WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>index_predicate</I
+></TT
+> ]
+    ON CONSTRAINT <TT
+CLASS="REPLACEABLE"
+><I
+>constraint_name</I
+></TT
+>
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>and <TT
+CLASS="REPLACEABLE"
+><I
+>conflict_action</I
+></TT
+> is one of:</SPAN
+></SPAN
+>
+
+    DO NOTHING
+    DO UPDATE SET { <TT
+CLASS="REPLACEABLE"
+><I
+>column_name</I
+></TT
+> = { <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> | DEFAULT } |
+                    ( <TT
+CLASS="REPLACEABLE"
+><I
+>column_name</I
+></TT
+> [, ...] ) = ( { <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> | DEFAULT } [, ...] ) |
+                    ( <TT
+CLASS="REPLACEABLE"
+><I
+>column_name</I
+></TT
+> [, ...] ) = ( <TT
+CLASS="REPLACEABLE"
+><I
+>sub-SELECT</I
+></TT
+> )
+                  } [, ...]
+              [ WHERE <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> ]</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81602"
+NAME="AEN84685"
 ></A
 ><H2
 >Description</H2
@@ -209,6 +326,21 @@ CLASS="REPLACEABLE"
    automatic type conversion will be attempted.
   </P
 ><P
+>   <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+> can be used to specify an alternative
+   action to raising a unique constraint or exclusion constraint
+   violation error. (See <A
+HREF="sql-insert.html#SQL-ON-CONFLICT"
+><I
+><I
+>ON CONFLICT</I
+> Clause</I
+></A
+> below.)
+  </P
+><P
 >   The optional <TT
 CLASS="LITERAL"
 >RETURNING</TT
@@ -216,30 +348,85 @@ CLASS="LITERAL"
 CLASS="COMMAND"
 >INSERT</TT
 >
-   to compute and return value(s) based on each row actually inserted.
-   This is primarily useful for obtaining values that were supplied by
-   defaults, such as a serial sequence number.  However, any expression
-   using the table's columns is allowed.  The syntax of the
-   <TT
+   to compute and return value(s) based on each row actually inserted
+   (or updated, if an <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+> clause was
+   used).  This is primarily useful for obtaining values that were
+   supplied by defaults, such as a serial sequence number.  However,
+   any expression using the table's columns is allowed.  The syntax of
+   the <TT
 CLASS="LITERAL"
 >RETURNING</TT
-> list is identical to that of the output list
-   of <TT
+> list is identical to that of the output
+   list of <TT
 CLASS="COMMAND"
 >SELECT</TT
->.
+>.  Only rows that were successfully
+   inserted or updated will be returned.  For example, if a row was
+   locked but not updated because an <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE
+   ... WHERE</TT
+> clause <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> was not satisfied, the
+   row will not be returned.
   </P
 ><P
 >   You must have <TT
 CLASS="LITERAL"
 >INSERT</TT
 > privilege on a table in
-   order to insert into it.  If a column list is specified, you only
-   need <TT
+   order to insert into it.  If <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+> is
+   present, <TT
+CLASS="LITERAL"
+>UPDATE</TT
+> privilege on the table is also
+   required.
+  </P
+><P
+>   If a column list is specified, you only need
+   <TT
 CLASS="LITERAL"
 >INSERT</TT
 > privilege on the listed columns.
-   Use of the <TT
+   Similarly, when <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+> is specified, you
+   only need <TT
+CLASS="LITERAL"
+>UPDATE</TT
+> privilege on the column(s) that are
+   listed to be updated.  However, <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+>
+   also requires <TT
+CLASS="LITERAL"
+>SELECT</TT
+> privilege on any column whose
+   values are read in the <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+>
+   expressions or <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+>.
+  </P
+><P
+>   Use of the <TT
 CLASS="LITERAL"
 >RETURNING</TT
 > clause requires <TT
@@ -266,10 +453,32 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81628"
+NAME="AEN84727"
 ></A
 ><H2
 >Parameters</H2
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="SQL-INSERTING-PARAMS"
+></A
+><H3
+>Inserting</H3
+><P
+>    This section covers parameters that may be used when only
+    inserting new rows.  Parameters <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>exclusively</I
+></SPAN
+>
+    used with the <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+> clause are described
+    separately.
+   </P
 ><P
 ></P
 ><DIV
@@ -284,52 +493,52 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      The <TT
+>        The <TT
 CLASS="LITERAL"
 >WITH</TT
 > clause allows you to specify one or more
-      subqueries that can be referenced by name in the <TT
+        subqueries that can be referenced by name in the <TT
 CLASS="COMMAND"
 >INSERT</TT
 >
-      query. See <A
+        query. See <A
 HREF="queries-with.html"
 >Section 7.8</A
 > and <A
 HREF="sql-select.html"
 >SELECT</A
 >
-      for details.
-     </P
+        for details.
+       </P
 ><P
->      It is possible for the <TT
+>        It is possible for the <TT
 CLASS="REPLACEABLE"
 ><I
 >query</I
 ></TT
 >
-      (<TT
+        (<TT
 CLASS="COMMAND"
 >SELECT</TT
 > statement)
-      to also contain a <TT
+        to also contain a <TT
 CLASS="LITERAL"
 >WITH</TT
 > clause.  In such a case both
-      sets of <TT
+        sets of <TT
 CLASS="REPLACEABLE"
 ><I
 >with_query</I
 ></TT
 > can be referenced within
-      the <TT
+        the <TT
 CLASS="REPLACEABLE"
 ><I
 >query</I
 ></TT
 >, but the
-      second one takes precedence since it is more closely nested.
-     </P
+        second one takes precedence since it is more closely nested.
+       </P
 ></DD
 ><DT
 ><TT
@@ -340,8 +549,33 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      The name (optionally schema-qualified) of an existing table.
-     </P
+>        The name (optionally schema-qualified) of an existing table.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>alias</I
+></TT
+></DT
+><DD
+><P
+>        A substitute name for <TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+>.  When an alias is
+        provided, it completely hides the actual name of the table.
+        This is particularly useful when <TT
+CLASS="LITERAL"
+>ON CONFLICT DO
+        UPDATE</TT
+> targets a table named excluded, since that's
+        also the name of the special table representing rows proposed
+        for insertion.
+       </P
 ></DD
 ><DT
 ><TT
@@ -352,16 +586,30 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      The name of a column in the table named by <TT
+>        The name of a column in the table named by <TT
 CLASS="REPLACEABLE"
 ><I
 >table_name</I
 ></TT
->.
-      The column name can be qualified with a subfield name or array
-      subscript, if needed.  (Inserting into only some fields of a
-      composite column leaves the other fields null.)
-     </P
+>.  The column name
+        can be qualified with a subfield name or array subscript, if
+        needed.  (Inserting into only some fields of a composite
+        column leaves the other fields null.)  When referencing a
+        column with <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+>, do not include
+        the table's name in the specification of a target column.  For
+        example, <TT
+CLASS="LITERAL"
+>INSERT ... ON CONFLICT DO UPDATE tab SET
+        table_name.col = 1</TT
+> is invalid (this follows the general
+        behavior for <TT
+CLASS="COMMAND"
+>UPDATE</TT
+>).
+       </P
 ></DD
 ><DT
 ><TT
@@ -370,8 +618,8 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->      All columns will be filled with their default values.
-     </P
+>        All columns will be filled with their default values.
+       </P
 ></DD
 ><DT
 ><TT
@@ -382,8 +630,8 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      An expression or value to assign to the corresponding column.
-     </P
+>        An expression or value to assign to the corresponding column.
+       </P
 ></DD
 ><DT
 ><TT
@@ -392,9 +640,9 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->      The corresponding column will be filled with
-      its default value.
-     </P
+>        The corresponding column will be filled with
+        its default value.
+       </P
 ></DD
 ><DT
 ><TT
@@ -405,17 +653,17 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      A query (<TT
+>        A query (<TT
 CLASS="COMMAND"
 >SELECT</TT
 > statement) that supplies the
-      rows to be inserted.  Refer to the
-      <A
+        rows to be inserted.  Refer to the
+        <A
 HREF="sql-select.html"
 >SELECT</A
 >
-      statement for a description of the syntax.
-     </P
+        statement for a description of the syntax.
+       </P
 ></DD
 ><DT
 ><TT
@@ -426,22 +674,24 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      An expression to be computed and returned by the <TT
+>        An expression to be computed and returned by the
+        <TT
 CLASS="COMMAND"
 >INSERT</TT
->
-      command after each row is inserted.  The expression can use any
-      column names of the table named by <TT
+> command after each row is inserted or
+        updated. The expression can use any column names of the table
+        named by <TT
 CLASS="REPLACEABLE"
 ><I
 >table_name</I
 ></TT
->.
-      Write <TT
+>.  Write
+        <TT
 CLASS="LITERAL"
 >*</TT
-> to return all columns of the inserted row(s).
-     </P
+> to return all columns of the inserted or updated
+        row(s).
+       </P
 ></DD
 ><DT
 ><TT
@@ -452,16 +702,544 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      A name to use for a returned column.
-     </P
+>        A name to use for a returned column.
+       </P
 ></DD
 ></DL
 ></DIV
 ></DIV
 ><DIV
+CLASS="REFSECT2"
+><A
+NAME="SQL-ON-CONFLICT"
+></A
+><H3
+><TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+> Clause</H3
+><P
+>    The optional <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+> clause specifies an
+    alternative action to raising a unique violation or exclusion
+    constraint violation error.  For each individual row proposed for
+    insertion, either the insertion proceeds, or, if an
+    <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>arbiter</I
+></SPAN
+> constraint or index specified by
+    <TT
+CLASS="PARAMETER"
+>conflict_target</TT
+> is violated, the
+    alternative <TT
+CLASS="PARAMETER"
+>conflict_action</TT
+> is taken.
+    <TT
+CLASS="LITERAL"
+>ON CONFLICT DO NOTHING</TT
+> simply avoids inserting
+    a row as its alternative action.  <TT
+CLASS="LITERAL"
+>ON CONFLICT DO
+    UPDATE</TT
+> updates the existing row that conflicts with the
+    row proposed for insertion as its alternative action.
+   </P
+><P
+>    <TT
+CLASS="PARAMETER"
+>conflict_target</TT
+> can perform
+    <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>unique index inference</I
+></SPAN
+>.  When performing
+    inference, it consists of one or more <TT
+CLASS="REPLACEABLE"
+><I
+>index_column_name</I
+></TT
+> columns and/or
+    <TT
+CLASS="REPLACEABLE"
+><I
+>index_expression</I
+></TT
+>
+    expressions, and an optional <TT
+CLASS="REPLACEABLE"
+><I
+>    index_predicate</I
+></TT
+>.  All <TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+> unique indexes that,
+    without regard to order, contain exactly the
+    <TT
+CLASS="PARAMETER"
+>conflict_target</TT
+>-specified
+    columns/expressions are inferred (chosen) as arbiter indexes.  If
+    an <TT
+CLASS="REPLACEABLE"
+><I
+>index_predicate</I
+></TT
+> is
+    specified, it must, as a further requirement for inference,
+    satisfy arbiter indexes.  Note that this means a non-partial
+    unique index (a unique index without a predicate) will be inferred
+    (and thus used by <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+>) if such an index
+    satisfying every other criteria is available.  If an attempt at
+    inference is unsuccessful, an error is raised.
+   </P
+><P
+>    <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+> guarantees an atomic
+    <TT
+CLASS="COMMAND"
+>INSERT</TT
+> or <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> outcome;
+    provided there is no independent error, one of those two outcomes
+    is guaranteed, even under high concurrency.  This is also known as
+    <I
+CLASS="FIRSTTERM"
+>UPSERT</I
+> &mdash; <SPAN
+CLASS="QUOTE"
+>"UPDATE or
+    INSERT"</SPAN
+>.
+   </P
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>conflict_target</I
+></TT
+></DT
+><DD
+><P
+>        Specifies which conflicts <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+> takes
+        the alternative action on by choosing <I
+CLASS="FIRSTTERM"
+>arbiter
+        indexes</I
+>.  Either performs <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>unique index
+        inference</I
+></SPAN
+>, or names a constraint explicitly.  For
+        <TT
+CLASS="LITERAL"
+>ON CONFLICT DO NOTHING</TT
+>, it is optional to
+        specify a <TT
+CLASS="PARAMETER"
+>conflict_target</TT
+>; when
+        omitted, conflicts with all usable constraints (and unique
+        indexes) are handled.  For <TT
+CLASS="LITERAL"
+>ON CONFLICT DO
+        UPDATE</TT
+>, a <TT
+CLASS="PARAMETER"
+>conflict_target</TT
+>
+        <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>must</I
+></SPAN
+> be provided.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>conflict_action</I
+></TT
+></DT
+><DD
+><P
+>        <TT
+CLASS="PARAMETER"
+>conflict_action</TT
+> specifies an
+        alternative <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+> action.  It can be
+        either <TT
+CLASS="LITERAL"
+>DO NOTHING</TT
+>, or a <TT
+CLASS="LITERAL"
+>DO
+        UPDATE</TT
+> clause specifying the exact details of the
+        <TT
+CLASS="LITERAL"
+>UPDATE</TT
+> action to be performed in case of a
+        conflict.  The <TT
+CLASS="LITERAL"
+>SET</TT
+> and
+        <TT
+CLASS="LITERAL"
+>WHERE</TT
+> clauses in <TT
+CLASS="LITERAL"
+>ON CONFLICT DO
+        UPDATE</TT
+> have access to the existing row using the
+        table's name (or an alias), and to rows proposed for insertion
+        using the special <TT
+CLASS="VARNAME"
+>excluded</TT
+> table.
+        <TT
+CLASS="LITERAL"
+>SELECT</TT
+> privilege is required on any column in the
+        target table where corresponding <TT
+CLASS="VARNAME"
+>excluded</TT
+>
+        columns are read.
+       </P
+><P
+>        Note that the effects of all per-row <TT
+CLASS="LITERAL"
+>BEFORE
+        INSERT</TT
+> triggers are reflected in
+        <TT
+CLASS="VARNAME"
+>excluded</TT
+> values, since those effects may
+        have contributed to the row being excluded from insertion.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>index_column_name</I
+></TT
+></DT
+><DD
+><P
+>        The name of a <TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+> column.  Used to
+        infer arbiter indexes.  Follows <TT
+CLASS="COMMAND"
+>CREATE
+        INDEX</TT
+> format.  <TT
+CLASS="LITERAL"
+>SELECT</TT
+> privilege on
+        <TT
+CLASS="REPLACEABLE"
+><I
+>index_column_name</I
+></TT
+>
+        is required.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>index_expression</I
+></TT
+></DT
+><DD
+><P
+>        Similar to <TT
+CLASS="REPLACEABLE"
+><I
+>index_column_name</I
+></TT
+>, but used to
+        infer expressions on <TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+> columns appearing
+        within index definitions (not simple columns).  Follows
+        <TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> format.  <TT
+CLASS="LITERAL"
+>SELECT</TT
+>
+        privilege on any column appearing within <TT
+CLASS="REPLACEABLE"
+><I
+>index_expression</I
+></TT
+> is required.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>collation</I
+></TT
+></DT
+><DD
+><P
+>        When specified, mandates that corresponding <TT
+CLASS="REPLACEABLE"
+><I
+>index_column_name</I
+></TT
+> or
+        <TT
+CLASS="REPLACEABLE"
+><I
+>index_expression</I
+></TT
+>
+        use a particular collation in order to be matched during
+        inference.  Typically this is omitted, as collations usually
+        do not affect whether or not a constraint violation occurs.
+        Follows <TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> format.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>opclass</I
+></TT
+></DT
+><DD
+><P
+>        When specified, mandates that corresponding <TT
+CLASS="REPLACEABLE"
+><I
+>index_column_name</I
+></TT
+> or
+        <TT
+CLASS="REPLACEABLE"
+><I
+>index_expression</I
+></TT
+>
+        use particular operator class in order to be matched during
+        inference.  Typically this is omitted,  as the
+        <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>equality</I
+></SPAN
+> semantics are often equivalent
+        across a type's operator classes anyway, or because it's
+        sufficient to trust that the defined unique indexes have the
+        pertinent definition of equality.  Follows <TT
+CLASS="COMMAND"
+>CREATE
+        INDEX</TT
+> format.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>index_predicate</I
+></TT
+></DT
+><DD
+><P
+>        Used to allow inference of partial unique indexes.  Any
+        indexes that satisfy the predicate (which need not actually be
+        partial indexes) can be inferred.  Follows <TT
+CLASS="COMMAND"
+>CREATE
+        INDEX</TT
+> format.  <TT
+CLASS="LITERAL"
+>SELECT</TT
+> privilege on any
+        column appearing within <TT
+CLASS="REPLACEABLE"
+><I
+>index_predicate</I
+></TT
+> is required.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>constraint_name</I
+></TT
+></DT
+><DD
+><P
+>        Explicitly specifies an arbiter
+        <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>constraint</I
+></SPAN
+> by name, rather than inferring
+        a constraint or index.
+       </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+></DT
+><DD
+><P
+>        An expression that returns a value of type
+        <TT
+CLASS="TYPE"
+>boolean</TT
+>.  Only rows for which this expression
+        returns <TT
+CLASS="LITERAL"
+>true</TT
+> will be updated, although all
+        rows will be locked when the <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+>
+        action is taken.  Note that
+        <TT
+CLASS="REPLACEABLE"
+><I
+>condition</I
+></TT
+> is evaluated last, after
+        a conflict has been identified as a candidate to update.
+       </P
+></DD
+></DL
+></DIV
+><P
+>    Note that exclusion constraints are not supported as arbiters with
+    <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+>. In all cases, only
+    <TT
+CLASS="LITERAL"
+>NOT DEFERRABLE</TT
+> constraints and unique indexes
+    are supported as arbiters.
+   </P
+><P
+>    <TT
+CLASS="COMMAND"
+>INSERT</TT
+> with an <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+>
+    clause is a <SPAN
+CLASS="QUOTE"
+>"deterministic"</SPAN
+> statement.  This means
+    that the command will not be allowed to affect any single existing
+    row more than once; a cardinality violation error will be raised
+    when this situation arises.  Rows proposed for insertion should
+    not duplicate each other in terms of attributes constrained by an
+    arbiter index or constraint.
+   </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>Tip: </B
+>     It is often preferable to use unique index inference rather than
+     naming a constraint directly using <TT
+CLASS="LITERAL"
+>ON CONFLICT ON
+     CONSTRAINT</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>     constraint_name</I
+></TT
+>.  Inference will continue to work
+     correctly when the underlying index is replaced by another more
+     or less equivalent index in an overlapping way, for example when
+     using <TT
+CLASS="LITERAL"
+>CREATE UNIQUE INDEX ...  CONCURRENTLY</TT
+>
+     before dropping the index being replaced.
+    </P
+></BLOCKQUOTE
+></DIV
+></DIV
+></DIV
+><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81692"
+NAME="AEN84940"
 ></A
 ><H2
 >Outputs</H2
@@ -490,25 +1268,24 @@ CLASS="REPLACEABLE"
 ><I
 >count</I
 ></TT
-> is the number
-   of rows inserted.  If <TT
+> is the
+   number of rows inserted or updated.  If <TT
 CLASS="REPLACEABLE"
 ><I
 >count</I
 ></TT
->
-   is exactly one, and the target table has OIDs, then
-   <TT
+> is exactly one, and the
+   target table has OIDs, then <TT
 CLASS="REPLACEABLE"
 ><I
 >oid</I
 ></TT
-> is the
-   <ACRONYM
+> is the <ACRONYM
 CLASS="ACRONYM"
 >OID</ACRONYM
-> assigned to the inserted row.  Otherwise
-   <TT
+>
+   assigned to the inserted row.  The single row must have been
+   inserted rather than updated.  Otherwise <TT
 CLASS="REPLACEABLE"
 ><I
 >oid</I
@@ -531,14 +1308,14 @@ CLASS="COMMAND"
    <TT
 CLASS="LITERAL"
 >RETURNING</TT
-> list, computed over the row(s) inserted by the
-   command.
+> list, computed over the row(s) inserted or
+   updated by the command.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81709"
+NAME="AEN84957"
 ></A
 ><H2
 >Examples</H2
@@ -663,12 +1440,101 @@ CLASS="PROGRAMLISTING"
     RETURNING *
 )
 INSERT INTO employees_log SELECT *, current_timestamp FROM upd;</PRE
-><P></P
+><P>
+  </P
+><P
+>   Insert or update new distributors as appropriate.  Assumes a unique
+   index has been defined that constrains values appearing in the
+   <TT
+CLASS="LITERAL"
+>did</TT
+> column.  Note that the special
+   <TT
+CLASS="VARNAME"
+>excluded</TT
+> table is used to reference values originally
+   proposed for insertion:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO distributors (did, dname)
+    VALUES (5, 'Gizmo Transglobal'), (6, 'Associated Computing, Inc')
+    ON CONFLICT (did) DO UPDATE SET dname = EXCLUDED.dname;</PRE
+><P>
+  </P
+><P
+>   Insert a distributor, or do nothing for rows proposed for insertion
+   when an existing, excluded row (a row with a matching constrained
+   column or columns after before row insert triggers fire) exists.
+   Example assumes a unique index has been defined that constrains
+   values appearing in the <TT
+CLASS="LITERAL"
+>did</TT
+> column:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO distributors (did, dname) VALUES (7, 'Redline GmbH')
+    ON CONFLICT (did) DO NOTHING;</PRE
+><P>
+  </P
+><P
+>   Insert or update new distributors as appropriate.  Example assumes
+   a unique index has been defined that constrains values appearing in
+   the <TT
+CLASS="LITERAL"
+>did</TT
+> column.  <TT
+CLASS="LITERAL"
+>WHERE</TT
+> clause is
+   used to limit the rows actually updated (any existing row not
+   updated will still be locked, though):
+</P><PRE
+CLASS="PROGRAMLISTING"
+>-- Don't update existing distributors based in a certain ZIP code
+INSERT INTO distributors AS d (did, dname) VALUES (8, 'Anvil Distribution')
+    ON CONFLICT (did) DO UPDATE
+    SET dname = EXCLUDED.dname || ' (formerly ' || d.dname || ')'
+    WHERE d.zipcode &lt;&gt; '21201';
+
+-- Name a constraint directly in the statement (uses associated
+-- index to arbitrate taking the DO NOTHING action)
+INSERT INTO distributors (did, dname) VALUES (9, 'Antwerp Design')
+    ON CONFLICT ON CONSTRAINT distributors_pkey DO NOTHING;</PRE
+><P>
+  </P
+><P
+>   Insert new distributor if possible;  otherwise
+   <TT
+CLASS="LITERAL"
+>DO NOTHING</TT
+>.  Example assumes a unique index has been
+   defined that constrains values appearing in the
+   <TT
+CLASS="LITERAL"
+>did</TT
+> column on a subset of rows where the
+   <TT
+CLASS="LITERAL"
+>is_active</TT
+> Boolean column evaluates to
+   <TT
+CLASS="LITERAL"
+>true</TT
+>:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>-- This statement could infer a partial unique index on "did"
+-- with a predicate of "WHERE is_active", but it could also
+-- just use a regular unique constraint on "did"
+INSERT INTO distributors (did, dname) VALUES (10, 'Conrad International')
+    ON CONFLICT (did) WHERE is_active DO NOTHING;</PRE
+><P>
+  </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81738"
+NAME="AEN85003"
 ></A
 ><H2
 >Compatibility</H2
@@ -691,6 +1557,10 @@ CLASS="LITERAL"
 > with <TT
 CLASS="COMMAND"
 >INSERT</TT
+>, and the ability to
+   specify an alternative action with <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
 >.
    Also, the case in
    which a column name list is omitted, but not all the columns are
@@ -734,7 +1604,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="sql-grant.html"
+HREF="sql-importforeignschema.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -762,7 +1632,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->GRANT</TD
+>IMPORT FOREIGN SCHEMA</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

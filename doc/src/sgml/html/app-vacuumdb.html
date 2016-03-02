@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN92729"
+NAME="AEN96988"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN92733"
+NAME="AEN96992"
 ></A
 ><H2
 >Synopsis</H2
@@ -178,7 +178,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92763"
+NAME="AEN97022"
 ></A
 ><H2
 >Description</H2
@@ -217,7 +217,7 @@ HREF="sql-vacuum.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92773"
+NAME="AEN97032"
 ></A
 ><H2
 >Options</H2
@@ -334,6 +334,65 @@ CLASS="OPTION"
 CLASS="QUOTE"
 >"freeze"</SPAN
 > tuples.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-j <TT
+CLASS="REPLACEABLE"
+><I
+>njobs</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--jobs=<TT
+CLASS="REPLACEABLE"
+><I
+>njobs</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        Execute the vacuum or analyze commands in parallel by running
+        <TT
+CLASS="REPLACEABLE"
+><I
+>njobs</I
+></TT
+>
+        commands simultaneously.  This option reduces the time of the
+        processing but it also increases the load on the database server.
+       </P
+><P
+>        <SPAN
+CLASS="APPLICATION"
+>vacuumdb</SPAN
+> will open
+        <TT
+CLASS="REPLACEABLE"
+><I
+>njobs</I
+></TT
+> connections to the
+        database, so make sure your <A
+HREF="runtime-config-connection.html#GUC-MAX-CONNECTIONS"
+>max_connections</A
+>
+        setting is high enough to accommodate all connections.
+       </P
+><P
+>        Note that using this mode together with the <TT
+CLASS="OPTION"
+>-f</TT
+>
+        (<TT
+CLASS="LITERAL"
+>FULL</TT
+>) option might cause deadlock failures if
+        certain system catalogs are processed in parallel.
        </P
 ></DD
 ><DT
@@ -686,7 +745,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92950"
+NAME="AEN97226"
 ></A
 ><H2
 >Environment</H2
@@ -734,7 +793,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92968"
+NAME="AEN97244"
 ></A
 ><H2
 >Diagnostics</H2
@@ -763,7 +822,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92974"
+NAME="AEN97250"
 ></A
 ><H2
 >Notes</H2
@@ -789,7 +848,7 @@ HREF="libpq-pgpass.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92981"
+NAME="AEN97257"
 ></A
 ><H2
 >Examples</H2
@@ -854,7 +913,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN93000"
+NAME="AEN97276"
 ></A
 ><H2
 >See Also</H2

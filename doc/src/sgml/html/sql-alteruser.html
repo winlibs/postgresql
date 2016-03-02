@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERUSER"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN70808"
+NAME="AEN73094"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN70808"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN70811"
+NAME="AEN73097"
 ></A
 ><H2
 >Synopsis</H2
@@ -112,14 +112,14 @@ CLASS="SYNOPSIS"
 >ALTER USER <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>role_specification</I
 ></TT
-> [ [ WITH ] <TT
+> [ WITH ] <TT
 CLASS="REPLACEABLE"
 ><I
 >option</I
 ></TT
-> [ ... ] ]
+> [ ... ]
 
 <SPAN
 CLASS="phrase"
@@ -141,6 +141,7 @@ CLASS="REPLACEABLE"
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
     | REPLICATION | NOREPLICATION
+    | BYPASSRLS | NOBYPASSRLS
     | CONNECTION LIMIT <TT
 CLASS="REPLACEABLE"
 ><I
@@ -175,7 +176,7 @@ CLASS="REPLACEABLE"
 ALTER USER <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>role_specification</I
 ></TT
 > SET <TT
 CLASS="REPLACEABLE"
@@ -191,7 +192,7 @@ CLASS="REPLACEABLE"
 ALTER USER <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>role_specification</I
 ></TT
 > SET <TT
 CLASS="REPLACEABLE"
@@ -202,7 +203,7 @@ CLASS="REPLACEABLE"
 ALTER USER <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>role_specification</I
 ></TT
 > RESET <TT
 CLASS="REPLACEABLE"
@@ -213,14 +214,36 @@ CLASS="REPLACEABLE"
 ALTER USER <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>role_specification</I
 ></TT
-> RESET ALL</PRE
+> RESET ALL
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>where <TT
+CLASS="REPLACEABLE"
+><I
+>role_specification</I
+></TT
+> can be:</SPAN
+></SPAN
+>
+
+    [ GROUP ] <TT
+CLASS="REPLACEABLE"
+><I
+>role_name</I
+></TT
+>
+  | CURRENT_USER
+  | SESSION_USER</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70830"
+NAME="AEN73119"
 ></A
 ><H2
 >Description</H2
@@ -238,7 +261,7 @@ HREF="sql-alterrole.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70835"
+NAME="AEN73124"
 ></A
 ><H2
 >Compatibility</H2
@@ -257,7 +280,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70840"
+NAME="AEN73129"
 ></A
 ><H2
 >See Also</H2

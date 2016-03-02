@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 48. System Catalogs</TD
+>Chapter 49. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="VIEW-PG-SETTINGS"
->48.67. <TT
+>49.73. <TT
 CLASS="STRUCTNAME"
 >pg_settings</TT
 ></A
@@ -122,11 +122,11 @@ CLASS="COMMAND"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN101955"
+NAME="AEN107701"
 ></A
 ><P
 ><B
->Table 48-68. <TT
+>Table 49-74. <TT
 CLASS="STRUCTNAME"
 >pg_settings</TT
 > Columns</B
@@ -403,6 +403,29 @@ CLASS="TYPE"
       or when examined by a non-superuser)
       </TD
 ></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>pending_restart</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>true</TT
+> if the value has been changed in the
+      configuration file but needs a restart; or <TT
+CLASS="LITERAL"
+>false</TT
+>
+      otherwise.
+      </TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -486,6 +509,43 @@ CLASS="SYSTEMITEM"
 ><DT
 ><TT
 CLASS="LITERAL"
+>superuser-backend</TT
+></DT
+><DD
+><P
+>      Changes to these settings can be made in
+      <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> without restarting the server.
+      They can also be set for a particular session in the connection request
+      packet (for example, via <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>'s <TT
+CLASS="LITERAL"
+>PGOPTIONS</TT
+>
+      environment variable), but only if the connecting user is a superuser.
+      However, these settings never change in a session after it is started.
+      If you change them in <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>, send a
+      <SPAN
+CLASS="SYSTEMITEM"
+>SIGHUP</SPAN
+> signal to the postmaster to cause it to
+      re-read <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>.  The new values will only
+      affect subsequently-launched sessions.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
 >backend</TT
 ></DT
 ><DD
@@ -494,8 +554,8 @@ CLASS="LITERAL"
       <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
-> without restarting the server;
-      they can also be set for a particular session in the connection request
+> without restarting the server.
+      They can also be set for a particular session in the connection request
       packet (for example, via <SPAN
 CLASS="APPLICATION"
 >libpq</SPAN
@@ -503,9 +563,9 @@ CLASS="APPLICATION"
 CLASS="LITERAL"
 >PGOPTIONS</TT
 >
-      environment variable).  However, these settings never change in a
-      session after it is started.  If you change them in
-      <TT
+      environment variable); any user can make such a change for his session.
+      However, these settings never change in a session after it is started.
+      If you change them in <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
 >, send a

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: COPY
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "COPY" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "COPY" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -57,7 +57,6 @@ where \fIoption\fR can be one of:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCOPY\fR
 moves data between
 PostgreSQL
@@ -81,7 +80,6 @@ will only copy the data in the specified columns to or from the file\&. If there
 \fBCOPY FROM\fR
 will insert the default values for those columns\&.
 .PP
-
 \fBCOPY\fR
 with a file name instructs the
 PostgreSQL
@@ -317,7 +315,6 @@ is the number of rows copied\&.
 .ps -1
 .br
 .PP
-
 psql
 will print this command tag only if the command was not
 COPY \&.\&.\&. TO STDOUT, or the equivalent
@@ -328,12 +325,10 @@ meta\-command
 .RE
 .SH "NOTES"
 .PP
-
 \fBCOPY\fR
 can only be used with plain tables, not with views\&. However, you can write
 COPY (SELECT * FROM \fIviewname\fR) TO \&.\&.\&.\&.
 .PP
-
 \fBCOPY\fR
 only deals with the specific table named; it does not copy data to or from child tables\&. Thus for example
 COPY \fItable\fR TO
@@ -363,7 +358,7 @@ Do not confuse
 with the
 psql
 instruction
-\fB\ecopy\fR\&.
+\fB\copy\fR\&.
 \fB\ecopy\fR
 invokes
 \fBCOPY FROM STDIN\fR
@@ -385,11 +380,9 @@ Executing a command with
 PROGRAM
 might be restricted by the operating system\*(Aqs access control mechanisms, such as SELinux\&.
 .PP
-
 \fBCOPY FROM\fR
 will invoke any triggers and check constraints on the destination table\&. However, it will not invoke rules\&.
 .PP
-
 \fBCOPY\fR
 input and output is affected by
 \fIDateStyle\fR\&. To ensure portability to other
@@ -413,7 +406,6 @@ option or the current client encoding, and output data is encoded in
 ENCODING
 or the current client encoding, even if the data does not pass through the client but is read from or written to a file directly by the server\&.
 .PP
-
 \fBCOPY\fR
 stops operation at the first error\&. This should not lead to problems in the event of a
 \fBCOPY TO\fR, but the target table will already have received earlier rows in a
@@ -421,7 +413,6 @@ stops operation at the first error\&. This should not lead to problems in the ev
 \fBVACUUM\fR
 to recover the wasted space\&.
 .PP
-
 FORCE_NULL
 and
 FORCE_NOT_NULL
@@ -536,7 +527,6 @@ sequences respectively\&. At present it is possible to represent a data carriage
 \fBCOPY\fR
 file is transferred across different machines (for example, from Unix to Windows or vice versa)\&.
 .PP
-
 \fBCOPY TO\fR
 will terminate each row with a Unix\-style newline (\(lq\en\(rq)\&. Servers running on Microsoft Windows instead output carriage return/newline (\(lq\er\en\(rq), but only for
 \fBCOPY\fR
@@ -691,7 +681,6 @@ file format consists of a file header, zero or more tuples containing the row da
 .ps -1
 .br
 .PP
-
 PostgreSQL
 releases before 7\&.4 used a different binary file format\&.
 .sp .5v
@@ -909,7 +898,6 @@ COPY { \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ] | ( \fIquery\fR 
 .RE
 .\}
 .sp
-
 Note that in this syntax,
 BINARY
 and

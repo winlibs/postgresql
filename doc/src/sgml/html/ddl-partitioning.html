@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Definition"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="DDL-PARTITIONING"
->5.9. Partitioning</A
+>5.10. Partitioning</A
 ></H1
 ><P
 >    <SPAN
@@ -109,7 +109,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="DDL-PARTITIONING-OVERVIEW"
->5.9.1. Overview</A
+>5.10.1. Overview</A
 ></H2
 ><P
 >    Partitioning refers to splitting what is logically one large table
@@ -182,7 +182,7 @@ CLASS="PRODUCTNAME"
     empty; it exists just to represent the entire data set.  You should be
     familiar with inheritance (see <A
 HREF="ddl-inherit.html"
->Section 5.8</A
+>Section 5.9</A
 >) before
     attempting to set up partitioning.
    </P
@@ -231,7 +231,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="DDL-PARTITIONING-IMPLEMENTATION"
->5.9.2. Implementing Partitioning</A
+>5.10.2. Implementing Partitioning</A
 ></H2
 ><P
 >     To set up a partitioned table, do the following:
@@ -269,7 +269,8 @@ CLASS="QUOTE"
         are in every way normal <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> tables.
+> tables
+        (or, possibly, foreign tables).
        </P
 ></LI
 ><LI
@@ -566,7 +567,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="DDL-PARTITIONING-MANAGING-PARTITIONS"
->5.9.3. Managing Partitions</A
+>5.10.3. Managing Partitions</A
 ></H2
 ><P
 >     Normally the set of partitions established when initially
@@ -644,7 +645,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="DDL-PARTITIONING-CONSTRAINT-EXCLUSION"
->5.9.4. Partitioning and Constraint Exclusion</A
+>5.10.4. Partitioning and Constraint Exclusion</A
 ></H2
 ><P
 >    <I
@@ -774,7 +775,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="DDL-PARTITIONING-ALTERNATIVES"
->5.9.5. Alternative Partitioning Methods</A
+>5.10.5. Alternative Partitioning Methods</A
 ></H2
 ><P
 >     A different approach to redirecting inserts into the appropriate
@@ -850,7 +851,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="DDL-PARTITIONING-CAVEATS"
->5.9.6. Caveats</A
+>5.10.6. Caveats</A
 ></H2
 ><P
 >    The following caveats apply to partitioned tables:
@@ -902,6 +903,23 @@ CLASS="PROGRAMLISTING"
 >ANALYZE measurement;</PRE
 ><P>
       will only process the master table.
+     </P
+></LI
+><LI
+><P
+>      <TT
+CLASS="COMMAND"
+>INSERT</TT
+> statements with <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+>
+      clauses are unlikely to work as expected, as the <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+>
+      action is only taken in case of unique violations on the specified
+      target relation, not its child relations.
      </P
 ></LI
 ></UL

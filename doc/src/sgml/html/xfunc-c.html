@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -592,23 +592,15 @@ CLASS="TYPE"
 CLASS="PROGRAMLISTING"
 >typedef struct {
     int32 length;
-    char data[1];
+    char data[FLEXIBLE_ARRAY_MEMBER];
 } text;</PRE
 ><P>
 
-     Obviously,  the  data  field declared here is not long enough to hold
-     all possible strings.  Since it's impossible to declare a variable-size
-     structure in <ACRONYM
-CLASS="ACRONYM"
->C</ACRONYM
->, we rely on the knowledge that the
-     <ACRONYM
-CLASS="ACRONYM"
->C</ACRONYM
-> compiler won't range-check array subscripts.  We
-     just allocate the necessary amount of space and then access the array as
-     if it were declared the right length.  (This is a common trick, which
-     you can read about in many textbooks about C.)
+     The <TT
+CLASS="LITERAL"
+>[FLEXIBLE_ARRAY_MEMBER]</TT
+> notation means that the actual
+     length of the data part is not specified by this declaration.
     </P
 ><P
 >     When manipulating
@@ -721,6 +713,26 @@ CLASS="TYPE"
 ><TT
 CLASS="FILENAME"
 >utils/nabstime.h</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+> (<TT
+CLASS="TYPE"
+>int8</TT
+>)</TD
+><TD
+><TT
+CLASS="TYPE"
+>int64</TT
+></TD
+><TD
+><TT
+CLASS="FILENAME"
+>postgres.h</TT
 ></TD
 ></TR
 ><TR
@@ -1238,7 +1250,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN55831"
+NAME="AEN57338"
 >35.9.3. Version 0 Calling Conventions</A
 ></H2
 ><P
@@ -1457,7 +1469,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN55858"
+NAME="AEN57365"
 >35.9.4. Version 1 Calling Conventions</A
 ></H2
 ><P
@@ -1808,7 +1820,7 @@ HREF="triggers.html"
 >) and
      procedural-language call handlers (<A
 HREF="plhandler.html"
->Chapter 52</A
+>Chapter 53</A
 >).  Version-1 code is also more
      portable than version-0, because it does not break restrictions
      on function call protocol in the C standard.  For more details
@@ -1824,7 +1836,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN55916"
+NAME="AEN57423"
 >35.9.5. Writing Code</A
 ></H2
 ><P
@@ -2344,33 +2356,6 @@ gcc -G -o foo.so foo.o</PRE
 ><DT
 ><SPAN
 CLASS="SYSTEMITEM"
->Tru64 UNIX</SPAN
->
-     
-     </DT
-><DD
-><P
->      <ACRONYM
-CLASS="ACRONYM"
->PIC</ACRONYM
-> is the default, so the compilation command
-      is the usual one.  <TT
-CLASS="COMMAND"
->ld</TT
-> with special options is
-      used to do the linking.
-</P><PRE
-CLASS="PROGRAMLISTING"
->cc -c foo.c
-ld -shared -expect_unresolved '*' -o foo.so foo.o</PRE
-><P>
-      The same procedure is used with GCC instead of the system
-      compiler; no special options are required.
-     </P
-></DD
-><DT
-><SPAN
-CLASS="SYSTEMITEM"
 >UnixWare</SPAN
 >
      </DT
@@ -2476,7 +2461,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN56131"
+NAME="AEN57624"
 >35.9.7. Composite-type Arguments</A
 ></H2
 ><P
@@ -2636,7 +2621,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN56155"
+NAME="AEN57648"
 >35.9.8. Returning Rows (Composite Types)</A
 ></H2
 ><P
@@ -3132,6 +3117,53 @@ CLASS="STRUCTFIELD"
 >multi_call_memory_ctx</TT
 > while doing the first-call setup.
     </P
+><DIV
+CLASS="WARNING"
+><P
+></P
+><TABLE
+CLASS="WARNING"
+BORDER="1"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Warning</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>      While the actual arguments to the function remain unchanged between
+      calls, if you detoast the argument values (which is normally done
+      transparently by the
+      <CODE
+CLASS="FUNCTION"
+>PG_GETARG_<TT
+CLASS="REPLACEABLE"
+><I
+>xxx</I
+></TT
+></CODE
+> macro)
+      in the transient context then the detoasted copies will be freed on
+      each cycle. Accordingly, if you keep references to such values in
+      your <TT
+CLASS="STRUCTFIELD"
+>user_fctx</TT
+>, you must either copy them into the
+      <TT
+CLASS="STRUCTFIELD"
+>multi_call_memory_ctx</TT
+> after detoasting, or ensure
+      that you detoast the values only in that context.
+     </P
+></TD
+></TR
+></TABLE
+></DIV
 ><P
 >     A complete pseudo-code example looks like the following:
 </P><PRE
@@ -3382,7 +3414,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN56278"
+NAME="AEN57777"
 >35.9.10. Polymorphic Arguments and Return Types</A
 ></H2
 ><P
@@ -3656,7 +3688,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN56329"
+NAME="AEN57828"
 >35.9.12. Shared Memory and LWLocks</A
 ></H2
 ><P

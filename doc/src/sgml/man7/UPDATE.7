@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: UPDATE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "UPDATE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "UPDATE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -35,14 +35,15 @@ UPDATE \- update rows of a table
 [ WITH [ RECURSIVE ] \fIwith_query\fR [, \&.\&.\&.] ]
 UPDATE [ ONLY ] \fItable_name\fR [ * ] [ [ AS ] \fIalias\fR ]
     SET { \fIcolumn_name\fR = { \fIexpression\fR | DEFAULT } |
-          ( \fIcolumn_name\fR [, \&.\&.\&.] ) = ( { \fIexpression\fR | DEFAULT } [, \&.\&.\&.] ) } [, \&.\&.\&.]
+          ( \fIcolumn_name\fR [, \&.\&.\&.] ) = ( { \fIexpression\fR | DEFAULT } [, \&.\&.\&.] ) |
+          ( \fIcolumn_name\fR [, \&.\&.\&.] ) = ( \fIsub\-SELECT\fR )
+        } [, \&.\&.\&.]
     [ FROM \fIfrom_list\fR ]
     [ WHERE \fIcondition\fR | WHERE CURRENT OF \fIcursor_name\fR ]
     [ RETURNING * | \fIoutput_expression\fR [ [ AS ] \fIoutput_name\fR ] [, \&.\&.\&.] ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBUPDATE\fR
 changes the values of the specified columns in all rows that satisfy the condition\&. Only the columns to be modified need be mentioned in the
 SET
@@ -123,6 +124,13 @@ An expression to assign to the column\&. The expression can use the old values o
 DEFAULT
 .RS 4
 Set the column to its default value (which will be NULL if no specific default expression has been assigned to it)\&.
+.RE
+.PP
+\fIsub\-SELECT\fR
+.RS 4
+A
+SELECT
+sub\-query that produces as many output columns as are listed in the parenthesized column list preceding it\&. The sub\-query must yield no more than one row when executed\&. If it yields one row, its column values are assigned to the target columns; if it yields no rows, NULL values are assigned to the target columns\&. The sub\-query can refer to old values of the current row of the table being updated\&.
 .RE
 .PP
 \fIfrom_list\fR
@@ -313,6 +321,56 @@ UPDATE employees SET sales_count = sales_count + 1 WHERE id =
 .RE
 .\}
 .PP
+Update contact names in an accounts table to match the currently assigned salesmen:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+UPDATE accounts SET (contact_first_name, contact_last_name) =
+    (SELECT first_name, last_name FROM salesmen
+     WHERE salesmen\&.id = accounts\&.sales_id);
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+A similar result could be accomplished with a join:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+UPDATE accounts SET contact_first_name = first_name,
+                    contact_last_name = last_name
+  FROM salesmen WHERE salesmen\&.id = accounts\&.sales_id;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+However, the second query may give unexpected results if
+salesmen\&.id
+is not a unique key, whereas the first query is guaranteed to raise an error if there are multiple
+id
+matches\&. Also, if there is no match for a particular
+accounts\&.sales_id
+entry, the first query will set the corresponding name fields to NULL, whereas the second query will not update that row at all\&.
+.PP
+Update statistics in a summary table to match the current data:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+UPDATE summary s SET (sum_x, sum_y, avg_x, avg_y) =
+    (SELECT sum(x), sum(y), avg(x), avg(y) FROM data d
+     WHERE d\&.group_id = s\&.group_id);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
 Attempt to insert a new stock item along with the quantity of stock\&. If the item already exists, instead update the stock count of the existing item\&. To do this without failing the entire transaction, use savepoints:
 .sp
 .if n \{\
@@ -366,22 +424,6 @@ WITH
 with
 \fBUPDATE\fR\&.
 .PP
-According to the standard, the column\-list syntax should allow a list of columns to be assigned from a single row\-valued expression, such as a sub\-select:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-UPDATE accounts SET (contact_last_name, contact_first_name) =
-    (SELECT last_name, first_name FROM salesmen
-     WHERE salesmen\&.id = accounts\&.sales_id);
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-This is not currently implemented \(em the source must be a list of independent expressions\&.
-.PP
 Some other database systems offer a
 FROM
 option in which the target table is supposed to be listed again within
@@ -389,3 +431,9 @@ FROM\&. That is not how
 PostgreSQL
 interprets
 FROM\&. Be careful when porting applications that use this extension\&.
+.PP
+According to the standard, the source value for a parenthesized sub\-list of column names can be any row\-valued expression yielding the correct number of columns\&.
+PostgreSQL
+only allows the source value to be a parenthesized list of expressions (a row constructor) or a sub\-SELECT\&. An individual column\*(Aqs updated value can be specified as
+DEFAULT
+in the row\-constructor case, but not inside a sub\-SELECT\&.

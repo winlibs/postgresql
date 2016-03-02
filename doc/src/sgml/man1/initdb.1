@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: initdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "INITDB" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "INITDB" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,6 @@ initdb \- create a new PostgreSQL database cluster
 \fBinitdb\fR [\fIoption\fR...] [\fB\-\-pgdata\fR | \fB\-D\fR]\fI directory\fR
 .SH "DESCRIPTION"
 .PP
-
 \fBinitdb\fR
 creates a new
 PostgreSQL
@@ -61,7 +60,6 @@ to assign ownership of that directory to the database user account, then
 to become the database user to run
 \fBinitdb\fR\&.
 .PP
-
 \fBinitdb\fR
 must be run as the user that will own the server process, because the server needs to have access to the files and directories that
 \fBinitdb\fR
@@ -69,7 +67,6 @@ creates\&. Since the server cannot be run as root, you must not run
 \fBinitdb\fR
 as root either\&. (It will in fact refuse to do so\&.)
 .PP
-
 \fBinitdb\fR
 initializes the database cluster\*(Aqs default locale and character set encoding\&. The character set encoding, collation order (LC_COLLATE) and character set classes (LC_CTYPE, e\&.g\&. upper, lower, digit) can be set separately for a database when it is created\&.
 \fBinitdb\fR
@@ -321,7 +318,6 @@ libpq
 Section 31.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
 .SH "NOTES"
 .PP
-
 \fBinitdb\fR
 can also be invoked via
 \fBpg_ctl initdb\fR\&.

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE DATABASE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATE DATABASE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATE DATABASE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,11 +39,12 @@ CREATE DATABASE \fIname\fR
            [ LC_COLLATE [=] \fIlc_collate\fR ]
            [ LC_CTYPE [=] \fIlc_ctype\fR ]
            [ TABLESPACE [=] \fItablespace_name\fR ]
+           [ ALLOW_CONNECTIONS [=] \fIallowconn\fR ]
            [ CONNECTION LIMIT [=] \fIconnlimit\fR ] ]
+           [ IS_TEMPLATE [=] \fIistemplate\fR ]
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCREATE DATABASE\fR
 creates a new
 PostgreSQL
@@ -111,15 +112,27 @@ CREATE TABLESPACE (\fBCREATE_TABLESPACE\fR(7))
 for more information\&.
 .RE
 .PP
+\fIallowconn\fR
+.RS 4
+If false then no one can connect to this database\&. The default is true, allowing connections (except as restricted by other mechanisms, such as
+GRANT/REVOKE CONNECT)\&.
+.RE
+.PP
 \fIconnlimit\fR
 .RS 4
 How many concurrent connections can be made to this database\&. \-1 (the default) means no limit\&.
 .RE
 .PP
+\fIistemplate\fR
+.RS 4
+If true, then this database can be cloned by any user with
+CREATEDB
+privileges; if false (the default), then only superusers or the owner of the database can clone it\&.
+.RE
+.PP
 Optional parameters can be written in any order, not only the order illustrated above\&.
 .SH "NOTES"
 .PP
-
 \fBCREATE DATABASE\fR
 cannot be executed inside a transaction block\&.
 .PP

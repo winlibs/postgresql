@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1104,6 +1104,31 @@ CLASS="FUNCTION"
 >box(<TT
 CLASS="TYPE"
 >point</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>box</TT
+></TD
+><TD
+>point to empty box</TD
+><TD
+><TT
+CLASS="LITERAL"
+>box(point '(0,0)')</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>box(<TT
+CLASS="TYPE"
+>point</TT
 >, <TT
 CLASS="TYPE"
 >point</TT
@@ -1146,6 +1171,34 @@ CLASS="TYPE"
 ><TT
 CLASS="LITERAL"
 >box(polygon '((0,0),(1,1),(2,0))')</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>bound_box(<TT
+CLASS="TYPE"
+>box</TT
+>, <TT
+CLASS="TYPE"
+>box</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>box</TT
+></TD
+><TD
+>boxes to bounding box</TD
+><TD
+><TT
+CLASS="LITERAL"
+>bound_box(box '((0,0),(1,1))', box '((3,3),(4,4))')</TT
 ></TD
 ></TR
 ><TR

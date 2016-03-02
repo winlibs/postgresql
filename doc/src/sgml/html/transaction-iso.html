@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Concurrency Control"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -148,14 +148,24 @@ CLASS="VARIABLELIST"
         has changed due to another recently-committed transaction.
        </P
 ></DD
+><DT
+>serialization anomaly
+       </DT
+><DD
+><P
+>        The result of successfully committing a group of transactions
+        is inconsistent with all possible orderings of running those
+        transactions one at a time.
+       </P
+></DD
 ></DL
 ></DIV
 ><P>
    </P
 ><P
 >    
-    The four transaction isolation levels and the corresponding
-    behaviors are described in <A
+    The SQL standard and PostgreSQL-implemented transaction isolation levels
+    are described in <A
 HREF="transaction-iso.html#MVCC-ISOLEVEL-TABLE"
 >Table 13-1</A
 >.
@@ -167,15 +177,12 @@ NAME="MVCC-ISOLEVEL-TABLE"
 ></A
 ><P
 ><B
->Table 13-1. Standard <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> Transaction Isolation Levels</B
+>Table 13-1. Transaction Isolation Levels</B
 ></P
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><COL><COL><THEAD
+><COL><COL><COL><COL><COL><THEAD
 ><TR
 ><TH
 >         Isolation Level
@@ -189,12 +196,18 @@ CLASS="CALSTABLE"
 ><TH
 >         Phantom Read
         </TH
+><TH
+>         Serialization Anomaly
+        </TH
 ></TR
 ></THEAD
 ><TBODY
 ><TR
 ><TD
 >         Read uncommitted
+        </TD
+><TD
+>         Allowed, but not in PG
         </TD
 ><TD
 >         Possible
@@ -219,6 +232,9 @@ CLASS="CALSTABLE"
 ><TD
 >         Possible
         </TD
+><TD
+>         Possible
+        </TD
 ></TR
 ><TR
 ><TD
@@ -229,6 +245,9 @@ CLASS="CALSTABLE"
         </TD
 ><TD
 >         Not possible
+        </TD
+><TD
+>         Allowed, but not in PG
         </TD
 ><TD
 >         Possible
@@ -247,6 +266,9 @@ CLASS="CALSTABLE"
 ><TD
 >         Not possible
         </TD
+><TD
+>         Not possible
+        </TD
 ></TR
 ></TBODY
 ></TABLE
@@ -255,27 +277,26 @@ CLASS="CALSTABLE"
 >    In <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
->, you can request any of the
-    four standard transaction isolation levels.  But internally, there are
-    only three distinct isolation levels, which correspond to the levels Read
-    Committed, Repeatable Read, and Serializable.  When you select the level Read
-    Uncommitted you really get Read Committed, and phantom reads are not possible
-    in the <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> implementation of Repeatable
-    Read, so the actual
-    isolation level might be stricter than what you select.  This is
-    permitted by the SQL standard: the four isolation levels only
-    define which phenomena must not happen, they do not define which
-    phenomena must happen.  The reason that <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
-    only provides three isolation levels is that this is the only
-    sensible way to map the standard isolation levels to the multiversion
-    concurrency control architecture.  The behavior of the available
-    isolation levels is detailed in the following subsections.
+>, you can request any of
+    the four standard transaction isolation levels, but internally only
+    three distinct isolation levels are implemented, i.e. PostgreSQL's
+    Read Uncommitted mode behaves like Read Committed.  This is because
+    it is the only sensible way to map the standard isolation levels to
+    PostgreSQL's multiversion concurrency control architecture.
+   </P
+><P
+>    The table also shows that PostgreSQL's Repeatable Read implementation
+    does not allow phantom reads.  Stricter behavior is permitted by the
+    SQL standard: the four isolation levels only define which phenomena
+    must not happen, not which phenomena <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>must</I
+></SPAN
+> happen.
+    The behavior of the available isolation levels is detailed in the
+    following subsections.
    </P
 ><P
 >    To set the transaction isolation level of a transaction, use the
@@ -412,8 +433,52 @@ CLASS="COMMAND"
     locked and returned to the client.
    </P
 ><P
->    Because of the above rule, it is possible for an updating command to see an
-    inconsistent snapshot: it can see the effects of concurrent updating
+>    <TT
+CLASS="COMMAND"
+>INSERT</TT
+> with an <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+> clause
+    behaves similarly. In Read Committed mode, each row proposed for insertion
+    will either insert or update. Unless there are unrelated errors, one of
+    those two outcomes is guaranteed.  If a conflict originates in another
+    transaction whose effects are not yet visible to the <TT
+CLASS="COMMAND"
+>INSERT
+    </TT
+>, the <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> clause will affect that row,
+    even though possibly <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>no</I
+></SPAN
+> version of that row is
+    conventionally visible to the command.
+   </P
+><P
+>    <TT
+CLASS="COMMAND"
+>INSERT</TT
+> with an <TT
+CLASS="LITERAL"
+>ON CONFLICT DO
+    NOTHING</TT
+> clause may have insertion not proceed for a row due to
+    the outcome of another transaction whose effects are not visible
+    to the <TT
+CLASS="COMMAND"
+>INSERT</TT
+> snapshot.  Again, this is only
+    the case in Read Committed mode.
+   </P
+><P
+>    Because of the above rules, it is possible for an updating command to see
+    an inconsistent snapshot: it can see the effects of concurrent updating
     commands on the same rows it is trying to update, but it
     does not see effects of those commands on other rows in the database.
     This behavior makes Read Committed mode unsuitable for commands that
@@ -561,6 +626,7 @@ CLASS="EMPHASIS"
 ><P
 >    This level is different from Read Committed in that a query in a
     repeatable read transaction sees a snapshot as of the start of the
+    first non-transaction-control statement in the
     <SPAN
 CLASS="emphasis"
 ><I
@@ -568,7 +634,7 @@ CLASS="EMPHASIS"
 >transaction</I
 ></SPAN
 >, not as of the start
-    of the current query within the transaction.  Thus, successive
+    of the current statement within the transaction.  Thus, successive
     <TT
 CLASS="COMMAND"
 >SELECT</TT

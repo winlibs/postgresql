@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: createuser
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATEUSER" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATEUSER" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,6 @@ createuser \- define a new PostgreSQL user account
 \fBcreateuser\fR [\fIconnection\-option\fR...] [\fIoption\fR...] [\fIusername\fR]
 .SH "DESCRIPTION"
 .PP
-
 createuser
 creates a new
 PostgreSQL
@@ -50,7 +49,6 @@ If you wish to create a new superuser, you must connect as a superuser, not mere
 CREATEROLE
 privilege\&. Being a superuser implies the ability to bypass all access permission checks within the database, so superuserdom should not be granted lightly\&.
 .PP
-
 createuser
 is a wrapper around the
 SQL
@@ -58,7 +56,6 @@ command
 CREATE ROLE (\fBCREATE_ROLE\fR(7))\&. There is no effective difference between creating users via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
-
 createuser
 accepts the following command\-line arguments:
 .PP
@@ -234,7 +231,6 @@ createuser
 command line arguments, and exit\&.
 .RE
 .PP
-
 createuser
 also accepts the following command\-line arguments for connection parameters:
 .PP

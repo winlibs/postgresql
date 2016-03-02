@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER LARGE OBJECT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER LARGE OBJECT" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER LARGE OBJECT" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,11 +32,10 @@ ALTER_LARGE_OBJECT \- change the definition of a large object
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER LARGE OBJECT \fIlarge_object_oid\fR OWNER TO \fInew_owner\fR
+ALTER LARGE OBJECT \fIlarge_object_oid\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER LARGE OBJECT\fR
 changes the definition of a large object\&. The only functionality is to assign a new owner\&. You must be superuser or owner of the large object to use
 \fBALTER LARGE OBJECT\fR\&.

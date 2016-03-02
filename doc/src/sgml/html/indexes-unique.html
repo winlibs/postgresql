@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -145,14 +145,7 @@ CLASS="NOTE"
 ><P
 ><B
 >Note: </B
->    The preferred way to add a unique constraint to a table is
-    <TT
-CLASS="LITERAL"
->ALTER TABLE ... ADD CONSTRAINT</TT
->.  The use of
-    indexes to enforce unique constraints could be considered an
-    implementation detail that should not be accessed directly.
-    One should, however, be aware that there's no need to manually
+>    There's no need to manually
     create indexes on unique columns; doing so would just duplicate
     the automatically-created index.
    </P

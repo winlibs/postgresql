@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PAGEINSPECT"
->F.22. pageinspect</A
+>F.21. pageinspect</A
 ></H1
 ><P
 >  The <TT
@@ -108,8 +108,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN161305"
->F.22.1. Functions</A
+NAME="AEN170569"
+>F.21.1. Functions</A
 ></H2
 ><P
 ></P
@@ -335,6 +335,269 @@ CLASS="SCREEN"
           6 | (0,6)   |      12 | f     | f    | 28 27 00 00
           7 | (0,7)   |      12 | f     | f    | 29 27 00 00
           8 | (0,8)   |      12 | f     | f    | 2a 27 00 00</PRE
+><P>
+      In a B-tree leaf page, <TT
+CLASS="STRUCTFIELD"
+>ctid</TT
+> points to a heap tuple.
+      In an internal page, the block number part of <TT
+CLASS="STRUCTFIELD"
+>ctid</TT
+>
+      points to another page in the index itself, while the offset part
+      (the second number) is ignored and is usually 1.
+     </P
+><P
+>      Note that the first item on any non-rightmost page (any page with
+      a non-zero value in the <TT
+CLASS="STRUCTFIELD"
+>btpo_next</TT
+> field) is the
+      page's <SPAN
+CLASS="QUOTE"
+>"high key"</SPAN
+>, meaning its <TT
+CLASS="STRUCTFIELD"
+>data</TT
+>
+      serves as an upper bound on all items appearing on the page, while
+      its <TT
+CLASS="STRUCTFIELD"
+>ctid</TT
+> field is meaningless.  Also, on non-leaf
+      pages, the first real data item (the first item that is not a high
+      key) is a <SPAN
+CLASS="QUOTE"
+>"minus infinity"</SPAN
+> item, with no actual value
+      in its <TT
+CLASS="STRUCTFIELD"
+>data</TT
+> field.  Such an item does have a valid
+      downlink in its <TT
+CLASS="STRUCTFIELD"
+>ctid</TT
+> field, however.
+     </P
+></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>brin_page_type(page bytea) returns text</CODE
+>
+     </DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>brin_page_type</CODE
+> returns the page type of the given
+      <ACRONYM
+CLASS="ACRONYM"
+>BRIN</ACRONYM
+> index page, or throws an error if the page is
+      not a valid <ACRONYM
+CLASS="ACRONYM"
+>BRIN</ACRONYM
+> page.  For example:
+</P><PRE
+CLASS="SCREEN"
+>test=# SELECT brin_page_type(get_raw_page('brinidx', 0));
+ brin_page_type 
+----------------
+ meta</PRE
+><P>
+     </P
+></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>brin_metapage_info(page bytea) returns record</CODE
+>
+     </DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>brin_metapage_info</CODE
+> returns assorted information
+      about a <ACRONYM
+CLASS="ACRONYM"
+>BRIN</ACRONYM
+> index metapage.  For example:
+</P><PRE
+CLASS="SCREEN"
+>test=# SELECT * FROM brin_metapage_info(get_raw_page('brinidx', 0));
+   magic    | version | pagesperrange | lastrevmappage 
+------------+---------+---------------+----------------
+ 0xA8109CFA |       1 |             4 |              2</PRE
+><P>
+     </P
+></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>brin_revmap_data(page bytea) returns setof tid</CODE
+>
+     </DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>brin_revmap_data</CODE
+> returns the list of tuple
+      identifiers in a <ACRONYM
+CLASS="ACRONYM"
+>BRIN</ACRONYM
+> index range map page.
+      For example:
+</P><PRE
+CLASS="SCREEN"
+>test=# SELECT * FROM brin_revmap_data(get_raw_page('brinidx', 2)) limit 5;
+  pages  
+---------
+ (6,137)
+ (6,138)
+ (6,139)
+ (6,140)
+ (6,141)</PRE
+><P>
+     </P
+></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>brin_page_items(page bytea, index oid) returns setof record</CODE
+>
+     </DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>brin_page_items</CODE
+> returns the data stored in the
+      <ACRONYM
+CLASS="ACRONYM"
+>BRIN</ACRONYM
+> data page.  For example:
+</P><PRE
+CLASS="SCREEN"
+>test=# SELECT * FROM brin_page_items(get_raw_page('brinidx', 5),
+                                     'brinidx')
+       ORDER BY blknum, attnum LIMIT 6;
+ itemoffset | blknum | attnum | allnulls | hasnulls | placeholder |    value     
+------------+--------+--------+----------+----------+-------------+--------------
+        137 |      0 |      1 | t        | f        | f           | 
+        137 |      0 |      2 | f        | f        | f           | {1 .. 88}
+        138 |      4 |      1 | t        | f        | f           | 
+        138 |      4 |      2 | f        | f        | f           | {89 .. 176}
+        139 |      8 |      1 | t        | f        | f           | 
+        139 |      8 |      2 | f        | f        | f           | {177 .. 264}</PRE
+><P>
+      The returned columns correspond to the fields in the
+      <TT
+CLASS="STRUCTNAME"
+>BrinMemTuple</TT
+> and <TT
+CLASS="STRUCTNAME"
+>BrinValues</TT
+> structs.
+      See <TT
+CLASS="FILENAME"
+>src/include/access/brin_tuple.h</TT
+> for details.
+     </P
+></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>gin_metapage_info(page bytea) returns record</CODE
+>
+     </DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>gin_metapage_info</CODE
+> returns information about
+      a <ACRONYM
+CLASS="ACRONYM"
+>GIN</ACRONYM
+> index metapage.  For example:
+</P><PRE
+CLASS="SCREEN"
+>test=# SELECT * FROM gin_metapage_info(get_raw_page('gin_index', 0));
+-[ RECORD 1 ]----+-----------
+pending_head     | 4294967295
+pending_tail     | 4294967295
+tail_free_size   | 0
+n_pending_pages  | 0
+n_pending_tuples | 0
+n_total_pages    | 7
+n_entry_pages    | 6
+n_data_pages     | 0
+n_entries        | 693
+version          | 2</PRE
+><P>
+     </P
+></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>gin_page_opaque_info(page bytea) returns record</CODE
+>
+     </DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>gin_page_opaque_info</CODE
+> returns information about
+      a <ACRONYM
+CLASS="ACRONYM"
+>GIN</ACRONYM
+> index opaque area, like the page type.
+      For example:
+</P><PRE
+CLASS="SCREEN"
+>test=# SELECT * FROM gin_page_opaque_info(get_raw_page('gin_index', 2));
+ rightlink | maxoff |         flags
+-----------+--------+------------------------
+         5 |      0 | {data,leaf,compressed}
+(1 row)</PRE
+><P>
+     </P
+></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>gin_leafpage_items(page bytea) returns setof record</CODE
+>
+     </DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>gin_leafpage_items</CODE
+> returns information about
+      the data stored in a <ACRONYM
+CLASS="ACRONYM"
+>GIN</ACRONYM
+> leaf page.  For example:
+</P><PRE
+CLASS="SCREEN"
+>test=# SELECT first_tid, nbytes, tids[0:5] as some_tids
+        FROM gin_leafpage_items(get_raw_page('gin_test_idx', 2));
+ first_tid | nbytes |                        some_tids
+-----------+--------+----------------------------------------------------------
+ (8,41)    |    244 | {"(8,41)","(8,43)","(8,44)","(8,45)","(8,46)"}
+ (10,45)   |    248 | {"(10,45)","(10,46)","(10,47)","(10,48)","(10,49)"}
+ (12,52)   |    248 | {"(12,52)","(12,53)","(12,54)","(12,55)","(12,56)"}
+ (14,59)   |    320 | {"(14,59)","(14,60)","(14,61)","(14,62)","(14,63)"}
+ (167,16)  |    376 | {"(167,16)","(167,17)","(167,18)","(167,19)","(167,20)"}
+ (170,30)  |    376 | {"(170,30)","(170,31)","(170,32)","(170,33)","(170,34)"}
+ (173,44)  |    197 | {"(173,44)","(173,45)","(173,46)","(173,47)","(173,48)"}
+(7 rows)</PRE
 ><P>
      </P
 ></DD

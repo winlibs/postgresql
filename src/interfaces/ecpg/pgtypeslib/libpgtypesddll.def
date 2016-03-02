@@ -1,4 +1,4 @@
-; DEF file for MS VC++
+; DEF file for win32.mak debug build
 LIBRARY LIBPGTYPESD.dll
 EXPORTS
     PGTYPESdate_dayofweek           @ 1

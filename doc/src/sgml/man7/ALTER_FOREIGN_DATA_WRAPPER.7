@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER FOREIGN DATA WRAPPER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER FOREIGN DATA WRAPPER" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER FOREIGN DATA WRAPPER" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,12 +36,11 @@ ALTER FOREIGN DATA WRAPPER \fIname\fR
     [ HANDLER \fIhandler_function\fR | NO HANDLER ]
     [ VALIDATOR \fIvalidator_function\fR | NO VALIDATOR ]
     [ OPTIONS ( [ ADD | SET | DROP ] \fIoption\fR [\*(Aq\fIvalue\fR\*(Aq] [, \&.\&.\&. ]) ]
-ALTER FOREIGN DATA WRAPPER \fIname\fR OWNER TO \fInew_owner\fR
+ALTER FOREIGN DATA WRAPPER \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
 ALTER FOREIGN DATA WRAPPER \fIname\fR RENAME TO \fInew_name\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER FOREIGN DATA WRAPPER\fR
 changes the definition of a foreign\-data wrapper\&. The first form of the command changes the support functions or the generic options of the foreign\-data wrapper (at least one clause is required)\&. The second form changes the owner of the foreign\-data wrapper\&.
 .PP
@@ -134,7 +133,6 @@ ALTER FOREIGN DATA WRAPPER dbi VALIDATOR bob\&.myvalidator;
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBALTER FOREIGN DATA WRAPPER\fR
 conforms to ISO/IEC 9075\-9 (SQL/MED), except that the
 HANDLER,

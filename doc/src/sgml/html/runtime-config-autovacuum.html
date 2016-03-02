@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -103,8 +103,14 @@ CLASS="FIRSTTERM"
       feature.  Refer to <A
 HREF="routine-vacuuming.html#AUTOVACUUM"
 >Section 23.1.6</A
-> for
-      more information.
+> for more information.
+      Note that many of these settings can be overridden on a per-table
+      basis; see <A
+HREF="sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS"
+><I
+>Storage Parameters</I
+></A
+>.
      </P
 ><P
 ></P
@@ -136,7 +142,8 @@ HREF="runtime-config-statistics.html#GUC-TRACK-COUNTS"
 CLASS="FILENAME"
 >postgresql.conf</TT
 >
-        file or on the server command line.
+        file or on the server command line; however, autovacuuming can be
+        disabled for individual tables by changing table storage parameters.
        </P
 ><P
 >        Note that even when this parameter is disabled, the system
@@ -176,11 +183,13 @@ CLASS="LITERAL"
 >, a message will be
         logged if an autovacuum action is skipped due to the existence of a
         conflicting lock.  Enabling this parameter can be helpful
-        in tracking autovacuum activity.  This setting can only be set in
+        in tracking autovacuum activity.  This parameter can only be set in
         the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
-> file or on the server command line.
+> file or on the server command line;
+        but the setting can be overridden for individual tables by
+        changing table storage parameters.
        </P
 ></DD
 ><DT
@@ -198,7 +207,7 @@ CLASS="TYPE"
 ><DD
 ><P
 >        Specifies the maximum number of autovacuum processes (other than the
-        autovacuum launcher) which may be running at any one time.  The default
+        autovacuum launcher) that may be running at any one time.  The default
         is three.  This parameter can only be set at server start.
        </P
 ></DD
@@ -261,9 +270,9 @@ CLASS="COMMAND"
 CLASS="FILENAME"
 >postgresql.conf</TT
 >
-        file or on the server command line.
-        This setting can be overridden for individual tables by
-        changing storage parameters.
+        file or on the server command line;
+        but the setting can be overridden for individual tables by
+        changing table storage parameters.
        </P
 ></DD
 ><DT
@@ -290,9 +299,9 @@ CLASS="COMMAND"
 CLASS="FILENAME"
 >postgresql.conf</TT
 >
-        file or on the server command line.
-        This setting can be overridden for individual tables by
-        changing storage parameters.
+        file or on the server command line;
+        but the setting can be overridden for individual tables by
+        changing table storage parameters.
        </P
 ></DD
 ><DT
@@ -323,9 +332,9 @@ CLASS="COMMAND"
 CLASS="FILENAME"
 >postgresql.conf</TT
 >
-        file or on the server command line.
-        This setting can be overridden for individual tables by
-        changing storage parameters.
+        file or on the server command line;
+        but the setting can be overridden for individual tables by
+        changing table storage parameters.
        </P
 ></DD
 ><DT
@@ -356,9 +365,9 @@ CLASS="COMMAND"
 CLASS="FILENAME"
 >postgresql.conf</TT
 >
-        file or on the server command line.
-        This setting can be overridden for individual tables by
-        changing storage parameters.
+        file or on the server command line;
+        but the setting can be overridden for individual tables by
+        changing table storage parameters.
        </P
 ></DD
 ><DT
@@ -400,7 +409,7 @@ CLASS="FILENAME"
         is a relatively low 200 million transactions.
         This parameter can only be set at server start, but the setting
         can be reduced for individual tables by
-        changing storage parameters.
+        changing table storage parameters.
         For more information see <A
 HREF="routine-vacuuming.html#VACUUM-FOR-WRAPAROUND"
 >Section 23.1.5</A
@@ -448,8 +457,8 @@ CLASS="FILENAME"
 >
         subdirectories, which is why the default is a relatively low
         400 million multixacts.
-        This parameter can only be set at server start, but the setting
-        can be reduced for individual tables by changing storage parameters.
+        This parameter can only be set at server start, but the setting can
+        be reduced for individual tables by changing table storage parameters.
         For more information see <A
 HREF="routine-vacuuming.html#VACUUM-FOR-MULTIXACT-WRAPAROUND"
 >Section 23.1.5.1</A
@@ -484,9 +493,9 @@ HREF="runtime-config-resource.html#GUC-VACUUM-COST-DELAY"
 CLASS="FILENAME"
 >postgresql.conf</TT
 >
-        file or on the server command line.
-        This setting can be overridden for individual tables by
-        changing storage parameters.
+        file or on the server command line;
+        but the setting can be overridden for individual tables by
+        changing table storage parameters.
        </P
 ></DD
 ><DT
@@ -514,15 +523,15 @@ HREF="runtime-config-resource.html#GUC-VACUUM-COST-LIMIT"
 >vacuum_cost_limit</A
 > value will be used.  Note that
         the value is distributed proportionally among the running autovacuum
-        workers, if there is more than one, so that the sum of the limits of
-        each worker never exceeds the limit on this variable.
+        workers, if there is more than one, so that the sum of the limits for
+        each worker does not exceed the value of this variable.
         This parameter can only be set in the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
 >
-        file or on the server command line.
-        This setting can be overridden for individual tables by
-        changing storage parameters.
+        file or on the server command line;
+        but the setting can be overridden for individual tables by
+        changing table storage parameters.
        </P
 ></DD
 ></DL

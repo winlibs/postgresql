@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
 REL="PREVIOUS"
-TITLE="CREATE TEXT SEARCH TEMPLATE"
-HREF="sql-createtstemplate.html"><LINK
+TITLE="CREATE TRANSFORM"
+HREF="sql-createtransform.html"><LINK
 REL="NEXT"
 TITLE="CREATE TYPE"
 HREF="sql-createtype.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="CREATE TEXT SEARCH TEMPLATE"
-HREF="sql-createtstemplate.html"
+TITLE="CREATE TRANSFORM"
+HREF="sql-createtransform.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-CREATETRIGGER"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN77033"
+NAME="AEN79865"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN77033"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN77036"
+NAME="AEN79868"
 ></A
 ><H2
 >Synopsis</H2
@@ -132,7 +132,7 @@ CLASS="REPLACEABLE"
 >referenced_table_name</I
 ></TT
 > ]
-    [ NOT DEFERRABLE | [ DEFERRABLE ] { INITIALLY IMMEDIATE | INITIALLY DEFERRED } ]
+    [ NOT DEFERRABLE | [ DEFERRABLE ] [ INITIALLY IMMEDIATE | INITIALLY DEFERRED ] ]
     [ FOR [ EACH ] { ROW | STATEMENT } ]
     [ WHEN ( <TT
 CLASS="REPLACEABLE"
@@ -178,7 +178,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77048"
+NAME="AEN79880"
 ></A
 ><H2
 >Description</H2
@@ -265,7 +265,22 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >FOR
    EACH STATEMENT</TT
-> triggers).
+> triggers).  Note that with an
+   <TT
+CLASS="COMMAND"
+>INSERT</TT
+> with an <TT
+CLASS="LITERAL"
+>ON CONFLICT DO UPDATE</TT
+>
+   clause, both <TT
+CLASS="COMMAND"
+>INSERT</TT
+> and
+   <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> statement level trigger will be fired.
   </P
 ><P
 >   Triggers that are specified to fire <TT
@@ -528,7 +543,7 @@ HREF="triggers.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77147"
+NAME="AEN79983"
 ></A
 ><H2
 >Parameters</H2
@@ -1251,7 +1266,7 @@ CLASS="ACRONYM"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77346"
+NAME="AEN80182"
 ></A
 ><H2
 >See Also</H2
@@ -1284,7 +1299,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="sql-createtstemplate.html"
+HREF="sql-createtransform.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -1312,7 +1327,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->CREATE TEXT SEARCH TEMPLATE</TD
+>CREATE TRANSFORM</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="GIN Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 58. GIN Indexes</TD
+>Chapter 61. GIN Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="GIN-TIPS"
->58.5. GIN Tips and Tricks</A
+>61.5. GIN Tips and Tricks</A
 ></H1
 ><P
 ></P
@@ -119,7 +119,7 @@ CLASS="PRODUCTNAME"
 > 8.4, this advice is less
      necessary since delayed indexing is used (see <A
 HREF="gin-implementation.html#GIN-FAST-UPDATE"
->Section 58.4.1</A
+>Section 61.4.1</A
 > for details).  But for very large updates
      it may still be best to drop and recreate the index.
     </P
@@ -144,8 +144,8 @@ CLASS="VARNAME"
 ></DD
 ><DT
 ><A
-HREF="runtime-config-resource.html#GUC-WORK-MEM"
->work_mem</A
+HREF="runtime-config-client.html#GUC-GIN-PENDING-LIST-LIMIT"
+>gin_pending_list_limit</A
 ></DT
 ><DD
 ><P
@@ -155,24 +155,32 @@ CLASS="ACRONYM"
 >
      index that has <TT
 CLASS="LITERAL"
->FASTUPDATE</TT
+>fastupdate</TT
 > enabled, the system will clean up
      the pending-entry list whenever the list grows larger than
      <TT
 CLASS="VARNAME"
->work_mem</TT
->.  To avoid fluctuations in observed response time,
-     it's desirable to have pending-list cleanup occur in the background
-     (i.e., via autovacuum).  Foreground cleanup operations can be avoided by
-     increasing <TT
+>gin_pending_list_limit</TT
+>. To avoid fluctuations in observed
+     response time, it's desirable to have pending-list cleanup occur in the
+     background (i.e., via autovacuum).  Foreground cleanup operations
+     can be avoided by increasing <TT
 CLASS="VARNAME"
->work_mem</TT
-> or making autovacuum more aggressive.
-     However, enlarging <TT
+>gin_pending_list_limit</TT
+>
+     or making autovacuum more aggressive.
+     However, enlarging the threshold of the cleanup operation means that
+     if a foreground cleanup does occur, it will take even longer.
+    </P
+><P
+>     <TT
 CLASS="VARNAME"
->work_mem</TT
-> means that if a foreground
-     cleanup does occur, it will take even longer.
+>gin_pending_list_limit</TT
+> can be overridden for individual
+     GIN indexes by changing storage parameters, and which allows each
+     GIN index to have its own cleanup threshold.
+     For example, it's possible to increase the threshold only for the GIN
+     index which can be updated heavily, and decrease it otherwise.
     </P
 ></DD
 ><DT

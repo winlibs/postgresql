@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="SEPGSQL"
->F.34. sepgsql</A
+>F.33. sepgsql</A
 ></H1
 ><P
 >  <TT
@@ -129,7 +129,7 @@ ALIGN="LEFT"
      enforce mandatory access control for all actions.  See
      <A
 HREF="sepgsql.html#SEPGSQL-LIMITATIONS"
->Section F.34.7</A
+>Section F.33.7</A
 >.
    </P
 ></TD
@@ -142,7 +142,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-OVERVIEW"
->F.34.1. Overview</A
+>F.33.1. Overview</A
 ></H2
 ><P
 >   This module integrates with <SPAN
@@ -203,7 +203,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-INSTALLATION"
->F.34.2. Installation</A
+>F.33.2. Installation</A
 ></H2
 ><P
 >    <TT
@@ -342,7 +342,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-REGRESSION"
->F.34.3. Regression Tests</A
+>F.33.3. Regression Tests</A
 ></H2
 ><P
 >   Due to the nature of <SPAN
@@ -385,7 +385,7 @@ CLASS="FILENAME"
 > in a working database
    according to the instructions in <A
 HREF="sepgsql.html#SEPGSQL-INSTALLATION"
->Section F.34.2</A
+>Section F.33.2</A
 >.
    Note that the current operating system user must be able to connect to the
    database as superuser without password authentication.
@@ -472,7 +472,7 @@ unconfined_u:unconfined_r:unconfined_t:s0-s0:c0.c1023</PRE
 ><P
 >   See <A
 HREF="sepgsql.html#SEPGSQL-RESOURCES"
->Section F.34.8</A
+>Section F.33.8</A
 > for details on adjusting your
    working domain, if necessary.
   </P
@@ -517,7 +517,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-PARAMETERS"
->F.34.4. GUC Parameters</A
+>F.33.4. GUC Parameters</A
 ></H2
 ><P
 ></P
@@ -601,15 +601,15 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-FEATURES"
->F.34.5. Features</A
+>F.33.5. Features</A
 ></H2
 ><DIV
 CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN163711"
->F.34.5.1. Controlled Object Classes</A
+NAME="AEN173242"
+>F.33.5.1. Controlled Object Classes</A
 ></H3
 ><P
 >    The security model of <SPAN
@@ -656,8 +656,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN163720"
->F.34.5.2. DML Permissions</A
+NAME="AEN173251"
+>F.33.5.2. DML Permissions</A
 ></H3
 ><P
 >    For tables, <TT
@@ -827,8 +827,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN163762"
->F.34.5.3. DDL Permissions</A
+NAME="AEN173293"
+>F.33.5.3. DDL Permissions</A
 ></H3
 ><P
 >    <SPAN
@@ -994,8 +994,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN163808"
->F.34.5.4. Trusted Procedures</A
+NAME="AEN173339"
+>F.33.5.4. Trusted Procedures</A
 ></H3
 ><P
 >    Trusted procedures are similar to security definer functions or setuid
@@ -1060,8 +1060,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN163818"
->F.34.5.5. Dynamic Domain Transitions</A
+NAME="AEN173349"
+>F.33.5.5. Dynamic Domain Transitions</A
 ></H3
 ><P
 >    It is possible to use SELinux's dynamic domain transition feature
@@ -1151,8 +1151,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN163833"
->F.34.5.6. Miscellaneous</A
+NAME="AEN173364"
+>F.33.5.6. Miscellaneous</A
 ></H3
 ><P
 >    We reject the <A
@@ -1169,12 +1169,12 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-FUNCTIONS"
->F.34.6. Sepgsql Functions</A
+>F.33.6. Sepgsql Functions</A
 ></H2
 ><P
 >   <A
 HREF="sepgsql.html#SEPGSQL-FUNCTIONS-TABLE"
->Table F-27</A
+>Table F-28</A
 > shows the available functions.
   </P
 ><DIV
@@ -1184,7 +1184,7 @@ NAME="SEPGSQL-FUNCTIONS-TABLE"
 ></A
 ><P
 ><B
->Table F-27. Sepgsql Functions</B
+>Table F-28. Sepgsql Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1260,7 +1260,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-LIMITATIONS"
->F.34.7. Limitations</A
+>F.33.7. Limitations</A
 ></H2
 ><P
 ></P
@@ -1290,11 +1290,11 @@ CLASS="VARIABLELIST"
 >      <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> does not support row-level access; therefore,
+> supports row-level access, but
       <TT
 CLASS="FILENAME"
 >sepgsql</TT
-> does not support it either.
+> does not.
      </P
 ></DD
 ><DT
@@ -1322,7 +1322,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-RESOURCES"
->F.34.8. External Resources</A
+>F.33.8. External Resources</A
 ></H2
 ><P
 ></P
@@ -1382,7 +1382,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SEPGSQL-AUTHOR"
->F.34.9. Author</A
+>F.33.9. Author</A
 ></H2
 ><P
 >   KaiGai Kohei <CODE

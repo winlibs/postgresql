@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SPI_prepare
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "SPI_PREPARE" "3" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "SPI_PREPARE" "3" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,6 @@ SPIPlanPtr SPI_prepare(const char * \fIcommand\fR, int \fInargs\fR, Oid * \fIarg
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBSPI_prepare\fR
 creates and returns a prepared statement for the specified command, but doesn\*(Aqt execute the command\&. The prepared statement can later be executed repeatedly using
 \fBSPI_execute_plan\fR\&.
@@ -78,7 +77,6 @@ OIDs of the data types of the parameters
 .RE
 .SH "RETURN VALUE"
 .PP
-
 \fBSPI_prepare\fR
 returns a non\-null pointer to an
 SPIPlan, which is an opaque struct representing a prepared statement\&. On error,
@@ -126,7 +124,6 @@ for more information about the behavior of prepared statements\&.
 .PP
 This function should only be called from a connected procedure\&.
 .PP
-
 SPIPlanPtr
 is declared as a pointer to an opaque struct type in
 spi\&.h\&. It is unwise to try to access its contents directly, as that makes your code much more likely to break in future revisions of

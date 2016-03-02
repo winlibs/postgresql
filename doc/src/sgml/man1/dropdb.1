@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dropdb
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "DROPDB" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "DROPDB" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,13 +34,11 @@ dropdb \- remove a PostgreSQL database
 \fBdropdb\fR [\fIconnection\-option\fR...] [\fIoption\fR...] \fIdbname\fR
 .SH "DESCRIPTION"
 .PP
-
 dropdb
 destroys an existing
 PostgreSQL
 database\&. The user who executes this command must be a database superuser or the owner of the database\&.
 .PP
-
 dropdb
 is a wrapper around the
 SQL
@@ -48,7 +46,6 @@ command
 DROP DATABASE (\fBDROP_DATABASE\fR(7))\&. There is no effective difference between dropping databases via this utility and via other methods for accessing the server\&.
 .SH "OPTIONS"
 .PP
-
 dropdb
 accepts the following command\-line arguments:
 .PP
@@ -96,7 +93,6 @@ dropdb
 command line arguments, and exit\&.
 .RE
 .PP
-
 dropdb
 also accepts the following command\-line arguments for connection parameters:
 .PP

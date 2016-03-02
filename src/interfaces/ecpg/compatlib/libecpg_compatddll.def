@@ -1,4 +1,4 @@
-; DEF file for MS VC++
+; DEF file for win32.mak debug build
 LIBRARY LIBECPG_COMPATD.dll
 EXPORTS
     ECPG_informix_get_var   @ 1

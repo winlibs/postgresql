@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: PREPARE TRANSACTION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PREPARE TRANSACTION" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PREPARE TRANSACTION" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,7 +36,6 @@ PREPARE TRANSACTION \fItransaction_id\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBPREPARE TRANSACTION\fR
 prepares the current transaction for two\-phase commit\&. After this command, the transaction is no longer associated with the current session; instead, its state is fully stored on disk, and there is a very high probability that it can be committed successfully, even if a database crash occurs before the commit is requested\&.
 .PP
@@ -66,7 +65,6 @@ or
 .RE
 .SH "NOTES"
 .PP
-
 \fBPREPARE TRANSACTION\fR
 is not intended for use in applications or interactive sessions\&. Its purpose is to allow an external transaction manager to perform atomic global transactions across multiple databases or other transactional resources\&. Unless you\*(Aqre writing a transaction manager, you probably shouldn\*(Aqt be using
 \fBPREPARE TRANSACTION\fR\&.
@@ -141,7 +139,6 @@ PREPARE TRANSACTION \*(Aqfoobar\*(Aq;
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBPREPARE TRANSACTION\fR
 is a
 PostgreSQL

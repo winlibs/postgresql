@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE INDEX
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATE INDEX" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATE INDEX" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ CREATE_INDEX \- define a new index
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ \fIname\fR ] ON \fItable_name\fR [ USING \fImethod\fR ]
+CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] \fIname\fR ] ON \fItable_name\fR [ USING \fImethod\fR ]
     ( { \fIcolumn_name\fR | ( \fIexpression\fR ) } [ COLLATE \fIcollation\fR ] [ \fIopclass\fR ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] [, \&.\&.\&.] )
     [ WITH ( \fIstorage_parameter\fR = \fIvalue\fR [, \&.\&.\&. ] ) ]
     [ TABLESPACE \fItablespace_name\fR ]
@@ -40,7 +40,6 @@ CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ \fIname\fR ] ON \fItable_name\fR [ US
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCREATE INDEX\fR
 constructs an index on the specified column(s) of the specified relation, which can be a table or a materialized view\&. Indexes are primarily used to enhance database performance (though inappropriate use can result in slower performance)\&.
 .PP
@@ -52,9 +51,8 @@ would allow the clause
 WHERE upper(col) = \*(AqJIM\*(Aq
 to use an index\&.
 .PP
-
 PostgreSQL
-provides the index methods B\-tree, hash, GiST, SP\-GiST, and GIN\&. Users can also define their own index methods, but that is fairly complicated\&.
+provides the index methods B\-tree, hash, GiST, SP\-GiST, GIN, and BRIN\&. Users can also define their own index methods, but that is fairly complicated\&.
 .PP
 When the
 WHERE
@@ -92,6 +90,13 @@ will build the index without taking any locks that prevent concurrent inserts, u
 Building Indexes Concurrently\&.
 .RE
 .PP
+IF NOT EXISTS
+.RS 4
+Do not throw an error if a relation with the same name already exists\&. A notice is issued in this case\&. Note that there is no guarantee that the existing index is anything like the one that would have been created\&. Index name is required when
+IF NOT EXISTS
+is specified\&.
+.RE
+.PP
 \fIname\fR
 .RS 4
 The name of the index to be created\&. No schema name can be included here; the index is always created in the same schema as its parent table\&. If the name is omitted,
@@ -110,9 +115,9 @@ The name of the index method to be used\&. Choices are
 btree,
 hash,
 gist,
-spgist
-and
-gin\&. The default method is
+spgist,
+gin, and
+brin\&. The default method is
 btree\&.
 .RE
 .PP
@@ -188,17 +193,17 @@ clause specifies
 storage parameters
 for the index\&. Each index method has its own set of allowed storage parameters\&. The B\-tree, hash, GiST and SP\-GiST index methods all accept this parameter:
 .PP
-FILLFACTOR
+fillfactor
 .RS 4
 The fillfactor for an index is a percentage that determines how full the index method will try to pack index pages\&. For B\-trees, leaf pages are filled to this percentage during initial index build, and also when extending the index at the right (adding new largest key values)\&. If pages subsequently become completely full, they will be split, leading to gradual degradation in the index\*(Aqs efficiency\&. B\-trees use a default fillfactor of 90, but any integer value from 10 to 100 can be selected\&. If the table is static then fillfactor 100 is best to minimize the index\*(Aqs physical size, but for heavily updated tables a smaller fillfactor is better to minimize the need for page splits\&. The other index methods use fillfactor in different but roughly analogous ways; the default fillfactor varies between methods\&.
 .RE
 .PP
 GiST indexes additionally accept this parameter:
 .PP
-BUFFERING
+buffering
 .RS 4
 Determines whether the buffering build technique described in
-Section 56.4.1, \(lqGiST buffering build\(rq, in the documentation
+Section 59.4.1, \(lqGiST buffering build\(rq, in the documentation
 is used to build the index\&. With
 OFF
 it is disabled, with
@@ -210,12 +215,12 @@ effective_cache_size\&. The default is
 AUTO\&.
 .RE
 .PP
-GIN indexes accept a different parameter:
+GIN indexes accept different parameters:
 .PP
-FASTUPDATE
+fastupdate
 .RS 4
 This setting controls usage of the fast update technique described in
-Section 58.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation\&. It is a Boolean parameter:
+Section 61.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation\&. It is a Boolean parameter:
 ON
 enables fast update,
 OFF
@@ -239,7 +244,7 @@ ON\&.
 .ps -1
 .br
 Turning
-FASTUPDATE
+fastupdate
 off via
 \fBALTER INDEX\fR
 prevents future insertions from going into the list of pending index entries, but does not in itself flush previous entries\&. You might want to
@@ -248,13 +253,32 @@ the table afterward to ensure the pending list is emptied\&.
 .sp .5v
 .RE
 .RE
+.PP
+gin_pending_list_limit
+.RS 4
+Custom
+gin_pending_list_limit
+parameter\&. This value is specified in kilobytes\&.
+.RE
+.PP
+BRIN
+indexes accept a different parameter:
+.PP
+pages_per_range
+.RS 4
+Defines the number of table blocks that make up one block range for each entry of a
+BRIN
+index (see
+Section 62.1, \(lqIntroduction\(rq, in the documentation
+for more details)\&. The default is
+128\&.
+.RE
 .SS "Building Indexes Concurrently"
 .PP
 Creating an index can interfere with regular operation of a database\&. Normally
 PostgreSQL
 locks the table to be indexed against writes and performs the entire index build with a single scan of the table\&. Other transactions can still read the table, but if they try to insert, update, or delete rows in the table they will block until the index build is finished\&. This could have a severe effect if the system is a live production database\&. Very large tables can take many hours to be indexed, and even for smaller tables, an index build can lock out writers for periods that are unacceptably long for a production system\&.
 .PP
-
 PostgreSQL
 supports building indexes without locking out writes\&. This method is invoked by specifying the
 CONCURRENTLY
@@ -264,15 +288,14 @@ PostgreSQL
 must perform two scans of the table, and in addition it must wait for all existing transactions that could potentially use the index to terminate\&. Thus this method requires more total work than a standard index build and takes significantly longer to complete\&. However, since it allows normal operations to continue while the index is built, this method is useful for adding new indexes in a production environment\&. Of course, the extra CPU and I/O load imposed by the index creation might slow other operations\&.
 .PP
 In a concurrent index build, the index is actually entered into the system catalogs in one transaction, then two table scans occur in two more transactions\&. Any transaction active when the second table scan starts can block concurrent index creation until it completes, even transactions that only reference the table after the second table scan starts\&. Concurrent index creation serially waits for each old transaction to complete using the method outlined in section
-Section 48.60, \(lqpg_locks\(rq, in the documentation\&.
+Section 49.65, \(lqpg_locks\(rq, in the documentation\&.
 .PP
 If a problem arises while scanning the table, such as a deadlock or a uniqueness violation in a unique index, the
 \fBCREATE INDEX\fR
 command will fail but leave behind an
 \(lqinvalid\(rq
 index\&. This index will be ignored for querying purposes because it might be incomplete; however it will still consume update overhead\&. The
-psql
-\fB\ed\fR
+psql\fB\ed\fR
 command will report such an index as
 INVALID:
 .sp
@@ -329,11 +352,11 @@ for information about when indexes can be used, when they are not used, and in w
 .PP
 Hash index operations are not presently WAL\-logged, so hash indexes might need to be rebuilt with
 \fBREINDEX\fR
-after a database crash if there were unwritten changes\&. Also, changes to hash indexes are not replicated over streaming or file\-based replication after the initial base backup, so they give wrong answers to queries that subsequently use them\&. For these reasons, hash index use is presently discouraged\&.
+after a database crash if there were unwritten changes\&. Also, changes to hash indexes are not replicated over streaming or file\-based replication after the initial base backup, so they give wrong answers to queries that subsequently use them\&. Hash indexes are also not properly restored during point\-in\-time recovery\&. For these reasons, hash index use is presently discouraged\&.
 .sp .5v
 .RE
 .PP
-Currently, only the B\-tree, GiST and GIN index methods support multicolumn indexes\&. Up to 32 fields can be specified by default\&. (This limit can be altered when building
+Currently, only the B\-tree, GiST, GIN, and BRIN index methods support multicolumn indexes\&. Up to 32 fields can be specified by default\&. (This limit can be altered when building
 PostgreSQL\&.) Only B\-tree currently supports unique indexes\&.
 .PP
 An
@@ -461,7 +484,7 @@ index with fast updates disabled:
 .RS 4
 .\}
 .nf
-CREATE INDEX gin_idx ON documents_table USING gin (locations) WITH (fastupdate = off);
+CREATE INDEX gin_idx ON documents_table USING GIN (locations) WITH (fastupdate = off);
 .fi
 .if n \{\
 .RE
@@ -512,7 +535,6 @@ CREATE INDEX CONCURRENTLY sales_quantity_index ON sales_table (quantity);
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBCREATE INDEX\fR
 is a
 PostgreSQL

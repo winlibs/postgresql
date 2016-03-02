@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -118,6 +118,11 @@ HREF="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE"
    <A
 HREF="functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE"
 >Table 9-52</A
+>.  Grouping operations,
+   which are closely related to aggregate functions, are listed in
+   <A
+HREF="functions-aggregate.html#FUNCTIONS-GROUPING-TABLE"
+>Table 9-53</A
 >.
    The special syntax considerations for aggregate
    functions are explained in <A
@@ -169,13 +174,36 @@ CLASS="REPLACEABLE"
 >
       </TD
 ><TD
->       any
+>       any non-array type
       </TD
 ><TD
 >       array of the argument type
       </TD
 ><TD
 >input values, including nulls, concatenated into an array</TD
+></TR
+><TR
+><TD
+>       <CODE
+CLASS="FUNCTION"
+>array_agg(<TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       any array type
+      </TD
+><TD
+>       same as argument data type
+      </TD
+><TD
+>input arrays concatenated into array of one higher dimension
+       (inputs must all have same dimensionality,
+        and cannot be empty or NULL)</TD
 ></TR
 ><TR
 ><TD
@@ -466,6 +494,34 @@ CLASS="TYPE"
 >       
        <CODE
 CLASS="FUNCTION"
+>jsonb_agg(<TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>any</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>jsonb</TT
+>
+      </TD
+><TD
+>aggregates values as a JSON array</TD
+></TR
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
 >json_object_agg(<TT
 CLASS="REPLACEABLE"
 ><I
@@ -499,6 +555,39 @@ CLASS="TYPE"
 >       
        <CODE
 CLASS="FUNCTION"
+>jsonb_object_agg(<TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>value</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>(any, any)</TT
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>jsonb</TT
+>
+      </TD
+><TD
+>aggregates name/value pairs as a JSON object</TD
+></TR
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
 >max(<TT
 CLASS="REPLACEABLE"
 ><I
@@ -508,7 +597,8 @@ CLASS="REPLACEABLE"
 >
       </TD
 ><TD
->any array, numeric, string, or date/time type</TD
+>any numeric, string, date/time, network, or enum type,
+             or arrays of these types</TD
 ><TD
 >same as argument type</TD
 ><TD
@@ -535,7 +625,8 @@ CLASS="REPLACEABLE"
 >
       </TD
 ><TD
->any array, numeric, string, or date/time type</TD
+>any numeric, string, date/time, network, or enum type,
+             or arrays of these types</TD
 ><TD
 >same as argument type</TD
 ><TD
@@ -800,10 +891,16 @@ CLASS="FUNCTION"
    <CODE
 CLASS="FUNCTION"
 >json_agg</CODE
+>, <CODE
+CLASS="FUNCTION"
+>jsonb_agg</CODE
 >,
    <CODE
 CLASS="FUNCTION"
 >json_object_agg</CODE
+>, <CODE
+CLASS="FUNCTION"
+>jsonb_object_agg</CODE
 >,
    <CODE
 CLASS="FUNCTION"
@@ -2236,6 +2333,110 @@ CLASS="LITERAL"
 >ORDER BY</TT
 > clause.
   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-GROUPING-TABLE"
+></A
+><P
+><B
+>Table 9-53. Grouping Operations</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Function</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>       
+       <CODE
+CLASS="FUNCTION"
+>GROUPING(<TT
+CLASS="REPLACEABLE"
+><I
+>args...</I
+></TT
+>)</CODE
+>
+      </TD
+><TD
+>       <TT
+CLASS="TYPE"
+>integer</TT
+>
+      </TD
+><TD
+>       Integer bit mask indicating which arguments are not being included in the current
+       grouping set
+      </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    Grouping operations are used in conjunction with grouping sets (see
+    <A
+HREF="queries-table-expressions.html#QUERIES-GROUPING-SETS"
+>Section 7.2.4</A
+>) to distinguish result rows.  The
+    arguments to the <TT
+CLASS="LITERAL"
+>GROUPING</TT
+> operation are not actually evaluated,
+    but they must match exactly expressions given in the <TT
+CLASS="LITERAL"
+>GROUP BY</TT
+>
+    clause of the associated query level.  Bits are assigned with the rightmost
+    argument being the least-significant bit; each bit is 0 if the corresponding
+    expression is included in the grouping criteria of the grouping set generating
+    the result row, and 1 if it is not.  For example:
+</P><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>=&gt;</SAMP
+> <KBD
+CLASS="USERINPUT"
+>SELECT * FROM items_sold;</KBD
+>
+ make  | model | sales
+-------+-------+-------
+ Foo   | GT    |  10
+ Foo   | Tour  |  20
+ Bar   | City  |  15
+ Bar   | Sport |  5
+(4 rows)
+
+<SAMP
+CLASS="PROMPT"
+>=&gt;</SAMP
+> <KBD
+CLASS="USERINPUT"
+>SELECT make, model, GROUPING(make,model), sum(sales) FROM items_sold GROUP BY ROLLUP(make,model);</KBD
+>
+ make  | model | grouping | sum
+-------+-------+----------+-----
+ Foo   | GT    |        0 | 10
+ Foo   | Tour  |        0 | 20
+ Bar   | City  |        0 | 15
+ Bar   | Sport |        0 | 5
+ Foo   |       |        1 | 30
+ Bar   |       |        1 | 20
+       |       |        3 | 50
+(7 rows)</PRE
+><P>
+   </P
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

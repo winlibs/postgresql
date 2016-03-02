@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_standby
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PG_STANDBY" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PG_STANDBY" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,13 +34,11 @@ pg_standby \- supports the creation of a PostgreSQL warm standby server
 \fBpg_standby\fR [\fIoption\fR...] \fIarchivelocation\fR \fInextwalfile\fR \fIxlogfilepath\fR [\fIrestartwalfile\fR]
 .SH "DESCRIPTION"
 .PP
-
 pg_standby
 supports creation of a
 \(lqwarm standby\(rq
 database server\&. It is designed to be a production\-ready program, as well as a customizable template should you require specific modifications\&.
 .PP
-
 pg_standby
 is designed to be a waiting
 \fIrestore_command\fR, which is needed to turn a standard archive recovery into a warm standby operation\&. Other configuration is required as well, all of which is described in the main server manual (see
@@ -78,7 +76,6 @@ when the
 \fIarchivelocation\fR
 is intended as a long\-term WAL archive area\&.
 .PP
-
 pg_standby
 assumes that
 \fIarchivelocation\fR
@@ -109,7 +106,6 @@ can also be configured to execute a fast failover automatically if no new WAL fi
 .RE
 .SH "OPTIONS"
 .PP
-
 pg_standby
 accepts the following command\-line arguments:
 .PP
@@ -192,13 +188,11 @@ command line arguments, and exit\&.
 .RE
 .SH "NOTES"
 .PP
-
 pg_standby
 is designed to work with
 PostgreSQL
 8\&.2 and later\&.
 .PP
-
 PostgreSQL
 8\&.3 provides the
 %r
@@ -210,13 +204,11 @@ PostgreSQL
 \-k
 option must be used if archive cleanup is required\&. This option remains available in 8\&.3, but its use is deprecated\&.
 .PP
-
 PostgreSQL
 8\&.4 provides the
 \fIrecovery_end_command\fR
 option\&. Without this option a leftover trigger file can be hazardous\&.
 .PP
-
 pg_standby
 is written in C and has an easy\-to\-modify source code, with specifically designated sections to modify for your own needs
 .SH "EXAMPLES"

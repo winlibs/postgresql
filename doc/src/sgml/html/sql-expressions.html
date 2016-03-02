@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Syntax"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1757,7 +1757,7 @@ CLASS="LITERAL"
 ><P
 >    The built-in window functions are described in <A
 HREF="functions-window.html#FUNCTIONS-WINDOW-TABLE"
->Table 9-53</A
+>Table 9-54</A
 >.  Other window functions can be added by
     the user.  Also, any built-in or user-defined normal aggregate function
     can be used as a window function.  Ordered-set aggregates presently
@@ -1809,7 +1809,7 @@ HREF="functions-window.html"
 >, and
     <A
 HREF="queries-table-expressions.html#QUERIES-WINDOW"
->Section 7.2.4</A
+>Section 7.2.5</A
 >.
    </P
 ></DIV
@@ -2258,12 +2258,23 @@ CLASS="PROGRAMLISTING"
                                  array
 -----------------------------------------------------------------------
  {2011,1954,1948,1952,1951,1244,1950,2005,1949,1953,2006,31,2412,2413}
+(1 row)
+
+SELECT ARRAY(SELECT ARRAY[i, i*2] FROM generate_series(1,5) AS a(i));
+              array
+----------------------------------
+ {{1,2},{2,4},{3,6},{4,8},{5,10}}
 (1 row)</PRE
 ><P>
-   The subquery must return a single column. The resulting
+   The subquery must return a single column.
+   If the subquery's output column is of a non-array type, the resulting
    one-dimensional array will have an element for each row in the
    subquery result, with an element type matching that of the
    subquery's output column.
+   If the subquery's output column is of an array type, the result will be
+   an array of the same type but one higher dimension; in this case all
+   the subquery rows must yield arrays of identical dimensionality, else
+   the result would not be rectangular.
   </P
 ><P
 >   The subscripts of an array value built with <TT

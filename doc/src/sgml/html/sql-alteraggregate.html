@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERAGGREGATE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN66758"
+NAME="AEN68806"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN66758"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN66761"
+NAME="AEN68809"
 ></A
 ><H2
 >Synopsis</H2
@@ -135,12 +135,13 @@ CLASS="REPLACEABLE"
 ><I
 >aggregate_signature</I
 ></TT
-> ) OWNER TO <TT
+> )
+                OWNER TO { <TT
 CLASS="REPLACEABLE"
 ><I
 >new_owner</I
 ></TT
->
+> | CURRENT_USER | SESSION_USER }
 ALTER AGGREGATE <TT
 CLASS="REPLACEABLE"
 ><I
@@ -223,7 +224,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66783"
+NAME="AEN68831"
 ></A
 ><H2
 >Description</H2
@@ -258,7 +259,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66791"
+NAME="AEN68839"
 ></A
 ><H2
 >Parameters</H2
@@ -384,7 +385,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66835"
+NAME="AEN68883"
 ></A
 ><H2
 >Notes</H2
@@ -417,7 +418,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66843"
+NAME="AEN68891"
 ></A
 ><H2
 >Examples</H2
@@ -485,7 +486,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66862"
+NAME="AEN68910"
 ></A
 ><H2
 >Compatibility</H2
@@ -500,7 +501,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN66866"
+NAME="AEN68914"
 ></A
 ><H2
 >See Also</H2

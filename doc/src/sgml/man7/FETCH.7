@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: FETCH
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "FETCH" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "FETCH" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -53,7 +53,6 @@ where \fIdirection\fR can be empty or one of:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBFETCH\fR
 retrieves rows using a previously\-created cursor\&.
 .PP
@@ -83,7 +82,6 @@ retrieve the indicated number of rows moving in the forward or backward directio
 \fIcount\fR
 exceeds the number of rows available)\&.
 .PP
-
 RELATIVE 0,
 FORWARD 0, and
 BACKWARD 0
@@ -274,12 +272,10 @@ will allow backwards fetch from cursors not declared with
 SCROLL, but this behavior is best not relied on\&. If the cursor is declared with
 NO SCROLL, no backward fetches are allowed\&.
 .PP
-
 ABSOLUTE
 fetches are not any faster than navigating to the desired row with a relative move: the underlying implementation must traverse all the intermediate rows anyway\&. Negative absolute fetches are even worse: the query must be read to the end to find the last row, and then traversed backward from there\&. However, rewinding to the start of the query (as with
 FETCH ABSOLUTE 0) is fast\&.
 .PP
-
 \fBDECLARE\fR(7)
 is used to define a cursor\&. Use
 \fBMOVE\fR(7)

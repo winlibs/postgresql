@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 48. System Catalogs</TD
+>Chapter 49. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,12 +93,12 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOGS-OVERVIEW"
->48.1. Overview</A
+>49.1. Overview</A
 ></H1
 ><P
 >   <A
 HREF="catalogs-overview.html#CATALOG-TABLE"
->Table 48-1</A
+>Table 49-1</A
 > lists the system catalogs.
    More detailed documentation of each catalog follows below.
   </P
@@ -115,7 +115,7 @@ NAME="CATALOG-TABLE"
 ></A
 ><P
 ><B
->Table 48-1. System Catalogs</B
+>Table 49-1. System Catalogs</B
 ></P
 ><TABLE
 BORDER="1"
@@ -546,6 +546,18 @@ CLASS="STRUCTNAME"
 ><TR
 ><TD
 ><A
+HREF="catalog-pg-policy.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_policy</TT
+></A
+></TD
+><TD
+>row-security policies</TD
+></TR
+><TR
+><TD
+><A
 HREF="catalog-pg-proc.html"
 ><TT
 CLASS="STRUCTNAME"
@@ -578,6 +590,30 @@ CLASS="STRUCTNAME"
 ></TD
 ><TD
 >query rewrite rules</TD
+></TR
+><TR
+><TD
+><A
+HREF="catalog-pg-replication-origin.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_replication_origin</TT
+></A
+></TD
+><TD
+>registered replication origins</TD
+></TR
+><TR
+><TD
+><A
+HREF="catalog-pg-replication-origin-status.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_replication_origin_status</TT
+></A
+></TD
+><TD
+>information about replication origins, including replication progress</TD
 ></TR
 ><TR
 ><TD
@@ -662,6 +698,18 @@ CLASS="STRUCTNAME"
 ></TD
 ><TD
 >tablespaces within this database cluster</TD
+></TR
+><TR
+><TD
+><A
+HREF="catalog-pg-transform.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_transform</TT
+></A
+></TD
+><TD
+>transforms (data type to procedural language conversions)</TD
 ></TR
 ><TR
 ><TD

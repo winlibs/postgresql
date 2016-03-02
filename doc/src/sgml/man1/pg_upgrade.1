@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_upgrade
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PG_UPGRADE" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PG_UPGRADE" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,6 @@ pg_upgrade \- upgrade a PostgreSQL server instance
 \fBpg_upgrade\fR \fB\-b\fR \fIoldbindir\fR \fB\-B\fR \fInewbindir\fR \fB\-d\fR \fIolddatadir\fR \fB\-D\fR \fInewdatadir\fR [\fIoption\fR...]
 .SH "DESCRIPTION"
 .PP
-
 pg_upgrade
 (formerly called
 pg_migrator) allows data stored in
@@ -50,16 +49,14 @@ uses this fact to perform rapid upgrades by creating new system tables and simpl
 pg_upgrade
 will not be usable for such upgrades\&. (The community will attempt to avoid such situations\&.)
 .PP
-
 pg_upgrade
 does its best to make sure the old and new clusters are binary\-compatible, e\&.g\&. by checking for compatible compile\-time settings, including 32/64\-bit binaries\&. It is important that any external modules are also binary compatible, though this cannot be checked by
 pg_upgrade\&.
 .PP
-pg_upgrade supports upgrades from 8\&.3\&.X and later to the current major release of
+pg_upgrade supports upgrades from 8\&.4\&.X and later to the current major release of
 PostgreSQL, including snapshot and alpha releases\&.
 .SH "OPTIONS"
 .PP
-
 pg_upgrade
 accepts the following command\-line arguments:
 .PP
@@ -122,7 +119,7 @@ use hard links instead of copying files to the new cluster (use junction points 
 .RS 4
 options to be passed directly to the old
 \fBpostgres\fR
-command
+command; multiple option invocations are appended
 .RE
 .PP
 \fB\-O\fR \fIoptions\fR
@@ -131,7 +128,7 @@ command
 .RS 4
 options to be passed directly to the new
 \fBpostgres\fR
-command
+command; multiple option invocations are appended
 .RE
 .PP
 \fB\-p\fR \fIport\fR
@@ -161,7 +158,7 @@ retain SQL and log files even after successful completion
 .br
 \fB\-\-username=\fR\fIusername\fR
 .RS 4
-cluster\*(Aqs super user name; environment variable
+cluster\*(Aqs install user name; environment variable
 \fBPGUSER\fR
 .RE
 .PP
@@ -248,6 +245,8 @@ to make sure all settings are compatible before starting the upgrade\&.
 .IP "  3." 4.2
 .\}
 Install the new PostgreSQL binaries: Install the new server\*(Aqs binaries and support files\&.
+pg_upgrade
+is included in a default installation\&.
 .sp
 For source installs, if you wish to install the new server in a custom location, use the
 prefix
@@ -272,11 +271,10 @@ make prefix=/usr/local/pgsql\&.new install
 .sp -1
 .IP "  4." 4.2
 .\}
-Install pg_upgrade and pg_upgrade_support: Install the
-pg_upgrade
-binary and
-pg_upgrade_support
-library in the new PostgreSQL installation\&.
+Initialize the new PostgreSQL cluster: Initialize the new cluster using
+\fBinitdb\fR\&. Again, use compatible
+\fBinitdb\fR
+flags that match the old cluster\&. Many prebuilt installers do this step automatically\&. There is no need to start the new cluster\&.
 .RE
 .sp
 .RS 4
@@ -287,10 +285,11 @@ library in the new PostgreSQL installation\&.
 .sp -1
 .IP "  5." 4.2
 .\}
-Initialize the new PostgreSQL cluster: Initialize the new cluster using
-\fBinitdb\fR\&. Again, use compatible
-\fBinitdb\fR
-flags that match the old cluster\&. Many prebuilt installers do this step automatically\&. There is no need to start the new cluster\&.
+Install custom shared object files: Install any custom shared object files (or DLLs) used by the old cluster into the new cluster, e\&.g\&.
+pgcrypto\&.so, whether they are from
+contrib
+or some other source\&. Do not install the schema definitions, e\&.g\&.
+pgcrypto\&.sql, because these will be upgraded from the old cluster\&. Also, any custom full text search files (dictionary, synonym, thesaurus, stop words) must also be copied to the new cluster\&.
 .RE
 .sp
 .RS 4
@@ -301,23 +300,7 @@ flags that match the old cluster\&. Many prebuilt installers do this step automa
 .sp -1
 .IP "  6." 4.2
 .\}
-Install custom shared object files: Install any custom shared object files (or DLLs) used by the old cluster into the new cluster, e\&.g\&.
-pgcrypto\&.so, whether they are from
-contrib
-or some other source\&. Do not install the schema definitions, e\&.g\&.
-pgcrypto\&.sql, because these will be upgraded from the old cluster\&. Also, any custom full text search files (dictionary, synonym, thesaurus, stop words) must also be copied to the new cluster\&.
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04' 7.\h'+01'\c
-.\}
-.el \{\
-.sp -1
-.IP "  7." 4.2
-.\}
-Adjust authentication: 
-\fBpg_upgrade\fR
+Adjust authentication: \fBpg_upgrade\fR
 will connect to the old and new servers several times, so you might want to set authentication to
 peer
 in
@@ -330,11 +313,11 @@ Section 31.15, \(lqThe Password File\(rq, in the documentation)\&.
 .sp
 .RS 4
 .ie n \{\
-\h'-04' 8.\h'+01'\c
+\h'-04' 7.\h'+01'\c
 .\}
 .el \{\
 .sp -1
-.IP "  8." 4.2
+.IP "  7." 4.2
 .\}
 Stop both servers: Make sure both database servers are stopped using, on Unix, e\&.g\&.:
 .sp
@@ -362,17 +345,22 @@ NET STOP postgresql\-9\&.0
 .RE
 .\}
 .sp
-or
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-NET STOP pgsql\-8\&.3  (PostgreSQL 8\&.3 and older used a different service name)
-.fi
-.if n \{\
+Streaming replication and log\-shipping standby servers can remain running until a later step\&.
 .RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 8.\h'+01'\c
 .\}
+.el \{\
+.sp -1
+.IP "  8." 4.2
+.\}
+Verify standby servers: If you are upgrading Streaming Replication and Log\-Shipping standby servers, verify that the old standby servers are caught up by running
+pg_controldata
+against the old primary and standby clusters\&. Verify that the
+\(lqLatest checkpoint location\(rq
+values match in all clusters\&. (There will be a mismatch if old standby servers were shut down before the old primary\&.)
 .RE
 .sp
 .RS 4
@@ -453,10 +441,14 @@ defaults to running servers on port 50432 to avoid unintended client connections
 If an error occurs while restoring the database schema,
 \fBpg_upgrade\fR
 will exit and you will have to revert to the old cluster as outlined in
-Step 14
+Step 16
 below\&. To try
 \fBpg_upgrade\fR
-again, you will need to modify the old cluster so the pg_upgrade schema restore succeeds\&. If the problem is a contrib module, you might need to uninstall the contrib module from the old cluster and install it in the new cluster after the upgrade, assuming the module is not being used to store user data\&.
+again, you will need to modify the old cluster so the pg_upgrade schema restore succeeds\&. If the problem is a
+contrib
+module, you might need to uninstall the
+contrib
+module from the old cluster and install it in the new cluster after the upgrade, assuming the module is not being used to store user data\&.
 .RE
 .sp
 .RS 4
@@ -467,9 +459,75 @@ again, you will need to modify the old cluster so the pg_upgrade schema restore 
 .sp -1
 .IP "  10." 4.2
 .\}
-Restore pg_hba\&.conf: If you modified
-pg_hba\&.conf, restore its original settings\&. It might also be necessary to adjust other configuration files in the new cluster to match the old cluster, e\&.g\&.
-postgresql\&.conf\&.
+Upgrade Streaming Replication and Log\-Shipping standby
+    servers: If you have Streaming Replication (see
+Section 25.2.5, \(lqStreaming Replication\(rq, in the documentation) or Log\-Shipping (see
+Section 25.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation) standby servers, follow these steps to upgrade them\&. You will not be running
+pg_upgrade
+on the standby servers, but rather
+rsync\&. Do not start any servers yet\&.
+Install the new PostgreSQL binaries on standby servers: Make sure the new binaries and support files are installed on all standby servers\&.
+Make sure the new standby data directories do \fInot\fR
+      exist: Make sure the new standby data directories do
+\fInot\fR
+exist or are empty\&. If
+initdb
+was run, delete the standby server data directories\&.
+Install custom shared object files: Install the same custom shared object files on the new standbys that you installed in the new master cluster\&.
+Stop standby servers: If the standby servers are still running, stop them now using the above instructions\&.
+Save configuration files: Save any configuration files from the standbys you need to keep, e\&.g\&.
+postgresql\&.conf,
+recovery\&.conf, as these will be overwritten or removed in the next step\&.
+Start and stop the new master cluster: In the new master cluster, change
+\fIwal_level\fR
+to
+hot_standby
+in the
+postgresql\&.conf
+file and then start and stop the cluster\&.
+Run rsync: From a directory that is above the old and new database cluster directories, run this for each slave:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+rsync \-\-archive \-\-delete \-\-hard\-links \-\-size\-only old_pgdata new_pgdata remote_dir
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+where
+\fBold_pgdata\fR
+and
+\fBnew_pgdata\fR
+are relative to the current directory, and
+\fBremote_dir\fR
+is
+\fIabove\fR
+the old and new cluster directories on the standby server\&. The old and new relative cluster paths must match on the master and standby server\&. Consult the
+rsync
+manual page for details on specifying the remote directory, e\&.g\&.
+standbyhost:/opt/PostgreSQL/\&.
+rsync
+will be fast when
+pg_upgrade\*(Aqs
+\fB\-\-link\fR
+mode is used because it will create hard links on the remote server rather than transferring user data\&.
+.sp
+If you have tablespaces, you will need to run a similar
+rsync
+command for each tablespace directory\&. If you have relocated
+pg_xlog
+outside the data directories,
+rsync
+must be run on those directories too\&.
+Configure streaming replication and log\-shipping standby
+      servers: Configure the servers for log shipping\&. (You do not need to run
+\fBpg_start_backup()\fR
+and
+\fBpg_stop_backup()\fR
+or take a file system backup as the slaves are still synchronized with the master\&.)
 .RE
 .sp
 .RS 4
@@ -479,6 +537,31 @@ postgresql\&.conf\&.
 .el \{\
 .sp -1
 .IP "  11." 4.2
+.\}
+Restore pg_hba\&.conf: If you modified
+pg_hba\&.conf, restore its original settings\&. It might also be necessary to adjust other configuration files in the new cluster to match the old cluster, e\&.g\&.
+postgresql\&.conf\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 12.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  12." 4.2
+.\}
+Start the new server: The new server can now be safely started, and then any
+rsync\*(Aqed standby servers\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04' 13.\h'+01'\c
+.\}
+.el \{\
+.sp -1
+.IP "  13." 4.2
 .\}
 Post\-Upgrade processing: If any post\-upgrade processing is required, pg_upgrade will issue warnings as it completes\&. It will also generate script files that must be run by the administrator\&. The script files will connect to each database that needs post\-upgrade processing\&. Each script should be run using:
 .sp
@@ -512,11 +595,11 @@ In general it is unsafe to access tables referenced in rebuild scripts until the
 .sp
 .RS 4
 .ie n \{\
-\h'-04' 12.\h'+01'\c
+\h'-04' 14.\h'+01'\c
 .\}
 .el \{\
 .sp -1
-.IP "  12." 4.2
+.IP "  14." 4.2
 .\}
 Statistics: Because optimizer statistics are not transferred by
 \fBpg_upgrade\fR, you will be instructed to run a command to regenerate that information at the end of the upgrade\&. You might need to set connection parameters to match your new cluster\&.
@@ -524,11 +607,11 @@ Statistics: Because optimizer statistics are not transferred by
 .sp
 .RS 4
 .ie n \{\
-\h'-04' 13.\h'+01'\c
+\h'-04' 15.\h'+01'\c
 .\}
 .el \{\
 .sp -1
-.IP "  13." 4.2
+.IP "  15." 4.2
 .\}
 Delete old cluster: Once you are satisfied with the upgrade, you can delete the old cluster\*(Aqs data directories by running the script mentioned when
 \fBpg_upgrade\fR
@@ -539,11 +622,11 @@ share)\&.
 .sp
 .RS 4
 .ie n \{\
-\h'-04' 14.\h'+01'\c
+\h'-04' 16.\h'+01'\c
 .\}
 .el \{\
 .sp -1
-.IP "  14." 4.2
+.IP "  16." 4.2
 .\}
 Reverting to old cluster: If, after running
 \fBpg_upgrade\fR, you wish to revert to the old cluster, there are several options:
@@ -585,9 +668,7 @@ with
 .IP \(bu 2.3
 .\}
 If you ran
-\fBpg_upgrade\fR
-\fIwithout\fR
-\fB\-\-link\fR
+\fBpg_upgrade\fR\fIwithout\fR\fB\-\-link\fR
 or did not start the new server, the old cluster was not modified except that, if linking started, a
 \&.old
 suffix was appended to
@@ -600,7 +681,6 @@ $PGDATA/global/pg_control; you can then restart the old cluster\&.
 .RE
 .SH "NOTES"
 .PP
-
 pg_upgrade
 does not support upgrading of databases containing these
 reg*
@@ -628,101 +708,15 @@ If using a pre\-9\&.1 old server that is using a non\-default Unix\-domain socke
 \fBPGHOST\fR
 to point to the old server\*(Aqs socket location\&. (This is not relevant on Windows\&.)
 .PP
-A Log\-Shipping Standby Server (Section 25.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation) cannot be upgraded because the server must allow writes\&. The simplest way is to upgrade the primary and use
-\fBrsync\fR
-to rebuild the standbys\&. You can run
-\fBrsync\fR
-while the primary is down, or as part of a base backup (Section 24.3.2, \(lqMaking a Base Backup\(rq, in the documentation) which overwrites the old standby cluster\&.
-.PP
 If you want to use link mode and you do not want your old cluster to be modified when the new cluster is started, make a copy of the old cluster and upgrade that in link mode\&. To make a valid copy of the old cluster, use
 \fBrsync\fR
 to create a dirty copy of the old cluster while the server is running, then shut down the old server and run
+\fBrsync \-\-checksum\fR
+again to update the copy with any changes to make it consistent\&. (\fB\-\-checksum\fR
+is necessary because
 \fBrsync\fR
-again to update the copy with any changes to make it consistent\&. You might want to exclude some files, e\&.g\&.
+only has file modification\-time granularity of one second\&.) You might want to exclude some files, e\&.g\&.
 postmaster\&.pid, as documented in
 Section 24.3.3, \(lqMaking a Base Backup Using the Low Level API\(rq, in the documentation\&. If your file system supports file system snapshots or copy\-on\-write file copies, you can use that to make a backup of the old cluster and tablespaces, though the snapshot and copies must be created simultaneously or while the database server is down\&.
-.SS "Limitations in Upgrading from PostgreSQL 8\&.3"
-.PP
-Upgrading
-\fIfrom\fR
-PostgreSQL 8\&.3 has additional restrictions not present when upgrading from later PostgreSQL releases\&. For example, pg_upgrade will not work for upgrading from 8\&.3 if a user column is defined as:
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-a
-tsquery
-data type
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-data type
-name
-and is not the first column
-.RE
-.PP
-You must drop any such columns and upgrade them manually\&.
-.PP
-pg_upgrade will not work if the
-ltree
-contrib module is installed in a database\&.
-.PP
-pg_upgrade will require a table rebuild if:
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-a user column is of data type
-tsvector
-.RE
-.PP
-pg_upgrade will require a reindex if:
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-an index is of type hash or GIN
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-an index uses
-\fBbpchar_pattern_ops\fR
-.RE
-.PP
-Also, the default datetime storage format changed to integer after
-PostgreSQL
-8\&.3\&. pg_upgrade will check that the datetime storage format used by the old and new clusters match\&. Make sure your new cluster is built with the configure flag
-\fB\-\-disable\-integer\-datetimes\fR\&.
-.PP
-For Windows users, note that due to different integer datetimes settings used by the graphical installer and the MSI installer, it is only possible to upgrade from version 8\&.3 of the installer distribution to version 8\&.4 or later of the installer distribution\&. It is not possible to upgrade from the MSI installer to the new graphical installer\&.
 .SH "SEE ALSO"
 \fBinitdb\fR(1), \fBpg_ctl\fR(1), \fBpg_dump\fR(1), \fBpostgres\fR(1)

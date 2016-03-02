@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="APP-PGRESTORE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN89677"
+NAME="AEN93821"
 ></A
 ><H2
 >Name</H2
@@ -111,7 +111,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN89682"
+NAME="AEN93826"
 ></A
 ><H2
 >Synopsis</H2
@@ -474,19 +474,6 @@ CLASS="COMMAND"
 ></DL
 ></DIV
 ><P></P
-></DD
-><DT
-><TT
-CLASS="OPTION"
->-i</TT
-><BR><TT
-CLASS="OPTION"
->--ignore-version</TT
-></DT
-><DD
-><P
->        A deprecated option that is now ignored.
-       </P
 ></DD
 ><DT
 ><TT
@@ -1000,6 +987,47 @@ CLASS="PRODUCTNAME"
 ><DT
 ><TT
 CLASS="OPTION"
+>--enable-row-security</TT
+></DT
+><DD
+><P
+>        This option is relevant only when restoring the contents of a table
+        which has row security.  By default, <SPAN
+CLASS="APPLICATION"
+>pg_restore</SPAN
+> will set
+        <A
+HREF="runtime-config-client.html#GUC-ROW-SECURITY"
+>row_security</A
+> to off, to ensure
+        that all data is restored in to the table.  If the user does not have
+        sufficient privileges to bypass row security, then an error is thrown.
+        This parameter instructs <SPAN
+CLASS="APPLICATION"
+>pg_restore</SPAN
+> to set
+        <A
+HREF="runtime-config-client.html#GUC-ROW-SECURITY"
+>row_security</A
+> to on instead, allowing the user to attempt to restore
+        the contents of the table with row security enabled.  This might still
+        fail if the user does not have the right to insert the rows from the
+        dump into the table.
+       </P
+><P
+>        Note that this option currently also requires the dump be in <TT
+CLASS="COMMAND"
+>INSERT</TT
+>
+        format, as <TT
+CLASS="COMMAND"
+>COPY TO</TT
+> does not support row security.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >--if-exists</TT
 ></DT
 ><DD
@@ -1339,7 +1367,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN90109"
+NAME="AEN94258"
 ></A
 ><H2
 >Environment</H2
@@ -1704,7 +1732,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN90203"
+NAME="AEN94352"
 ></A
 ><H2
 >See Also</H2

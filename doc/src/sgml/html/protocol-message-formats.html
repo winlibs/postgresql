@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Frontend/Backend Protocol"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 49. Frontend/Backend Protocol</TD
+>Chapter 50. Frontend/Backend Protocol</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PROTOCOL-MESSAGE-FORMATS"
->49.5. Message Formats</A
+>50.5. Message Formats</A
 ></H1
 ><P
 >This section describes the detailed format of each message.  Each is marked to
@@ -1411,7 +1411,7 @@ CLASS="VARIABLELIST"
                 The presently defined field types are listed in
                 <A
 HREF="protocol-error-fields.html"
->Section 49.6</A
+>Section 50.6</A
 >.
                 Since more field types might be added in future,
                 frontends should silently ignore fields of unrecognized
@@ -1732,7 +1732,7 @@ CLASS="VARIABLELIST"
                 The presently defined field types are listed in
                 <A
 HREF="protocol-error-fields.html"
->Section 49.6</A
+>Section 50.6</A
 >.
                 Since more field types might be added in future,
                 frontends should silently ignore fields of unrecognized
@@ -2318,7 +2318,16 @@ CLASS="LITERAL"
 ><P
 >                        Command-line arguments for the backend.  (This is
                         deprecated in favor of setting individual run-time
-                        parameters.)</P
+                        parameters.)  Spaces within this string are
+                        considered to separate arguments, unless escaped with
+                        a backslash (<TT
+CLASS="LITERAL"
+>\</TT
+>); write <TT
+CLASS="LITERAL"
+>\\</TT
+> to
+                        represent a literal backslash.</P
 ></DD
 ></DL
 ></DIV
@@ -2327,7 +2336,7 @@ CLASS="LITERAL"
                 In addition to the above, any run-time parameter that can be
                 set at backend start time might be listed.  Such settings
                 will be applied during backend start (after parsing the
-                command-line options if any).  The values will act as
+                command-line arguments if any).  The values will act as
                 session defaults.</P
 ></DD
 ><DT

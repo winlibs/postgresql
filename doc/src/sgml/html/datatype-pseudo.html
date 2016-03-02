@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -268,10 +268,22 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="TYPE"
+>tsm_handler</TT
+></TD
+><TD
+>A tablesample method handler is declared to return <TT
+CLASS="TYPE"
+>tsm_handler</TT
+>.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
 >record</TT
 ></TD
 ><TD
->Identifies a function returning an unspecified row type.</TD
+>Identifies a function taking or returning an unspecified row type.</TD
 ></TR
 ><TR
 ><TD
@@ -284,6 +296,27 @@ CLASS="TYPE"
 CLASS="TYPE"
 >trigger.</TT
 ></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>event_trigger</TT
+></TD
+><TD
+>An event trigger function is declared to return <TT
+CLASS="TYPE"
+>event_trigger.</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>pg_ddl_command</TT
+></TD
+><TD
+>Identifies a representation of DDL commands that is available to event triggers.</TD
 ></TR
 ><TR
 ><TD
@@ -314,8 +347,8 @@ CLASS="TYPE"
    </P
 ><P
 >    Functions coded in procedural languages can use pseudo-types only as
-    allowed by their implementation languages.  At present the procedural
-    languages all forbid use of a pseudo-type as argument type, and allow
+    allowed by their implementation languages.  At present most procedural
+    languages forbid use of a pseudo-type as an argument type, and allow
     only <TT
 CLASS="TYPE"
 >void</TT
@@ -326,7 +359,11 @@ CLASS="TYPE"
     <TT
 CLASS="TYPE"
 >trigger</TT
-> when the function is used as a trigger).  Some also
+> or <TT
+CLASS="TYPE"
+>event_trigger</TT
+> when the function is used
+    as a trigger or event trigger).  Some also
     support polymorphic functions using the types <TT
 CLASS="TYPE"
 >anyelement</TT

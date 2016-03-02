@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -139,6 +139,13 @@ CLASS="TYPE"
 CLASS="TYPE"
 >regtype</TT
 >, <TT
+CLASS="TYPE"
+>regrole</TT
+>, <TT
+CLASS="TYPE"
+>regnamespace</TT
+>,
+    <TT
 CLASS="TYPE"
 >regconfig</TT
 >, and <TT
@@ -380,6 +387,44 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="TYPE"
+>regrole</TT
+></TD
+><TD
+><TT
+CLASS="STRUCTNAME"
+>pg_authid</TT
+></TD
+><TD
+>role name</TD
+><TD
+><TT
+CLASS="LITERAL"
+>smithee</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>regnamespace</TT
+></TD
+><TD
+><TT
+CLASS="STRUCTNAME"
+>pg_namespace</TT
+></TD
+><TD
+>namespace name</TD
+><TD
+><TT
+CLASS="LITERAL"
+>pg_catalog</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
 >regconfig</TT
 ></TD
 ><TD
@@ -418,7 +463,8 @@ CLASS="LITERAL"
 ></TABLE
 ></DIV
 ><P
->    All of the OID alias types accept schema-qualified names, and will
+>    All of the OID alias types for objects grouped by namespace accept
+    schema-qualified names, and will
     display schema-qualified names on output if the object would not
     be found in the current search path without being qualified.
     The <TT
@@ -447,7 +493,7 @@ CLASS="LITERAL"
     operand.
    </P
 ><P
->    An additional property of the OID alias types is the creation of
+>    An additional property of most of the OID alias types is the creation of
     dependencies.  If a
     constant of one of these types appears in a stored expression
     (such as a column default expression or view), it creates a dependency
@@ -466,7 +512,25 @@ CLASS="LITERAL"
 >my_seq</TT
 >; the system will not let the sequence be dropped
     without first removing the default expression.
+    <TT
+CLASS="TYPE"
+>regrole</TT
+> is the only exception for the property. Constants of this
+    type are not allowed in such expressions.
    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>    The OID alias types do not completely follow transaction isolation
+    rules. The planner also treats them as simple constants, which may
+    result in sub-optimal planning.
+   </P
+></BLOCKQUOTE
+></DIV
 ><P
 >    Another identifier type used by the system is <TT
 CLASS="TYPE"

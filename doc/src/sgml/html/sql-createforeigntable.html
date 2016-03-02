@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEFOREIGNTABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN73437"
+NAME="AEN75778"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN73437"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN73440"
+NAME="AEN75781"
 ></A
 ><H2
 >Synopsis</H2
@@ -115,7 +115,7 @@ CLASS="REPLACEABLE"
 >table_name</I
 ></TT
 > ( [
-    <TT
+  { <TT
 CLASS="REPLACEABLE"
 ><I
 >column_name</I
@@ -146,8 +146,20 @@ CLASS="REPLACEABLE"
 >column_constraint</I
 ></TT
 > [ ... ] ]
+    | <TT
+CLASS="REPLACEABLE"
+><I
+>table_constraint</I
+></TT
+> }
     [, ... ]
 ] )
+[ INHERITS ( <TT
+CLASS="REPLACEABLE"
+><I
+>parent_table</I
+></TT
+> [, ... ] ) ]
   SERVER <TT
 CLASS="REPLACEABLE"
 ><I
@@ -187,12 +199,44 @@ CLASS="REPLACEABLE"
 > ]
 { NOT NULL |
   NULL |
+  CHECK ( <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> ) [ NO INHERIT ] |
   DEFAULT <TT
 CLASS="REPLACEABLE"
 ><I
 >default_expr</I
 ></TT
-> }</PRE
+> }
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>and <TT
+CLASS="REPLACEABLE"
+><I
+>table_constraint</I
+></TT
+> is:</SPAN
+></SPAN
+>
+
+[ CONSTRAINT <TT
+CLASS="REPLACEABLE"
+><I
+>constraint_name</I
+></TT
+> ]
+CHECK ( <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> ) [ NO INHERIT ]</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
@@ -244,7 +288,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73467"
+NAME="AEN75815"
 ></A
 ><H2
 >Parameters</H2
@@ -313,6 +357,74 @@ HREF="datatype.html"
 ><DT
 ><TT
 CLASS="LITERAL"
+>COLLATE <TT
+CLASS="REPLACEABLE"
+><I
+>collation</I
+></TT
+></TT
+></DT
+><DD
+><P
+>      The <TT
+CLASS="LITERAL"
+>COLLATE</TT
+> clause assigns a collation to
+      the column (which must be of a collatable data type).
+      If not specified, the column data type's default collation is used.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>INHERITS ( <TT
+CLASS="REPLACEABLE"
+><I
+>parent_table</I
+></TT
+> [, ... ] )</TT
+></DT
+><DD
+><P
+>      The optional <TT
+CLASS="LITERAL"
+>INHERITS</TT
+> clause specifies a list of
+      tables from which the new foreign table automatically inherits
+      all columns.  Parent tables can be plain tables or foreign tables.
+      See the similar form of
+      <A
+HREF="sql-createtable.html"
+>CREATE TABLE</A
+> for more details.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>CONSTRAINT <TT
+CLASS="REPLACEABLE"
+><I
+>constraint_name</I
+></TT
+></TT
+></DT
+><DD
+><P
+>      An optional name for a column or table constraint.  If the
+      constraint is violated, the constraint name is present in error messages,
+      so constraint names like <TT
+CLASS="LITERAL"
+>col must be positive</TT
+> can be used
+      to communicate helpful constraint information to client applications.
+      (Double-quotes are needed to specify constraint names that contain spaces.)
+      If a constraint name is not specified, the system generates a name.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
 >NOT NULL</TT
 ></DT
 ><DD
@@ -333,6 +445,49 @@ CLASS="LITERAL"
 >      This clause is only provided for compatibility with
       non-standard SQL databases.  Its use is discouraged in new
       applications.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>CHECK ( <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> ) [ NO INHERIT ] </TT
+></DT
+><DD
+><P
+>      The <TT
+CLASS="LITERAL"
+>CHECK</TT
+> clause specifies an expression producing a
+      Boolean result which each row in the foreign table is expected
+      to satisfy; that is, the expression should produce TRUE or UNKNOWN,
+      never FALSE, for all rows in the foreign table.
+      A check constraint specified as a column constraint should
+      reference that column's value only, while an expression
+      appearing in a table constraint can reference multiple columns.
+     </P
+><P
+>      Currently, <TT
+CLASS="LITERAL"
+>CHECK</TT
+> expressions cannot contain
+      subqueries nor refer to variables other than columns of the
+      current row.  The system column <TT
+CLASS="LITERAL"
+>tableoid</TT
+>
+      may be referenced, but not any other system column.
+     </P
+><P
+>      A constraint marked with <TT
+CLASS="LITERAL"
+>NO INHERIT</TT
+> will not propagate to
+      child tables.
      </P
 ></DD
 ><DT
@@ -411,6 +566,54 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
+NAME="AEN75906"
+></A
+><H2
+>Notes</H2
+><P
+>    Constraints on foreign tables (such as <TT
+CLASS="LITERAL"
+>CHECK</TT
+>
+    or <TT
+CLASS="LITERAL"
+>NOT NULL</TT
+> clauses) are not enforced by the
+    core <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> system, and most foreign data wrappers
+    do not attempt to enforce them either; that is, the constraint is
+    simply assumed to hold true.  There would be little point in such
+    enforcement since it would only apply to rows inserted or updated via
+    the foreign table, and not to rows modified by other means, such as
+    directly on the remote server.  Instead, a constraint attached to a
+    foreign table should represent a constraint that is being enforced by
+    the remote server.
+   </P
+><P
+>    Some special-purpose foreign data wrappers might be the only access
+    mechanism for the data they access, and in that case it might be
+    appropriate for the foreign data wrapper itself to perform constraint
+    enforcement.  But you should not assume that a wrapper does that
+    unless its documentation says so.
+   </P
+><P
+>    Although <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> does not attempt to enforce
+    constraints on foreign tables, it does assume that they are correct
+    for purposes of query optimization.  If there are rows visible in the
+    foreign table that do not satisfy a declared constraint, queries on
+    the table might produce incorrect answers.  It is the user's
+    responsibility to ensure that the constraint definition matches
+    reality.
+   </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
 NAME="SQL-CREATEFOREIGNTABLE-EXAMPLES"
 ></A
 ><H2
@@ -465,17 +668,21 @@ CLASS="COMMAND"
 CLASS="LITERAL"
 >NULL</TT
 > constraints and zero-column foreign tables are permitted.
-   The ability to specify a default value is also a <SPAN
+   The ability to specify column default values is also
+   a <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
->
-   extension.
+> extension.  Table inheritance, in the form
+   defined by <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>, is nonstandard.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73539"
+NAME="AEN75931"
 ></A
 ><H2
 >See Also</H2
@@ -491,6 +698,9 @@ HREF="sql-createtable.html"
 >, <A
 HREF="sql-createserver.html"
 >CREATE SERVER</A
+>, <A
+HREF="sql-importforeignschema.html"
+>IMPORT FOREIGN SCHEMA</A
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE FOREIGN DATA WRAPPER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATE FOREIGN DATA WRAPPER" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATE FOREIGN DATA WRAPPER" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,7 +39,6 @@ CREATE FOREIGN DATA WRAPPER \fIname\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCREATE FOREIGN DATA WRAPPER\fR
 creates a new foreign\-data wrapper\&. The user who defines a foreign\-data wrapper becomes its owner\&.
 .PP
@@ -80,7 +79,6 @@ This clause specifies options for the new foreign\-data wrapper\&. The allowed o
 .RE
 .SH "NOTES"
 .PP
-
 PostgreSQL\*(Aqs foreign\-data functionality is still under active development\&. Optimization of queries is primitive (and mostly left to the wrapper, too)\&. Thus, there is considerable room for future performance improvements\&.
 .SH "EXAMPLES"
 .PP
@@ -128,7 +126,6 @@ CREATE FOREIGN DATA WRAPPER mywrapper
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBCREATE FOREIGN DATA WRAPPER\fR
 conforms to ISO/IEC 9075\-9 (SQL/MED), with the exception that the
 HANDLER

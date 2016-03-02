@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Monitoring Database Activity"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -203,8 +203,30 @@ CLASS="STRUCTNAME"
   system view to determine who is blocking whom.)
   </P
 ><P
+>   If <A
+HREF="runtime-config-logging.html#GUC-CLUSTER-NAME"
+>cluster_name</A
+> has been configured the
+   cluster name will also be shown in <TT
+CLASS="COMMAND"
+>ps</TT
+> output:
+</P><PRE
+CLASS="SCREEN"
+>$ psql -c 'SHOW cluster_name'
+ cluster_name
+--------------
+ server1
+(1 row)
+
+$ ps aux|grep server1
+postgres   27093  0.0  0.0  30096  2752 ?        Ss   11:34   0:00 postgres: server1: writer process
+...</PRE
+><P>
+  </P
+><P
 >   If you have turned off <A
-HREF="runtime-config-statistics.html#GUC-UPDATE-PROCESS-TITLE"
+HREF="runtime-config-logging.html#GUC-UPDATE-PROCESS-TITLE"
 >update_process_title</A
 > then the
    activity indicator is not updated; the process title is set only once

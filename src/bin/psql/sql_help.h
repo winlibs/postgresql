@@ -43,6 +43,7 @@ extern void sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf);
 extern void sql_help_ALTER_OPERATOR(PQExpBuffer buf);
 extern void sql_help_ALTER_OPERATOR_CLASS(PQExpBuffer buf);
 extern void sql_help_ALTER_OPERATOR_FAMILY(PQExpBuffer buf);
+extern void sql_help_ALTER_POLICY(PQExpBuffer buf);
 extern void sql_help_ALTER_ROLE(PQExpBuffer buf);
 extern void sql_help_ALTER_RULE(PQExpBuffer buf);
 extern void sql_help_ALTER_SCHEMA(PQExpBuffer buf);
@@ -87,6 +88,7 @@ extern void sql_help_CREATE_MATERIALIZED_VIEW(PQExpBuffer buf);
 extern void sql_help_CREATE_OPERATOR(PQExpBuffer buf);
 extern void sql_help_CREATE_OPERATOR_CLASS(PQExpBuffer buf);
 extern void sql_help_CREATE_OPERATOR_FAMILY(PQExpBuffer buf);
+extern void sql_help_CREATE_POLICY(PQExpBuffer buf);
 extern void sql_help_CREATE_ROLE(PQExpBuffer buf);
 extern void sql_help_CREATE_RULE(PQExpBuffer buf);
 extern void sql_help_CREATE_SCHEMA(PQExpBuffer buf);
@@ -99,6 +101,7 @@ extern void sql_help_CREATE_TEXT_SEARCH_CONFIGURATION(PQExpBuffer buf);
 extern void sql_help_CREATE_TEXT_SEARCH_DICTIONARY(PQExpBuffer buf);
 extern void sql_help_CREATE_TEXT_SEARCH_PARSER(PQExpBuffer buf);
 extern void sql_help_CREATE_TEXT_SEARCH_TEMPLATE(PQExpBuffer buf);
+extern void sql_help_CREATE_TRANSFORM(PQExpBuffer buf);
 extern void sql_help_CREATE_TRIGGER(PQExpBuffer buf);
 extern void sql_help_CREATE_TYPE(PQExpBuffer buf);
 extern void sql_help_CREATE_USER(PQExpBuffer buf);
@@ -128,6 +131,7 @@ extern void sql_help_DROP_OPERATOR(PQExpBuffer buf);
 extern void sql_help_DROP_OPERATOR_CLASS(PQExpBuffer buf);
 extern void sql_help_DROP_OPERATOR_FAMILY(PQExpBuffer buf);
 extern void sql_help_DROP_OWNED(PQExpBuffer buf);
+extern void sql_help_DROP_POLICY(PQExpBuffer buf);
 extern void sql_help_DROP_ROLE(PQExpBuffer buf);
 extern void sql_help_DROP_RULE(PQExpBuffer buf);
 extern void sql_help_DROP_SCHEMA(PQExpBuffer buf);
@@ -139,6 +143,7 @@ extern void sql_help_DROP_TEXT_SEARCH_CONFIGURATION(PQExpBuffer buf);
 extern void sql_help_DROP_TEXT_SEARCH_DICTIONARY(PQExpBuffer buf);
 extern void sql_help_DROP_TEXT_SEARCH_PARSER(PQExpBuffer buf);
 extern void sql_help_DROP_TEXT_SEARCH_TEMPLATE(PQExpBuffer buf);
+extern void sql_help_DROP_TRANSFORM(PQExpBuffer buf);
 extern void sql_help_DROP_TRIGGER(PQExpBuffer buf);
 extern void sql_help_DROP_TYPE(PQExpBuffer buf);
 extern void sql_help_DROP_USER(PQExpBuffer buf);
@@ -149,6 +154,7 @@ extern void sql_help_EXECUTE(PQExpBuffer buf);
 extern void sql_help_EXPLAIN(PQExpBuffer buf);
 extern void sql_help_FETCH(PQExpBuffer buf);
 extern void sql_help_GRANT(PQExpBuffer buf);
+extern void sql_help_IMPORT_FOREIGN_SCHEMA(PQExpBuffer buf);
 extern void sql_help_INSERT(PQExpBuffer buf);
 extern void sql_help_LISTEN(PQExpBuffer buf);
 extern void sql_help_LOAD(PQExpBuffer buf);
@@ -195,7 +201,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER AGGREGATE",
       N_("change the definition of an aggregate function"),
       sql_help_ALTER_AGGREGATE,
-      8 },
+      9 },
 
     { "ALTER COLLATION",
       N_("change the definition of a collation"),
@@ -210,7 +216,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER DATABASE",
       N_("change a database"),
       sql_help_ALTER_DATABASE,
-      15 },
+      17 },
 
     { "ALTER DEFAULT PRIVILEGES",
       N_("define default access privileges"),
@@ -230,7 +236,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER EXTENSION",
       N_("change the definition of an extension"),
       sql_help_ALTER_EXTENSION,
-      36 },
+      37 },
 
     { "ALTER FOREIGN DATA WRAPPER",
       N_("change the definition of a foreign-data wrapper"),
@@ -240,7 +246,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER FOREIGN TABLE",
       N_("change the definition of a foreign table"),
       sql_help_ALTER_FOREIGN_TABLE,
-      26 },
+      34 },
 
     { "ALTER FUNCTION",
       N_("change the definition of a function"),
@@ -250,7 +256,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER GROUP",
       N_("change role name or membership"),
       sql_help_ALTER_GROUP,
-      3 },
+      9 },
 
     { "ALTER INDEX",
       N_("change the definition of an index"),
@@ -275,22 +281,27 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER OPERATOR",
       N_("change the definition of an operator"),
       sql_help_ALTER_OPERATOR,
-      1 },
+      4 },
 
     { "ALTER OPERATOR CLASS",
       N_("change the definition of an operator class"),
       sql_help_ALTER_OPERATOR_CLASS,
-      2 },
+      7 },
 
     { "ALTER OPERATOR FAMILY",
       N_("change the definition of an operator family"),
       sql_help_ALTER_OPERATOR_FAMILY,
-      10 },
+      19 },
+
+    { "ALTER POLICY",
+      N_("change the definition of a row level security policy"),
+      sql_help_ALTER_POLICY,
+      5 },
 
     { "ALTER ROLE",
       N_("change a database role"),
       sql_help_ALTER_ROLE,
-      20 },
+      27 },
 
     { "ALTER RULE",
       N_("change the definition of a rule"),
@@ -320,7 +331,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER TABLE",
       N_("change the definition of a table"),
       sql_help_ALTER_TABLE,
-      56 },
+      61 },
 
     { "ALTER TABLESPACE",
       N_("change the definition of a tablespace"),
@@ -360,7 +371,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "ALTER USER",
       N_("change a database role"),
       sql_help_ALTER_USER,
-      20 },
+      27 },
 
     { "ALTER USER MAPPING",
       N_("change the definition of a user mapping"),
@@ -400,7 +411,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "COMMENT",
       N_("define or change the comment of an object"),
       sql_help_COMMENT,
-      42 },
+      45 },
 
     { "COMMIT",
       N_("commit the current transaction"),
@@ -440,7 +451,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE DATABASE",
       N_("create a new database"),
       sql_help_CREATE_DATABASE,
-      7 },
+      9 },
 
     { "CREATE DOMAIN",
       N_("define a new domain"),
@@ -465,12 +476,12 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE FOREIGN TABLE",
       N_("define a new foreign table"),
       sql_help_CREATE_FOREIGN_TABLE,
-      12 },
+      20 },
 
     { "CREATE FUNCTION",
       N_("define a new function"),
       sql_help_CREATE_FUNCTION,
-      15 },
+      16 },
 
     { "CREATE GROUP",
       N_("define a new database role"),
@@ -507,10 +518,15 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_CREATE_OPERATOR_FAMILY,
       0 },
 
+    { "CREATE POLICY",
+      N_("define a new row level security policy for a table"),
+      sql_help_CREATE_POLICY,
+      4 },
+
     { "CREATE ROLE",
       N_("define a new database role"),
       sql_help_CREATE_ROLE,
-      19 },
+      20 },
 
     { "CREATE RULE",
       N_("define a new rewrite rule"),
@@ -520,7 +536,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE SCHEMA",
       N_("define a new schema"),
       sql_help_CREATE_SCHEMA,
-      3 },
+      9 },
 
     { "CREATE SEQUENCE",
       N_("define a new sequence generator"),
@@ -567,6 +583,11 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_CREATE_TEXT_SEARCH_TEMPLATE,
       3 },
 
+    { "CREATE TRANSFORM",
+      N_("define a new transform"),
+      sql_help_CREATE_TRANSFORM,
+      3 },
+
     { "CREATE TRIGGER",
       N_("define a new trigger"),
       sql_help_CREATE_TRIGGER,
@@ -580,7 +601,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "CREATE USER",
       N_("define a new database role"),
       sql_help_CREATE_USER,
-      19 },
+      20 },
 
     { "CREATE USER MAPPING",
       N_("define a new mapping of a user to a foreign server"),
@@ -712,6 +733,11 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_DROP_OWNED,
       0 },
 
+    { "DROP POLICY",
+      N_("remove a row level security policy from a table"),
+      sql_help_DROP_POLICY,
+      0 },
+
     { "DROP ROLE",
       N_("remove a database role"),
       sql_help_DROP_ROLE,
@@ -767,6 +793,11 @@ static const struct _helpStruct QL_HELP[] = {
       sql_help_DROP_TEXT_SEARCH_TEMPLATE,
       0 },
 
+    { "DROP TRANSFORM",
+      N_("remove a transform"),
+      sql_help_DROP_TRANSFORM,
+      0 },
+
     { "DROP TRIGGER",
       N_("remove a trigger"),
       sql_help_DROP_TRIGGER,
@@ -815,12 +846,17 @@ static const struct _helpStruct QL_HELP[] = {
     { "GRANT",
       N_("define access privileges"),
       sql_help_GRANT,
-      58 },
+      65 },
+
+    { "IMPORT FOREIGN SCHEMA",
+      N_("import table definitions from a foreign server"),
+      sql_help_IMPORT_FOREIGN_SCHEMA,
+      4 },
 
     { "INSERT",
       N_("create new rows in a table"),
       sql_help_INSERT,
-      3 },
+      18 },
 
     { "LISTEN",
       N_("listen for a notification"),
@@ -860,7 +896,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "REASSIGN OWNED",
       N_("change the ownership of database objects owned by a database role"),
       sql_help_REASSIGN_OWNED,
-      0 },
+      1 },
 
     { "REFRESH MATERIALIZED VIEW",
       N_("replace the contents of a materialized view"),
@@ -915,7 +951,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "SELECT",
       N_("retrieve rows from a table or view"),
       sql_help_SELECT,
-      32 },
+      42 },
 
     { "SELECT INTO",
       N_("define a new table from the results of a query"),
@@ -960,7 +996,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "TABLE",
       N_("retrieve rows from a table or view"),
       sql_help_TABLE,
-      32 },
+      42 },
 
     { "TRUNCATE",
       N_("empty a table or set of tables"),
@@ -975,7 +1011,7 @@ static const struct _helpStruct QL_HELP[] = {
     { "UPDATE",
       N_("update rows of a table"),
       sql_help_UPDATE,
-      6 },
+      8 },
 
     { "VACUUM",
       N_("garbage-collect and optionally analyze a database"),
@@ -990,14 +1026,14 @@ static const struct _helpStruct QL_HELP[] = {
     { "WITH",
       N_("retrieve rows from a table or view"),
       sql_help_WITH,
-      32 },
+      42 },
 
 
     { NULL, NULL, NULL }    /* End of list marker */
 };
 
 
-#define QL_HELP_COUNT	161		/* number of help items */
+#define QL_HELP_COUNT	167		/* number of help items */
 #define QL_MAX_CMD_LEN	32		/* largest strlen(cmd) */
 
 

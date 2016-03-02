@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER AGGREGATE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER AGGREGATE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER AGGREGATE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,7 +33,8 @@ ALTER_AGGREGATE \- change the definition of an aggregate function
 .sp
 .nf
 ALTER AGGREGATE \fIname\fR ( \fIaggregate_signature\fR ) RENAME TO \fInew_name\fR
-ALTER AGGREGATE \fIname\fR ( \fIaggregate_signature\fR ) OWNER TO \fInew_owner\fR
+ALTER AGGREGATE \fIname\fR ( \fIaggregate_signature\fR )
+                OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
 ALTER AGGREGATE \fIname\fR ( \fIaggregate_signature\fR ) SET SCHEMA \fInew_schema\fR
 
 where \fIaggregate_signature\fR is:
@@ -44,7 +45,6 @@ where \fIaggregate_signature\fR is:
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER AGGREGATE\fR
 changes the definition of an aggregate function\&.
 .PP

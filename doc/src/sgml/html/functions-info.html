@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ NAME="FUNCTIONS-INFO"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-SESSION-TABLE"
->Table 9-56</A
+>Table 9-57</A
 > shows several
    functions that extract session and system information.
   </P
@@ -118,7 +118,7 @@ NAME="FUNCTIONS-INFO-SESSION-TABLE"
 ></A
 ><P
 ><B
->Table 9-56. Session Information Functions</B
+>Table 9-57. Session Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -493,7 +493,10 @@ CLASS="TYPE"
 ><SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> version information</TD
+> version information. See also <A
+HREF="runtime-config-preset.html#GUC-SERVER-VERSION-NUM"
+>server_version_num</A
+> for a machine-readable version.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -697,12 +700,37 @@ CLASS="FUNCTION"
     <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> server's version.
+> server's version. You can also
+    get this information from <A
+HREF="runtime-config-preset.html#GUC-SERVER-VERSION"
+>server_version</A
+> or
+    for a machine-readable version, <A
+HREF="runtime-config-preset.html#GUC-SERVER-VERSION-NUM"
+>server_version_num</A
+>.
+    Software developers should use <TT
+CLASS="LITERAL"
+>server_version_num</TT
+>
+    (available since 8.2) or <A
+HREF="libpq-status.html#LIBPQ-PQSERVERVERSION"
+><I
+CLASS="TERM"
+>      <CODE
+CLASS="FUNCTION"
+>PQserverVersion</CODE
+>
+      
+     </I
+></A
+> instead
+    of parsing the text version.
    </P
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE"
->Table 9-57</A
+>Table 9-58</A
 > lists functions that
    allow the user to query object access privileges programmatically.
    See <A
@@ -718,7 +746,7 @@ NAME="FUNCTIONS-INFO-ACCESS-TABLE"
 ></A
 ><P
 ><B
->Table 9-57. Access Privilege Inquiry Functions</B
+>Table 9-58. Access Privilege Inquiry Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1390,6 +1418,27 @@ CLASS="TYPE"
 ><TD
 >does current user have privilege for role</TD
 ></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>row_security_active</CODE
+>(<TT
+CLASS="PARAMETER"
+>table</TT
+>)</TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>does current user have row level security active for table</TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -1762,9 +1811,21 @@ CLASS="COMMAND"
 >.
    </P
 ><P
+>    <CODE
+CLASS="FUNCTION"
+>row_security_active</CODE
+> checks whether row level
+    security is active for the specified table in the context of the
+    <CODE
+CLASS="FUNCTION"
+>current_user</CODE
+> and environment. The table can
+    be specified by name or by OID.
+   </P
+><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE"
->Table 9-58</A
+>Table 9-59</A
 > shows functions that
    determine whether a certain object is <I
 CLASS="FIRSTTERM"
@@ -1788,7 +1849,7 @@ NAME="FUNCTIONS-INFO-SCHEMA-TABLE"
 ></A
 ><P
 ><B
->Table 9-58. Schema Visibility Inquiry Functions</B
+>Table 9-59. Schema Visibility Inquiry Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2065,11 +2126,12 @@ CLASS="TYPE"
 CLASS="FUNCTION"
 >pg_table_is_visible</CODE
 > can also be used
-    with views, indexes and sequences; <CODE
+    with views, materialized views, indexes, sequences and foreign tables;
+    <CODE
 CLASS="FUNCTION"
 >pg_type_is_visible</CODE
->
-    can also be used with domains. For functions and operators, an object in
+> can also be used with domains.
+    For functions and operators, an object in
     the search path is visible if there is no object of the same name
     <SPAN
 CLASS="emphasis"
@@ -2115,7 +2177,7 @@ CLASS="PROGRAMLISTING"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE"
->Table 9-59</A
+>Table 9-60</A
 > lists functions that
    extract information from the system catalogs.
   </P
@@ -2126,7 +2188,7 @@ NAME="FUNCTIONS-INFO-CATALOG-TABLE"
 ></A
 ><P
 ><B
->Table 9-59. System Catalog Information Functions</B
+>Table 9-60. System Catalog Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2164,88 +2226,6 @@ CLASS="TYPE"
 ></TD
 ><TD
 >get SQL name of a data type</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
-><CODE
-CLASS="FUNCTION"
->pg_describe_object(<TT
-CLASS="PARAMETER"
->catalog_id</TT
->, <TT
-CLASS="PARAMETER"
->object_id</TT
->, <TT
-CLASS="PARAMETER"
->object_sub_id</TT
->)</CODE
-></TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text</TT
-></TD
-><TD
->get description of a database object</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
-><CODE
-CLASS="FUNCTION"
->pg_identify_object(<TT
-CLASS="PARAMETER"
->catalog_id</TT
-> <TT
-CLASS="TYPE"
->oid</TT
->, <TT
-CLASS="PARAMETER"
->object_id</TT
-> <TT
-CLASS="TYPE"
->oid</TT
->, <TT
-CLASS="PARAMETER"
->object_sub_id</TT
-> <TT
-CLASS="TYPE"
->integer</TT
->)</CODE
-></TT
-></TD
-><TD
-><TT
-CLASS="PARAMETER"
->type</TT
-> <TT
-CLASS="TYPE"
->text</TT
->, <TT
-CLASS="PARAMETER"
->schema</TT
-> <TT
-CLASS="TYPE"
->text</TT
->, <TT
-CLASS="PARAMETER"
->name</TT
-> <TT
-CLASS="TYPE"
->text</TT
->, <TT
-CLASS="PARAMETER"
->identity</TT
-> <TT
-CLASS="TYPE"
->text</TT
-></TD
-><TD
->get identity of a database object</TD
 ></TR
 ><TR
 ><TD
@@ -3001,6 +2981,46 @@ CLASS="TYPE"
 ><TD
 >get the OID of the named type</TD
 ></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>to_regnamespace(<TT
+CLASS="PARAMETER"
+>schema_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>regnamespace</TT
+></TD
+><TD
+>get the OID of the named schema</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>to_regrole(<TT
+CLASS="PARAMETER"
+>role_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>regrole</TT
+></TD
+><TD
+>get the OID of the named role</TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -3222,56 +3242,6 @@ CLASS="STRUCTNAME"
 ><P
 >   <CODE
 CLASS="FUNCTION"
->pg_describe_object</CODE
-> returns a textual description of a database
-   object specified by catalog OID, object OID and a (possibly zero) sub-object ID.
-   This description is intended to be human-readable, and might be translated,
-   depending on server configuration.
-   This is useful to determine the identity of an object as stored in the
-   <TT
-CLASS="STRUCTNAME"
->pg_depend</TT
-> catalog.
-  </P
-><P
->   <CODE
-CLASS="FUNCTION"
->pg_identify_object</CODE
-> returns a row containing enough information
-   to uniquely identify the database object specified by catalog OID, object OID and a
-   (possibly zero) sub-object ID.  This information is intended to be machine-readable,
-   and is never translated.
-   <TT
-CLASS="PARAMETER"
->type</TT
-> identifies the type of database object;
-   <TT
-CLASS="PARAMETER"
->schema</TT
-> is the schema name that the object belongs in, or
-   <TT
-CLASS="LITERAL"
->NULL</TT
-> for object types that do not belong to schemas;
-   <TT
-CLASS="PARAMETER"
->name</TT
-> is the name of the object, quoted if necessary, only
-   present if it can be used (alongside schema name, if pertinent) as a unique
-   identifier of the object, otherwise <TT
-CLASS="LITERAL"
->NULL</TT
->;
-   <TT
-CLASS="PARAMETER"
->identity</TT
-> is the complete object identity, with the precise format
-   depending on object type, and each part within the format being
-   schema-qualified and quoted as necessary.
-  </P
-><P
->   <CODE
-CLASS="FUNCTION"
 >pg_typeof</CODE
 > returns the OID of the data type of the
    value that is passed to it.  This can be helpful for troubleshooting or
@@ -3343,12 +3313,20 @@ CLASS="FUNCTION"
    <CODE
 CLASS="FUNCTION"
 >to_regoperator</CODE
->, and <CODE
+>, <CODE
 CLASS="FUNCTION"
 >to_regtype</CODE
+>,
+   <CODE
+CLASS="FUNCTION"
+>to_regnamespace</CODE
+>, and <CODE
+CLASS="FUNCTION"
+>to_regrole</CODE
 >
-   functions translate relation, function, operator, and type names to objects
-   of type <TT
+   functions translate relation, function, operator, type, schema, and role
+   names to objects of
+   type <TT
 CLASS="TYPE"
 >regclass</TT
 >, <TT
@@ -3364,10 +3342,17 @@ CLASS="TYPE"
 >, <TT
 CLASS="TYPE"
 >regoperator</TT
->, and <TT
+>, <TT
 CLASS="TYPE"
 >regtype</TT
 >,
+   <TT
+CLASS="TYPE"
+>regnamespace</TT
+>, and <TT
+CLASS="TYPE"
+>regrole</TT
+>
    respectively.  These functions differ from a cast from
    text in that they don't accept a numeric OID, and that they return null
    rather than throwing an error if the name is not found (or, for
@@ -3381,9 +3366,342 @@ CLASS="FUNCTION"
    the given name matches multiple objects).
   </P
 ><P
+>   <A
+HREF="functions-info.html#FUNCTIONS-INFO-OBJECT-TABLE"
+>Table 9-61</A
+> lists functions related to
+   database object identification and addressing.
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-INFO-OBJECT-TABLE"
+></A
+><P
+><B
+>Table 9-61. Object Information and Addressing Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Name</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_describe_object(<TT
+CLASS="PARAMETER"
+>catalog_id</TT
+>, <TT
+CLASS="PARAMETER"
+>object_id</TT
+>, <TT
+CLASS="PARAMETER"
+>object_sub_id</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>get description of a database object</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_identify_object(<TT
+CLASS="PARAMETER"
+>catalog_id</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>object_id</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>object_sub_id</TT
+> <TT
+CLASS="TYPE"
+>integer</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="PARAMETER"
+>type</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>schema</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>name</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>identity</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>get identity of a database object</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_identify_object_as_address(<TT
+CLASS="PARAMETER"
+>catalog_id</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>object_id</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>object_sub_id</TT
+> <TT
+CLASS="TYPE"
+>integer</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="PARAMETER"
+>type</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>name</TT
+> <TT
+CLASS="TYPE"
+>text[]</TT
+>, <TT
+CLASS="PARAMETER"
+>args</TT
+> <TT
+CLASS="TYPE"
+>text[]</TT
+></TD
+><TD
+>get external representation of a database object's address</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_get_object_address(<TT
+CLASS="PARAMETER"
+>type</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>name</TT
+> <TT
+CLASS="TYPE"
+>text[]</TT
+>, <TT
+CLASS="PARAMETER"
+>args</TT
+> <TT
+CLASS="TYPE"
+>text[]</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="PARAMETER"
+>catalog_id</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>object_id</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
+>, <TT
+CLASS="PARAMETER"
+>object_sub_id</TT
+> <TT
+CLASS="TYPE"
+>int32</TT
+></TD
+><TD
+>get address of a database object, from its external representation</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   <CODE
+CLASS="FUNCTION"
+>pg_describe_object</CODE
+> returns a textual description of a database
+   object specified by catalog OID, object OID and a (possibly zero) sub-object ID.
+   This description is intended to be human-readable, and might be translated,
+   depending on server configuration.
+   This is useful to determine the identity of an object as stored in the
+   <TT
+CLASS="STRUCTNAME"
+>pg_depend</TT
+> catalog.
+  </P
+><P
+>   <CODE
+CLASS="FUNCTION"
+>pg_identify_object</CODE
+> returns a row containing enough information
+   to uniquely identify the database object specified by catalog OID, object OID and a
+   (possibly zero) sub-object ID.  This information is intended to be machine-readable,
+   and is never translated.
+   <TT
+CLASS="PARAMETER"
+>type</TT
+> identifies the type of database object;
+   <TT
+CLASS="PARAMETER"
+>schema</TT
+> is the schema name that the object belongs in, or
+   <TT
+CLASS="LITERAL"
+>NULL</TT
+> for object types that do not belong to schemas;
+   <TT
+CLASS="PARAMETER"
+>name</TT
+> is the name of the object, quoted if necessary, only
+   present if it can be used (alongside schema name, if pertinent) as a unique
+   identifier of the object, otherwise <TT
+CLASS="LITERAL"
+>NULL</TT
+>;
+   <TT
+CLASS="PARAMETER"
+>identity</TT
+> is the complete object identity, with the precise format
+   depending on object type, and each part within the format being
+   schema-qualified and quoted as necessary.
+  </P
+><P
+>   <CODE
+CLASS="FUNCTION"
+>pg_identify_object_as_address</CODE
+> returns a row containing
+   enough information to uniquely identify the database object specified by
+   catalog OID, object OID and a (possibly zero) sub-object ID.  The returned
+   information is independent of the current server, that is, it could be used
+   to identify an identically named object in another server.
+   <TT
+CLASS="PARAMETER"
+>type</TT
+> identifies the type of database object;
+   <TT
+CLASS="PARAMETER"
+>name</TT
+> and <TT
+CLASS="PARAMETER"
+>args</TT
+> are text arrays that together
+   form a reference to the object.  These three columns can be passed to
+   <CODE
+CLASS="FUNCTION"
+>pg_get_object_address</CODE
+> to obtain the internal address
+   of the object.
+   This function is the inverse of <CODE
+CLASS="FUNCTION"
+>pg_get_object_address</CODE
+>.
+  </P
+><P
+>   <CODE
+CLASS="FUNCTION"
+>pg_get_object_address</CODE
+> returns a row containing enough
+   information to uniquely identify the database object specified by its
+   type and object name and argument arrays.  The returned values are the
+   ones that would be used in system catalogs such as <TT
+CLASS="STRUCTNAME"
+>pg_depend</TT
+>
+   and can be passed to other system functions such as
+   <CODE
+CLASS="FUNCTION"
+>pg_identify_object</CODE
+> or <CODE
+CLASS="FUNCTION"
+>pg_describe_object</CODE
+>.
+   <TT
+CLASS="PARAMETER"
+>catalog_id</TT
+> is the OID of the system catalog containing the
+   object;
+   <TT
+CLASS="PARAMETER"
+>object_id</TT
+> is the OID of the object itself, and
+   <TT
+CLASS="PARAMETER"
+>object_sub_id</TT
+> is the object sub-ID, or zero if none.
+   This function is the inverse of <CODE
+CLASS="FUNCTION"
+>pg_identify_object_as_address</CODE
+>.
+  </P
+><P
 >    The functions shown in <A
 HREF="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE"
->Table 9-60</A
+>Table 9-62</A
 >
     extract comments previously stored with the <A
 HREF="sql-comment.html"
@@ -3399,7 +3717,7 @@ NAME="FUNCTIONS-INFO-COMMENT-TABLE"
 ></A
 ><P
 ><B
->Table 9-60. Comment Information Functions</B
+>Table 9-62. Comment Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3561,7 +3879,7 @@ CLASS="FUNCTION"
 ><P
 >    The functions shown in <A
 HREF="functions-info.html#FUNCTIONS-TXID-SNAPSHOT"
->Table 9-61</A
+>Table 9-63</A
 >
     provide server transaction information in an exportable form.  The main
     use of these functions is to determine which transactions were committed
@@ -3574,7 +3892,7 @@ NAME="FUNCTIONS-TXID-SNAPSHOT"
 ></A
 ><P
 ><B
->Table 9-61. Transaction IDs and Snapshots</B
+>Table 9-63. Transaction IDs and Snapshots</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3605,7 +3923,7 @@ CLASS="TYPE"
 >bigint</TT
 ></TD
 ><TD
->get current transaction ID</TD
+>get current transaction ID, assigning a new one if the current transaction does not have one</TD
 ></TR
 ><TR
 ><TD
@@ -3735,7 +4053,7 @@ CLASS="TYPE"
     visibility at a particular moment in time.  Its components are
     described in <A
 HREF="functions-info.html#FUNCTIONS-TXID-SNAPSHOT-PARTS"
->Table 9-62</A
+>Table 9-64</A
 >.
    </P
 ><DIV
@@ -3745,7 +4063,7 @@ NAME="FUNCTIONS-TXID-SNAPSHOT-PARTS"
 ></A
 ><P
 ><B
->Table 9-62. Snapshot Components</B
+>Table 9-64. Snapshot Components</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3847,6 +4165,96 @@ CLASS="LITERAL"
 >xmin=10, xmax=20, xip_list=10, 14, 15</TT
 >.
    </P
+><P
+>    The functions shown in <A
+HREF="functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP"
+>Table 9-65</A
+>
+    provide information about transactions that have been already committed.
+    These functions mainly provide information about when the transactions
+    were committed. They only provide useful data when
+    <A
+HREF="runtime-config-replication.html#GUC-TRACK-COMMIT-TIMESTAMP"
+>track_commit_timestamp</A
+> configuration option is enabled
+    and only for transactions that were committed after it was enabled.
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-COMMIT-TIMESTAMP"
+></A
+><P
+><B
+>Table 9-65. Committed transaction information</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Name</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_xact_commit_timestamp(<TT
+CLASS="PARAMETER"
+>xid</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>get commit timestamp of a transaction</TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_last_committed_xact()</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="PARAMETER"
+>xid</TT
+> <TT
+CLASS="TYPE"
+>xid</TT
+>, <TT
+CLASS="PARAMETER"
+>timestamp</TT
+> <TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>get transaction ID and commit timestamp of latest committed transaction</TD
+></TR
+></TBODY
+></TABLE
+></DIV
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
 REL="PREVIOUS"
-TITLE="CREATE OPERATOR FAMILY"
-HREF="sql-createopfamily.html"><LINK
+TITLE="CREATE POLICY"
+HREF="sql-createpolicy.html"><LINK
 REL="NEXT"
 TITLE="CREATE RULE"
 HREF="sql-createrule.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="CREATE OPERATOR FAMILY"
-HREF="sql-createopfamily.html"
+TITLE="CREATE POLICY"
+HREF="sql-createpolicy.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-CREATEROLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN74892"
+NAME="AEN77587"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN74892"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN74895"
+NAME="AEN77590"
 ></A
 ><H2
 >Synopsis</H2
@@ -141,6 +141,7 @@ CLASS="REPLACEABLE"
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
     | REPLICATION | NOREPLICATION
+    | BYPASSRLS | NOBYPASSRLS
     | CONNECTION LIMIT <TT
 CLASS="REPLACEABLE"
 ><I
@@ -199,7 +200,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74910"
+NAME="AEN77605"
 ></A
 ><H2
 >Description</H2
@@ -242,7 +243,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74921"
+NAME="AEN77616"
 ></A
 ><H2
 >Parameters</H2
@@ -466,6 +467,34 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >NOREPLICATION</TT
 > is the default.
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>BYPASSRLS</TT
+><BR><TT
+CLASS="LITERAL"
+>NOBYPASSRLS</TT
+></DT
+><DD
+><P
+>        These clauses determine whether a role bypasses every row-level
+        security (RLS) policy.  <TT
+CLASS="LITERAL"
+>NOBYPASSRLS</TT
+> is the default.
+        Note that pg_dump will set <TT
+CLASS="LITERAL"
+>row_security</TT
+> to
+        <TT
+CLASS="LITERAL"
+>OFF</TT
+> by default, to ensure all contents of a table are
+        dumped out.  If the user running pg_dump does not have appropriate
+        permissions, an error will be returned.  The superuser and owner of the
+        table being dumped always bypass RLS.
        </P
 ></DD
 ><DT
@@ -711,7 +740,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75081"
+NAME="AEN77786"
 ></A
 ><H2
 >Notes</H2
@@ -894,7 +923,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75124"
+NAME="AEN77829"
 ></A
 ><H2
 >Examples</H2
@@ -943,7 +972,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75137"
+NAME="AEN77842"
 ></A
 ><H2
 >Compatibility</H2
@@ -1003,7 +1032,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75151"
+NAME="AEN77856"
 ></A
 ><H2
 >See Also</H2
@@ -1045,7 +1074,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="sql-createopfamily.html"
+HREF="sql-createpolicy.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -1073,7 +1102,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->CREATE OPERATOR FAMILY</TD
+>CREATE POLICY</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

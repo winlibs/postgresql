@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -978,7 +978,7 @@ CLASS="PROGRAMLISTING"
 
   This function is described in <A
 HREF="functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS"
->Table 9-55</A
+>Table 9-56</A
 >.
  </P
 ><P
@@ -1003,6 +1003,31 @@ HREF="functions-array.html"
 HREF="indexes-types.html"
 >Section 11.2</A
 >.
+ </P
+><P
+>  You can also search for specific values in an array using the <CODE
+CLASS="FUNCTION"
+>array_position</CODE
+>
+  and <CODE
+CLASS="FUNCTION"
+>array_positions</CODE
+> functions. The former returns the subscript of
+  the first occurrence of a value in an array; the latter returns an array with the
+  subscripts of all occurrences of the value in the array.  For example:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT array_position(ARRAY['sun','mon','tue','wed','thu','fri','sat'], 'mon');
+ array_positions
+-----------------
+ 2
+
+SELECT array_positions(ARRAY[1, 4, 3, 1, 3, 4, 2, 1], 1);
+ array_positions
+-----------------
+ {1,4,8}</PRE
+><P>
  </P
 ><DIV
 CLASS="TIP"

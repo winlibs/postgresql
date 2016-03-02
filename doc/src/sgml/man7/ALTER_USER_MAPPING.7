@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER USER MAPPING
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER USER MAPPING" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER USER MAPPING" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,13 +32,12 @@ ALTER_USER_MAPPING \- change the definition of a user mapping
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER USER MAPPING FOR { \fIuser_name\fR | USER | CURRENT_USER | PUBLIC }
+ALTER USER MAPPING FOR { \fIuser_name\fR | USER | CURRENT_USER | SESSION_USER | PUBLIC }
     SERVER \fIserver_name\fR
     OPTIONS ( [ ADD | SET | DROP ] \fIoption\fR [\*(Aq\fIvalue\fR\*(Aq] [, \&.\&.\&. ] )
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER USER MAPPING\fR
 changes the definition of a user mapping\&.
 .PP
@@ -89,7 +88,6 @@ ALTER USER MAPPING FOR bob SERVER foo OPTIONS (user \*(Aqbob\*(Aq, password \*(A
 .\}
 .SH "COMPATIBILITY"
 .PP
-
 \fBALTER USER MAPPING\fR
 conforms to ISO/IEC 9075\-9 (SQL/MED)\&. There is a subtle syntax issue: The standard omits the
 FOR

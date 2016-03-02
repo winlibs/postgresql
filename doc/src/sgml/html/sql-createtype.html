@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETYPE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN77364"
+NAME="AEN80200"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN77364"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN77367"
+NAME="AEN80203"
 ></A
 ><H2
 >Synopsis</H2
@@ -304,7 +304,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77400"
+NAME="AEN80236"
 ></A
 ><H2
 >Description</H2
@@ -359,7 +359,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77413"
+NAME="AEN80249"
 ></A
 ><H3
 >Composite Types</H3
@@ -522,7 +522,7 @@ HREF="rangetypes.html#RANGETYPES-DEFINING"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77447"
+NAME="AEN80283"
 ></A
 ><H3
 >Base Types</H3
@@ -723,7 +723,7 @@ CLASS="REPLACEABLE"
 ></TT
 ></TT
 >, with no additional parameters.  Then the
-   I/O functions can be defined referencing the shell type.  Finally,
+   C I/O functions can be defined referencing the shell type.  Finally,
    <TT
 CLASS="COMMAND"
 >CREATE TYPE</TT
@@ -888,7 +888,12 @@ CLASS="LITERAL"
 >typlen</TT
 > to -1.)  The internal representation of all
    variable-length types must start with a 4-byte integer giving the total
-   length of this value of the type.
+   length of this value of the type.  (Note that the length field is often
+   encoded, as described in <A
+HREF="storage-toast.html"
+>Section 63.2</A
+>; it's unwise
+   to access it directly.)
   </P
 ><P
 >   The optional flag <TT
@@ -896,12 +901,12 @@ CLASS="LITERAL"
 >PASSEDBYVALUE</TT
 > indicates that
    values of this data type are passed by value, rather than by
-   reference.  You cannot pass by value types whose internal
-   representation is larger than the size of the <TT
+   reference.  Types passed by value must be fixed-length, and their internal
+   representation cannot be larger than the size of the <TT
 CLASS="TYPE"
 >Datum</TT
 > type
-   (4 bytes on most machines, 8 bytes on a few).
+   (4 bytes on some machines, 8 bytes on others).
   </P
 ><P
 >   The <TT
@@ -961,6 +966,36 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >external</TT
 > items.)
+  </P
+><P
+>   All <TT
+CLASS="REPLACEABLE"
+><I
+>storage</I
+></TT
+> values other
+   than <TT
+CLASS="LITERAL"
+>plain</TT
+> imply that the functions of the data type
+   can handle values that have been <I
+CLASS="FIRSTTERM"
+>toasted</I
+>, as described
+   in <A
+HREF="storage-toast.html"
+>Section 63.2</A
+> and <A
+HREF="xtypes.html#XTYPES-TOAST"
+>Section 35.11.1</A
+>.
+   The specific other value given merely determines the default TOAST
+   storage strategy for columns of a toastable data type; users can pick
+   other strategies for individual columns using <TT
+CLASS="LITERAL"
+>ALTER TABLE
+   SET STORAGE</TT
+>.
   </P
 ><P
 >   The <TT
@@ -1116,7 +1151,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN77557"
+NAME="AEN80401"
 ></A
 ><H3
 >Array Types</H3
@@ -1162,8 +1197,8 @@ CLASS="OPTION"
 CLASS="TYPE"
 >point</TT
 >
-    is represented as just two floating-point numbers, each can be accessed using
-    <TT
+    is represented as just two floating-point numbers, which can be accessed
+    using <TT
 CLASS="LITERAL"
 >point[0]</TT
 > and <TT
@@ -1190,7 +1225,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77572"
+NAME="AEN80416"
 ></A
 ><H2
 >Parameters</H2
@@ -1538,7 +1573,7 @@ CLASS="QUOTE"
       Other standard category codes can be found in
       <A
 HREF="catalog-pg-type.html#CATALOG-TYPCATEGORY-TABLE"
->Table 48-53</A
+>Table 49-57</A
 >.  You may also choose
       other ASCII characters in order to create custom categories.
      </P
@@ -1726,7 +1761,7 @@ CLASS="TYPE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77745"
+NAME="AEN80589"
 ></A
 ><H2
 >Examples</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Definition"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="DDL-INHERIT"
->5.8. Inheritance</A
+>5.9. Inheritance</A
 ></H1
 ><P
 >   <SPAN
@@ -317,6 +317,20 @@ CLASS="PROGRAMLISTING"
 ><P>
   </P
 ><P
+>   Another way to get the same effect is to use the <TT
+CLASS="TYPE"
+>regclass</TT
+>
+   pseudo-type, which will print the table OID symbolically:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT c.tableoid::regclass, c.name, c.altitude
+FROM cities c
+WHERE c.altitude &gt; 500;</PRE
+><P>
+  </P
+><P
 >   Inheritance does not automatically propagate data from
    <TT
 CLASS="COMMAND"
@@ -333,7 +347,7 @@ CLASS="COMMAND"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >INSERT INTO cities (name, population, altitude, state)
-VALUES ('New York', NULL, NULL, 'NY');</PRE
+VALUES ('Albany', NULL, NULL, 'NY');</PRE
 ><P>
    We might hope that the data would somehow be routed to the
    <TT
@@ -414,7 +428,7 @@ CLASS="COMMAND"
    when the inheritance relationship is being used for table
    partitioning (see <A
 HREF="ddl-partitioning.html"
->Section 5.9</A
+>Section 5.10</A
 >).
   </P
 ><P
@@ -482,13 +496,23 @@ CLASS="COMMAND"
    directly is, however, not automatically allowed and would require
    further privileges to be granted.
   </P
+><P
+>   Foreign tables (see <A
+HREF="ddl-foreign-data.html"
+>Section 5.11</A
+>) can also
+   be part of inheritance hierarchies, either as parent or child
+   tables, just as regular tables can be.  If a foreign table is part
+   of an inheritance hierarchy then any operations not supported by
+   the foreign table are not supported on the whole hierarchy either.
+  </P
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
 NAME="DDL-INHERIT-CAVEATS"
->5.8.1. Caveats</A
+>5.9.1. Caveats</A
 ></H2
 ><P
 >   Note that not all SQL commands are able to work on

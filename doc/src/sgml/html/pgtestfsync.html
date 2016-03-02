@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
-TITLE="Server Applications"
-HREF="contrib-prog-server.html"><LINK
+TITLE="PostgreSQL Server Applications"
+HREF="reference-server.html"><LINK
 REL="PREVIOUS"
-TITLE="pg_standby"
-HREF="pgstandby.html"><LINK
+TITLE="pg_rewind"
+HREF="app-pgrewind.html"><LINK
 REL="NEXT"
 TITLE="pg_test_timing"
 HREF="pgtesttiming.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="pg_standby"
-HREF="pgstandby.html"
+TITLE="pg_rewind"
+HREF="app-pgrewind.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -63,7 +63,7 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="contrib-prog-server.html"
+HREF="reference-server.html"
 ACCESSKEY="U"
 >Up</A
 ></TD
@@ -98,18 +98,21 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN166218"
+NAME="AEN98515"
 ></A
 ><H2
 >Name</H2
->pg_test_fsync&nbsp;--&nbsp;determine fastest wal_sync_method for <SPAN
+>pg_test_fsync&nbsp;--&nbsp;determine fastest <TT
+CLASS="VARNAME"
+>wal_sync_method</TT
+> for <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 ></DIV
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN166222"
+NAME="AEN98520"
 ></A
 ><H2
 >Synopsis</H2
@@ -127,7 +130,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN166227"
+NAME="AEN98525"
 ></A
 ><H2
 >Description</H2
@@ -166,7 +169,7 @@ HREF="runtime-config-wal.html#GUC-COMMIT-DELAY"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN166236"
+NAME="AEN98534"
 ></A
 ><H2
 >Options</H2
@@ -269,24 +272,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN166275"
-></A
-><H2
->Author</H2
-><P
->   Bruce Momjian <CODE
-CLASS="EMAIL"
->&#60;<A
-HREF="mailto:bruce@momjian.us"
->bruce@momjian.us</A
->&#62;</CODE
->
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN166279"
+NAME="AEN98573"
 ></A
 ><H2
 >See Also</H2
@@ -313,7 +299,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="pgstandby.html"
+HREF="app-pgrewind.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -343,14 +329,14 @@ ALIGN="left"
 VALIGN="top"
 ><SPAN
 CLASS="APPLICATION"
->pg_standby</SPAN
+>pg_rewind</SPAN
 ></TD
 ><TD
 WIDTH="34%"
 ALIGN="center"
 VALIGN="top"
 ><A
-HREF="contrib-prog-server.html"
+HREF="reference-server.html"
 ACCESSKEY="U"
 >Up</A
 ></TD

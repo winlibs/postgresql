@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="The Rule System"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -329,13 +329,13 @@ CLASS="LITERAL"
 >INSERT</TT
 >.  This might not be true in more complex scenarios.</P
 ><P
->    When it is necessary for a view to provide row-level security, the
+>    When it is necessary for a view to provide row level security, the
     <TT
 CLASS="LITERAL"
 >security_barrier</TT
 > attribute should be applied to
     the view.  This prevents maliciously-chosen functions and operators from
-    being invoked on rows until after the view has done its work.  For
+    being passed values from rows until after the view has done its work.  For
     example, if the view shown above had been created like this, it would
     be secure:
 </P><PRE
@@ -361,9 +361,15 @@ CLASS="LITERAL"
     operators.  The query planner can safely allow such functions to be evaluated
     at any point in the query execution process, since invoking them on rows
     invisible to the user will not leak any information about the unseen rows.
-    In contrast, a function that might throw an error depending on the values
-    received as arguments (such as one that throws an error in the event of
-    overflow or division by zero) are not leak-proof, and could provide
+    Further, functions which do not take arguments or which are not passed any
+    arguments from the security barrier view do not have to be marked as
+    <TT
+CLASS="LITERAL"
+>LEAKPROOF</TT
+> to be pushed down, as they never receive data
+    from the view.  In contrast, a function that might throw an error depending
+    on the values received as arguments (such as one that throws an error in the
+    event of overflow or division by zero) is not leak-proof, and could provide
     significant information about the unseen rows if applied before the security
     view's row filters.</P
 ><P

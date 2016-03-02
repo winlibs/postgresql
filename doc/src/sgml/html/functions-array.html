@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -694,6 +694,86 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >          <CODE
 CLASS="FUNCTION"
+>array_position</CODE
+>(<TT
+CLASS="TYPE"
+>anyarray</TT
+>, <TT
+CLASS="TYPE"
+>anyelement</TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, <TT
+CLASS="TYPE"
+>int</TT
+></SPAN
+>])
+         </TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>int</TT
+></TD
+><TD
+>returns the subscript of the first occurrence of the second
+        argument in the array, starting at the element indicated by the third
+        argument or at the first element (array must be one-dimensional)</TD
+><TD
+><TT
+CLASS="LITERAL"
+>array_position(ARRAY['sun','mon','tue','wed','thu','fri','sat'], 'mon')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>2</TT
+></TD
+></TR
+><TR
+><TD
+>         <TT
+CLASS="LITERAL"
+>          <CODE
+CLASS="FUNCTION"
+>array_positions</CODE
+>(<TT
+CLASS="TYPE"
+>anyarray</TT
+>, <TT
+CLASS="TYPE"
+>anyelement</TT
+>)
+         </TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>int[]</TT
+></TD
+><TD
+>returns an array of subscripts of all occurrences of the second
+        argument in the array given as first argument (array must be
+        one-dimensional)</TD
+><TD
+><TT
+CLASS="LITERAL"
+>array_positions(ARRAY['A','A','B','A'], 'A')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>{1,2,4}</TT
+></TD
+></TR
+><TR
+><TD
+>         <TT
+CLASS="LITERAL"
+>          <CODE
+CLASS="FUNCTION"
 >array_prepend</CODE
 >(<TT
 CLASS="TYPE"
@@ -1026,6 +1106,44 @@ NULL baz</PRE
 ></TBODY
 ></TABLE
 ></DIV
+><P
+>    In <CODE
+CLASS="FUNCTION"
+>array_position</CODE
+> and <CODE
+CLASS="FUNCTION"
+>array_positions</CODE
+>,
+    each array element is compared to the searched value using
+    <TT
+CLASS="LITERAL"
+>IS NOT DISTINCT FROM</TT
+> semantics.
+   </P
+><P
+>    In <CODE
+CLASS="FUNCTION"
+>array_position</CODE
+>, <TT
+CLASS="LITERAL"
+>NULL</TT
+> is returned
+    if the value is not found.
+   </P
+><P
+>    In <CODE
+CLASS="FUNCTION"
+>array_positions</CODE
+>, <TT
+CLASS="LITERAL"
+>NULL</TT
+> is returned
+    only if the array is <TT
+CLASS="LITERAL"
+>NULL</TT
+>; if the value is not found in
+    the array, an empty array is returned instead.
+   </P
 ><P
 >    In <CODE
 CLASS="FUNCTION"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-SELECT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN83196"
+NAME="AEN86479"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN83196"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN83201"
+NAME="AEN86484"
 ></A
 ><H2
 >Synopsis</H2
@@ -147,7 +147,7 @@ CLASS="REPLACEABLE"
     [ GROUP BY <TT
 CLASS="REPLACEABLE"
 ><I
->expression</I
+>grouping_element</I
 ></TT
 > [, ...] ]
     [ HAVING <TT
@@ -207,7 +207,7 @@ CLASS="REPLACEABLE"
 ><I
 >table_name</I
 ></TT
-> [, ...] ] [ NOWAIT ] [...] ]
+> [, ...] ] [ NOWAIT | SKIP LOCKED ] [...] ]
 
 <SPAN
 CLASS="phrase"
@@ -238,6 +238,22 @@ CLASS="REPLACEABLE"
 >column_alias</I
 ></TT
 > [, ...] ) ] ]
+                [ TABLESAMPLE <TT
+CLASS="REPLACEABLE"
+><I
+>sampling_method</I
+></TT
+> ( <TT
+CLASS="REPLACEABLE"
+><I
+>argument</I
+></TT
+> [, ...] ) [ REPEATABLE ( <TT
+CLASS="REPLACEABLE"
+><I
+>seed</I
+></TT
+> ) ] ]
     [ LATERAL ] ( <TT
 CLASS="REPLACEABLE"
 ><I
@@ -390,6 +406,61 @@ CLASS="PHRASE"
 >and <TT
 CLASS="REPLACEABLE"
 ><I
+>grouping_element</I
+></TT
+> can be one of:</SPAN
+></SPAN
+>
+
+    ( )
+    <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+>
+    ( <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> [, ...] )
+    ROLLUP ( { <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> | ( <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> [, ...] ) } [, ...] )
+    CUBE ( { <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> | ( <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> [, ...] ) } [, ...] )
+    GROUPING SETS ( <TT
+CLASS="REPLACEABLE"
+><I
+>grouping_element</I
+></TT
+> [, ...] )
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>and <TT
+CLASS="REPLACEABLE"
+><I
 >with_query</I
 ></TT
 > is:</SPAN
@@ -443,7 +514,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83262"
+NAME="AEN86557"
 ></A
 ><H2
 >Description</H2
@@ -799,7 +870,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83346"
+NAME="AEN86641"
 ></A
 ><H2
 >Parameters</H2
@@ -1092,6 +1163,145 @@ CLASS="LITERAL"
 >.  If an alias is
         written, a column alias list can also be written to provide
         substitute names for one or more columns of the table.
+       </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>TABLESAMPLE <TT
+CLASS="REPLACEABLE"
+><I
+>sampling_method</I
+></TT
+> ( <TT
+CLASS="REPLACEABLE"
+><I
+>argument</I
+></TT
+> [, ...] ) [ REPEATABLE ( <TT
+CLASS="REPLACEABLE"
+><I
+>seed</I
+></TT
+> ) ]</TT
+></DT
+><DD
+><P
+>        A <TT
+CLASS="LITERAL"
+>TABLESAMPLE</TT
+> clause after
+        a <TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+> indicates that the
+        specified <TT
+CLASS="REPLACEABLE"
+><I
+>sampling_method</I
+></TT
+>
+        should be used to retrieve a subset of the rows in that table.
+        This sampling precedes the application of any other filters such
+        as <TT
+CLASS="LITERAL"
+>WHERE</TT
+> clauses.
+        The standard <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> distribution
+        includes two sampling methods, <TT
+CLASS="LITERAL"
+>BERNOULLI</TT
+>
+        and <TT
+CLASS="LITERAL"
+>SYSTEM</TT
+>, and other sampling methods can be
+        installed in the database via extensions.
+       </P
+><P
+>        The <TT
+CLASS="LITERAL"
+>BERNOULLI</TT
+> and <TT
+CLASS="LITERAL"
+>SYSTEM</TT
+> sampling methods
+        each accept a single <TT
+CLASS="REPLACEABLE"
+><I
+>argument</I
+></TT
+>
+        which is the fraction of the table to sample, expressed as a
+        percentage between 0 and 100.  This argument can be
+        any <TT
+CLASS="TYPE"
+>real</TT
+>-valued expression.  (Other sampling methods might
+        accept more or different arguments.)  These two methods each return
+        a randomly-chosen sample of the table that will contain
+        approximately the specified percentage of the table's rows.
+        The <TT
+CLASS="LITERAL"
+>BERNOULLI</TT
+> method scans the whole table and
+        selects or ignores individual rows independently with the specified
+        probability.
+        The <TT
+CLASS="LITERAL"
+>SYSTEM</TT
+> method does block-level sampling with
+        each block having the specified chance of being selected; all rows
+        in each selected block are returned.
+        The <TT
+CLASS="LITERAL"
+>SYSTEM</TT
+> method is significantly faster than
+        the <TT
+CLASS="LITERAL"
+>BERNOULLI</TT
+> method when small sampling
+        percentages are specified, but it may return a less-random sample of
+        the table as a result of clustering effects.
+       </P
+><P
+>        The optional <TT
+CLASS="LITERAL"
+>REPEATABLE</TT
+> clause specifies
+        a <TT
+CLASS="REPLACEABLE"
+><I
+>seed</I
+></TT
+> number or expression to use
+        for generating random numbers within the sampling method.  The seed
+        value can be any non-null floating-point value.  Two queries that
+        specify the same seed and <TT
+CLASS="REPLACEABLE"
+><I
+>argument</I
+></TT
+>
+        values will select the same sample of the table, if the table has
+        not been changed meanwhile.  But different seed values will usually
+        produce different samples.
+        If <TT
+CLASS="LITERAL"
+>REPEATABLE</TT
+> is not given then a new random
+        sample is selected for each query.
+        Note that some add-on sampling methods do not
+        accept <TT
+CLASS="LITERAL"
+>REPEATABLE</TT
+>, and will always produce new
+        samples on each use.
        </P
 ></DD
 ><DT
@@ -1754,7 +1964,7 @@ CLASS="SYNOPSIS"
 >GROUP BY <TT
 CLASS="REPLACEABLE"
 ><I
->expression</I
+>grouping_element</I
 ></TT
 > [, ...]</PRE
 ><P>
@@ -1765,14 +1975,20 @@ CLASS="LITERAL"
 >GROUP BY</TT
 > will condense into a single row all
     selected rows that share the same values for the grouped
-    expressions.  <TT
+    expressions.  An <TT
 CLASS="REPLACEABLE"
 ><I
 >expression</I
 ></TT
-> can be an input column
-    name, or the name or ordinal number of an output column
-    (<TT
+> used inside a
+    <TT
+CLASS="REPLACEABLE"
+><I
+>grouping_element</I
+></TT
+>
+    can be an input column name, or the name or ordinal number of an
+    output column (<TT
 CLASS="COMMAND"
 >SELECT</TT
 > list item), or an arbitrary
@@ -1782,6 +1998,42 @@ CLASS="LITERAL"
 >GROUP BY</TT
 > name will be interpreted as an
     input-column name rather than an output column name.
+   </P
+><P
+>    If any of <TT
+CLASS="LITERAL"
+>GROUPING SETS</TT
+>, <TT
+CLASS="LITERAL"
+>ROLLUP</TT
+> or
+    <TT
+CLASS="LITERAL"
+>CUBE</TT
+> are present as grouping elements, then the
+    <TT
+CLASS="LITERAL"
+>GROUP BY</TT
+> clause as a whole defines some number of
+    independent <TT
+CLASS="REPLACEABLE"
+><I
+>grouping sets</I
+></TT
+>.  The effect of this is
+    equivalent to constructing a <TT
+CLASS="LITERAL"
+>UNION ALL</TT
+> between
+    subqueries with the individual grouping sets as their
+    <TT
+CLASS="LITERAL"
+>GROUP BY</TT
+> clauses.  For further details on the handling
+    of grouping sets see <A
+HREF="queries-table-expressions.html#QUERIES-GROUPING-SETS"
+>Section 7.2.4</A
+>.
    </P
 ><P
 >    Aggregate functions, if any are used, are computed across all rows
@@ -2448,7 +2700,7 @@ HREF="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS"
 >, and
     <A
 HREF="queries-table-expressions.html#QUERIES-WINDOW"
->Section 7.2.4</A
+>Section 7.2.5</A
 >.
    </P
 ></DIV
@@ -3655,7 +3907,7 @@ CLASS="REPLACEABLE"
 ><I
 >table_name</I
 ></TT
-> [, ...] ] [ NOWAIT ]</PRE
+> [, ...] ] [ NOWAIT | SKIP LOCKED ]</PRE
 ><P>
 
     where <TT
@@ -3682,18 +3934,33 @@ HREF="explicit-locking.html#LOCKING-ROWS"
    </P
 ><P
 >    To prevent the operation from waiting for other transactions to commit,
-    use the <TT
+    use either the <TT
 CLASS="LITERAL"
 >NOWAIT</TT
-> option.  With <TT
+> or <TT
+CLASS="LITERAL"
+>SKIP LOCKED</TT
+>
+    option.  With <TT
 CLASS="LITERAL"
 >NOWAIT</TT
->, the statement
-    reports an error, rather than waiting, if a selected row
-    cannot be locked immediately.  Note that <TT
+>, the statement reports an error, rather
+    than waiting, if a selected row cannot be locked immediately.
+    With <TT
+CLASS="LITERAL"
+>SKIP LOCKED</TT
+>, any selected rows that cannot be
+    immediately locked are skipped.  Skipping locked rows provides an
+    inconsistent view of the data, so this is not suitable for general purpose
+    work, but can be used to avoid lock contention with multiple consumers
+    accessing a queue-like table.
+    Note that <TT
 CLASS="LITERAL"
 >NOWAIT</TT
-> applies only
+> and <TT
+CLASS="LITERAL"
+>SKIP LOCKED</TT
+> apply only
     to the row-level lock(s) &mdash; the required <TT
 CLASS="LITERAL"
 >ROW SHARE</TT
@@ -3750,7 +4017,12 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >NOWAIT</TT
 > if that is specified in any of the clauses
-    affecting it.
+    affecting it.  Otherwise, it is processed
+    as <TT
+CLASS="LITERAL"
+>SKIP LOCKED</TT
+> if that is specified in any of the
+    clauses affecting it.
    </P
 ><P
 >    The locking clauses cannot be
@@ -3995,7 +4267,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84121"
+NAME="AEN87460"
 ></A
 ><H2
 >Examples</H2
@@ -4288,7 +4560,7 @@ FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;</P
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84163"
+NAME="AEN87502"
 ></A
 ><H2
 >Compatibility</H2
@@ -4303,7 +4575,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84167"
+NAME="AEN87506"
 ></A
 ><H3
 >Omitted <TT
@@ -4364,7 +4636,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84181"
+NAME="AEN87520"
 ></A
 ><H3
 >Empty <TT
@@ -4392,7 +4664,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84188"
+NAME="AEN87527"
 ></A
 ><H3
 >Omitting the <TT
@@ -4441,7 +4713,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84200"
+NAME="AEN87539"
 ></A
 ><H3
 ><TT
@@ -4488,7 +4760,29 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84213"
+NAME="AEN87552"
+></A
+><H3
+><TT
+CLASS="LITERAL"
+>TABLESAMPLE</TT
+> Clause Restrictions</H3
+><P
+>    The <TT
+CLASS="LITERAL"
+>TABLESAMPLE</TT
+> clause is currently accepted only on
+    regular tables and materialized views.  According to the SQL standard
+    it should be possible to apply it to any <TT
+CLASS="LITERAL"
+>FROM</TT
+> item.
+   </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN87558"
 ></A
 ><H3
 >Function Calls in <TT
@@ -4566,7 +4860,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84232"
+NAME="AEN87577"
 ></A
 ><H3
 >Namespace Available to <TT
@@ -4620,7 +4914,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84245"
+NAME="AEN87590"
 ></A
 ><H3
 >Functional Dependencies</H3
@@ -4644,7 +4938,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84251"
+NAME="AEN87596"
 ></A
 ><H3
 ><TT
@@ -4669,7 +4963,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84257"
+NAME="AEN87602"
 ></A
 ><H3
 ><TT
@@ -4727,7 +5021,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84271"
+NAME="AEN87616"
 ></A
 ><H3
 ><TT
@@ -4773,18 +5067,21 @@ CLASS="LITERAL"
     <TT
 CLASS="LITERAL"
 >FOR KEY SHARE</TT
-> variants,
-    as well as the <TT
+> variants, as well as the <TT
 CLASS="LITERAL"
 >NOWAIT</TT
-> option,
-    do not appear in the standard.
+>
+    and <TT
+CLASS="LITERAL"
+>SKIP LOCKED</TT
+> options, do not appear in the
+    standard.
    </P
 ></DIV
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84287"
+NAME="AEN87633"
 ></A
 ><H3
 >Data-Modifying Statements in <TT
@@ -4815,7 +5112,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84296"
+NAME="AEN87642"
 ></A
 ><H3
 >Nonstandard Clauses</H3

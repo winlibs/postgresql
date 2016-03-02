@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Client Authentication"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -399,30 +399,59 @@ CLASS="REPLACEABLE"
     of the server machine.
    </P
 ><P
->    Client principals must have their <SPAN
+>    Client principals can be mapped to different <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> database user
-    name as their first component, for example
+>
+    database user names with <TT
+CLASS="FILENAME"
+>pg_ident.conf</TT
+>.  For example,
     <TT
 CLASS="LITERAL"
 >pgusername@realm</TT
->.  Alternatively, you can use a user name
-    mapping to map from the first component of the principal name to the
-    database user name.  By default, the realm of the client is
-    not checked by <SPAN
+> could be mapped to just <TT
+CLASS="LITERAL"
+>pgusername</TT
+>.
+    Alternatively, you can use the full <TT
+CLASS="LITERAL"
+>username@realm</TT
+> principal as
+    the role name in <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
->. If you have cross-realm
-    authentication enabled and need to verify the realm, use the
+> without any mapping.
+   </P
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> also supports a parameter to strip the realm from
+    the principal.  This method is supported for backwards compatibility and is
+    strongly discouraged as it is then impossible to distinguish different users
+    with the same user name but coming from different realms.  To enable this,
+    set <TT
+CLASS="LITERAL"
+>include_realm</TT
+> to 0.  For simple single-realm
+    installations, <TT
+CLASS="LITERAL"
+>include_realm</TT
+> combined with the
     <TT
 CLASS="LITERAL"
 >krb_realm</TT
-> parameter, or enable <TT
+> parameter (which checks that the realm provided
+    matches exactly what is in the <TT
 CLASS="LITERAL"
->include_realm</TT
->
-    and use user name mapping to check the realm.
+>krb_realm</TT
+> parameter) would be a secure but
+    less capable option compared to specifying an explicit mapping in
+    <TT
+CLASS="FILENAME"
+>pg_ident.conf</TT
+>.
    </P
 ><P
 >    Make sure that your server keytab file is readable (and preferably
@@ -513,21 +542,22 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        If set to 1, the realm name from the authenticated user
-        principal is included in the system user name that's passed through
-        user name mapping (<A
+>        If set to 0, the realm name from the authenticated user principal is
+        stripped off before being passed through the user name mapping
+        (<A
 HREF="auth-username-maps.html"
 >Section 19.2</A
->). This is
-        the recommended configuration as, otherwise, it is impossible to
-        differentiate users with the same username who are from different
-        realms.  The default for this parameter is 0 (meaning to not include
-        the realm in the system user name) but may change to 1 in a future
-        version of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.  Users can set it
-        explicitly to avoid any issues when upgrading.
+>). This is discouraged and is
+        primarily available for backwards compatibility as it is not secure
+        in multi-realm environments unless <TT
+CLASS="LITERAL"
+>krb_realm</TT
+> is also used.  Users
+        are recommended to leave include_realm set to the default (1) and to
+        provide an explicit mapping in <TT
+CLASS="FILENAME"
+>pg_ident.conf</TT
+>.
        </P
 ></DD
 ><DT
@@ -550,19 +580,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >username/hostbased@EXAMPLE.COM</TT
 >), the
-        default user name used for mapping is
-        <TT
-CLASS="LITERAL"
->username</TT
-> (or <TT
-CLASS="LITERAL"
->username/hostbased</TT
->,
-        respectively), unless <TT
-CLASS="LITERAL"
->include_realm</TT
-> has been set to
-        1 (as recommended, see above), in which case
+        user name used for mapping is
         <TT
 CLASS="LITERAL"
 >username@EXAMPLE.COM</TT
@@ -570,8 +588,19 @@ CLASS="LITERAL"
         <TT
 CLASS="LITERAL"
 >username/hostbased@EXAMPLE.COM</TT
+>, respectively),
+        unless <TT
+CLASS="LITERAL"
+>include_realm</TT
+> has been set to 0, in which case
+        <TT
+CLASS="LITERAL"
+>username</TT
+> (or <TT
+CLASS="LITERAL"
+>username/hostbased</TT
 >)
-        is what is seen as the system username when mapping.
+        is what is seen as the system user name when mapping.
        </P
 ></DD
 ><DT
@@ -674,21 +703,22 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        If set to 1, the realm name from the authenticated user
-        principal is included in the system user name that's passed through
-        user name mapping (<A
+>        If set to 0, the realm name from the authenticated user principal is
+        stripped off before being passed through the user name mapping
+        (<A
 HREF="auth-username-maps.html"
 >Section 19.2</A
->). This is
-        the recommended configuration as, otherwise, it is impossible to
-        differentiate users with the same username who are from different
-        realms.  The default for this parameter is 0 (meaning to not include
-        the realm in the system user name) but may change to 1 in a future
-        version of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.  Users can set it
-        explicitly to avoid any issues when upgrading.
+>). This is discouraged and is
+        primarily available for backwards compatibility as it is not secure
+        in multi-realm environments unless <TT
+CLASS="LITERAL"
+>krb_realm</TT
+> is also used.  Users
+        are recommended to leave include_realm set to the default (1) and to
+        provide an explicit mapping in <TT
+CLASS="FILENAME"
+>pg_ident.conf</TT
+>.
        </P
 ></DD
 ><DT
@@ -711,19 +741,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >username/hostbased@EXAMPLE.COM</TT
 >), the
-        default user name used for mapping is
-        <TT
-CLASS="LITERAL"
->username</TT
-> (or <TT
-CLASS="LITERAL"
->username/hostbased</TT
->,
-        respectively), unless <TT
-CLASS="LITERAL"
->include_realm</TT
-> has been set to
-        1 (as recommended, see above), in which case
+        user name used for mapping is
         <TT
 CLASS="LITERAL"
 >username@EXAMPLE.COM</TT
@@ -731,8 +749,19 @@ CLASS="LITERAL"
         <TT
 CLASS="LITERAL"
 >username/hostbased@EXAMPLE.COM</TT
+>, respectively),
+        unless <TT
+CLASS="LITERAL"
+>include_realm</TT
+> has been set to 0, in which case
+        <TT
+CLASS="LITERAL"
+>username</TT
+> (or <TT
+CLASS="LITERAL"
+>username/hostbased</TT
 >)
-        is what is seen as the system username when mapping.
+        is what is seen as the system user name when mapping.
        </P
 ></DD
 ><DT
@@ -865,7 +894,7 @@ CLASS="REPLACEABLE"
     trust the machine running the ident server.
     Heed the warning:
     <A
-NAME="AEN34328"
+NAME="AEN35538"
 ></A
 ><TABLE
 BORDER="0"
@@ -1096,7 +1125,13 @@ CLASS="REPLACEABLE"
     this search, the server disconnects and re-binds to the directory as
     this user, using the password specified by the client, to verify that the
     login is correct. This mode is the same as that used by LDAP authentication
-    schemes in other software, such as Apache mod_authnz_ldap and pam_ldap.
+    schemes in other software, such as Apache <TT
+CLASS="LITERAL"
+>mod_authnz_ldap</TT
+> and <TT
+CLASS="LITERAL"
+>pam_ldap</TT
+>.
     This method allows for significantly more flexibility
     in where the user objects are located in the directory, but will cause
     two separate connections to the LDAP server to be made.

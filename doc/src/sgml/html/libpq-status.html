@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -823,6 +823,221 @@ CLASS="SYNOPSIS"
        connection attempt to detect whether the server demanded a password.
       </P
 ></DD
+></DL
+></DIV
+><P>
+  </P
+><P
+>    The following functions return information related to SSL. This information
+    usually doesn't change after a connection is established.
+
+    <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A
+NAME="LIBPQ-PQSSLINUSE"
+></A
+><CODE
+CLASS="FUNCTION"
+>PQsslInUse</CODE
+></DT
+><DD
+><P
+>        Returns true (1) if the connection uses SSL, false (0) if not.
+
+</P><PRE
+CLASS="SYNOPSIS"
+>int PQsslInUse(const PGconn *conn);</PRE
+><P>
+      </P
+></DD
+><DT
+><A
+NAME="LIBPQ-PQSSLATTRIBUTE"
+></A
+><CODE
+CLASS="FUNCTION"
+>PQsslAttribute</CODE
+></DT
+><DD
+><P
+>        Returns SSL-related information about the connection.
+
+</P><PRE
+CLASS="SYNOPSIS"
+>const char *PQsslAttribute(const PGconn *conn, const char *attribute_name);</PRE
+><P>
+      </P
+><P
+>       The list of available attributes varies depending on the SSL library
+       being used, and the type of connection. If an attribute is not
+       available, returns NULL.
+      </P
+><P
+>       The following attributes are commonly available:
+       <P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><TT
+CLASS="LITERAL"
+>library</TT
+></DT
+><DD
+><P
+>            Name of the SSL implementation in use. (Currently, only
+            <TT
+CLASS="LITERAL"
+>"OpenSSL"</TT
+> is implemented)
+           </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>protocol</TT
+></DT
+><DD
+><P
+>             SSL/TLS version in use. Common values
+             are <TT
+CLASS="LITERAL"
+>"SSLv2"</TT
+>, <TT
+CLASS="LITERAL"
+>"SSLv3"</TT
+>,
+             <TT
+CLASS="LITERAL"
+>"TLSv1"</TT
+>, <TT
+CLASS="LITERAL"
+>"TLSv1.1"</TT
+>
+             and <TT
+CLASS="LITERAL"
+>"TLSv1.2"</TT
+>, but an implementation may
+             return other strings if some other protocol is used.
+           </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>key_bits</TT
+></DT
+><DD
+><P
+>            Number of key bits used by the encryption algorithm.
+           </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>cipher</TT
+></DT
+><DD
+><P
+>            A short name of the ciphersuite used, e.g.
+            <TT
+CLASS="LITERAL"
+>"DHE-RSA-DES-CBC3-SHA"</TT
+>. The names are specific
+            to each SSL implementation.
+           </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>compression</TT
+></DT
+><DD
+><P
+>            If SSL compression is in use, returns the name of the compression
+            algorithm, or "on" if compression is used but the algorithm is
+            not known. If compression is not in use, returns "off".
+           </P
+></DD
+></DL
+></DIV
+><P>
+      </P
+></DD
+><DT
+><A
+NAME="LIBPQ-PQSSLATTRIBUTENAMES"
+></A
+><CODE
+CLASS="FUNCTION"
+>PQsslAttributeNames</CODE
+></DT
+><DD
+><P
+>       Return an array of SSL attribute names available. The array is terminated by a NULL pointer.
+</P><PRE
+CLASS="SYNOPSIS"
+>const char * const * PQsslAttributeNames(const PGconn *conn);</PRE
+><P>
+      </P
+></DD
+><DT
+><A
+NAME="LIBPQ-PQSSLSTRUCT"
+></A
+><CODE
+CLASS="FUNCTION"
+>PQsslStruct</CODE
+></DT
+><DD
+><P
+>       Return a pointer to an SSL-implementation-specific object describing
+       the connection.
+</P><PRE
+CLASS="SYNOPSIS"
+>void *PQsslStruct(const PGconn *conn, const char *struct_name);</PRE
+><P>
+      </P
+><P
+>       The struct(s) available depend on the SSL implementation in use.
+       For OpenSSL, there is one struct, available under the name "OpenSSL",
+       and it returns a pointer to the OpenSSL <TT
+CLASS="LITERAL"
+>SSL</TT
+> struct.
+       To use this function, code along the following lines could be used:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>#include &#60;libpq-fe.h&#62;
+#include &#60;openssl/ssl.h&#62;
+
+...
+
+    SSL *ssl;
+
+    dbconn = PQconnectdb(...);
+    ...
+
+    ssl = PQsslStruct(dbconn, "OpenSSL");
+    if (ssl)
+    {
+        /* use OpenSSL functions to access ssl */
+    }</PRE
+><P>
+      </P
+><P
+>       This structure can be used to verify encryption levels, check server
+       certificates, and more. Refer to the <SPAN
+CLASS="PRODUCTNAME"
+>OpenSSL</SPAN
+>
+       documentation for information about this structure.
+      </P
+></DD
 ><DT
 ><A
 NAME="LIBPQ-PQGETSSL"
@@ -843,50 +1058,21 @@ CLASS="SYNOPSIS"
 ><P>
       </P
 ><P
->       This structure can be used to verify encryption levels, check server
-       certificates, and more. Refer to the <SPAN
-CLASS="PRODUCTNAME"
->OpenSSL</SPAN
->
-       documentation for information about this structure.
-      </P
-><P
->       The actual return value is of type <TT
-CLASS="TYPE"
->SSL *</TT
->,
-       where <TT
-CLASS="TYPE"
->SSL</TT
-> is a type defined by
-       the <SPAN
-CLASS="PRODUCTNAME"
->OpenSSL</SPAN
-> library, but it is not declared
-       this way to avoid requiring the <SPAN
-CLASS="PRODUCTNAME"
->OpenSSL</SPAN
->
-       header files.  To use this function, code along the following lines
-       could be used:
-</P><PRE
-CLASS="PROGRAMLISTING"
->#include &#60;libpq-fe.h&#62;
-#include &#60;openssl/ssl.h&#62;
-
-...
-
-    SSL *ssl;
-
-    dbconn = PQconnectdb(...);
-    ...
-
-    ssl = PQgetssl(dbconn);
-    if (ssl)
-    {
-        /* use OpenSSL functions to access ssl */
-    }</PRE
-><P>
+>       This function is equivalent to <TT
+CLASS="LITERAL"
+>PQsslStruct(conn, "OpenSSL")</TT
+>. It should
+       not be used in new applications, because the returned struct is
+       specific to OpenSSL and will not be available if another SSL
+       implementation is used. To check if a connection uses SSL, call
+       <CODE
+CLASS="FUNCTION"
+>PQsslInUse</CODE
+> instead, and for more details about the
+       connection, use <CODE
+CLASS="FUNCTION"
+>PQsslAttribute</CODE
+>.
       </P
 ></DD
 ></DL

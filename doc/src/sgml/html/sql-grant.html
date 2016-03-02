@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="FETCH"
 HREF="sql-fetch.html"><LINK
 REL="NEXT"
-TITLE="INSERT"
-HREF="sql-insert.html"><LINK
+TITLE="IMPORT FOREIGN SCHEMA"
+HREF="sql-importforeignschema.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="INSERT"
-HREF="sql-insert.html"
+TITLE="IMPORT FOREIGN SCHEMA"
+HREF="sql-importforeignschema.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-GRANT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN81299"
+NAME="AEN84270"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN81299"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN81302"
+NAME="AEN84273"
 ></A
 ><H2
 >Synopsis</H2
@@ -123,12 +123,12 @@ CLASS="REPLACEABLE"
 >schema_name</I
 ></TT
 > [, ...] }
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { { SELECT | INSERT | UPDATE | REFERENCES } ( <TT
 CLASS="REPLACEABLE"
@@ -148,12 +148,12 @@ CLASS="REPLACEABLE"
 >table_name</I
 ></TT
 > [, ...]
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { { USAGE | SELECT | UPDATE }
     [, ...] | ALL [ PRIVILEGES ] }
@@ -169,12 +169,12 @@ CLASS="REPLACEABLE"
 >schema_name</I
 ></TT
 > [, ...] }
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { { CREATE | CONNECT | TEMPORARY | TEMP } [, ...] | ALL [ PRIVILEGES ] }
     ON DATABASE <TT
@@ -183,12 +183,12 @@ CLASS="REPLACEABLE"
 >database_name</I
 ></TT
 > [, ...]
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON DOMAIN <TT
@@ -197,12 +197,12 @@ CLASS="REPLACEABLE"
 >domain_name</I
 ></TT
 > [, ...]
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON FOREIGN DATA WRAPPER <TT
@@ -211,12 +211,12 @@ CLASS="REPLACEABLE"
 >fdw_name</I
 ></TT
 > [, ...]
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON FOREIGN SERVER <TT
@@ -225,12 +225,12 @@ CLASS="REPLACEABLE"
 >server_name</I
 ></TT
 > [, ...]
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { EXECUTE | ALL [ PRIVILEGES ] }
     ON { FUNCTION <TT
@@ -260,12 +260,12 @@ CLASS="REPLACEABLE"
 >schema_name</I
 ></TT
 > [, ...] }
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON LANGUAGE <TT
@@ -274,12 +274,12 @@ CLASS="REPLACEABLE"
 >lang_name</I
 ></TT
 > [, ...]
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { { SELECT | UPDATE } [, ...] | ALL [ PRIVILEGES ] }
     ON LARGE OBJECT <TT
@@ -288,12 +288,12 @@ CLASS="REPLACEABLE"
 >loid</I
 ></TT
 > [, ...]
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { { CREATE | USAGE } [, ...] | ALL [ PRIVILEGES ] }
     ON SCHEMA <TT
@@ -302,12 +302,12 @@ CLASS="REPLACEABLE"
 >schema_name</I
 ></TT
 > [, ...]
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { CREATE | ALL [ PRIVILEGES ] }
     ON TABLESPACE <TT
@@ -316,12 +316,12 @@ CLASS="REPLACEABLE"
 >tablespace_name</I
 ></TT
 > [, ...]
-    TO { [ GROUP ] <TT
+    TO <TT
 CLASS="REPLACEABLE"
 ><I
->role_name</I
+>role_specification</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON TYPE <TT
@@ -330,12 +330,35 @@ CLASS="REPLACEABLE"
 >type_name</I
 ></TT
 > [, ...]
-    TO { [ GROUP ] <TT
+    TO <TT
+CLASS="REPLACEABLE"
+><I
+>role_specification</I
+></TT
+> [, ...] [ WITH GRANT OPTION ]
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>where <TT
+CLASS="REPLACEABLE"
+><I
+>role_specification</I
+></TT
+> can be:</SPAN
+></SPAN
+>
+
+    [ GROUP ] <TT
 CLASS="REPLACEABLE"
 ><I
 >role_name</I
 ></TT
-> | PUBLIC } [, ...] [ WITH GRANT OPTION ]
+>
+  | PUBLIC
+  | CURRENT_USER
+  | SESSION_USER
 
 GRANT <TT
 CLASS="REPLACEABLE"
@@ -1280,7 +1303,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81576"
+NAME="AEN84550"
 ></A
 ><H2
 >See Also</H2
@@ -1325,7 +1348,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="sql-insert.html"
+HREF="sql-importforeignschema.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -1349,7 +1372,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->INSERT</TD
+>IMPORT FOREIGN SCHEMA</TD
 ></TR
 ></TABLE
 ></DIV

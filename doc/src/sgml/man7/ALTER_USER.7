@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER USER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER USER" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER USER" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ ALTER_USER \- change a database role
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER USER \fIname\fR [ [ WITH ] \fIoption\fR [ \&.\&.\&. ] ]
+ALTER USER \fIrole_specification\fR [ WITH ] \fIoption\fR [ \&.\&.\&. ]
 
 where \fIoption\fR can be:
 
@@ -43,20 +43,26 @@ where \fIoption\fR can be:
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
     | REPLICATION | NOREPLICATION
+    | BYPASSRLS | NOBYPASSRLS
     | CONNECTION LIMIT \fIconnlimit\fR
     | [ ENCRYPTED | UNENCRYPTED ] PASSWORD \*(Aq\fIpassword\fR\*(Aq
     | VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq
 
 ALTER USER \fIname\fR RENAME TO \fInew_name\fR
 
-ALTER USER \fIname\fR SET \fIconfiguration_parameter\fR { TO | = } { \fIvalue\fR | DEFAULT }
-ALTER USER \fIname\fR SET \fIconfiguration_parameter\fR FROM CURRENT
-ALTER USER \fIname\fR RESET \fIconfiguration_parameter\fR
-ALTER USER \fIname\fR RESET ALL
+ALTER USER \fIrole_specification\fR SET \fIconfiguration_parameter\fR { TO | = } { \fIvalue\fR | DEFAULT }
+ALTER USER \fIrole_specification\fR SET \fIconfiguration_parameter\fR FROM CURRENT
+ALTER USER \fIrole_specification\fR RESET \fIconfiguration_parameter\fR
+ALTER USER \fIrole_specification\fR RESET ALL
+
+where \fIrole_specification\fR can be:
+
+    [ GROUP ] \fIrole_name\fR
+  | CURRENT_USER
+  | SESSION_USER
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER USER\fR
 is now an alias for
 ALTER ROLE (\fBALTER_ROLE\fR(7))\&.

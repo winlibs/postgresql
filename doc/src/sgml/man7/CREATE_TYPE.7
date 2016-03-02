@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TYPE
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "CREATE TYPE" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "CREATE TYPE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -71,7 +71,6 @@ CREATE TYPE \fIname\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBCREATE TYPE\fR
 registers a new data type for use in the current database\&. The user who defines a type becomes its owner\&.
 .PP
@@ -187,7 +186,7 @@ bytea\&. Send functions are not invoked for NULL values\&.
 .PP
 You should at this point be wondering how the input and output functions can be declared to have results or arguments of the new type, when they have to be created before the new type can be created\&. The answer is that the type should first be defined as a
 shell type, which is a placeholder type that has no properties except a name and an owner\&. This is done by issuing the command
-CREATE TYPE \fIname\fR, with no additional parameters\&. Then the I/O functions can be defined referencing the shell type\&. Finally,
+CREATE TYPE \fIname\fR, with no additional parameters\&. Then the C I/O functions can be defined referencing the shell type\&. Finally,
 \fBCREATE TYPE\fR
 with a full definition replaces the shell entry with a complete, valid type definition, after which the new type can be used normally\&.
 .PP
@@ -240,13 +239,14 @@ is a positive integer, or variable length, indicated by setting
 to
 VARIABLE\&. (Internally, this is represented by setting
 typlen
-to \-1\&.) The internal representation of all variable\-length types must start with a 4\-byte integer giving the total length of this value of the type\&.
+to \-1\&.) The internal representation of all variable\-length types must start with a 4\-byte integer giving the total length of this value of the type\&. (Note that the length field is often encoded, as described in
+Section 63.2, \(lqTOAST\(rq, in the documentation; it\*(Aqs unwise to access it directly\&.)
 .PP
 The optional flag
 PASSEDBYVALUE
-indicates that values of this data type are passed by value, rather than by reference\&. You cannot pass by value types whose internal representation is larger than the size of the
+indicates that values of this data type are passed by value, rather than by reference\&. Types passed by value must be fixed\-length, and their internal representation cannot be larger than the size of the
 Datum
-type (4 bytes on most machines, 8 bytes on a few)\&.
+type (4 bytes on some machines, 8 bytes on others)\&.
 .PP
 The
 \fIalignment\fR
@@ -271,6 +271,17 @@ extended
 and
 external
 items\&.)
+.PP
+All
+\fIstorage\fR
+values other than
+plain
+imply that the functions of the data type can handle values that have been
+toasted, as described in
+Section 63.2, \(lqTOAST\(rq, in the documentation
+and
+Section 35.11.1, \(lqTOAST Considerations\(rq, in the documentation\&. The specific other value given merely determines the default TOAST storage strategy for columns of a toastable data type; users can pick other strategies for individual columns using
+ALTER TABLE SET STORAGE\&.
 .PP
 The
 \fIlike_type\fR
@@ -335,7 +346,7 @@ option, if the system makes the correct array type automatically\&. The only cas
 \fBELEMENT\fR
 is when you are making a fixed\-length type that happens to be internally an array of a number of identical things, and you want to allow these things to be accessed directly by subscripting, in addition to whatever operations you plan to provide for the type as a whole\&. For example, type
 point
-is represented as just two floating\-point numbers, each can be accessed using
+is represented as just two floating\-point numbers, which can be accessed using
 point[0]
 and
 point[1]\&. Note that this facility only works for fixed\-length types whose internal form is exactly a sequence of identical fixed\-length fields\&. A subscriptable variable\-length type must have the generalized internal representation used by
@@ -467,7 +478,7 @@ The category code (a single ASCII character) for this type\&. The default is
 \*(AqU\*(Aq
 for
 \(lquser\-defined type\(rq\&. Other standard category codes can be found in
-Table\ \&48.53, \(lqtypcategory Codes\(rq\&. You may also choose other ASCII characters in order to create custom categories\&.
+Table\ \&49.57, \(lqtypcategory Codes\(rq\&. You may also choose other ASCII characters in order to create custom categories\&.
 .RE
 .PP
 \fIpreferred\fR

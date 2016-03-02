@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_receivexlog
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PG_RECEIVEXLOG" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PG_RECEIVEXLOG" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,14 +34,12 @@ pg_receivexlog \- stream transaction logs from a PostgreSQL server
 \fBpg_receivexlog\fR [\fIoption\fR...]
 .SH "DESCRIPTION"
 .PP
-
 pg_receivexlog
-is used to stream transaction log from a running
+is used to stream the transaction log from a running
 PostgreSQL
 cluster\&. The transaction log is streamed using the streaming replication protocol, and is written to a local directory of files\&. This directory can be used as the archive location for doing a restore using point\-in\-time recovery (see
 Section 24.3, \(lqContinuous Archiving and Point-in-Time Recovery (PITR)\(rq, in the documentation)\&.
 .PP
-
 pg_receivexlog
 streams the transaction log in real time as it\*(Aqs being generated on the server, and does not wait for segments to complete like
 archive_command
@@ -50,14 +48,20 @@ archive_timeout
 when using
 pg_receivexlog\&.
 .PP
+Unlike the WAL receiver of a PostgreSQL standby server,
+pg_receivexlog
+by default flushes WAL data only when a WAL file is closed\&. The option
+\fB\-\-synchronous\fR
+must be specified to flush WAL data in real time\&.
+.PP
 The transaction log is streamed over a regular
 PostgreSQL
-connection, and uses the replication protocol\&. The connection must be made with a superuser or a user having
+connection and uses the replication protocol\&. The connection must be made with a superuser or a user having
 REPLICATION
 permissions (see
 Section 20.2, \(lqRole Attributes\(rq, in the documentation), and
 pg_hba\&.conf
-must explicitly permit the replication connection\&. The server must also be configured with
+must permit the replication connection\&. The server must also be configured with
 max_wal_senders
 set high enough to leave at least one session available for the stream\&.
 .PP
@@ -75,6 +79,13 @@ parameter\&.
 Directory to write the output to\&.
 .sp
 This parameter is required\&.
+.RE
+.PP
+\fB\-\-if\-not\-exists\fR
+.RS 4
+Do not not error out when
+\fB\-\-create\-slot\fR
+is specified and a slot with the specified name already exists\&.
 .RE
 .PP
 \fB\-n\fR
@@ -100,10 +111,23 @@ pg_receivexlog
 to use an existing replication slot (see
 Section 25.2.6, \(lqReplication Slots\(rq, in the documentation)\&. When this option is used,
 pg_receivexlog
-will report a flush position to the server, indicating when each segment has been synchronized to disk so that the server can remove that segment if it is not otherwise needed\&. When using this parameter, it is important to make sure that
+will report a flush position to the server, indicating when each segment has been synchronized to disk so that the server can remove that segment if it is not otherwise needed\&.
+.sp
+When the replication client of
 pg_receivexlog
-cannot become the synchronous standby through an incautious setting of
-synchronous_standby_names; it does not flush data frequently enough for this to work correctly\&.
+is configured on the server as a synchronous standby, then using a replication slot will report the flush position to the server, but only when a WAL file is closed\&. Therefore, that configuration will cause transactions on the primary to wait for a long time and effectively not work satisfactorily\&. The option
+\-\-synchronous
+(see below) must be specified in addition to make this work correctly\&.
+.RE
+.PP
+\fB\-\-synchronous\fR
+.RS 4
+Flush the WAL data to disk immediately after it has been received\&. Also send a status packet back to the server immediately after flushing, regardless of
+\-\-status\-interval\&.
+.sp
+This option should be specified if the replication client of
+pg_receivexlog
+is configured on the server as a synchronous standby, to ensure that timely feedback is sent to the server\&.
 .RE
 .PP
 \fB\-v\fR
@@ -179,6 +203,21 @@ pg_receivexlog
 will waste a connection attempt finding out that the server wants a password\&. In some cases it is worth typing
 \fB\-W\fR
 to avoid the extra connection attempt\&.
+.RE
+.PP
+pg_receivexlog
+can perform one of the two following actions in order to control physical replication slots:
+.PP
+\fB\-\-create\-slot\fR
+.RS 4
+Create a new physical replication slot with the name specified in
+\fB\-\-slot\fR, then exit\&.
+.RE
+.PP
+\fB\-\-drop\-slot\fR
+.RS 4
+Drop the replication slot with the name specified in
+\fB\-\-slot\fR, then exit\&.
 .RE
 .PP
 Other options are also available:

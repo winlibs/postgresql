@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="APP-PGDUMP"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN87978"
+NAME="AEN92074"
 ></A
 ><H2
 >Name</H2
@@ -107,7 +107,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN87982"
+NAME="AEN92078"
 ></A
 ><H2
 >Synopsis</H2
@@ -155,6 +155,20 @@ CLASS="APPLICATION"
 >pg_dump</SPAN
 > does not block other users
    accessing the database (readers or writers).
+  </P
+><P
+>   <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> only dumps a single database.  To backup
+   global objects that are common to all databases in a cluster, such as roles
+   and tablespaces, use <A
+HREF="app-pg-dumpall.html"
+><SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+></A
+>.
   </P
 ><P
 >   Dumps can be output in script or archive file formats. Script
@@ -554,30 +568,17 @@ CLASS="COMMAND"
            into <SPAN
 CLASS="APPLICATION"
 >pg_restore</SPAN
->. The tar-format is
-           compatible with the directory-format; extracting a tar-format
+>. The tar format is
+           compatible with the directory format: extracting a tar-format
            archive produces a valid directory-format archive.
-           However, the tar-format does not support compression and has a
-           limit of 8 GB on the size of individual tables. Also, the relative
-           order of table data items cannot be changed during restore.
+           However, the tar format does not support compression. Also, when
+           using tar format the relative order of table data items cannot be
+           changed during restore.
           </P
 ></DD
 ></DL
 ></DIV
 ><P></P
-></DD
-><DT
-><TT
-CLASS="OPTION"
->-i</TT
-><BR><TT
-CLASS="OPTION"
->--ignore-version</TT
-></DT
-><DD
-><P
->        A deprecated option that is now ignored.
-       </P
 ></DD
 ><DT
 ><TT
@@ -1404,6 +1405,35 @@ CLASS="COMMAND"
 ><DT
 ><TT
 CLASS="OPTION"
+>--enable-row-security</TT
+></DT
+><DD
+><P
+>        This option is relevant only when dumping the contents of a table
+        which has row security.  By default, <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> will set
+        <A
+HREF="runtime-config-client.html#GUC-ROW-SECURITY"
+>row_security</A
+> to off, to ensure
+        that all data is dumped from the table.  If the user does not have
+        sufficient privileges to bypass row security, then an error is thrown.
+        This parameter instructs <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> to set
+        <A
+HREF="runtime-config-client.html#GUC-ROW-SECURITY"
+>row_security</A
+> to on instead, allowing the user
+        to dump the parts of the contents of the table that they have access to.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >--exclude-table-data=<TT
 CLASS="REPLACEABLE"
 ><I
@@ -1667,6 +1697,39 @@ HREF="mvcc.html"
         indeterminate length of time.  Once running, performance with or
         without the switch is the same.
        </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--snapshot=<TT
+CLASS="REPLACEABLE"
+><I
+>snapshotname</I
+></TT
+></TT
+></DT
+><DD
+><P
+>          Use the specified synchronized snapshot when making a dump of the
+          database (see
+          <A
+HREF="functions-admin.html#FUNCTIONS-SNAPSHOT-SYNCHRONIZATION-TABLE"
+>Table 9-71</A
+> for more
+          details).
+         </P
+><P
+>          This option is useful when needing to synchronize the dump with
+          a logical replication slot (see <A
+HREF="logicaldecoding.html"
+>Chapter 46</A
+>)
+          or with a concurrent session.
+         </P
+><P
+>          In the case of a parallel dump, the snapshot name defined by this
+          option is used rather than taking a new snapshot.
+         </P
 ></DD
 ><DT
 ><TT
@@ -1966,7 +2029,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN88563"
+NAME="AEN92674"
 ></A
 ><H2
 >Environment</H2
@@ -2111,14 +2174,6 @@ CLASS="APPLICATION"
    and then commands to re-enable them after the data has been
    inserted.  If the restore is stopped in the middle, the system
    catalogs might be left in the wrong state.
-  </P
-><P
->   Members of tar archives are limited to a size less than 8 GB.
-   (This is an inherent limitation of the tar file format.)  Therefore
-   this format cannot be used if the textual representation of any one table
-   exceeds that size.  The total size of a tar archive and any of the
-   other output formats is not limited, except possibly by the
-   operating system.
   </P
 ><P
 >   The dump file produced by <SPAN
@@ -2435,7 +2490,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN88690"
+NAME="AEN92800"
 ></A
 ><H2
 >See Also</H2

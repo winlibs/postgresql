@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dblink_get_notify
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "DBLINK_GET_NOTIFY" "3" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "DBLINK_GET_NOTIFY" "3" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,7 +37,6 @@ dblink_get_notify(text connname) returns setof (notify_name text, be_pid int, ex
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBdblink_get_notify\fR
 retrieves notifications on either the unnamed connection, or on a named connection if specified\&. To receive notifications via dblink,
 \fBLISTEN\fR

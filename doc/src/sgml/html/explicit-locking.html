@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Concurrency Control"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -448,11 +448,17 @@ CLASS="LITERAL"
          is self-exclusive so that only one session can hold it at a time.
         </P
 ><P
->         This lock mode is not automatically acquired by any
-         <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> command.
+>         Acquired by <TT
+CLASS="COMMAND"
+>CREATE TRIGGER</TT
+> and many forms of
+         <TT
+CLASS="COMMAND"
+>ALTER TABLE</TT
+> (see <A
+HREF="sql-altertable.html"
+>ALTER TABLE</A
+>).
         </P
 ></DD
 ><DT
@@ -557,23 +563,28 @@ CLASS="COMMAND"
          <TT
 CLASS="COMMAND"
 >CLUSTER</TT
->, and <TT
+>, <TT
 CLASS="COMMAND"
 >VACUUM FULL</TT
->
+>,
+         and <TT
+CLASS="COMMAND"
+>REFRESH MATERIALIZED VIEW</TT
+> (without
+         <TT
+CLASS="OPTION"
+>CONCURRENTLY</TT
+>)
          commands. Many forms of <TT
 CLASS="COMMAND"
 >ALTER TABLE</TT
 > also acquire
-         a lock at this level (see <A
-HREF="sql-altertable.html"
->ALTER TABLE</A
->).
-         This is also the default lock mode for <TT
+         a lock at this level. This is also the default lock mode for
+         <TT
 CLASS="COMMAND"
 >LOCK TABLE</TT
->
-         statements that do not specify a mode explicitly.
+> statements that do not specify
+         a mode explicitly.
         </P
 ></DD
 ></DL
@@ -1484,7 +1495,7 @@ CLASS="STRUCTNAME"
 >     The functions provided to manipulate advisory locks are described in
      <A
 HREF="functions-admin.html#FUNCTIONS-ADVISORY-LOCKS"
->Section 9.26.9</A
+>Section 9.26.10</A
 >.
     </P
 ></DIV

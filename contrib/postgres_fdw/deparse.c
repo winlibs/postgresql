@@ -24,7 +24,7 @@
  * with collations that match the remote table's columns, which we can
  * consider to be user error.
  *
- * Portions Copyright (c) 2012-2014, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2012-2015, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *		  contrib/postgres_fdw/deparse.c
@@ -51,6 +51,7 @@
 #include "parser/parsetree.h"
 #include "utils/builtins.h"
 #include "utils/lsyscache.h"
+#include "utils/rel.h"
 #include "utils/syscache.h"
 
 
@@ -110,6 +111,7 @@ static void deparseTargetList(StringInfo buf,
 				  PlannerInfo *root,
 				  Index rtindex,
 				  Relation rel,
+				  bool is_returning,
 				  Bitmapset *attrs_used,
 				  List **retrieved_attrs);
 static void deparseReturningList(StringInfo buf, PlannerInfo *root,
@@ -120,7 +122,6 @@ static void deparseReturningList(StringInfo buf, PlannerInfo *root,
 static void deparseColumnRef(StringInfo buf, int varno, int varattno,
 				 PlannerInfo *root);
 static void deparseRelation(StringInfo buf, Relation rel);
-static void deparseStringLiteral(StringInfo buf, const char *val);
 static void deparseExpr(Expr *expr, deparse_expr_cxt *context);
 static void deparseVar(Var *node, deparse_expr_cxt *context);
 static void deparseConst(Const *node, deparse_expr_cxt *context);
@@ -721,7 +722,7 @@ deparseSelectSql(StringInfo buf,
 	 * Construct SELECT list
 	 */
 	appendStringInfoString(buf, "SELECT ");
-	deparseTargetList(buf, root, baserel->relid, rel, attrs_used,
+	deparseTargetList(buf, root, baserel->relid, rel, false, attrs_used,
 					  retrieved_attrs);
 
 	/*
@@ -735,7 +736,8 @@ deparseSelectSql(StringInfo buf,
 
 /*
  * Emit a target list that retrieves the columns specified in attrs_used.
- * This is used for both SELECT and RETURNING targetlists.
+ * This is used for both SELECT and RETURNING targetlists; the is_returning
+ * parameter is true only for a RETURNING targetlist.
  *
  * The tlist text is appended to buf, and we also create an integer List
  * of the columns being retrieved, which is returned to *retrieved_attrs.
@@ -745,6 +747,7 @@ deparseTargetList(StringInfo buf,
 				  PlannerInfo *root,
 				  Index rtindex,
 				  Relation rel,
+				  bool is_returning,
 				  Bitmapset *attrs_used,
 				  List **retrieved_attrs)
 {
@@ -774,6 +777,8 @@ deparseTargetList(StringInfo buf,
 		{
 			if (!first)
 				appendStringInfoString(buf, ", ");
+			else if (is_returning)
+				appendStringInfoString(buf, " RETURNING ");
 			first = false;
 
 			deparseColumnRef(buf, rtindex, i, root);
@@ -791,6 +796,8 @@ deparseTargetList(StringInfo buf,
 	{
 		if (!first)
 			appendStringInfoString(buf, ", ");
+		else if (is_returning)
+			appendStringInfoString(buf, " RETURNING ");
 		first = false;
 
 		appendStringInfoString(buf, "ctid");
@@ -800,7 +807,7 @@ deparseTargetList(StringInfo buf,
 	}
 
 	/* Don't generate bad syntax if no undropped columns */
-	if (first)
+	if (first && !is_returning)
 		appendStringInfoString(buf, "NULL");
 }
 
@@ -872,8 +879,8 @@ appendWhereClause(StringInfo buf,
 void
 deparseInsertSql(StringInfo buf, PlannerInfo *root,
 				 Index rtindex, Relation rel,
-				 List *targetAttrs, List *returningList,
-				 List **retrieved_attrs)
+				 List *targetAttrs, bool doNothing,
+				 List *returningList, List **retrieved_attrs)
 {
 	AttrNumber	pindex;
 	bool		first;
@@ -916,6 +923,9 @@ deparseInsertSql(StringInfo buf, PlannerInfo *root,
 	}
 	else
 		appendStringInfoString(buf, " DEFAULT VALUES");
+
+	if (doNothing)
+		appendStringInfoString(buf, " ON CONFLICT DO NOTHING");
 
 	deparseReturningList(buf, root, rtindex, rel,
 					   rel->trigdesc && rel->trigdesc->trig_insert_after_row,
@@ -1016,11 +1026,8 @@ deparseReturningList(StringInfo buf, PlannerInfo *root,
 	}
 
 	if (attrs_used != NULL)
-	{
-		appendStringInfoString(buf, " RETURNING ");
-		deparseTargetList(buf, root, rtindex, rel, attrs_used,
+		deparseTargetList(buf, root, rtindex, rel, true, attrs_used,
 						  retrieved_attrs);
-	}
 	else
 		*retrieved_attrs = NIL;
 }
@@ -1197,7 +1204,7 @@ deparseRelation(StringInfo buf, Relation rel)
 /*
  * Append a SQL string literal representing "val" to buf.
  */
-static void
+void
 deparseStringLiteral(StringInfo buf, const char *val)
 {
 	const char *valptr;
@@ -1753,9 +1760,6 @@ deparseRelabelType(RelabelType *node, deparse_expr_cxt *context)
 
 /*
  * Deparse a BoolExpr node.
- *
- * Note: by the time we get here, AND and OR expressions have been flattened
- * into N-argument form, so we'd better be prepared to deal with that.
  */
 static void
 deparseBoolExpr(BoolExpr *node, deparse_expr_cxt *context)

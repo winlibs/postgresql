@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: psql
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "PSQL" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "PSQL" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,6 @@ psql \- PostgreSQL interactive terminal
 \fBpsql\fR [\fIoption\fR...] [\fIdbname\fR\ [\fIusername\fR]]
 .SH "DESCRIPTION"
 .PP
-
 psql
 is a terminal\-based front\-end to
 PostgreSQL\&. It enables you to type in queries interactively, issue them to
@@ -58,6 +57,16 @@ all\&.
 Switches to unaligned output mode\&. (The default output mode is otherwise aligned\&.)
 .RE
 .PP
+\fB\-b\fR
+.br
+\fB\-\-echo\-errors\fR
+.RS 4
+Print failed SQL commands to standard error output\&. This is equivalent to setting the variable
+\fIECHO\fR
+to
+errors\&.
+.RE
+.PP
 \fB\-c \fR\fB\fIcommand\fR\fR
 .br
 \fB\-\-command=\fR\fB\fIcommand\fR\fR
@@ -69,7 +78,6 @@ is to execute one command string,
 and
 ~/\&.psqlrc) are ignored with this option\&.
 .sp
-
 \fIcommand\fR
 must be either a command string that is completely parsable by the server (i\&.e\&., it contains no
 psql\-specific features), or a single backslash command\&. Thus you cannot mix
@@ -167,7 +175,11 @@ If
 \fIfilename\fR
 is
 \-
-(hyphen), then standard input is read\&.
+(hyphen), then standard input is read until an EOF indication or
+\fB\eq\fR
+meta\-command\&. Note however that Readline is not used in this case (much as if
+\fB\-n\fR
+had been specified)\&.
 .sp
 Using this option is subtly different from writing
 psql < \fIfilename\fR\&. In general, both will do what you expect, but using
@@ -330,8 +342,7 @@ command\&.
 \fB\-\-table\-attr=\fR\fB\fItable_options\fR\fR
 .RS 4
 Specifies options to be placed within the
-HTML
-table
+HTMLtable
 tag\&. See
 \fB\epset\fR
 for details\&.
@@ -453,15 +464,29 @@ If the script itself uses
 .PP
 \fB\-?\fR
 .br
-\fB\-\-help\fR
+\fB\-\-help[=\fR\fB\fItopic\fR\fR\fB]\fR
 .RS 4
 Show help about
 psql
-command line arguments, and exit\&.
+and exit\&. The optional
+\fItopic\fR
+parameter (defaulting to
+options) selects which part of
+psql
+is explained:
+commands
+describes
+psql\*(Aqs backslash commands;
+options
+describes the command\-line options that can be passed to
+psql; and
+variables
+shows help about about
+psql
+configuration variables\&.
 .RE
 .SH "EXIT STATUS"
 .PP
-
 psql
 returns 0 to the shell if it finished normally, 1 if a fatal error of its own occurs (e\&.g\&. out of memory, file not found), 2 if the connection to the server went bad and the session was not interactive, and 3 if an error occurred in a script and the variable
 \fION_ERROR_STOP\fR
@@ -469,7 +494,6 @@ was set\&.
 .SH "USAGE"
 .SS "Connecting to a Database"
 .PP
-
 psql
 is a regular
 PostgreSQL
@@ -546,7 +570,7 @@ is currently connected, followed by the string
 .\}
 .nf
 $ \fBpsql testdb\fR
-psql (9\&.4\&.5)
+psql (9\&.5\&.1)
 Type "help" for help\&.
 
 testdb=>
@@ -718,8 +742,7 @@ Outputs information about the current database connection\&.
 \ecopy { \fItable\fR [ ( \fIcolumn_list\fR ) ] | ( \fIquery\fR ) } { from | to } { \fI\*(Aqfilename\*(Aq\fR | program \fI\*(Aqcommand\*(Aq\fR | stdin | stdout | pstdin | pstdout } [ [ with ] ( \fIoption\fR [, \&.\&.\&.] ) ]
 .RS 4
 Performs a frontend (client) copy\&. This is an operation that runs an
-SQL
-\fBCOPY\fR(7)
+SQL\fBCOPY\fR(7)
 command, but instead of the server reading or writing the specified file,
 psql
 reads or writes the file and routes the data between the server and the local file system\&. This means that file accessibility and privileges are those of the local user, not the server, and no SQL superuser privileges are required\&.
@@ -752,8 +775,7 @@ or
 to pstdout\&.
 .sp
 The syntax of this command is similar to that of the
-SQL
-\fBCOPY\fR(7)
+SQL\fBCOPY\fR(7)
 command\&. All options other than the data source/destination are as specified for
 \fBCOPY\fR(7)\&. Because of this, special parsing rules apply to the
 \fB\ecopy\fR
@@ -772,8 +794,7 @@ psql\*(Aqs variable substitution rules and backslash escapes do not apply\&.
 .ps -1
 .br
 This operation is not as efficient as the
-SQL
-\fBCOPY\fR
+SQL\fBCOPY\fR
 command because all data must pass through the client/server connection\&. For large amounts of data the
 SQL
 command might be preferable\&.
@@ -848,7 +869,7 @@ Lists tablespaces\&. If
 \fIpattern\fR
 is specified, only tablespaces whose names match the pattern are shown\&. If
 +
-is appended to the command name, each object is listed with its associated permissions\&.
+is appended to the command name, each tablespace is listed with its associated options, on\-disk size, permissions and description\&.
 .RE
 .PP
 \edc[S+] [ \fIpattern\fR ]
@@ -887,8 +908,7 @@ S
 modifier to include system objects\&.
 .sp
 Descriptions for objects can be created with the
-\fBCOMMENT\fR(7)
-SQL
+\fBCOMMENT\fR(7)SQL
 command\&.
 .RE
 .PP
@@ -985,7 +1005,6 @@ is used, additional information about each mapping is shown\&.
 \fBCaution\fR
 .ps -1
 .br
-
 \edeu+
 might also display the user name and password of the remote user, so care should be taken not to disclose them\&.
 .sp .5v
@@ -1458,6 +1477,14 @@ about setting other output options\&.
 Reads input from the file
 \fIfilename\fR
 and executes it as though it had been typed on the keyboard\&.
+.sp
+If
+\fIfilename\fR
+is
+\-
+(hyphen), then standard input is read until an EOF indication or
+\fB\eq\fR
+meta\-command\&. This can be used to intersperse interactive input with input from files\&. Note that Readline behavior will be used only if it is active at the outermost level\&.
 .if n \{\
 .sp
 .\}
@@ -1500,8 +1527,7 @@ is appended to the command name, database sizes, default tablespaces, and descri
 \elo_export \fIloid\fR \fIfilename\fR
 .RS 4
 Reads the large object with
-OID
-\fIloid\fR
+OID\fIloid\fR
 from the database and writes it to
 \fIfilename\fR\&. Note that this is subtly different from the server function
 \fBlo_export\fR, which acts with the permissions of the user that the database server runs as and on the server\*(Aqs file system\&.
@@ -1561,8 +1587,7 @@ large objects currently stored in the database, along with any comments provided
 \elo_unlink \fIloid\fR
 .RS 4
 Deletes the large object with
-OID
-\fIloid\fR
+OID\fIloid\fR
 from the database\&.
 .if n \{\
 .sp
@@ -1653,7 +1678,6 @@ causes the option to be toggled or unset, as described under the particular opti
 \fIvalue\fR
 just results in the current setting being displayed\&.
 .sp
-
 \fB\epset\fR
 without any arguments displays the current status of all printing options\&.
 .sp
@@ -1663,17 +1687,16 @@ border
 .RS 4
 The
 \fIvalue\fR
-must be a number\&. In general, the higher the number the more borders and lines the tables will have, but this depends on the particular format\&. In
+must be a number\&. In general, the higher the number the more borders and lines the tables will have, but details depend on the particular format\&. In
 HTML
 format, this will translate directly into the
 border=\&.\&.\&.
-attribute; in the other formats only values 0 (no border), 1 (internal dividing lines), and 2 (table frame) make sense\&.
+attribute\&. In most other formats only values 0 (no border), 1 (internal dividing lines), and 2 (table frame) make sense, and values above 2 will be treated the same as
+border = 2\&. The
 latex
 and
 latex\-longtable
-also support a
-border
-value of 3 which adds a dividing line between each row\&.
+formats additionally allow a value of 3 to add dividing lines between data rows\&.
 .RE
 .PP
 columns
@@ -1742,6 +1765,7 @@ unaligned,
 aligned,
 wrapped,
 html,
+asciidoc,
 latex
 (uses
 tabular),
@@ -1769,6 +1793,7 @@ if the total width needed for column headers exceeds the target\&.
 .sp
 The
 html,
+asciidoc,
 latex,
 latex\-longtable, and
 troff\-ms
@@ -1778,8 +1803,7 @@ LaTeX
 you must have a complete document wrapper\&.
 latex\-longtable
 also requires the
-LaTeX
-longtable
+LaTeXlongtable
 and
 booktabs
 packages\&.
@@ -1823,7 +1847,9 @@ style uses Unicode box\-drawing characters\&. Newlines in data are shown using a
 .sp
 When the
 border
-setting is greater than zero, this option also determines the characters with which the border lines are drawn\&. Plain
+setting is greater than zero, the
+linestyle
+option also determines the characters with which the border lines are drawn\&. Plain
 ASCII
 characters work everywhere, but Unicode characters look nicer on displays that recognize them\&.
 .RE
@@ -1870,6 +1896,13 @@ always, which causes the pager to be used for all terminal output regardless of 
 without a
 \fIvalue\fR
 toggles pager use on and off\&.
+.RE
+.PP
+pager_min_lines
+.RS 4
+If
+pager_min_lines
+is set to a number greater than the page height, the pager program will not be called unless there are at least this many lines of output to show\&. The default setting is 0\&.
 .RE
 .PP
 recordsep
@@ -1922,6 +1955,36 @@ off
 which will enable or disable tuples\-only mode\&. If
 \fIvalue\fR
 is omitted the command toggles between regular and tuples\-only output\&. Regular output includes extra information such as column headers, titles, and various footers\&. In tuples\-only mode, only actual table data is shown\&.
+.RE
+.PP
+unicode_border_linestyle
+.RS 4
+Sets the border drawing style for the
+unicode
+line style to one of
+single
+or
+double\&.
+.RE
+.PP
+unicode_column_linestyle
+.RS 4
+Sets the column drawing style for the
+unicode
+line style to one of
+single
+or
+double\&.
+.RE
+.PP
+unicode_header_linestyle
+.RS 4
+Sets the header drawing style for the
+unicode
+line style to one of
+single
+or
+double\&.
 .RE
 .sp
 Illustrations of how these different formats look can be seen in the
@@ -2132,9 +2195,24 @@ Escapes to a separate shell or executes the shell command
 \fIcommand\fR\&. The arguments are not further interpreted; the shell will see them as\-is\&. In particular, the variable substitution rules and backslash escapes do not apply\&.
 .RE
 .PP
-\e?
+\e? [ \fItopic\fR ]
 .RS 4
-Shows help information about the backslash commands\&.
+Shows help information\&. The optional
+\fItopic\fR
+parameter (defaulting to
+commands) selects which part of
+psql
+is explained:
+commands
+describes
+psql\*(Aqs backslash commands;
+options
+describes the command\-line options that can be passed to
+psql; and
+variables
+shows help about about
+psql
+configuration variables\&.
 .RE
 .sp
 .it 1 an-trap
@@ -2235,7 +2313,6 @@ at the beginning and/or end if you don\*(Aqt wish the pattern to be anchored\&. 
 \fBVariables\fR
 .RS 4
 .PP
-
 psql
 provides variable substitution features similar to common Unix command shells\&. Variables are simply name/value pairs, where the value can be any string of any length\&. The name must consist of letters (including non\-Latin letters), digits, and underscores\&.
 .PP
@@ -2398,7 +2475,11 @@ all, all nonempty input lines are printed to standard output as they are read\&.
 queries,
 psql
 prints each query to standard output as it is sent to the server\&. The switch for this is
-\fB\-e\fR\&.
+\fB\-e\fR\&. If set to
+errors, then only failed queries are displayed on standard error output\&. The switch for this is
+\fB\-b\fR\&. If unset, or if set to
+none
+(or any other value than those above) then no queries are displayed\&.
 .RE
 .PP
 \fIECHO_HIDDEN\fR
@@ -2449,7 +2530,9 @@ If this variable is set to
 ignorespace, lines which begin with a space are not entered into the history list\&. If set to a value of
 ignoredups, lines matching the previous history line are not entered\&. A value of
 ignoreboth
-combines the two options\&. If unset, or if set to any other value than those above, all lines read in interactive mode are saved on the history list\&.
+combines the two options\&. If unset, or if set to
+none
+(or any other value than those above), all lines read in interactive mode are saved on the history list\&.
 .if n \{\
 .sp
 .\}
@@ -2748,8 +2831,7 @@ issues can be customized to your preference\&. The three variables
 contain strings and special escape sequences that describe the appearance of the prompt\&. Prompt 1 is the normal prompt that is issued when
 psql
 requests a new command\&. Prompt 2 is issued when more input is expected during command input because the command was not terminated with a semicolon or a quote was not closed\&. Prompt 3 is issued when you run an
-SQL
-\fBCOPY\fR
+SQL\fBCOPY\fR
 command and you are expected to type in the row values on the terminal\&.
 .PP
 The value of the selected prompt variable is printed literally, except where a percent sign (%) is encountered\&. Depending on the next character, certain other text is substituted instead\&. Defined substitutions are:
@@ -2830,6 +2912,12 @@ when in a failed transaction block, or
 when the transaction state is indeterminate (for example, because there is no connection)\&.
 .RE
 .PP
+%l
+.RS 4
+The line number inside the current statement, starting from
+1\&.
+.RE
+.PP
 %\fIdigits\fR
 .RS 4
 The character with the indicated octal code is substituted\&.
@@ -2907,7 +2995,6 @@ tcsh\&.
 \fBCommand-Line Editing\fR
 .RS 4
 .PP
-
 psql
 supports the
 Readline
@@ -3150,7 +3237,6 @@ from each major version around and be sure to use the version that matches the r
 .RE
 .SH "NOTES FOR WINDOWS USERS"
 .PP
-
 psql
 is built as a
 \(lqconsole application\(rq\&. Since the Windows console windows use a different encoding than the rest of the system, you must take special care when using 8\-bit characters within

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -607,33 +607,36 @@ CLASS="TYPE"
 ><PRE
 CLASS="PROGRAMLISTING"
 >-- Simple scalar/primitive values contain only the identical value:
-SELECT '"foo"'::jsonb @&#62; '"foo"'::jsonb;
+SELECT '"foo"'::jsonb @&gt; '"foo"'::jsonb;
 
 -- The array on the right side is contained within the one on the left:
-SELECT '[1, 2, 3]'::jsonb @&#62; '[1, 3]'::jsonb;
+SELECT '[1, 2, 3]'::jsonb @&gt; '[1, 3]'::jsonb;
 
 -- Order of array elements is not significant, so this is also true:
-SELECT '[1, 2, 3]'::jsonb @&#62; '[3, 1]'::jsonb;
+SELECT '[1, 2, 3]'::jsonb @&gt; '[3, 1]'::jsonb;
 
 -- Duplicate array elements don't matter either:
-SELECT '[1, 2, 3]'::jsonb @&#62; '[1, 2, 2]'::jsonb;
+SELECT '[1, 2, 3]'::jsonb @&gt; '[1, 2, 2]'::jsonb;
 
 -- The object with a single pair on the right side is contained
 -- within the object on the left side:
-SELECT '{"product": "PostgreSQL", "version": 9.4, "jsonb":true}'::jsonb @&#62; '{"version":9.4}'::jsonb;
+SELECT '{"product": "PostgreSQL", "version": 9.4, "jsonb": true}'::jsonb @&gt; '{"version": 9.4}'::jsonb;
 
 -- The array on the right side is <B
 CLASS="EMPHASIS"
 >not</B
 > considered contained within the
 -- array on the left, even though a similar array is nested within it:
-SELECT '[1, 2, [1, 3]]'::jsonb @&#62; '[1, 3]'::jsonb;  -- yields false
+SELECT '[1, 2, [1, 3]]'::jsonb @&gt; '[1, 3]'::jsonb;  -- yields false
 
 -- But with a layer of nesting, it is contained:
-SELECT '[1, 2, [1, 3]]'::jsonb @&#62; '[[1, 3]]'::jsonb;
+SELECT '[1, 2, [1, 3]]'::jsonb @&gt; '[[1, 3]]'::jsonb;
 
 -- Similarly, containment is not reported here:
-SELECT '{"foo": {"bar": "baz"}}'::jsonb @&#62; '{"bar": "baz"}'::jsonb;  -- yields false</PRE
+SELECT '{"foo": {"bar": "baz"}}'::jsonb @&gt; '{"bar": "baz"}'::jsonb;  -- yields false
+
+-- A top-level key and an empty object is contained:
+SELECT '{"foo": {"bar": "baz"}}'::jsonb @&gt; '{"foo": {}}'::jsonb;</PRE
 ><P
 >   The general principle is that the contained object must match the
    containing object as to structure and data contents, possibly after
@@ -650,10 +653,10 @@ SELECT '{"foo": {"bar": "baz"}}'::jsonb @&#62; '{"bar": "baz"}'::jsonb;  -- yiel
 ><PRE
 CLASS="PROGRAMLISTING"
 >-- This array contains the primitive string value:
-SELECT '["foo", "bar"]'::jsonb @&#62; '"bar"'::jsonb;
+SELECT '["foo", "bar"]'::jsonb @&gt; '"bar"'::jsonb;
 
 -- This exception is not reciprocal -- non-containment is reported here:
-SELECT '"bar"'::jsonb @&#62; '["bar"]'::jsonb;  -- yields false</PRE
+SELECT '"bar"'::jsonb @&gt; '["bar"]'::jsonb;  -- yields false</PRE
 ><P
 >    <TT
 CLASS="TYPE"
@@ -695,6 +698,55 @@ SELECT '"foo"'::jsonb ? 'foo';</PRE
     unlike arrays they are internally optimized for searching, and do not
     need to be searched linearly.
   </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>Tip: </B
+>    Because JSON containment is nested, an appropriate query can skip
+    explicit selection of sub-objects.  As an example, suppose that we have
+    a <TT
+CLASS="STRUCTFIELD"
+>doc</TT
+> column containing objects at the top level, with
+    most objects containing <TT
+CLASS="LITERAL"
+>tags</TT
+> fields that contain arrays of
+    sub-objects.  This query finds entries in which sub-objects containing
+    both <TT
+CLASS="LITERAL"
+>"term":"paris"</TT
+> and <TT
+CLASS="LITERAL"
+>"term":"food"</TT
+> appear,
+    while ignoring any such keys outside the <TT
+CLASS="LITERAL"
+>tags</TT
+> array:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT doc-&gt;'site_name' FROM websites
+  WHERE doc @&gt; '{"tags":[{"term":"paris"}, {"term":"food"}]}';</PRE
+><P>
+    One could accomplish the same thing with, say,
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT doc-&gt;'site_name' FROM websites
+  WHERE doc-&gt;'tags' @&gt; '[{"term":"paris"}, {"term":"food"}]';</PRE
+><P>
+    but that approach is less flexible, and often less efficient as well.
+   </P
+><P
+>    On the other hand, the JSON existence operator is not nested: it will
+    only look for the specified key or array element at top level of the
+    JSON value.
+   </P
+></BLOCKQUOTE
+></DIV
 ><P
 >    The various containment and existence operators, along with all other
     JSON operators and functions are documented
@@ -733,10 +785,7 @@ CLASS="QUOTE"
 CLASS="TYPE"
 >jsonb</TT
 > supports queries with
-    the <TT
-CLASS="LITERAL"
->@&gt;</TT
->, <TT
+    top-level key-exists operators <TT
 CLASS="LITERAL"
 >?</TT
 >, <TT
@@ -746,7 +795,11 @@ CLASS="LITERAL"
     and <TT
 CLASS="LITERAL"
 >?|</TT
-> operators.
+> operators and path/value-exists operator
+    <TT
+CLASS="LITERAL"
+>@&gt;</TT
+>.
     (For details of the semantics that these operators
     implement, see <A
 HREF="functions-json.html#FUNCTIONS-JSONB-OP-TABLE"
@@ -755,7 +808,7 @@ HREF="functions-json.html#FUNCTIONS-JSONB-OP-TABLE"
     An example of creating an index with this operator class is:
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE INDEX idxgin ON api USING gin (jdoc);</PRE
+>CREATE INDEX idxgin ON api USING GIN (jdoc);</PRE
 ><P>
     The non-default GIN operator class <TT
 CLASS="LITERAL"
@@ -768,7 +821,7 @@ CLASS="LITERAL"
     An example of creating an index with this operator class is:
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE INDEX idxginp ON api USING gin (jdoc jsonb_path_ops);</PRE
+>CREATE INDEX idxginp ON api USING GIN (jdoc jsonb_path_ops);</PRE
 ><P>
   </P
 ><P
@@ -834,7 +887,7 @@ CLASS="LITERAL"
     may be worthwhile:
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE INDEX idxgintags ON api USING gin ((jdoc -&gt; 'tags'));</PRE
+>CREATE INDEX idxgintags ON api USING GIN ((jdoc -&gt; 'tags'));</PRE
 ><P>
     Now, the <TT
 CLASS="LITERAL"
@@ -921,8 +974,8 @@ CLASS="LITERAL"
     while the latter creates index items only for each value in the
     data.
     <A
-NAME="AEN7529"
-HREF="#FTN.AEN7529"
+NAME="AEN7711"
+HREF="#FTN.AEN7711"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN
@@ -1140,8 +1193,8 @@ ALIGN="LEFT"
 VALIGN="TOP"
 WIDTH="5%"
 ><A
-NAME="FTN.AEN7529"
-HREF="datatype-json.html#AEN7529"
+NAME="FTN.AEN7711"
+HREF="datatype-json.html#AEN7711"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN

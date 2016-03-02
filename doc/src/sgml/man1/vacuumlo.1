@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: vacuumlo
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "VACUUMLO" "1" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "VACUUMLO" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,7 +34,6 @@ vacuumlo \- remove orphaned large objects from a PostgreSQL database
 \fBvacuumlo\fR [\fIoption\fR...] \fIdbname\fR...
 .SH "DESCRIPTION"
 .PP
-
 vacuumlo
 is a simple utility program that will remove any
 \(lqorphaned\(rq
@@ -57,7 +56,6 @@ is useful to try to avoid creating orphaned LOs in the first place\&.
 All databases named on the command line are processed\&.
 .SH "OPTIONS"
 .PP
-
 vacuumlo
 accepts the following command\-line arguments:
 .PP
@@ -97,7 +95,6 @@ vacuumlo
 command line arguments, and exit\&.
 .RE
 .PP
-
 vacuumlo
 also accepts the following command\-line arguments for connection parameters:
 .PP
@@ -141,7 +138,6 @@ to avoid the extra connection attempt\&.
 .RE
 .SH "NOTES"
 .PP
-
 vacuumlo
 works by the following method: First,
 vacuumlo

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATESCHEMA"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN75345"
+NAME="AEN78054"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN75345"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN75348"
+NAME="AEN78057"
 ></A
 ><H2
 >Synopsis</H2
@@ -117,7 +117,7 @@ CLASS="REPLACEABLE"
 > [ AUTHORIZATION <TT
 CLASS="REPLACEABLE"
 ><I
->user_name</I
+>role_specification</I
 ></TT
 > ] [ <TT
 CLASS="REPLACEABLE"
@@ -128,7 +128,7 @@ CLASS="REPLACEABLE"
 CREATE SCHEMA AUTHORIZATION <TT
 CLASS="REPLACEABLE"
 ><I
->user_name</I
+>role_specification</I
 ></TT
 > [ <TT
 CLASS="REPLACEABLE"
@@ -144,20 +144,42 @@ CLASS="REPLACEABLE"
 > [ AUTHORIZATION <TT
 CLASS="REPLACEABLE"
 ><I
->user_name</I
+>role_specification</I
 ></TT
 > ]
 CREATE SCHEMA IF NOT EXISTS AUTHORIZATION <TT
 CLASS="REPLACEABLE"
 ><I
+>role_specification</I
+></TT
+>
+
+<SPAN
+CLASS="phrase"
+><SPAN
+CLASS="PHRASE"
+>where <TT
+CLASS="REPLACEABLE"
+><I
+>role_specification</I
+></TT
+> can be:</SPAN
+></SPAN
+>
+
+    [ GROUP ] <TT
+CLASS="REPLACEABLE"
+><I
 >user_name</I
 ></TT
-></PRE
+>
+  | CURRENT_USER
+  | SESSION_USER</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75358"
+NAME="AEN78070"
 ></A
 ><H2
 >Description</H2
@@ -207,7 +229,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75369"
+NAME="AEN78081"
 ></A
 ><H2
 >Parameters</H2
@@ -317,7 +339,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75402"
+NAME="AEN78114"
 ></A
 ><H2
 >Notes</H2
@@ -333,7 +355,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75406"
+NAME="AEN78118"
 ></A
 ><H2
 >Examples</H2
@@ -403,7 +425,7 @@ CREATE VIEW hollywood.winners AS
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75424"
+NAME="AEN78136"
 ></A
 ><H2
 >Compatibility</H2
@@ -464,7 +486,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75439"
+NAME="AEN78151"
 ></A
 ><H2
 >See Also</H2

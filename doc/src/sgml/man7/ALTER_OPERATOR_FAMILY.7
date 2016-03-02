@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: ALTER OPERATOR FAMILY
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "ALTER OPERATOR FAMILY" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "ALTER OPERATOR FAMILY" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,20 +33,28 @@ ALTER_OPERATOR_FAMILY \- change the definition of an operator family
 .sp
 .nf
 ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR ADD
-  {  OPERATOR \fIstrategy_number\fR \fIoperator_name\fR ( \fIop_type\fR, \fIop_type\fR ) [ FOR SEARCH | FOR ORDER BY \fIsort_family_name\fR ]
-   | FUNCTION \fIsupport_number\fR [ ( \fIop_type\fR [ , \fIop_type\fR ] ) ] \fIfunction_name\fR ( \fIargument_type\fR [, \&.\&.\&.] )
+  {  OPERATOR \fIstrategy_number\fR \fIoperator_name\fR ( \fIop_type\fR, \fIop_type\fR )
+              [ FOR SEARCH | FOR ORDER BY \fIsort_family_name\fR ]
+   | FUNCTION \fIsupport_number\fR [ ( \fIop_type\fR [ , \fIop_type\fR ] ) ]
+              \fIfunction_name\fR ( \fIargument_type\fR [, \&.\&.\&.] )
   } [, \&.\&.\&. ]
+
 ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR DROP
   {  OPERATOR \fIstrategy_number\fR ( \fIop_type\fR [ , \fIop_type\fR ] )
    | FUNCTION \fIsupport_number\fR ( \fIop_type\fR [ , \fIop_type\fR ] )
   } [, \&.\&.\&. ]
-ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR RENAME TO \fInew_name\fR
-ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR OWNER TO \fInew_owner\fR
-ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR SET SCHEMA \fInew_schema\fR
+
+ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR
+    RENAME TO \fInew_name\fR
+
+ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR
+    OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
+
+ALTER OPERATOR FAMILY \fIname\fR USING \fIindex_method\fR
+    SET SCHEMA \fInew_schema\fR
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBALTER OPERATOR FAMILY\fR
 changes the definition of an operator family\&. You can add operators and support functions to the family, remove them from the family, or change the family\*(Aqs name or owner\&.
 .PP
@@ -61,7 +69,6 @@ will allow loose members of a family to be dropped from the family at any time, 
 You must be a superuser to use
 \fBALTER OPERATOR FAMILY\fR\&. (This restriction is made because an erroneous operator family definition could confuse or even crash the server\&.)
 .PP
-
 \fBALTER OPERATOR FAMILY\fR
 does not presently check whether the operator family definition includes all the operators and functions required by the index method, nor whether the operators and functions form a self\-consistent set\&. It is the user\*(Aqs responsibility to define a valid operator family\&.
 .PP

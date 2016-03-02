@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: REASSIGN OWNED
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.76.1 <http://docbook.sf.net/>
-.\"      Date: 2015
-.\"    Manual: PostgreSQL 9.4.5 Documentation
-.\"    Source: PostgreSQL 9.4.5
+.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
+.\"      Date: 2016
+.\"    Manual: PostgreSQL 9.5.1 Documentation
+.\"    Source: PostgreSQL 9.5.1
 .\"  Language: English
 .\"
-.TH "REASSIGN OWNED" "7" "2015" "PostgreSQL 9.4.5" "PostgreSQL 9.4.5 Documentation"
+.TH "REASSIGN OWNED" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,13 +32,16 @@ REASSIGN_OWNED \- change the ownership of database objects owned by a database r
 .SH "SYNOPSIS"
 .sp
 .nf
-REASSIGN OWNED BY \fIold_role\fR [, \&.\&.\&.] TO \fInew_role\fR
+REASSIGN OWNED BY { \fIold_role\fR | CURRENT_USER | SESSION_USER } [, \&.\&.\&.]
+               TO { \fInew_role\fR | CURRENT_USER | SESSION_USER }
 .fi
 .SH "DESCRIPTION"
 .PP
-
 \fBREASSIGN OWNED\fR
-instructs the system to change the ownership of database objects owned by one of the old_roles, to new_role\&.
+instructs the system to change the ownership of database objects owned by any of the
+\fIold_roles\fR
+to
+\fInew_role\fR\&.
 .SH "PARAMETERS"
 .PP
 \fIold_role\fR
@@ -53,32 +56,34 @@ The name of the role that will be made the new owner of the affected objects\&.
 .RE
 .SH "NOTES"
 .PP
-
 \fBREASSIGN OWNED\fR
 is often used to prepare for the removal of one or more roles\&. Because
 \fBREASSIGN OWNED\fR
 does not affect objects within other databases, it is usually necessary to execute this command in each database that contains objects owned by a role that is to be removed\&.
 .PP
-
 \fBREASSIGN OWNED\fR
 requires privileges on both the source role(s) and the target role\&.
 .PP
 The
 DROP OWNED (\fBDROP_OWNED\fR(7))
-command is an alternative that drops all the database objects owned by one or more roles\&. Note also that
-\fBDROP OWNED\fR
-requires privileges only on the source role(s)\&.
+command is an alternative that simply drops all the database objects owned by one or more roles\&.
 .PP
 The
 \fBREASSIGN OWNED\fR
-command does not affect the privileges granted to the old_roles in objects that are not owned by them\&. Use
+command does not affect any privileges granted to the
+\fIold_roles\fR
+for objects that are not owned by them\&. Use
 \fBDROP OWNED\fR
-to revoke those privileges\&.
+to revoke such privileges\&.
+.PP
+See
+Section 20.4, \(lqDropping Roles\(rq, in the documentation
+for more discussion\&.
 .SH "COMPATIBILITY"
 .PP
 The
 \fBREASSIGN OWNED\fR
-statement is a
+command is a
 PostgreSQL
 extension\&.
 .SH "SEE ALSO"

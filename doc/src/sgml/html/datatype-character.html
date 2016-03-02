@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -359,12 +359,16 @@ CLASS="REPLACEABLE"
 CLASS="TYPE"
 >character</TT
 >.  In collations where whitespace
-    is significant, this behavior can produce unexpected results,
-    e.g. <TT
+    is significant, this behavior can produce unexpected results;
+    for example <TT
 CLASS="COMMAND"
 >SELECT 'a '::CHAR(2) collate "C" &lt;
-    'a\n'::CHAR(2)</TT
-> returns true.
+    E'a\n'::CHAR(2)</TT
+> returns true, even though <TT
+CLASS="LITERAL"
+>C</TT
+>
+    locale would consider a space to be greater than a newline.
     Trailing spaces are removed when converting a <TT
 CLASS="TYPE"
 >character</TT
@@ -384,10 +388,10 @@ CLASS="TYPE"
 CLASS="TYPE"
 >text</TT
 > values, and
-    when using pattern matching, e.g. <TT
+    when using pattern matching, that is <TT
 CLASS="LITERAL"
 >LIKE</TT
->,
+> and
     regular expressions.
    </P
 ><P
@@ -455,7 +459,8 @@ CLASS="REPLACEABLE"
 ></TT
 >)</TT
 > is usually the slowest of
-     the three because of its additional storage costs.  In most situations
+     the three because of its additional storage costs and slower
+     sorting.  In most situations
      <TT
 CLASS="TYPE"
 >text</TT
@@ -487,7 +492,7 @@ HREF="multibyte.html"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN5419"
+NAME="AEN5589"
 ></A
 ><P
 ><B

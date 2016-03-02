@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.4.5 Documentation"
+TITLE="PostgreSQL 9.5.1 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2015-10-05T19:28:19"></HEAD
+CONTENT="2016-02-08T21:25:04"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.4.5 Documentation</A
+>PostgreSQL 9.5.1 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -374,15 +374,51 @@ CLASS="LITERAL"
   layers are discussed in following sections.
  </P
 ><P
->   
-  If the values of your data type vary in size (in internal form), you should
-  make the data type <ACRONYM
+>  If the internal representation of the data type is variable-length, the
+  internal representation must follow the standard layout for variable-length
+  data: the first four bytes must be a <TT
+CLASS="TYPE"
+>char[4]</TT
+> field which is
+  never accessed directly (customarily named <TT
+CLASS="STRUCTFIELD"
+>vl_len_</TT
+>). You
+  must use the <CODE
+CLASS="FUNCTION"
+>SET_VARSIZE()</CODE
+> macro to store the total
+  size of the datum (including the length field itself) in this field
+  and <CODE
+CLASS="FUNCTION"
+>VARSIZE()</CODE
+> to retrieve it.  (These macros exist
+  because the length field may be encoded depending on platform.)
+ </P
+><P
+>  For further details see the description of the
+  <A
+HREF="sql-createtype.html"
+>CREATE TYPE</A
+> command.
+ </P
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="XTYPES-TOAST"
+>35.11.1. TOAST Considerations</A
+></H2
+><P
+>  If the values of your data type vary in size (in internal form), it's
+  usually desirable to make the data type <ACRONYM
 CLASS="ACRONYM"
 >TOAST</ACRONYM
 >-able (see <A
 HREF="storage-toast.html"
->Section 59.2</A
->). You should do this even if the data are always
+>Section 63.2</A
+>). You should do this even if the values are always
   too small to be compressed or stored externally, because
   <ACRONYM
 CLASS="ACRONYM"
@@ -391,45 +427,34 @@ CLASS="ACRONYM"
   overhead.
  </P
 ><P
->  To do this, the internal representation must follow the standard layout for
-  variable-length data: the first four bytes must be a <TT
-CLASS="TYPE"
->char[4]</TT
->
-  field which is never accessed directly (customarily named
-  <TT
-CLASS="STRUCTFIELD"
->vl_len_</TT
->). You
-  must use <CODE
-CLASS="FUNCTION"
->SET_VARSIZE()</CODE
-> to store the size of the datum
-  in this field and <CODE
-CLASS="FUNCTION"
->VARSIZE()</CODE
-> to retrieve it. The C
-  functions operating on the data type must always be careful to unpack any
-  toasted values they are handed, by using <CODE
+>  To support <ACRONYM
+CLASS="ACRONYM"
+>TOAST</ACRONYM
+> storage, the C functions operating on the data
+  type must always be careful to unpack any toasted values they are handed
+  by using <CODE
 CLASS="FUNCTION"
 >PG_DETOAST_DATUM</CODE
->.
-  (This detail is customarily hidden by defining type-specific
-  <CODE
+>.  (This detail is customarily hidden
+  by defining type-specific <CODE
 CLASS="FUNCTION"
 >GETARG_DATATYPE_P</CODE
-> macros.) Then, when running the
-  <TT
+> macros.)
+  Then, when running the <TT
 CLASS="COMMAND"
 >CREATE TYPE</TT
-> command, specify the internal length as
-  <TT
+> command, specify the
+  internal length as <TT
 CLASS="LITERAL"
 >variable</TT
-> and select the appropriate storage option.
+> and select some appropriate storage
+  option other than <TT
+CLASS="LITERAL"
+>plain</TT
+>.
  </P
 ><P
->  If the alignment is unimportant (either just for a specific function or
+>  If data alignment is unimportant (either just for a specific function or
   because the data type specifies byte alignment anyway) then it's possible
   to avoid some of the overhead of <CODE
 CLASS="FUNCTION"
@@ -488,12 +513,114 @@ CLASS="TYPE"
 ></BLOCKQUOTE
 ></DIV
 ><P
->  For further details see the description of the
-  <A
-HREF="sql-createtype.html"
->CREATE TYPE</A
-> command.
+>  Another feature that's enabled by <ACRONYM
+CLASS="ACRONYM"
+>TOAST</ACRONYM
+> support is the
+  possibility of having an <I
+CLASS="FIRSTTERM"
+>expanded</I
+> in-memory data
+  representation that is more convenient to work with than the format that
+  is stored on disk.  The regular or <SPAN
+CLASS="QUOTE"
+>"flat"</SPAN
+> varlena storage format
+  is ultimately just a blob of bytes; it cannot for example contain
+  pointers, since it may get copied to other locations in memory.
+  For complex data types, the flat format may be quite expensive to work
+  with, so <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> provides a way to <SPAN
+CLASS="QUOTE"
+>"expand"</SPAN
+>
+  the flat format into a representation that is more suited to computation,
+  and then pass that format in-memory between functions of the data type.
  </P
+><P
+>  To use expanded storage, a data type must define an expanded format that
+  follows the rules given in <TT
+CLASS="FILENAME"
+>src/include/utils/expandeddatum.h</TT
+>,
+  and provide functions to <SPAN
+CLASS="QUOTE"
+>"expand"</SPAN
+> a flat varlena value into
+  expanded format and <SPAN
+CLASS="QUOTE"
+>"flatten"</SPAN
+> the expanded format back to the
+  regular varlena representation.  Then ensure that all C functions for
+  the data type can accept either representation, possibly by converting
+  one into the other immediately upon receipt.  This does not require fixing
+  all existing functions for the data type at once, because the standard
+  <CODE
+CLASS="FUNCTION"
+>PG_DETOAST_DATUM</CODE
+> macro is defined to convert expanded inputs
+  into regular flat format.  Therefore, existing functions that work with
+  the flat varlena format will continue to work, though slightly
+  inefficiently, with expanded inputs; they need not be converted until and
+  unless better performance is important.
+ </P
+><P
+>  C functions that know how to work with an expanded representation
+  typically fall into two categories: those that can only handle expanded
+  format, and those that can handle either expanded or flat varlena inputs.
+  The former are easier to write but may be less efficient overall, because
+  converting a flat input to expanded form for use by a single function may
+  cost more than is saved by operating on the expanded format.
+  When only expanded format need be handled, conversion of flat inputs to
+  expanded form can be hidden inside an argument-fetching macro, so that
+  the function appears no more complex than one working with traditional
+  varlena input.
+  To handle both types of input, write an argument-fetching function that
+  will detoast external, short-header, and compressed varlena inputs, but
+  not expanded inputs.  Such a function can be defined as returning a
+  pointer to a union of the flat varlena format and the expanded format.
+  Callers can use the <CODE
+CLASS="FUNCTION"
+>VARATT_IS_EXPANDED_HEADER()</CODE
+> macro to
+  determine which format they received.
+ </P
+><P
+>  The <ACRONYM
+CLASS="ACRONYM"
+>TOAST</ACRONYM
+> infrastructure not only allows regular varlena
+  values to be distinguished from expanded values, but also
+  distinguishes <SPAN
+CLASS="QUOTE"
+>"read-write"</SPAN
+> and <SPAN
+CLASS="QUOTE"
+>"read-only"</SPAN
+> pointers to
+  expanded values.  C functions that only need to examine an expanded
+  value, or will only change it in safe and non-semantically-visible ways,
+  need not care which type of pointer they receive.  C functions that
+  produce a modified version of an input value are allowed to modify an
+  expanded input value in-place if they receive a read-write pointer, but
+  must not modify the input if they receive a read-only pointer; in that
+  case they have to copy the value first, producing a new value to modify.
+  A C function that has constructed a new expanded value should always
+  return a read-write pointer to it.  Also, a C function that is modifying
+  a read-write expanded value in-place should take care to leave the value
+  in a sane state if it fails partway through.
+ </P
+><P
+>  For examples of working with expanded values, see the standard array
+  infrastructure, particularly
+  <TT
+CLASS="FILENAME"
+>src/backend/utils/adt/array_expanded.c</TT
+>.
+ </P
+></DIV
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

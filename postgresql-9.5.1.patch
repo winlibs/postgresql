@@ -1,7 +1,16 @@
 diff --git a/src/interfaces/libpq/win32.mak b/src/interfaces/libpq/win32.mak
-index 1b71ebd..076ef50 100644
+index 1b71ebd..3071013 100644
 --- a/src/interfaces/libpq/win32.mak
 +++ b/src/interfaces/libpq/win32.mak
+@@ -16,7 +16,7 @@ CPU=i386
+ !MESSAGE Building the Win32 static library...
+ !MESSAGE
+ !ELSEIF ("$(CPU)" == "IA64")||("$(CPU)" == "AMD64")
+-ADD_DEFINES=/D "WIN64" /Wp64 /GS
++ADD_DEFINES=/D "WIN64" /GS
+ ADD_SECLIB=bufferoverflowU.lib
+ !MESSAGE Building the Win64 static library...
+ !MESSAGE
 @@ -30,9 +30,9 @@ ADD_SECLIB=bufferoverflowU.lib
  OPT=/Od /Zi /MDd
  LOPT=/DEBUG
@@ -10,7 +19,7 @@ index 1b71ebd..076ef50 100644
 +OUTFILENAME=libpq_debug
  !ELSE
 -OPT=/O2 /MD
-+OPT=/O2 /Zi /MD
++OPT=/guard:cf /Zc:inline /fp:precise /Gw /Ox /Zi /MD /D _MBCS
  LOPT=
  DEBUGDEF=/D NDEBUG
  OUTFILENAME=libpq
@@ -35,21 +44,25 @@ index 1b71ebd..076ef50 100644
  !ENDIF
  
  
-@@ -192,7 +194,7 @@ pg_config_paths.h: win32.mak
+@@ -191,8 +193,8 @@ pg_config_paths.h: win32.mak
+ 
  CPP_PROJ=/nologo /W3 /EHsc $(OPT) /I "..\..\include" /I "..\..\include\port\win32" /I "..\..\include\port\win32_msvc" /I "..\..\port" /I. /I "$(SSL_INC)" \
   /D "FRONTEND" $(DEBUGDEF) \
-  /D "WIN32" /D "_WINDOWS" /Fp"$(INTDIR)\libpq.pch" \
+- /D "WIN32" /D "_WINDOWS" /Fp"$(INTDIR)\libpq.pch" \
 - /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c  \
++ /D "WIN32" /D "_WINDOWS" \
 + /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\$(OUTFILENAME).pdb" /FD /c  \
   /D "_CRT_SECURE_NO_DEPRECATE" $(ADD_DEFINES)
  
  !IFDEF USE_OPENSSL
-@@ -216,7 +218,7 @@ RSC_PROJ=/l 0x409 /fo"$(INTDIR)\libpq.res"
+@@ -215,8 +217,8 @@ RSC_PROJ=/l 0x409 /fo"$(INTDIR)\libpq.res"
+ 
  LINK32=link.exe
  LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib shell32.lib ws2_32.lib secur32.lib $(SSL_LIBS)  $(KFW_LIB) $(ADD_SECLIB) \
-  /nologo /subsystem:windows /dll $(LOPT) /incremental:no \
+- /nologo /subsystem:windows /dll $(LOPT) /incremental:no \
 - /pdb:"$(OUTDIR)\libpqdll.pdb" /machine:$(CPU) \
-+ /pdb:"$(OUTDIR)\libpq_debug.pdb" /machine:$(CPU) \
++ /nologo /subsystem:console /dll $(LOPT) /incremental:no \
++ /machine:$(CPU) /GUARD:CF  /NXCOMPAT /debug \
   /out:"$(OUTDIR)\$(OUTFILENAME).dll"\
   /implib:"$(OUTDIR)\$(OUTFILENAME)dll.lib"  \
   /libpath:"$(SSL_LIB_PATH)" /libpath:"$(KFW_LIB_PATH)" \

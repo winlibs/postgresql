@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.1 Documentation"
+TITLE="PostgreSQL 9.5.3 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-02-08T21:25:04"></HEAD
+CONTENT="2016-05-09T21:05:36"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.1 Documentation</A
+>PostgreSQL 9.5.3 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN91151"
+NAME="AEN91230"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN91155"
+NAME="AEN91234"
 ></A
 ><H2
 >Synopsis</H2
@@ -150,7 +150,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91170"
+NAME="AEN91249"
 ></A
 ><H2
 >Description</H2
@@ -382,7 +382,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91216"
+NAME="AEN91295"
 ></A
 ><H2
 >Options</H2
@@ -1384,14 +1384,14 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91568"
+NAME="AEN91647"
 ></A
 ><H2
 >Notes</H2
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91570"
+NAME="AEN91649"
 ></A
 ><H3
 >What is the <SPAN
@@ -1476,7 +1476,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91601"
+NAME="AEN91680"
 ></A
 ><H3
 >Custom Scripts</H3
@@ -2137,7 +2137,7 @@ END;</PRE
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91760"
+NAME="AEN91839"
 ></A
 ><H3
 >Per-Transaction Logging</H3
@@ -2289,21 +2289,23 @@ CLASS="REPLACEABLE"
 CLASS="OPTION"
 >--rate</TT
 > option is used.
-   The last field <TT
-CLASS="REPLACEABLE"
-><I
->skipped_transactions</I
-></TT
-> reports the number of
-   transactions skipped because they were too far behind schedule. It is only
-   present when both options <TT
+   When both <TT
 CLASS="OPTION"
 >--rate</TT
 > and <TT
 CLASS="OPTION"
 >--latency-limit</TT
->
-   are used.
+> are used,
+   the <TT
+CLASS="REPLACEABLE"
+><I
+>time</I
+></TT
+> for a skipped transaction will be reported as
+   <TT
+CLASS="LITERAL"
+>skipped</TT
+>.
   </P
 ><P
 >   Here is a snippet of the log file generated:
@@ -2332,7 +2334,7 @@ CLASS="SCREEN"
  0 84 4142 0 1412881037 918023 2333
  0 85 2465 0 1412881037 919759 740</PRE
 ><P>
-   In this example, transaction 82 was late, because it's latency (6.173 ms) was
+   In this example, transaction 82 was late, because its latency (6.173 ms) was
    over the 5 ms limit. The next two transactions were skipped, because they
    were already late before they were even started.
   </P
@@ -2348,7 +2350,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91801"
+NAME="AEN91881"
 ></A
 ><H3
 >Aggregated Logging</H3
@@ -2508,7 +2510,7 @@ CLASS="OPTION"
    scheduled start time and the time it actually started.
   </P
 ><P
->   Here is example outputs:
+>   Here is example output:
 </P><PRE
 CLASS="SCREEN"
 >1345828501 5601 1542744 483552416 61 2573
@@ -2518,15 +2520,15 @@ CLASS="SCREEN"
 1345828509 7073 1979779 573489941 236 1411</PRE
 ><P></P
 ><P
->   Notice that while the plain (unaggregated) log file contains index
-   of the custom script files, the aggregated log does not. Therefore if
+>   Notice that while the plain (unaggregated) log file contains a reference
+   to the custom script files, the aggregated log does not. Therefore if
    you need per script data, you need to aggregate the data on your own.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91836"
+NAME="AEN91916"
 ></A
 ><H3
 >Per-Statement Latencies</H3
@@ -2589,7 +2591,7 @@ statement latencies in milliseconds:
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91845"
+NAME="AEN91925"
 ></A
 ><H3
 >Good Practices</H3

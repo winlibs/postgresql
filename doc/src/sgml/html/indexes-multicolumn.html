@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.1 Documentation"
+TITLE="PostgreSQL 9.5.3 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-02-08T21:25:04"></HEAD
+CONTENT="2016-05-09T21:05:36"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.1 Documentation</A
+>PostgreSQL 9.5.3 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -140,7 +140,8 @@ CLASS="PROGRAMLISTING"
 ><P>
   </P
 ><P
->   Currently, only the B-tree, GiST and GIN index types support multicolumn
+>   Currently, only the B-tree, GiST, GIN, and BRIN
+   index types support multicolumn
    indexes.  Up to 32 columns can be specified.  (This limit can be
    altered when building <SPAN
 CLASS="PRODUCTNAME"
@@ -213,6 +214,17 @@ CLASS="LITERAL"
    involve any subset of the index's columns. Unlike B-tree or GiST,
    index search effectiveness is the same regardless of which index column(s)
    the query conditions use.
+  </P
+><P
+>   A multicolumn BRIN index can be used with query conditions that
+   involve any subset of the index's columns. Like GIN and unlike B-tree or
+   GiST, index search effectiveness is the same regardless of which index
+   column(s) the query conditions use. The only reason to have multiple BRIN
+   indexes instead of one multicolumn BRIN index on a single table is to have
+   a different <TT
+CLASS="LITERAL"
+>pages_per_range</TT
+> storage parameter.
   </P
 ><P
 >   Of course, each column must be used with operators appropriate to the index

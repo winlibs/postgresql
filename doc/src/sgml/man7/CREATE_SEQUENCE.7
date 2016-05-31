@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.1 Documentation
-.\"    Source: PostgreSQL 9.5.1
+.\"    Manual: PostgreSQL 9.5.3 Documentation
+.\"    Source: PostgreSQL 9.5.3
 .\"  Language: English
 .\"
-.TH "CREATE SEQUENCE" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
+.TH "CREATE SEQUENCE" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -179,6 +179,14 @@ to remove a sequence\&.
 Sequences are based on
 bigint
 arithmetic, so the range cannot exceed the range of an eight\-byte integer (\-9223372036854775808 to 9223372036854775807)\&.
+.PP
+Because
+\fBnextval\fR
+and
+\fBsetval\fR
+calls are never rolled back, sequence objects cannot be used if
+\(lqgapless\(rq
+assignment of sequence numbers is needed\&. It is possible to build gapless assignment by using exclusive locking of a table containing a counter; but this solution is much more expensive than sequence objects, especially if many transactions need sequence numbers concurrently\&.
 .PP
 Unexpected results might be obtained if a
 \fIcache\fR

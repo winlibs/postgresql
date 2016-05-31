@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.1 Documentation"
+TITLE="PostgreSQL 9.5.3 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-02-08T21:25:04"></HEAD
+CONTENT="2016-05-09T21:05:36"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.1 Documentation</A
+>PostgreSQL 9.5.3 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -455,22 +455,49 @@ CLASS="IMPORTANT"
 ><P
 ><B
 >Important: </B
->         To avoid blocking concurrent transactions that obtain numbers from the
-         same sequence, a <CODE
+>         To avoid blocking concurrent transactions that obtain numbers from
+         the same sequence, a <CODE
 CLASS="FUNCTION"
 >nextval</CODE
 > operation is never
          rolled back; that is, once a value has been fetched it is considered
-         used, even if the transaction that did the
-         <CODE
+         used and will not be returned again.  This is true even if the
+         surrounding transaction later aborts, or if the calling query ends
+         up not using the value.  For example an <TT
+CLASS="COMMAND"
+>INSERT</TT
+> with
+         an <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+> clause will compute the to-be-inserted
+         tuple, including doing any required <CODE
 CLASS="FUNCTION"
 >nextval</CODE
-> later aborts.  This means that aborted
-         transactions might leave unused <SPAN
+>
+         calls, before detecting any conflict that would cause it to follow
+         the <TT
+CLASS="LITERAL"
+>ON CONFLICT</TT
+> rule instead.  Such cases will leave
+         unused <SPAN
 CLASS="QUOTE"
 >"holes"</SPAN
-> in the sequence
-         of assigned values.
+> in the sequence of assigned values.
+         Thus, <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> sequence objects <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>cannot
+         be used to obtain <SPAN
+CLASS="QUOTE"
+>"gapless"</SPAN
+> sequences</I
+></SPAN
+>.
         </P
 ></BLOCKQUOTE
 ></DIV
@@ -516,11 +543,11 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >currval</CODE
 >, except that instead
-        of taking the sequence name as an argument it fetches the
-        value of the last sequence used by <CODE
+        of taking the sequence name as an argument it refers to whichever
+        sequence <CODE
 CLASS="FUNCTION"
 >nextval</CODE
->
+> was most recently applied to
         in the current session. It is an error to call
         <CODE
 CLASS="FUNCTION"

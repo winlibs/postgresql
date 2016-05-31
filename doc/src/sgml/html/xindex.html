@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.1 Documentation"
+TITLE="PostgreSQL 9.5.3 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-02-08T21:25:04"></HEAD
+CONTENT="2016-05-09T21:05:36"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.1 Documentation</A
+>PostgreSQL 9.5.3 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -599,6 +599,74 @@ CLASS="CALSTABLE"
 ></TABLE
 ></DIV
 ><P
+>   BRIN indexes are similar to GiST, SP-GiST and GIN indexes in that they
+   don't have a fixed set of strategies either.  Instead the support routines
+   of each operator class interpret the strategy numbers according to the
+   operator class's definition. As an example, the strategy numbers used by
+   the built-in <TT
+CLASS="LITERAL"
+>Minmax</TT
+> operator classes are shown in
+   <A
+HREF="xindex.html#XINDEX-BRIN-MINMAX-STRAT-TABLE"
+>Table 35-7</A
+>.
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="XINDEX-BRIN-MINMAX-STRAT-TABLE"
+></A
+><P
+><B
+>Table 35-7. BRIN Minmax Strategies</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>Operation</TH
+><TH
+>Strategy Number</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>less than</TD
+><TD
+>1</TD
+></TR
+><TR
+><TD
+>less than or equal</TD
+><TD
+>2</TD
+></TR
+><TR
+><TD
+>equal</TD
+><TD
+>3</TD
+></TR
+><TR
+><TD
+>greater than or equal</TD
+><TD
+>4</TD
+></TR
+><TR
+><TD
+>greater than</TD
+><TD
+>5</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
 >   Notice that all the operators listed above return Boolean values.  In
    practice, all operators defined as index method search operators must
    return type <TT
@@ -654,7 +722,7 @@ CLASS="QUOTE"
 >   B-trees require a single support function, and allow a second one to be
    supplied at the operator class author's option, as shown in <A
 HREF="xindex.html#XINDEX-BTREE-SUPPORT-TABLE"
->Table 35-7</A
+>Table 35-8</A
 >.
   </P
 ><DIV
@@ -664,7 +732,7 @@ NAME="XINDEX-BTREE-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-7. B-tree Support Functions</B
+>Table 35-8. B-tree Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -704,7 +772,7 @@ CLASS="FILENAME"
 ><P
 >   Hash indexes require one support function, shown in <A
 HREF="xindex.html#XINDEX-HASH-SUPPORT-TABLE"
->Table 35-8</A
+>Table 35-9</A
 >.
   </P
 ><DIV
@@ -714,7 +782,7 @@ NAME="XINDEX-HASH-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-8. Hash Support Functions</B
+>Table 35-9. Hash Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -741,7 +809,7 @@ CLASS="CALSTABLE"
 >   GiST indexes have nine support functions, two of which are optional,
    as shown in <A
 HREF="xindex.html#XINDEX-GIST-SUPPORT-TABLE"
->Table 35-9</A
+>Table 35-10</A
 >.
    (For more information see <A
 HREF="gist.html"
@@ -755,7 +823,7 @@ NAME="XINDEX-GIST-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-9. GiST Support Functions</B
+>Table 35-10. GiST Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -883,7 +951,7 @@ CLASS="FUNCTION"
 >   SP-GiST indexes require five support functions, as
    shown in <A
 HREF="xindex.html#XINDEX-SPGIST-SUPPORT-TABLE"
->Table 35-10</A
+>Table 35-11</A
 >.
    (For more information see <A
 HREF="spgist.html"
@@ -897,7 +965,7 @@ NAME="XINDEX-SPGIST-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-10. SP-GiST Support Functions</B
+>Table 35-11. SP-GiST Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -977,7 +1045,7 @@ CLASS="FUNCTION"
 >   GIN indexes have six support functions, three of which are optional,
    as shown in <A
 HREF="xindex.html#XINDEX-GIN-SUPPORT-TABLE"
->Table 35-11</A
+>Table 35-12</A
 >.
    (For more information see <A
 HREF="gin.html"
@@ -991,7 +1059,7 @@ NAME="XINDEX-GIN-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-11. GIN Support Functions</B
+>Table 35-12. GIN Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1088,6 +1156,91 @@ CLASS="FUNCTION"
 ></TABLE
 ></DIV
 ><P
+>   BRIN indexes have four basic support functions, as shown in
+   <A
+HREF="xindex.html#XINDEX-BRIN-SUPPORT-TABLE"
+>Table 35-13</A
+>; those basic functions
+   may require additional support functions to be provided.
+   (For more information see <A
+HREF="brin-extensibility.html"
+>Section 62.3</A
+>.)
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="XINDEX-BRIN-SUPPORT-TABLE"
+></A
+><P
+><B
+>Table 35-13. BRIN Support Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Function</TH
+><TH
+>Description</TH
+><TH
+>Support Number</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><CODE
+CLASS="FUNCTION"
+>opcInfo</CODE
+></TD
+><TD
+>        return internal information describing the indexed columns'
+        summary data
+       </TD
+><TD
+>1</TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="FUNCTION"
+>add_value</CODE
+></TD
+><TD
+>add a new value to an existing summary index tuple</TD
+><TD
+>2</TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="FUNCTION"
+>consistent</CODE
+></TD
+><TD
+>determine whether value matches query condition</TD
+><TD
+>3</TD
+></TR
+><TR
+><TD
+><CODE
+CLASS="FUNCTION"
+>union</CODE
+></TD
+><TD
+>        compute union of two summary tuples
+       </TD
+><TD
+>4</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
 >   Unlike search operators, support functions return whichever data
    type the particular index method expects; for example in the case
    of the comparison function for B-trees, a signed integer.  The number
@@ -1095,7 +1248,7 @@ CLASS="FUNCTION"
    dependent on the index method.  For B-tree and hash the comparison and
    hashing support functions take the same input data types as do the
    operators included in the operator class, but this is not the case for
-   most GiST, SP-GiST, and GIN support functions.
+   most GiST, SP-GiST, GIN, and BRIN support functions.
   </P
 ></DIV
 ><DIV
@@ -1608,6 +1761,16 @@ CLASS="QUOTE"
    whatever the primary support functions for a given operator class can
    handle.
   </P
+><P
+>   In BRIN, the requirements depends on the framework that provides the
+   operator classes.  For operator classes based on <TT
+CLASS="LITERAL"
+>minmax</TT
+>,
+   the behavior required is the same as for B-tree operator families:
+   all the operators in the family must sort compatibly, and casts must
+   not change the associated sort ordering.
+  </P
 ><DIV
 CLASS="NOTE"
 ><BLOCKQUOTE
@@ -1931,7 +2094,7 @@ CLASS="PROGRAMLISTING"
         STORAGE box;</PRE
 ><P>
 
-   At present, only the GiST and GIN index methods support a
+   At present, only the GiST, GIN and BRIN index methods support a
    <TT
 CLASS="LITERAL"
 >STORAGE</TT
@@ -1965,6 +2128,13 @@ CLASS="FUNCTION"
 >extractQuery</CODE
 > support
    routines are responsible for extracting keys from indexed values.
+   BRIN is similar to GIN: the <TT
+CLASS="LITERAL"
+>STORAGE</TT
+> type identifies the
+   type of the stored summary values, and operator classes' support
+   procedures are responsible for interpreting the summary values
+   correctly.
   </P
 ></DIV
 ></DIV

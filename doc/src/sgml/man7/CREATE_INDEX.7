@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.1 Documentation
-.\"    Source: PostgreSQL 9.5.1
+.\"    Manual: PostgreSQL 9.5.3 Documentation
+.\"    Source: PostgreSQL 9.5.3
 .\"  Language: English
 .\"
-.TH "CREATE INDEX" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
+.TH "CREATE INDEX" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -285,10 +285,12 @@ CONCURRENTLY
 option of
 \fBCREATE INDEX\fR\&. When this option is used,
 PostgreSQL
-must perform two scans of the table, and in addition it must wait for all existing transactions that could potentially use the index to terminate\&. Thus this method requires more total work than a standard index build and takes significantly longer to complete\&. However, since it allows normal operations to continue while the index is built, this method is useful for adding new indexes in a production environment\&. Of course, the extra CPU and I/O load imposed by the index creation might slow other operations\&.
+must perform two scans of the table, and in addition it must wait for all existing transactions that could potentially modify or use the index to terminate\&. Thus this method requires more total work than a standard index build and takes significantly longer to complete\&. However, since it allows normal operations to continue while the index is built, this method is useful for adding new indexes in a production environment\&. Of course, the extra CPU and I/O load imposed by the index creation might slow other operations\&.
 .PP
-In a concurrent index build, the index is actually entered into the system catalogs in one transaction, then two table scans occur in two more transactions\&. Any transaction active when the second table scan starts can block concurrent index creation until it completes, even transactions that only reference the table after the second table scan starts\&. Concurrent index creation serially waits for each old transaction to complete using the method outlined in section
-Section 49.65, \(lqpg_locks\(rq, in the documentation\&.
+In a concurrent index build, the index is actually entered into the system catalogs in one transaction, then two table scans occur in two more transactions\&. Before each table scan, the index build must wait for existing transactions that have modified the table to terminate\&. After the second scan, the index build must wait for any transactions that have a snapshot (see
+Chapter 13, Concurrency Control, in the documentation) predating the second scan to terminate\&. Then finally the index can be marked ready for use, and the
+\fBCREATE INDEX\fR
+command terminates\&. Even then, however, the index may not be immediately usable for queries: in the worst case, it cannot be used as long as transactions exist that predate the start of the index build\&.
 .PP
 If a problem arises while scanning the table, such as a deadlock or a uniqueness violation in a unique index, the
 \fBCREATE INDEX\fR

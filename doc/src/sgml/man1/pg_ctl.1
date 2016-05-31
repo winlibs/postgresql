@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.1 Documentation
-.\"    Source: PostgreSQL 9.5.1
+.\"    Manual: PostgreSQL 9.5.3 Documentation
+.\"    Source: PostgreSQL 9.5.3
 .\"  Language: English
 .\"
-.TH "PG_CTL" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
+.TH "PG_CTL" "1" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -240,7 +240,9 @@ Print only errors, no informational messages\&.
 .br
 \fB\-\-timeout\fR
 .RS 4
-The maximum number of seconds to wait when waiting for startup or shutdown to complete\&. The default is 60 seconds\&.
+The maximum number of seconds to wait when waiting for startup or shutdown to complete\&. Defaults to the value of the
+\fBPGCTLTIMEOUT\fR
+environment variable or, if not set, to 60 seconds\&.
 .RE
 .PP
 \fB\-V\fR
@@ -319,6 +321,11 @@ User name for the user to start the service\&. For domain users, use the format
 DOMAIN\eusername\&.
 .RE
 .SH "ENVIRONMENT"
+.PP
+\fBPGCTLTIMEOUT\fR
+.RS 4
+Default limit on the number of seconds to wait when waiting for startup or shutdown to complete\&. If not set, the default is 60 seconds\&.
+.RE
 .PP
 \fBPGDATA\fR
 .RS 4

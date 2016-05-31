@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.1 Documentation"
+TITLE="PostgreSQL 9.5.3 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-02-08T21:25:04"></HEAD
+CONTENT="2016-05-09T21:05:36"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.1 Documentation</A
+>PostgreSQL 9.5.3 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -107,7 +107,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN172125"
+NAME="AEN173196"
 >F.29.1. Functions</A
 ></H2
 ><P
@@ -340,9 +340,9 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >pgstattuple(regclass)</CODE
 >, except
-      that the target relation is specified by TEXT. This function is kept
+      that the target relation is specified as TEXT. This function is kept
       because of backward-compatibility so far, and will be deprecated in
-      the future release.
+      some future release.
      </P
 ></DD
 ><DT
@@ -363,13 +363,13 @@ CLASS="PROGRAMLISTING"
 -[ RECORD 1 ]------+------
 version            | 2
 tree_level         | 0
-index_size         | 8192
+index_size         | 16384
 root_block_no      | 1
 internal_pages     | 0
 leaf_pages         | 1
 empty_pages        | 0
 deleted_pages      | 0
-avg_leaf_density   | 50.27
+avg_leaf_density   | 54.27
 leaf_fragmentation | 0</PRE
 ><P>
      </P
@@ -381,7 +381,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN172225"
+NAME="AEN173296"
 ></A
 ><TABLE
 BORDER="1"
@@ -437,7 +437,7 @@ CLASS="TYPE"
 >bigint</TT
 ></TD
 ><TD
->Total number of pages in index</TD
+>Total index size in bytes</TD
 ></TR
 ><TR
 ><TD
@@ -451,7 +451,7 @@ CLASS="TYPE"
 >bigint</TT
 ></TD
 ><TD
->Location of root block</TD
+>Location of root page (zero if none)</TD
 ></TR
 ><TR
 ><TD
@@ -548,6 +548,18 @@ CLASS="TYPE"
 >
     </P
 ><P
+>     The reported <TT
+CLASS="LITERAL"
+>index_size</TT
+> will normally correspond to one more
+     page than is accounted for by <TT
+CLASS="LITERAL"
+>internal_pages + leaf_pages +
+     empty_pages + deleted_pages</TT
+>, because it also includes the
+     index's metapage.
+    </P
+><P
 >     As with <CODE
 CLASS="FUNCTION"
 >pgstattuple</CODE
@@ -567,9 +579,9 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >pgstatindex(regclass)</CODE
 >, except
-      that the target index is specified by TEXT. This function is kept
+      that the target index is specified as TEXT. This function is kept
       because of backward-compatibility so far, and will be deprecated in
-      the future release.
+      some future release.
      </P
 ></DD
 ><DT
@@ -601,7 +613,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN172312"
+NAME="AEN173386"
 ></A
 ><TABLE
 BORDER="1"
@@ -692,9 +704,9 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >pg_relpages(regclass)</CODE
 >, except
-      that the target relation is specified by TEXT. This function is kept
+      that the target relation is specified as TEXT. This function is kept
       because of backward-compatibility so far, and will be deprecated in
-      the future release.
+      some future release.
      </P
 ></DD
 ><DT
@@ -712,7 +724,7 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >pgstattuple</CODE
 > that returns approximate results.
-      The argument is the target relation's OID.
+      The argument is the target relation's name or OID.
       For example:
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -950,7 +962,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN172440"
+NAME="AEN173514"
 >F.29.2. Authors</A
 ></H2
 ><P

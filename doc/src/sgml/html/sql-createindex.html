@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.1 Documentation"
+TITLE="PostgreSQL 9.5.3 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-02-08T21:25:04"></HEAD
+CONTENT="2016-05-09T21:05:36"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.1 Documentation</A
+>PostgreSQL 9.5.3 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEINDEX"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN76369"
+NAME="AEN76443"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN76369"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN76372"
+NAME="AEN76446"
 ></A
 ><H2
 >Synopsis</H2
@@ -173,7 +173,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76385"
+NAME="AEN76459"
 ></A
 ><H2
 >Description</H2
@@ -274,7 +274,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76407"
+NAME="AEN76481"
 ></A
 ><H2
 >Parameters</H2
@@ -817,7 +817,7 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > must perform two scans of the table, and in
     addition it must wait for all existing transactions that could potentially
-    use the index to terminate.  Thus
+    modify or use the index to terminate.  Thus
     this method requires more total work than a standard index build and takes
     significantly longer to complete.  However, since it allows normal
     operations to continue while the index is built, this method is useful for
@@ -827,14 +827,21 @@ CLASS="PRODUCTNAME"
 ><P
 >    In a concurrent index build, the index is actually entered into
     the system catalogs in one transaction, then two table scans occur in
-    two more transactions.  Any transaction active when the second table
-    scan starts can block concurrent index creation until it completes,
-    even transactions that only reference the table after the second table
-    scan starts.   Concurrent index creation serially waits for each old
-    transaction to complete using the method outlined in section <A
-HREF="view-pg-locks.html"
->Section 49.65</A
->.
+    two more transactions.  Before each table scan, the index build must
+    wait for existing transactions that have modified the table to terminate.
+    After the second scan, the index build must wait for any transactions
+    that have a snapshot (see <A
+HREF="mvcc.html"
+>Chapter 13</A
+>) predating the second
+    scan to terminate.  Then finally the index can be marked ready for use,
+    and the <TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> command terminates.
+    Even then, however, the index may not be immediately usable for queries:
+    in the worst case, it cannot be used as long as transactions exist that
+    predate the start of the index build.
    </P
 ><P
 >    If a problem arises while scanning the table, such as a deadlock or a
@@ -922,7 +929,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76602"
+NAME="AEN76677"
 ></A
 ><H2
 >Notes</H2
@@ -1112,7 +1119,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76640"
+NAME="AEN76715"
 ></A
 ><H2
 >Examples</H2
@@ -1217,7 +1224,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76668"
+NAME="AEN76743"
 ></A
 ><H2
 >Compatibility</H2
@@ -1236,7 +1243,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76673"
+NAME="AEN76748"
 ></A
 ><H2
 >See Also</H2

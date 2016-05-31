@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.1 Documentation"
+TITLE="PostgreSQL 9.5.3 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-02-08T21:25:04"></HEAD
+CONTENT="2016-05-09T21:05:36"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.1 Documentation</A
+>PostgreSQL 9.5.3 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -301,7 +301,7 @@ CLASS="VARNAME"
 ><TD
 >at least <TT
 CLASS="LITERAL"
->ceil((max_connections + autovacuum_max_workers + 4) / 16)</TT
+>ceil((max_connections + autovacuum_max_workers + max_worker_processes + 5) / 16)</TT
 ></TD
 ></TR
 ><TR
@@ -315,7 +315,7 @@ CLASS="VARNAME"
 ><TD
 ><TT
 CLASS="LITERAL"
->ceil((max_connections + autovacuum_max_workers + 4) / 16) * 17</TT
+>ceil((max_connections + autovacuum_max_workers + max_worker_processes + 5) / 16) * 17</TT
 > plus room for other applications</TD
 ></TR
 ><TR
@@ -405,10 +405,14 @@ CLASS="PRODUCTNAME"
     (<A
 HREF="runtime-config-connection.html#GUC-MAX-CONNECTIONS"
 >max_connections</A
->) and allowed autovacuum worker
-    process (<A
+>), allowed autovacuum worker process
+    (<A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MAX-WORKERS"
 >autovacuum_max_workers</A
+>) and allowed background
+    process (<A
+HREF="runtime-config-resource.html#GUC-MAX-WORKER-PROCESSES"
+>max_worker_processes</A
 >), in sets of 16.
     Each such set will
     also contain a 17th semaphore which contains a <SPAN
@@ -428,7 +432,11 @@ CLASS="VARNAME"
     <TT
 CLASS="VARNAME"
 >autovacuum_max_workers</TT
->, plus one extra for each 16
+> plus <TT
+CLASS="VARNAME"
+>max_worker_processes</TT
+>,
+    plus one extra for each 16
     allowed connections plus workers (see the formula in <A
 HREF="kernel-resources.html#SYSVIPC-PARAMETERS"
 >Table 17-1</A
@@ -440,7 +448,7 @@ CLASS="VARNAME"
     exist on the system at one time.  Hence this parameter must be at
     least <TT
 CLASS="LITERAL"
->ceil((max_connections + autovacuum_max_workers + 4) / 16)</TT
+>ceil((max_connections + autovacuum_max_workers + max_worker_processes + 5) / 16)</TT
 >.
     Lowering the number
     of allowed connections is a temporary workaround for failures,
@@ -1242,7 +1250,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN29887"
+NAME="AEN29900"
 >17.4.2. Resource Limits</A
 ></H2
 ><P

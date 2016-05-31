@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.1 Documentation
-.\"    Source: PostgreSQL 9.5.1
+.\"    Manual: PostgreSQL 9.5.3 Documentation
+.\"    Source: PostgreSQL 9.5.3
 .\"  Language: English
 .\"
-.TH "CREATE OPERATOR CLASS" "7" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
+.TH "CREATE OPERATOR CLASS" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -109,7 +109,7 @@ to signify a left\-unary or right\-unary operator\&. The operand data types can 
 .sp
 In a
 FUNCTION
-clause, the operand data type(s) the function is intended to support, if different from the input data type(s) of the function (for B\-tree comparison functions and hash functions) or the class\*(Aqs data type (for B\-tree sort support functions and all functions in GiST, SP\-GiST and GIN operator classes)\&. These defaults are correct, and so
+clause, the operand data type(s) the function is intended to support, if different from the input data type(s) of the function (for B\-tree comparison functions and hash functions) or the class\*(Aqs data type (for B\-tree sort support functions and all functions in GiST, SP\-GiST, GIN and BRIN operator classes)\&. These defaults are correct, and so
 \fIop_type\fR
 need not be specified in
 FUNCTION
@@ -148,7 +148,7 @@ The parameter data type(s) of the function\&.
 .PP
 \fIstorage_type\fR
 .RS 4
-The data type actually stored in the index\&. Normally this is the same as the column data type, but some index methods (currently GiST and GIN) allow it to be different\&. The
+The data type actually stored in the index\&. Normally this is the same as the column data type, but some index methods (currently GiST, GIN and BRIN) allow it to be different\&. The
 STORAGE
 clause must be omitted unless the index method allows a different type to be used\&.
 .RE

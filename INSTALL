@@ -848,7 +848,7 @@ set path = ( /usr/local/pgsql/bin $path )
    To enable your system to find the man documentation, you need to add
    lines like the following to a shell start-up file unless you installed
    into a location that is searched by default:
-MANPATH=/usr/local/pgsql/man:$MANPATH
+MANPATH=/usr/local/pgsql/share/man:$MANPATH
 export MANPATH
 
    The environment variables PGHOST and PGPORT specify to client
@@ -1373,11 +1373,11 @@ Using the UDK on OpenServer
 Reading the PostgreSQL Man Pages
 
    By default, the PostgreSQL man pages are installed into
-   "/usr/local/pgsql/man". By default, UnixWare does not look there for
-   man pages. To be able to read them you need to modify the MANPATH
+   "/usr/local/pgsql/share/man". By default, UnixWare does not look there
+   for man pages. To be able to read them you need to modify the MANPATH
    variable in "/etc/default/man", for example:
 MANPATH=/usr/lib/scohelp/%L/man:/usr/dt/man:/usr/man:/usr/share/man:scohelp:/usr
-/local/man:/usr/local/pgsql/man
+/local/man:/usr/local/pgsql/share/man
 
    On OpenServer, some extra research needs to be invested to make the man
    pages usable, because the man system is a bit different from other

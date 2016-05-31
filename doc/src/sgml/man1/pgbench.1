@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.1 Documentation
-.\"    Source: PostgreSQL 9.5.1
+.\"    Manual: PostgreSQL 9.5.3 Documentation
+.\"    Source: PostgreSQL 9.5.3
 .\"  Language: English
 .\"
-.TH "PGBENCH" "1" "2016" "PostgreSQL 9.5.1" "PostgreSQL 9.5.1 Documentation"
+.TH "PGBENCH" "1" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -634,7 +634,7 @@ There is a simple variable\-substitution facility for script files\&. Variables 
 option, explained above, or by the meta commands explained below\&. In addition to any variables preset by
 \fB\-D\fR
 command\-line options, there are a few variables that are preset automatically, listed in
-Table\ \&219, \(lqAutomatic variables\(rq\&. A value specified for these variables using
+Table\ \&221, \(lqAutomatic variables\(rq\&. A value specified for these variables using
 \fB\-D\fR
 takes precedence over the automatic presets\&. Once set, a variable\*(Aqs value can be inserted into a SQL command by writing
 :\fIvariablename\fR\&. When running more than one client session, each session has its own set of variables\&.
@@ -643,7 +643,7 @@ takes precedence over the automatic presets\&. Once set, a variable\*(Aqs value 
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&219.\ \&Automatic variables
+.B Table\ \&221.\ \&Automatic variables
 .TS
 allbox tab(:);
 lB lB.
@@ -948,13 +948,14 @@ are a Unix epoch format time stamp and an offset in microseconds (suitable for c
 \fIschedule_lag\fR
 is the difference between the transaction\*(Aqs scheduled start time, and the time it actually started, in microseconds\&. It is only present when the
 \fB\-\-rate\fR
-option is used\&. The last field
-\fIskipped_transactions\fR
-reports the number of transactions skipped because they were too far behind schedule\&. It is only present when both options
+option is used\&. When both
 \fB\-\-rate\fR
 and
 \fB\-\-latency\-limit\fR
-are used\&.
+are used, the
+\fItime\fR
+for a skipped transaction will be reported as
+skipped\&.
 .PP
 Here is a snippet of the log file generated:
 .sp
@@ -991,7 +992,7 @@ column):
 .RE
 .\}
 .sp
-In this example, transaction 82 was late, because it\*(Aqs latency (6\&.173 ms) was over the 5 ms limit\&. The next two transactions were skipped, because they were already late before they were even started\&.
+In this example, transaction 82 was late, because its latency (6\&.173 ms) was over the 5 ms limit\&. The next two transactions were skipped, because they were already late before they were even started\&.
 .PP
 When running a long test on hardware that can handle a lot of transactions, the log files can become very large\&. The
 \fB\-\-sampling\-rate\fR
@@ -1037,7 +1038,7 @@ option is used\&. The very last one,
 \fB\-\-latency\-limit\fR
 is present, too\&. They are calculated from the time each transaction had to wait for the previous one to finish, i\&.e\&. the difference between each transaction\*(Aqs scheduled start time and the time it actually started\&.
 .PP
-Here is example outputs:
+Here is example output:
 .sp
 .if n \{\
 .RS 4
@@ -1053,7 +1054,7 @@ Here is example outputs:
 .RE
 .\}
 .PP
-Notice that while the plain (unaggregated) log file contains index of the custom script files, the aggregated log does not\&. Therefore if you need per script data, you need to aggregate the data on your own\&.
+Notice that while the plain (unaggregated) log file contains a reference to the custom script files, the aggregated log does not\&. Therefore if you need per script data, you need to aggregate the data on your own\&.
 .SS "Per\-Statement Latencies"
 .PP
 With the

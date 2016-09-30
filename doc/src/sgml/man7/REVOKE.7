@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "REVOKE" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "REVOKE" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -179,7 +179,7 @@ commands that can display their privileges\&.
 .PP
 A user can only revoke privileges that were granted directly by that user\&. If, for example, user A has granted a privilege with grant option to user B, and user B has in turned granted it to user C, then user A cannot revoke the privilege directly from C\&. Instead, user A could revoke the grant option from user B and use the
 CASCADE
-option so that the privilege is in turn revoked from user C\&. For another example, if both A and B have granted the same privilege to C, A can revoke his own grant but not B\*(Aqs grant, so C will still effectively have the privilege\&.
+option so that the privilege is in turn revoked from user C\&. For another example, if both A and B have granted the same privilege to C, A can revoke their own grant but not B\*(Aqs grant, so C will still effectively have the privilege\&.
 .PP
 When a non\-owner of an object attempts to
 \fBREVOKE\fR

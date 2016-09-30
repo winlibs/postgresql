@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN98763"
+NAME="AEN102723"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN98767"
+NAME="AEN102727"
 ></A
 ><H2
 >Synopsis</H2
@@ -159,7 +159,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN98788"
+NAME="AEN102748"
 ></A
 ><H2
 >Description</H2
@@ -228,7 +228,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN98804"
+NAME="AEN102764"
 ></A
 ><H2
 >Options</H2
@@ -574,7 +574,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN98948"
+NAME="AEN102908"
 ></A
 ><H2
 >Usage</H2
@@ -745,7 +745,7 @@ CLASS="FILENAME"
 > file
      (see <A
 HREF="libpq-pgpass.html"
->Section 31.15</A
+>Section 32.15</A
 >).
     </P
 ></LI
@@ -945,16 +945,15 @@ CLASS="FILENAME"
 CLASS="STEP"
 ><P
 ><B
->Upgrade Streaming Replication and Log-Shipping standby
-    servers</B
+>Upgrade Streaming Replication and Log-Shipping standby servers</B
 ></P
 ><P
 >     If you have Streaming Replication (see <A
 HREF="warm-standby.html#STREAMING-REPLICATION"
->Section 25.2.5</A
+>Section 26.2.5</A
 >) or Log-Shipping (see <A
 HREF="warm-standby.html"
->Section 25.2</A
+>Section 26.2</A
 >) standby servers, follow these steps to
      upgrade them.  You will not be running <SPAN
 CLASS="APPLICATION"
@@ -990,8 +989,7 @@ CLASS="emphasis"
 CLASS="EMPHASIS"
 >not</I
 ></SPAN
->
-      exist</B
+> exist</B
 ></P
 ><P
 >       Make sure the new standby data directories do <SPAN
@@ -1061,7 +1059,7 @@ CLASS="VARNAME"
 > to
        <TT
 CLASS="LITERAL"
->hot_standby</TT
+>replica</TT
 > in the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
@@ -1127,6 +1125,11 @@ CLASS="OPTION"
 >--link</TT
 > mode is used because it will create hard links
        on the remote server rather than transferring user data.
+       Unfortunately, <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+> needlessly copies the
+       files associated with temporary and unlogged tables.
       </P
 ><P
 >       If you have tablespaces, you will need to run a similar
@@ -1148,8 +1151,7 @@ CLASS="APPLICATION"
 CLASS="STEP"
 ><P
 ><B
->Configure streaming replication and log-shipping standby
-      servers</B
+>Configure streaming replication and log-shipping standby servers</B
 ></P
 ><P
 >       Configure the servers for log shipping.  (You do not need to run
@@ -1384,7 +1386,7 @@ CLASS="FILENAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN99142"
+NAME="AEN103103"
 ></A
 ><H2
 >Notes</H2
@@ -1491,7 +1493,7 @@ CLASS="FILENAME"
 >postmaster.pid</TT
 >, as documented in <A
 HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
->Section 24.3.3</A
+>Section 25.3.3</A
 >.  If your file system supports
    file system snapshots or copy-on-write file copies, you can use that
    to make a backup of the old cluster and tablespaces, though the snapshot
@@ -1502,7 +1504,7 @@ HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN99170"
+NAME="AEN103131"
 ></A
 ><H2
 >See Also</H2

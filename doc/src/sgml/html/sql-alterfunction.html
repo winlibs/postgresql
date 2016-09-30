@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERFUNCTION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN70251"
+NAME="AEN73361"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN70251"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN70254"
+NAME="AEN73364"
 ></A
 ><H2
 >Synopsis</H2
@@ -217,6 +217,33 @@ CLASS="REPLACEABLE"
 >new_schema</I
 ></TT
 >
+ALTER FUNCTION <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> ( [ [ <TT
+CLASS="REPLACEABLE"
+><I
+>argmode</I
+></TT
+> ] [ <TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+> ] <TT
+CLASS="REPLACEABLE"
+><I
+>argtype</I
+></TT
+> [, ...] ] )
+    DEPENDS ON EXTENSION <TT
+CLASS="REPLACEABLE"
+><I
+>extension_name</I
+></TT
+>
 
 <SPAN
 CLASS="phrase"
@@ -234,6 +261,7 @@ CLASS="REPLACEABLE"
     CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT
     IMMUTABLE | STABLE | VOLATILE | [ NOT ] LEAKPROOF
     [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER
+    PARALLEL { UNSAFE | RESTRICTED | SAFE }
     COST <TT
 CLASS="REPLACEABLE"
 ><I
@@ -274,7 +302,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70284"
+NAME="AEN73399"
 ></A
 ><H2
 >Description</H2
@@ -308,7 +336,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70292"
+NAME="AEN73407"
 ></A
 ><H2
 >Parameters</H2
@@ -452,6 +480,18 @@ CLASS="REPLACEABLE"
 ></DD
 ><DT
 ><TT
+CLASS="REPLACEABLE"
+><I
+>extension_name</I
+></TT
+></DT
+><DD
+><P
+>      The name of the extension that the function is to depend on.
+     </P
+></DD
+><DT
+><TT
 CLASS="LITERAL"
 >CALLED ON NULL INPUT</TT
 ><BR><TT
@@ -530,6 +570,20 @@ HREF="sql-createfunction.html"
 >CREATE FUNCTION</A
 > for more information about
       this capability.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>PARALLEL</TT
+></DT
+><DD
+><P
+>      Change whether the function is deemed safe for parallelism.
+      See <A
+HREF="sql-createfunction.html"
+>CREATE FUNCTION</A
+> for details.
      </P
 ></DD
 ><DT
@@ -623,8 +677,12 @@ CLASS="LITERAL"
         <TT
 CLASS="LITERAL"
 >SET FROM CURRENT</TT
-> saves the session's current value of
-        the parameter as the value to be applied when the function is entered.
+> saves the value of the parameter that
+        is current when <TT
+CLASS="COMMAND"
+>ALTER FUNCTION</TT
+> is executed as the value
+        to be applied when the function is entered.
        </P
 ><P
 >        See <A
@@ -633,7 +691,7 @@ HREF="sql-set.html"
 > and
         <A
 HREF="runtime-config.html"
->Chapter 18</A
+>Chapter 19</A
 >
         for more information about allowed parameter names and values.
        </P
@@ -654,7 +712,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70416"
+NAME="AEN73543"
 ></A
 ><H2
 >Examples</H2
@@ -710,6 +768,24 @@ CLASS="PROGRAMLISTING"
 ><P>
   </P
 ><P
+>   To mark the function <TT
+CLASS="LITERAL"
+>sqrt</TT
+> for type
+   <TT
+CLASS="TYPE"
+>integer</TT
+> as being dependent on the extension
+   <TT
+CLASS="LITERAL"
+>mathlib</TT
+>:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ALTER FUNCTION sqrt(integer) DEPENDS ON EXTENSION mathlib;</PRE
+><P>
+  </P
+><P
 >   To adjust the search path that is automatically set for a function:
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -732,7 +808,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70438"
+NAME="AEN73570"
 ></A
 ><H2
 >Compatibility</H2
@@ -759,7 +835,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN70444"
+NAME="AEN73576"
 ></A
 ><H2
 >See Also</H2

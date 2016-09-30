@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="pgstattuple"
 HREF="pgstattuple.html"><LINK
 REL="NEXT"
-TITLE="postgres_fdw"
-HREF="postgres-fdw.html"><LINK
+TITLE="pg_visibility"
+HREF="pgvisibility.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="postgres_fdw"
-HREF="postgres-fdw.html"
+TITLE="pg_visibility"
+HREF="pgvisibility.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PGTRGM"
->F.30. pg_trgm</A
+>F.31. pg_trgm</A
 ></H1
 ><P
 >  The <TT
@@ -110,8 +110,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN173523"
->F.30.1. Trigram (or Trigraph) Concepts</A
+NAME="AEN180398"
+>F.31.1. Trigram (or Trigraph) Concepts</A
 ></H2
 ><P
 >   A trigram is a group of three consecutive characters taken
@@ -244,8 +244,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN173557"
->F.30.2. Functions and Operators</A
+NAME="AEN180432"
+>F.31.2. Functions and Operators</A
 ></H2
 ><P
 >   The functions provided by the <TT
@@ -254,11 +254,11 @@ CLASS="FILENAME"
 > module
    are shown in <A
 HREF="pgtrgm.html#PGTRGM-FUNC-TABLE"
->Table F-23</A
+>Table F-25</A
 >, the operators
    in <A
 HREF="pgtrgm.html#PGTRGM-OP-TABLE"
->Table F-24</A
+>Table F-26</A
 >.
   </P
 ><DIV
@@ -268,7 +268,7 @@ NAME="PGTRGM-FUNC-TABLE"
 ></A
 ><P
 ><B
->Table F-23. <TT
+>Table F-25. <TT
 CLASS="FILENAME"
 >pg_trgm</TT
 > Functions</B
@@ -323,6 +323,28 @@ CLASS="TYPE"
 ></TR
 ><TR
 ><TD
+>       <CODE
+CLASS="FUNCTION"
+>word_similarity(text, text)</CODE
+>
+       
+      </TD
+><TD
+><TT
+CLASS="TYPE"
+>real</TT
+></TD
+><TD
+>       Returns a number that indicates how similar the first string
+       to the most similar word of the second string. The function searches in
+       the second string a most similar word not a most similar substring.  The
+       range of the result is zero (indicating that the two strings are
+       completely dissimilar) to one (indicating that the first string is
+       identical to one of the words of the second string).
+      </TD
+></TR
+><TR
+><TD
 ><CODE
 CLASS="FUNCTION"
 >show_limit()</CODE
@@ -339,7 +361,14 @@ CLASS="LITERAL"
 >
        operator.  This sets the minimum similarity between
        two words for them to be considered similar enough to
-       be misspellings of each other, for example.
+       be misspellings of each other, for example
+       (<SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>deprecated</I
+></SPAN
+>).
       </TD
 ></TR
 ><TR
@@ -359,7 +388,13 @@ CLASS="LITERAL"
 >%</TT
 >
        operator.  The threshold must be between 0 and 1 (default is 0.3).
-       Returns the same value passed in.
+       Returns the same value passed in (<SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>deprecated</I
+></SPAN
+>).
       </TD
 ></TR
 ></TBODY
@@ -372,7 +407,7 @@ NAME="PGTRGM-OP-TABLE"
 ></A
 ><P
 ><B
->Table F-24. <TT
+>Table F-26. <TT
 CLASS="FILENAME"
 >pg_trgm</TT
 > Operators</B
@@ -414,10 +449,64 @@ CLASS="LITERAL"
 >true</TT
 > if its arguments have a similarity that is
        greater than the current similarity threshold set by
-       <CODE
-CLASS="FUNCTION"
->set_limit</CODE
+       <TT
+CLASS="VARNAME"
+>pg_trgm.similarity_threshold</TT
 >.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+> <TT
+CLASS="LITERAL"
+>&lt;%</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>       Returns <TT
+CLASS="LITERAL"
+>true</TT
+> if its first argument has the similar word in
+       the second argument and they have a similarity that is greater than the
+       current word similarity threshold set by
+       <TT
+CLASS="VARNAME"
+>pg_trgm.word_similarity_threshold</TT
+> parameter.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+> <TT
+CLASS="LITERAL"
+>%&gt;</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>       Commutator of the <TT
+CLASS="LITERAL"
+>&lt;%</TT
+> operator.
       </TD
 ></TR
 ><TR
@@ -448,6 +537,60 @@ CLASS="FUNCTION"
 > value.
       </TD
 ></TR
+><TR
+><TD
+>       <TT
+CLASS="TYPE"
+>text</TT
+> <TT
+CLASS="LITERAL"
+>&lt;&lt;-&gt;</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>
+      </TD
+><TD
+><TT
+CLASS="TYPE"
+>real</TT
+></TD
+><TD
+>       Returns the <SPAN
+CLASS="QUOTE"
+>"distance"</SPAN
+> between the arguments, that is
+       one minus the <CODE
+CLASS="FUNCTION"
+>word_similarity()</CODE
+> value.
+      </TD
+></TR
+><TR
+><TD
+>       <TT
+CLASS="TYPE"
+>text</TT
+> <TT
+CLASS="LITERAL"
+>&lt;-&gt;&gt;</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>
+      </TD
+><TD
+><TT
+CLASS="TYPE"
+>real</TT
+></TD
+><TD
+>       Commutator of the <TT
+CLASS="LITERAL"
+>&lt;&lt;-&gt;</TT
+> operator.
+      </TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -457,8 +600,70 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN173637"
->F.30.3. Index Support</A
+NAME="AEN180560"
+>F.31.3. GUC Parameters</A
+></H2
+><P
+></P
+><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+><A
+NAME="GUC-PGTRGM-SIMILARITY-THRESHOLD"
+></A
+><TT
+CLASS="VARNAME"
+>pg_trgm.similarity_threshold</TT
+> (<TT
+CLASS="TYPE"
+>real</TT
+>)
+     </DT
+><DD
+><P
+>      Sets the current similarity threshold that is used by the <TT
+CLASS="LITERAL"
+>%</TT
+>
+      operator.  The threshold must be between 0 and 1 (default is 0.3).
+     </P
+></DD
+><DT
+><A
+NAME="GUC-PGTRGM-WORD-SIMILARITY-THRESHOLD"
+></A
+><TT
+CLASS="VARNAME"
+>pg_trgm.word_similarity_threshold</TT
+> (<TT
+CLASS="TYPE"
+>real</TT
+>)
+      </DT
+><DD
+><P
+>       Sets the current word similarity threshold that is used by
+       <TT
+CLASS="LITERAL"
+>&lt;%</TT
+> and <TT
+CLASS="LITERAL"
+>%&gt;</TT
+> operators.  The threshold
+       must be between 0 and 1 (default is 0.6).
+      </P
+></DD
+></DL
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN180584"
+>F.31.4. Index Support</A
 ></H2
 ><P
 >   The <TT
@@ -550,6 +755,55 @@ CLASS="REPLACEABLE"
    a small number of the closest matches is wanted.
   </P
 ><P
+>   Also you can use an index on the <TT
+CLASS="STRUCTFIELD"
+>t</TT
+> column for word
+   similarity.  For example:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT t, word_similarity('<TT
+CLASS="REPLACEABLE"
+><I
+>word</I
+></TT
+>', t) AS sml
+  FROM test_trgm
+  WHERE '<TT
+CLASS="REPLACEABLE"
+><I
+>word</I
+></TT
+>' &lt;% t
+  ORDER BY sml DESC, t;</PRE
+><P>
+   This will return all values in the text column that have a word
+   which sufficiently similar to <TT
+CLASS="REPLACEABLE"
+><I
+>word</I
+></TT
+>, sorted from best
+   match to worst.  The index will be used to make this a fast operation
+   even over very large data sets.
+  </P
+><P
+>   A variant of the above query is
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT t, '<TT
+CLASS="REPLACEABLE"
+><I
+>word</I
+></TT
+>' &lt;&lt;-&gt; t AS dist
+  FROM test_trgm
+  ORDER BY dist LIMIT 10;</PRE
+><P>
+   This can be implemented quite efficiently by GiST indexes, but not
+   by GIN indexes.
+  </P
+><P
 >   Beginning in <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
@@ -604,9 +858,6 @@ CLASS="LITERAL"
 ><P
 >   The choice between GiST and GIN indexing depends on the relative
    performance characteristics of GiST and GIN, which are discussed elsewhere.
-   As a rule of thumb, a GIN index is faster to search than a GiST index, but
-   slower to build or update; so GIN is better suited for static data and GiST
-   for often-updated data.
   </P
 ></DIV
 ><DIV
@@ -614,8 +865,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN173670"
->F.30.4. Text Search Integration</A
+NAME="AEN180626"
+>F.31.5. Text Search Integration</A
 ></H2
 ><P
 >   Trigram matching is a very useful tool when used in conjunction
@@ -690,8 +941,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN173685"
->F.30.5. References</A
+NAME="AEN180641"
+>F.31.6. References</A
 ></H2
 ><P
 >   GiST Development Site
@@ -715,8 +966,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN173691"
->F.30.6. Authors</A
+NAME="AEN180647"
+>F.31.7. Authors</A
 ></H2
 ><P
 >   Oleg Bartunov <CODE
@@ -735,6 +986,15 @@ HREF="mailto:teodor@sigaev.ru"
 >teodor@sigaev.ru</A
 >&#62;</CODE
 >, Moscow, Delta-Soft Ltd.,Russia
+  </P
+><P
+>   Alexander Korotkov <CODE
+CLASS="EMAIL"
+>&#60;<A
+HREF="mailto:a.korotkov@postgrespro.ru"
+>a.korotkov@postgrespro.ru</A
+>&#62;</CODE
+>, Moscow, Postgres Professional, Russia
   </P
 ><P
 >   Documentation: Christopher Kings-Lynne
@@ -778,7 +1038,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="postgres-fdw.html"
+HREF="pgvisibility.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -802,7 +1062,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->postgres_fdw</TD
+>pg_visibility</TD
 ></TR
 ></TABLE
 ></DIV

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 18. Server Configuration</TD
+>Chapter 19. Server Configuration</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="RUNTIME-CONFIG-QUERY"
->18.7. Query Planning</A
+>19.7. Query Planning</A
 ></H1
 ><DIV
 CLASS="SECT2"
@@ -101,7 +101,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-QUERY-ENABLE"
->18.7.1. Planner Method Configuration</A
+>19.7.1. Planner Method Configuration</A
 ></H2
 ><P
 >       These configuration parameters provide a crude method of
@@ -120,7 +120,7 @@ CLASS="EMPHASIS"
        plans chosen by the optimizer include adjusting the planer cost
        constants (see <A
 HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-CONSTANTS"
->Section 18.7.2</A
+>Section 19.7.2</A
 >),
        running <A
 HREF="sql-analyze.html"
@@ -239,12 +239,15 @@ CLASS="VARNAME"
 CLASS="TYPE"
 >boolean</TT
 >)
-      
       </DT
 ><DD
 ><P
 >        Enables or disables the query planner's use of index-only-scan plan
-        types. The default is <TT
+        types (see <A
+HREF="indexes-index-only-scans.html"
+>Section 11.11</A
+>).
+        The default is <TT
 CLASS="LITERAL"
 >on</TT
 >.
@@ -401,7 +404,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-QUERY-CONSTANTS"
->18.7.2. Planner Cost Constants</A
+>19.7.2. Planner Cost Constants</A
 ></H2
 ><P
 >     The <I
@@ -603,6 +606,65 @@ CLASS="TYPE"
 ></DD
 ><DT
 ><A
+NAME="GUC-PARALLEL-SETUP-COST"
+></A
+><TT
+CLASS="VARNAME"
+>parallel_setup_cost</TT
+> (<TT
+CLASS="TYPE"
+>floating point</TT
+>)
+      </DT
+><DD
+><P
+>        Sets the planner's estimate of the cost of launching parallel worker
+        processes.
+        The default is 1000.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-PARALLEL-TUPLE-COST"
+></A
+><TT
+CLASS="VARNAME"
+>parallel_tuple_cost</TT
+> (<TT
+CLASS="TYPE"
+>floating point</TT
+>)
+      </DT
+><DD
+><P
+>        Sets the planner's estimate of the cost of transferring one tuple
+        from a parallel worker process to another process.
+        The default is 0.1.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-MIN-PARALLEL-RELATION-SIZE"
+></A
+><TT
+CLASS="VARNAME"
+>min_parallel_relation_size</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        Sets the minimum size of relations to be considered for parallel scan.
+        The default is 8 megabytes (<TT
+CLASS="LITERAL"
+>8MB</TT
+>).
+       </P
+></DD
+><DT
+><A
 NAME="GUC-EFFECTIVE-CACHE-SIZE"
 ></A
 ><TT
@@ -655,7 +717,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-QUERY-GEQO"
->18.7.3. Genetic Query Optimizer</A
+>19.7.3. Genetic Query Optimizer</A
 ></H2
 ><P
 >      The genetic query optimizer (GEQO) is an algorithm that does query
@@ -665,7 +727,7 @@ NAME="RUNTIME-CONFIG-QUERY-GEQO"
       exhaustive-search algorithm.
       For more information see <A
 HREF="geqo.html"
->Chapter 57</A
+>Chapter 58</A
 >.
      </P
 ><P
@@ -863,7 +925,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-QUERY-OTHER"
->18.7.4. Other Planner Options</A
+>19.7.4. Other Planner Options</A
 ></H2
 ><P
 ></P
@@ -1054,7 +1116,7 @@ HREF="runtime-config-query.html#GUC-GEQO-THRESHOLD"
         may trigger use of the GEQO planner, resulting in non-optimal
         plans.  See <A
 HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-GEQO"
->Section 18.7.3</A
+>Section 19.7.3</A
 >.
        </P
 ></DD
@@ -1116,7 +1178,99 @@ HREF="runtime-config-query.html#GUC-GEQO-THRESHOLD"
         may trigger use of the GEQO planner, resulting in non-optimal
         plans.  See <A
 HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-GEQO"
->Section 18.7.3</A
+>Section 19.7.3</A
+>.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-FORCE-PARALLEL-MODE"
+></A
+><TT
+CLASS="VARNAME"
+>force_parallel_mode</TT
+> (<TT
+CLASS="TYPE"
+>enum</TT
+>)
+      </DT
+><DD
+><P
+>        Allows the use of parallel queries for testing purposes even in cases
+        where no performance benefit is expected.
+        The allowed values of <TT
+CLASS="VARNAME"
+>force_parallel_mode</TT
+> are
+        <TT
+CLASS="LITERAL"
+>off</TT
+> (use parallel mode only when it is expected to improve
+        performance), <TT
+CLASS="LITERAL"
+>on</TT
+> (force parallel query for all queries
+        for which it is thought to be safe), and <TT
+CLASS="LITERAL"
+>regress</TT
+> (like
+        <TT
+CLASS="LITERAL"
+>on</TT
+>, but with additional behavior changes as explained
+        below).
+       </P
+><P
+>        More specifically, setting this value to <TT
+CLASS="LITERAL"
+>on</TT
+> will add
+        a <TT
+CLASS="LITERAL"
+>Gather</TT
+> node to the top of any query plan for which this
+        appears to be safe, so that the query runs inside of a parallel worker.
+        Even when a parallel worker is not available or cannot be used,
+        operations such as starting a subtransaction that would be prohibited
+        in a parallel query context will be prohibited unless the planner
+        believes that this will cause the query to fail.  If failures or
+        unexpected results occur when this option is set, some functions used
+        by the query may need to be marked <TT
+CLASS="LITERAL"
+>PARALLEL UNSAFE</TT
+>
+        (or, possibly, <TT
+CLASS="LITERAL"
+>PARALLEL RESTRICTED</TT
+>).
+       </P
+><P
+>        Setting this value to <TT
+CLASS="LITERAL"
+>regress</TT
+> has all of the same effects
+        as setting it to <TT
+CLASS="LITERAL"
+>on</TT
+> plus some additional effects that are
+        intended to facilitate automated regression testing.  Normally,
+        messages from a parallel worker include a context line indicating that,
+        but a setting of <TT
+CLASS="LITERAL"
+>regress</TT
+> suppresses this line so that the
+        output is the same as in non-parallel execution.  Also,
+        the <TT
+CLASS="LITERAL"
+>Gather</TT
+> nodes added to plans by this setting are hidden
+        in <TT
+CLASS="LITERAL"
+>EXPLAIN</TT
+> output so that the output matches what
+        would be obtained if this setting were turned <TT
+CLASS="LITERAL"
+>off</TT
 >.
        </P
 ></DD

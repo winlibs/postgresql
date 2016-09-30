@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 18. Server Configuration</TD
+>Chapter 19. Server Configuration</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="RUNTIME-CONFIG-CLIENT"
->18.11. Client Connection Defaults</A
+>19.11. Client Connection Defaults</A
 ></H1
 ><DIV
 CLASS="SECT2"
@@ -101,7 +101,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-CLIENT-STATEMENT"
->18.11.1. Statement Behavior</A
+>19.11.1. Statement Behavior</A
 ></H2
 ><P
 ></P
@@ -367,7 +367,7 @@ HREF="runtime-config-client.html#GUC-TEMP-TABLESPACES"
 >        For more information on tablespaces,
         see <A
 HREF="manage-ag-tablespaces.html"
->Section 21.6</A
+>Section 22.6</A
 >.
        </P
 ></DD
@@ -741,6 +741,33 @@ CLASS="FILENAME"
 ></DD
 ><DT
 ><A
+NAME="GUC-IDLE-IN-TRANSACTION-SESSION-TIMEOUT"
+></A
+><TT
+CLASS="VARNAME"
+>idle_in_transaction_session_timeout</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>       Terminate any session with an open transaction that has been idle for
+       longer than the specified duration in milliseconds. This allows any
+       locks held by that session to be released and the connection slot to be reused;
+       it also allows tuples visible only to this transaction to be vacuumed.  See
+       <A
+HREF="routine-vacuuming.html"
+>Section 24.1</A
+> for more details about this.
+       </P
+><P
+>       The default value of 0 disables this feature.
+       </P
+></DD
+><DT
+><A
 NAME="GUC-VACUUM-FREEZE-TABLE-AGE"
 ></A
 ><TT
@@ -756,7 +783,7 @@ CLASS="TYPE"
 >        <TT
 CLASS="COMMAND"
 >VACUUM</TT
-> performs a whole-table scan if the table's
+> performs an aggressive scan if the table's
         <TT
 CLASS="STRUCTNAME"
 >pg_class</TT
@@ -764,13 +791,19 @@ CLASS="STRUCTNAME"
 CLASS="STRUCTFIELD"
 >relfrozenxid</TT
 > field has reached
-        the age specified by this setting.  The default is 150 million
-        transactions.  Although users can set this value anywhere from zero to
-        two billions, <TT
+        the age specified by this setting.  An aggressive scan differs from
+        a regular <TT
 CLASS="COMMAND"
 >VACUUM</TT
-> will silently limit the effective value
-        to 95% of <A
+> in that it visits every page that might
+        contain unfrozen XIDs or MXIDs, not just those that might contain dead
+        tuples.  The default is 150 million transactions.  Although users can
+        set this value anywhere from zero to two billions, <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>
+        will silently limit the effective value to 95% of
+        <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-FREEZE-MAX-AGE"
 >autovacuum_freeze_max_age</A
 >, so that a
@@ -782,7 +815,7 @@ CLASS="COMMAND"
         information see
         <A
 HREF="routine-vacuuming.html#VACUUM-FOR-WRAPAROUND"
->Section 23.1.5</A
+>Section 24.1.5</A
 >.
        </P
 ></DD
@@ -819,7 +852,7 @@ HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-FREEZE-MAX-AGE"
         that there is not an unreasonably short time between forced
         autovacuums.  For more information see <A
 HREF="routine-vacuuming.html#VACUUM-FOR-WRAPAROUND"
->Section 23.1.5</A
+>Section 24.1.5</A
 >.
        </P
 ></DD
@@ -840,7 +873,7 @@ CLASS="TYPE"
 >        <TT
 CLASS="COMMAND"
 >VACUUM</TT
-> performs a whole-table scan if the table's
+> performs an aggressive scan if the table's
         <TT
 CLASS="STRUCTNAME"
 >pg_class</TT
@@ -848,7 +881,13 @@ CLASS="STRUCTNAME"
 CLASS="STRUCTFIELD"
 >relminmxid</TT
 > field has reached
-        the age specified by this setting.  The default is 150 million multixacts.
+        the age specified by this setting.  An aggressive scan differs from
+        a regular <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> in that it visits every page that might
+        contain unfrozen XIDs or MXIDs, not just those that might contain dead
+        tuples.  The default is 150 million multixacts.
         Although users can set this value anywhere from zero to two billions,
         <TT
 CLASS="COMMAND"
@@ -865,7 +904,7 @@ CLASS="COMMAND"
         anti-wraparound is launched for the table.
         For more information see <A
 HREF="routine-vacuuming.html#VACUUM-FOR-MULTIXACT-WRAPAROUND"
->Section 23.1.5.1</A
+>Section 24.1.5.1</A
 >.
        </P
 ></DD
@@ -903,7 +942,7 @@ HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
         autovacuums.
         For more information see <A
 HREF="routine-vacuuming.html#VACUUM-FOR-MULTIXACT-WRAPAROUND"
->Section 23.1.5.1</A
+>Section 24.1.5.1</A
 >.
        </P
 ></DD
@@ -1075,10 +1114,10 @@ CLASS="LITERAL"
         index storage parameters.
          See <A
 HREF="gin-implementation.html#GIN-FAST-UPDATE"
->Section 61.4.1</A
+>Section 63.4.1</A
 > and <A
 HREF="gin-tips.html"
->Section 61.5</A
+>Section 63.5</A
 >
          for more information.
        </P
@@ -1092,7 +1131,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-CLIENT-FORMAT"
->18.11.2. Locale and Formatting</A
+>19.11.2. Locale and Formatting</A
 ></H2
 ><P
 ></P
@@ -1396,7 +1435,7 @@ CLASS="PRODUCTNAME"
 >
         server are described in <A
 HREF="multibyte.html#MULTIBYTE-CHARSET-SUPPORTED"
->Section 22.3.1</A
+>Section 23.3.1</A
 >.
        </P
 ></DD
@@ -1417,7 +1456,7 @@ CLASS="TYPE"
 >        Sets the language in which messages are displayed.  Acceptable
         values are system-dependent; see <A
 HREF="locale.html"
->Section 22.1</A
+>Section 23.1</A
 > for
         more information.  If this variable is set to the empty string
         (which is the default) then the value is inherited from the
@@ -1458,7 +1497,7 @@ CLASS="FUNCTION"
 > family of
         functions.  Acceptable values are system-dependent; see <A
 HREF="locale.html"
->Section 22.1</A
+>Section 23.1</A
 > for more information.  If this variable is
         set to the empty string (which is the default) then the value
         is inherited from the execution environment of the server in a
@@ -1486,7 +1525,7 @@ CLASS="FUNCTION"
 > family of
         functions. Acceptable values are system-dependent; see <A
 HREF="locale.html"
->Section 22.1</A
+>Section 23.1</A
 > for more information.  If this variable is
         set to the empty string (which is the default) then the value
         is inherited from the execution environment of the server in a
@@ -1514,7 +1553,7 @@ CLASS="FUNCTION"
 > family of
         functions. Acceptable values are system-dependent; see <A
 HREF="locale.html"
->Section 22.1</A
+>Section 23.1</A
 > for more information.  If this variable is
         set to the empty string (which is the default) then the value
         is inherited from the execution environment of the server in a
@@ -1567,7 +1606,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-CLIENT-PRELOAD"
->18.11.3. Shared Library Preloading</A
+>19.11.3. Shared Library Preloading</A
 ></H2
 ><P
 >      Several settings are available for preloading shared libraries into the
@@ -1841,7 +1880,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-CLIENT-OTHER"
->18.11.4. Other Defaults</A
+>19.11.4. Other Defaults</A
 ></H2
 ><P
 ></P
@@ -1952,7 +1991,7 @@ CLASS="TYPE"
 >        Soft upper limit of the size of the set returned by GIN index scans. For more
         information see <A
 HREF="gin-tips.html"
->Section 61.5</A
+>Section 63.5</A
 >.
        </P
 ></DD

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 35. Extending <ACRONYM
+>Chapter 36. Extending <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 ></TD
@@ -96,7 +96,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="XFUNC-SQL"
->35.4. Query Language (<ACRONYM
+>36.4. Query Language (<ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 >) Functions</A
@@ -304,7 +304,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-SQL-FUNCTION-ARGUMENTS"
->35.4.1. Arguments for <ACRONYM
+>36.4.1. Arguments for <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions</A
@@ -362,11 +362,26 @@ CLASS="LITERAL"
 >     If an argument is of a composite type, then the dot notation,
      e.g., <TT
 CLASS="LITERAL"
->argname.fieldname</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>argname</I
+></TT
+>.<TT
+CLASS="REPLACEABLE"
+><I
+>fieldname</I
+></TT
+></TT
 > or
      <TT
 CLASS="LITERAL"
->$1.fieldname</TT
+>$1.<TT
+CLASS="REPLACEABLE"
+><I
+>fieldname</I
+></TT
+></TT
 >, can be used to access attributes of the
      argument.  Again, you might need to qualify the argument's name with the
      function name to make the form with an argument name unambiguous.
@@ -415,7 +430,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-SQL-BASE-FUNCTIONS"
->35.4.2. <ACRONYM
+>36.4.2. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions on Base Types</A
@@ -586,7 +601,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-SQL-COMPOSITE-FUNCTIONS"
->35.4.3. <ACRONYM
+>36.4.3. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions on Composite Types</A
@@ -759,7 +774,7 @@ SELECT * FROM new_emp();
 
      The second way is described more fully in <A
 HREF="xfunc-sql.html#XFUNC-SQL-TABLE-FUNCTIONS"
->Section 35.4.7</A
+>Section 36.4.7</A
 >.
     </P
 ><P
@@ -793,10 +808,31 @@ LINE 1: SELECT new_emp().name;
      to explain this is that we can use the
      notations <TT
 CLASS="LITERAL"
->attribute(table)</TT
->  and  <TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>attribute</I
+></TT
+>(<TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+>)</TT
+>
+     and  <TT
 CLASS="LITERAL"
->table.attribute</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>table</I
+></TT
+>.<TT
+CLASS="REPLACEABLE"
+><I
+>attribute</I
+></TT
+></TT
 >
      interchangeably.
 
@@ -883,7 +919,7 @@ SELECT getname(new_emp());
 >     Still another way to use a function that returns a composite type is to
      call it as a table function, as described in <A
 HREF="xfunc-sql.html#XFUNC-SQL-TABLE-FUNCTIONS"
->Section 35.4.7</A
+>Section 36.4.7</A
 >.
     </P
 ></DIV
@@ -893,7 +929,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-OUTPUT-PARAMETERS"
->35.4.4. <ACRONYM
+>36.4.4. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions with Output Parameters</A
@@ -924,7 +960,7 @@ CLASS="LITERAL"
 >
      shown in <A
 HREF="xfunc-sql.html#XFUNC-SQL-BASE-FUNCTIONS"
->Section 35.4.2</A
+>Section 36.4.2</A
 >.  The real value of
      output parameters is that they provide a convenient way of defining
      functions that return several columns.  For example,
@@ -1013,7 +1049,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-SQL-VARIADIC-FUNCTIONS"
->35.4.5. <ACRONYM
+>36.4.5. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions with Variable Numbers of Arguments</A
@@ -1127,15 +1163,15 @@ CLASS="LITERAL"
 
 </P><PRE
 CLASS="SCREEN"
->SELECT mleast(VARIADIC arr =&#62; ARRAY[10, -1, 5, 4.4]);</PRE
+>SELECT mleast(VARIADIC arr =&gt; ARRAY[10, -1, 5, 4.4]);</PRE
 ><P>
 
      but not these:
 
 </P><PRE
 CLASS="SCREEN"
->SELECT mleast(arr =&#62; 10);
-SELECT mleast(arr =&#62; ARRAY[10, -1, 5, 4.4]);</PRE
+>SELECT mleast(arr =&gt; 10);
+SELECT mleast(arr =&gt; ARRAY[10, -1, 5, 4.4]);</PRE
 ><P>
     </P
 ></DIV
@@ -1145,7 +1181,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-SQL-PARAMETER-DEFAULTS"
->35.4.6. <ACRONYM
+>36.4.6. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions with Default Values for Arguments</A
@@ -1208,7 +1244,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-SQL-TABLE-FUNCTIONS"
->35.4.7. <ACRONYM
+>36.4.7. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions as Table Sources</A
@@ -1263,7 +1299,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-SQL-FUNCTIONS-RETURNING-SET"
->35.4.8. <ACRONYM
+>36.4.8. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions Returning Sets</A
@@ -1522,7 +1558,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-SQL-FUNCTIONS-RETURNING-TABLE"
->35.4.9. <ACRONYM
+>36.4.9. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions Returning <TT
@@ -1594,8 +1630,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN56797"
->35.4.10. Polymorphic <ACRONYM
+NAME="AEN59663"
+>36.4.10. Polymorphic <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions</A
@@ -1624,7 +1660,7 @@ CLASS="TYPE"
 >anyrange</TT
 >.  See <A
 HREF="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC"
->Section 35.2.5</A
+>Section 36.2.5</A
 > for a more detailed
      explanation of polymorphic functions. Here is a polymorphic
      function <CODE
@@ -1748,8 +1784,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN56823"
->35.4.11. <ACRONYM
+NAME="AEN59689"
+>36.4.11. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions with Collations</A
@@ -1759,7 +1795,7 @@ CLASS="ACRONYM"
      a collation is identified for each function call depending on the
      collations assigned to the actual arguments, as described in <A
 HREF="collation.html"
->Section 22.2</A
+>Section 23.2</A
 >.  If a collation is successfully identified
      (i.e., there are no conflicts of implicit collations among the arguments)
      then all the collatable parameters are treated as having that collation

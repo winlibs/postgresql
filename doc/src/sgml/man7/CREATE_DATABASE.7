@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "CREATE DATABASE" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "CREATE DATABASE" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,8 +40,8 @@ CREATE DATABASE \fIname\fR
            [ LC_CTYPE [=] \fIlc_ctype\fR ]
            [ TABLESPACE [=] \fItablespace_name\fR ]
            [ ALLOW_CONNECTIONS [=] \fIallowconn\fR ]
-           [ CONNECTION LIMIT [=] \fIconnlimit\fR ] ]
-           [ IS_TEMPLATE [=] \fIistemplate\fR ]
+           [ CONNECTION LIMIT [=] \fIconnlimit\fR ]
+           [ IS_TEMPLATE [=] \fIistemplate\fR ] ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -90,7 +90,7 @@ DEFAULT
 to use the default encoding (namely, the encoding of the template database)\&. The character sets supported by the
 PostgreSQL
 server are described in
-Section 22.3.1, \(lqSupported Character Sets\(rq, in the documentation\&. See below for additional restrictions\&.
+Section 23.3.1, \(lqSupported Character Sets\(rq, in the documentation\&. See below for additional restrictions\&.
 .RE
 .PP
 \fIlc_collate\fR
@@ -160,7 +160,7 @@ facility\&. The principal limitation is that no other sessions can be connected 
 will fail if any other connection exists when it starts; otherwise, new connections to the template database are locked out until
 \fBCREATE DATABASE\fR
 completes\&. See
-Section 21.3, \(lqTemplate Databases\(rq, in the documentation
+Section 22.3, \(lqTemplate Databases\(rq, in the documentation
 for more information\&.
 .PP
 The character set encoding specified for the new database must be compatible with the chosen locale settings (LC_COLLATE

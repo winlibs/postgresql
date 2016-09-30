@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "SET" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "SET" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,7 +40,7 @@ SET [ SESSION | LOCAL ] TIME ZONE { \fItimezone\fR | LOCAL | DEFAULT }
 The
 \fBSET\fR
 command changes run\-time configuration parameters\&. Many of the run\-time parameters listed in
-Chapter 18, Server Configuration, in the documentation
+Chapter 19, Server Configuration, in the documentation
 can be changed on\-the\-fly with
 \fBSET\fR\&. (But some require superuser privileges to change, and others cannot be changed after server or session start\&.)
 \fBSET\fR
@@ -132,7 +132,7 @@ or
 \fIconfiguration_parameter\fR
 .RS 4
 Name of a settable run\-time parameter\&. Available parameters are documented in
-Chapter 18, Server Configuration, in the documentation
+Chapter 19, Server Configuration, in the documentation
 and below\&.
 .RE
 .PP
@@ -146,7 +146,7 @@ had been executed in the current session)\&.
 .RE
 .PP
 Besides the configuration parameters documented in
-Chapter 18, Server Configuration, in the documentation, there are a few that can only be adjusted using the
+Chapter 19, Server Configuration, in the documentation, there are a few that can only be adjusted using the
 \fBSET\fR
 command or that have a special syntax:
 .PP
@@ -167,7 +167,7 @@ SET client_encoding TO \fIvalue\fR\&.
 SEED
 .RS 4
 Sets the internal seed for the random number generator (the function
-\fBrandom\fR)\&. Allowed values are floating\-point numbers between \-1 and 1, which are then multiplied by 231\-1\&.
+\fBrandom\fR)\&. Allowed values are floating\-point numbers between \-1 and 1, which are then multiplied by 2^31\-1\&.
 .sp
 The seed can also be set by invoking the function
 \fBsetseed\fR:

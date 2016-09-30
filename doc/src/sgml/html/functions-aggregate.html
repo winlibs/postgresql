@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -104,25 +104,25 @@ CLASS="FIRSTTERM"
    are listed in
    <A
 HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE"
->Table 9-49</A
+>Table 9-51</A
 > and
    <A
 HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
->Table 9-50</A
+>Table 9-52</A
 >.
    The built-in ordered-set aggregate functions
    are listed in <A
 HREF="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE"
->Table 9-51</A
+>Table 9-53</A
 > and
    <A
 HREF="functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE"
->Table 9-52</A
+>Table 9-54</A
 >.  Grouping operations,
    which are closely related to aggregate functions, are listed in
    <A
 HREF="functions-aggregate.html#FUNCTIONS-GROUPING-TABLE"
->Table 9-53</A
+>Table 9-55</A
 >.
    The special syntax considerations for aggregate
    functions are explained in <A
@@ -142,12 +142,12 @@ NAME="FUNCTIONS-AGGREGATE-TABLE"
 ></A
 ><P
 ><B
->Table 9-49. General-Purpose Aggregate Functions</B
+>Table 9-51. General-Purpose Aggregate Functions</B
 ></P
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><COL><COL><THEAD
+><COL><COL><COL><COL><COL><THEAD
 ><TR
 ><TH
 >Function</TH
@@ -155,6 +155,8 @@ CLASS="CALSTABLE"
 >Argument Type(s)</TH
 ><TH
 >Return Type</TH
+><TH
+>Partial Mode</TH
 ><TH
 >Description</TH
 ></TR
@@ -180,6 +182,8 @@ CLASS="REPLACEABLE"
 >       array of the argument type
       </TD
 ><TD
+>No</TD
+><TD
 >input values, including nulls, concatenated into an array</TD
 ></TR
 ><TR
@@ -200,6 +204,8 @@ CLASS="REPLACEABLE"
 ><TD
 >       same as argument data type
       </TD
+><TD
+>No</TD
 ><TD
 >input arrays concatenated into array of one higher dimension
        (inputs must all have same dimensionality,
@@ -257,6 +263,8 @@ CLASS="TYPE"
        otherwise the same as the argument data type
       </TD
 ><TD
+>Yes</TD
+><TD
 >the average (arithmetic mean) of all input values</TD
 ></TR
 ><TR
@@ -291,6 +299,8 @@ CLASS="TYPE"
 ><TD
 >        same as argument data type
       </TD
+><TD
+>Yes</TD
 ><TD
 >the bitwise AND of all non-null input values, or null if none</TD
 ></TR
@@ -327,6 +337,8 @@ CLASS="TYPE"
 >        same as argument data type
       </TD
 ><TD
+>Yes</TD
+><TD
 >the bitwise OR of all non-null input values, or null if none</TD
 ></TR
 ><TR
@@ -354,6 +366,8 @@ CLASS="TYPE"
 >bool</TT
 >
       </TD
+><TD
+>Yes</TD
 ><TD
 >true if all input values are true, otherwise false</TD
 ></TR
@@ -383,6 +397,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >true if at least one input value is true, otherwise false</TD
 ></TR
 ><TR
@@ -400,6 +416,8 @@ CLASS="FUNCTION"
 CLASS="TYPE"
 >bigint</TT
 ></TD
+><TD
+>Yes</TD
 ><TD
 >number of input rows</TD
 ></TR
@@ -421,6 +439,8 @@ CLASS="REPLACEABLE"
 CLASS="TYPE"
 >bigint</TT
 ></TD
+><TD
+>Yes</TD
 ><TD
 >       number of input rows for which the value of <TT
 CLASS="REPLACEABLE"
@@ -456,6 +476,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >equivalent to <CODE
 CLASS="FUNCTION"
 >bool_and</CODE
@@ -487,6 +509,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>No</TD
+><TD
 >aggregates values as a JSON array</TD
 ></TR
 ><TR
@@ -514,6 +538,8 @@ CLASS="TYPE"
 >jsonb</TT
 >
       </TD
+><TD
+>No</TD
 ><TD
 >aggregates values as a JSON array</TD
 ></TR
@@ -548,6 +574,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>No</TD
+><TD
 >aggregates name/value pairs as a JSON object</TD
 ></TR
 ><TR
@@ -581,6 +609,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>No</TD
+><TD
 >aggregates name/value pairs as a JSON object</TD
 ></TR
 ><TR
@@ -601,6 +631,8 @@ CLASS="REPLACEABLE"
              or arrays of these types</TD
 ><TD
 >same as argument type</TD
+><TD
+>Yes</TD
 ><TD
 >       maximum value of <TT
 CLASS="REPLACEABLE"
@@ -629,6 +661,8 @@ CLASS="REPLACEABLE"
              or arrays of these types</TD
 ><TD
 >same as argument type</TD
+><TD
+>Yes</TD
 ><TD
 >       minimum value of <TT
 CLASS="REPLACEABLE"
@@ -677,6 +711,8 @@ CLASS="TYPE"
 ><TD
 >       same as argument types
       </TD
+><TD
+>No</TD
 ><TD
 >input values concatenated into a string, separated by delimiter</TD
 ></TR
@@ -745,6 +781,8 @@ CLASS="TYPE"
        argument data type
       </TD
 ><TD
+>Yes</TD
+><TD
 >sum of <TT
 CLASS="REPLACEABLE"
 ><I
@@ -778,6 +816,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>No</TD
+><TD
 >concatenation of XML values (see also <A
 HREF="functions-xml.html#FUNCTIONS-XML-XMLAGG"
 >Section 9.14.1.7</A
@@ -806,6 +846,14 @@ CLASS="FUNCTION"
 >coalesce</CODE
 > function can be used to
    substitute zero or an empty array for null when necessary.
+  </P
+><P
+>   Aggregate functions which support <I
+CLASS="FIRSTTERM"
+>Partial Mode</I
+>
+   are eligible to participate in various optimizations, such as parallel
+   aggregation.
   </P
 ><DIV
 CLASS="NOTE"
@@ -929,13 +977,14 @@ CLASS="SCREEN"
 >SELECT xmlagg(x) FROM (SELECT x FROM test ORDER BY y DESC) AS tab;</PRE
 ><P>
 
-   But this syntax is not allowed in the SQL standard, and is
-   not portable to other database systems.
+   Beware that this approach can fail if the outer query level contains
+   additional processing, such as a join, because that might cause the
+   subquery's output to be reordered before the aggregate is computed.
   </P
 ><P
 >   <A
 HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
->Table 9-50</A
+>Table 9-52</A
 > shows
    aggregate functions typically used in statistical analysis.
    (These are separated out merely to avoid cluttering the listing
@@ -962,12 +1011,12 @@ NAME="FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
 ></A
 ><P
 ><B
->Table 9-50. Aggregate Functions for Statistics</B
+>Table 9-52. Aggregate Functions for Statistics</B
 ></P
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><COL><COL><THEAD
+><COL><COL><COL><COL><COL><THEAD
 ><TR
 ><TH
 >Function</TH
@@ -975,6 +1024,8 @@ CLASS="CALSTABLE"
 >Argument Type</TH
 ><TH
 >Return Type</TH
+><TH
+>Partial Mode</TH
 ><TH
 >Description</TH
 ></TR
@@ -1012,6 +1063,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >correlation coefficient</TD
 ></TR
 ><TR
@@ -1045,6 +1098,8 @@ CLASS="TYPE"
 >double precision</TT
 >
       </TD
+><TD
+>Yes</TD
 ><TD
 >population covariance</TD
 ></TR
@@ -1080,6 +1135,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >sample covariance</TD
 ></TR
 ><TR
@@ -1112,6 +1169,8 @@ CLASS="TYPE"
 >double precision</TT
 >
       </TD
+><TD
+>Yes</TD
 ><TD
 >average of the independent variable
       (<TT
@@ -1160,6 +1219,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >average of the dependent variable
       (<TT
 CLASS="LITERAL"
@@ -1207,6 +1268,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >number of input rows in which both expressions are nonnull</TD
 ></TR
 ><TR
@@ -1240,6 +1303,8 @@ CLASS="TYPE"
 >double precision</TT
 >
       </TD
+><TD
+>Yes</TD
 ><TD
 >y-intercept of the least-squares-fit linear equation
       determined by the (<TT
@@ -1285,6 +1350,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >square of the correlation coefficient</TD
 ></TR
 ><TR
@@ -1318,6 +1385,8 @@ CLASS="TYPE"
 >double precision</TT
 >
       </TD
+><TD
+>Yes</TD
 ><TD
 >slope of the least-squares-fit linear equation determined
       by the (<TT
@@ -1363,6 +1432,8 @@ CLASS="TYPE"
 >double precision</TT
 >
       </TD
+><TD
+>Yes</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -1418,6 +1489,8 @@ CLASS="TYPE"
 >double precision</TT
 >
       </TD
+><TD
+>Yes</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -1484,6 +1557,8 @@ CLASS="TYPE"
 >double precision</TT
 >
       </TD
+><TD
+>Yes</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -1557,6 +1632,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >historical alias for <CODE
 CLASS="FUNCTION"
 >stddev_samp</CODE
@@ -1610,6 +1687,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >population standard deviation of the input values</TD
 ></TR
 ><TR
@@ -1660,6 +1739,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >sample standard deviation of the input values</TD
 ></TR
 ><TR
@@ -1708,6 +1789,8 @@ CLASS="TYPE"
 >numeric</TT
 >
       </TD
+><TD
+>Yes</TD
 ><TD
 >historical alias for <CODE
 CLASS="FUNCTION"
@@ -1762,6 +1845,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >population variance of the input values (square of the population standard deviation)</TD
 ></TR
 ><TR
@@ -1812,6 +1897,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>Yes</TD
+><TD
 >sample variance of the input values (square of the sample standard deviation)</TD
 ></TR
 ></TBODY
@@ -1820,7 +1907,7 @@ CLASS="TYPE"
 ><P
 >   <A
 HREF="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE"
->Table 9-51</A
+>Table 9-53</A
 > shows some
    aggregate functions that use the <I
 CLASS="FIRSTTERM"
@@ -1839,12 +1926,12 @@ NAME="FUNCTIONS-ORDEREDSET-TABLE"
 ></A
 ><P
 ><B
->Table 9-51. Ordered-Set Aggregate Functions</B
+>Table 9-53. Ordered-Set Aggregate Functions</B
 ></P
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><COL><COL><COL><THEAD
+><COL><COL><COL><COL><COL><COL><THEAD
 ><TR
 ><TH
 >Function</TH
@@ -1854,6 +1941,8 @@ CLASS="CALSTABLE"
 >Aggregated Argument Type(s)</TH
 ><TH
 >Return Type</TH
+><TH
+>Partial Mode</TH
 ><TH
 >Description</TH
 ></TR
@@ -1880,6 +1969,8 @@ CLASS="REPLACEABLE"
 ><TD
 >       same as sort expression
       </TD
+><TD
+>No</TD
 ><TD
 >       returns the most frequent input value (arbitrarily choosing the first
        one if there are multiple equally-frequent results)
@@ -1923,6 +2014,8 @@ CLASS="TYPE"
 >       same as sort expression
       </TD
 ><TD
+>No</TD
+><TD
 >       continuous percentile: returns a value corresponding to the specified
        fraction in the ordering, interpolating between adjacent input items if
        needed
@@ -1964,10 +2057,14 @@ CLASS="TYPE"
 >       array of sort expression's type
       </TD
 ><TD
+>No</TD
+><TD
 >       multiple continuous percentile: returns an array of results matching
        the shape of the <TT
-CLASS="LITERAL"
->fractions</TT
+CLASS="REPLACEABLE"
+><I
+>fractions</I
+></TT
 > parameter, with each
        non-null element replaced by the value corresponding to that percentile
       </TD
@@ -2003,6 +2100,8 @@ CLASS="TYPE"
 >       same as sort expression
       </TD
 ><TD
+>No</TD
+><TD
 >       discrete percentile: returns the first input value whose position in
        the ordering equals or exceeds the specified fraction
       </TD
@@ -2037,10 +2136,14 @@ CLASS="TYPE"
 >       array of sort expression's type
       </TD
 ><TD
+>No</TD
+><TD
 >       multiple discrete percentile: returns an array of results matching the
        shape of the <TT
-CLASS="LITERAL"
->fractions</TT
+CLASS="REPLACEABLE"
+><I
+>fractions</I
+></TT
 > parameter, with each non-null
        element replaced by the input value corresponding to that percentile
       </TD
@@ -2051,7 +2154,7 @@ CLASS="LITERAL"
 ><P
 >   All the aggregates listed in <A
 HREF="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE"
->Table 9-51</A
+>Table 9-53</A
 >
    ignore null values in their sorted input.  For those that take
    a <TT
@@ -2067,7 +2170,7 @@ CLASS="REPLACEABLE"
 >   Each of the aggregates listed in
    <A
 HREF="functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE"
->Table 9-52</A
+>Table 9-54</A
 > is associated with a
    window function of the same name defined in
    <A
@@ -2099,12 +2202,12 @@ NAME="FUNCTIONS-HYPOTHETICAL-TABLE"
 ></A
 ><P
 ><B
->Table 9-52. Hypothetical-Set Aggregate Functions</B
+>Table 9-54. Hypothetical-Set Aggregate Functions</B
 ></P
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><COL><COL><COL><THEAD
+><COL><COL><COL><COL><COL><COL><THEAD
 ><TR
 ><TH
 >Function</TH
@@ -2114,6 +2217,8 @@ CLASS="CALSTABLE"
 >Aggregated Argument Type(s)</TH
 ><TH
 >Return Type</TH
+><TH
+>Partial Mode</TH
 ><TH
 >Description</TH
 ></TR
@@ -2162,6 +2267,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>No</TD
+><TD
 >       rank of the hypothetical row, with gaps for duplicate rows
       </TD
 ></TR
@@ -2207,6 +2314,8 @@ CLASS="TYPE"
 >bigint</TT
 >
       </TD
+><TD
+>No</TD
 ><TD
 >       rank of the hypothetical row, without gaps
       </TD
@@ -2254,6 +2363,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>No</TD
+><TD
 >       relative rank of the hypothetical row, ranging from 0 to 1
       </TD
 ></TR
@@ -2300,6 +2411,8 @@ CLASS="TYPE"
 >
       </TD
 ><TD
+>No</TD
+><TD
 >       relative rank of the hypothetical row, ranging from
        1/<TT
 CLASS="REPLACEABLE"
@@ -2340,7 +2453,7 @@ NAME="FUNCTIONS-GROUPING-TABLE"
 ></A
 ><P
 ><B
->Table 9-53. Grouping Operations</B
+>Table 9-55. Grouping Operations</B
 ></P
 ><TABLE
 BORDER="1"

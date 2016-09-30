@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -809,7 +809,7 @@ CLASS="ACRONYM"
 ><P
 >    <A
 HREF="functions-matching.html#FUNCTIONS-POSIX-TABLE"
->Table 9-12</A
+>Table 9-14</A
 > lists the available
     operators for pattern matching using POSIX regular expressions.
    </P
@@ -820,7 +820,7 @@ NAME="FUNCTIONS-POSIX-TABLE"
 ></A
 ><P
 ><B
->Table 9-12. Regular Expression Match Operators</B
+>Table 9-14. Regular Expression Match Operators</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1141,7 +1141,7 @@ CLASS="LITERAL"
 >) are
      described in <A
 HREF="functions-matching.html#POSIX-EMBEDDED-OPTIONS-TABLE"
->Table 9-20</A
+>Table 9-22</A
 >.
     </P
 ><P
@@ -1246,7 +1246,7 @@ CLASS="LITERAL"
 >)
      are described in <A
 HREF="functions-matching.html#POSIX-EMBEDDED-OPTIONS-TABLE"
->Table 9-20</A
+>Table 9-22</A
 >.
     </P
 ><P
@@ -1346,7 +1346,7 @@ CLASS="FUNCTION"
 > supports the flags described in
      <A
 HREF="functions-matching.html#POSIX-EMBEDDED-OPTIONS-TABLE"
->Table 9-20</A
+>Table 9-22</A
 >.
     </P
 ><P
@@ -1600,12 +1600,12 @@ CLASS="FIRSTTERM"
 > can be any of the possibilities
     shown in <A
 HREF="functions-matching.html#POSIX-ATOMS-TABLE"
->Table 9-13</A
+>Table 9-15</A
 >.
     The possible quantifiers and their meanings are shown in
     <A
 HREF="functions-matching.html#POSIX-QUANTIFIERS-TABLE"
->Table 9-14</A
+>Table 9-16</A
 >.
    </P
 ><P
@@ -1618,7 +1618,7 @@ CLASS="FIRSTTERM"
     The simple constraints are shown in
     <A
 HREF="functions-matching.html#POSIX-CONSTRAINTS-TABLE"
->Table 9-15</A
+>Table 9-17</A
 >;
     some more constraints are described later.
    </P
@@ -1629,7 +1629,7 @@ NAME="POSIX-ATOMS-TABLE"
 ></A
 ><P
 ><B
->Table 9-13. Regular Expression Atoms</B
+>Table 9-15. Regular Expression Atoms</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1862,7 +1862,7 @@ NAME="POSIX-QUANTIFIERS-TABLE"
 ></A
 ><P
 ><B
->Table 9-14. Regular Expression Quantifiers</B
+>Table 9-16. Regular Expression Quantifiers</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2210,7 +2210,7 @@ NAME="POSIX-CONSTRAINTS-TABLE"
 ></A
 ><P
 ><B
->Table 9-15. Regular Expression Constraints</B
+>Table 9-17. Regular Expression Constraints</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2296,15 +2296,69 @@ CLASS="REPLACEABLE"
 > begins
        (AREs only) </TD
 ></TR
+><TR
+><TD
+> <TT
+CLASS="LITERAL"
+>(?&lt;=</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+><TT
+CLASS="LITERAL"
+>)</TT
+> </TD
+><TD
+> <I
+CLASS="FIRSTTERM"
+>positive lookbehind</I
+> matches at any point
+       where a substring matching <TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+> ends
+       (AREs only) </TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="LITERAL"
+>(?&lt;!</TT
+><TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+><TT
+CLASS="LITERAL"
+>)</TT
+> </TD
+><TD
+> <I
+CLASS="FIRSTTERM"
+>negative lookbehind</I
+> matches at any point
+       where no substring matching <TT
+CLASS="REPLACEABLE"
+><I
+>re</I
+></TT
+> ends
+       (AREs only) </TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
 ><P
->    Lookahead constraints cannot contain <I
+>    Lookahead and lookbehind constraints cannot contain <I
 CLASS="FIRSTTERM"
->back references</I
->
-    (see <A
+>back
+    references</I
+> (see <A
 HREF="functions-matching.html#POSIX-ESCAPE-SEQUENCES"
 >Section 9.7.3.3</A
 >),
@@ -2630,7 +2684,7 @@ CLASS="FIRSTTERM"
     non-printing and other inconvenient characters in REs.  They are
     shown in <A
 HREF="functions-matching.html#POSIX-CHARACTER-ENTRY-ESCAPES-TABLE"
->Table 9-16</A
+>Table 9-18</A
 >.
    </P
 ><P
@@ -2641,7 +2695,7 @@ CLASS="FIRSTTERM"
     commonly-used character classes.  They are
     shown in <A
 HREF="functions-matching.html#POSIX-CLASS-SHORTHAND-ESCAPES-TABLE"
->Table 9-17</A
+>Table 9-19</A
 >.
    </P
 ><P
@@ -2653,7 +2707,7 @@ CLASS="FIRSTTERM"
     written as an escape.  They are
     shown in <A
 HREF="functions-matching.html#POSIX-CONSTRAINT-ESCAPES-TABLE"
->Table 9-18</A
+>Table 9-20</A
 >.
    </P
 ><P
@@ -2678,7 +2732,7 @@ CLASS="REPLACEABLE"
 >
     (see <A
 HREF="functions-matching.html#POSIX-CONSTRAINT-BACKREF-TABLE"
->Table 9-19</A
+>Table 9-21</A
 >).  For example,
     <TT
 CLASS="LITERAL"
@@ -2708,7 +2762,7 @@ NAME="POSIX-CHARACTER-ENTRY-ESCAPES-TABLE"
 ></A
 ><P
 ><B
->Table 9-16. Regular Expression Character-entry Escapes</B
+>Table 9-18. Regular Expression Character-entry Escapes</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3081,7 +3135,7 @@ NAME="POSIX-CLASS-SHORTHAND-ESCAPES-TABLE"
 ></A
 ><P
 ><B
->Table 9-17. Regular Expression Class-shorthand Escapes</B
+>Table 9-19. Regular Expression Class-shorthand Escapes</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3218,7 +3272,7 @@ NAME="POSIX-CONSTRAINT-ESCAPES-TABLE"
 ></A
 ><P
 ><B
->Table 9-18. Regular Expression Constraint Escapes</B
+>Table 9-20. Regular Expression Constraint Escapes</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3324,7 +3378,7 @@ NAME="POSIX-CONSTRAINT-BACKREF-TABLE"
 ></A
 ><P
 ><B
->Table 9-19. Regular Expression Back References</B
+>Table 9-21. Regular Expression Back References</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3501,7 +3555,7 @@ CLASS="REPLACEABLE"
     The available option letters are
     shown in <A
 HREF="functions-matching.html#POSIX-EMBEDDED-OPTIONS-TABLE"
->Table 9-20</A
+>Table 9-22</A
 >.
     Note that these same option letters are used in the <TT
 CLASS="REPLACEABLE"
@@ -3518,7 +3572,7 @@ NAME="POSIX-EMBEDDED-OPTIONS-TABLE"
 ></A
 ><P
 ><B
->Table 9-20. ARE Embedded-option Letters</B
+>Table 9-22. ARE Embedded-option Letters</B
 ></P
 ><TABLE
 BORDER="1"
@@ -4295,7 +4349,7 @@ CLASS="LITERAL"
     the lack of special treatment for a trailing newline,
     the addition of complemented bracket expressions to the things
     affected by newline-sensitive matching,
-    the restrictions on parentheses and back references in lookahead
+    the restrictions on parentheses and back references in lookahead/lookbehind
     constraints, and the longest/shortest-match (rather than first-match)
     matching semantics.
    </P

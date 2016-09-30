@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN91230"
+NAME="AEN94740"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN91234"
+NAME="AEN94744"
 ></A
 ><H2
 >Synopsis</H2
@@ -150,7 +150,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91249"
+NAME="AEN94759"
 ></A
 ><H2
 >Description</H2
@@ -191,7 +191,7 @@ CLASS="APPLICATION"
 
 </P><PRE
 CLASS="SCREEN"
->transaction type: TPC-B (sort of)
+>transaction type: &lt;builtin: TPC-B (sort of)&gt;
 scaling factor: 10
 query mode: simple
 number of clients: 10
@@ -382,7 +382,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91295"
+NAME="AEN94805"
 ></A
 ><H2
 >Options</H2
@@ -607,6 +607,51 @@ CLASS="VARIABLELIST"
 ><DT
 ><TT
 CLASS="OPTION"
+>-b</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>scriptname[@weight]</I
+></TT
+><BR><TT
+CLASS="OPTION"
+>--builtin</TT
+>=<TT
+CLASS="REPLACEABLE"
+><I
+>scriptname[@weight]</I
+></TT
+></DT
+><DD
+><P
+>        Add the specified built-in script to the list of executed scripts.
+        An optional integer weight after <TT
+CLASS="LITERAL"
+>@</TT
+> allows to adjust the
+        probability of drawing the script.  If not specified, it is set to 1.
+        Available built-in scripts are: <TT
+CLASS="LITERAL"
+>tpcb-like</TT
+>,
+        <TT
+CLASS="LITERAL"
+>simple-update</TT
+> and <TT
+CLASS="LITERAL"
+>select-only</TT
+>.
+        Unambiguous prefixes of built-in names are accepted.
+        With special name <TT
+CLASS="LITERAL"
+>list</TT
+>, show the list of built-in scripts
+        and exit immediately.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >-c</TT
 > <TT
 CLASS="REPLACEABLE"
@@ -706,7 +751,7 @@ CLASS="OPTION"
 > <TT
 CLASS="REPLACEABLE"
 ><I
->filename</I
+>filename[@weight]</I
 ></TT
 ><BR><TT
 CLASS="OPTION"
@@ -714,29 +759,24 @@ CLASS="OPTION"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->filename</I
+>filename[@weight]</I
 ></TT
 ></DT
 ><DD
 ><P
->        Read transaction script from <TT
+>        Add a transaction script read from <TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
->.
+> to
+        the list of executed scripts.
+        An optional integer weight after <TT
+CLASS="LITERAL"
+>@</TT
+> allows to adjust the
+        probability of drawing the test.
         See below for details.
-        <TT
-CLASS="OPTION"
->-N</TT
->, <TT
-CLASS="OPTION"
->-S</TT
->, and <TT
-CLASS="OPTION"
->-f</TT
->
-        are mutually exclusive.
        </P
 ></DD
 ><DT
@@ -764,8 +804,7 @@ CLASS="APPLICATION"
 >pgbench</SPAN
 >.
         Using more than one thread can be helpful on multi-CPU machines.
-        The number of clients must be a multiple of the number of threads,
-        since each thread is given the same number of client sessions to manage.
+        Clients are distributed as evenly as possible among available threads.
         Default is 1.
        </P
 ></DD
@@ -882,7 +921,7 @@ CLASS="LITERAL"
 ><P>
         The default is simple query protocol.  (See <A
 HREF="protocol.html"
->Chapter 50</A
+>Chapter 51</A
 >
         for more information.)
        </P
@@ -933,16 +972,11 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->        Do not update <TT
-CLASS="STRUCTNAME"
->pgbench_tellers</TT
-> and
-        <TT
-CLASS="STRUCTNAME"
->pgbench_branches</TT
+>        Run built-in simple-update script.
+        Shorthand for <TT
+CLASS="OPTION"
+>-b simple-update</TT
 >.
-        This will avoid update contention on these tables, but
-        it makes the test case even less like TPC-B.
        </P
 ></DD
 ><DT
@@ -966,8 +1000,10 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        Show progress report every <TT
-CLASS="LITERAL"
->sec</TT
+CLASS="REPLACEABLE"
+><I
+>sec</I
+></TT
 > seconds.  The report
         includes the time since the beginning of the run, the tps since the
         last report, and the transaction latency average and standard
@@ -1092,12 +1128,12 @@ CLASS="APPLICATION"
         rows in the <TT
 CLASS="STRUCTNAME"
 >pgbench_branches</TT
-> table.  However, when testing
-        custom benchmarks (<TT
+> table.
+        However, when testing only custom benchmarks (<TT
 CLASS="OPTION"
 >-f</TT
-> option), the scale factor
-        will be reported as 1 unless this option is used.
+> option),
+        the scale factor will be reported as 1 unless this option is used.
        </P
 ></DD
 ><DT
@@ -1110,7 +1146,11 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->        Perform select-only transactions instead of TPC-B-like test.
+>        Run built-in select-only script.
+        Shorthand for <TT
+CLASS="OPTION"
+>-b select-only</TT
+>.
        </P
 ></DD
 ><DT
@@ -1223,6 +1263,23 @@ CLASS="APPLICATION"
        </P
 ><P
 >        This option is not currently supported on Windows.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--progress-timestamp</TT
+></DT
+><DD
+><P
+>        When showing progress (option <TT
+CLASS="OPTION"
+>-P</TT
+>), use a timestamp
+        (Unix epoch) instead of the number of seconds since the
+        beginning of the run.  The unit is in seconds, with millisecond
+        precision after the dot.
+        This helps compare logs generated by various tools.
        </P
 ></DD
 ><DT
@@ -1384,14 +1441,14 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91647"
+NAME="AEN95175"
 ></A
 ><H2
 >Notes</H2
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91649"
+NAME="AEN95177"
 ></A
 ><H3
 >What is the <SPAN
@@ -1402,7 +1459,54 @@ CLASS="APPLICATION"
 >pgbench</SPAN
 >?</H3
 ><P
->   The default transaction script issues seven commands per transaction:
+>   <SPAN
+CLASS="APPLICATION"
+>pgbench</SPAN
+> executes test scripts chosen randomly
+   from a specified list.
+   They include built-in scripts with <TT
+CLASS="OPTION"
+>-b</TT
+> and
+   user-provided custom scripts with <TT
+CLASS="OPTION"
+>-f</TT
+>.
+   Each script may be given a relative weight specified after a
+   <TT
+CLASS="LITERAL"
+>@</TT
+> so as to change its drawing probability.
+   The default weight is <TT
+CLASS="LITERAL"
+>1</TT
+>.
+   Scripts with a weight of <TT
+CLASS="LITERAL"
+>0</TT
+> are ignored.
+ </P
+><P
+>   The default built-in transaction script (also invoked with <TT
+CLASS="OPTION"
+>-b tpcb-like</TT
+>)
+   issues seven commands per transaction over randomly chosen <TT
+CLASS="LITERAL"
+>aid</TT
+>,
+   <TT
+CLASS="LITERAL"
+>tid</TT
+>, <TT
+CLASS="LITERAL"
+>bid</TT
+> and <TT
+CLASS="LITERAL"
+>balance</TT
+>.
+   The scenario is inspired by the TPC-B benchmark, but is not actually TPC-B,
+   hence the name.
   </P
 ><P
 ></P
@@ -1459,24 +1563,35 @@ CLASS="LITERAL"
 ></LI
 ></OL
 ><P
->   If you specify <TT
+>   If you select the <TT
+CLASS="LITERAL"
+>simple-update</TT
+> built-in (also <TT
 CLASS="OPTION"
 >-N</TT
->, steps 4 and 5 aren't included in the
-   transaction.  If you specify <TT
+>),
+   steps 4 and 5 aren't included in the transaction.
+   This will avoid update contention on these tables, but
+   it makes the test case even less like TPC-B.
+  </P
+><P
+>   If you select the <TT
+CLASS="LITERAL"
+>select-only</TT
+> built-in (also <TT
 CLASS="OPTION"
 >-S</TT
->, only the <TT
+>),
+   only the <TT
 CLASS="COMMAND"
 >SELECT</TT
-> is
-   issued.
+> is issued.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91680"
+NAME="AEN95223"
 ></A
 ><H3
 >Custom Scripts</H3
@@ -1494,21 +1609,15 @@ CLASS="OPTION"
 CLASS="QUOTE"
 >"transaction"</SPAN
 >
-   counts as one execution of a script file.  You can even specify
-   multiple scripts (multiple <TT
-CLASS="OPTION"
->-f</TT
-> options), in which
-   case a random one of the scripts is chosen each time a client session
-   starts a new transaction.
+   counts as one execution of a script file.
   </P
 ><P
->   The format of a script file is one SQL command per line; multiline
-   SQL commands are not supported.  Empty lines and lines beginning with
+>   A script file contains one or more SQL commands terminated by
+   semicolons.  Empty lines and lines beginning with
    <TT
 CLASS="LITERAL"
 >--</TT
-> are ignored.  Script file lines can also be
+> are ignored.  Script files can also contain
    <SPAN
 CLASS="QUOTE"
 >"meta commands"</SPAN
@@ -1518,6 +1627,35 @@ CLASS="APPLICATION"
 >
    itself, as described below.
   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>    Before <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.6, SQL commands in script files
+    were terminated by newlines, and so they could not be continued across
+    lines.  Now a semicolon is <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>required</I
+></SPAN
+> to separate consecutive
+    SQL commands (though a SQL command does not need one if it is followed
+    by a meta command).  If you need to create a script file that works with
+    both old and new versions of <SPAN
+CLASS="APPLICATION"
+>pgbench</SPAN
+>, be sure to write
+    each SQL command on a single line ending with a semicolon.
+   </P
+></BLOCKQUOTE
+></DIV
 ><P
 >   There is a simple variable-substitution facility for script files.
    Variables can be set by the command-line <TT
@@ -1558,7 +1696,7 @@ NAME="PGBENCH-AUTOMATIC-VARIABLES"
 ></A
 ><P
 ><B
->Table 1. Automatic variables</B
+>Table 1. Automatic Variables</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1597,7 +1735,8 @@ CLASS="LITERAL"
 >   Script file meta commands begin with a backslash (<TT
 CLASS="LITERAL"
 >\</TT
->).
+>) and
+   extend to the end of the line.
    Arguments to a meta command are separated by white space.
    These meta commands are supported:
   </P
@@ -1607,6 +1746,9 @@ CLASS="LITERAL"
 CLASS="VARIABLELIST"
 ><DL
 ><DT
+><A
+NAME="PGBENCH-METACOMMAND-SET"
+></A
 ><TT
 CLASS="LITERAL"
 >\set <TT
@@ -1628,7 +1770,7 @@ CLASS="REPLACEABLE"
 ><I
 >varname</I
 ></TT
-> to an integer value calculated
+> to a value calculated
       from <TT
 CLASS="REPLACEABLE"
 ><I
@@ -1639,6 +1781,10 @@ CLASS="REPLACEABLE"
 CLASS="LITERAL"
 >5432</TT
 >,
+      double constants such as <TT
+CLASS="LITERAL"
+>3.14159</TT
+>,
       references to variables <TT
 CLASS="LITERAL"
 >:</TT
@@ -1648,10 +1794,13 @@ CLASS="REPLACEABLE"
 >variablename</I
 ></TT
 >,
-      and expressions composed of unary (<TT
+      unary operators (<TT
+CLASS="LITERAL"
+>+</TT
+>, <TT
 CLASS="LITERAL"
 >-</TT
->) or binary operators
+>) and binary operators
       (<TT
 CLASS="LITERAL"
 >+</TT
@@ -1664,294 +1813,23 @@ CLASS="LITERAL"
 >, <TT
 CLASS="LITERAL"
 >/</TT
->, <TT
+>,
+      <TT
 CLASS="LITERAL"
 >%</TT
->)
-      with their usual associativity, and parentheses.
+>) with their usual precedence and associativity,
+      <A
+HREF="pgbench.html#PGBENCH-BUILTIN-FUNCTIONS"
+>function calls</A
+>, and
+      parentheses.
      </P
 ><P
 >      Examples:
 </P><PRE
 CLASS="PROGRAMLISTING"
 >\set ntellers 10 * :scale
-\set aid (1021 * :aid) % (100000 * :scale) + 1</PRE
-><P></P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->\setrandom <TT
-CLASS="REPLACEABLE"
-><I
->varname</I
-></TT
-> <TT
-CLASS="REPLACEABLE"
-><I
->min</I
-></TT
-> <TT
-CLASS="REPLACEABLE"
-><I
->max</I
-></TT
-> [ uniform | { gaussian | exponential } <TT
-CLASS="REPLACEABLE"
-><I
->parameter</I
-></TT
-> ]</TT
-></DT
-><DD
-><P
->      Sets variable <TT
-CLASS="REPLACEABLE"
-><I
->varname</I
-></TT
-> to a random integer value
-      between the limits <TT
-CLASS="REPLACEABLE"
-><I
->min</I
-></TT
-> and <TT
-CLASS="REPLACEABLE"
-><I
->max</I
-></TT
-> inclusive.
-      Each limit can be either an integer constant or a
-      <TT
-CLASS="LITERAL"
->:</TT
-><TT
-CLASS="REPLACEABLE"
-><I
->variablename</I
-></TT
-> reference to a variable
-      having an integer value.
-     </P
-><P
->      By default, or when <TT
-CLASS="LITERAL"
->uniform</TT
-> is specified, all values in the
-      range are drawn with equal probability.  Specifying <TT
-CLASS="LITERAL"
->gaussian</TT
->
-      or  <TT
-CLASS="LITERAL"
->exponential</TT
-> options modifies this behavior; each
-      requires a mandatory parameter which determines the precise shape of the
-      distribution.
-     </P
-><P
->      For a Gaussian distribution, the interval is mapped onto a standard
-      normal distribution (the classical bell-shaped Gaussian curve) truncated
-      at <TT
-CLASS="LITERAL"
->-parameter</TT
-> on the left and <TT
-CLASS="LITERAL"
->+parameter</TT
->
-      on the right.
-      Values in the middle of the interval are more likely to be drawn.
-      To be precise, if <TT
-CLASS="LITERAL"
->PHI(x)</TT
-> is the cumulative distribution
-      function of the standard normal distribution, with mean <TT
-CLASS="LITERAL"
->mu</TT
->
-      defined as <TT
-CLASS="LITERAL"
->(max + min) / 2.0</TT
->, with
-<P
-CLASS="LITERALLAYOUT"
->&nbsp;f(x)&nbsp;=&nbsp;PHI(2.0&nbsp;*&nbsp;parameter&nbsp;*&nbsp;(x&nbsp;-&nbsp;mu)&nbsp;/&nbsp;(max&nbsp;-&nbsp;min&nbsp;+&nbsp;1))&nbsp;/<br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(2.0&nbsp;*&nbsp;PHI(parameter)&nbsp;-&nbsp;1.0)</P
->
-      then value <TT
-CLASS="REPLACEABLE"
-><I
->i</I
-></TT
-> between <TT
-CLASS="REPLACEABLE"
-><I
->min</I
-></TT
-> and
-      <TT
-CLASS="REPLACEABLE"
-><I
->max</I
-></TT
-> inclusive is drawn with probability:
-      <TT
-CLASS="LITERAL"
->f(i + 0.5) - f(i - 0.5)</TT
->.
-      Intuitively, the larger <TT
-CLASS="REPLACEABLE"
-><I
->parameter</I
-></TT
->, the more
-      frequently values close to the middle of the interval are drawn, and the
-      less frequently values close to the <TT
-CLASS="REPLACEABLE"
-><I
->min</I
-></TT
-> and
-      <TT
-CLASS="REPLACEABLE"
-><I
->max</I
-></TT
-> bounds. About 67% of values are drawn from the
-      middle <TT
-CLASS="LITERAL"
->1.0 / parameter</TT
->, that is a relative
-      <TT
-CLASS="LITERAL"
->0.5 / parameter</TT
-> around the mean, and 95% in the middle
-      <TT
-CLASS="LITERAL"
->2.0 / parameter</TT
->, that is a relative
-      <TT
-CLASS="LITERAL"
->1.0 / parameter</TT
-> around the mean; for instance, if
-      <TT
-CLASS="REPLACEABLE"
-><I
->parameter</I
-></TT
-> is 4.0, 67% of values are drawn from the
-      middle quarter (1.0 / 4.0) of the interval (i.e. from
-      <TT
-CLASS="LITERAL"
->3.0 / 8.0</TT
-> to <TT
-CLASS="LITERAL"
->5.0 / 8.0</TT
->) and 95% from
-      the middle half (<TT
-CLASS="LITERAL"
->2.0 / 4.0</TT
->) of the interval (second and
-      third quartiles). The minimum <TT
-CLASS="REPLACEABLE"
-><I
->parameter</I
-></TT
-> is 2.0 for
-      performance of the Box-Muller transform.
-     </P
-><P
->      For an exponential distribution, <TT
-CLASS="REPLACEABLE"
-><I
->parameter</I
-></TT
->
-      controls the distribution by truncating a quickly-decreasing
-      exponential distribution at <TT
-CLASS="REPLACEABLE"
-><I
->parameter</I
-></TT
->, and then
-      projecting onto integers between the bounds.
-      To be precise, with
-<P
-CLASS="LITERALLAYOUT"
->f(x)&nbsp;=&nbsp;exp(-parameter&nbsp;*&nbsp;(x&nbsp;-&nbsp;min)&nbsp;/&nbsp;(max&nbsp;-&nbsp;min&nbsp;+&nbsp;1))&nbsp;/&nbsp;(1.0&nbsp;-&nbsp;exp(-parameter))</P
->
-      Then value <TT
-CLASS="REPLACEABLE"
-><I
->i</I
-></TT
-> between <TT
-CLASS="REPLACEABLE"
-><I
->min</I
-></TT
-> and
-      <TT
-CLASS="REPLACEABLE"
-><I
->max</I
-></TT
-> inclusive is drawn with probability:
-      <TT
-CLASS="LITERAL"
->f(x) - f(x + 1)</TT
->.
-      Intuitively, the larger <TT
-CLASS="REPLACEABLE"
-><I
->parameter</I
-></TT
->, the more
-      frequently values close to <TT
-CLASS="REPLACEABLE"
-><I
->min</I
-></TT
-> are accessed, and the
-      less frequently values close to <TT
-CLASS="REPLACEABLE"
-><I
->max</I
-></TT
-> are accessed.
-      The closer to 0 <TT
-CLASS="REPLACEABLE"
-><I
->parameter</I
-></TT
->, the flatter (more uniform)
-      the access distribution.
-      A crude approximation of the distribution is that the most frequent 1%
-      values in the range, close to <TT
-CLASS="REPLACEABLE"
-><I
->min</I
-></TT
->, are drawn
-      <TT
-CLASS="REPLACEABLE"
-><I
->parameter</I
-></TT
->% of the time.
-      <TT
-CLASS="REPLACEABLE"
-><I
->parameter</I
-></TT
-> value must be strictly positive.
-     </P
-><P
->      Example:
-</P><PRE
-CLASS="PROGRAMLISTING"
->\setrandom aid 1 :naccounts gaussian 5.0</PRE
+\set aid (1021 * random(1, 100000 * :scale)) % (100000 * :scale) + 1</PRE
 ><P></P
 ></DD
 ><DT
@@ -2035,17 +1913,27 @@ CLASS="REPLACEABLE"
 ><I
 >command</I
 ></TT
->. The command must return an integer value
-      through its standard output.
-     </P
-><P
-><TT
+> with the given <TT
 CLASS="REPLACEABLE"
 ><I
 >argument</I
 ></TT
-> can be either a text constant or a
-      <TT
+>(s).
+      The command must return an integer value through its standard output.
+     </P
+><P
+>      <TT
+CLASS="REPLACEABLE"
+><I
+>command</I
+></TT
+> and each <TT
+CLASS="REPLACEABLE"
+><I
+>argument</I
+></TT
+> can be either
+      a text constant or a <TT
 CLASS="LITERAL"
 >:</TT
 ><TT
@@ -2053,14 +1941,14 @@ CLASS="REPLACEABLE"
 ><I
 >variablename</I
 ></TT
-> reference to a variable of
-      any types. If you want to use <TT
+> reference
+      to a variable. If you want to use an <TT
 CLASS="REPLACEABLE"
 ><I
 >argument</I
 ></TT
-> starting with
-      colons, you need to add an additional colon at the beginning of
+> starting
+      with a colon, write an additional colon at the beginning of
       <TT
 CLASS="REPLACEABLE"
 ><I
@@ -2095,7 +1983,8 @@ CLASS="REPLACEABLE"
 >      Same as <TT
 CLASS="LITERAL"
 >\setshell</TT
->, but the result is ignored.
+>, but the result of the command
+      is discarded.
      </P
 ><P
 >      Example:
@@ -2106,19 +1995,697 @@ CLASS="PROGRAMLISTING"
 ></DD
 ></DL
 ></DIV
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="PGBENCH-BUILTIN-FUNCTIONS"
+></A
+><H3
+>Built-In Functions</H3
+><P
+>   The functions listed in <A
+HREF="pgbench.html#PGBENCH-FUNCTIONS"
+>Table 2</A
+> are built
+   into <SPAN
+CLASS="APPLICATION"
+>pgbench</SPAN
+> and may be used in expressions appearing in
+   <A
+HREF="pgbench.html#PGBENCH-METACOMMAND-SET"
+><TT
+CLASS="LITERAL"
+>\set</TT
+></A
+>.
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="PGBENCH-FUNCTIONS"
+></A
+><P
+><B
+>Table 2. pgbench Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><COL><COL><THEAD
+><TR
+><TH
+>Function</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+><TH
+>Example</TH
+><TH
+>Result</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>abs(<TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+>)</CODE
+></TT
+></TD
+><TD
+>same as <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+></TD
+><TD
+>absolute value</TD
+><TD
+><TT
+CLASS="LITERAL"
+>abs(-17)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>17</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>debug(<TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+>)</CODE
+></TT
+></TD
+><TD
+>same as <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> </TD
+><TD
+>print <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> to <SPAN
+CLASS="SYSTEMITEM"
+>stderr</SPAN
+>,
+        and return <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>debug(5432.1)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>5432.1</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>double(<TT
+CLASS="REPLACEABLE"
+><I
+>i</I
+></TT
+>)</CODE
+></TT
+></TD
+><TD
+>double</TD
+><TD
+>cast to double</TD
+><TD
+><TT
+CLASS="LITERAL"
+>double(5432)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>5432.0</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>greatest(<TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> [, <TT
+CLASS="REPLACEABLE"
+><I
+>...</I
+></TT
+> ] )</CODE
+></TT
+></TD
+><TD
+>double if any <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> is double, else integer</TD
+><TD
+>largest value among arguments</TD
+><TD
+><TT
+CLASS="LITERAL"
+>greatest(5, 4, 3, 2)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>5</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>int(<TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+>)</CODE
+></TT
+></TD
+><TD
+>integer</TD
+><TD
+>cast to int</TD
+><TD
+><TT
+CLASS="LITERAL"
+>int(5.4 + 3.8)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>9</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>least(<TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> [, <TT
+CLASS="REPLACEABLE"
+><I
+>...</I
+></TT
+> ] )</CODE
+></TT
+></TD
+><TD
+>double if any <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> is double, else integer</TD
+><TD
+>smallest value among arguments</TD
+><TD
+><TT
+CLASS="LITERAL"
+>least(5, 4, 3, 2.1)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>2.1</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pi()</CODE
+></TT
+></TD
+><TD
+>double</TD
+><TD
+>value of the constant PI</TD
+><TD
+><TT
+CLASS="LITERAL"
+>pi()</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>3.14159265358979323846</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>random(<TT
+CLASS="REPLACEABLE"
+><I
+>lb</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>ub</I
+></TT
+>)</CODE
+></TT
+></TD
+><TD
+>integer</TD
+><TD
+>uniformly-distributed random integer in <TT
+CLASS="LITERAL"
+>[lb, ub]</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>random(1, 10)</TT
+></TD
+><TD
+>an integer between <TT
+CLASS="LITERAL"
+>1</TT
+> and <TT
+CLASS="LITERAL"
+>10</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>random_exponential(<TT
+CLASS="REPLACEABLE"
+><I
+>lb</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>ub</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>)</CODE
+></TT
+></TD
+><TD
+>integer</TD
+><TD
+>exponentially-distributed random integer in <TT
+CLASS="LITERAL"
+>[lb, ub]</TT
+>,
+              see below</TD
+><TD
+><TT
+CLASS="LITERAL"
+>random_exponential(1, 10, 3.0)</TT
+></TD
+><TD
+>an integer between <TT
+CLASS="LITERAL"
+>1</TT
+> and <TT
+CLASS="LITERAL"
+>10</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>random_gaussian(<TT
+CLASS="REPLACEABLE"
+><I
+>lb</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>ub</I
+></TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>)</CODE
+></TT
+></TD
+><TD
+>integer</TD
+><TD
+>Gaussian-distributed random integer in <TT
+CLASS="LITERAL"
+>[lb, ub]</TT
+>,
+              see below</TD
+><TD
+><TT
+CLASS="LITERAL"
+>random_gaussian(1, 10, 2.5)</TT
+></TD
+><TD
+>an integer between <TT
+CLASS="LITERAL"
+>1</TT
+> and <TT
+CLASS="LITERAL"
+>10</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>sqrt(<TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+>)</CODE
+></TT
+></TD
+><TD
+>double</TD
+><TD
+>square root</TD
+><TD
+><TT
+CLASS="LITERAL"
+>sqrt(2.0)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>1.414213562</TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    The <TT
+CLASS="LITERAL"
+>random</TT
+> function generates values using a uniform
+    distribution, that is all the values are drawn within the specified
+    range with equal probability. The <TT
+CLASS="LITERAL"
+>random_exponential</TT
+> and
+    <TT
+CLASS="LITERAL"
+>random_gaussian</TT
+> functions require an additional double
+    parameter which determines the precise shape of the distribution.
+   </P
+><P
+></P
+><UL
+><LI
+><P
+>      For an exponential distribution, <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>
+      controls the distribution by truncating a quickly-decreasing
+      exponential distribution at <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>, and then
+      projecting onto integers between the bounds.
+      To be precise, with
+<P
+CLASS="LITERALLAYOUT"
+>f(x)&nbsp;=&nbsp;exp(-parameter&nbsp;*&nbsp;(x&nbsp;-&nbsp;min)&nbsp;/&nbsp;(max&nbsp;-&nbsp;min&nbsp;+&nbsp;1))&nbsp;/&nbsp;(1&nbsp;-&nbsp;exp(-parameter))</P
+>
+      Then value <TT
+CLASS="REPLACEABLE"
+><I
+>i</I
+></TT
+> between <TT
+CLASS="REPLACEABLE"
+><I
+>min</I
+></TT
+> and
+      <TT
+CLASS="REPLACEABLE"
+><I
+>max</I
+></TT
+> inclusive is drawn with probability:
+      <TT
+CLASS="LITERAL"
+>f(x) - f(x + 1)</TT
+>.
+     </P
+><P
+>      Intuitively, the larger the <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>, the more
+      frequently values close to <TT
+CLASS="REPLACEABLE"
+><I
+>min</I
+></TT
+> are accessed, and the
+      less frequently values close to <TT
+CLASS="REPLACEABLE"
+><I
+>max</I
+></TT
+> are accessed.
+      The closer to 0 <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+> is, the flatter (more
+      uniform) the access distribution.
+      A crude approximation of the distribution is that the most frequent 1%
+      values in the range, close to <TT
+CLASS="REPLACEABLE"
+><I
+>min</I
+></TT
+>, are drawn
+      <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>% of the time.
+      The <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+> value must be strictly positive.
+     </P
+></LI
+><LI
+><P
+>      For a Gaussian distribution, the interval is mapped onto a standard
+      normal distribution (the classical bell-shaped Gaussian curve) truncated
+      at <TT
+CLASS="LITERAL"
+>-parameter</TT
+> on the left and <TT
+CLASS="LITERAL"
+>+parameter</TT
+>
+      on the right.
+      Values in the middle of the interval are more likely to be drawn.
+      To be precise, if <TT
+CLASS="LITERAL"
+>PHI(x)</TT
+> is the cumulative distribution
+      function of the standard normal distribution, with mean <TT
+CLASS="LITERAL"
+>mu</TT
+>
+      defined as <TT
+CLASS="LITERAL"
+>(max + min) / 2.0</TT
+>, with
+<P
+CLASS="LITERALLAYOUT"
+>f(x)&nbsp;=&nbsp;PHI(2.0&nbsp;*&nbsp;parameter&nbsp;*&nbsp;(x&nbsp;-&nbsp;mu)&nbsp;/&nbsp;(max&nbsp;-&nbsp;min&nbsp;+&nbsp;1))&nbsp;/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(2.0&nbsp;*&nbsp;PHI(parameter)&nbsp;-&nbsp;1)</P
+>
+      then value <TT
+CLASS="REPLACEABLE"
+><I
+>i</I
+></TT
+> between <TT
+CLASS="REPLACEABLE"
+><I
+>min</I
+></TT
+> and
+      <TT
+CLASS="REPLACEABLE"
+><I
+>max</I
+></TT
+> inclusive is drawn with probability:
+      <TT
+CLASS="LITERAL"
+>f(i + 0.5) - f(i - 0.5)</TT
+>.
+      Intuitively, the larger the <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+>, the more
+      frequently values close to the middle of the interval are drawn, and the
+      less frequently values close to the <TT
+CLASS="REPLACEABLE"
+><I
+>min</I
+></TT
+> and
+      <TT
+CLASS="REPLACEABLE"
+><I
+>max</I
+></TT
+> bounds. About 67% of values are drawn from the
+      middle <TT
+CLASS="LITERAL"
+>1.0 / parameter</TT
+>, that is a relative
+      <TT
+CLASS="LITERAL"
+>0.5 / parameter</TT
+> around the mean, and 95% in the middle
+      <TT
+CLASS="LITERAL"
+>2.0 / parameter</TT
+>, that is a relative
+      <TT
+CLASS="LITERAL"
+>1.0 / parameter</TT
+> around the mean; for instance, if
+      <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+> is 4.0, 67% of values are drawn from the
+      middle quarter (1.0 / 4.0) of the interval (i.e. from
+      <TT
+CLASS="LITERAL"
+>3.0 / 8.0</TT
+> to <TT
+CLASS="LITERAL"
+>5.0 / 8.0</TT
+>) and 95% from
+      the middle half (<TT
+CLASS="LITERAL"
+>2.0 / 4.0</TT
+>) of the interval (second and third
+      quartiles). The minimum <TT
+CLASS="REPLACEABLE"
+><I
+>parameter</I
+></TT
+> is 2.0 for performance
+      of the Box-Muller transform.
+     </P
+></LI
+></UL
 ><P
 >   As an example, the full definition of the built-in TPC-B-like
    transaction is:
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->\set nbranches :scale
-\set ntellers 10 * :scale
-\set naccounts 100000 * :scale
-\setrandom aid 1 :naccounts
-\setrandom bid 1 :nbranches
-\setrandom tid 1 :ntellers
-\setrandom delta -5000 5000
+>\set aid random(1, 100000 * :scale)
+\set bid random(1, 1 * :scale)
+\set tid random(1, 10 * :scale)
+\set delta random(-5000, 5000)
 BEGIN;
 UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
 SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
@@ -2137,7 +2704,7 @@ END;</PRE
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91839"
+NAME="AEN95537"
 ></A
 ><H3
 >Per-Transaction Logging</H3
@@ -2224,7 +2791,7 @@ CLASS="REPLACEABLE"
 > <TT
 CLASS="REPLACEABLE"
 ><I
->file_no</I
+>script_no</I
 ></TT
 > <TT
 CLASS="REPLACEABLE"
@@ -2256,12 +2823,15 @@ CLASS="REPLACEABLE"
    <TT
 CLASS="REPLACEABLE"
 ><I
->file_no</I
+>script_no</I
 ></TT
-> identifies which script file was used
-   (useful when multiple scripts were specified with <TT
+> identifies which script file was used (useful when
+   multiple scripts were specified with <TT
 CLASS="OPTION"
 >-f</TT
+> or <TT
+CLASS="OPTION"
+>-b</TT
 >),
    and <TT
 CLASS="REPLACEABLE"
@@ -2311,10 +2881,10 @@ CLASS="LITERAL"
 >   Here is a snippet of the log file generated:
 </P><PRE
 CLASS="SCREEN"
-> 0 199 2241 0 1175850568 995598
- 0 200 2465 0 1175850568 998079
- 0 201 2513 0 1175850569 608
- 0 202 2038 0 1175850569 2663</PRE
+>0 199 2241 0 1175850568 995598
+0 200 2465 0 1175850568 998079
+0 201 2513 0 1175850569 608
+0 202 2038 0 1175850569 2663</PRE
 ><P>
 
    Another example with --rate=100 and --latency-limit=5 (note the additional
@@ -2326,13 +2896,13 @@ CLASS="REPLACEABLE"
 > column):
 </P><PRE
 CLASS="SCREEN"
-> 0 81 4621 0 1412881037 912698 3005
- 0 82 6173 0 1412881037 914578 4304
- 0 83 skipped 0 1412881037 914578 5217
- 0 83 skipped 0 1412881037 914578 5099
- 0 83 4722 0 1412881037 916203 3108
- 0 84 4142 0 1412881037 918023 2333
- 0 85 2465 0 1412881037 919759 740</PRE
+>0 81 4621 0 1412881037 912698 3005
+0 82 6173 0 1412881037 914578 4304
+0 83 skipped 0 1412881037 914578 5217
+0 83 skipped 0 1412881037 914578 5099
+0 83 4722 0 1412881037 916203 3108
+0 84 4142 0 1412881037 918023 2333
+0 85 2465 0 1412881037 919759 740</PRE
 ><P>
    In this example, transaction 82 was late, because its latency (6.173 ms) was
    over the 5 ms limit. The next two transactions were skipped, because they
@@ -2350,7 +2920,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91881"
+NAME="AEN95580"
 ></A
 ><H3
 >Aggregated Logging</H3
@@ -2456,7 +3026,7 @@ CLASS="REPLACEABLE"
 ><I
 >latency_2_sum</I
 ></TT
-> is a sum of 2nd powers of latencies. The last two
+> is a sum of 2nd powers of latencies. The next two
    fields are <TT
 CLASS="REPLACEABLE"
 ><I
@@ -2528,7 +3098,7 @@ CLASS="SCREEN"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91916"
+NAME="AEN95615"
 ></A
 ><H3
 >Per-Statement Latencies</H3
@@ -2549,30 +3119,30 @@ CLASS="APPLICATION"
 </P><PRE
 CLASS="SCREEN"
 >starting vacuum...end.
-transaction type: TPC-B (sort of)
+transaction type: &lt;builtin: TPC-B (sort of)&gt;
 scaling factor: 1
 query mode: simple
 number of clients: 10
 number of threads: 1
 number of transactions per client: 1000
 number of transactions actually processed: 10000/10000
+latency average = 15.844 ms
+latency stddev = 2.715 ms
 tps = 618.764555 (including connections establishing)
 tps = 622.977698 (excluding connections establishing)
-statement latencies in milliseconds:
-        0.004386        \set nbranches 1 * :scale
-        0.001343        \set ntellers 10 * :scale
-        0.001212        \set naccounts 100000 * :scale
-        0.001310        \setrandom aid 1 :naccounts
-        0.001073        \setrandom bid 1 :nbranches
-        0.001005        \setrandom tid 1 :ntellers
-        0.001078        \setrandom delta -5000 5000
-        0.326152        BEGIN;
-        0.603376        UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
-        0.454643        SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
-        5.528491        UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;
-        7.335435        UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
-        0.371851        INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
-        1.212976        END;</PRE
+script statistics:
+ - statement latencies in milliseconds:
+        0.002  \set aid random(1, 100000 * :scale)
+        0.005  \set bid random(1, 1 * :scale)
+        0.002  \set tid random(1, 10 * :scale)
+        0.001  \set delta random(-5000, 5000)
+        0.326  BEGIN;
+        0.603  UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
+        0.454  SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
+        5.528  UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;
+        7.335  UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
+        0.371  INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
+        1.212  END;</PRE
 ><P>
   </P
 ><P
@@ -2591,7 +3161,7 @@ statement latencies in milliseconds:
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91925"
+NAME="AEN95624"
 ></A
 ><H3
 >Good Practices</H3

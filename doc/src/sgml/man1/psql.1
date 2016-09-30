@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "PSQL" "1" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "PSQL" "1" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,7 +37,9 @@ psql \- PostgreSQL interactive terminal
 psql
 is a terminal\-based front\-end to
 PostgreSQL\&. It enables you to type in queries interactively, issue them to
-PostgreSQL, and see the query results\&. Alternatively, input can be from a file\&. In addition, it provides a number of meta\-commands and various shell\-like features to facilitate writing scripts and automating a wide variety of tasks\&.
+PostgreSQL, and see the query results\&. Alternatively, input can be from a file or from command line arguments\&. In addition,
+psql
+provides a number of meta\-commands and various shell\-like features to facilitate writing scripts and automating a wide variety of tasks\&.
 .SH "OPTIONS"
 .PP
 \fB\-a\fR
@@ -73,10 +75,20 @@ errors\&.
 .RS 4
 Specifies that
 psql
-is to execute one command string,
-\fIcommand\fR, and then exit\&. This is useful in shell scripts\&. Start\-up files (psqlrc
+is to execute the given command string,
+\fIcommand\fR\&. This option can be repeated and combined in any order with the
+\fB\-f\fR
+option\&. When either
+\fB\-c\fR
+or
+\fB\-f\fR
+is specified,
+psql
+does not read commands from standard input; instead it terminates after processing all the
+\fB\-c\fR
 and
-~/\&.psqlrc) are ignored with this option\&.
+\fB\-f\fR
+options in sequence\&.
 .sp
 \fIcommand\fR
 must be either a command string that is completely parsable by the server (i\&.e\&., it contains no
@@ -84,19 +96,62 @@ psql\-specific features), or a single backslash command\&. Thus you cannot mix
 SQL
 and
 psql
-meta\-commands with this option\&. To achieve that, you could pipe the string into
+meta\-commands within a
+\fB\-c\fR
+option\&. To achieve that, you could use repeated
+\fB\-c\fR
+options or pipe the string into
 psql, for example:
-echo \*(Aq\ex \e\e SELECT * FROM foo;\*(Aq | psql\&. (\e\e
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+psql \-c \*(Aq\ex\*(Aq \-c \*(AqSELECT * FROM foo;\*(Aq
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+or
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+echo \*(Aq\ex \e\e SELECT * FROM foo;\*(Aq | psql
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+(\e\e
 is the separator meta\-command\&.)
 .sp
-If the command string contains multiple SQL commands, they are processed in a single transaction, unless there are explicit
-\fBBEGIN\fR/\fBCOMMIT\fR
-commands included in the string to divide it into multiple transactions\&. This is different from the behavior when the same string is fed to
-psql\*(Aqs standard input\&. Also, only the result of the last SQL command is returned\&.
-.sp
-Because of these legacy behaviors, putting more than one command in the
+Each
+SQL
+command string passed to
 \fB\-c\fR
-string often has unexpected results\&. It\*(Aqs better to feed multiple commands to
+is sent to the server as a single query\&. Because of this, the server executes it as a single transaction even if the string contains multiple
+SQL
+commands, unless there are explicit
+\fBBEGIN\fR/\fBCOMMIT\fR
+commands included in the string to divide it into multiple transactions\&. Also,
+psql
+only prints the result of the last
+SQL
+command in the string\&. This is different from the behavior when the same string is read from a file or fed to
+psql\*(Aqs standard input, because then
+psql
+sends each
+SQL
+command separately\&.
+.sp
+Because of this behavior, putting more than one command in a single
+\fB\-c\fR
+string often has unexpected results\&. It\*(Aqs better to use repeated
+\fB\-c\fR
+commands or feed multiple commands to
 psql\*(Aqs standard input, either using
 echo
 as illustrated above, or via a shell here\-document, for example:
@@ -133,7 +188,7 @@ or
 postgres://), it is treated as a
 \fIconninfo\fR
 string\&. See
-Section 31.1.1, \(lqConnection Strings\(rq, in the documentation
+Section 32.1.1, \(lqConnection Strings\(rq, in the documentation
 for more information\&.
 .RE
 .PP
@@ -164,11 +219,20 @@ on\&.
 .br
 \fB\-\-file=\fR\fB\fIfilename\fR\fR
 .RS 4
-Use the file
-\fIfilename\fR
-as the source of commands instead of reading commands interactively\&. After the file is processed,
+Read commands from the file
+\fIfilename\fR, rather than standard input\&. This option can be repeated and combined in any order with the
+\fB\-c\fR
+option\&. When either
+\fB\-c\fR
+or
+\fB\-f\fR
+is specified,
 psql
-terminates\&. This is in many ways equivalent to the meta\-command
+does not read commands from standard input; instead it terminates after processing all the
+\fB\-c\fR
+and
+\fB\-f\fR
+options in sequence\&. Except for that, this option is largely equivalent to the meta\-command
 \fB\ei\fR\&.
 .sp
 If
@@ -177,7 +241,7 @@ is
 \-
 (hyphen), then standard input is read until an EOF indication or
 \fB\eq\fR
-meta\-command\&. Note however that Readline is not used in this case (much as if
+meta\-command\&. This can be used to intersperse interactive input with input from files\&. Note however that Readline is not used in this case (much as if
 \fB\-n\fR
 had been specified)\&.
 .sp
@@ -450,16 +514,22 @@ xargs \-0\&.
 .br
 \fB\-\-single\-transaction\fR
 .RS 4
-When
+This option can only be used in combination with one or more
+\fB\-c\fR
+and/or
+\fB\-f\fR
+options\&. It causes
 psql
-executes a script, adding this option wraps
-\fBBEGIN\fR/\fBCOMMIT\fR
-around the script to execute it as a single transaction\&. This ensures that either all the commands complete successfully, or no changes are applied\&.
+to issue a
+\fBBEGIN\fR
+command before the first such option and a
+\fBCOMMIT\fR
+command after the last one, thereby wrapping all the commands into a single transaction\&. This ensures that either all the commands complete successfully, or no changes are applied\&.
 .sp
-If the script itself uses
+If the commands themselves contain
 \fBBEGIN\fR,
 \fBCOMMIT\fR, or
-\fBROLLBACK\fR, this option will not have the desired effects\&. Also, if the script contains any command that cannot be executed inside a transaction block, specifying this option will cause that command (and hence the whole transaction) to fail\&.
+\fBROLLBACK\fR, this option will not have the desired effects\&. Also, if an individual command cannot be executed inside a transaction block, specifying this option will cause the whole transaction to fail\&.
 .RE
 .PP
 \fB\-?\fR
@@ -517,10 +587,10 @@ When the defaults aren\*(Aqt quite right, you can save yourself some typing by s
 and/or
 \fBPGUSER\fR
 to appropriate values\&. (For additional environment variables, see
-Section 31.14, \(lqEnvironment Variables\(rq, in the documentation\&.) It is also convenient to have a
+Section 32.14, \(lqEnvironment Variables\(rq, in the documentation\&.) It is also convenient to have a
 ~/\&.pgpass
 file to avoid regularly having to type in passwords\&. See
-Section 31.15, \(lqThe Password File\(rq, in the documentation
+Section 32.15, \(lqThe Password File\(rq, in the documentation
 for more information\&.
 .PP
 An alternative way to specify connection parameters is in a
@@ -542,8 +612,8 @@ $ \fBpsql postgresql://dbmaster:5433/mydb?sslmode=require\fR
 This way you can also use
 LDAP
 for connection parameter lookup as described in
-Section 31.17, \(lqLDAP Lookup of Connection Parameters\(rq, in the documentation\&. See
-Section 31.1.2, \(lqParameter Key Words\(rq, in the documentation
+Section 32.17, \(lqLDAP Lookup of Connection Parameters\(rq, in the documentation\&. See
+Section 32.1.2, \(lqParameter Key Words\(rq, in the documentation
 for more information on all the available connection options\&.
 .PP
 If the connection could not be made for any reason (e\&.g\&., insufficient privileges, server is not running on the targeted host, etc\&.),
@@ -570,7 +640,7 @@ is currently connected, followed by the string
 .\}
 .nf
 $ \fBpsql testdb\fR
-psql (9\&.5\&.3)
+psql (9\&.6\&.0)
 Type "help" for help\&.
 
 testdb=>
@@ -661,27 +731,32 @@ If the current table output format is unaligned, it is switched to aligned\&. If
 for a more general solution\&.
 .RE
 .PP
-\ec or \econnect [ \fIdbname\fR [ \fIusername\fR ] [ \fIhost\fR ] [ \fIport\fR ] ] | \fIconninfo\fR
+\ec or \econnect [ \-reuse\-previous=\fIon|off\fR ] [ \fIdbname\fR [ \fIusername\fR ] [ \fIhost\fR ] [ \fIport\fR ] | \fIconninfo\fR ]
 .RS 4
 Establishes a new connection to a
 PostgreSQL
 server\&. The connection parameters to use can be specified either using a positional syntax, or using
-conninfo
+\fIconninfo\fR
 connection strings as detailed in
-Section 31.1.1, \(lqConnection Strings\(rq, in the documentation\&.
+Section 32.1.1, \(lqConnection Strings\(rq, in the documentation\&.
 .sp
-When using positional parameters, if any of
+Where the command omits database name, user, host, or port, the new connection can reuse values from the previous connection\&. By default, values from the previous connection are reused except when processing a
+\fIconninfo\fR
+string\&. Passing a first argument of
+\-reuse\-previous=on
+or
+\-reuse\-previous=off
+overrides that default\&. When the command neither specifies nor reuses a particular parameter, the
+libpq
+default is used\&. Specifying any of
 \fIdbname\fR,
 \fIusername\fR,
 \fIhost\fR
 or
 \fIport\fR
-are omitted or specified as
-\-, the value of that parameter from the previous connection is used; if there is no previous connection, the
-libpq
-default for the parameter\*(Aqs value is used\&. When using
-conninfo
-strings, no values from the previous connection are used for the new connection\&.
+as
+\-
+is equivalent to omitting that parameter\&.
 .sp
 If the new connection is successfully made, the previous connection is closed\&. If the connection attempt failed (wrong user name, access denied, etc\&.), the previous connection will only be kept if
 psql
@@ -808,6 +883,68 @@ Shows the copyright and distribution terms of
 PostgreSQL\&.
 .RE
 .PP
+\ecrosstabview [ \fIcolV\fR [ \fIcolH\fR [ \fIcolD\fR [ \fIsortcolH\fR ] ] ] ]
+.RS 4
+Executes the current query buffer (like
+\eg) and shows the results in a crosstab grid\&. The query must return at least three columns\&. The output column identified by
+\fIcolV\fR
+becomes a vertical header and the output column identified by
+\fIcolH\fR
+becomes a horizontal header\&.
+\fIcolD\fR
+identifies the output column to display within the grid\&.
+\fIsortcolH\fR
+identifies an optional sort column for the horizontal header\&.
+.sp
+Each column specification can be a column number (starting at 1) or a column name\&. The usual SQL case folding and quoting rules apply to column names\&. If omitted,
+\fIcolV\fR
+is taken as column 1 and
+\fIcolH\fR
+as column 2\&.
+\fIcolH\fR
+must differ from
+\fIcolV\fR\&. If
+\fIcolD\fR
+is not specified, then there must be exactly three columns in the query result, and the column that is neither
+\fIcolV\fR
+nor
+\fIcolH\fR
+is taken to be
+\fIcolD\fR\&.
+.sp
+The vertical header, displayed as the leftmost column, contains the values found in column
+\fIcolV\fR, in the same order as in the query results, but with duplicates removed\&.
+.sp
+The horizontal header, displayed as the first row, contains the values found in column
+\fIcolH\fR, with duplicates removed\&. By default, these appear in the same order as in the query results\&. But if the optional
+\fIsortcolH\fR
+argument is given, it identifies a column whose values must be integer numbers, and the values from
+\fIcolH\fR
+will appear in the horizontal header sorted according to the corresponding
+\fIsortcolH\fR
+values\&.
+.sp
+Inside the crosstab grid, for each distinct value
+x
+of
+\fIcolH\fR
+and each distinct value
+y
+of
+\fIcolV\fR, the cell located at the intersection
+(x,y)
+contains the value of the
+colD
+column in the query result row for which the value of
+\fIcolH\fR
+is
+x
+and the value of
+\fIcolV\fR
+is
+y\&. If there is no such row, the cell is empty\&. If there are multiple such rows, an error is reported\&.
+.RE
+.PP
 \ed[S+] [ \fIpattern\fR ]
 .RS 4
 For each relation (table, view, index, sequence, or foreign table) or composite type matching the
@@ -861,6 +998,15 @@ Lists aggregate functions, together with their return type and the data types th
 is specified, only aggregates whose names match the pattern are shown\&. By default, only user\-created objects are shown; supply a pattern or the
 S
 modifier to include system objects\&.
+.RE
+.PP
+\edA[+] [ \fIpattern\fR ]
+.RS 4
+Lists access methods\&. If
+\fIpattern\fR
+is specified, only access methods whose names match the pattern are shown\&. If
++
+is appended to the command name, each access method is listed with its associated handler function and description\&.
 .RE
 .PP
 \edb[+] [ \fIpattern\fR ]
@@ -1023,7 +1169,7 @@ is used, the ACL, options, and description of the foreign\-data wrapper are also
 .PP
 \edf[antwS+] [ \fIpattern\fR ]
 .RS 4
-Lists functions, together with their arguments, return types, and function types, which are classified as
+Lists functions, together with their result data types, argument data types, and function types, which are classified as
 \(lqagg\(rq
 (aggregate),
 \(lqnormal\(rq,
@@ -1039,7 +1185,7 @@ is specified, only functions whose names match the pattern are shown\&. By defau
 S
 modifier to include system objects\&. If the form
 \edf+
-is used, additional information about each function is shown, including security classification, volatility, owner, language, source code and description\&.
+is used, additional information about each function is shown, including volatility, parallel safety, owner, security classification, access privileges, language, source code and description\&.
 .if n \{\
 .sp
 .\}
@@ -1052,7 +1198,7 @@ is used, additional information about each function is shown, including security
 \fBTip\fR
 .ps -1
 .br
-To look up functions taking arguments or returning values of a specific type, use your pager\*(Aqs search capability to scroll through the
+To look up functions taking arguments or returning values of a specific data type, use your pager\*(Aqs search capability to scroll through the
 \edf
 output\&.
 .sp .5v
@@ -1095,7 +1241,7 @@ is specified, only templates whose names match the pattern are shown\&. If the f
 is used, additional information is shown about each template, including the underlying function names\&.
 .RE
 .PP
-\edg[+] [ \fIpattern\fR ]
+\edg[S+] [ \fIpattern\fR ]
 .RS 4
 Lists database roles\&. (Since the concepts of
 \(lqusers\(rq
@@ -1103,7 +1249,9 @@ and
 \(lqgroups\(rq
 have been unified into
 \(lqroles\(rq, this command is now equivalent to
-\edu\&.) If
+\edu\&.) By default, only user\-created roles are shown; supply the
+S
+modifier to include system roles\&. If
 \fIpattern\fR
 is specified, only those roles whose names match the pattern are listed\&. If the form
 \edg+
@@ -1204,7 +1352,7 @@ S
 modifier to include system objects\&.
 .RE
 .PP
-\edu[+] [ \fIpattern\fR ]
+\edu[S+] [ \fIpattern\fR ]
 .RS 4
 Lists database roles\&. (Since the concepts of
 \(lqusers\(rq
@@ -1212,7 +1360,9 @@ and
 \(lqgroups\(rq
 have been unified into
 \(lqroles\(rq, this command is now equivalent to
-\edg\&.) If
+\edg\&.) By default, only user\-created roles are shown; supply the
+S
+modifier to include system roles\&. If
 \fIpattern\fR
 is specified, only those roles whose names match the pattern are listed\&. If the form
 \edu+
@@ -1362,6 +1512,38 @@ for how to configure and customize your editor\&.
 Sets the client character set encoding\&. Without an argument, this command shows the current encoding\&.
 .RE
 .PP
+\eerrverbose
+.RS 4
+Repeats the most recent server error message at maximum verbosity, as though
+\fIVERBOSITY\fR
+were set to
+verbose
+and
+\fISHOW_CONTEXT\fR
+were set to
+always\&.
+.RE
+.PP
+\eev [ \fIview_name\fR [ \fIline_number\fR ] ]
+.RS 4
+This command fetches and edits the definition of the named view, in the form of a
+\fBCREATE OR REPLACE VIEW\fR
+command\&. Editing is done in the same way as for
+\eedit\&. After the editor exits, the updated command waits in the query buffer; type semicolon or
+\eg
+to send it, or
+\er
+to cancel\&.
+.sp
+If no view is specified, a blank
+\fBCREATE VIEW\fR
+template is presented for editing\&.
+.sp
+If a line number is specified,
+psql
+will position the cursor on the specified line of the view definition\&.
+.RE
+.PP
 \ef [ \fIstring\fR ]
 .RS 4
 Sets the field separator for unaligned query output\&. The default is the vertical bar (|)\&. See also
@@ -1387,6 +1569,47 @@ with argument is a
 alternative to the
 \fB\eo\fR
 command\&.
+.RE
+.PP
+\egexec
+.RS 4
+Sends the current query input buffer to the server, then treats each column of each row of the query\*(Aqs output (if any) as a SQL statement to be executed\&. For example, to create an index on each column of
+my_table:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+=> \fBSELECT format(\*(Aqcreate index on my_table(%I)\*(Aq, attname)\fR
+\-> \fBFROM pg_attribute\fR
+\-> \fBWHERE attrelid = \*(Aqmy_table\*(Aq::regclass AND attnum > 0\fR
+\-> \fBORDER BY attnum\fR
+\-> \fB\egexec\fR
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The generated queries are executed in the order in which the rows are returned, and left\-to\-right within each row if there is more than one column\&. NULL fields are ignored\&. The generated queries are sent literally to the server for processing, so they cannot be
+psql
+meta\-commands nor contain
+psql
+variable references\&. If any individual query fails, execution of the remaining queries continues unless
+\fION_ERROR_STOP\fR
+is set\&. Execution of each query is subject to
+\fIECHO\fR
+processing\&. (Setting
+\fIECHO\fR
+to
+all
+or
+queries
+is often advisable when using
+\fB\egexec\fR\&.) Query logging, single\-step mode, timing, and other query execution features apply to each generated query as well\&.
 .RE
 .PP
 \egset [ \fIprefix\fR ]
@@ -1727,7 +1950,7 @@ auto\&. If
 \fIvalue\fR
 is omitted the command toggles between the on and off settings\&. When expanded mode is enabled, query results are displayed in two columns, with the column name on the left and the data on the right\&. This mode is useful if the data wouldn\*(Aqt fit on the screen in the normal
 \(lqhorizontal\(rq
-mode\&. In the auto setting, the expanded mode is used whenever the query output is wider than the screen, otherwise the regular mode is used\&. The auto setting is only effective in the aligned and wrapped formats\&. In other formats, it always behaves as if the expanded mode is off\&.
+mode\&. In the auto setting, the expanded mode is used whenever the query output has more than one column and is wider than the screen; otherwise, the regular mode is used\&. The auto setting is only effective in the aligned and wrapped formats\&. In other formats, it always behaves as if the expanded mode is off\&.
 .RE
 .PP
 fieldsep
@@ -1813,8 +2036,7 @@ linestyle
 .RS 4
 Sets the border line drawing style to one of
 ascii,
-old\-ascii
-or
+old\-ascii, or
 unicode\&. Unique abbreviations are allowed\&. (That would mean one letter is enough\&.) The default setting is
 ascii\&. This option only affects the
 aligned
@@ -1937,7 +2159,7 @@ format, this controls the proportional width of each column containing a left\-a
 \*(Aq0\&.2 0\&.2 0\&.6\*(Aq\&. Unspecified output columns use the last specified value\&.
 .RE
 .PP
-title
+title (or C)
 .RS 4
 Sets the table title for any subsequently printed tables\&. This can be used to give your output descriptive tags\&. If no
 \fIvalue\fR
@@ -2126,6 +2348,18 @@ If
 is appended to the command name, then the output lines are numbered, with the first line of the function body being line 1\&.
 .RE
 .PP
+\esv[+] \fIview_name\fR
+.RS 4
+This command fetches and shows the definition of the named view, in the form of a
+\fBCREATE OR REPLACE VIEW\fR
+command\&. The definition is printed to the current query output channel, as set by
+\fB\eo\fR\&.
+.sp
+If
++
+is appended to the command name, then the output lines are numbered from 1\&.
+.RE
+.PP
 \et
 .RS 4
 Toggles the display of output column name headings and row count footer\&. This command is equivalent to
@@ -2168,8 +2402,11 @@ or pipes it to the shell command
 .PP
 \ewatch [ \fIseconds\fR ]
 .RS 4
-Repeatedly execute the current query buffer (like
-\eg) until interrupted or the query fails\&. Wait the specified number of seconds (default 2) between executions\&.
+Repeatedly execute the current query buffer (as
+\eg
+does) until interrupted or the query fails\&. Wait the specified number of seconds (default 2) between executions\&. Each query result is displayed with a header that includes the
+\epset title
+string (if any), the time as of query start, and the delay interval\&.
 .RE
 .PP
 \ex [ \fIon\fR | \fIoff\fR | \fIauto\fR ]
@@ -2700,6 +2937,23 @@ is equivalent to the command line option
 \fB\-q\fR\&. It is probably not too useful in interactive mode\&.
 .RE
 .PP
+\fISHOW_CONTEXT\fR
+.RS 4
+This variable can be set to the values
+never,
+errors, or
+always
+to control whether
+CONTEXT
+fields are displayed in messages from the server\&. The default is
+errors
+(meaning that context will be shown in error messages, but not in notice or warning messages)\&. This setting has no effect when
+\fIVERBOSITY\fR
+is set to
+terse\&. (See also
+\fB\eerrverbose\fR, for use when you want a verbose version of the error you just got\&.)
+.RE
+.PP
 \fISINGLELINE\fR
 .RS 4
 Setting this variable to
@@ -2727,7 +2981,8 @@ This variable can be set to the values
 default,
 verbose, or
 terse
-to control the verbosity of error reports\&.
+to control the verbosity of error reports\&. (See also
+\fB\eerrverbose\fR, for use when you want a verbose version of the error you just got\&.)
 .RE
 .RE
 .sp
@@ -2830,9 +3085,9 @@ issues can be customized to your preference\&. The three variables
 \fIPROMPT3\fR
 contain strings and special escape sequences that describe the appearance of the prompt\&. Prompt 1 is the normal prompt that is issued when
 psql
-requests a new command\&. Prompt 2 is issued when more input is expected during command input because the command was not terminated with a semicolon or a quote was not closed\&. Prompt 3 is issued when you run an
-SQL\fBCOPY\fR
-command and you are expected to type in the row values on the terminal\&.
+requests a new command\&. Prompt 2 is issued when more input is expected during command entry, for example because the command was not terminated with a semicolon or a quote was not closed\&. Prompt 3 is issued when you are running an
+SQL\fBCOPY FROM STDIN\fR
+command and you need to type in a row value on the terminal\&.
 .PP
 The value of the selected prompt variable is printed literally, except where a percent sign (%) is encountered\&. Depending on the next character, certain other text is substituted instead\&. Defined substitutions are:
 .PP
@@ -2883,22 +3138,35 @@ If the session user is a database superuser, then a
 \fBSET SESSION AUTHORIZATION\fR\&.)
 .RE
 .PP
+%p
+.RS 4
+The process ID of the backend currently connected to\&.
+.RE
+.PP
 %R
 .RS 4
 In prompt 1 normally
 =, but
 ^
-if in single\-line mode, and
+if in single\-line mode, or
 !
 if the session is disconnected from the database (which can happen if
 \fB\econnect\fR
-fails)\&. In prompt 2 the sequence is replaced by
-\-,
-*, a single quote, a double quote, or a dollar sign, depending on whether
+fails)\&. In prompt 2
+%R
+is replaced by a character that depends on why
 psql
-expects more input because the command wasn\*(Aqt terminated yet, because you are inside a
+expects more input:
+\-
+if the command simply wasn\*(Aqt terminated yet, but
+*
+if there is an unfinished
 /* \&.\&.\&. */
-comment, or because you are inside a quoted or dollar\-escaped string\&. In prompt 3 the sequence doesn\*(Aqt produce anything\&.
+comment, a single quote if there is an unfinished quoted string, a double quote if there is an unfinished quoted identifier, a dollar sign if there is an unfinished dollar\-quoted string, or
+(
+if there is an unmatched left parenthesis\&. In prompt 3
+%R
+doesn\*(Aqt produce anything\&.
 .RE
 .PP
 %x
@@ -3057,7 +3325,7 @@ command\&.
 \fBPGUSER\fR
 .RS 4
 Default connection parameters (see
-Section 31.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
 .RE
 .PP
 \fBPSQL_EDITOR\fR
@@ -3067,10 +3335,10 @@ Section 31.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
 \fBVISUAL\fR
 .RS 4
 Editor used by the
-\fB\ee\fR
-and
-\fB\eef\fR
-commands\&. The variables are examined in the order listed; the first that is set is used\&.
+\fB\ee\fR,
+\fB\eef\fR, and
+\fB\eev\fR
+commands\&. These variables are examined in the order listed; the first that is set is used\&.
 .sp
 The built\-in default editors are
 vi
@@ -3082,9 +3350,9 @@ on Windows systems\&.
 \fBPSQL_EDITOR_LINENUMBER_ARG\fR
 .RS 4
 When
-\fB\ee\fR
-or
-\fB\eef\fR
+\fB\ee\fR,
+\fB\eef\fR, or
+\fB\eev\fR
 is used with a line number argument, this variable specifies the command\-line argument used to pass the starting line number to the user\*(Aqs editor\&. For editors such as
 Emacs
 or
@@ -3137,15 +3405,13 @@ PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section 31.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
 .SH "FILES"
 .PP
 psqlrc and ~/\&.psqlrc
 .RS 4
 Unless it is passed an
 \fB\-X\fR
-or
-\fB\-c\fR
 option,
 psql
 attempts to read and execute commands from the system\-wide startup file (psqlrc) and then the user\*(Aqs personal startup file (~/\&.psqlrc), after connecting to the database but before accepting normal commands\&. These files can be used to set up the client and/or the server to taste, typically with
@@ -3204,21 +3470,6 @@ environment variable\&.
 .sp -1
 .IP \(bu 2.3
 .\}
-In an earlier life
-psql
-allowed the first argument of a single\-letter backslash command to start directly after the command, without intervening whitespace\&. As of
-PostgreSQL
-8\&.4 this is no longer allowed\&.
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
 psql
 works best with servers of the same or an older major version\&. Backslash commands are particularly likely to fail if the server is of a newer version than
 psql
@@ -3231,9 +3482,41 @@ itself\&. The general functionality of running SQL commands and displaying query
 If you want to use
 psql
 to connect to several servers of different major versions, it is recommended that you use the newest version of
-psql\&. Alternatively, you can keep a copy of
+psql\&. Alternatively, you can keep around a copy of
 psql
-from each major version around and be sure to use the version that matches the respective server\&. But in practice, this additional complication should not be necessary\&.
+from each major version and be sure to use the version that matches the respective server\&. But in practice, this additional complication should not be necessary\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Before
+PostgreSQL
+9\&.6, the
+\fB\-c\fR
+option implied
+\fB\-X\fR
+(\fB\-\-no\-psqlrc\fR); this is no longer the case\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+Before
+PostgreSQL
+8\&.4,
+psql
+allowed the first argument of a single\-letter backslash command to start directly after the command, without intervening whitespace\&. Now, some whitespace is required\&.
 .RE
 .SH "NOTES FOR WINDOWS USERS"
 .PP
@@ -3412,4 +3695,57 @@ second | four
 .if n \{\
 .RE
 .\}
+.PP
+When suitable, query results can be shown in a crosstab representation with the
+\fB\ecrosstabview\fR
+command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+testdb=> \fBSELECT first, second, first > 2 AS gt2 FROM my_table;\fR
+ first | second | ge2 
+\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-+\-\-\-\-\-
+     1 | one    | f
+     2 | two    | f
+     3 | three  | t
+     4 | four   | t
+(4 rows)
+
+testdb=> \fB\ecrosstabview first second\fR
+ first | one | two | three | four 
+\-\-\-\-\-\-\-+\-\-\-\-\-+\-\-\-\-\-+\-\-\-\-\-\-\-+\-\-\-\-\-\-
+     1 | f   |     |       | 
+     2 |     | f   |       | 
+     3 |     |     | t     | 
+     4 |     |     |       | t
+(4 rows)
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+This second example shows a multiplication table with rows sorted in reverse numerical order and columns with an independent, ascending numerical order\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+testdb=> \fBSELECT t1\&.first as "A", t2\&.first+100 AS "B", t1\&.first*(t2\&.first+100) as "AxB",\fR
+testdb(> \fBrow_number() over(order by t2\&.first) AS ord\fR
+testdb(> \fBFROM my_table t1 CROSS JOIN my_table t2 ORDER BY 1 DESC\fR
+testdb(> \fB\ecrosstabview "A" "B" "AxB" ord\fR
+ A | 101 | 102 | 103 | 104 
+\-\-\-+\-\-\-\-\-+\-\-\-\-\-+\-\-\-\-\-+\-\-\-\-\-
+ 4 | 404 | 408 | 412 | 416
+ 3 | 303 | 306 | 309 | 312
+ 2 | 202 | 204 | 206 | 208
+ 1 | 101 | 102 | 103 | 104
+(4 rows)
+.fi
+.if n \{\
+.RE
+.\}
+.sp
 

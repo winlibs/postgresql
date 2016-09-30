@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 49. System Catalogs</TD
+>Chapter 50. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOG-PG-STATISTIC"
->49.45. <TT
+>50.46. <TT
 CLASS="STRUCTNAME"
 >pg_statistic</TT
 ></A
@@ -237,11 +237,11 @@ CLASS="STRUCTNAME"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN105064"
+NAME="AEN108912"
 ></A
 ><P
 ><B
->Table 49-45. <TT
+>Table 50-46. <TT
 CLASS="STRUCTNAME"
 >pg_statistic</TT
 > Columns</B
@@ -378,12 +378,12 @@ CLASS="TYPE"
 >The number of distinct nonnull data values in the column.
       A value greater than zero is the actual number of distinct values.
       A value less than zero is the negative of a multiplier for the number
-      of rows in the table; for example, a column in which values appear about
-      twice on the average could be represented by
-      <TT
+      of rows in the table; for example, a column in which about 80% of the
+      values are nonnull and each nonnull value appears about twice on
+      average could be represented by <TT
 CLASS="STRUCTFIELD"
 >stadistinct</TT
-> = -0.5.
+> = -0.4.
       A zero value means the number of distinct values is unknown.
       </TD
 ></TR

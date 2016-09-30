@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "VACUUM" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "VACUUM" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ VACUUM \- garbage\-collect and optionally analyze a database
 .SH "SYNOPSIS"
 .sp
 .nf
-VACUUM [ ( { FULL | FREEZE | VERBOSE | ANALYZE } [, \&.\&.\&.] ) ] [ \fItable_name\fR [ (\fIcolumn_name\fR [, \&.\&.\&.] ) ] ]
+VACUUM [ ( { FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING } [, \&.\&.\&.] ) ] [ \fItable_name\fR [ (\fIcolumn_name\fR [, \&.\&.\&.] ) ] ]
 VACUUM [ FULL ] [ FREEZE ] [ VERBOSE ] [ \fItable_name\fR ]
 VACUUM [ FULL ] [ FREEZE ] [ VERBOSE ] ANALYZE [ \fItable_name\fR [ (\fIcolumn_name\fR [, \&.\&.\&.] ) ] ]
 .fi
@@ -108,6 +108,14 @@ ANALYZE
 Updates statistics used by the planner to determine the most efficient way to execute a query\&.
 .RE
 .PP
+DISABLE_PAGE_SKIPPING
+.RS 4
+Normally,
+\fBVACUUM\fR
+will skip pages based on the
+visibility map\&. Pages where all tuples are known to be frozen can always be skipped, and those where all tuples are known to be visible to all transactions may be skipped except when performing an aggressive vacuum\&. Furthermore, except when performing an aggressive vacuum, some pages may be skipped in order to avoid waiting for other sessions to finish using them\&. This option disables all page\-skipping behavior, and is intended to be used only the contents of the visibility map are thought to be suspect, which should happen only if there is a hardware or software issue causing database corruption\&.
+.RE
+.PP
 \fItable_name\fR
 .RS 4
 The name (optionally schema\-qualified) of a specific table to vacuum\&. Defaults to all tables in the current database\&.
@@ -144,7 +152,7 @@ indexes,
 (in any form) also completes any pending index insertions, by moving pending index entries to the appropriate places in the main
 GIN
 index structure\&. See
-Section 61.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation
+Section 63.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation
 for details\&.
 .PP
 We recommend that active production databases be vacuumed frequently (at least nightly), in order to remove dead rows\&. After adding or deleting a large number of rows, it might be a good idea to issue a
@@ -163,14 +171,14 @@ would\&.
 .PP
 \fBVACUUM\fR
 causes a substantial increase in I/O traffic, which might cause poor performance for other active sessions\&. Therefore, it is sometimes advisable to use the cost\-based vacuum delay feature\&. See
-Section 18.4.4, \(lqCost-based Vacuum Delay\(rq, in the documentation
+Section 19.4.4, \(lqCost-based Vacuum Delay\(rq, in the documentation
 for details\&.
 .PP
 PostgreSQL
 includes an
 \(lqautovacuum\(rq
 facility which can automate routine vacuum maintenance\&. For more information about automatic and manual vacuuming, see
-Section 23.1, \(lqRoutine Vacuuming\(rq, in the documentation\&.
+Section 24.1, \(lqRoutine Vacuuming\(rq, in the documentation\&.
 .SH "EXAMPLES"
 .PP
 The following is an example from running
@@ -220,4 +228,4 @@ There is no
 \fBVACUUM\fR
 statement in the SQL standard\&.
 .SH "SEE ALSO"
-\fBvacuumdb\fR(1), Section 18.4.4, \(lqCost-based Vacuum Delay\(rq, in the documentation, Section 23.1.6, \(lqThe Autovacuum Daemon\(rq, in the documentation
+\fBvacuumdb\fR(1), Section 19.4.4, \(lqCost-based Vacuum Delay\(rq, in the documentation, Section 24.1.6, \(lqThe Autovacuum Daemon\(rq, in the documentation

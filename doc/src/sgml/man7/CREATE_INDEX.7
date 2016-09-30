@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "CREATE INDEX" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "CREATE INDEX" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -203,7 +203,7 @@ GiST indexes additionally accept this parameter:
 buffering
 .RS 4
 Determines whether the buffering build technique described in
-Section 59.4.1, \(lqGiST buffering build\(rq, in the documentation
+Section 61.4.1, \(lqGiST buffering build\(rq, in the documentation
 is used to build the index\&. With
 OFF
 it is disabled, with
@@ -220,7 +220,7 @@ GIN indexes accept different parameters:
 fastupdate
 .RS 4
 This setting controls usage of the fast update technique described in
-Section 61.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation\&. It is a Boolean parameter:
+Section 63.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation\&. It is a Boolean parameter:
 ON
 enables fast update,
 OFF
@@ -229,7 +229,7 @@ ON
 and
 OFF
 are allowed as described in
-Section 18.1, \(lqSetting Parameters\(rq, in the documentation\&.) The default is
+Section 19.1, \(lqSetting Parameters\(rq, in the documentation\&.) The default is
 ON\&.
 .if n \{\
 .sp
@@ -249,7 +249,9 @@ off via
 \fBALTER INDEX\fR
 prevents future insertions from going into the list of pending index entries, but does not in itself flush previous entries\&. You might want to
 \fBVACUUM\fR
-the table afterward to ensure the pending list is emptied\&.
+the table or call
+\fBgin_clean_pending_list\fR
+function afterward to ensure the pending list is emptied\&.
 .sp .5v
 .RE
 .RE
@@ -269,7 +271,7 @@ pages_per_range
 Defines the number of table blocks that make up one block range for each entry of a
 BRIN
 index (see
-Section 62.1, \(lqIntroduction\(rq, in the documentation
+Section 64.1, \(lqIntroduction\(rq, in the documentation
 for more details)\&. The default is
 128\&.
 .RE
@@ -368,7 +370,7 @@ int4_ops
 class; this operator class includes comparison functions for four\-byte integers\&. In practice the default operator class for the column\*(Aqs data type is usually sufficient\&. The main point of having operator classes is that for some data types, there could be more than one meaningful ordering\&. For example, we might want to sort a complex\-number data type either by absolute value or by real part\&. We could do this by defining two operator classes for the data type and then selecting the proper class when making an index\&. More information about operator classes is in
 Section 11.9, \(lqOperator Classes and Operator Families\(rq, in the documentation
 and in
-Section 35.14, \(lqInterfacing Extensions To Indexes\(rq, in the documentation\&.
+Section 36.14, \(lqInterfacing Extensions To Indexes\(rq, in the documentation\&.
 .PP
 For index methods that support ordered scans (currently, only B\-tree), the optional clauses
 ASC,
@@ -386,16 +388,7 @@ behavior, rather than the default
 \(lqnulls sort high\(rq, in queries that depend on indexes to avoid sorting steps\&.
 .PP
 For most index methods, the speed of creating an index is dependent on the setting of
-maintenance_work_mem\&. Larger values will reduce the time needed for index creation, so long as you don\*(Aqt make it larger than the amount of memory really available, which would drive the machine into swapping\&. For hash indexes, the value of
-effective_cache_size
-is also relevant to index creation time:
-PostgreSQL
-will use one of two different hash index creation methods depending on whether the estimated index size is more or less than
-\fIeffective_cache_size\fR\&. For best results, make sure that this parameter is also set to something reflective of available memory, and be careful that the sum of
-\fImaintenance_work_mem\fR
-and
-\fIeffective_cache_size\fR
-is less than the machine\*(Aqs RAM less whatever space is needed by other programs\&.
+maintenance_work_mem\&. Larger values will reduce the time needed for index creation, so long as you don\*(Aqt make it larger than the amount of memory really available, which would drive the machine into swapping\&.
 .PP
 Use
 DROP INDEX (\fBDROP_INDEX\fR(7))

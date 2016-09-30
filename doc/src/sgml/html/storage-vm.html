@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Database Physical Storage"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 63. Database Physical Storage</TD
+>Chapter 65. Database Physical Storage</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,12 +93,13 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="STORAGE-VM"
->63.4. Visibility Map</A
+>65.4. Visibility Map</A
 ></H1
 ><P
 >Each heap relation has a Visibility Map
 (VM) to keep track of which pages contain only tuples that are known to be
-visible to all active transactions. It's stored
+visible to all active transactions; it also keeps track of which pages contain
+only unfrozen tuples.  It's stored
 alongside the main relation data in a separate relation fork, named after the
 filenode number of the relation, plus a <TT
 CLASS="LITERAL"
@@ -111,19 +112,31 @@ CLASS="FILENAME"
 >, in the same directory as the main relation file.
 Note that indexes do not have VMs.</P
 ><P
->The visibility map simply stores one bit per heap page. A set bit means
-that all tuples on the page are known to be visible to all transactions.
-This means that the page does not contain any tuples that need to be vacuumed.
-This information can also be used by <I
+>The visibility map stores two bits per heap page.  The first bit, if set,
+indicates that the page is all-visible, or in other words that the page does
+not contain any tuples that need to be vacuumed.
+This information can also be used
+by <A
+HREF="indexes-index-only-scans.html"
+><I
 CLASS="FIRSTTERM"
->index-only scans</I
-> to answer
-queries using only the index tuple.</P
+>index-only
+scans</I
+></A
+> to answer queries using only the index tuple.
+The second bit, if set, means that all tuples on the page have been frozen.
+That means that even an anti-wraparound vacuum need not revisit the page.</P
 ><P
 >The map is conservative in the sense that we make sure that whenever a bit is
 set, we know the condition is true, but if a bit is not set, it might or
 might not be true. Visibility map bits are only set by vacuum, but are
 cleared by any data-modifying operations on a page.</P
+><P
+>The <A
+HREF="pgvisibility.html"
+>pg_visibility</A
+> module can be used to examine the
+information stored in the visibility map.</P
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 31. <SPAN
+>Chapter 32. <SPAN
 CLASS="APPLICATION"
 >libpq</SPAN
 > - C Library</TD
@@ -96,7 +96,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="LIBPQ-SSL"
->31.18. SSL Support</A
+>32.18. SSL Support</A
 ></H1
 ><P
 >   <SPAN
@@ -109,7 +109,7 @@ CLASS="ACRONYM"
    connections to encrypt client/server communications for increased
    security. See <A
 HREF="ssl-tcp.html"
->Section 17.9</A
+>Section 18.9</A
 > for details about the server-side
    <ACRONYM
 CLASS="ACRONYM"
@@ -146,7 +146,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LIBQ-SSL-CERTIFICATES"
->31.18.1. Client Verification of Server Certificates</A
+>32.18.1. Client Verification of Server Certificates</A
 ></H2
 ><P
 >   By default, <SPAN
@@ -201,7 +201,10 @@ CLASS="LITERAL"
 >verify-full</TT
 > mode, the host name is matched against the
    certificate's Subject Alternative Name attribute(s), or against the
-   Common Name attribute if no Subject Alternative Name of type dNSName is
+   Common Name attribute if no Subject Alternative Name of type <TT
+CLASS="LITERAL"
+>dNSName</TT
+> is
    present.  If the certificate's name attribute starts with an asterisk
    (<TT
 CLASS="LITERAL"
@@ -317,7 +320,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LIBPQ-SSL-CLIENTCERT"
->31.18.2. Client Certificates</A
+>32.18.2. Client Certificates</A
 ></H2
 ><P
 >   If the server requests a trusted client certificate,
@@ -411,7 +414,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LIBPQ-SSL-PROTECTION"
->31.18.3. Protection Provided in Different Modes</A
+>32.18.3. Protection Provided in Different Modes</A
 ></H2
 ><P
 >   The different values for the <TT
@@ -528,10 +531,10 @@ CLASS="ACRONYM"
 CLASS="ACRONYM"
 >SSL</ACRONYM
 > options carry overhead in the form of encryption and
-   key-exchange, so there is a tradeoff that has to be made between performance
+   key-exchange, so there is a trade-off that has to be made between performance
    and security. <A
 HREF="libpq-ssl.html#LIBPQ-SSL-SSLMODE-STATEMENTS"
->Table 31-1</A
+>Table 32-1</A
 >
    illustrates the risks the different <TT
 CLASS="LITERAL"
@@ -546,7 +549,7 @@ NAME="LIBPQ-SSL-SSLMODE-STATEMENTS"
 ></A
 ><P
 ><B
->Table 31-1. SSL Mode Descriptions</B
+>Table 32-1. SSL Mode Descriptions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -728,12 +731,12 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LIBPQ-SSL-FILEUSAGE"
->31.18.4. SSL Client File Usage</A
+>32.18.4. SSL Client File Usage</A
 ></H2
 ><P
 >   <A
 HREF="libpq-ssl.html#LIBPQ-SSL-FILE-USAGE"
->Table 31-2</A
+>Table 32-2</A
 > summarizes the files that are
    relevant to the SSL setup on the client.
   </P
@@ -744,7 +747,7 @@ NAME="LIBPQ-SSL-FILE-USAGE"
 ></A
 ><P
 ><B
->Table 31-2. Libpq/Client SSL File Usage</B
+>Table 32-2. Libpq/Client SSL File Usage</B
 ></P
 ><TABLE
 BORDER="1"
@@ -816,7 +819,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LIBPQ-SSL-INITIALIZE"
->31.18.5. SSL Library Initialization</A
+>32.18.5. SSL Library Initialization</A
 ></H2
 ><P
 >   If your application initializes <TT

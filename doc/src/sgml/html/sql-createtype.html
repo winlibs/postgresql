@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETYPE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN80279"
+NAME="AEN83646"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN80279"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN80282"
+NAME="AEN83649"
 ></A
 ><H2
 >Synopsis</H2
@@ -304,7 +304,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80315"
+NAME="AEN83682"
 ></A
 ><H2
 >Description</H2
@@ -359,7 +359,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80328"
+NAME="AEN83695"
 ></A
 ><H3
 >Composite Types</H3
@@ -522,7 +522,7 @@ HREF="rangetypes.html#RANGETYPES-DEFINING"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80362"
+NAME="AEN83729"
 ></A
 ><H3
 >Base Types</H3
@@ -872,7 +872,7 @@ CLASS="REPLACEABLE"
 >internallength</I
 ></TT
 > is a
-   positive integer, or variable  length, indicated by setting
+   positive integer, or variable-length, indicated by setting
    <TT
 CLASS="REPLACEABLE"
 ><I
@@ -891,7 +891,7 @@ CLASS="LITERAL"
    length of this value of the type.  (Note that the length field is often
    encoded, as described in <A
 HREF="storage-toast.html"
->Section 63.2</A
+>Section 65.2</A
 >; it's unwise
    to access it directly.)
   </P
@@ -984,10 +984,10 @@ CLASS="FIRSTTERM"
 >, as described
    in <A
 HREF="storage-toast.html"
->Section 63.2</A
+>Section 65.2</A
 > and <A
 HREF="xtypes.html#XTYPES-TOAST"
->Section 35.11.1</A
+>Section 36.11.1</A
 >.
    The specific other value given merely determines the default TOAST
    storage strategy for columns of a toastable data type; users can pick
@@ -1151,7 +1151,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN80480"
+NAME="AEN83847"
 ></A
 ><H3
 >Array Types</H3
@@ -1225,7 +1225,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80495"
+NAME="AEN83862"
 ></A
 ><H2
 >Parameters</H2
@@ -1573,7 +1573,7 @@ CLASS="QUOTE"
       Other standard category codes can be found in
       <A
 HREF="catalog-pg-type.html#CATALOG-TYPCATEGORY-TABLE"
->Table 49-55</A
+>Table 50-56</A
 >.  You may also choose
       other ASCII characters in order to create custom categories.
      </P
@@ -1761,7 +1761,7 @@ CLASS="TYPE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80668"
+NAME="AEN84035"
 ></A
 ><H2
 >Examples</H2
@@ -1863,7 +1863,7 @@ CREATE TABLE big_objs (
 >   More examples, including suitable input and output functions, are
    in <A
 HREF="xtypes.html"
->Section 35.11</A
+>Section 36.11</A
 >.
   </P
 ></DIV

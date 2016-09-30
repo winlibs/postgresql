@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Definition"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -187,7 +187,7 @@ CLASS="COMMAND"
    used. For example, if <TT
 CLASS="LITERAL"
 >joe</TT
-> is an existing user, and
+> is an existing role, and
    <TT
 CLASS="LITERAL"
 >accounts</TT
@@ -206,12 +206,12 @@ CLASS="LITERAL"
 ><P
 >   The special <SPAN
 CLASS="QUOTE"
->"user"</SPAN
+>"role"</SPAN
 > name <TT
 CLASS="LITERAL"
 >PUBLIC</TT
 > can
-   be used to grant a privilege to every user on the system.  Also,
+   be used to grant a privilege to every role on the system.  Also,
    <SPAN
 CLASS="QUOTE"
 >"group"</SPAN
@@ -219,7 +219,7 @@ CLASS="QUOTE"
    there are many users of a database &mdash; for details see
    <A
 HREF="user-manag.html"
->Chapter 20</A
+>Chapter 21</A
 >.
   </P
 ><P
@@ -245,8 +245,8 @@ CLASS="COMMAND"
 >, etc.)
    are always implicit in being the owner,
    and cannot be granted or revoked.  But the object owner can choose
-   to revoke his own ordinary privileges, for example to make a
-   table read-only for himself as well as others.
+   to revoke their own ordinary privileges, for example to make a
+   table read-only for themselves as well as others.
   </P
 ><P
 >   Ordinarily, only the object's owner (or a superuser) can grant or

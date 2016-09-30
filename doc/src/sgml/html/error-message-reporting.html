@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Coding Conventions"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 51. PostgreSQL Coding Conventions</TD
+>Chapter 52. PostgreSQL Coding Conventions</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="ERROR-MESSAGE-REPORTING"
->51.2. Reporting Errors Within the Server</A
+>52.2. Reporting Errors Within the Server</A
 ></H1
 ><P
 >    Error, warning, and log messages generated within the server code
@@ -277,8 +277,8 @@ CLASS="LITERAL"
 >errno</TT
 >.
      <A
-NAME="AEN110645"
-HREF="#FTN.AEN110645"
+NAME="AEN114602"
+HREF="#FTN.AEN114602"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN
@@ -350,7 +350,7 @@ CLASS="REPLACEABLE"
      to the selected format string.  For more information see
      <A
 HREF="nls-programmer.html#NLS-GUIDELINES"
->Section 52.2.2</A
+>Section 53.2.2</A
 >.
     </P
 ></LI
@@ -401,7 +401,7 @@ CLASS="FUNCTION"
      support for various plural forms of the message.
      For more information see <A
 HREF="nls-programmer.html#NLS-GUIDELINES"
->Section 52.2.2</A
+>Section 53.2.2</A
 >.
     </P
 ></LI
@@ -443,7 +443,7 @@ CLASS="FUNCTION"
      the message.
      For more information see <A
 HREF="nls-programmer.html#NLS-GUIDELINES"
->Section 52.2.2</A
+>Section 53.2.2</A
 >.
     </P
 ></LI
@@ -608,6 +608,21 @@ CLASS="LITERAL"
      includes the current statement already.
     </P
 ></LI
+><LI
+><P
+>     <CODE
+CLASS="FUNCTION"
+>errhidecontext(bool hide_ctx)</CODE
+> can be called to
+     specify suppression of the <TT
+CLASS="LITERAL"
+>CONTEXT:</TT
+> portion of a message in
+     the postmaster log.  This should only be used for verbose debugging
+     messages where the repeated inclusion of context would bloat the log
+     volume too much.
+    </P
+></LI
 ></UL
 ><P>
    </P
@@ -697,7 +712,7 @@ CLASS="FUNCTION"
 >    Advice about writing good error messages can be found in
     <A
 HREF="error-style-guide.html"
->Section 51.3</A
+>Section 52.3</A
 >.
    </P
 ></DIV
@@ -714,8 +729,8 @@ ALIGN="LEFT"
 VALIGN="TOP"
 WIDTH="5%"
 ><A
-NAME="FTN.AEN110645"
-HREF="error-message-reporting.html#AEN110645"
+NAME="FTN.AEN114602"
+HREF="error-message-reporting.html#AEN114602"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN

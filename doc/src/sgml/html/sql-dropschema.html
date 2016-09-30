@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-DROPSCHEMA"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN82972"
+NAME="AEN86418"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN82972"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN82975"
+NAME="AEN86421"
 ></A
 ><H2
 >Synopsis</H2
@@ -119,7 +119,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82978"
+NAME="AEN86424"
 ></A
 ><H2
 >Description</H2
@@ -132,13 +132,13 @@ CLASS="COMMAND"
 ><P
 >   A schema can only be dropped by its owner or a superuser.  Note that
    the owner can drop the schema (and thereby all contained objects)
-   even if he does not own some of the objects within the schema.
+   even if they do not own some of the objects within the schema.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82983"
+NAME="AEN86429"
 ></A
 ><H2
 >Parameters</H2
@@ -178,7 +178,12 @@ CLASS="LITERAL"
 ><DD
 ><P
 >      Automatically drop objects (tables, functions, etc.) that are
-      contained in the schema.
+      contained in the schema,
+      and in turn all objects that depend on those objects
+      (see <A
+HREF="ddl-depend.html"
+>Section 5.13</A
+>).
      </P
 ></DD
 ><DT
@@ -198,7 +203,22 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83006"
+NAME="AEN86453"
+></A
+><H2
+>Notes</H2
+><P
+>   Using the <TT
+CLASS="LITERAL"
+>CASCADE</TT
+> option might make the command
+   remove objects in other schemas besides the one(s) named.
+  </P
+></DIV
+><DIV
+CLASS="REFSECT1"
+><A
+NAME="AEN86457"
 ></A
 ><H2
 >Examples</H2
@@ -217,7 +237,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83011"
+NAME="AEN86462"
 ></A
 ><H2
 >Compatibility</H2
@@ -241,7 +261,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN83017"
+NAME="AEN86468"
 ></A
 ><H2
 >See Also</H2

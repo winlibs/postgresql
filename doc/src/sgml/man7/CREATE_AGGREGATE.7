@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "CREATE AGGREGATE" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "CREATE AGGREGATE" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,6 +38,9 @@ CREATE AGGREGATE \fIname\fR ( [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_ty
     [ , SSPACE = \fIstate_data_size\fR ]
     [ , FINALFUNC = \fIffunc\fR ]
     [ , FINALFUNC_EXTRA ]
+    [ , COMBINEFUNC = \fIcombinefunc\fR ]
+    [ , SERIALFUNC = \fIserialfunc\fR ]
+    [ , DESERIALFUNC = \fIdeserialfunc\fR ]
     [ , INITCOND = \fIinitial_condition\fR ]
     [ , MSFUNC = \fImsfunc\fR ]
     [ , MINVFUNC = \fIminvfunc\fR ]
@@ -47,6 +50,7 @@ CREATE AGGREGATE \fIname\fR ( [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_ty
     [ , MFINALFUNC_EXTRA ]
     [ , MINITCOND = \fIminitial_condition\fR ]
     [ , SORTOP = \fIsort_operator\fR ]
+    [ , PARALLEL = { SAFE | RESTRICTED | UNSAFE } ]
 )
 
 CREATE AGGREGATE \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_type\fR [ , \&.\&.\&. ] ]
@@ -57,6 +61,7 @@ CREATE AGGREGATE \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_
     [ , FINALFUNC = \fIffunc\fR ]
     [ , FINALFUNC_EXTRA ]
     [ , INITCOND = \fIinitial_condition\fR ]
+    [ , PARALLEL = { SAFE | RESTRICTED | UNSAFE } ]
     [ , HYPOTHETICAL ]
 )
 
@@ -69,6 +74,9 @@ CREATE AGGREGATE \fIname\fR (
     [ , SSPACE = \fIstate_data_size\fR ]
     [ , FINALFUNC = \fIffunc\fR ]
     [ , FINALFUNC_EXTRA ]
+    [ , COMBINEFUNC = \fIcombinefunc\fR ]
+    [ , SERIALFUNC = \fIserialfunc\fR ]
+    [ , DESERIALFUNC = \fIdeserialfunc\fR ]
     [ , INITCOND = \fIinitial_condition\fR ]
     [ , MSFUNC = \fImsfunc\fR ]
     [ , MINVFUNC = \fIminvfunc\fR ]
@@ -139,7 +147,7 @@ to identify the actual argument type in the current call\&.
 .PP
 An aggregate can optionally support
 moving\-aggregate mode, as described in
-Section 35.10.1, \(lqMoving-Aggregate Mode\(rq, in the documentation\&. This requires specifying the
+Section 36.10.1, \(lqMoving-Aggregate Mode\(rq, in the documentation\&. This requires specifying the
 MSFUNC,
 MINVFUNC, and
 MSTYPE
@@ -164,6 +172,21 @@ direct
 arguments, which are arguments that are evaluated only once per aggregation rather than once per input row\&. Hypothetical\-set aggregates are a subclass of ordered\-set aggregates in which some of the direct arguments are required to match, in number and data types, the aggregated argument columns\&. This allows the values of those direct arguments to be added to the collection of aggregate\-input rows as an additional
 \(lqhypothetical\(rq
 row\&.
+.PP
+An aggregate can optionally support
+partial aggregation, as described in
+Section 36.10.4, \(lqPartial Aggregation\(rq, in the documentation\&. This requires specifying the
+COMBINEFUNC
+parameter\&. If the
+\fIstate_data_type\fR
+is
+internal, it\*(Aqs usually also appropriate to provide the
+SERIALFUNC
+and
+DESERIALFUNC
+parameters so that parallel aggregation is possible\&. Note that the aggregate must also be marked
+PARALLEL SAFE
+to enable parallel aggregation\&.
 .PP
 Aggregates that behave like
 \fBMIN\fR
@@ -210,7 +233,7 @@ To be able to create an aggregate function, you must have
 USAGE
 privilege on the argument types, the state type(s), and the return type, as well as
 EXECUTE
-privilege on the transition and final functions\&.
+privilege on the supporting functions\&.
 .SH "PARAMETERS"
 .PP
 \fIname\fR
@@ -297,6 +320,67 @@ FINALFUNC_EXTRA
 is specified, then in addition to the final state value and any direct arguments, the final function receives extra NULL values corresponding to the aggregate\*(Aqs regular (aggregated) arguments\&. This is mainly useful to allow correct resolution of the aggregate result type when a polymorphic aggregate is being defined\&.
 .RE
 .PP
+\fIcombinefunc\fR
+.RS 4
+The
+\fIcombinefunc\fR
+function may optionally be specified to allow the aggregate function to support partial aggregation\&. If provided, the
+\fIcombinefunc\fR
+must combine two
+\fIstate_data_type\fR
+values, each containing the result of aggregation over some subset of the input values, to produce a new
+\fIstate_data_type\fR
+that represents the result of aggregating over both sets of inputs\&. This function can be thought of as an
+\fIsfunc\fR, where instead of acting upon an individual input row and adding it to the running aggregate state, it adds another aggregate state to the running state\&.
+.sp
+The
+\fIcombinefunc\fR
+must be declared as taking two arguments of the
+\fIstate_data_type\fR
+and returning a value of the
+\fIstate_data_type\fR\&. Optionally this function may be
+\(lqstrict\(rq\&. In this case the function will not be called when either of the input states are null; the other state will be taken as the correct result\&.
+.sp
+For aggregate functions whose
+\fIstate_data_type\fR
+is
+internal, the
+\fIcombinefunc\fR
+must not be strict\&. In this case the
+\fIcombinefunc\fR
+must ensure that null states are handled correctly and that the state being returned is properly stored in the aggregate memory context\&.
+.RE
+.PP
+\fIserialfunc\fR
+.RS 4
+An aggregate function whose
+\fIstate_data_type\fR
+is
+internal
+can participate in parallel aggregation only if it has a
+\fIserialfunc\fR
+function, which must serialize the aggregate state into a
+bytea
+value for transmission to another process\&. This function must take a single argument of type
+internal
+and return type
+bytea\&. A corresponding
+\fIdeserialfunc\fR
+is also required\&.
+.RE
+.PP
+\fIdeserialfunc\fR
+.RS 4
+Deserialize a previously serialized aggregate state back into
+\fIstate_data_type\fR\&. This function must take two arguments of types
+bytea
+and
+internal, and produce a result of type
+internal\&. (Note: the second,
+internal
+argument is unused, but is required for type safety reasons\&.)
+.RE
+.PP
 \fIinitial_condition\fR
 .RS 4
 The initial setting for the state value\&. This must be a string constant in the form accepted for the data type
@@ -353,6 +437,19 @@ The associated sort operator for a
 \fBMAX\fR\-like aggregate\&. This is just an operator name (possibly schema\-qualified)\&. The operator is assumed to have the same input data types as the aggregate (which must be a single\-argument normal aggregate)\&.
 .RE
 .PP
+PARALLEL
+.RS 4
+The meanings of
+PARALLEL SAFE,
+PARALLEL RESTRICTED, and
+PARALLEL UNSAFE
+are the same as for
+CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7))\&. An aggregate will not be considered for parallelization if it is marked
+PARALLEL UNSAFE
+(which is the default!) or
+PARALLEL RESTRICTED\&. Note that the parallel\-safety markings of the aggregate\*(Aqs support functions are not consulted by the planner, only the marking of the aggregate itself\&.
+.RE
+.PP
 HYPOTHETICAL
 .RS 4
 For ordered\-set aggregates only, this flag specifies that the aggregate arguments are to be processed according to the requirements for hypothetical\-set aggregates: that is, the last few direct arguments must match the data types of the aggregated (WITHIN GROUP) arguments\&. The
@@ -397,10 +494,16 @@ VARIADIC "any"
 parameter are the hypothetical ones; any preceding parameters represent additional direct arguments that are not constrained to match the aggregated arguments\&.
 .PP
 Currently, ordered\-set aggregates do not need to support moving\-aggregate mode, since they cannot be used as window functions\&.
+.PP
+Partial (including parallel) aggregation is currently not supported for ordered\-set aggregates\&. Also, it will never be used for aggregate calls that include
+DISTINCT
+or
+ORDER BY
+clauses, since those semantics cannot be supported during partial aggregation\&.
 .SH "EXAMPLES"
 .PP
 See
-Section 35.10, \(lqUser-defined Aggregates\(rq, in the documentation\&.
+Section 36.10, \(lqUser-defined Aggregates\(rq, in the documentation\&.
 .SH "COMPATIBILITY"
 .PP
 \fBCREATE AGGREGATE\fR

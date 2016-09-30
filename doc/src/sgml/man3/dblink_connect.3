@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "DBLINK_CONNECT" "3" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "DBLINK_CONNECT" "3" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -61,7 +61,7 @@ The name to use for this connection; if omitted, an unnamed connection is opened
 .RS 4
 libpq\-style connection info string, for example
 hostaddr=127\&.0\&.0\&.1 port=5432 dbname=mydb user=postgres password=mypasswd\&. For details see
-Section 31.1.1, \(lqConnection Strings\(rq, in the documentation\&. Alternatively, the name of a foreign server\&.
+Section 32.1.1, \(lqConnection Strings\(rq, in the documentation\&. Alternatively, the name of a foreign server\&.
 .RE
 .SH "RETURN VALUE"
 .PP
@@ -107,13 +107,13 @@ SELECT dblink_connect(\*(Aqmyconn\*(Aq, \*(Aqdbname=postgres\*(Aq);
 
 CREATE SERVER fdtest FOREIGN DATA WRAPPER dblink_fdw OPTIONS (hostaddr \*(Aq127\&.0\&.0\&.1\*(Aq, dbname \*(Aqcontrib_regression\*(Aq);
 
-CREATE USER dblink_regression_test WITH PASSWORD \*(Aqsecret\*(Aq;
-CREATE USER MAPPING FOR dblink_regression_test SERVER fdtest OPTIONS (user \*(Aqdblink_regression_test\*(Aq, password \*(Aqsecret\*(Aq);
-GRANT USAGE ON FOREIGN SERVER fdtest TO dblink_regression_test;
-GRANT SELECT ON TABLE foo TO dblink_regression_test;
+CREATE USER regress_dblink_user WITH PASSWORD \*(Aqsecret\*(Aq;
+CREATE USER MAPPING FOR regress_dblink_user SERVER fdtest OPTIONS (user \*(Aqregress_dblink_user\*(Aq, password \*(Aqsecret\*(Aq);
+GRANT USAGE ON FOREIGN SERVER fdtest TO regress_dblink_user;
+GRANT SELECT ON TABLE foo TO regress_dblink_user;
 
 \eset ORIGINAL_USER :USER
-\ec \- dblink_regression_test
+\ec \- regress_dblink_user
 SELECT dblink_connect(\*(Aqmyconn\*(Aq, \*(Aqfdtest\*(Aq);
  dblink_connect 
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
@@ -137,10 +137,10 @@ SELECT * FROM dblink(\*(Aqmyconn\*(Aq,\*(AqSELECT * FROM foo\*(Aq) AS t(a int, b
 (11 rows)
 
 \ec \- :ORIGINAL_USER
-REVOKE USAGE ON FOREIGN SERVER fdtest FROM dblink_regression_test;
-REVOKE SELECT ON TABLE foo FROM dblink_regression_test;
-DROP USER MAPPING FOR dblink_regression_test SERVER fdtest;
-DROP USER dblink_regression_test;
+REVOKE USAGE ON FOREIGN SERVER fdtest FROM regress_dblink_user;
+REVOKE SELECT ON TABLE foo FROM regress_dblink_user;
+DROP USER MAPPING FOR regress_dblink_user SERVER fdtest;
+DROP USER regress_dblink_user;
 DROP SERVER fdtest;
 .fi
 .if n \{\

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "CREATE ROLE" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "CREATE ROLE" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,7 +39,6 @@ where \fIoption\fR can be:
       SUPERUSER | NOSUPERUSER
     | CREATEDB | NOCREATEDB
     | CREATEROLE | NOCREATEROLE
-    | CREATEUSER | NOCREATEUSER
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
     | REPLICATION | NOREPLICATION
@@ -62,9 +61,9 @@ PostgreSQL
 database cluster\&. A role is an entity that can own database objects and have database privileges; a role can be considered a
 \(lquser\(rq, a
 \(lqgroup\(rq, or both depending on how it is used\&. Refer to
-Chapter 20, Database Roles, in the documentation
+Chapter 21, Database Roles, in the documentation
 and
-Chapter 19, Client Authentication, in the documentation
+Chapter 20, Client Authentication, in the documentation
 for information about managing users and authentication\&. You must have
 CREATEROLE
 privilege or be a database superuser to use this command\&.
@@ -110,20 +109,6 @@ CREATEROLE
 privilege can also alter and drop other roles\&. If not specified,
 NOCREATEROLE
 is the default\&.
-.RE
-.PP
-CREATEUSER
-.br
-NOCREATEUSER
-.RS 4
-These clauses are an obsolete, but still accepted, spelling of
-SUPERUSER
-and
-NOSUPERUSER\&. Note that they are
-\fInot\fR
-equivalent to
-CREATEROLE
-as one might naively expect!
 .RE
 .PP
 INHERIT

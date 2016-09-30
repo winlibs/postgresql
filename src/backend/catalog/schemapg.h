@@ -3,7 +3,7 @@
  * schemapg.h
  *    Schema_pg_xxx macros for use by relcache.c
  *
- * Portions Copyright (c) 1996-2015, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * NOTES
@@ -34,19 +34,20 @@
 { 1255, {"proisstrict"}, 16, -1, 1, 13, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
 { 1255, {"proretset"}, 16, -1, 1, 14, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
 { 1255, {"provolatile"}, 18, -1, 1, 15, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
-{ 1255, {"pronargs"}, 21, -1, 2, 16, 0, -1, -1, true, 'p', 's', true, false, false, true, 0, 0 }, \
-{ 1255, {"pronargdefaults"}, 21, -1, 2, 17, 0, -1, -1, true, 'p', 's', true, false, false, true, 0, 0 }, \
-{ 1255, {"prorettype"}, 26, -1, 4, 18, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
-{ 1255, {"proargtypes"}, 30, -1, -1, 19, 1, -1, -1, false, 'p', 'i', true, false, false, true, 0, 0 }, \
-{ 1255, {"proallargtypes"}, 1028, -1, -1, 20, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
-{ 1255, {"proargmodes"}, 1002, -1, -1, 21, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
-{ 1255, {"proargnames"}, 1009, -1, -1, 22, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
-{ 1255, {"proargdefaults"}, 194, -1, -1, 23, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
-{ 1255, {"protrftypes"}, 1028, -1, -1, 24, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
-{ 1255, {"prosrc"}, 25, -1, -1, 25, 0, -1, -1, false, 'x', 'i', true, false, false, true, 0, 100 }, \
-{ 1255, {"probin"}, 25, -1, -1, 26, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
-{ 1255, {"proconfig"}, 1009, -1, -1, 27, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
-{ 1255, {"proacl"}, 1034, -1, -1, 28, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }
+{ 1255, {"proparallel"}, 18, -1, 1, 16, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }, \
+{ 1255, {"pronargs"}, 21, -1, 2, 17, 0, -1, -1, true, 'p', 's', true, false, false, true, 0, 0 }, \
+{ 1255, {"pronargdefaults"}, 21, -1, 2, 18, 0, -1, -1, true, 'p', 's', true, false, false, true, 0, 0 }, \
+{ 1255, {"prorettype"}, 26, -1, 4, 19, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
+{ 1255, {"proargtypes"}, 30, -1, -1, 20, 1, -1, -1, false, 'p', 'i', true, false, false, true, 0, 0 }, \
+{ 1255, {"proallargtypes"}, 1028, -1, -1, 21, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
+{ 1255, {"proargmodes"}, 1002, -1, -1, 22, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
+{ 1255, {"proargnames"}, 1009, -1, -1, 23, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
+{ 1255, {"proargdefaults"}, 194, -1, -1, 24, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
+{ 1255, {"protrftypes"}, 1028, -1, -1, 25, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }, \
+{ 1255, {"prosrc"}, 25, -1, -1, 26, 0, -1, -1, false, 'x', 'i', true, false, false, true, 0, 100 }, \
+{ 1255, {"probin"}, 25, -1, -1, 27, 0, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
+{ 1255, {"proconfig"}, 1009, -1, -1, 28, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 100 }, \
+{ 1255, {"proacl"}, 1034, -1, -1, 29, 1, -1, -1, false, 'x', 'i', false, false, false, true, 0, 0 }
 
 #define Schema_pg_type \
 { 1247, {"typname"}, 19, -1, NAMEDATALEN, 1, 0, -1, -1, false, 'p', 'c', true, false, false, true, 0, 0 }, \
@@ -190,5 +191,11 @@
 { 1261, {"member"}, 26, -1, 4, 2, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
 { 1261, {"grantor"}, 26, -1, 4, 3, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
 { 1261, {"admin_option"}, 16, -1, 1, 4, 0, -1, -1, true, 'p', 'c', true, false, false, true, 0, 0 }
+
+#define Schema_pg_shseclabel \
+{ 3592, {"objoid"}, 26, -1, 4, 1, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
+{ 3592, {"classoid"}, 26, -1, 4, 2, 0, -1, -1, true, 'p', 'i', true, false, false, true, 0, 0 }, \
+{ 3592, {"provider"}, 25, -1, -1, 3, 0, -1, -1, false, 'x', 'i', true, false, false, true, 0, 100 }, \
+{ 3592, {"label"}, 25, -1, -1, 4, 0, -1, -1, false, 'x', 'i', true, false, false, true, 0, 100 }
 
 #endif /* SCHEMAPG_H */

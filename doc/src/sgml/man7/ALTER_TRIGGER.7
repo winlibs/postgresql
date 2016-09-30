@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "ALTER TRIGGER" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "ALTER TRIGGER" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,13 +33,16 @@ ALTER_TRIGGER \- change the definition of a trigger
 .sp
 .nf
 ALTER TRIGGER \fIname\fR ON \fItable_name\fR RENAME TO \fInew_name\fR
+ALTER TRIGGER \fIname\fR ON \fItable_name\fR DEPENDS ON EXTENSION \fIextension_name\fR
 .fi
 .SH "DESCRIPTION"
 .PP
 \fBALTER TRIGGER\fR
 changes properties of an existing trigger\&. The
 RENAME
-clause changes the name of the given trigger without otherwise changing the trigger definition\&.
+clause changes the name of the given trigger without otherwise changing the trigger definition\&. The
+DEPENDS ON EXTENSION
+clause marks the trigger as dependent on an extension, such that if the extension is dropped, the trigger will automatically be dropped as well\&.
 .PP
 You must own the table on which the trigger acts to be allowed to change its properties\&.
 .SH "PARAMETERS"
@@ -58,6 +61,11 @@ The name of the table on which this trigger acts\&.
 .RS 4
 The new name for the trigger\&.
 .RE
+.PP
+\fIextension_name\fR
+.RS 4
+The name of the extension that the trigger is to depend on\&.
+.RE
 .SH "NOTES"
 .PP
 The ability to temporarily enable or disable a trigger is provided by
@@ -74,6 +82,18 @@ To rename an existing trigger:
 .\}
 .nf
 ALTER TRIGGER emp_stamp ON emp RENAME TO emp_track_chgs;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To mark a trigger as being dependent on an extension:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER TRIGGER emp_stamp ON emp DEPENDS ON EXTENSION emplib;
 .fi
 .if n \{\
 .RE

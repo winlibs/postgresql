@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Routine Database Maintenance Tasks"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 23. Routine Database Maintenance Tasks</TD
+>Chapter 24. Routine Database Maintenance Tasks</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="ROUTINE-VACUUMING"
->23.1. Routine Vacuuming</A
+>24.1. Routine Vacuuming</A
 ></H1
 ><P
 >   <SPAN
@@ -110,7 +110,7 @@ CLASS="FIRSTTERM"
    daemon</I
 >, which is described in <A
 HREF="routine-vacuuming.html#AUTOVACUUM"
->Section 23.1.6</A
+>Section 24.1.6</A
 >.  You might
    need to adjust the autovacuuming parameters described there to obtain best
    results for your situation.  Some database administrators will want to
@@ -137,7 +137,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="VACUUM-BASICS"
->23.1.1. Vacuuming Basics</A
+>24.1.1. Vacuuming Basics</A
 ></H2
 ><P
 >    <SPAN
@@ -169,8 +169,12 @@ CLASS="PRODUCTNAME"
 ></LI
 ><LI
 ><P
->To update the visibility map, which speeds up index-only
-      scans.</P
+>To update the visibility map, which speeds
+      up <A
+HREF="indexes-index-only-scans.html"
+>index-only
+      scans</A
+>.</P
 ></LI
 ><LI
 ><P
@@ -258,7 +262,7 @@ CLASS="COMMAND"
     performance impact of background vacuuming &mdash; see
     <A
 HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-VACUUM-COST"
->Section 18.4.4</A
+>Section 19.4.4</A
 >.
    </P
 ></DIV
@@ -268,7 +272,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="VACUUM-FOR-SPACE-RECOVERY"
->23.1.2. Recovering Disk Space</A
+>24.1.2. Recovering Disk Space</A
 ></H2
 ><P
 >    In <SPAN
@@ -472,7 +476,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="VACUUM-FOR-STATISTICS"
->23.1.3. Updating Planner Statistics</A
+>24.1.3. Updating Planner Statistics</A
 ></H2
 ><P
 >    The <SPAN
@@ -616,7 +620,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="VACUUM-FOR-VISIBILITY-MAP"
->23.1.4. Updating The Visibility Map</A
+>24.1.4. Updating The Visibility Map</A
 ></H2
 ><P
 >    Vacuum maintains a <A
@@ -641,12 +645,17 @@ CLASS="PRODUCTNAME"
 > indexes don't contain tuple
     visibility information, a normal index scan fetches the heap tuple for each
     matching index entry, to check whether it should be seen by the current
-    transaction.  An <I
+    transaction.
+    An <A
+HREF="indexes-index-only-scans.html"
+><I
 CLASS="FIRSTTERM"
->index-only scan</I
->, on the other hand, checks
-    the visibility map first.  If it's known that all tuples on the page are
-    visible, the heap fetch can be skipped.  This is most noticeable on
+>index-only
+    scan</I
+></A
+>, on the other hand, checks the visibility map first.
+    If it's known that all tuples on the page are
+    visible, the heap fetch can be skipped.  This is most useful on
     large data sets where the visibility map can prevent disk accesses.
     The visibility map is vastly smaller than the heap, so it can easily be
     cached even when the heap is very large.
@@ -658,13 +667,17 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="VACUUM-FOR-WRAPAROUND"
->23.1.5. Preventing Transaction ID Wraparound Failures</A
+>24.1.5. Preventing Transaction ID Wraparound Failures</A
 ></H2
 ><P
 >    <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
->'s MVCC transaction semantics
+>'s
+    <A
+HREF="mvcc-intro.html"
+>MVCC</A
+> transaction semantics
     depend on being able to compare transaction ID (<ACRONYM
 CLASS="ACRONYM"
 >XID</ACRONYM
@@ -699,19 +712,10 @@ CLASS="EMPHASIS"
 >frozen</I
 ></SPAN
 >, indicating that
-    they were inserted by a transaction which committed sufficiently far in
-    the past that the effects of the inserting transaction is certain to be
-    visible, from an MVCC perspective, to all current and future transactions.
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> reserves a special XID,
-    <TT
-CLASS="LITERAL"
->FrozenTransactionId</TT
->, which does not follow the normal XID
-    comparison rules and is always considered older
-    than every normal XID. Normal XIDs are
+    they were inserted by a transaction that committed sufficiently far in
+    the past that the effects of the inserting transaction are certain to be
+    visible to all current and future transactions.
+    Normal XIDs are
     compared using modulo-2<SUP
 >32</SUP
 > arithmetic. This means
@@ -732,7 +736,17 @@ CLASS="QUOTE"
     the next two billion transactions, no matter which normal XID we are
     talking about. If the row version still exists after more than two billion
     transactions, it will suddenly appear to be in the future. To
-    prevent this, frozen row versions are treated as if the inserting XID were
+    prevent this, <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> reserves a special XID,
+    <TT
+CLASS="LITERAL"
+>FrozenTransactionId</TT
+>, which does not follow the normal XID
+    comparison rules and is always considered older
+    than every normal XID.
+    Frozen row versions are treated as if the inserting XID were
     <TT
 CLASS="LITERAL"
 >FrozenTransactionId</TT
@@ -744,12 +758,70 @@ CLASS="QUOTE"
     issues, and so such row versions will be valid until deleted, no matter
     how long that is.
    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>     In <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> versions before 9.4, freezing was
+     implemented by actually replacing a row's insertion XID
+     with <TT
+CLASS="LITERAL"
+>FrozenTransactionId</TT
+>, which was visible in the
+     row's <TT
+CLASS="STRUCTNAME"
+>xmin</TT
+> system column.  Newer versions just set a flag
+     bit, preserving the row's original <TT
+CLASS="STRUCTNAME"
+>xmin</TT
+> for possible
+     forensic use.  However, rows with <TT
+CLASS="STRUCTNAME"
+>xmin</TT
+> equal
+     to <TT
+CLASS="LITERAL"
+>FrozenTransactionId</TT
+> (2) may still be found
+     in databases <SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+>'d from pre-9.4 versions.
+    </P
+><P
+>     Also, system catalogs may contain rows with <TT
+CLASS="STRUCTNAME"
+>xmin</TT
+> equal
+     to <TT
+CLASS="LITERAL"
+>BootstrapTransactionId</TT
+> (1), indicating that they were
+     inserted during the first phase of <SPAN
+CLASS="APPLICATION"
+>initdb</SPAN
+>.
+     Like <TT
+CLASS="LITERAL"
+>FrozenTransactionId</TT
+>, this special XID is treated as
+     older than every normal XID.
+    </P
+></BLOCKQUOTE
+></DIV
 ><P
 >    <A
 HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-MIN-AGE"
 >vacuum_freeze_min_age</A
 >
-    controls how old an XID value has to be before its row version will be
+    controls how old an XID value has to be before rows bearing that XID will be
     frozen.  Increasing this setting may avoid unnecessary work if the
     rows that would otherwise be frozen will soon be modified again,
     but decreasing this setting increases
@@ -760,31 +832,51 @@ HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-MIN-AGE"
 >    <TT
 CLASS="COMMAND"
 >VACUUM</TT
-> normally skips pages that don't have any dead row
-    versions, but those pages might still have row versions with old XID
-    values.  To ensure all old row versions have been frozen, a
-    scan of the whole table is needed.
-    <A
-HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-TABLE-AGE"
->vacuum_freeze_table_age</A
-> controls when
+> uses the <A
+HREF="storage-vm.html"
+>visibility map</A
+>
+    to determine which pages of a table must be scanned.  Normally, it
+    will skip pages that don't have any dead row versions even if those pages
+    might still have row versions with old XID values.  Therefore, normal
     <TT
 CLASS="COMMAND"
 >VACUUM</TT
-> does that: a whole table sweep is forced if
-    the table hasn't been fully scanned for <TT
-CLASS="VARNAME"
->vacuum_freeze_table_age</TT
->
-    minus <TT
-CLASS="VARNAME"
->vacuum_freeze_min_age</TT
-> transactions. Setting it to 0
-    forces <TT
+>s won't always freeze every old row version in the table.
+    Periodically, <TT
 CLASS="COMMAND"
 >VACUUM</TT
-> to always scan all pages, effectively ignoring
-    the visibility map.
+> will perform an <I
+CLASS="FIRSTTERM"
+>aggressive
+    vacuum</I
+>, skipping only those pages which contain neither dead rows nor
+    any unfrozen XID or MXID values.
+    <A
+HREF="runtime-config-client.html#GUC-VACUUM-FREEZE-TABLE-AGE"
+>vacuum_freeze_table_age</A
+>
+    controls when <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> does that: all-visible but not all-frozen
+    pages are scanned if the number of transactions that have passed since the
+    last such scan is greater than <TT
+CLASS="VARNAME"
+>vacuum_freeze_table_age</TT
+> minus
+    <TT
+CLASS="VARNAME"
+>vacuum_freeze_min_age</TT
+>. Setting
+    <TT
+CLASS="VARNAME"
+>vacuum_freeze_table_age</TT
+> to 0 forces <TT
+CLASS="COMMAND"
+>VACUUM</TT
+> to
+    use this more aggressive strategy for all scans.
    </P
 ><P
 >    The maximum time that a table can go unvacuumed is two billion
@@ -792,10 +884,7 @@ CLASS="COMMAND"
 CLASS="VARNAME"
 >vacuum_freeze_min_age</TT
 > value at
-    the time <TT
-CLASS="COMMAND"
->VACUUM</TT
-> last scanned the whole table.  If it were to go
+    the time of the last aggressive vacuum. If it were to go
     unvacuumed for longer than
     that, data loss could result.  To ensure that this does not happen,
     autovacuum is invoked on any table that might contain unfrozen rows with
@@ -866,7 +955,7 @@ CLASS="COMMAND"
     normal delete and update activity is run in that window.  Setting it too
     close could lead to anti-wraparound autovacuums, even though the table
     was recently vacuumed to reclaim space, whereas lower values lead to more
-    frequent whole-table scans.
+    frequent aggressive vacuuming.
    </P
 ><P
 >    The sole disadvantage of increasing <TT
@@ -947,7 +1036,7 @@ CLASS="STRUCTFIELD"
 CLASS="STRUCTNAME"
 >pg_class</TT
 > row contains the freeze cutoff XID that was used
-    by the last whole-table <TT
+    by the last aggressive <TT
 CLASS="COMMAND"
 >VACUUM</TT
 > for that table.  All rows
@@ -990,17 +1079,18 @@ CLASS="LITERAL"
 >    <TT
 CLASS="COMMAND"
 >VACUUM</TT
-> normally
-    only scans pages that have been modified since the last vacuum, but
+> normally only scans pages that have been modified
+    since the last vacuum, but <TT
+CLASS="STRUCTFIELD"
+>relfrozenxid</TT
+> can only be
+    advanced when every page of the table
+    that might contain unfrozen XIDs is scanned.  This happens when
     <TT
 CLASS="STRUCTFIELD"
 >relfrozenxid</TT
-> can only be advanced when the whole table is
-    scanned. The whole table is scanned when <TT
-CLASS="STRUCTFIELD"
->relfrozenxid</TT
-> is
-    more than <TT
+> is more than
+    <TT
 CLASS="VARNAME"
 >vacuum_freeze_table_age</TT
 > transactions old, when
@@ -1010,33 +1100,38 @@ CLASS="COMMAND"
 >'s <TT
 CLASS="LITERAL"
 >FREEZE</TT
-> option is used, or when all pages
-    happen to
+> option is used, or when all
+    pages that are not already all-frozen happen to
     require vacuuming to remove dead row versions. When <TT
 CLASS="COMMAND"
 >VACUUM</TT
 >
-    scans the whole table, after it's finished <TT
+    scans every page in the table that is not already all-frozen, it should
+    set <TT
 CLASS="LITERAL"
 >age(relfrozenxid)</TT
->
-    should be a little more than the <TT
+> to a value just a little more than the
+    <TT
 CLASS="VARNAME"
 >vacuum_freeze_min_age</TT
 > setting
-    that was used (more by the number of transactions started since the
+    that was used (more by the number of transcations started since the
     <TT
 CLASS="COMMAND"
 >VACUUM</TT
-> started).  If no whole-table-scanning <TT
+> started).  If no <TT
+CLASS="STRUCTFIELD"
+>relfrozenxid</TT
+>-advancing
+    <TT
 CLASS="COMMAND"
 >VACUUM</TT
->
-    is issued on the table until <TT
+> is issued on the table until
+    <TT
 CLASS="VARNAME"
 >autovacuum_freeze_max_age</TT
-> is
-    reached, an autovacuum will soon be forced for the table.
+> is reached, an autovacuum will soon
+    be forced for the table.
    </P
 ><P
 >    If for some reason autovacuum fails to clear old XIDs from a table,
@@ -1101,7 +1196,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="VACUUM-FOR-MULTIXACT-WRAPAROUND"
->23.1.5.1. Multixacts and Wraparound</A
+>24.1.5.1. Multixacts and Wraparound</A
 ></H3
 ><P
 >     <I
@@ -1133,16 +1228,16 @@ CLASS="STRUCTFIELD"
      be managed.
     </P
 ><P
->     During a <TT
+>     Whenever <TT
 CLASS="COMMAND"
 >VACUUM</TT
-> table scan, either partial or of the whole
-     table, any multixact ID older than
+> scans any part of a table, it will replace
+     any multixact ID it encounters which is older than
      <A
 HREF="runtime-config-client.html#GUC-VACUUM-MULTIXACT-FREEZE-MIN-AGE"
 >vacuum_multixact_freeze_min_age</A
 >
-     is replaced by a different value, which can be the zero value, a single
+     by a different value, which can be the zero value, a single
      transaction ID, or a newer multixact ID.  For each table,
      <TT
 CLASS="STRUCTNAME"
@@ -1156,8 +1251,10 @@ CLASS="STRUCTFIELD"
      <A
 HREF="runtime-config-client.html#GUC-VACUUM-MULTIXACT-FREEZE-TABLE-AGE"
 >vacuum_multixact_freeze_table_age</A
->, a whole-table
-     scan is forced.  <CODE
+>, an aggressive
+     vacuum is forced.  As discussed in the previous section, an aggressive
+     vacuum means that only those pages which are known to be all-frozen will
+     be skipped.  <CODE
 CLASS="FUNCTION"
 >mxid_age()</CODE
 > can be used on
@@ -1170,7 +1267,7 @@ CLASS="STRUCTFIELD"
 > to find its age.
     </P
 ><P
->     Whole-table <TT
+>     Aggressive <TT
 CLASS="COMMAND"
 >VACUUM</TT
 > scans, regardless of
@@ -1180,16 +1277,16 @@ CLASS="COMMAND"
      multixacts can be removed.
     </P
 ><P
->     As a safety device, a whole-table vacuum scan will occur for any table
+>     As a safety device, an aggressive vacuum scan will occur for any table
      whose multixact-age is greater than
      <A
 HREF="runtime-config-autovacuum.html#GUC-AUTOVACUUM-MULTIXACT-FREEZE-MAX-AGE"
 >autovacuum_multixact_freeze_max_age</A
->.  Whole-table
+>.  Aggressive
      vacuum scans will also occur progressively for all tables, starting with
      those that have the oldest multixact-age, if the amount of used member
      storage space exceeds the amount 50% of the addressable storage space.
-     Both of these kinds of whole-table scans will occur even if autovacuum is
+     Both of these kinds of aggressive scans will occur even if autovacuum is
      nominally disabled.
     </P
 ></DIV
@@ -1200,7 +1297,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="AUTOVACUUM"
->23.1.6. The Autovacuum Daemon</A
+>24.1.6. The Autovacuum Daemon</A
 ></H2
 ><P
 >    <SPAN
@@ -1367,12 +1464,12 @@ CLASS="STRUCTFIELD"
     than <TT
 CLASS="VARNAME"
 >vacuum_freeze_table_age</TT
-> transactions old, the whole
-    table is scanned to freeze old tuples and advance
+> transactions old, an aggressive
+    vacuum is performed to freeze old tuples and advance
     <TT
 CLASS="STRUCTFIELD"
 >relfrozenxid</TT
->, otherwise only pages that have been modified
+>; otherwise, only pages that have been modified
     since the last vacuum are scanned.
    </P
 ><P
@@ -1409,7 +1506,7 @@ HREF="sql-createtable.html#SQL-CREATETABLE-STORAGE-PARAMETERS"
     is used when processing that table; otherwise the global settings are
     used. See <A
 HREF="runtime-config-autovacuum.html"
->Section 18.10</A
+>Section 19.10</A
 > for more details on
     the global settings.
    </P
@@ -1417,7 +1514,7 @@ HREF="runtime-config-autovacuum.html"
 >    When multiple workers are running, the autovacuum cost delay parameters
     (see <A
 HREF="runtime-config-resource.html#RUNTIME-CONFIG-RESOURCE-VACUUM-COST"
->Section 18.4.4</A
+>Section 19.4.4</A
 >) are
     <SPAN
 CLASS="QUOTE"

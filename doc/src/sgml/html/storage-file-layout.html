@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Database Physical Storage"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 63. Database Physical Storage</TD
+>Chapter 65. Database Physical Storage</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="STORAGE-FILE-LAYOUT"
->63.1. Database File Layout</A
+>65.1. Database File Layout</A
 ></H1
 ><P
 >This section describes the storage format at the level of files and
@@ -121,7 +121,7 @@ CLASS="VARNAME"
 > directory contains several subdirectories and control
 files, as shown in <A
 HREF="storage-file-layout.html#PGDATA-CONTENTS-TABLE"
->Table 63-1</A
+>Table 65-1</A
 >.  In addition to
 these required items, the cluster configuration files
 <TT
@@ -146,7 +146,7 @@ NAME="PGDATA-CONTENTS-TABLE"
 ></A
 ><P
 ><B
->Table 63-1. Contents of <TT
+>Table 65-1. Contents of <TT
 CLASS="VARNAME"
 >PGDATA</TT
 ></B
@@ -442,7 +442,7 @@ CLASS="FIRSTTERM"
 >free space map</I
 > (see <A
 HREF="storage-fsm.html"
->Section 63.3</A
+>Section 65.3</A
 >), which stores information about free space available in
 the relation.  The free space map is stored in a file named with the filenode
 number plus the suffix <TT
@@ -459,7 +459,7 @@ CLASS="LITERAL"
 to track which pages are known to have no dead tuples.  The visibility map is
 described further in <A
 HREF="storage-vm.html"
->Section 63.4</A
+>Section 65.4</A
 >.  Unlogged tables and indexes
 have a third fork, known as the initialization fork, which is stored in a fork
 with the suffix <TT
@@ -467,7 +467,7 @@ CLASS="LITERAL"
 >_init</TT
 > (see <A
 HREF="storage-init.html"
->Section 63.5</A
+>Section 65.5</A
 >).</P
 ><DIV
 CLASS="CAUTION"
@@ -571,13 +571,13 @@ CLASS="ACRONYM"
 > table, if any.
 See <A
 HREF="storage-toast.html"
->Section 63.2</A
+>Section 65.2</A
 > for more information.</P
 ><P
 >The contents of tables and indexes are discussed further in
 <A
 HREF="storage-page-layout.html"
->Section 63.6</A
+>Section 65.6</A
 >.</P
 ><P
 >Tablespaces make the scenario more complicated.  Each user-defined tablespace

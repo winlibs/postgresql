@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -122,13 +122,13 @@ CLASS="TYPE"
 > have a large set of
     native support functions and operators, shown in <A
 HREF="functions-geometry.html#FUNCTIONS-GEOMETRY-OP-TABLE"
->Table 9-31</A
+>Table 9-33</A
 >, <A
 HREF="functions-geometry.html#FUNCTIONS-GEOMETRY-FUNC-TABLE"
->Table 9-32</A
+>Table 9-34</A
 >, and <A
 HREF="functions-geometry.html#FUNCTIONS-GEOMETRY-CONV-TABLE"
->Table 9-33</A
+>Table 9-35</A
 >.
    </P
 ><DIV
@@ -202,7 +202,7 @@ NAME="FUNCTIONS-GEOMETRY-OP-TABLE"
 ></A
 ><P
 ><B
->Table 9-31. Geometric Operators</B
+>Table 9-33. Geometric Operators</B
 ></P
 ><TABLE
 BORDER="1"
@@ -285,7 +285,7 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->'((1,-1),(-1,1))' # '((1,1),(-1,-1))'</TT
+>box '((1,-1),(-1,1))' # box '((1,1),(-2,-2))'</TT
 ></TD
 ></TR
 ><TR
@@ -299,7 +299,7 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
-># '((1,0),(0,1),(-1,0))'</TT
+># path '((1,0),(0,1),(-1,0))'</TT
 ></TD
 ></TR
 ><TR
@@ -691,7 +691,7 @@ NAME="FUNCTIONS-GEOMETRY-FUNC-TABLE"
 ></A
 ><P
 ><B
->Table 9-32. Geometric Functions</B
+>Table 9-34. Geometric Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1050,7 +1050,7 @@ NAME="FUNCTIONS-GEOMETRY-CONV-TABLE"
 ></A
 ><P
 ><B
->Table 9-33. Geometric Type Conversion Functions</B
+>Table 9-35. Geometric Type Conversion Functions</B
 ></P
 ><TABLE
 BORDER="1"

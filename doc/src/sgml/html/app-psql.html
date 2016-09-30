@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN94449"
+NAME="AEN98199"
 ></A
 ><H2
 >Name</H2
@@ -113,7 +113,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN94454"
+NAME="AEN98204"
 ></A
 ><H2
 >Synopsis</H2
@@ -142,7 +142,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94463"
+NAME="AEN98213"
 ></A
 ><H2
 >Description</H2
@@ -160,7 +160,11 @@ CLASS="PRODUCTNAME"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 >, and see the query results.
-     Alternatively, input can be from a file. In addition, it provides a
+     Alternatively, input can be from a file or from command line
+     arguments. In addition, <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> provides a
      number of meta-commands and various shell-like features to
      facilitate writing scripts and automating a wide variety of tasks.
     </P
@@ -254,93 +258,150 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      Specifies that <SPAN
+>       Specifies that <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> is to execute one
-      command string, <TT
+> is to execute the given
+       command string, <TT
 CLASS="REPLACEABLE"
 ><I
 >command</I
 ></TT
->,
-      and then exit. This is useful in shell scripts. Start-up files
-      (<TT
-CLASS="FILENAME"
->psqlrc</TT
+>.
+       This option can be repeated and combined in any order with
+       the <TT
+CLASS="OPTION"
+>-f</TT
+> option.  When either <TT
+CLASS="OPTION"
+>-c</TT
+>
+       or <TT
+CLASS="OPTION"
+>-f</TT
+> is specified, <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+       does not read commands from standard input; instead it terminates
+       after processing all the <TT
+CLASS="OPTION"
+>-c</TT
 > and <TT
-CLASS="FILENAME"
->~/.psqlrc</TT
->) are
-      ignored with this option.
+CLASS="OPTION"
+>-f</TT
+>
+       options in sequence.
       </P
 ><P
->      <TT
+>       <TT
 CLASS="REPLACEABLE"
 ><I
 >command</I
 ></TT
 > must be either
-      a command string that is completely parsable by the server (i.e.,
-      it contains no <SPAN
+       a command string that is completely parsable by the server (i.e.,
+       it contains no <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
 >-specific features),
-      or a single backslash command. Thus you cannot mix
-      <ACRONYM
+       or a single backslash command. Thus you cannot mix
+       <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > and <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
 >
-      meta-commands with this option. To achieve that, you could
-      pipe the string into <SPAN
+       meta-commands within a <TT
+CLASS="OPTION"
+>-c</TT
+> option. To achieve that,
+       you could use repeated <TT
+CLASS="OPTION"
+>-c</TT
+> options or pipe the string
+       into <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
 >, for example:
-      <TT
-CLASS="LITERAL"
->echo '\x \\ SELECT * FROM foo;' | psql</TT
->.
-      (<TT
+</P><PRE
+CLASS="PROGRAMLISTING"
+>psql -c '\x' -c 'SELECT * FROM foo;'</PRE
+><P>
+       or
+</P><PRE
+CLASS="PROGRAMLISTING"
+>echo '\x \\ SELECT * FROM foo;' | psql</PRE
+><P>
+       (<TT
 CLASS="LITERAL"
 >\\</TT
 > is the separator meta-command.)
       </P
 ><P
->       If the command string contains multiple SQL commands, they are
-       processed in a single transaction, unless there are explicit
-       <TT
+>       Each <ACRONYM
+CLASS="ACRONYM"
+>SQL</ACRONYM
+> command string passed
+       to <TT
+CLASS="OPTION"
+>-c</TT
+> is sent to the server as a single query.
+       Because of this, the server executes it as a single transaction even
+       if the string contains multiple <ACRONYM
+CLASS="ACRONYM"
+>SQL</ACRONYM
+> commands,
+       unless there are explicit <TT
 CLASS="COMMAND"
 >BEGIN</TT
 >/<TT
 CLASS="COMMAND"
 >COMMIT</TT
-> commands included in the
-       string to divide it into multiple transactions.  This is
-       different from the behavior when the same string is fed to
-       <SPAN
+>
+       commands included in the string to divide it into multiple
+       transactions.  Also, <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
->'s standard input.  Also, only
-       the result of the last SQL command is returned.
+> only prints the
+       result of the last <ACRONYM
+CLASS="ACRONYM"
+>SQL</ACRONYM
+> command in the string.
+       This is different from the behavior when the same string is read from
+       a file or fed to <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>'s standard input,
+       because then <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> sends
+       each <ACRONYM
+CLASS="ACRONYM"
+>SQL</ACRONYM
+> command separately.
       </P
 ><P
->       Because of these legacy behaviors, putting more than one command in
-       the <TT
+>       Because of this behavior, putting more than one command in a
+       single <TT
 CLASS="OPTION"
 >-c</TT
-> string often has unexpected results.  It's
-       better to feed multiple commands to <SPAN
+> string often has unexpected results.
+       It's better to use repeated <TT
+CLASS="OPTION"
+>-c</TT
+> commands or feed
+       multiple commands to <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
->'s
-       standard input, either using <SPAN
+>'s standard input,
+       either using <SPAN
 CLASS="APPLICATION"
 >echo</SPAN
-> as
-       illustrated above, or via a shell here-document, for example:
+> as illustrated above, or
+       via a shell here-document, for example:
 </P><PRE
 CLASS="PROGRAMLISTING"
 >psql &lt;&lt;EOF
@@ -401,7 +462,7 @@ CLASS="PARAMETER"
 >conninfo</TT
 > string. See <A
 HREF="libpq-connect.html#LIBPQ-CONNSTRING"
->Section 31.1.1</A
+>Section 32.1.1</A
 > for more information.
       </P
 ></DD
@@ -475,19 +536,40 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      Use the file <TT
+>       Read commands from the
+       file <TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
+>,
+       rather than standard input.
+       This option can be repeated and combined in any order with
+       the <TT
+CLASS="OPTION"
+>-c</TT
+> option.  When either <TT
+CLASS="OPTION"
+>-c</TT
 >
-      as the source of commands instead of reading commands interactively.
-      After the file is processed, <SPAN
+       or <TT
+CLASS="OPTION"
+>-f</TT
+> is specified, <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
 >
-      terminates. This is in many ways equivalent to the meta-command
-      <TT
+       does not read commands from standard input; instead it terminates
+       after processing all the <TT
+CLASS="OPTION"
+>-c</TT
+> and <TT
+CLASS="OPTION"
+>-f</TT
+>
+       options in sequence.
+       Except for that, this option is largely equivalent to the
+       meta-command <TT
 CLASS="COMMAND"
 >\i</TT
 >.
@@ -506,7 +588,8 @@ CLASS="LITERAL"
        or <TT
 CLASS="COMMAND"
 >\q</TT
-> meta-command.  Note however that Readline
+> meta-command.  This can be used to intersperse
+       interactive input with input from files.  Note however that Readline
        is not used in this case (much as if <TT
 CLASS="OPTION"
 >-n</TT
@@ -1178,23 +1261,32 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->        When <SPAN
+>        This option can only be used in combination with one or more
+        <TT
+CLASS="OPTION"
+>-c</TT
+> and/or <TT
+CLASS="OPTION"
+>-f</TT
+> options.  It causes
+        <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> executes a script, adding
-        this option wraps <TT
+> to issue a <TT
 CLASS="COMMAND"
 >BEGIN</TT
->/<TT
+> command
+        before the first such option and a <TT
 CLASS="COMMAND"
 >COMMIT</TT
-> around the
-        script to execute it as a single transaction.  This ensures that
-        either all the commands complete successfully, or no changes are
-        applied.
+> command after
+        the last one, thereby wrapping all the commands into a single
+        transaction.  This ensures that either all the commands complete
+        successfully, or no changes are applied.
        </P
 ><P
->        If the script itself uses <TT
+>        If the commands themselves
+        contain <TT
 CLASS="COMMAND"
 >BEGIN</TT
 >, <TT
@@ -1205,10 +1297,9 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >ROLLBACK</TT
 >, this option will not have the desired
-        effects.
-        Also, if the script contains any command that cannot be executed
-        inside a transaction block, specifying this option will cause that
-        command (and hence the whole transaction) to fail.
+        effects.  Also, if an individual command cannot be executed inside a
+        transaction block, specifying this option will cause the whole
+        transaction to fail.
        </P
 ></DD
 ><DT
@@ -1274,7 +1365,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94853"
+NAME="AEN98626"
 ></A
 ><H2
 >Exit Status</H2
@@ -1295,7 +1386,7 @@ CLASS="VARNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94858"
+NAME="AEN98631"
 ></A
 ><H2
 >Usage</H2
@@ -1375,7 +1466,7 @@ CLASS="ENVAR"
 > to appropriate
     values. (For additional environment variables, see <A
 HREF="libpq-envars.html"
->Section 31.14</A
+>Section 32.14</A
 >.) It is also convenient to have a
     <TT
 CLASS="FILENAME"
@@ -1383,7 +1474,7 @@ CLASS="FILENAME"
 > file to avoid regularly having to type in
     passwords. See <A
 HREF="libpq-pgpass.html"
->Section 31.15</A
+>Section 32.15</A
 > for more information.
     </P
 ><P
@@ -1415,11 +1506,11 @@ CLASS="ACRONYM"
 > for connection
      parameter lookup as described in <A
 HREF="libpq-ldap.html"
->Section 31.17</A
+>Section 32.17</A
 >.
      See <A
 HREF="libpq-connect.html#LIBPQ-PARAMKEYWORDS"
->Section 31.1.2</A
+>Section 32.1.2</A
 > for more information on all the
      available connection options.
     </P
@@ -1481,7 +1572,7 @@ CLASS="PROGRAMLISTING"
 CLASS="USERINPUT"
 >psql testdb</KBD
 >
-psql (9.5.3)
+psql (9.6.0)
 Type "help" for help.
 
 testdb=&gt;</PRE
@@ -1716,10 +1807,12 @@ CLASS="LITERAL"
 >\c</TT
 > or <TT
 CLASS="LITERAL"
->\connect</TT
-> <TT
-CLASS="LITERAL"
->[ <TT
+>\connect [ -reuse-previous=<TT
+CLASS="REPLACEABLE"
+><I
+>on|off</I
+></TT
+> ] [ <TT
 CLASS="REPLACEABLE"
 ><I
 >dbname</I
@@ -1739,12 +1832,12 @@ CLASS="REPLACEABLE"
 ><I
 >port</I
 ></TT
-> ] ] | <TT
+> ] | <TT
 CLASS="REPLACEABLE"
 ><I
 >conninfo</I
 ></TT
-> </TT
+> ]</TT
 ></DT
 ><DD
 ><P
@@ -1754,17 +1847,40 @@ CLASS="PRODUCTNAME"
 >
         server.  The connection parameters to use can be specified either
         using a positional syntax, or using <TT
-CLASS="LITERAL"
->conninfo</TT
+CLASS="REPLACEABLE"
+><I
+>conninfo</I
+></TT
 > connection
         strings as detailed in <A
 HREF="libpq-connect.html#LIBPQ-CONNSTRING"
->Section 31.1.1</A
+>Section 32.1.1</A
 >.
         </P
 ><P
->        When using positional parameters, if any of
-        <TT
+>        Where the command omits database name, user, host, or port, the new
+        connection can reuse values from the previous connection.  By default,
+        values from the previous connection are reused except when processing
+        a <TT
+CLASS="REPLACEABLE"
+><I
+>conninfo</I
+></TT
+> string.  Passing a first argument
+        of <TT
+CLASS="LITERAL"
+>-reuse-previous=on</TT
+>
+        or <TT
+CLASS="LITERAL"
+>-reuse-previous=off</TT
+> overrides that default.
+        When the command neither specifies nor reuses a particular parameter,
+        the <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+> default is used.  Specifying any
+        of <TT
 CLASS="REPLACEABLE"
 ><I
 >dbname</I
@@ -1787,21 +1903,11 @@ CLASS="REPLACEABLE"
 ><I
 >port</I
 ></TT
-> are omitted or
-        specified as <TT
+>
+        as <TT
 CLASS="LITERAL"
 >-</TT
->, the value of that parameter from
-        the previous connection is used; if there is no previous connection,
-        the <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> default for the parameter's value
-        is used.  When using <TT
-CLASS="LITERAL"
->conninfo</TT
-> strings, no values from the
-        previous connection are used for the new connection.
+> is equivalent to omitting that parameter.
         </P
 ><P
 >        If the new connection is successfully made, the previous
@@ -2113,6 +2219,224 @@ CLASS="PRODUCTNAME"
         </P
 ></DD
 ><DT
+><A
+NAME="APP-PSQL-META-COMMANDS-CROSSTABVIEW"
+></A
+><TT
+CLASS="LITERAL"
+>\crosstabview [
+            <TT
+CLASS="REPLACEABLE"
+><I
+>colV</I
+></TT
+>
+            [ <TT
+CLASS="REPLACEABLE"
+><I
+>colH</I
+></TT
+>
+            [ <TT
+CLASS="REPLACEABLE"
+><I
+>colD</I
+></TT
+>
+            [ <TT
+CLASS="REPLACEABLE"
+><I
+>sortcolH</I
+></TT
+>
+            ] ] ] ] </TT
+></DT
+><DD
+><P
+>        Executes the current query buffer (like <TT
+CLASS="LITERAL"
+>\g</TT
+>) and
+        shows the results in a crosstab grid.
+        The query must return at least three columns.
+        The output column identified by <TT
+CLASS="REPLACEABLE"
+><I
+>colV</I
+></TT
+>
+        becomes a vertical header and the output column identified by
+        <TT
+CLASS="REPLACEABLE"
+><I
+>colH</I
+></TT
+>
+        becomes a horizontal header.
+        <TT
+CLASS="REPLACEABLE"
+><I
+>colD</I
+></TT
+> identifies
+        the output column to display within the grid.
+        <TT
+CLASS="REPLACEABLE"
+><I
+>sortcolH</I
+></TT
+> identifies
+        an optional sort column for the horizontal header.
+        </P
+><P
+>        Each column specification can be a column number (starting at 1) or
+        a column name.  The usual SQL case folding and quoting rules apply to
+        column names.  If omitted,
+        <TT
+CLASS="REPLACEABLE"
+><I
+>colV</I
+></TT
+> is taken as column 1
+        and <TT
+CLASS="REPLACEABLE"
+><I
+>colH</I
+></TT
+> as column 2.
+        <TT
+CLASS="REPLACEABLE"
+><I
+>colH</I
+></TT
+> must differ from
+        <TT
+CLASS="REPLACEABLE"
+><I
+>colV</I
+></TT
+>.
+        If <TT
+CLASS="REPLACEABLE"
+><I
+>colD</I
+></TT
+> is not
+        specified, then there must be exactly three columns in the query
+        result, and the column that is neither
+        <TT
+CLASS="REPLACEABLE"
+><I
+>colV</I
+></TT
+> nor
+        <TT
+CLASS="REPLACEABLE"
+><I
+>colH</I
+></TT
+>
+        is taken to be <TT
+CLASS="REPLACEABLE"
+><I
+>colD</I
+></TT
+>.
+        </P
+><P
+>        The vertical header, displayed as the leftmost column, contains the
+        values found in column <TT
+CLASS="REPLACEABLE"
+><I
+>colV</I
+></TT
+>, in the
+        same order as in the query results, but with duplicates removed.
+        </P
+><P
+>        The horizontal header, displayed as the first row, contains the values
+        found in column <TT
+CLASS="REPLACEABLE"
+><I
+>colH</I
+></TT
+>,
+        with duplicates removed.  By default, these appear in the same order
+        as in the query results.  But if the
+        optional <TT
+CLASS="REPLACEABLE"
+><I
+>sortcolH</I
+></TT
+> argument is given,
+        it identifies a column whose values must be integer numbers, and the
+        values from <TT
+CLASS="REPLACEABLE"
+><I
+>colH</I
+></TT
+> will
+        appear in the horizontal header sorted according to the
+        corresponding <TT
+CLASS="REPLACEABLE"
+><I
+>sortcolH</I
+></TT
+> values.
+        </P
+><P
+>        Inside the crosstab grid, for each distinct value <TT
+CLASS="LITERAL"
+>x</TT
+>
+        of <TT
+CLASS="REPLACEABLE"
+><I
+>colH</I
+></TT
+> and each distinct
+        value <TT
+CLASS="LITERAL"
+>y</TT
+>
+        of <TT
+CLASS="REPLACEABLE"
+><I
+>colV</I
+></TT
+>, the cell located
+        at the intersection <TT
+CLASS="LITERAL"
+>(x,y)</TT
+> contains the value of
+        the <TT
+CLASS="LITERAL"
+>colD</TT
+> column in the query result row for which
+        the value of <TT
+CLASS="REPLACEABLE"
+><I
+>colH</I
+></TT
+>
+        is <TT
+CLASS="LITERAL"
+>x</TT
+> and the value
+        of <TT
+CLASS="REPLACEABLE"
+><I
+>colV</I
+></TT
+>
+        is <TT
+CLASS="LITERAL"
+>y</TT
+>.  If there is no such row, the cell is empty.  If
+        there are multiple such rows, an error is reported.
+        </P
+></DD
+><DT
 ><TT
 CLASS="LITERAL"
 >\d[S+] [ <A
@@ -2241,6 +2565,35 @@ CLASS="LITERAL"
 >S</TT
 > modifier to include system
         objects.
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\dA[+] [ <A
+HREF="app-psql.html#APP-PSQL-PATTERNS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+></A
+> ]</TT
+></DT
+><DD
+><P
+>        Lists access methods. If <TT
+CLASS="REPLACEABLE"
+><I
+>pattern</I
+></TT
+> is specified, only access
+        methods whose names match the pattern are shown. If
+        <TT
+CLASS="LITERAL"
+>+</TT
+> is appended to the command name, each access
+        method is listed with its associated handler function and description.
         </P
 ></DD
 ><DT
@@ -2786,12 +3139,12 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Lists functions, together with their arguments, return types, and
-        function types, which are classified as <SPAN
+>        Lists functions, together with their result data types, argument data
+        types, and function types, which are classified as <SPAN
 CLASS="QUOTE"
 >"agg"</SPAN
-> (aggregate),
-        <SPAN
+>
+        (aggregate), <SPAN
 CLASS="QUOTE"
 >"normal"</SPAN
 >, <SPAN
@@ -2833,8 +3186,9 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >\df+</TT
 > is used, additional information
-        about each function is shown, including security classification,
-        volatility, owner, language, source code and description.
+        about each function is shown, including volatility,
+        parallel safety, owner, security classification, access privileges,
+        language, source code and description.
         </P
 ><DIV
 CLASS="TIP"
@@ -2844,7 +3198,7 @@ CLASS="TIP"
 ><B
 >Tip: </B
 >        To look up functions taking arguments or returning values of a specific
-        type, use your pager's search capability to scroll through the
+        data type, use your pager's search capability to scroll through the
         <TT
 CLASS="LITERAL"
 >\df</TT
@@ -2979,7 +3333,7 @@ CLASS="LITERAL"
 ><DT
 ><TT
 CLASS="LITERAL"
->\dg[+] [ <A
+>\dg[S+] [ <A
 HREF="app-psql.html#APP-PSQL-PATTERNS"
 ><TT
 CLASS="REPLACEABLE"
@@ -3007,6 +3361,11 @@ CLASS="QUOTE"
 CLASS="LITERAL"
 >\du</TT
 >.)
+        By default, only user-created roles are shown; supply the
+        <TT
+CLASS="LITERAL"
+>S</TT
+> modifier to include system roles.
         If <TT
 CLASS="REPLACEABLE"
 ><I
@@ -3324,7 +3683,7 @@ CLASS="LITERAL"
 ><DT
 ><TT
 CLASS="LITERAL"
->\du[+] [ <A
+>\du[S+] [ <A
 HREF="app-psql.html#APP-PSQL-PATTERNS"
 ><TT
 CLASS="REPLACEABLE"
@@ -3352,6 +3711,11 @@ CLASS="QUOTE"
 CLASS="LITERAL"
 >\dg</TT
 >.)
+        By default, only user-created roles are shown; supply the
+        <TT
+CLASS="LITERAL"
+>S</TT
+> modifier to include system roles.
         If <TT
 CLASS="REPLACEABLE"
 ><I
@@ -3680,6 +4044,88 @@ CLASS="REPLACEABLE"
 ><DT
 ><TT
 CLASS="LITERAL"
+>\errverbose</TT
+></DT
+><DD
+><P
+>        Repeats the most recent server error message at maximum
+        verbosity, as though <TT
+CLASS="VARNAME"
+>VERBOSITY</TT
+> were set
+        to <TT
+CLASS="LITERAL"
+>verbose</TT
+> and <TT
+CLASS="VARNAME"
+>SHOW_CONTEXT</TT
+> were
+        set to <TT
+CLASS="LITERAL"
+>always</TT
+>.
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\ev [<SPAN
+CLASS="OPTIONAL"
+> <TT
+CLASS="REPLACEABLE"
+><I
+>view_name</I
+></TT
+> [<SPAN
+CLASS="OPTIONAL"
+>  <TT
+CLASS="REPLACEABLE"
+><I
+>line_number</I
+></TT
+> </SPAN
+>] </SPAN
+>] </TT
+></DT
+><DD
+><P
+>         This command fetches and edits the definition of the named view,
+         in the form of a <TT
+CLASS="COMMAND"
+>CREATE OR REPLACE VIEW</TT
+> command.
+         Editing is done in the same way as for <TT
+CLASS="LITERAL"
+>\edit</TT
+>.
+         After the editor exits, the updated command waits in the query buffer;
+         type semicolon or <TT
+CLASS="LITERAL"
+>\g</TT
+> to send it, or <TT
+CLASS="LITERAL"
+>\r</TT
+>
+         to cancel.
+        </P
+><P
+>         If no view is specified, a blank <TT
+CLASS="COMMAND"
+>CREATE VIEW</TT
+>
+         template is presented for editing.
+        </P
+><P
+>         If a line number is specified, <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> will
+         position the cursor on the specified line of the view definition.
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
 >\f [ <TT
 CLASS="REPLACEABLE"
 ><I
@@ -3753,6 +4199,89 @@ CLASS="QUOTE"
 CLASS="COMMAND"
 >\o</TT
 > command.
+        </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>\gexec</TT
+></DT
+><DD
+><P
+>         Sends the current query input buffer to the server, then treats
+         each column of each row of the query's output (if any) as a SQL
+         statement to be executed.  For example, to create an index on each
+         column of <TT
+CLASS="STRUCTNAME"
+>my_table</TT
+>:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>=&gt; <KBD
+CLASS="USERINPUT"
+>SELECT format('create index on my_table(%I)', attname)</KBD
+>
+-&gt; <KBD
+CLASS="USERINPUT"
+>FROM pg_attribute</KBD
+>
+-&gt; <KBD
+CLASS="USERINPUT"
+>WHERE attrelid = 'my_table'::regclass AND attnum &gt; 0</KBD
+>
+-&gt; <KBD
+CLASS="USERINPUT"
+>ORDER BY attnum</KBD
+>
+-&gt; <KBD
+CLASS="USERINPUT"
+>\gexec</KBD
+>
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX</PRE
+><P>
+        </P
+><P
+>         The generated queries are executed in the order in which the rows
+         are returned, and left-to-right within each row if there is more
+         than one column.  NULL fields are ignored.  The generated queries
+         are sent literally to the server for processing, so they cannot be
+         <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> meta-commands nor contain <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>
+         variable references.  If any individual query fails, execution of
+         the remaining queries continues
+         unless <TT
+CLASS="VARNAME"
+>ON_ERROR_STOP</TT
+> is set.  Execution of each
+         query is subject to <TT
+CLASS="VARNAME"
+>ECHO</TT
+> processing.
+         (Setting <TT
+CLASS="VARNAME"
+>ECHO</TT
+> to <TT
+CLASS="LITERAL"
+>all</TT
+>
+         or <TT
+CLASS="LITERAL"
+>queries</TT
+> is often advisable when
+         using <TT
+CLASS="COMMAND"
+>\gexec</TT
+>.)  Query logging, single-step mode,
+         timing, and other query execution features apply to each generated
+         query as well.
         </P
 ></DD
 ><DT
@@ -4552,8 +5081,9 @@ CLASS="REPLACEABLE"
 CLASS="QUOTE"
 >"horizontal"</SPAN
 > mode.  In the auto setting, the
-          expanded mode is used whenever the query output is wider than the
-          screen, otherwise the regular mode is used.  The auto setting is only
+          expanded mode is used whenever the query output has more than one
+          column and is wider than the screen; otherwise, the regular mode is
+          used.  The auto setting is only
           effective in the aligned and wrapped formats.  In other formats, it
           always behaves as if the expanded mode is off.
           </P
@@ -4776,7 +5306,7 @@ CLASS="LITERAL"
 >, <TT
 CLASS="LITERAL"
 >old-ascii</TT
->
+>,
           or <TT
 CLASS="LITERAL"
 >unicode</TT
@@ -5079,7 +5609,10 @@ CLASS="LITERAL"
 ><TT
 CLASS="LITERAL"
 >title</TT
-></DT
+> (or <TT
+CLASS="LITERAL"
+>C</TT
+>)</DT
 ><DD
 ><P
 >          Sets the table title for any subsequently printed tables. This
@@ -5509,6 +6042,37 @@ CLASS="LITERAL"
 ><DT
 ><TT
 CLASS="LITERAL"
+>\sv[+] <TT
+CLASS="REPLACEABLE"
+><I
+>view_name</I
+></TT
+> </TT
+></DT
+><DD
+><P
+>          This command fetches and shows the definition of the named view,
+          in the form of a <TT
+CLASS="COMMAND"
+>CREATE OR REPLACE VIEW</TT
+> command.
+          The definition is printed to the current query output channel,
+          as set by <TT
+CLASS="COMMAND"
+>\o</TT
+>.
+         </P
+><P
+>          If <TT
+CLASS="LITERAL"
+>+</TT
+> is appended to the command name, then the
+          output lines are numbered from 1.
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
 >\t</TT
 ></DT
 ><DD
@@ -5652,12 +6216,17 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Repeatedly execute the current query buffer (like <TT
+>        Repeatedly execute the current query buffer (as <TT
 CLASS="LITERAL"
 >\g</TT
->)
+> does)
         until interrupted or the query fails.  Wait the specified number of
-        seconds (default 2) between executions.
+        seconds (default 2) between executions.  Each query result is
+        displayed with a header that includes the <TT
+CLASS="LITERAL"
+>\pset title</TT
+>
+        string (if any), the time as of query start, and the delay interval.
         </P
 ></DD
 ><DT
@@ -6041,7 +6610,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN96169"
+NAME="AEN100055"
 ></A
 ><H3
 >Advanced Features</H3
@@ -6761,6 +7330,48 @@ CLASS="OPTION"
 ><DT
 ><TT
 CLASS="VARNAME"
+>SHOW_CONTEXT</TT
+></DT
+><DD
+><P
+>        This variable can be set to the
+        values <TT
+CLASS="LITERAL"
+>never</TT
+>, <TT
+CLASS="LITERAL"
+>errors</TT
+>, or <TT
+CLASS="LITERAL"
+>always</TT
+>
+        to control whether <TT
+CLASS="LITERAL"
+>CONTEXT</TT
+> fields are displayed in
+        messages from the server. The default is <TT
+CLASS="LITERAL"
+>errors</TT
+> (meaning
+        that context will be shown in error messages, but not in notice or
+        warning messages).  This setting has no effect
+        when <TT
+CLASS="VARNAME"
+>VERBOSITY</TT
+> is set to <TT
+CLASS="LITERAL"
+>terse</TT
+>.
+        (See also <TT
+CLASS="COMMAND"
+>\errverbose</TT
+>, for use when you want a verbose
+        version of the error you just got.)
+        </P
+></DD
+><DT
+><TT
+CLASS="VARNAME"
 >SINGLELINE</TT
 ></DT
 ><DD
@@ -6823,6 +7434,11 @@ CLASS="LITERAL"
 >terse</TT
 > to control the verbosity
         of error reports.
+        (See also <TT
+CLASS="COMMAND"
+>\errverbose</TT
+>, for use when you want a verbose
+        version of the error you just got.)
         </P
 ></DD
 ></DL
@@ -7008,17 +7624,18 @@ CLASS="VARNAME"
 CLASS="APPLICATION"
 >psql</SPAN
 > requests a new command. Prompt 2 is
-    issued when more input is expected during command input because the
-    command was not terminated with a semicolon or a quote was not closed.
-    Prompt 3 is issued when you run an <ACRONYM
+    issued when more input is expected during command entry, for example
+    because the command was not terminated with a semicolon or a quote
+    was not closed.
+    Prompt 3 is issued when you are running an <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 >
     <TT
 CLASS="COMMAND"
->COPY</TT
-> command and you are expected to type in the
-    row values on the terminal.
+>COPY FROM STDIN</TT
+> command and you need to type in
+    a row value on the terminal.
     </P
 ><P
 >    The value of the selected prompt variable is printed literally,
@@ -7151,6 +7768,15 @@ CLASS="COMMAND"
 ><DT
 ><TT
 CLASS="LITERAL"
+>%p</TT
+></DT
+><DD
+><P
+>The process ID of the backend currently connected to.</P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
 >%R</TT
 ></DT
 ><DD
@@ -7158,38 +7784,50 @@ CLASS="LITERAL"
 >        In prompt 1 normally <TT
 CLASS="LITERAL"
 >=</TT
->, but <TT
+>,
+        but <TT
 CLASS="LITERAL"
 >^</TT
-> if
-        in single-line mode, and <TT
+> if in single-line mode,
+        or <TT
 CLASS="LITERAL"
 >!</TT
-> if the session is
-        disconnected from the database (which can happen if
-        <TT
+> if the session is disconnected from the
+        database (which can happen if <TT
 CLASS="COMMAND"
 >\connect</TT
-> fails). In prompt 2 the sequence is
-        replaced by <TT
+> fails).
+        In prompt 2 <TT
 CLASS="LITERAL"
->-</TT
->, <TT
-CLASS="LITERAL"
->*</TT
->, a single quote,
-        a double quote, or a dollar sign, depending on whether
-        <SPAN
+>%R</TT
+> is replaced by a character that
+        depends on why <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> expects more input because the
-        command wasn't terminated yet, because you are inside a
+> expects more input:
+        <TT
+CLASS="LITERAL"
+>-</TT
+> if the command simply wasn't terminated yet,
+        but <TT
+CLASS="LITERAL"
+>*</TT
+> if there is an unfinished
         <TT
 CLASS="LITERAL"
 >/* ... */</TT
-> comment, or because you are inside
-        a quoted or dollar-escaped string. In prompt 3 the sequence doesn't
-        produce anything.
+> comment,
+        a single quote if there is an unfinished quoted string,
+        a double quote if there is an unfinished quoted identifier,
+        a dollar sign if there is an unfinished dollar-quoted string,
+        or <TT
+CLASS="LITERAL"
+>(</TT
+> if there is an unmatched left parenthesis.
+        In prompt 3 <TT
+CLASS="LITERAL"
+>%R</TT
+> doesn't produce anything.
         </P
 ></DD
 ><DT
@@ -7382,7 +8020,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT3"
 ><A
-NAME="AEN96572"
+NAME="AEN100480"
 ></A
 ><H4
 >Command-Line Editing</H4
@@ -7511,7 +8149,7 @@ CLASS="ENVAR"
 ><P
 >      Default connection parameters (see <A
 HREF="libpq-envars.html"
->Section 31.14</A
+>Section 32.14</A
 >).
      </P
 ></DD
@@ -7531,12 +8169,16 @@ CLASS="ENVAR"
 >      Editor used by the <TT
 CLASS="COMMAND"
 >\e</TT
-> and
-      <TT
+>, <TT
 CLASS="COMMAND"
 >\ef</TT
-> commands.  The variables are examined in
-      the order listed; the first that is set is used.
+>,
+      and <TT
+CLASS="COMMAND"
+>\ev</TT
+> commands.
+      These variables are examined in the order listed;
+      the first that is set is used.
      </P
 ><P
 >      The built-in default editors are <TT
@@ -7559,9 +8201,13 @@ CLASS="ENVAR"
 >      When <TT
 CLASS="COMMAND"
 >\e</TT
-> or <TT
+>, <TT
 CLASS="COMMAND"
 >\ef</TT
+>, or
+      <TT
+CLASS="COMMAND"
+>\ev</TT
 > is used
       with a line number argument, this variable specifies the
       command-line argument used to pass the starting line number to
@@ -7663,14 +8309,14 @@ CLASS="APPLICATION"
 >
    (see <A
 HREF="libpq-envars.html"
->Section 31.14</A
+>Section 32.14</A
 >).
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN96671"
+NAME="AEN100581"
 ></A
 ><H2
 >Files</H2
@@ -7692,9 +8338,6 @@ CLASS="FILENAME"
 >     Unless it is passed an <TT
 CLASS="OPTION"
 >-X</TT
-> or <TT
-CLASS="OPTION"
->-c</TT
 > option,
      <SPAN
 CLASS="APPLICATION"
@@ -7818,28 +8461,13 @@ CLASS="ENVAR"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN96712"
+NAME="AEN100621"
 ></A
 ><H2
 >Notes</H2
 ><P
 ></P
 ><UL
-><LI
-><P
->       In an earlier life <SPAN
-CLASS="APPLICATION"
->psql</SPAN
-> allowed the
-       first argument of a single-letter backslash command to start
-       directly after the command, without intervening whitespace.
-       As of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.4 this is no
-       longer allowed.
-      </P
-></LI
 ><LI
 ><P
 ><SPAN
@@ -7874,13 +8502,47 @@ CLASS="APPLICATION"
 CLASS="APPLICATION"
 >psql</SPAN
 >.  Alternatively, you
-       can keep a copy of <SPAN
+       can keep around a copy of <SPAN
 CLASS="APPLICATION"
 >psql</SPAN
-> from each major
-       version around and be sure to use the version that matches the
+> from each
+       major version and be sure to use the version that matches the
        respective server.  But in practice, this additional complication should
        not be necessary.
+      </P
+></LI
+><LI
+><P
+>       Before <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.6,
+       the <TT
+CLASS="OPTION"
+>-c</TT
+> option implied <TT
+CLASS="OPTION"
+>-X</TT
+>
+       (<TT
+CLASS="OPTION"
+>--no-psqlrc</TT
+>); this is no longer the case.
+      </P
+></LI
+><LI
+><P
+>       Before <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 8.4,
+       <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+> allowed the
+       first argument of a single-letter backslash command to start
+       directly after the command, without intervening whitespace.
+       Now, some whitespace is required.
       </P
 ></LI
 ></UL
@@ -7888,7 +8550,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN96729"
+NAME="AEN100644"
 ></A
 ><H2
 >Notes for Windows Users</H2
@@ -8106,6 +8768,67 @@ second | three
 first  | 4
 second | four</PRE
 ><P></P
+><P
+>  When suitable, query results can be shown in a crosstab representation
+  with the <TT
+CLASS="COMMAND"
+>\crosstabview</TT
+> command:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <KBD
+CLASS="USERINPUT"
+>SELECT first, second, first &gt; 2 AS gt2 FROM my_table;</KBD
+>
+ first | second | ge2 
+-------+--------+-----
+     1 | one    | f
+     2 | two    | f
+     3 | three  | t
+     4 | four   | t
+(4 rows)
+
+testdb=&gt; <KBD
+CLASS="USERINPUT"
+>\crosstabview first second</KBD
+>
+ first | one | two | three | four 
+-------+-----+-----+-------+------
+     1 | f   |     |       | 
+     2 |     | f   |       | 
+     3 |     |     | t     | 
+     4 |     |     |       | t
+(4 rows)</PRE
+><P>
+
+This second example shows a multiplication table with rows sorted in reverse
+numerical order and columns with an independent, ascending numerical order.
+</P><PRE
+CLASS="PROGRAMLISTING"
+>testdb=&gt; <KBD
+CLASS="USERINPUT"
+>SELECT t1.first as "A", t2.first+100 AS "B", t1.first*(t2.first+100) as "AxB",</KBD
+>
+testdb(&gt; <KBD
+CLASS="USERINPUT"
+>row_number() over(order by t2.first) AS ord</KBD
+>
+testdb(&gt; <KBD
+CLASS="USERINPUT"
+>FROM my_table t1 CROSS JOIN my_table t2 ORDER BY 1 DESC</KBD
+>
+testdb(&gt; <KBD
+CLASS="USERINPUT"
+>\crosstabview "A" "B" "AxB" ord</KBD
+>
+ A | 101 | 102 | 103 | 104 
+---+-----+-----+-----+-----
+ 4 | 404 | 408 | 412 | 416
+ 3 | 303 | 306 | 309 | 312
+ 2 | 202 | 204 | 206 | 208
+ 1 | 101 | 102 | 103 | 104
+(4 rows)</PRE
+><P>&#13;</P
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

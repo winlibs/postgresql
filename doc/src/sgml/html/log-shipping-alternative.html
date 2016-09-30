@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="High Availability, Load Balancing, and Replication"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 25. High Availability, Load Balancing, and Replication</TD
+>Chapter 26. High Availability, Load Balancing, and Replication</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="LOG-SHIPPING-ALTERNATIVE"
->25.4. Alternative Method for Log Shipping</A
+>26.4. Alternative Method for Log Shipping</A
 ></H1
 ><P
 >    An alternative to the built-in standby mode described in the previous
@@ -243,7 +243,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="WARM-STANDBY-CONFIG"
->25.4.1. Implementation</A
+>26.4.1. Implementation</A
 ></H2
 ><P
 >    The short procedure for configuring a standby server using this alternative
@@ -282,7 +282,7 @@ HREF="runtime-config-wal.html#GUC-ARCHIVE-TIMEOUT"
        are set appropriately on the primary
        (see <A
 HREF="continuous-archiving.html#BACKUP-ARCHIVING-WAL"
->Section 24.3.1</A
+>Section 25.3.1</A
 >).
       </P
 ></LI
@@ -290,7 +290,7 @@ HREF="continuous-archiving.html#BACKUP-ARCHIVING-WAL"
 ><P
 >       Make a base backup of the primary server (see <A
 HREF="continuous-archiving.html#BACKUP-BASE-BACKUP"
->Section 24.3.2</A
+>Section 25.3.2</A
 >), and load this data onto the standby.
       </P
 ></LI
@@ -307,7 +307,7 @@ CLASS="VARNAME"
 > that waits as described
        previously (see <A
 HREF="continuous-archiving.html#BACKUP-PITR-RECOVERY"
->Section 24.3.4</A
+>Section 25.3.4</A
 >).
       </P
 ></LI
@@ -334,7 +334,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="WARM-STANDBY-RECORD"
->25.4.2. Record-based Log Shipping</A
+>26.4.2. Record-based Log Shipping</A
 ></H2
 ><P
 >    It is also possible to implement record-based log shipping using this
@@ -379,7 +379,7 @@ CLASS="PRODUCTNAME"
 > version 9.0, you can use
     streaming replication (see <A
 HREF="warm-standby.html#STREAMING-REPLICATION"
->Section 25.2.5</A
+>Section 26.2.5</A
 >) to
     achieve the same benefits with less effort.
    </P

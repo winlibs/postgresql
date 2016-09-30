@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -126,7 +126,7 @@ CLASS="ACRONYM"
     arguments.  Details are in
     <A
 HREF="functions-string.html#FUNCTIONS-STRING-SQL"
->Table 9-6</A
+>Table 9-8</A
 >.
     <SPAN
 CLASS="PRODUCTNAME"
@@ -135,7 +135,7 @@ CLASS="PRODUCTNAME"
     that use the regular function invocation syntax
     (see <A
 HREF="functions-string.html#FUNCTIONS-STRING-OTHER"
->Table 9-7</A
+>Table 9-9</A
 >).
    </P
 ><DIV
@@ -162,7 +162,7 @@ CLASS="LITERAL"
 >) still accepts non-string input, so long as at least one
      input is of a string type, as shown in <A
 HREF="functions-string.html#FUNCTIONS-STRING-SQL"
->Table 9-6</A
+>Table 9-8</A
 >.  For other cases, insert an explicit
      coercion to <TT
 CLASS="TYPE"
@@ -178,7 +178,7 @@ NAME="FUNCTIONS-STRING-SQL"
 ></A
 ><P
 ><B
->Table 9-6. <ACRONYM
+>Table 9-8. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > String Functions and Operators</B
@@ -785,14 +785,14 @@ CLASS="LITERAL"
 >    Additional string manipulation functions are available and are
     listed in <A
 HREF="functions-string.html#FUNCTIONS-STRING-OTHER"
->Table 9-7</A
+>Table 9-9</A
 >.  Some of them are used internally to implement the
     <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 >-standard string functions listed in <A
 HREF="functions-string.html#FUNCTIONS-STRING-SQL"
->Table 9-6</A
+>Table 9-8</A
 >.
    </P
 ><DIV
@@ -802,7 +802,7 @@ NAME="FUNCTIONS-STRING-OTHER"
 ></A
 ><P
 ><B
->Table 9-7. Other String Functions</B
+>Table 9-9. Other String Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1115,7 +1115,7 @@ CLASS="COMMAND"
 >.
         Also there are some predefined conversions. See <A
 HREF="functions-string.html#CONVERSION-NAMES"
->Table 9-8</A
+>Table 9-10</A
 > for available conversions.
        </TD
 ><TD
@@ -1754,6 +1754,65 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
+>parse_ident(<TT
+CLASS="PARAMETER"
+>qualified_identifier</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>
+           [, <TT
+CLASS="PARAMETER"
+>strictmode</TT
+> <TT
+CLASS="TYPE"
+>boolean</TT
+> DEFAULT true ] )</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>text[]</TT
+></TD
+><TD
+>        Split <TT
+CLASS="PARAMETER"
+>qualified_identifier</TT
+> into an array of
+        identifiers, removing any quoting of individual identifiers.  By
+        default, extra characters after the last identifier are considered an
+        error; but if the second parameter is <TT
+CLASS="LITERAL"
+>false</TT
+>, then such
+        extra characters are ignored. (This behavior is useful for parsing
+        names for objects like functions.) Note that this function does not
+        truncate over-length identifiers. If you want truncation you can cast
+        the result to <TT
+CLASS="TYPE"
+>name[]</TT
+>.
+       </TD
+><TD
+><TT
+CLASS="LITERAL"
+>parse_ident('"SomeSchema".someTable')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>{SomeSchema,sometable}</TT
+></TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
 >pg_client_encoding()</CODE
 ></TT
 >
@@ -1810,7 +1869,7 @@ CLASS="ACRONYM"
         Embedded quotes are properly doubled.
         See also <A
 HREF="plpgsql-statements.html#PLPGSQL-QUOTE-LITERAL-EXAMPLE"
->Example 40-1</A
+>Example 41-1</A
 >.
        </TD
 ><TD
@@ -1864,7 +1923,7 @@ CLASS="FUNCTION"
 > is often more suitable.
         See also <A
 HREF="plpgsql-statements.html#PLPGSQL-QUOTE-LITERAL-EXAMPLE"
->Example 40-1</A
+>Example 41-1</A
 >.
        </TD
 ><TD
@@ -1948,7 +2007,7 @@ CLASS="LITERAL"
         Embedded single-quotes and backslashes are properly doubled.
         See also <A
 HREF="plpgsql-statements.html#PLPGSQL-QUOTE-LITERAL-EXAMPLE"
->Example 40-1</A
+>Example 41-1</A
 >.
        </TD
 ><TD
@@ -2922,7 +2981,7 @@ CLASS="LITERAL"
 >VARIADIC</TT
 > keyword (see <A
 HREF="xfunc-sql.html#XFUNC-SQL-VARIADIC-FUNCTIONS"
->Section 35.4.5</A
+>Section 36.4.5</A
 >).  The array's elements are
     treated as if they were separate ordinary arguments to the function.
     If the variadic array argument is NULL, <CODE
@@ -2955,7 +3014,7 @@ NAME="CONVERSION-NAMES"
 ></A
 ><P
 ><B
->Table 9-8. Built-in Conversions</B
+>Table 9-10. Built-in Conversions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2965,8 +3024,8 @@ CLASS="CALSTABLE"
 ><TH
 >Conversion Name
         <A
-NAME="AEN10657"
-HREF="#FTN.AEN10657"
+NAME="AEN10929"
+HREF="#FTN.AEN10929"
 ><SPAN
 CLASS="footnote"
 >[a]</SPAN
@@ -5161,7 +5220,7 @@ CLASS="LITERAL"
 ><TD
 COLSPAN="3"
 >Notes:<BR><A
-NAME="FTN.AEN10657"
+NAME="FTN.AEN10929"
 >a. </A
 >          The conversion names follow a standard naming scheme: The
           official name of the source encoding with all
@@ -5679,7 +5738,7 @@ CLASS="LITERAL"
      useful for safely constructing dynamic SQL statements.  See
      <A
 HREF="plpgsql-statements.html#PLPGSQL-QUOTE-LITERAL-EXAMPLE"
->Example 40-1</A
+>Example 41-1</A
 >.
     </P
 ></DIV

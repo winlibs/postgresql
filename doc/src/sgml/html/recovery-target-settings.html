@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Recovery Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 26. Recovery Configuration</TD
+>Chapter 27. Recovery Configuration</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="RECOVERY-TARGET-SETTINGS"
->26.2. Recovery Target Settings</A
+>27.2. Recovery Target Settings</A
 ></H1
 ><P
 >      By default, recovery will recover to the end of the WAL log. The
@@ -294,7 +294,7 @@ CLASS="LITERAL"
         a state that itself was reached after a point-in-time recovery.
         See <A
 HREF="continuous-archiving.html#BACKUP-TIMELINES"
->Section 24.3.5</A
+>Section 25.3.5</A
 > for discussion.
        </P
 ></DD
@@ -342,7 +342,7 @@ CLASS="FUNCTION"
 > (see
         <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL-TABLE"
->Table 9-70</A
+>Table 9-80</A
 >), which then
         causes recovery to end. If this recovery target is not the
         desired stopping point, then shut down the server, change the

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETABLESPACE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN79502"
+NAME="AEN82867"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN79502"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN79505"
+NAME="AEN82870"
 ></A
 ><H2
 >Synopsis</H2
@@ -142,7 +142,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN79512"
+NAME="AEN82877"
 ></A
 ><H2
 >Description</H2
@@ -205,7 +205,7 @@ ALIGN="LEFT"
 >    A tablespace cannot be used independently of the cluster in which it
     is defined;  see <A
 HREF="manage-ag-tablespaces.html"
->Section 21.6</A
+>Section 22.6</A
 >.
    </P
 ></TD
@@ -216,7 +216,7 @@ HREF="manage-ag-tablespaces.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN79526"
+NAME="AEN82891"
 ></A
 ><H2
 >Parameters</H2
@@ -288,23 +288,30 @@ CLASS="REPLACEABLE"
         available parameters are <TT
 CLASS="VARNAME"
 >seq_page_cost</TT
-> and
+>,
         <TT
 CLASS="VARNAME"
 >random_page_cost</TT
->.  Setting either value for a particular
-        tablespace will override the planner's usual estimate of the cost of
-        reading pages from tables in that tablespace, as established by
-        the configuration parameters of the same name (see
-        <A
+> and <TT
+CLASS="VARNAME"
+>effective_io_concurrency</TT
+>.
+        Setting either value for a particular tablespace will override the
+        planner's usual estimate of the cost of reading pages from tables in
+        that tablespace, as established by the configuration parameters of the
+        same name (see <A
 HREF="runtime-config-query.html#GUC-SEQ-PAGE-COST"
 >seq_page_cost</A
 >,
         <A
 HREF="runtime-config-query.html#GUC-RANDOM-PAGE-COST"
 >random_page_cost</A
->).  This may be useful if one
-        tablespace is located on a disk which is faster or slower than the
+>,
+        <A
+HREF="runtime-config-resource.html#GUC-EFFECTIVE-IO-CONCURRENCY"
+>effective_io_concurrency</A
+>).  This may be useful if
+        one tablespace is located on a disk which is faster or slower than the
         remainder of the I/O subsystem.
        </P
 ></DD
@@ -314,7 +321,7 @@ HREF="runtime-config-query.html#GUC-RANDOM-PAGE-COST"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN79555"
+NAME="AEN82922"
 ></A
 ><H2
 >Notes</H2
@@ -332,7 +339,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN79560"
+NAME="AEN82927"
 ></A
 ><H2
 >Examples</H2
@@ -369,7 +376,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN79571"
+NAME="AEN82938"
 ></A
 ><H2
 >Compatibility</H2
@@ -387,7 +394,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN79576"
+NAME="AEN82943"
 ></A
 ><H2
 >See Also</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEEXTENSION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN75652"
+NAME="AEN78982"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN75652"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN75655"
+NAME="AEN78985"
 ></A
 ><H2
 >Synopsis</H2
@@ -132,12 +132,13 @@ CLASS="REPLACEABLE"
 ><I
 >old_version</I
 ></TT
-> ]</PRE
+> ]
+             [ CASCADE ]</PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75661"
+NAME="AEN78991"
 ></A
 ><H2
 >Description</H2
@@ -180,7 +181,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75671"
+NAME="AEN79001"
 ></A
 ><H2
 >Parameters</H2
@@ -247,6 +248,47 @@ CLASS="REPLACEABLE"
         schema either, the current default object creation schema is used.
        </P
 ><P
+>        If the extension specifies a <TT
+CLASS="LITERAL"
+>schema</TT
+> parameter in its
+        control file, then that schema cannot be overridden with
+        a <TT
+CLASS="LITERAL"
+>SCHEMA</TT
+> clause.  Normally, an error will be raised if
+        a <TT
+CLASS="LITERAL"
+>SCHEMA</TT
+> clause is given and it conflicts with the
+        extension's <TT
+CLASS="LITERAL"
+>schema</TT
+> parameter.  However, if
+        the <TT
+CLASS="LITERAL"
+>CASCADE</TT
+> clause is also given,
+        then <TT
+CLASS="REPLACEABLE"
+><I
+>schema_name</I
+></TT
+> is
+        ignored when it conflicts.  The
+        given <TT
+CLASS="REPLACEABLE"
+><I
+>schema_name</I
+></TT
+> will be
+        used for installation of any needed extensions that do not
+        specify <TT
+CLASS="LITERAL"
+>schema</TT
+> in their control files.
+       </P
+><P
 >        Remember that the extension itself is not considered to be within any
         schema: extensions have unqualified names that must be unique
         database-wide.  But objects belonging to the extension can be within
@@ -276,7 +318,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
-><TT
+>        <TT
 CLASS="LITERAL"
 >FROM</TT
 > <TT
@@ -328,13 +370,32 @@ CLASS="REPLACEABLE"
         updating a module to extension style.
        </P
 ></DD
+><DT
+><TT
+CLASS="LITERAL"
+>CASCADE</TT
+></DT
+><DD
+><P
+>        Automatically install any extensions that this extension depends on
+        that are not already installed.  Their dependencies are likewise
+        automatically installed, recursively.  The <TT
+CLASS="LITERAL"
+>SCHEMA</TT
+> clause,
+        if given, applies to all extensions that get installed this way.
+        Other options of the statement are not applied to
+        automatically-installed extensions; in particular, their default
+        versions are always selected.
+       </P
+></DD
 ></DL
 ></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75714"
+NAME="AEN79059"
 ></A
 ><H2
 >Notes</H2
@@ -377,14 +438,14 @@ CLASS="STRUCTNAME"
 >   For information about writing new extensions, see
    <A
 HREF="extend-extensions.html"
->Section 35.15</A
+>Section 36.15</A
 >.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75727"
+NAME="AEN79072"
 ></A
 ><H2
 >Examples</H2
@@ -419,7 +480,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75736"
+NAME="AEN79081"
 ></A
 ><H2
 >Compatibility</H2
@@ -437,7 +498,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN75741"
+NAME="AEN79086"
 ></A
 ><H2
 >See Also</H2

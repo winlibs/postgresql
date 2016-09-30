@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 18. Server Configuration</TD
+>Chapter 19. Server Configuration</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="RUNTIME-CONFIG-RESOURCE"
->18.4. Resource Consumption</A
+>19.4. Resource Consumption</A
 ></H1
 ><DIV
 CLASS="SECT2"
@@ -101,7 +101,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-RESOURCE-MEMORY"
->18.4.1. Memory</A
+>19.4.1. Memory</A
 ></H2
 ><P
 ></P
@@ -227,7 +227,7 @@ CLASS="LITERAL"
         spent on memory management, increasing performance. For more details,
         see <A
 HREF="kernel-resources.html#LINUX-HUGE-PAGES"
->Section 17.4.4</A
+>Section 18.4.4</A
 >.
        </P
 ><P
@@ -440,6 +440,64 @@ HREF="runtime-config-resource.html#GUC-AUTOVACUUM-WORK-MEM"
 ></DD
 ><DT
 ><A
+NAME="GUC-REPLACEMENT-SORT-TUPLES"
+></A
+><TT
+CLASS="VARNAME"
+>replacement_sort_tuples</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        When the number of tuples to be sorted is smaller than this number,
+        a sort will produce its first output run using replacement selection
+        rather than quicksort.  This may be useful in memory-constrained
+        environments where tuples that are input into larger sort operations
+        have a strong physical-to-logical correlation.  Note that this does
+        not include input tuples with an <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>inverse</I
+></SPAN
+>
+        correlation.  It is possible for the replacement selection algorithm
+        to generate one long run that requires no merging, where use of the
+        default strategy would result in many runs that must be merged
+        to produce a final sorted output.  This may allow sort
+        operations to complete sooner.
+       </P
+><P
+>        The default is 150,000 tuples.  Note that higher values are typically
+        not much more effective, and may be counter-productive, since the
+        priority queue is sensitive to the size of available CPU cache, whereas
+        the default strategy sorts runs using a <I
+CLASS="FIRSTTERM"
+>cache
+        oblivious</I
+> algorithm.  This property allows the default sort
+        strategy to automatically and transparently make effective use
+        of available CPU cache.
+       </P
+><P
+>        Setting <TT
+CLASS="VARNAME"
+>maintenance_work_mem</TT
+> to its default
+        value usually prevents utility command external sorts (e.g.,
+        sorts used by <TT
+CLASS="COMMAND"
+>CREATE INDEX</TT
+> to build B-Tree
+        indexes) from ever using replacement selection sort, unless the
+        input tuples are quite wide.
+       </P
+></DD
+><DT
+><A
 NAME="GUC-AUTOVACUUM-WORK-MEM"
 ></A
 ><TT
@@ -580,7 +638,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-RESOURCE-DISK"
->18.4.2. Disk</A
+>19.4.2. Disk</A
 ></H2
 ><P
 ></P
@@ -601,7 +659,7 @@ CLASS="TYPE"
       </DT
 ><DD
 ><P
->        Specifies the maximum amount of disk space that a session can use
+>        Specifies the maximum amount of disk space that a process can use
         for temporary files, such as sort and hash temporary files, or the
         storage file for a held cursor.  A transaction attempting to exceed
         this limit will be canceled.
@@ -617,7 +675,7 @@ CLASS="LITERAL"
         temporary files used by a given <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> session.
+> process.
         It should be noted that disk space used for explicit temporary
         tables, as opposed to temporary files used behind-the-scenes in query
         execution, does <SPAN
@@ -638,7 +696,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-RESOURCE-KERNEL"
->18.4.3. Kernel Resource Usage</A
+>19.4.3. Kernel Resource Usage</A
 ></H2
 ><P
 ></P
@@ -682,7 +740,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-RESOURCE-VACUUM-COST"
->18.4.4. Cost-based Vacuum Delay</A
+>19.4.4. Cost-based Vacuum Delay</A
 ></H2
 ><P
 >      During the execution of <A
@@ -897,7 +955,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-RESOURCE-BACKGROUND-WRITER"
->18.4.5. Background Writer</A
+>19.4.5. Background Writer</A
 ></H2
 ><P
 >      There is a separate server
@@ -1037,6 +1095,63 @@ CLASS="FILENAME"
          file or on the server command line.
         </P
 ></DD
+><DT
+><A
+NAME="GUC-BGWRITER-FLUSH-AFTER"
+></A
+><TT
+CLASS="VARNAME"
+>bgwriter_flush_after</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+       </DT
+><DD
+><P
+>         Whenever more than <TT
+CLASS="VARNAME"
+>bgwriter_flush_after</TT
+> bytes have
+         been written by the bgwriter, attempt to force the OS to issue these
+         writes to the underlying storage.  Doing so will limit the amount of
+         dirty data in the kernel's page cache, reducing the likelihood of
+         stalls when an fsync is issued at the end of a checkpoint, or when
+         the OS writes data back in larger batches in the background.  Often
+         that will result in greatly reduced transaction latency, but there
+         also are some cases, especially with workloads that are bigger than
+         <A
+HREF="runtime-config-resource.html#GUC-SHARED-BUFFERS"
+>shared_buffers</A
+>, but smaller than the OS's page
+         cache, where performance might degrade.  This setting may have no
+         effect on some platforms.  The valid range is between
+         <TT
+CLASS="LITERAL"
+>0</TT
+>, which disables controlled writeback, and
+         <TT
+CLASS="LITERAL"
+>2MB</TT
+>.  The default is <TT
+CLASS="LITERAL"
+>512kB</TT
+> on Linux,
+         <TT
+CLASS="LITERAL"
+>0</TT
+> elsewhere.  (Non-default values of
+         <TT
+CLASS="SYMBOL"
+>BLCKSZ</TT
+> change the default and maximum.)
+         This parameter can only be set in the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>
+         file or on the server command line.
+        </P
+></DD
 ></DL
 ></DIV
 ><P
@@ -1059,7 +1174,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-RESOURCE-ASYNC-BEHAVIOR"
->18.4.6. Asynchronous Behavior</A
+>19.4.6. Asynchronous Behavior</A
 ></H2
 ><P
 ></P
@@ -1095,19 +1210,16 @@ CLASS="PRODUCTNAME"
          this setting only affects bitmap heap scans.
         </P
 ><P
->         A good starting point for this setting is the number of separate
+>         For magnetic drives, a good starting point for this setting is the
+         number of separate
          drives comprising a RAID 0 stripe or RAID 1 mirror being used for the
          database.  (For RAID 5 the parity drive should not be counted.)
          However, if the database is often busy with multiple queries issued in
          concurrent sessions, lower values may be sufficient to keep the disk
          array busy.  A value higher than needed to keep the disks busy will
          only result in extra CPU overhead.
-        </P
-><P
->         For more exotic systems, such as memory-based storage or a RAID array
-         that is limited by bus bandwidth, the correct value might be the
-         number of I/O paths available.  Some experimentation may be needed
-         to find the best value.
+         SSDs and other memory-based storage can often process many
+         concurrent requests, so the best value might be in the hundreds.
         </P
 ><P
 >         Asynchronous I/O depends on an effective <CODE
@@ -1120,7 +1232,13 @@ CLASS="FUNCTION"
          is present but does not actually do anything.
         </P
 ><P
->         The default is 1 on supported systems, otherwise 0.
+>         The default is 1 on supported systems, otherwise 0.  This value can
+         be overridden for tables in a particular tablespace by setting the
+         tablespace parameter of the same name (see
+         <A
+HREF="sql-altertablespace.html"
+>ALTER TABLESPACE</A
+>).
         </P
 ></DD
 ><DT
@@ -1138,12 +1256,202 @@ CLASS="TYPE"
 ><DD
 ><P
 >         Sets the maximum number of background processes that the system
-         can support.  This parameter can only be set at server start.
+         can support.  This parameter can only be set at server start.  The
+         default is 8.
         </P
 ><P
 >         When running a standby server, you must set this parameter to the
          same or higher value than on the master server. Otherwise, queries
          will not be allowed in the standby server.
+        </P
+></DD
+><DT
+><A
+NAME="GUC-MAX-PARALLEL-WORKERS-PER-GATHER"
+></A
+><TT
+CLASS="VARNAME"
+>max_parallel_workers_per_gather</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+       </DT
+><DD
+><P
+>         Sets the maximum number of workers that can be started by a single
+         <TT
+CLASS="LITERAL"
+>Gather</TT
+> node.  Parallel workers are taken from the
+         pool of processes established by
+         <A
+HREF="runtime-config-resource.html#GUC-MAX-WORKER-PROCESSES"
+>max_worker_processes</A
+>.  Note that the requested
+         number of workers may not actually be available at run time.  If this
+         occurs, the plan will run with fewer workers than expected, which may
+         be inefficient.  Setting this value to 0, which is the default,
+         disables parallel query execution.
+        </P
+><P
+>         Note that parallel queries may consume very substantially more
+         resources than non-parallel queries, because each worker process is
+         a completely separate process which has roughly the same impact on the
+         system as an additional user session.  This should be taken into
+         account when choosing a value for this setting, as well as when
+         configuring other settings that control resource utilization, such
+         as <A
+HREF="runtime-config-resource.html#GUC-WORK-MEM"
+>work_mem</A
+>.  Resource limits such as
+         <TT
+CLASS="VARNAME"
+>work_mem</TT
+> are applied individually to each worker,
+         which means the total utilization may be much higher across all
+         processes than it would normally be for any single process.
+         For example, a parallel query using 4 workers may use up to 5 times
+         as much CPU time, memory, I/O bandwidth, and so forth as a query which
+         uses no workers at all.
+        </P
+><P
+>         For more information on parallel query, see
+         <A
+HREF="parallel-query.html"
+>Chapter 15</A
+>.
+        </P
+></DD
+><DT
+><A
+NAME="GUC-BACKEND-FLUSH-AFTER"
+></A
+><TT
+CLASS="VARNAME"
+>backend_flush_after</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+       </DT
+><DD
+><P
+>         Whenever more than <TT
+CLASS="VARNAME"
+>backend_flush_after</TT
+> bytes have
+         been written by a single backend, attempt to force the OS to issue
+         these writes to the underlying storage.  Doing so will limit the
+         amount of dirty data in the kernel's page cache, reducing the
+         likelihood of stalls when an fsync is issued at the end of a
+         checkpoint, or when the OS writes data back in larger batches in the
+         background.  Often that will result in greatly reduced transaction
+         latency, but there also are some cases, especially with workloads
+         that are bigger than <A
+HREF="runtime-config-resource.html#GUC-SHARED-BUFFERS"
+>shared_buffers</A
+>, but smaller
+         than the OS's page cache, where performance might degrade.  This
+         setting may have no effect on some platforms.  The valid range is
+         between <TT
+CLASS="LITERAL"
+>0</TT
+>, which disables controlled writeback,
+         and <TT
+CLASS="LITERAL"
+>2MB</TT
+>.  The default is <TT
+CLASS="LITERAL"
+>0</TT
+> (i.e. no
+         flush control).  (Non-default values of <TT
+CLASS="SYMBOL"
+>BLCKSZ</TT
+>
+         change the maximum.)
+        </P
+></DD
+><DT
+><A
+NAME="GUC-OLD-SNAPSHOT-THRESHOLD"
+></A
+><TT
+CLASS="VARNAME"
+>old_snapshot_threshold</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+       </DT
+><DD
+><P
+>         Sets the minimum time that a snapshot can be used without risk of a
+         <TT
+CLASS="LITERAL"
+>snapshot too old</TT
+> error occurring when using the snapshot.
+         This parameter can only be set at server start.
+        </P
+><P
+>         Beyond the threshold, old data may be vacuumed away.  This can help
+         prevent bloat in the face of snapshots which remain in use for a
+         long time.  To prevent incorrect results due to cleanup of data which
+         would otherwise be visible to the snapshot, an error is generated
+         when the snapshot is older than this threshold and the snapshot is
+         used to read a page which has been modified since the snapshot was
+         built.
+        </P
+><P
+>         A value of <TT
+CLASS="LITERAL"
+>-1</TT
+> disables this feature, and is the default.
+         Useful values for production work probably range from a small number
+         of hours to a few days.  The setting will be coerced to a granularity
+         of minutes, and small numbers (such as <TT
+CLASS="LITERAL"
+>0</TT
+> or
+         <TT
+CLASS="LITERAL"
+>1min</TT
+>) are only allowed because they may sometimes be
+         useful for testing.  While a setting as high as <TT
+CLASS="LITERAL"
+>60d</TT
+> is
+         allowed, please note that in many workloads extreme bloat or
+         transaction ID wraparound may occur in much shorter time frames.
+        </P
+><P
+>         When this feature is enabled, freed space at the end of a relation
+         cannot be released to the operating system, since that could remove
+         information needed to detect the <TT
+CLASS="LITERAL"
+>snapshot too old</TT
+>
+         condition.  All space allocated to a relation remains associated with
+         that relation for reuse only within that relation unless explicitly
+         freed (for example, with <TT
+CLASS="COMMAND"
+>VACUUM FULL</TT
+>).
+        </P
+><P
+>         This setting does not attempt to guarantee that an error will be
+         generated under any particular circumstances.  In fact, if the
+         correct results can be generated from (for example) a cursor which
+         has materialized a result set, no error will be generated even if the
+         underlying rows in the referenced table have been vacuumed away.
+         Some tables cannot safely be vacuumed early, and so will not be
+         affected by this setting.  Examples include system catalogs and any
+         table which has a hash index.  For such tables this setting will
+         neither reduce bloat nor create a possibility of a <TT
+CLASS="LITERAL"
+>snapshot
+         too old</TT
+> error on scanning.
         </P
 ></DD
 ></DL

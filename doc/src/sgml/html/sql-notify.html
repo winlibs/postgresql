@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-NOTIFY"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN85400"
+NAME="AEN88862"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN85400"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN85403"
+NAME="AEN88865"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85407"
+NAME="AEN88869"
 ></A
 ><H2
 >Description</H2
@@ -202,7 +202,7 @@ CLASS="COMMAND"
    <TT
 CLASS="COMMAND"
 >NOTIFY</TT
-> in a rule that is triggered by table updates.
+> in a statement trigger that is triggered by table updates.
    In this way, notification happens automatically when the table is changed,
    and the application programmer cannot accidentally forget to do it.
   </P
@@ -286,7 +286,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85439"
+NAME="AEN88901"
 ></A
 ><H2
 >Parameters</H2
@@ -332,7 +332,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85453"
+NAME="AEN88915"
 ></A
 ><H2
 >Notes</H2
@@ -355,6 +355,17 @@ CLASS="COMMAND"
    current transaction so that cleanup can proceed.
   </P
 ><P
+>   The function <CODE
+CLASS="FUNCTION"
+>pg_notification_queue_usage</CODE
+> returns the
+   fraction of the queue that is currently occupied by pending notifications.
+   See <A
+HREF="functions-info.html"
+>Section 9.25</A
+> for more information.
+  </P
+><P
 >   A transaction that has executed <TT
 CLASS="COMMAND"
 >NOTIFY</TT
@@ -364,7 +375,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN85460"
+NAME="AEN88925"
 ></A
 ><H3
 >pg_notify</H3
@@ -396,7 +407,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85470"
+NAME="AEN88935"
 ></A
 ><H2
 >Examples</H2
@@ -423,7 +434,7 @@ Asynchronous notification "foo" with payload "payload" received from server proc
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85475"
+NAME="AEN88940"
 ></A
 ><H2
 >Compatibility</H2
@@ -438,7 +449,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85479"
+NAME="AEN88944"
 ></A
 ><H2
 >See Also</H2

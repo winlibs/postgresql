@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Coding Conventions"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="Reporting Errors Within the Server"
 HREF="error-message-reporting.html"><LINK
 REL="NEXT"
-TITLE="Native Language Support"
-HREF="nls.html"><LINK
+TITLE="Miscellaneous Coding Conventions"
+HREF="source-conventions.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,14 +71,14 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 51. PostgreSQL Coding Conventions</TD
+>Chapter 52. PostgreSQL Coding Conventions</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="Native Language Support"
-HREF="nls.html"
+TITLE="Miscellaneous Coding Conventions"
+HREF="source-conventions.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="ERROR-STYLE-GUIDE"
->51.3. Error Message Style Guide</A
+>52.3. Error Message Style Guide</A
 ></H1
 ><P
 >    This style guide is offered in the hope of maintaining a consistent,
@@ -108,8 +108,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110760"
->51.3.1. What Goes Where</A
+NAME="AEN114721"
+>52.3.1. What Goes Where</A
 ></H2
 ><P
 >    The primary message should be short, factual, and avoid reference to
@@ -150,7 +150,7 @@ Hint:       the addendum</PRE
     verbose mode, or perhaps a pop-up error-details window.  Also, details and
     hints would normally be suppressed from the server log to save
     space. Reference to implementation details is best avoided since users
-    don't know the details anyway.
+    aren't expected to know the details.
    </P
 ></DIV
 ><DIV
@@ -158,8 +158,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110769"
->51.3.2. Formatting</A
+NAME="AEN114730"
+>52.3.2. Formatting</A
 ></H2
 ><P
 >    Don't put any specific assumptions about formatting into the message
@@ -181,8 +181,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110773"
->51.3.3. Quotation Marks</A
+NAME="AEN114734"
+>52.3.3. Quotation Marks</A
 ></H2
 ><P
 >    English text should use double quotes when quoting is appropriate.
@@ -204,8 +204,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110777"
->51.3.4. Use of Quotes</A
+NAME="AEN114738"
+>52.3.4. Use of Quotes</A
 ></H2
 ><P
 >    Use quotes always to delimit file names, user-supplied identifiers, and
@@ -232,8 +232,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110783"
->51.3.5. Grammar and Punctuation</A
+NAME="AEN114744"
+>52.3.5. Grammar and Punctuation</A
 ></H2
 ><P
 >    The rules are different for primary error messages and for detail/hint
@@ -270,8 +270,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110790"
->51.3.6. Upper Case vs. Lower Case</A
+NAME="AEN114751"
+>52.3.6. Upper Case vs. Lower Case</A
 ></H2
 ><P
 >    Use lower case for message wording, including the first letter of a
@@ -288,8 +288,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110794"
->51.3.7. Avoid Passive Voice</A
+NAME="AEN114755"
+>52.3.7. Avoid Passive Voice</A
 ></H2
 ><P
 >    Use the active voice.  Use complete sentences when there is an acting
@@ -312,8 +312,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110800"
->51.3.8. Present vs. Past Tense</A
+NAME="AEN114761"
+>52.3.8. Present vs. Past Tense</A
 ></H2
 ><P
 >    Use past tense if an attempt to do something failed, but could perhaps
@@ -360,8 +360,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110810"
->51.3.9. Type of the Object</A
+NAME="AEN114771"
+>52.3.9. Type of the Object</A
 ></H2
 ><P
 >    When citing the name of an object, state what kind of object it is.
@@ -379,8 +379,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110815"
->51.3.10. Brackets</A
+NAME="AEN114776"
+>52.3.10. Brackets</A
 ></H2
 ><P
 >    Square brackets are only to be used (1) in command synopses to denote
@@ -396,8 +396,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110819"
->51.3.11. Assembling Error Messages</A
+NAME="AEN114780"
+>52.3.11. Assembling Error Messages</A
 ></H2
 ><P
 >   When a message includes text that is generated elsewhere, embed it in
@@ -420,8 +420,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110824"
->51.3.12. Reasons for Errors</A
+NAME="AEN114785"
+>52.3.12. Reasons for Errors</A
 ></H2
 ><P
 >    Messages should always state the reason why an error occurred.
@@ -439,8 +439,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110828"
->51.3.13. Function Names</A
+NAME="AEN114789"
+>52.3.13. Function Names</A
 ></H2
 ><P
 >    Don't include the name of the reporting routine in the error text. We have
@@ -474,8 +474,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110835"
->51.3.14. Tricky Words to Avoid</A
+NAME="AEN114796"
+>52.3.14. Tricky Words to Avoid</A
 ></H2
 ><DIV
 CLASS="FORMALPARA"
@@ -619,8 +619,8 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110878"
->51.3.15. Proper Spelling</A
+NAME="AEN114839"
+>52.3.15. Proper Spelling</A
 ></H2
 ><P
 >    Spell out words in full.  For instance, avoid:
@@ -664,14 +664,14 @@ CLASS="SIMPLESECT"
 ><H2
 CLASS="SIMPLESECT"
 ><A
-NAME="AEN110893"
->51.3.16. Localization</A
+NAME="AEN114854"
+>52.3.16. Localization</A
 ></H2
 ><P
 >    Keep in mind that error message texts need to be translated into other
     languages.  Follow the guidelines in <A
 HREF="nls-programmer.html#NLS-GUIDELINES"
->Section 52.2.2</A
+>Section 53.2.2</A
 >
     to avoid making life difficult for translators.
    </P
@@ -711,7 +711,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="nls.html"
+HREF="source-conventions.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -735,7 +735,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->Native Language Support</TD
+>Miscellaneous Coding Conventions</TD
 ></TR
 ></TABLE
 ></DIV

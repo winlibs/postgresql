@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "SET SESSION AUTHORIZATION" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "SET SESSION AUTHORIZATION" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -96,7 +96,7 @@ SELECT SESSION_USER, CURRENT_USER;
 The SQL standard allows some other expressions to appear in place of the literal
 \fIuser_name\fR, but these options are not important in practice\&.
 PostgreSQL
-allows identifier syntax ("username"), which SQL does not\&. SQL does not allow this command during a transaction;
+allows identifier syntax ("\fIusername\fR"), which SQL does not\&. SQL does not allow this command during a transaction;
 PostgreSQL
 does not make this restriction because there is no reason to\&. The
 SESSION

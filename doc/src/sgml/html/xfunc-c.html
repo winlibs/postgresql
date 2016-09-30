@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 35. Extending <ACRONYM
+>Chapter 36. Extending <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 ></TD
@@ -96,7 +96,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="XFUNC-C"
->35.9. C-Language Functions</A
+>36.9. C-Language Functions</A
 ></H1
 ><P
 >    User-defined functions can be written in C (or a language that can
@@ -146,7 +146,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-C-DYNLOAD"
->35.9.1. Dynamic Loading</A
+>36.9.1. Dynamic Loading</A
 ></H2
 ><P
 >    The first time a user-defined function in a particular
@@ -279,7 +279,7 @@ CLASS="COMMAND"
      FUNCTION</TT
 > command.  See <A
 HREF="xfunc-c.html#DFUNC"
->Section 35.9.6</A
+>Section 36.9.6</A
 > for additional
      information.
     </P
@@ -364,7 +364,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-C-BASETYPE"
->35.9.2. Base Types in C-Language Functions</A
+>36.9.2. Base Types in C-Language Functions</A
 ></H2
 ><P
 >     To know how to write C-language functions, you need to know how
@@ -483,7 +483,7 @@ CLASS="TYPE"
 > in C.  See also
      <A
 HREF="xfunc-c.html#XFUNC-C-TYPE-TABLE"
->Table 35-1</A
+>Table 36-1</A
 >.)
     </P
 ><P
@@ -574,7 +574,7 @@ CLASS="EMPHASIS"
       The sole exception to this rule is explained in
       <A
 HREF="xaggr.html"
->Section 35.10</A
+>Section 36.10</A
 >.
      </P
 ></TD
@@ -651,7 +651,7 @@ CLASS="LITERAL"
 ><P
 >     <A
 HREF="xfunc-c.html#XFUNC-C-TYPE-TABLE"
->Table 35-1</A
+>Table 36-1</A
 > specifies which C type
      corresponds to which SQL type when writing a C-language function
      that uses a built-in type of <SPAN
@@ -679,7 +679,7 @@ NAME="XFUNC-C-TYPE-TABLE"
 ></A
 ><P
 ><B
->Table 35-1. Equivalent C Types for Built-in SQL Types</B
+>Table 36-1. Equivalent C Types for Built-in SQL Types</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1250,8 +1250,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN57351"
->35.9.3. Version 0 Calling Conventions</A
+NAME="AEN60224"
+>36.9.3. Version 0 Calling Conventions</A
 ></H2
 ><P
 >     We present the <SPAN
@@ -1469,8 +1469,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN57378"
->35.9.4. Version 1 Calling Conventions</A
+NAME="AEN60251"
+>36.9.4. Version 1 Calling Conventions</A
 ></H2
 ><P
 >     The version-1 calling convention relies on macros to suppress most
@@ -1812,15 +1812,15 @@ CLASS="LITERAL"
 >     Finally, the version-1 function call conventions make it possible
      to return set results (<A
 HREF="xfunc-c.html#XFUNC-C-RETURN-SET"
->Section 35.9.9</A
+>Section 36.9.9</A
 >) and
      implement trigger functions (<A
 HREF="triggers.html"
->Chapter 36</A
+>Chapter 37</A
 >) and
      procedural-language call handlers (<A
 HREF="plhandler.html"
->Chapter 53</A
+>Chapter 54</A
 >).  Version-1 code is also more
      portable than version-0, because it does not break restrictions
      on function call protocol in the C standard.  For more details
@@ -1836,8 +1836,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN57436"
->35.9.5. Writing Code</A
+NAME="AEN60309"
+>36.9.5. Writing Code</A
 ></H2
 ><P
 >     Before we turn to the more advanced topics, we should discuss
@@ -1888,7 +1888,7 @@ CLASS="PRODUCTNAME"
 > always
         requires special flags.  See <A
 HREF="xfunc-c.html#DFUNC"
->Section 35.9.6</A
+>Section 36.9.6</A
 > for a
         detailed explanation of how to do it for your particular
         operating system.
@@ -1902,7 +1902,7 @@ CLASS="QUOTE"
 > for your shared library,
         as described in <A
 HREF="xfunc-c.html#XFUNC-C-DYNLOAD"
->Section 35.9.1</A
+>Section 36.9.1</A
 >.
        </P
 ></LI
@@ -2023,7 +2023,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="DFUNC"
->35.9.6. Compiling and Linking Dynamically-loaded Functions</A
+>36.9.6. Compiling and Linking Dynamically-loaded Functions</A
 ></H2
 ><P
 >  Before you are able to use your
@@ -2451,7 +2451,7 @@ CLASS="COMMAND"
 ><P
 >  Refer back to <A
 HREF="xfunc-c.html#XFUNC-C-DYNLOAD"
->Section 35.9.1</A
+>Section 36.9.1</A
 > about where the
   server expects to find the shared library files.
  </P
@@ -2461,8 +2461,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN57637"
->35.9.7. Composite-type Arguments</A
+NAME="AEN60510"
+>36.9.7. Composite-type Arguments</A
 ></H2
 ><P
 >     Composite types do not have a fixed layout like C structures.
@@ -2621,8 +2621,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN57661"
->35.9.8. Returning Rows (Composite Types)</A
+NAME="AEN60534"
+>36.9.8. Returning Rows (Composite Types)</A
 ></H2
 ><P
 >     To return a row or composite-type value from a C-language
@@ -2869,7 +2869,7 @@ CLASS="STRUCTNAME"
 >HeapTuple</TT
 > given user data
      in C string form.  <TT
-CLASS="LITERAL"
+CLASS="PARAMETER"
 >values</TT
 > is an array of C strings,
      one for each attribute of the return row. Each C string should be in
@@ -2916,7 +2916,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-C-RETURN-SET"
->35.9.9. Returning Sets</A
+>36.9.9. Returning Sets</A
 ></H2
 ><P
 >     There is also a special API that provides support for returning
@@ -3414,8 +3414,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN57790"
->35.9.10. Polymorphic Arguments and Return Types</A
+NAME="AEN60663"
+>36.9.10. Polymorphic Arguments and Return Types</A
 ></H2
 ><P
 >     C-language functions can be declared to accept and
@@ -3439,7 +3439,7 @@ CLASS="TYPE"
 >.
      See <A
 HREF="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC"
->Section 35.2.5</A
+>Section 36.2.5</A
 > for a more detailed explanation
      of polymorphic functions. When function arguments or return types
      are defined as polymorphic types, the function author cannot know
@@ -3620,7 +3620,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XFUNC-TRANSFORM-FUNCTIONS"
->35.9.11. Transform Functions</A
+>36.9.11. Transform Functions</A
 ></H2
 ><P
 >     Some function calls can be simplified during planning based on
@@ -3688,8 +3688,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN57841"
->35.9.12. Shared Memory and LWLocks</A
+NAME="AEN60714"
+>36.9.12. Shared Memory and LWLocks</A
 ></H2
 ><P
 >     Add-ins can reserve LWLocks and an allocation of shared memory on server
@@ -3713,12 +3713,24 @@ CLASS="FUNCTION"
 >     LWLocks are reserved by calling:
 </P><PRE
 CLASS="PROGRAMLISTING"
->void RequestAddinLWLocks(int n)</PRE
+>void RequestNamedLWLockTranche(const char *tranche_name, int num_lwlocks)</PRE
 ><P>
      from <CODE
 CLASS="FUNCTION"
 >_PG_init</CODE
->.
+>.  This will ensure that an array of
+     <TT
+CLASS="LITERAL"
+>num_lwlocks</TT
+> LWLocks is available under the name
+     <TT
+CLASS="LITERAL"
+>tranche_name</TT
+>.  Use <CODE
+CLASS="FUNCTION"
+>GetNamedLWLockTranche</CODE
+>
+     to get a pointer to this array.
     </P
 ><P
 >     To avoid possible race-conditions, each backend should use the LWLock
@@ -3741,7 +3753,7 @@ if (!ptr)
         {
                 initialize contents of shmem area;
                 acquire any requested LWLocks using:
-                ptr-&#62;mylockid = LWLockAssign();
+                ptr-&#62;locks = GetNamedLWLockTranche("my tranche name");
         }
         LWLockRelease(AddinShmemInitLock);
 }</PRE
@@ -3754,7 +3766,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="EXTEND-CPP"
->35.9.13. Using C++ for Extensibility</A
+>36.9.13. Using C++ for Extensibility</A
 ></H2
 ><P
 >     Although the <SPAN

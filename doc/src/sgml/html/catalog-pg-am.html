@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 49. System Catalogs</TD
+>Chapter 50. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOG-PG-AM"
->49.3. <TT
+>50.3. <TT
 CLASS="STRUCTNAME"
 >pg_am</TT
 ></A
@@ -102,22 +102,23 @@ CLASS="STRUCTNAME"
 >   The catalog <TT
 CLASS="STRUCTNAME"
 >pg_am</TT
-> stores information about index
-   access methods.  There is one row for each index access method supported by
-   the system.  The contents of this catalog are discussed in detail in
-   <A
+> stores information about
+   relation access methods.  There is one row for each access method supported
+   by the system.
+   Currently, only indexes have access methods.  The requirements for index
+   access methods are discussed in detail in <A
 HREF="indexam.html"
->Chapter 58</A
+>Chapter 59</A
 >.
   </P
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN100552"
+NAME="AEN104549"
 ></A
 ><P
 ><B
->Table 49-3. <TT
+>Table 50-3. <TT
 CLASS="STRUCTNAME"
 >pg_am</TT
 > Columns</B
@@ -174,229 +175,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
->amstrategies</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->int2</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Number of operator strategies for this access method,
-       or zero if access method does not have a fixed set of operator
-       strategies</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amsupport</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->int2</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Number of support routines for this access method</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amcanorder</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Does the access method support ordered scans sorted by the
-       indexed column's value?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amcanorderbyop</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Does the access method support ordered scans sorted by the result
-       of an operator on the indexed column?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amcanbackward</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Does the access method support backward scanning?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amcanunique</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Does the access method support unique indexes?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amcanmulticol</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Does the access method support multicolumn indexes?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amoptionalkey</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Does the access method support a scan without any constraint
-       for the first index column?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amsearcharray</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Does the access method support <TT
-CLASS="LITERAL"
->ScalarArrayOpExpr</TT
-> searches?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amsearchnulls</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Does the access method support <TT
-CLASS="LITERAL"
->IS NULL</TT
->/<TT
-CLASS="LITERAL"
->NOT NULL</TT
-> searches?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amstorage</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Can index storage data type differ from column data type?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amclusterable</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Can an index of this type be clustered on?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->ampredlocks</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Does an index of this type manage fine-grained predicate locks?</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amkeytype</TT
+>amhandler</TT
 ></TD
 ><TD
 ><TT
@@ -407,31 +186,6 @@ CLASS="TYPE"
 ><TT
 CLASS="LITERAL"
 ><A
-HREF="catalog-pg-type.html"
-><TT
-CLASS="STRUCTNAME"
->pg_type</TT
-></A
->.oid</TT
-></TD
-><TD
->Type of data stored in index, or zero if not a fixed type</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->aminsert</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
 HREF="catalog-pg-proc.html"
 ><TT
 CLASS="STRUCTNAME"
@@ -440,397 +194,61 @@ CLASS="STRUCTNAME"
 >.oid</TT
 ></TD
 ><TD
-><SPAN
-CLASS="QUOTE"
->"Insert this tuple"</SPAN
-> function</TD
+>       OID of a handler function that is responsible for supplying information
+       about the access method
+      </TD
 ></TR
 ><TR
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
->ambeginscan</TT
+>amtype</TT
 ></TD
 ><TD
 ><TT
 CLASS="TYPE"
->regproc</TT
+>char</TT
 ></TD
 ><TD
-><TT
+>&nbsp;</TD
+><TD
+>       Currently always <TT
 CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
-><SPAN
-CLASS="QUOTE"
->"Prepare for index scan"</SPAN
-> function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amgettuple</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
-><SPAN
-CLASS="QUOTE"
->"Next valid tuple"</SPAN
-> function, or zero if none</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amgetbitmap</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
-><SPAN
-CLASS="QUOTE"
->"Fetch all valid tuples"</SPAN
-> function, or zero if none</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amrescan</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
-><SPAN
-CLASS="QUOTE"
->"(Re)start index scan"</SPAN
-> function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amendscan</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
-><SPAN
-CLASS="QUOTE"
->"Clean up after index scan"</SPAN
-> function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->ammarkpos</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
-><SPAN
-CLASS="QUOTE"
->"Mark current scan position"</SPAN
-> function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amrestrpos</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
-><SPAN
-CLASS="QUOTE"
->"Restore marked scan position"</SPAN
-> function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->ambuild</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
-><SPAN
-CLASS="QUOTE"
->"Build new index"</SPAN
-> function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->ambuildempty</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
-><SPAN
-CLASS="QUOTE"
->"Build empty index"</SPAN
-> function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->ambulkdelete</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
->Bulk-delete function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amvacuumcleanup</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
->Post-<TT
-CLASS="COMMAND"
->VACUUM</TT
-> cleanup function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amcanreturn</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
->Function to check whether an index column supports index-only
-       scans. Can be zero if index-only scans are never supported.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amcostestimate</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
->Function to estimate cost of an index scan</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->amoptions</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
->Function to parse and validate <TT
-CLASS="STRUCTFIELD"
->reloptions</TT
-> for an index</TD
+>i</TT
+> to indicate an index access
+       method; other values may be allowed in future
+      </TD
 ></TR
 ></TBODY
 ></TABLE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>    Before <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.6, <TT
+CLASS="STRUCTNAME"
+>pg_am</TT
+>
+    contained many additional columns representing properties of index access
+    methods.  That data is now only directly visible at the C code level.
+    However, <CODE
+CLASS="FUNCTION"
+>pg_index_column_has_property()</CODE
+> and related
+    functions have been added to allow SQL queries to inspect index access
+    method properties; see <A
+HREF="functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE"
+>Table 9-62</A
+>.
+   </P
+></BLOCKQUOTE
 ></DIV
 ></DIV
 ><DIV

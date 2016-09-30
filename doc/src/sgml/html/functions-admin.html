@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -113,7 +113,7 @@ NAME="FUNCTIONS-ADMIN-SET"
 ><P
 >    <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-SET-TABLE"
->Table 9-66</A
+>Table 9-76</A
 > shows the functions
     available to query and alter run-time configuration parameters.
    </P
@@ -124,7 +124,7 @@ NAME="FUNCTIONS-ADMIN-SET-TABLE"
 ></A
 ><P
 ><B
->Table 9-66. Configuration Settings Functions</B
+>Table 9-76. Configuration Settings Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -150,7 +150,10 @@ CLASS="FUNCTION"
 >current_setting(<TT
 CLASS="PARAMETER"
 >setting_name</TT
->)</CODE
+> [, <TT
+CLASS="PARAMETER"
+>missing_ok</TT
+> ])</CODE
 ></TT
 >
        </TD
@@ -221,6 +224,23 @@ CLASS="PROGRAMLISTING"
  ISO, MDY
 (1 row)</PRE
 ><P>
+
+    If there is no setting named <TT
+CLASS="PARAMETER"
+>setting_name</TT
+>,
+    <CODE
+CLASS="FUNCTION"
+>current_setting</CODE
+> throws an error
+    unless <TT
+CLASS="PARAMETER"
+>missing_ok</TT
+> is supplied and is
+    <TT
+CLASS="LITERAL"
+>true</TT
+>.
    </P
 ><P
 >    <CODE
@@ -274,10 +294,14 @@ NAME="FUNCTIONS-ADMIN-SIGNAL"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE"
->Table 9-67</A
+>Table 9-77</A
 > send control signals to
-    other server processes.  Use of these functions is usually restricted
-    to superusers, with noted exceptions.
+    other server processes.  Use of these functions is restricted to
+    superusers by default but access may be granted to others with the
+    <TT
+CLASS="COMMAND"
+>GRANT</TT
+>, with noted exceptions.
    </P
 ><DIV
 CLASS="TABLE"
@@ -286,7 +310,7 @@ NAME="FUNCTIONS-ADMIN-SIGNAL-TABLE"
 ></A
 ><P
 ><B
->Table 9-67. Server Signaling Functions</B
+>Table 9-77. Server Signaling Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -325,7 +349,11 @@ CLASS="TYPE"
 ></TD
 ><TD
 >Cancel a backend's current query.  This is also allowed if the
-        calling role is a member of the role whose backend is being canceled,
+        calling role is a member of the role whose backend is being canceled or
+        the calling role has been granted <TT
+CLASS="LITERAL"
+>pg_signal_backend</TT
+>,
         however only superusers can cancel superuser backends.
         </TD
 ></TR
@@ -388,8 +416,12 @@ CLASS="TYPE"
 ></TD
 ><TD
 >Terminate a backend.  This is also allowed if the calling role
-        is a member of the role whose backend is being terminated, however only
-        superusers can terminate superuser backends.
+        is a member of the role whose backend is being terminated or the
+        calling role has been granted <TT
+CLASS="LITERAL"
+>pg_signal_backend</TT
+>,
+        however only superusers can terminate superuser backends.
        </TD
 ></TR
 ></TBODY
@@ -487,7 +519,7 @@ NAME="FUNCTIONS-ADMIN-BACKUP"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-68</A
+>Table 9-78</A
 > assist in making on-line backups.
     These functions cannot be executed during recovery (except
     <CODE
@@ -509,7 +541,7 @@ NAME="FUNCTIONS-ADMIN-BACKUP-TABLE"
 ></A
 ><P
 ><B
->Table 9-68. Backup Control Functions</B
+>Table 9-78. Backup Control Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -547,7 +579,25 @@ CLASS="TYPE"
 >pg_lsn</TT
 ></TD
 ><TD
->Create a named point for performing restore (restricted to superusers)</TD
+>Create a named point for performing restore (restricted to superusers by default, but other users can be granted EXECUTE to run the function)</TD
+></TR
+><TR
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_current_xlog_flush_location()</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+><TD
+>Get current transaction log flush location</TD
 ></TR
 ><TR
 ><TD
@@ -605,7 +655,16 @@ CLASS="PARAMETER"
 > <TT
 CLASS="TYPE"
 >boolean</TT
+> [<SPAN
+CLASS="OPTIONAL"
+>, <TT
+CLASS="PARAMETER"
+>exclusive</TT
+> <TT
+CLASS="TYPE"
+>boolean</TT
 > </SPAN
+>]</SPAN
 >])</CODE
 ></TT
 >
@@ -616,7 +675,7 @@ CLASS="TYPE"
 >pg_lsn</TT
 ></TD
 ><TD
->Prepare for performing on-line backup (restricted to superusers or replication roles)</TD
+>Prepare for performing on-line backup (restricted to superusers by default, but other users can be granted EXECUTE to run the function)</TD
 ></TR
 ><TR
 ><TD
@@ -634,7 +693,31 @@ CLASS="TYPE"
 >pg_lsn</TT
 ></TD
 ><TD
->Finish performing on-line backup (restricted to superusers or replication roles)</TD
+>Finish performing exclusive on-line backup (restricted to superusers by default, but other users can be granted EXECUTE to run the function)</TD
+></TR
+><TR
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_stop_backup(<TT
+CLASS="PARAMETER"
+>exclusive</TT
+> <TT
+CLASS="TYPE"
+>boolean</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>setof record</TT
+></TD
+><TD
+>Finish performing exclusive or non-exclusive on-line backup (restricted to superusers by default, but other users can be granted EXECUTE to run the function)</TD
 ></TR
 ><TR
 ><TD
@@ -688,7 +771,7 @@ CLASS="TYPE"
 >pg_lsn</TT
 ></TD
 ><TD
->Force switch to a new transaction log file (restricted to superusers)</TD
+>Force switch to a new transaction log file (restricted to superusers by default, but other users can be granted EXECUTE to run the function)</TD
 ></TR
 ><TR
 ><TD
@@ -778,24 +861,31 @@ CLASS="TYPE"
 >    <CODE
 CLASS="FUNCTION"
 >pg_start_backup</CODE
-> accepts an
-    arbitrary user-defined label for the backup.  (Typically this would be
-    the name under which the backup dump file will be stored.)  The function
-    writes a backup label file (<TT
+> accepts an arbitrary user-defined label for
+    the backup.  (Typically this would be the name under which the backup dump
+    file will be stored.) When used in exclusive mode, the function writes a
+    backup label file (<TT
 CLASS="FILENAME"
 >backup_label</TT
->) and, if there
-    are any links in the <TT
+>) and, if there are any links
+    in the <TT
 CLASS="FILENAME"
 >pg_tblspc/</TT
-> directory, a tablespace map
-    file (<TT
+> directory, a tablespace map file
+    (<TT
 CLASS="FILENAME"
 >tablespace_map</TT
->) into the database cluster's data
-    directory, performs a checkpoint, and then returns the backup's starting
-    transaction log location as text.  The user can ignore this result value,
-    but it is provided in case it is useful.
+>) into the database cluster's data directory,
+    performs a checkpoint, and then returns the backup's starting transaction
+    log location as text.  The user can ignore this result value, but it is
+    provided in case it is useful. When used in non-exclusive mode, the
+    contents of these files are instead returned by the
+    <CODE
+CLASS="FUNCTION"
+>pg_stop_backup</CODE
+> function, and should be written to the backup
+    by the caller.
+
 </P><PRE
 CLASS="PROGRAMLISTING"
 >postgres=# select pg_start_backup('label_goes_here');
@@ -819,19 +909,31 @@ CLASS="FUNCTION"
     spike in I/O operations, slowing any concurrently executing queries.
    </P
 ><P
->    <CODE
+>    In an exclusive backup, <CODE
 CLASS="FUNCTION"
 >pg_stop_backup</CODE
-> removes the label file and, if it exists,
-    the <TT
+> removes the label file
+    and, if it exists, the <TT
 CLASS="FILENAME"
 >tablespace_map</TT
 > file created by
     <CODE
 CLASS="FUNCTION"
 >pg_start_backup</CODE
->, and creates a backup history file in
-    the transaction log archive area.  The history file includes the label given to
+>. In a non-exclusive backup, the contents of
+    the <TT
+CLASS="FILENAME"
+>backup_label</TT
+> and <TT
+CLASS="FILENAME"
+>tablespace_map</TT
+> are returned
+    in the result of the function, and should be written to files in the
+    backup (and not in the data directory).
+   </P
+><P
+>    The function also creates a backup history file in the transaction log
+    archive area. The history file includes the label given to
     <CODE
 CLASS="FUNCTION"
 >pg_start_backup</CODE
@@ -882,16 +984,20 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >pg_current_xlog_insert_location</CODE
 > displays the current transaction log
-    insertion point.  The insertion point is the <SPAN
+    insertion point and <CODE
+CLASS="FUNCTION"
+>pg_current_xlog_flush_location</CODE
+> displays the
+    current transaction log flush point. The insertion point is the <SPAN
 CLASS="QUOTE"
 >"logical"</SPAN
-> end
-    of the transaction log
-    at any instant, while the write location is the end of what has actually
-    been written out from the server's internal buffers.  The write location
-    is the end of what can be examined from outside the server, and is usually
+>
+    end of the transaction log at any instant, while the write location is the end of
+    what has actually been written out from the server's internal buffers and flush
+    location is the location guaranteed to be written to durable storage. The write
+    location is the end of what can be examined from outside the server, and is usually
     what you want if you are interested in archiving partially-complete transaction log
-    files.  The insertion point is made available primarily for server
+    files.  The insertion and flush points are made available primarily for server
     debugging purposes.  These are both read-only operations and do not
     require superuser permissions.
    </P
@@ -932,14 +1038,14 @@ CLASS="STRUCTNAME"
 > or some functions shown in
     <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-68</A
+>Table 9-78</A
 > to get the replication lag.
    </P
 ><P
 >    For details about proper usage of these functions, see
     <A
 HREF="continuous-archiving.html"
->Section 24.3</A
+>Section 25.3</A
 >.
    </P
 ></DIV
@@ -954,7 +1060,7 @@ NAME="FUNCTIONS-RECOVERY-CONTROL"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-INFO-TABLE"
->Table 9-69</A
+>Table 9-79</A
 > provide information
     about the current status of the standby.
     These functions may be executed both during recovery and in normal running.
@@ -966,7 +1072,7 @@ NAME="FUNCTIONS-RECOVERY-INFO-TABLE"
 ></A
 ><P
 ><B
->Table 9-69. Recovery Information Functions</B
+>Table 9-79. Recovery Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1083,7 +1189,7 @@ CLASS="TYPE"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-CONTROL-TABLE"
->Table 9-70</A
+>Table 9-80</A
 > control the progress of recovery.
     These functions may be executed only during recovery.
    </P
@@ -1094,7 +1200,7 @@ NAME="FUNCTIONS-RECOVERY-CONTROL-TABLE"
 ></A
 ><P
 ><B
->Table 9-70. Recovery Control Functions</B
+>Table 9-80. Recovery Control Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1145,7 +1251,7 @@ CLASS="TYPE"
 >void</TT
 ></TD
 ><TD
->Pauses recovery immediately (restricted to superusers).
+>Pauses recovery immediately (restricted to superusers by default, but other users can be granted EXECUTE to run the function).
        </TD
 ></TR
 ><TR
@@ -1164,7 +1270,7 @@ CLASS="TYPE"
 >void</TT
 ></TD
 ><TD
->Restarts recovery if it was paused (restricted to superusers).
+>Restarts recovery if it was paused (restricted to superusers by default, but other users can be granted EXECUTE to run the function).
        </TD
 ></TR
 ></TBODY
@@ -1239,7 +1345,7 @@ CLASS="FUNCTION"
 > function,
     shown in <A
 HREF="functions-admin.html#FUNCTIONS-SNAPSHOT-SYNCHRONIZATION-TABLE"
->Table 9-71</A
+>Table 9-81</A
 >, and
     imported with the <A
 HREF="sql-set-transaction.html"
@@ -1253,7 +1359,7 @@ NAME="FUNCTIONS-SNAPSHOT-SYNCHRONIZATION-TABLE"
 ></A
 ><P
 ><B
->Table 9-71. Snapshot Synchronization Functions</B
+>Table 9-81. Snapshot Synchronization Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1337,20 +1443,20 @@ NAME="FUNCTIONS-REPLICATION"
 >    The functions shown
     in <A
 HREF="functions-admin.html#FUNCTIONS-REPLICATION-TABLE"
->Table 9-72</A
+>Table 9-82</A
 > are for
     controlling and interacting with replication features.
     See <A
 HREF="warm-standby.html#STREAMING-REPLICATION"
->Section 25.2.5</A
+>Section 26.2.5</A
 >,
     <A
 HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
->Section 25.2.6</A
+>Section 26.2.6</A
 >, and
     <A
 HREF="replication-origins.html"
->Chapter 47</A
+>Chapter 48</A
 >
     for information about the underlying features.  Use of these
     functions is restricted to superusers.
@@ -1359,7 +1465,7 @@ HREF="replication-origins.html"
 >    Many of these functions have equivalent commands in the replication
     protocol; see <A
 HREF="protocol-replication.html"
->Section 50.3</A
+>Section 51.3</A
 >.
    </P
 ><P
@@ -1385,7 +1491,7 @@ NAME="FUNCTIONS-REPLICATION-TABLE"
 ></A
 ><P
 ><B
->Table 9-72. Replication <ACRONYM
+>Table 9-82. Replication <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions</B
@@ -1417,7 +1523,16 @@ CLASS="PARAMETER"
 > <TT
 CLASS="TYPE"
 >name</TT
->)</CODE
+> [<SPAN
+CLASS="OPTIONAL"
+>, <TT
+CLASS="PARAMETER"
+>immediately_reserve</TT
+> <TT
+CLASS="TYPE"
+>boolean</TT
+> </SPAN
+>])</CODE
 ></TT
 >
        </TD
@@ -1441,14 +1556,29 @@ CLASS="TYPE"
         <TT
 CLASS="PARAMETER"
 >slot_name</TT
->. Streaming changes from a physical slot
-        is only possible with the streaming-replication protocol - see <A
-HREF="protocol-replication.html"
->Section 50.3</A
->. Corresponds to the replication protocol
-        command <TT
+>. The optional second parameter,
+        when <TT
 CLASS="LITERAL"
->CREATE_REPLICATION_SLOT ... PHYSICAL</TT
+>true</TT
+>, specifies that the <ACRONYM
+CLASS="ACRONYM"
+>LSN</ACRONYM
+> for this
+        replication slot be reserved immediately; otherwise
+        the <ACRONYM
+CLASS="ACRONYM"
+>LSN</ACRONYM
+> is reserved on first connection from a streaming
+        replication client. Streaming changes from a physical slot is only
+        possible with the streaming-replication protocol &mdash;
+        see <A
+HREF="protocol-replication.html"
+>Section 51.3</A
+>. This function corresponds
+        to the replication protocol command <TT
+CLASS="LITERAL"
+>CREATE_REPLICATION_SLOT
+        ... PHYSICAL</TT
 >.
        </TD
 ></TR
@@ -1883,7 +2013,10 @@ CLASS="TYPE"
 >
        </TD
 ><TD
->        void
+>        <TT
+CLASS="TYPE"
+>void</TT
+>
        </TD
 ><TD
 >        Delete a previously created replication origin, including any
@@ -1939,7 +2072,10 @@ CLASS="TYPE"
 >
        </TD
 ><TD
->        void
+>        <TT
+CLASS="TYPE"
+>void</TT
+>
        </TD
 ><TD
 >        Mark the current session as replaying from the given
@@ -1963,7 +2099,10 @@ CLASS="FUNCTION"
 >
        </TD
 ><TD
->        void
+>        <TT
+CLASS="TYPE"
+>void</TT
+>
        </TD
 ><TD
 >        Cancel the effects
@@ -2057,7 +2196,10 @@ CLASS="TYPE"
 >
        </TD
 ><TD
->        void
+>        <TT
+CLASS="TYPE"
+>void</TT
+>
        </TD
 ><TD
 >        Mark the current transaction as replaying a transaction that has
@@ -2088,7 +2230,10 @@ CLASS="FUNCTION"
 >
        </TD
 ><TD
->        void
+>        <TT
+CLASS="TYPE"
+>void</TT
+>
        </TD
 ><TD
 >        Cancel the effects of
@@ -2122,7 +2267,10 @@ CLASS="TYPE"
 >
        </TD
 ><TD
->        void
+>        <TT
+CLASS="TYPE"
+>void</TT
+>
        </TD
 ><TD
 >        Set replication progress for the given node to the given
@@ -2174,6 +2322,122 @@ CLASS="PARAMETER"
         flushed to disk or not.
        </TD
 ></TR
+><TR
+><A
+NAME="PG-LOGICAL-EMIT-MESSAGE-TEXT"
+></A
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_logical_emit_message(<TT
+CLASS="PARAMETER"
+>transactional</TT
+> <TT
+CLASS="TYPE"
+>bool</TT
+>, <TT
+CLASS="PARAMETER"
+>prefix</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>content</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>
+       </TD
+><TD
+>        Emit text logical decoding message. This can be used to pass generic
+        messages to logical decoding plugins through WAL. The parameter
+        <TT
+CLASS="PARAMETER"
+>transactional</TT
+> specifies if the message should
+        be part of current transaction or if it should be written immediately
+        and decoded as soon as the logical decoding reads the record. The
+        <TT
+CLASS="PARAMETER"
+>prefix</TT
+> is textual prefix used by the logical
+        decoding plugins to easily recognize interesting messages for them.
+        The <TT
+CLASS="PARAMETER"
+>content</TT
+> is the text of the message.
+       </TD
+></TR
+><TR
+><A
+NAME="PG-LOGICAL-EMIT-MESSAGE-BYTEA"
+></A
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_logical_emit_message(<TT
+CLASS="PARAMETER"
+>transactional</TT
+> <TT
+CLASS="TYPE"
+>bool</TT
+>, <TT
+CLASS="PARAMETER"
+>prefix</TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, <TT
+CLASS="PARAMETER"
+>content</TT
+> <TT
+CLASS="TYPE"
+>bytea</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        <TT
+CLASS="TYPE"
+>pg_lsn</TT
+>
+       </TD
+><TD
+>        Emit binary logical decoding message. This can be used to pass generic
+        messages to logical decoding plugins through WAL. The parameter
+        <TT
+CLASS="PARAMETER"
+>transactional</TT
+> specifies if the message should
+        be part of current transaction or if it should be written immediately
+        and decoded as soon as the logical decoding reads the record. The
+        <TT
+CLASS="PARAMETER"
+>prefix</TT
+> is textual prefix used by the logical
+        decoding plugins to easily recognize interesting messages for them.
+        The <TT
+CLASS="PARAMETER"
+>content</TT
+> is the binary content of the
+        message.
+       </TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -2189,7 +2453,7 @@ NAME="FUNCTIONS-ADMIN-DBOBJECT"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-DBSIZE"
->Table 9-73</A
+>Table 9-83</A
 > calculate
     the disk space usage of database objects.
    </P
@@ -2200,7 +2464,7 @@ NAME="FUNCTIONS-ADMIN-DBSIZE"
 ></A
 ><P
 ><B
->Table 9-73. Database Object Size Functions</B
+>Table 9-83. Database Object Size Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2371,6 +2635,28 @@ CLASS="TYPE"
 CLASS="LITERAL"
 >pg_relation_size(..., 'main')</TT
 >
+       </TD
+></TR
+><TR
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_size_bytes(<TT
+CLASS="TYPE"
+>text</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>         Converts a size in human-readable format with size units into bytes
        </TD
 ></TR
 ><TR
@@ -2621,7 +2907,7 @@ CLASS="LITERAL"
 > returns the size of the Free Space Map
        (see <A
 HREF="storage-fsm.html"
->Section 63.3</A
+>Section 65.3</A
 >) associated with the relation.
       </P
 ></LI
@@ -2633,7 +2919,7 @@ CLASS="LITERAL"
 > returns the size of the Visibility Map
        (see <A
 HREF="storage-vm.html"
->Section 63.4</A
+>Section 65.4</A
 >) associated with the relation.
       </P
 ></LI
@@ -2654,9 +2940,40 @@ CLASS="LITERAL"
 CLASS="FUNCTION"
 >pg_size_pretty</CODE
 > can be used to format the result of one of
-    the other functions in a human-readable way, using kB, MB, GB or TB as
-    appropriate.
+    the other functions in a human-readable way, using bytes, kB, MB, GB or TB
+    as appropriate.
    </P
+><P
+>    <CODE
+CLASS="FUNCTION"
+>pg_size_bytes</CODE
+> can be used to get the size in bytes from a
+    string in human-readable format. The input may have units of bytes, kB,
+    MB, GB or TB, and is parsed case-insensitively. If no units are specified,
+    bytes are assumed.
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>     The units kB, MB, GB and TB used by the functions
+     <CODE
+CLASS="FUNCTION"
+>pg_size_pretty</CODE
+> and <CODE
+CLASS="FUNCTION"
+>pg_size_bytes</CODE
+> are defined
+     using powers of 2 rather than powers of 10, so 1kB is 1024 bytes, 1MB is
+     1024<SUP
+>2</SUP
+> = 1048576 bytes, and so on.
+    </P
+></BLOCKQUOTE
+></DIV
 ><P
 >    The functions above that operate on tables or indexes accept a
     <TT
@@ -2687,7 +3004,7 @@ CLASS="ACRONYM"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-DBLOCATION"
->Table 9-74</A
+>Table 9-84</A
 > assist
     in identifying the specific disk files associated with database objects.
    </P
@@ -2698,7 +3015,7 @@ NAME="FUNCTIONS-ADMIN-DBLOCATION"
 ></A
 ><P
 ><B
->Table 9-74. Database Object Location Functions</B
+>Table 9-84. Database Object Location Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2810,7 +3127,7 @@ CLASS="QUOTE"
     currently assigned to it.  The filenode is the base component of the file
     name(s) used for the relation (see <A
 HREF="storage-file-layout.html"
->Section 63.1</A
+>Section 65.1</A
 >
     for more information).  For most tables the result is the same as
     <TT
@@ -2872,9 +3189,12 @@ NAME="FUNCTIONS-ADMIN-INDEX"
 ><P
 >    <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-INDEX-TABLE"
->Table 9-75</A
+>Table 9-85</A
 > shows the functions
     available for index maintenance tasks.
+    These functions cannot be executed during recovery.
+    Use of these functions is restricted to superusers and the owner
+    of the given index.
    </P
 ><DIV
 CLASS="TABLE"
@@ -2883,7 +3203,7 @@ NAME="FUNCTIONS-ADMIN-INDEX-TABLE"
 ></A
 ><P
 ><B
->Table 9-75. Index Maintenance Functions</B
+>Table 9-85. Index Maintenance Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2907,7 +3227,7 @@ CLASS="LITERAL"
 CLASS="FUNCTION"
 >brin_summarize_new_values(<TT
 CLASS="PARAMETER"
->index_oid</TT
+>index</TT
 > <TT
 CLASS="TYPE"
 >regclass</TT
@@ -2923,6 +3243,30 @@ CLASS="TYPE"
 ><TD
 >summarize page ranges not already summarized</TD
 ></TR
+><TR
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>gin_clean_pending_list(<TT
+CLASS="PARAMETER"
+>index</TT
+> <TT
+CLASS="TYPE"
+>regclass</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>move GIN pending list entries into main index structure</TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -2930,12 +3274,38 @@ CLASS="TYPE"
 >    <CODE
 CLASS="FUNCTION"
 >brin_summarize_new_values</CODE
-> receives a BRIN index OID as
-    argument and inspects the index to find page ranges in the base table
+> accepts the OID or name of a
+    BRIN index and inspects the index to find page ranges in the base table
     that are not currently summarized by the index; for any such range
     it creates a new summary index tuple by scanning the table pages.
     It returns the number of new page range summaries that were inserted
     into the index.
+   </P
+><P
+>    <CODE
+CLASS="FUNCTION"
+>gin_clean_pending_list</CODE
+> accepts the OID or name of
+    a GIN index and cleans up the pending list of the specified index
+    by moving entries in it to the main GIN data structure in bulk.
+    It returns the number of pages removed from the pending list.
+    Note that if the argument is a GIN index built with
+    the <TT
+CLASS="LITERAL"
+>fastupdate</TT
+> option disabled, no cleanup happens and the
+    return value is 0, because the index doesn't have a pending list.
+    Please see <A
+HREF="gin-implementation.html#GIN-FAST-UPDATE"
+>Section 63.4.1</A
+> and <A
+HREF="gin-tips.html"
+>Section 63.5</A
+>
+    for details of the pending list and <TT
+CLASS="LITERAL"
+>fastupdate</TT
+> option.
    </P
 ></DIV
 ><DIV
@@ -2949,7 +3319,7 @@ NAME="FUNCTIONS-ADMIN-GENFILE"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-GENFILE-TABLE"
->Table 9-76</A
+>Table 9-86</A
 > provide native access to
     files on the machine hosting the server. Only files within the
     database cluster directory and the <TT
@@ -2970,7 +3340,7 @@ NAME="FUNCTIONS-ADMIN-GENFILE-TABLE"
 ></A
 ><P
 ><B
->Table 9-76. Generic File Access Functions</B
+>Table 9-86. Generic File Access Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3275,7 +3645,7 @@ NAME="FUNCTIONS-ADVISORY-LOCKS"
 ><P
 >    The functions shown in <A
 HREF="functions-admin.html#FUNCTIONS-ADVISORY-LOCKS-TABLE"
->Table 9-77</A
+>Table 9-87</A
 >
     manage advisory locks.  For details about proper use of these functions,
     see <A
@@ -3290,7 +3660,7 @@ NAME="FUNCTIONS-ADVISORY-LOCKS-TABLE"
 ></A
 ><P
 ><B
->Table 9-77. Advisory Lock Functions</B
+>Table 9-87. Advisory Lock Functions</B
 ></P
 ><TABLE
 BORDER="1"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -18,15 +18,15 @@ REL="PREVIOUS"
 TITLE="COMMIT PREPARED"
 HREF="sql-commit-prepared.html"><LINK
 REL="NEXT"
-TITLE="CREATE AGGREGATE"
-HREF="sql-createaggregate.html"><LINK
+TITLE="CREATE ACCESS METHOD"
+HREF="sql-create-access-method.html"><LINK
 REL="STYLESHEET"
 TYPE="text/css"
 HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -77,8 +77,8 @@ WIDTH="20%"
 ALIGN="right"
 VALIGN="top"
 ><A
-TITLE="CREATE AGGREGATE"
-HREF="sql-createaggregate.html"
+TITLE="CREATE ACCESS METHOD"
+HREF="sql-create-access-method.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-COPY"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN74105"
+NAME="AEN77290"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN74105"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN74108"
+NAME="AEN77293"
 ></A
 ><H2
 >Synopsis</H2
@@ -261,7 +261,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74135"
+NAME="AEN77320"
 ></A
 ><H2
 >Description</H2
@@ -357,7 +357,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74157"
+NAME="AEN77342"
 ></A
 ><H2
 >Parameters</H2
@@ -403,13 +403,44 @@ CLASS="REPLACEABLE"
 >      A <A
 HREF="sql-select.html"
 >SELECT</A
-> or
-      <A
+>, <A
 HREF="sql-values.html"
 >VALUES</A
-> command
-      whose results are to be copied.
-      Note that parentheses are required around the query.
+>,
+      <A
+HREF="sql-insert.html"
+>INSERT</A
+>, <A
+HREF="sql-update.html"
+>UPDATE</A
+> or
+      <A
+HREF="sql-delete.html"
+>DELETE</A
+> command whose results are to be
+      copied.  Note that parentheses are required around the query.
+     </P
+><P
+>      For <TT
+CLASS="COMMAND"
+>INSERT</TT
+>, <TT
+CLASS="COMMAND"
+>UPDATE</TT
+> and
+      <TT
+CLASS="COMMAND"
+>DELETE</TT
+> queries a RETURNING clause must be provided,
+      and the target relation must not have a conditional rule, nor
+      an <TT
+CLASS="LITERAL"
+>ALSO</TT
+> rule, nor an <TT
+CLASS="LITERAL"
+>INSTEAD</TT
+> rule
+      that expands to multiple statements.
      </P
 ></DD
 ><DT
@@ -810,7 +841,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74308"
+NAME="AEN77502"
 ></A
 ><H2
 >Outputs</H2
@@ -868,7 +899,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74321"
+NAME="AEN77515"
 ></A
 ><H2
 >Notes</H2
@@ -1126,14 +1157,14 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74384"
+NAME="AEN77578"
 ></A
 ><H2
 >File Formats</H2
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN74386"
+NAME="AEN77580"
 ></A
 ><H3
 >Text Format</H3
@@ -1224,7 +1255,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN74406"
+NAME="AEN77600"
 ></A
 ><TABLE
 BORDER="1"
@@ -1426,7 +1457,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN74469"
+NAME="AEN77663"
 ></A
 ><H3
 >CSV Format</H3
@@ -1627,7 +1658,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN74515"
+NAME="AEN77709"
 ></A
 ><H3
 >Binary Format</H3
@@ -1683,7 +1714,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT3"
 ><A
-NAME="AEN74528"
+NAME="AEN77722"
 ></A
 ><H4
 >File Header</H4
@@ -1776,7 +1807,7 @@ is left for a later release.
 ><DIV
 CLASS="REFSECT3"
 ><A
-NAME="AEN74554"
+NAME="AEN77748"
 ></A
 ><H4
 >Tuples</H4
@@ -1828,7 +1859,7 @@ OIDs to be shown as null if that ever proves desirable.
 ><DIV
 CLASS="REFSECT3"
 ><A
-NAME="AEN74565"
+NAME="AEN77759"
 ></A
 ><H4
 >File Trailer</H4
@@ -1847,7 +1878,7 @@ NAME="AEN74565"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74569"
+NAME="AEN77763"
 ></A
 ><H2
 >Examples</H2
@@ -1938,7 +1969,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74590"
+NAME="AEN77784"
 ></A
 ><H2
 >Compatibility</H2
@@ -2174,7 +2205,7 @@ WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
 ><A
-HREF="sql-createaggregate.html"
+HREF="sql-create-access-method.html"
 ACCESSKEY="N"
 >Next</A
 ></TD
@@ -2198,7 +2229,7 @@ ACCESSKEY="U"
 WIDTH="33%"
 ALIGN="right"
 VALIGN="top"
->CREATE AGGREGATE</TD
+>CREATE ACCESS METHOD</TD
 ></TR
 ></TABLE
 ></DIV

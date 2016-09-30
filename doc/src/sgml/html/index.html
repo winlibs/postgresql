@@ -2,7 +2,7 @@
 <HTML
 ><HEAD
 ><TITLE
->PostgreSQL 9.5.3 Documentation</TITLE
+>PostgreSQL 9.6.0 Documentation</TITLE
 ><META
 NAME="GENERATOR"
 CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
@@ -17,7 +17,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="BOOK"
 ><DIV
@@ -31,7 +31,7 @@ CLASS="TITLEPAGE"
 CLASS="TITLE"
 ><A
 NAME="POSTGRES"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></H1
 ><H3
 CLASS="CORPAUTHOR"
@@ -179,6 +179,11 @@ HREF="mvcc.html"
 HREF="performance-tips.html"
 >Performance Tips</A
 ></DT
+><DT
+>15. <A
+HREF="parallel-query.html"
+>Parallel Query</A
+></DT
 ></DL
 ></DD
 ><DT
@@ -189,12 +194,12 @@ HREF="admin.html"
 ><DD
 ><DL
 ><DT
->15. <A
+>16. <A
 HREF="installation.html"
 >Installation from Source Code</A
 ></DT
 ><DT
->16. <A
+>17. <A
 HREF="install-windows.html"
 >Installation from Source Code on <SPAN
 CLASS="PRODUCTNAME"
@@ -202,72 +207,72 @@ CLASS="PRODUCTNAME"
 ></A
 ></DT
 ><DT
->17. <A
+>18. <A
 HREF="runtime.html"
 >Server Setup and Operation</A
 ></DT
 ><DT
->18. <A
+>19. <A
 HREF="runtime-config.html"
 >Server Configuration</A
 ></DT
 ><DT
->19. <A
+>20. <A
 HREF="client-authentication.html"
 >Client Authentication</A
 ></DT
 ><DT
->20. <A
+>21. <A
 HREF="user-manag.html"
 >Database Roles</A
 ></DT
 ><DT
->21. <A
+>22. <A
 HREF="managing-databases.html"
 >Managing Databases</A
 ></DT
 ><DT
->22. <A
+>23. <A
 HREF="charset.html"
 >Localization</A
 ></DT
 ><DT
->23. <A
+>24. <A
 HREF="maintenance.html"
 >Routine Database Maintenance Tasks</A
 ></DT
 ><DT
->24. <A
+>25. <A
 HREF="backup.html"
 >Backup and Restore</A
 ></DT
 ><DT
->25. <A
+>26. <A
 HREF="high-availability.html"
 >High Availability, Load Balancing, and Replication</A
 ></DT
 ><DT
->26. <A
+>27. <A
 HREF="recovery-config.html"
 >Recovery Configuration</A
 ></DT
 ><DT
->27. <A
+>28. <A
 HREF="monitoring.html"
 >Monitoring Database Activity</A
 ></DT
 ><DT
->28. <A
+>29. <A
 HREF="diskusage.html"
 >Monitoring Disk Usage</A
 ></DT
 ><DT
->29. <A
+>30. <A
 HREF="wal.html"
 >Reliability and the Write-Ahead Log</A
 ></DT
 ><DT
->30. <A
+>31. <A
 HREF="regress.html"
 >Regression Tests</A
 ></DT
@@ -281,7 +286,7 @@ HREF="client-interfaces.html"
 ><DD
 ><DL
 ><DT
->31. <A
+>32. <A
 HREF="libpq.html"
 ><SPAN
 CLASS="APPLICATION"
@@ -289,12 +294,12 @@ CLASS="APPLICATION"
 > - C Library</A
 ></DT
 ><DT
->32. <A
+>33. <A
 HREF="largeobjects.html"
 >Large Objects</A
 ></DT
 ><DT
->33. <A
+>34. <A
 HREF="ecpg.html"
 ><SPAN
 CLASS="APPLICATION"
@@ -305,7 +310,7 @@ CLASS="ACRONYM"
 > in C</A
 ></DT
 ><DT
->34. <A
+>35. <A
 HREF="information-schema.html"
 >The Information Schema</A
 ></DT
@@ -319,7 +324,7 @@ HREF="server-programming.html"
 ><DD
 ><DL
 ><DT
->35. <A
+>36. <A
 HREF="extend.html"
 >Extending <ACRONYM
 CLASS="ACRONYM"
@@ -327,27 +332,27 @@ CLASS="ACRONYM"
 ></A
 ></DT
 ><DT
->36. <A
+>37. <A
 HREF="triggers.html"
 >Triggers</A
 ></DT
 ><DT
->37. <A
+>38. <A
 HREF="event-triggers.html"
 >Event Triggers</A
 ></DT
 ><DT
->38. <A
+>39. <A
 HREF="rules.html"
 >The Rule System</A
 ></DT
 ><DT
->39. <A
+>40. <A
 HREF="xplang.html"
 >Procedural Languages</A
 ></DT
 ><DT
->40. <A
+>41. <A
 HREF="plpgsql.html"
 ><SPAN
 CLASS="APPLICATION"
@@ -358,37 +363,37 @@ CLASS="ACRONYM"
 > Procedural Language</A
 ></DT
 ><DT
->41. <A
+>42. <A
 HREF="pltcl.html"
 >PL/Tcl - Tcl Procedural Language</A
 ></DT
 ><DT
->42. <A
+>43. <A
 HREF="plperl.html"
 >PL/Perl - Perl Procedural Language</A
 ></DT
 ><DT
->43. <A
+>44. <A
 HREF="plpython.html"
 >PL/Python - Python Procedural Language</A
 ></DT
 ><DT
->44. <A
+>45. <A
 HREF="spi.html"
 >Server Programming Interface</A
 ></DT
 ><DT
->45. <A
+>46. <A
 HREF="bgworker.html"
 >Background Worker Processes</A
 ></DT
 ><DT
->46. <A
+>47. <A
 HREF="logicaldecoding.html"
 >Logical Decoding</A
 ></DT
 ><DT
->47. <A
+>48. <A
 HREF="replication-origins.html"
 >Replication Progress Tracking</A
 ></DT
@@ -426,87 +431,92 @@ HREF="internals.html"
 ><DD
 ><DL
 ><DT
->48. <A
+>49. <A
 HREF="overview.html"
 >Overview of PostgreSQL Internals</A
 ></DT
 ><DT
->49. <A
+>50. <A
 HREF="catalogs.html"
 >System Catalogs</A
 ></DT
 ><DT
->50. <A
+>51. <A
 HREF="protocol.html"
 >Frontend/Backend Protocol</A
 ></DT
 ><DT
->51. <A
+>52. <A
 HREF="source.html"
 >PostgreSQL Coding Conventions</A
 ></DT
 ><DT
->52. <A
+>53. <A
 HREF="nls.html"
 >Native Language Support</A
 ></DT
 ><DT
->53. <A
+>54. <A
 HREF="plhandler.html"
 >Writing A Procedural Language Handler</A
 ></DT
 ><DT
->54. <A
+>55. <A
 HREF="fdwhandler.html"
 >Writing A Foreign Data Wrapper</A
 ></DT
 ><DT
->55. <A
+>56. <A
 HREF="tablesample-method.html"
 >Writing A Table Sampling Method</A
 ></DT
 ><DT
->56. <A
+>57. <A
 HREF="custom-scan.html"
 >Writing A Custom Scan Provider</A
 ></DT
 ><DT
->57. <A
+>58. <A
 HREF="geqo.html"
 >Genetic Query Optimizer</A
 ></DT
 ><DT
->58. <A
+>59. <A
 HREF="indexam.html"
 >Index Access Method Interface Definition</A
 ></DT
 ><DT
->59. <A
+>60. <A
+HREF="generic-wal.html"
+>Generic WAL Records</A
+></DT
+><DT
+>61. <A
 HREF="gist.html"
 >GiST Indexes</A
 ></DT
 ><DT
->60. <A
+>62. <A
 HREF="spgist.html"
 >SP-GiST Indexes</A
 ></DT
 ><DT
->61. <A
+>63. <A
 HREF="gin.html"
 >GIN Indexes</A
 ></DT
 ><DT
->62. <A
+>64. <A
 HREF="brin.html"
 >BRIN Indexes</A
 ></DT
 ><DT
->63. <A
+>65. <A
 HREF="storage.html"
 >Database Physical Storage</A
 ></DT
 ><DT
->64. <A
+>66. <A
 HREF="bki.html"
 ><ACRONYM
 CLASS="ACRONYM"
@@ -514,7 +524,7 @@ CLASS="ACRONYM"
 > Backend Interface</A
 ></DT
 ><DT
->65. <A
+>67. <A
 HREF="planner-stats-details.html"
 >How the Planner Uses Statistics</A
 ></DT

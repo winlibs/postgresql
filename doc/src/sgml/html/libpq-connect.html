@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 31. <SPAN
+>Chapter 32. <SPAN
 CLASS="APPLICATION"
 >libpq</SPAN
 > - C Library</TD
@@ -96,7 +96,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="LIBPQ-CONNECT"
->31.1. Database Connection Control Functions</A
+>32.1. Database Connection Control Functions</A
 ></H1
 ><P
 >   The following functions deal with making a connection to a
@@ -266,7 +266,7 @@ CLASS="FUNCTION"
 >       The currently recognized parameter key words are listed in
        <A
 HREF="libpq-connect.html#LIBPQ-PARAMKEYWORDS"
->Section 31.1.2</A
+>Section 32.1.2</A
 >.
       </P
 ><P
@@ -290,7 +290,7 @@ CLASS="PARAMETER"
        details on the possible connection string formats appear in
        <A
 HREF="libpq-connect.html#LIBPQ-CONNSTRING"
->Section 31.1.1</A
+>Section 32.1.1</A
 >.
       </P
 ><P
@@ -312,7 +312,7 @@ CLASS="SYMBOL"
 > or an empty string, the corresponding
        environment variable (see <A
 HREF="libpq-envars.html"
->Section 31.14</A
+>Section 32.14</A
 >) is checked.
        If the  environment  variable is not set either, then the indicated
        built-in defaults are used.
@@ -364,7 +364,7 @@ CLASS="ACRONYM"
 >.
        See <A
 HREF="libpq-connect.html#LIBPQ-CONNSTRING"
->Section 31.1.1</A
+>Section 32.1.1</A
 > for details.
      </P
 ></DD
@@ -570,7 +570,7 @@ CLASS="LITERAL"
           name and reverse name queries are not made. See the documentation of
           these parameters in <A
 HREF="libpq-connect.html#LIBPQ-PARAMKEYWORDS"
->Section 31.1.2</A
+>Section 32.1.2</A
 > for details.
          </P
 ></LI
@@ -1378,7 +1378,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LIBPQ-CONNSTRING"
->31.1.1. Connection Strings</A
+>32.1.1. Connection Strings</A
 ></H2
 ><P
 >    Several <SPAN
@@ -1402,8 +1402,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN42521"
->31.1.1.1. Keyword/Value Connection Strings</A
+NAME="AEN45332"
+>32.1.1.1. Keyword/Value Connection Strings</A
 ></H3
 ><P
 >    In the first format, each parameter setting is in the form
@@ -1436,7 +1436,7 @@ CLASS="PROGRAMLISTING"
 ><P
 >    The recognized parameter key words are listed in <A
 HREF="libpq-connect.html#LIBPQ-PARAMKEYWORDS"
->Section 31.1.2</A
+>Section 32.1.2</A
 >.
    </P
 ></DIV
@@ -1445,8 +1445,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN42532"
->31.1.1.2. Connection URIs</A
+NAME="AEN45343"
+>32.1.1.2. Connection URIs</A
 ></H3
 ><P
 >   The general form for a connection <ACRONYM
@@ -1508,7 +1508,7 @@ CLASS="ACRONYM"
 ><P
 >    Any connection parameters not corresponding to key words listed in <A
 HREF="libpq-connect.html#LIBPQ-PARAMKEYWORDS"
->Section 31.1.2</A
+>Section 32.1.2</A
 > are ignored and a warning message about them
     is sent to <TT
 CLASS="FILENAME"
@@ -1562,7 +1562,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LIBPQ-PARAMKEYWORDS"
->31.1.2. Parameter Key Words</A
+>32.1.2. Parameter Key Words</A
 ></H2
 ><P
 >    The currently recognized parameter key words are:
@@ -1717,7 +1717,7 @@ CLASS="FILENAME"
 > (see
         <A
 HREF="libpq-pgpass.html"
->Section 31.15</A
+>Section 32.15</A
 >).
        </P
 ><P
@@ -1762,7 +1762,7 @@ CLASS="LITERAL"
        In certain contexts, the value is checked for extended
        formats; see <A
 HREF="libpq-connect.html#LIBPQ-CONNSTRING"
->Section 31.1.1</A
+>Section 32.1.1</A
 > for more details on
        those.
       </P
@@ -1875,7 +1875,7 @@ CLASS="LITERAL"
         backslash.  For a detailed discussion of the available
         options, consult <A
 HREF="runtime-config.html"
->Chapter 18</A
+>Chapter 19</A
 >.
        </P
 ></DD
@@ -2151,7 +2151,7 @@ CLASS="ACRONYM"
 
         See <A
 HREF="libpq-ssl.html"
->Section 31.18</A
+>Section 32.18</A
 > for a detailed description of how
         these options work.
        </P
@@ -2411,7 +2411,7 @@ CLASS="LITERAL"
 > authentication method is implemented; see
         <A
 HREF="auth-methods.html#AUTH-PEER"
->Section 19.3.6</A
+>Section 20.3.6</A
 >.
        </P
 ></DD
@@ -2430,7 +2430,7 @@ CLASS="LITERAL"
         configuration for Kerberos authentication to succeed. (See also
         <A
 HREF="auth-methods.html#GSSAPI-AUTH"
->Section 19.3.3</A
+>Section 20.3.3</A
 >.)
        </P
 ></DD
@@ -2470,7 +2470,7 @@ CLASS="FILENAME"
         This allows applications to specify only a service name so connection parameters
         can be centrally maintained. See <A
 HREF="libpq-pgservice.html"
->Section 31.16</A
+>Section 32.16</A
 >.
        </P
 ></DD

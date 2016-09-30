@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/Python - Python Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 43. PL/Python - Python Procedural Language</TD
+>Chapter 44. PL/Python - Python Procedural Language</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,87 +93,118 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPYTHON-UTIL"
->43.9. Utility Functions</A
+>44.9. Utility Functions</A
 ></H1
 ><P
 >   The <TT
 CLASS="LITERAL"
 >plpy</TT
 > module also provides the functions
-   <TT
+   <P
+></P
+><TABLE
+BORDER="0"
+><TBODY
+><TR
+><TD
+><TT
 CLASS="LITERAL"
 >plpy.debug(<TT
 CLASS="REPLACEABLE"
 ><I
->msg</I
+>msg, **kwargs</I
 ></TT
 >)</TT
->,
-   <TT
+></TD
+></TR
+><TR
+><TD
+><TT
 CLASS="LITERAL"
 >plpy.log(<TT
 CLASS="REPLACEABLE"
 ><I
->msg</I
+>msg, **kwargs</I
 ></TT
 >)</TT
->,
-   <TT
+></TD
+></TR
+><TR
+><TD
+><TT
 CLASS="LITERAL"
 >plpy.info(<TT
 CLASS="REPLACEABLE"
 ><I
->msg</I
+>msg, **kwargs</I
 ></TT
 >)</TT
->,
-   <TT
+></TD
+></TR
+><TR
+><TD
+><TT
 CLASS="LITERAL"
 >plpy.notice(<TT
 CLASS="REPLACEABLE"
 ><I
->msg</I
+>msg, **kwargs</I
 ></TT
 >)</TT
->,
-   <TT
+></TD
+></TR
+><TR
+><TD
+><TT
 CLASS="LITERAL"
 >plpy.warning(<TT
 CLASS="REPLACEABLE"
 ><I
->msg</I
+>msg, **kwargs</I
 ></TT
 >)</TT
->,
-   <TT
+></TD
+></TR
+><TR
+><TD
+><TT
 CLASS="LITERAL"
 >plpy.error(<TT
 CLASS="REPLACEABLE"
 ><I
->msg</I
+>msg, **kwargs</I
 ></TT
 >)</TT
->, and
-   <TT
+></TD
+></TR
+><TR
+><TD
+><TT
 CLASS="LITERAL"
 >plpy.fatal(<TT
 CLASS="REPLACEABLE"
 ><I
->msg</I
+>msg, **kwargs</I
 ></TT
 >)</TT
->.
+></TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+>
+   
    <CODE
 CLASS="FUNCTION"
 >plpy.error</CODE
-> and
-   <CODE
+> and <CODE
 CLASS="FUNCTION"
 >plpy.fatal</CODE
-> actually raise a Python exception
-   which, if uncaught, propagates out to the calling query, causing
-   the current transaction or subtransaction to be aborted.
-   <TT
+>
+   actually raise a Python exception which, if uncaught, propagates out to
+   the calling query, causing the current transaction or subtransaction to
+   be aborted.  <TT
 CLASS="LITERAL"
 >raise plpy.Error(<TT
 CLASS="REPLACEABLE"
@@ -191,17 +222,29 @@ CLASS="REPLACEABLE"
 ></TT
 >)</TT
 > are
-   equivalent to calling
-   <CODE
-CLASS="FUNCTION"
->plpy.error</CODE
+   equivalent to calling <TT
+CLASS="LITERAL"
+>plpy.error(<TT
+CLASS="REPLACEABLE"
+><I
+>msg</I
+></TT
+>)</TT
 > and
-   <CODE
-CLASS="FUNCTION"
->plpy.fatal</CODE
->, respectively.
-   The other functions only generate messages of different
-   priority levels.
+   <TT
+CLASS="LITERAL"
+>plpy.fatal(<TT
+CLASS="REPLACEABLE"
+><I
+>msg</I
+></TT
+>)</TT
+>, respectively but
+   the <TT
+CLASS="LITERAL"
+>raise</TT
+> form does not allow passing keyword arguments.
+   The other functions only generate messages of different priority levels.
    Whether messages of a particular priority are reported to the client,
    written to the server log, or both is controlled by the
    <A
@@ -214,8 +257,108 @@ HREF="runtime-config-logging.html#GUC-CLIENT-MIN-MESSAGES"
 > configuration
    variables. See <A
 HREF="runtime-config.html"
->Chapter 18</A
+>Chapter 19</A
 > for more information.
+  </P
+><P
+>   The <TT
+CLASS="REPLACEABLE"
+><I
+>msg</I
+></TT
+> argument is given as a positional argument.  For
+   backward compatibility, more than one positional argument can be given. In
+   that case, the string representation of the tuple of positional arguments
+   becomes the message reported to the client.
+  </P
+><P
+>   The following keyword-only arguments are accepted:
+   <P
+></P
+><TABLE
+BORDER="0"
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>detail</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>hint</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>sqlstate</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>schema_name</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>table_name</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>column_name</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>datatype_name</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>constraint_name</TT
+></TD
+></TR
+></TBODY
+></TABLE
+><P
+></P
+>
+   The string representation of the objects passed as keyword-only arguments
+   is used to enrich the messages reported to the client. For example:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE FUNCTION raise_custom_exception() RETURNS void AS $$
+plpy.error("custom exception message",
+           detail="some info about exception",
+           hint="hint for users")
+$$ LANGUAGE plpythonu;
+
+=# SELECT raise_custom_exception();
+ERROR:  plpy.Error: custom exception message
+DETAIL:  some info about exception
+HINT:  hint for users
+CONTEXT:  Traceback (most recent call last):
+  PL/Python function "raise_custom_exception", line 4, in &lt;module&gt;
+    hint="hint for users")
+PL/Python function "raise_custom_exception"</PRE
+><P>
   </P
 ><P
 >   Another set of utility functions are
@@ -252,7 +395,7 @@ HREF="functions-string.html"
 >.  They are useful when constructing
    ad-hoc queries.  A PL/Python equivalent of dynamic SQL from <A
 HREF="plpgsql-statements.html#PLPGSQL-QUOTE-LITERAL-EXAMPLE"
->Example 40-1</A
+>Example 41-1</A
 > would be:
 </P><PRE
 CLASS="PROGRAMLISTING"

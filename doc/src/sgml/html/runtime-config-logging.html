@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 18. Server Configuration</TD
+>Chapter 19. Server Configuration</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="RUNTIME-CONFIG-LOGGING"
->18.8. Error Reporting and Logging</A
+>19.8. Error Reporting and Logging</A
 ></H1
 ><DIV
 CLASS="SECT2"
@@ -101,7 +101,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-LOGGING-WHERE"
->18.8.1. Where To Log</A
+>19.8.1. Where To Log</A
 ></H2
 ><P
 ></P
@@ -173,7 +173,7 @@ CLASS="ACRONYM"
         loading logs into programs.
         See <A
 HREF="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-CSVLOG"
->Section 18.8.4</A
+>Section 19.8.4</A
 > for details.
         <A
 HREF="runtime-config-logging.html#GUC-LOGGING-COLLECTOR"
@@ -247,7 +247,7 @@ CLASS="VARNAME"
          log messages cleanly.
          See <A
 HREF="event-log-registration.html"
->Section 17.11</A
+>Section 18.11</A
 > for details.
         </P
 ></BLOCKQUOTE
@@ -813,6 +813,95 @@ CLASS="FILENAME"
 ></DD
 ><DT
 ><A
+NAME="GUC-SYSLOG-SEQUENCE-NUMBERS"
+></A
+><TT
+CLASS="VARNAME"
+>syslog_sequence_numbers</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)
+        </DT
+><DD
+><P
+>         When logging to <SPAN
+CLASS="APPLICATION"
+>syslog</SPAN
+> and this is on (the
+         default), then each message will be prefixed by an increasing
+         sequence number (such as <TT
+CLASS="LITERAL"
+>[2]</TT
+>).  This circumvents
+         the <SPAN
+CLASS="QUOTE"
+>"--- last message repeated N times ---"</SPAN
+> suppression
+         that many syslog implementations perform by default.  In more modern
+         syslog implementations, repeated message suppression can be configured
+         (for example, <TT
+CLASS="LITERAL"
+>$RepeatedMsgReduction</TT
+>
+         in <SPAN
+CLASS="PRODUCTNAME"
+>rsyslog</SPAN
+>), so this might not be
+         necessary.  Also, you could turn this off if you actually want to
+         suppress repeated messages.
+        </P
+><P
+>         This parameter can only be set in the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>
+         file or on the server command line.
+        </P
+></DD
+><DT
+><A
+NAME="GUC-SYSLOG-SPLIT-MESSAGES"
+></A
+><TT
+CLASS="VARNAME"
+>syslog_split_messages</TT
+> (<TT
+CLASS="TYPE"
+>boolean</TT
+>)
+      </DT
+><DD
+><P
+>        When logging to <SPAN
+CLASS="APPLICATION"
+>syslog</SPAN
+> is enabled, this parameter
+        determines how messages are delivered to syslog.  When on (the
+        default), messages are split by lines, and long lines are split so
+        that they will fit into 1024 bytes, which is a typical size limit for
+        traditional syslog implementations.  When off, PostgreSQL server log
+        messages are delivered to the syslog service as is, and it is up to
+        the syslog service to cope with the potentially bulky messages.
+       </P
+><P
+>        If syslog is ultimately logging to a text file, then the effect will
+        be the same either way, and it is best to leave the setting on, since
+        most syslog implementations either cannot handle large messages or
+        would need to be specially configured to handle them.  But if syslog
+        is ultimately writing into some other medium, it might be necessary or
+        more useful to keep messages logically together.
+       </P
+><P
+>        This parameter can only be set in the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>
+        file or on the server command line.
+       </P
+></DD
+><DT
+><A
 NAME="GUC-EVENT-SOURCE"
 ></A
 ><TT
@@ -854,7 +943,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-LOGGING-WHEN"
->18.8.2. When To Log</A
+>19.8.2. When To Log</A
 ></H2
 ><P
 ></P
@@ -1144,7 +1233,7 @@ HREF="runtime-config-logging.html#GUC-LOG-LINE-PREFIX"
 ><P
 >     <A
 HREF="runtime-config-logging.html#RUNTIME-CONFIG-SEVERITY-LEVELS"
->Table 18-1</A
+>Table 19-1</A
 > explains the message
      severity levels used by <SPAN
 CLASS="PRODUCTNAME"
@@ -1167,7 +1256,7 @@ NAME="RUNTIME-CONFIG-SEVERITY-LEVELS"
 ></A
 ><P
 ><B
->Table 18-1. Message Severity Levels</B
+>Table 19-1. Message Severity Levels</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1366,7 +1455,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-LOGGING-WHAT"
->18.8.3. What To Log</A
+>19.8.3. What To Log</A
 ></H2
 ><P
 ></P
@@ -1783,7 +1872,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN32961"
+NAME="AEN34857"
 ></A
 ><TABLE
 BORDER="1"
@@ -1884,6 +1973,17 @@ CLASS="LITERAL"
 ></TD
 ><TD
 >Time stamp with milliseconds</TD
+><TD
+>no</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>%n</TT
+></TD
+><TD
+>Time stamp with milliseconds (as a Unix epoch)</TD
 ><TD
 >no</TD
 ></TR
@@ -2223,7 +2323,7 @@ CLASS="TYPE"
 >        Causes each replication command to be logged in the server log.
         See <A
 HREF="protocol-replication.html"
->Section 50.3</A
+>Section 51.3</A
 > for more information about
         replication command. The default value is <TT
 CLASS="LITERAL"
@@ -2309,7 +2409,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-LOGGING-CSVLOG"
->18.8.4. Using CSV-Format Log Output</A
+>19.8.4. Using CSV-Format Log Output</A
 ></H2
 ><P
 >        Including <TT
@@ -2479,19 +2579,23 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN33177"
->18.8.5. Process Title</A
+NAME="AEN35078"
+>19.8.5. Process Title</A
 ></H2
 ><P
->     These settings control how the process title as seen
-     by <TT
-CLASS="COMMAND"
->ps</TT
-> is modified.  See <A
+>     These settings control how process titles of server processes are
+     modified.  Process titles are typically viewed using programs like
+     <SPAN
+CLASS="APPLICATION"
+>ps</SPAN
+> or, on Windows, <SPAN
+CLASS="APPLICATION"
+>Process Explorer</SPAN
+>.
+     See <A
 HREF="monitoring-ps.html"
->Section 27.1</A
->
-     for details.
+>Section 28.1</A
+> for details.
     </P
 ><P
 ></P
@@ -2513,8 +2617,8 @@ CLASS="TYPE"
 ><DD
 ><P
 >        Sets the cluster name that appears in the process title for all
-        processes in this cluster. The name can be any string of less than
-        <TT
+        server processes in this cluster. The name can be any string of less
+        than <TT
 CLASS="SYMBOL"
 >NAMEDATALEN</TT
 > characters (64 characters in a standard
@@ -2533,16 +2637,6 @@ CLASS="LITERAL"
 > (which is
         the default). This parameter can only be set at server start.
        </P
-><P
->        The process title is typically viewed using programs like
-        <SPAN
-CLASS="APPLICATION"
->ps</SPAN
-> or, on Windows, <SPAN
-CLASS="APPLICATION"
->Process Explorer</SPAN
->.
-       </P
 ></DD
 ><DT
 ><A
@@ -2559,15 +2653,16 @@ CLASS="TYPE"
 ><DD
 ><P
 >        Enables updating of the process title every time a new SQL command
-        is received by the server.  The process title is typically viewed
-        by the <TT
-CLASS="COMMAND"
->ps</TT
-> command,
-        or in Windows by using the <SPAN
-CLASS="APPLICATION"
->Process Explorer</SPAN
->.
+        is received by the server.
+        This setting defaults to <TT
+CLASS="LITERAL"
+>on</TT
+> on most platforms, but it
+        defaults to <TT
+CLASS="LITERAL"
+>off</TT
+> on Windows due to that platform's larger
+        overhead for updating the process title.
         Only superusers can change this setting.
        </P
 ></DD

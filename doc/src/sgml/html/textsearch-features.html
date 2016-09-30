@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Full Text Search"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -304,14 +304,34 @@ CLASS="TYPE"
 ></DT
 ><DD
 ><P
->       Returns a vector which lists the same lexemes as the given vector, but
-       which lacks any position or weight information.  While the returned
-       vector is much less useful than an unstripped vector for relevance
-       ranking, it will usually be much smaller.
+>       Returns a vector that lists the same lexemes as the given vector, but
+       lacks any position or weight information.  The result is usually much
+       smaller than an unstripped vector, but it is also less useful.
+       Relevance ranking does not work as well on stripped vectors as
+       unstripped ones.  Also,
+       the <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+> (FOLLOWED BY) <TT
+CLASS="TYPE"
+>tsquery</TT
+> operator
+       will never match stripped input, since it cannot determine the
+       distance between lexeme occurrences.
       </P
 ></DD
 ></DL
 ></DIV
+><P
+>    A full list of <TT
+CLASS="TYPE"
+>tsvector</TT
+>-related functions is available
+    in <A
+HREF="functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE"
+>Table 9-40</A
+>.
+   </P
 ></DIV
 ><DIV
 CLASS="SECT2"
@@ -388,6 +408,105 @@ CLASS="TYPE"
 ><DD
 ><P
 >       Returns the negation (NOT) of the given query.
+      </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+><TT
+CLASS="TYPE"
+>tsquery</TT
+> &lt;-&gt; <TT
+CLASS="TYPE"
+>tsquery</TT
+></TT
+></DT
+><DD
+><P
+>       Returns a query that searches for a match to the first given query
+       immediately followed by a match to the second given query, using
+       the <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+> (FOLLOWED BY)
+       <TT
+CLASS="TYPE"
+>tsquery</TT
+> operator.  For example:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT to_tsquery('fat') &lt;-&gt; to_tsquery('cat | rat');
+             ?column?
+-----------------------------------
+ 'fat' &lt;-&gt; 'cat' | 'fat' &lt;-&gt; 'rat'</PRE
+><P>
+      </P
+></DD
+><DT
+>&#13;
+      <TT
+CLASS="LITERAL"
+>tsquery_phrase(<TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> <TT
+CLASS="TYPE"
+>tsquery</TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+> <TT
+CLASS="TYPE"
+>tsquery</TT
+> [, <TT
+CLASS="REPLACEABLE"
+><I
+>distance</I
+></TT
+> <TT
+CLASS="TYPE"
+>integer</TT
+> ]) returns <TT
+CLASS="TYPE"
+>tsquery</TT
+></TT
+></DT
+><DD
+><P
+>       Returns a query that searches for a match to the first given query
+       followed by a match to the second given query at a distance of at
+       <TT
+CLASS="REPLACEABLE"
+><I
+>distance</I
+></TT
+> lexemes, using
+       the <TT
+CLASS="LITERAL"
+>&lt;<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+>&gt;</TT
+>
+       <TT
+CLASS="TYPE"
+>tsquery</TT
+> operator.  For example:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT tsquery_phrase(to_tsquery('fat'), to_tsquery('cat'), 10);
+  tsquery_phrase
+------------------
+ 'fat' &lt;10&gt; 'cat'</PRE
+><P>
       </P
 ></DD
 ><DT

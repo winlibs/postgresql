@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PGSTATTUPLE"
->F.29. pgstattuple</A
+>F.30. pgstattuple</A
 ></H1
 ><P
 >  The <TT
@@ -107,8 +107,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN173196"
->F.29.1. Functions</A
+NAME="AEN180071"
+>F.30.1. Functions</A
 ></H2
 ><P
 ></P
@@ -135,7 +135,7 @@ CLASS="QUOTE"
       For example:
 </P><PRE
 CLASS="PROGRAMLISTING"
->test=&#62; SELECT * FROM pgstattuple('pg_catalog.pg_proc');
+>test=&gt; SELECT * FROM pgstattuple('pg_catalog.pg_proc');
 -[ RECORD 1 ]------+-------
 table_len          | 458752
 tuple_count        | 1470
@@ -149,7 +149,7 @@ free_percent       | 1.95</PRE
 ><P>
      The output columns are described in <A
 HREF="pgstattuple.html#PGSTATTUPLE-COLUMNS"
->Table F-21</A
+>Table F-23</A
 >.
     </P
 ><DIV
@@ -159,7 +159,7 @@ NAME="PGSTATTUPLE-COLUMNS"
 ></A
 ><P
 ><B
->Table F-21. <CODE
+>Table F-23. <CODE
 CLASS="FUNCTION"
 >pgstattuple</CODE
 > Output Columns</B
@@ -359,7 +359,7 @@ CLASS="FUNCTION"
       about a B-tree index.  For example:
 </P><PRE
 CLASS="PROGRAMLISTING"
->test=&#62; SELECT * FROM pgstatindex('pg_cast_oid_index');
+>test=&gt; SELECT * FROM pgstatindex('pg_cast_oid_index');
 -[ RECORD 1 ]------+------
 version            | 2
 tree_level         | 0
@@ -381,7 +381,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN173296"
+NAME="AEN180171"
 ></A
 ><TABLE
 BORDER="1"
@@ -598,7 +598,7 @@ CLASS="FUNCTION"
       about a GIN index.  For example:
 </P><PRE
 CLASS="PROGRAMLISTING"
->test=&#62; SELECT * FROM pgstatginindex('test_gin_index');
+>test=&gt; SELECT * FROM pgstatginindex('test_gin_index');
 -[ RECORD 1 ]--+--
 version        | 1
 pending_pages  | 0
@@ -613,7 +613,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN173386"
+NAME="AEN180261"
 ></A
 ><TABLE
 BORDER="1"
@@ -728,7 +728,7 @@ CLASS="FUNCTION"
       For example:
 </P><PRE
 CLASS="PROGRAMLISTING"
->test=&#62; SELECT * FROM pgstattuple_approx('pg_catalog.pg_proc'::regclass);
+>test=&gt; SELECT * FROM pgstattuple_approx('pg_catalog.pg_proc'::regclass);
 -[ RECORD 1 ]--------+-------
 table_len            | 573440
 scanned_percent      | 2
@@ -743,7 +743,7 @@ approx_free_percent  | 2.09</PRE
 ><P>
       The output columns are described in <A
 HREF="pgstattuple.html#PGSTATAPPROX-COLUMNS"
->Table F-22</A
+>Table F-24</A
 >.
      </P
 ><P
@@ -782,7 +782,7 @@ NAME="PGSTATAPPROX-COLUMNS"
 ></A
 ><P
 ><B
->Table F-22. <CODE
+>Table F-24. <CODE
 CLASS="FUNCTION"
 >pgstattuple_approx</CODE
 > Output Columns</B
@@ -962,8 +962,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN173514"
->F.29.2. Authors</A
+NAME="AEN180389"
+>F.30.2. Authors</A
 ></H2
 ><P
 >   Tatsuo Ishii, Satoshi Nagayasu and Abhijit Menon-Sen

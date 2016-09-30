@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Writing A Foreign Data Wrapper"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 54. Writing A Foreign Data Wrapper</TD
+>Chapter 55. Writing A Foreign Data Wrapper</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="FDW-PLANNING"
->54.4. Foreign Data Wrapper Query Planning</A
+>55.4. Foreign Data Wrapper Query Planning</A
 ></H1
 ><P
 >     The FDW callback functions <CODE
@@ -110,9 +110,16 @@ CLASS="FUNCTION"
      <CODE
 CLASS="FUNCTION"
 >PlanForeignModify</CODE
->, and <CODE
+>, <CODE
 CLASS="FUNCTION"
 >GetForeignJoinPaths</CODE
+>,
+     <CODE
+CLASS="FUNCTION"
+>GetForeignUpperPaths</CODE
+>, and <CODE
+CLASS="FUNCTION"
+>PlanDirectModify</CODE
 >
      must fit into the workings of the <SPAN
 CLASS="PRODUCTNAME"
@@ -142,7 +149,7 @@ CLASS="LITERAL"
      to enforce these quals, as the core executor can check them instead.)
      <TT
 CLASS="LITERAL"
->baserel-&gt;reltargetlist</TT
+>baserel-&gt;reltarget-&gt;exprs</TT
 > can be used to determine which
      columns need to be fetched; but note that it only lists columns that
      have to be emitted by the <TT
@@ -516,6 +523,86 @@ CLASS="LITERAL"
 >).
     </P
 ><P
+>     An FDW might additionally support direct execution of some plan actions
+     that are above the level of scans and joins, such as grouping or
+     aggregation.  To offer such options, the FDW should generate paths and
+     insert them into the appropriate <I
+CLASS="FIRSTTERM"
+>upper relation</I
+>.  For
+     example, a path representing remote aggregation should be inserted into
+     the <TT
+CLASS="LITERAL"
+>UPPERREL_GROUP_AGG</TT
+> relation, using <CODE
+CLASS="FUNCTION"
+>add_path</CODE
+>.
+     This path will be compared on a cost basis with local aggregation
+     performed by reading a simple scan path for the foreign relation (note
+     that such a path must also be supplied, else there will be an error at
+     plan time).  If the remote-aggregation path wins, which it usually would,
+     it will be converted into a plan in the usual way, by
+     calling <CODE
+CLASS="FUNCTION"
+>GetForeignPlan</CODE
+>.  The recommended place to generate
+     such paths is in the <CODE
+CLASS="FUNCTION"
+>GetForeignUpperPaths</CODE
+>
+     callback function, which is called for each upper relation (i.e., each
+     post-scan/join processing step), if all the base relations of the query
+     come from the same FDW.
+    </P
+><P
+>     <CODE
+CLASS="FUNCTION"
+>PlanForeignModify</CODE
+> and the other callbacks described in
+     <A
+HREF="fdw-callbacks.html#FDW-CALLBACKS-UPDATE"
+>Section 55.2.4</A
+> are designed around the assumption
+     that the foreign relation will be scanned in the usual way and then
+     individual row updates will be driven by a local <TT
+CLASS="LITERAL"
+>ModifyTable</TT
+>
+     plan node.  This approach is necessary for the general case where an
+     update requires reading local tables as well as foreign tables.
+     However, if the operation could be executed entirely by the foreign
+     server, the FDW could generate a path representing that and insert it
+     into the <TT
+CLASS="LITERAL"
+>UPPERREL_FINAL</TT
+> upper relation, where it would
+     compete against the <TT
+CLASS="LITERAL"
+>ModifyTable</TT
+> approach.  This approach
+     could also be used to implement remote <TT
+CLASS="LITERAL"
+>SELECT FOR UPDATE</TT
+>,
+     rather than using the row locking callbacks described in
+     <A
+HREF="fdw-callbacks.html#FDW-CALLBACKS-ROW-LOCKING"
+>Section 55.2.5</A
+>.  Keep in mind that a path
+     inserted into <TT
+CLASS="LITERAL"
+>UPPERREL_FINAL</TT
+> is responsible for
+     implementing <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>all</I
+></SPAN
+> behavior of the query.
+    </P
+><P
 >     When planning an <TT
 CLASS="COMMAND"
 >UPDATE</TT
@@ -526,7 +613,11 @@ CLASS="COMMAND"
      <CODE
 CLASS="FUNCTION"
 >PlanForeignModify</CODE
-> can look up the <TT
+> and <CODE
+CLASS="FUNCTION"
+>PlanDirectModify</CODE
+>
+     can look up the <TT
 CLASS="STRUCTNAME"
 >RelOptInfo</TT
 >

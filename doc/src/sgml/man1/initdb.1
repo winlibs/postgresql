@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "INITDB" "1" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "INITDB" "1" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -89,11 +89,11 @@ The remaining locale categories can be changed later when the server is started\
 \fB\-\-locale\fR
 to set the default for all locale categories, including collation order and character set classes\&. All server locale values (lc_*) can be displayed via
 \fBSHOW ALL\fR\&. More details can be found in
-Section 22.1, \(lqLocale Support\(rq, in the documentation\&.
+Section 23.1, \(lqLocale Support\(rq, in the documentation\&.
 .PP
 To alter the default encoding, use the
 \fB\-\-encoding\fR\&. More details can be found in
-Section 22.3, \(lqCharacter Set Support\(rq, in the documentation\&.
+Section 23.3, \(lqCharacter Set Support\(rq, in the documentation\&.
 .SH "OPTIONS"
 .PP
 .PP
@@ -148,7 +148,7 @@ SQL_ASCII
 if that does not work\&. The character sets supported by the
 PostgreSQL
 server are described in
-Section 22.3.1, \(lqSupported Character Sets\(rq, in the documentation\&.
+Section 23.3.1, \(lqSupported Character Sets\(rq, in the documentation\&.
 .RE
 .PP
 \fB\-k\fR
@@ -163,7 +163,7 @@ Use checksums on data pages to help detect corruption by the I/O system that wou
 Sets the default locale for the database cluster\&. If this option is not specified, the locale is inherited from the environment that
 \fBinitdb\fR
 runs in\&. Locale support is described in
-Section 22.1, \(lqLocale Support\(rq, in the documentation\&.
+Section 23.1, \(lqLocale Support\(rq, in the documentation\&.
 .RE
 .PP
 \fB\-\-lc\-collate=\fR\fB\fIlocale\fR\fR
@@ -315,7 +315,7 @@ PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section 31.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
 .SH "NOTES"
 .PP
 \fBinitdb\fR

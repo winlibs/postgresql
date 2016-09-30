@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Reliability and the Write-Ahead Log"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 29. Reliability and the Write-Ahead Log</TD
+>Chapter 30. Reliability and the Write-Ahead Log</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="WAL-CONFIGURATION"
->29.4. <ACRONYM
+>30.4. <ACRONYM
 CLASS="ACRONYM"
 >WAL</ACRONYM
 > Configuration</A
@@ -106,7 +106,7 @@ CLASS="ACRONYM"
    affect database performance. This section explains their use.
    Consult <A
 HREF="runtime-config.html"
->Chapter 18</A
+>Chapter 19</A
 > for general information about
    setting server configuration parameters.
   </P
@@ -272,6 +272,25 @@ CLASS="VARNAME"
    unexpected variation in the number of WAL segments needed.
   </P
 ><P
+>   On Linux and POSIX platforms <A
+HREF="runtime-config-wal.html#GUC-CHECKPOINT-FLUSH-AFTER"
+>checkpoint_flush_after</A
+>
+   allows to force the OS that pages written by the checkpoint should be
+   flushed to disk after a configurable number of bytes.  Otherwise, these
+   pages may be kept in the OS's page cache, inducing a stall when
+   <TT
+CLASS="LITERAL"
+>fsync</TT
+> is issued at the end of a checkpoint.  This setting will
+   often help to reduce transaction latency, but it also can an adverse effect
+   on performance; particularly for workloads that are bigger than
+   <A
+HREF="runtime-config-resource.html#GUC-SHARED-BUFFERS"
+>shared_buffers</A
+>, but smaller than the OS's page cache.
+  </P
+><P
 >   The number of WAL segment files in <TT
 CLASS="FILENAME"
 >pg_xlog</TT
@@ -328,7 +347,7 @@ CLASS="FILENAME"
    uses a replication slot will have the same effect (see
    <A
 HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
->Section 25.2.6</A
+>Section 26.2.6</A
 >).
   </P
 ><P

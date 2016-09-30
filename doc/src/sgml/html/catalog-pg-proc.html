@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 49. System Catalogs</TD
+>Chapter 50. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOG-PG-PROC"
->49.37. <TT
+>50.38. <TT
 CLASS="STRUCTNAME"
 >pg_proc</TT
 ></A
@@ -109,7 +109,7 @@ HREF="sql-createfunction.html"
 >
    and <A
 HREF="xfunc.html"
->Section 35.3</A
+>Section 36.3</A
 > for more information.
   </P
 ><P
@@ -126,11 +126,11 @@ CLASS="STRUCTFIELD"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN104242"
+NAME="AEN108079"
 ></A
 ><P
 ><B
->Table 49-37. <TT
+>Table 50-38. <TT
 CLASS="STRUCTNAME"
 >pg_proc</TT
 > Columns</B
@@ -354,7 +354,7 @@ CLASS="STRUCTNAME"
 >Calls to this function can be simplified by this other function
        (see <A
 HREF="xfunc-c.html#XFUNC-TRANSFORM-FUNCTIONS"
->Section 35.9.11</A
+>Section 36.9.11</A
 >)</TD
 ></TR
 ><TR
@@ -518,6 +518,43 @@ CLASS="LITERAL"
 > also
        for functions with side-effects, so that calls to them cannot get
        optimized away.)
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>proparallel</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>char</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>       <TT
+CLASS="STRUCTFIELD"
+>proparallel</TT
+> tells whether the function
+       can be safely run in parallel mode.
+       It is <TT
+CLASS="LITERAL"
+>s</TT
+> for functions which are safe to run in
+       parallel mode without restriction.
+       It is <TT
+CLASS="LITERAL"
+>r</TT
+> for functions which can be run in parallel
+       mode, but their execution is restricted to the parallel group leader;
+       parallel worker processes cannot invoke these functions.
+       It is <TT
+CLASS="LITERAL"
+>u</TT
+> for functions which are unsafe in parallel
+       mode; the presence of such a function forces a serial execution plan.
       </TD
 ></TR
 ><TR

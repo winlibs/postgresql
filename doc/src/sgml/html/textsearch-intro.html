@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Full Text Search"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -551,23 +551,27 @@ CLASS="TYPE"
 >tsquery</TT
 >
     contains search terms, which must be already-normalized lexemes, and
-    may combine multiple terms using AND, OR, and NOT operators.
+    may combine multiple terms using AND, OR, NOT, and FOLLOWED BY operators.
     (For details see <A
-HREF="datatype-textsearch.html"
->Section 8.11</A
+HREF="datatype-textsearch.html#DATATYPE-TSQUERY"
+>Section 8.11.2</A
 >.)  There are
     functions <CODE
 CLASS="FUNCTION"
 >to_tsquery</CODE
-> and <CODE
+>, <CODE
 CLASS="FUNCTION"
 >plainto_tsquery</CODE
+>,
+    and <CODE
+CLASS="FUNCTION"
+>phraseto_tsquery</CODE
 >
     that are helpful in converting user-written text into a proper
     <TT
 CLASS="TYPE"
 >tsquery</TT
->, for example by normalizing words appearing in
+>, primarily by normalizing words appearing in
     the text.  Similarly, <CODE
 CLASS="FUNCTION"
 >to_tsvector</CODE
@@ -665,6 +669,136 @@ CLASS="TYPE"
 CLASS="LITERAL"
 >to_tsvector(x) @@ plainto_tsquery(y)</TT
 >.
+   </P
+><P
+>    Within a <TT
+CLASS="TYPE"
+>tsquery</TT
+>, the <TT
+CLASS="LITERAL"
+>&amp;</TT
+> (AND) operator
+    specifies that both its arguments must appear in the document to have a
+    match.  Similarly, the <TT
+CLASS="LITERAL"
+>|</TT
+> (OR) operator specifies that
+    at least one of its arguments must appear, while the <TT
+CLASS="LITERAL"
+>!</TT
+> (NOT)
+    operator specifies that its argument must <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>not</I
+></SPAN
+> appear in
+    order to have a match.
+   </P
+><P
+>    Searching for phrases is possible with the help of
+    the <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+> (FOLLOWED BY) <TT
+CLASS="TYPE"
+>tsquery</TT
+> operator, which
+    matches only if its arguments have matches that are adjacent and in the
+    given order.  For example:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT to_tsvector('fatal error') @@ to_tsquery('fatal &lt;-&gt; error');
+ ?column? 
+----------
+ t
+
+SELECT to_tsvector('error is not fatal') @@ to_tsquery('fatal &lt;-&gt; error');
+ ?column? 
+----------
+ f</PRE
+><P>
+
+    There is a more general version of the FOLLOWED BY operator having the
+    form <TT
+CLASS="LITERAL"
+>&lt;<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+>&gt;</TT
+>,
+    where <TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+> is an integer standing for the difference between
+    the positions of the matching lexemes.  <TT
+CLASS="LITERAL"
+>&lt;1&gt;</TT
+> is
+    the same as <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+>, while <TT
+CLASS="LITERAL"
+>&lt;2&gt;</TT
+>
+    allows exactly one other lexeme to appear between the matches, and so
+    on.  The <TT
+CLASS="LITERAL"
+>phraseto_tsquery</TT
+> function makes use of this
+    operator to construct a <TT
+CLASS="LITERAL"
+>tsquery</TT
+> that can match a multi-word
+    phrase when some of the words are stop words.  For example:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT phraseto_tsquery('cats ate rats');
+       phraseto_tsquery        
+-------------------------------
+ 'cat' &lt;-&gt; 'ate' &lt;-&gt; 'rat'
+
+SELECT phraseto_tsquery('the cats ate the rats');
+       phraseto_tsquery        
+-------------------------------
+ 'cat' &lt;-&gt; 'ate' &lt;2&gt; 'rat'</PRE
+><P>
+   </P
+><P
+>    A special case that's sometimes useful is that <TT
+CLASS="LITERAL"
+>&lt;0&gt;</TT
+>
+    can be used to require that two patterns match the same word.
+   </P
+><P
+>    Parentheses can be used to control nesting of the <TT
+CLASS="TYPE"
+>tsquery</TT
+>
+    operators.  Without parentheses, <TT
+CLASS="LITERAL"
+>|</TT
+> binds least tightly,
+    then <TT
+CLASS="LITERAL"
+>&amp;</TT
+>, then <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+>,
+    and <TT
+CLASS="LITERAL"
+>!</TT
+> most tightly.
    </P
 ></DIV
 ><DIV

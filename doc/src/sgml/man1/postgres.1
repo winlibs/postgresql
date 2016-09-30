@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "POSTGRES" "1" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "POSTGRES" "1" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -60,7 +60,7 @@ or
 \fBPGDATA\fR
 points directly to the data area directory created by
 \fBinitdb\fR(1)\&. Other possible file layouts are discussed in
-Section 18.2, \(lqFile Locations\(rq, in the documentation\&.
+Section 19.2, \(lqFile Locations\(rq, in the documentation\&.
 .PP
 By default
 \fBpostgres\fR
@@ -76,7 +76,7 @@ command can also be called in single\-user mode\&. The primary use for this mode
 .PP
 \fBpostgres\fR
 accepts the following command\-line arguments\&. For a detailed discussion of the options consult
-Chapter 18, Server Configuration, in the documentation\&. You can save typing most of these options by setting up a configuration file\&. Some (safe) options can also be set from the connecting client in an application\-dependent way to apply only for that session\&. For example, if the environment variable
+Chapter 19, Server Configuration, in the documentation\&. You can save typing most of these options by setting up a configuration file\&. Some (safe) options can also be set from the connecting client in an application\-dependent way to apply only for that session\&. For example, if the environment variable
 \fBPGOPTIONS\fR
 is set, then
 libpq\-based clients will pass that string to the server, which will interpret it as
@@ -97,7 +97,7 @@ configuration parameter\&.
 Sets a named run\-time parameter\&. The configuration parameters supported by
 PostgreSQL
 are described in
-Chapter 18, Server Configuration, in the documentation\&. Most of the other command line options are in fact short forms of such a parameter assignment\&.
+Chapter 19, Server Configuration, in the documentation\&. Most of the other command line options are in fact short forms of such a parameter assignment\&.
 \fB\-c\fR
 can appear multiple times to set multiple parameters\&.
 .RE
@@ -129,7 +129,7 @@ process from being propagated to this session\&.
 \fB\-D \fR\fB\fIdatadir\fR\fR
 .RS 4
 Specifies the file system location of the database configuration files\&. See
-Section 18.2, \(lqFile Locations\(rq, in the documentation
+Section 19.2, \(lqFile Locations\(rq, in the documentation
 for details\&.
 .RE
 .PP
@@ -200,7 +200,7 @@ must have been compiled with support for
 SSL
 for this option to be available\&. For more information on using
 SSL, refer to
-Section 17.9, \(lqSecure TCP/IP Connections with SSL\(rq, in the documentation\&.
+Section 18.9, \(lqSecure TCP/IP Connections with SSL\(rq, in the documentation\&.
 .RE
 .PP
 \fB\-N \fR\fB\fImax\-connections\fR\fR
@@ -253,7 +253,7 @@ Print time information and other statistics at the end of each command\&. This i
 Specifies the amount of memory to be used by internal sorts and hashes before resorting to temporary disk files\&. See the description of the
 \fIwork_mem\fR
 configuration parameter in
-Section 18.4.1, \(lqMemory\(rq, in the documentation\&.
+Section 19.4.1, \(lqMemory\(rq, in the documentation\&.
 .RE
 .PP
 \fB\-V\fR
@@ -360,7 +360,8 @@ A delay of this many seconds occurs when a new server process is started, after 
 .RE
 .SS "Options for Single\-User Mode"
 .PP
-The following options only apply to the single\-user mode\&.
+The following options only apply to the single\-user mode (see
+SINGLE\-USER MODE)\&.
 .PP
 \fB\-\-single\fR
 .RS 4
@@ -374,12 +375,12 @@ Specifies the name of the database to be accessed\&. This must be the last argum
 .PP
 \fB\-E\fR
 .RS 4
-Echo all commands\&.
+Echo all commands to standard output before executing them\&.
 .RE
 .PP
 \fB\-j\fR
 .RS 4
-Disables use of newline as a statement delimiter\&.
+Use semicolon followed by two newlines, rather than just newline, as the command entry terminator\&.
 .RE
 .PP
 \fB\-r\fR \fIfilename\fR
@@ -417,7 +418,7 @@ semget
 or
 shmget
 probably indicates you need to configure your kernel to provide adequate shared memory and semaphores\&. For more discussion see
-Section 17.4, \(lqManaging Kernel Resources\(rq, in the documentation\&. You might be able to postpone reconfiguring your kernel by decreasing
+Section 18.4, \(lqManaging Kernel Resources\(rq, in the documentation\&. You might be able to postpone reconfiguring your kernel by decreasing
 shared_buffers
 to reduce the shared memory consumption of
 PostgreSQL, and/or by reducing
@@ -525,7 +526,7 @@ OpenBSD\&. Use
 instead\&. This is a bug in the affected operating systems; a future release of
 PostgreSQL
 will provide a workaround if this is not fixed\&.
-.SH "USAGE"
+.SH "SINGLE-USER MODE"
 .PP
 To start a single\-user mode server, use a command like
 .sp
@@ -545,19 +546,23 @@ Provide the correct path to the database directory with
 is set\&. Also specify the name of the particular database you want to work in\&.
 .PP
 Normally, the single\-user mode server treats newline as the command entry terminator; there is no intelligence about semicolons, as there is in
-psql\&. To continue a command across multiple lines, you must type backslash just before each newline except the last one\&.
+psql\&. To continue a command across multiple lines, you must type backslash just before each newline except the last one\&. The backslash and adjacent newline are both dropped from the input command\&. Note that this will happen even when within a string literal or comment\&.
 .PP
 But if you use the
 \fB\-j\fR
-command line switch, then newline does not terminate command entry\&. In this case, the server will read the standard input until the end\-of\-file (EOF) marker, then process the input as a single command string\&. Backslash\-newline is not treated specially in this case\&.
+command line switch, a single newline does not terminate command entry; instead, the sequence semicolon\-newline\-newline does\&. That is, type a semicolon immediately followed by a completely empty line\&. Backslash\-newline is not treated specially in this mode\&. Again, there is no intelligence about such a sequence appearing within a string literal or comment\&.
+.PP
+In either input mode, if you type a semicolon that is not just before or part of a command entry terminator, it is considered a command separator\&. When you do type a command entry terminator, the multiple statements you\*(Aqve entered will be executed as a single transaction\&.
 .PP
 To quit the session, type
 EOF
-(Control+D, usually)\&. If you\*(Aqve used
-\fB\-j\fR, two consecutive
-EOFs are needed to exit\&.
+(Control+D, usually)\&. If you\*(Aqve entered any text since the last command entry terminator, then
+EOF
+will be taken as a command entry terminator, and another
+EOF
+will be needed to exit\&.
 .PP
-Note that the single\-user mode server does not provide sophisticated line\-editing features (no command history, for example)\&. Single\-User mode also does not do any background processing, like automatic checkpoints\&.
+Note that the single\-user mode server does not provide sophisticated line\-editing features (no command history, for example)\&. Single\-user mode also does not do any background processing, such as automatic checkpoints or replication\&.
 .SH "EXAMPLES"
 .PP
 To start

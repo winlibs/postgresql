@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-PREPARE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN85496"
+NAME="AEN88961"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN85496"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN85499"
+NAME="AEN88964"
 ></A
 ><H2
 >Synopsis</H2
@@ -129,7 +129,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85504"
+NAME="AEN88969"
 ></A
 ><H2
 >Description</H2
@@ -193,11 +193,11 @@ HREF="sql-deallocate.html"
 > command.
   </P
 ><P
->   Prepared statements have the largest performance advantage when a
-   single session is being used to execute a large number of similar
+>   Prepared statements potentially have the largest performance advantage
+   when a single session is being used to execute a large number of similar
    statements. The performance difference will be particularly
-   significant if the statements are complex to plan or rewrite, for
-   example, if the query involves a join of many tables or requires
+   significant if the statements are complex to plan or rewrite, e.g. 
+   if the query involves a join of many tables or requires
    the application of several rules. If the statement is relatively simple
    to plan and rewrite but relatively expensive to execute, the
    performance advantage of prepared statements will be less noticeable.
@@ -206,7 +206,7 @@ HREF="sql-deallocate.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85519"
+NAME="AEN88984"
 ></A
 ><H2
 >Parameters</H2
@@ -290,19 +290,42 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85545"
+NAME="SQL-PREPARE-NOTES"
 ></A
 ><H2
 >Notes</H2
 ><P
->   If a prepared statement is executed enough times, the server may eventually
-   decide to save and re-use a generic plan rather than re-planning each time.
-   This will occur immediately if the prepared statement has no parameters;
-   otherwise it occurs only if the generic plan appears to be not much more
-   expensive than a plan that depends on specific parameter values.
-   Typically, a generic plan will be selected only if the query's performance
-   is estimated to be fairly insensitive to the specific parameter values
-   supplied.
+>   Prepared statements can use generic plans rather than re-planning with
+   each set of supplied <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> values.  This occurs
+   immediately for prepared statements with no parameters; otherwise
+   it occurs only after five or more executions produce plans whose
+   estimated cost average (including planning overhead) is more expensive
+   than the generic plan cost estimate.  Once a generic plan is chosen,
+   it is used for the remaining lifetime of the prepared statement.
+   Using <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> values which are rare in columns with
+   many duplicates can generate custom plans that are so much cheaper
+   than the generic plan, even after adding planning overhead, that the
+   generic plan might never be used.
+  </P
+><P
+>   A generic plan assumes that each value supplied to
+   <TT
+CLASS="COMMAND"
+>EXECUTE</TT
+> is one of the column's distinct values
+   and that column values are uniformly distributed.  For example,
+   if statistics record three distinct column values, a generic plan
+   assumes a column equality comparison will match 33% of processed rows.
+   Column statistics also allow generic plans to accurately compute the
+   selectivity of unique columns.  Comparisons on non-uniformly-distributed
+   columns and specification of non-existent values affects the average
+   plan cost, and hence if and when a generic plan is chosen.
   </P
 ><P
 >   To examine the query plan <SPAN
@@ -312,6 +335,10 @@ CLASS="PRODUCTNAME"
    for a prepared statement, use <A
 HREF="sql-explain.html"
 >EXPLAIN</A
+>, e.g.
+   <TT
+CLASS="COMMAND"
+>EXPLAIN EXECUTE</TT
 >.
    If a generic plan is in use, it will contain parameter symbols
    <TT
@@ -323,7 +350,9 @@ CLASS="REPLACEABLE"
 ></TT
 ></TT
 >, while a custom plan will have the
-   current actual parameter values substituted into it.
+   supplied parameter values substituted into it.
+   The row estimates in the generic plan reflect the selectivity
+   computed for the parameters.
   </P
 ><P
 >   For more information on query planning and the statistics collected
@@ -429,7 +458,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85574"
+NAME="AEN89044"
 ></A
 ><H2
 >Compatibility</H2
@@ -449,7 +478,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN85579"
+NAME="AEN89049"
 ></A
 ><H2
 >See Also</H2

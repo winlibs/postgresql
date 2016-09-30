@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "COMMENT" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "COMMENT" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,6 +34,7 @@ COMMENT \- define or change the comment of an object
 .nf
 COMMENT ON
 {
+  ACCESS METHOD \fIobject_name\fR |
   AGGREGATE \fIaggregate_name\fR ( \fIaggregate_signature\fR ) |
   CAST (\fIsource_type\fR AS \fItarget_type\fR) |
   COLLATION \fIobject_name\fR |
@@ -94,7 +95,7 @@ For most kinds of object, only the object\*(Aqs owner can set the comment\&. Rol
 COMMENT ON ROLE
 is that you must be superuser to comment on a superuser role, or have the
 CREATEROLE
-privilege to comment on non\-superuser roles\&. Of course, a superuser can comment on anything\&.
+privilege to comment on non\-superuser roles\&. Likewise, access methods don\*(Aqt have owners either; you must be superuser to comment on an access method\&. Of course, a superuser can comment on anything\&.
 .PP
 Comments can be viewed using
 psql\*(Aqs
@@ -106,7 +107,7 @@ uses, namely
 \fBcol_description\fR, and
 \fBshobj_description\fR
 (see
-Table\ \&9.62, \(lqComment Information Functions\(rq)\&.
+Table\ \&9.67, \(lqComment Information Functions\(rq)\&.
 .SH "PARAMETERS"
 .PP
 \fIobject_name\fR
@@ -136,7 +137,7 @@ must refer to a table, view, composite type, or foreign table\&.
 .br
 \fIdomain_name\fR
 .RS 4
-When creating a comment on a constraint, a table, a domain or a policy these parameters specify the name of the table or domain on which the constraint is defined\&.
+When creating a comment on a constraint, a trigger, a rule or a policy these parameters specify the name of the table or domain on which that object is defined\&.
 .RE
 .PP
 \fIsource_type\fR
@@ -250,6 +251,7 @@ Some more examples:
 .RS 4
 .\}
 .nf
+COMMENT ON ACCESS METHOD rtree IS \*(AqR\-Tree access method\*(Aq;
 COMMENT ON AGGREGATE my_aggregate (double precision) IS \*(AqComputes sample variance\*(Aq;
 COMMENT ON CAST (text AS int4) IS \*(AqAllow casts from text to int4\*(Aq;
 COMMENT ON COLLATION "fr_CA" IS \*(AqCanadian French\*(Aq;

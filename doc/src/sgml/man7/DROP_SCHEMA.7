@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "DROP SCHEMA" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "DROP SCHEMA" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,7 +39,7 @@ DROP SCHEMA [ IF EXISTS ] \fIname\fR [, \&.\&.\&.] [ CASCADE | RESTRICT ]
 \fBDROP SCHEMA\fR
 removes schemas from the database\&.
 .PP
-A schema can only be dropped by its owner or a superuser\&. Note that the owner can drop the schema (and thereby all contained objects) even if he does not own some of the objects within the schema\&.
+A schema can only be dropped by its owner or a superuser\&. Note that the owner can drop the schema (and thereby all contained objects) even if they do not own some of the objects within the schema\&.
 .SH "PARAMETERS"
 .PP
 IF EXISTS
@@ -54,13 +54,19 @@ The name of a schema\&.
 .PP
 CASCADE
 .RS 4
-Automatically drop objects (tables, functions, etc\&.) that are contained in the schema\&.
+Automatically drop objects (tables, functions, etc\&.) that are contained in the schema, and in turn all objects that depend on those objects (see
+Section 5.13, \(lqDependency Tracking\(rq, in the documentation)\&.
 .RE
 .PP
 RESTRICT
 .RS 4
 Refuse to drop the schema if it contains any objects\&. This is the default\&.
 .RE
+.SH "NOTES"
+.PP
+Using the
+CASCADE
+option might make the command remove objects in other schemas besides the one(s) named\&.
 .SH "EXAMPLES"
 .PP
 To remove schema

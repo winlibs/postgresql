@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Backup and Restore"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 24. Backup and Restore</TD
+>Chapter 25. Backup and Restore</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="BACKUP-FILE"
->24.2. File System Level Backup</A
+>25.2. File System Level Backup</A
 ></H1
 ><P
 >   An alternative backup strategy is to directly copy the files that
@@ -103,7 +103,7 @@ CLASS="PRODUCTNAME"
 > uses to store the data in the database;
    <A
 HREF="creating-cluster.html"
->Section 17.2</A
+>Section 18.2</A
 > explains where these files
    are located.  You can use whatever method you prefer
    for doing file system backups; for example:
@@ -151,7 +151,7 @@ CLASS="COMMAND"
       Information about stopping the server can be found in
       <A
 HREF="server-shutdown.html"
->Section 17.5</A
+>Section 18.5</A
 >.  Needless to say, you
       also need to shut down the server before restoring the data.
      </P
@@ -236,13 +236,13 @@ CLASS="EMPHASIS"
    the database server long enough to establish all the frozen snapshots.
    Another option is to perform a continuous archiving base backup (<A
 HREF="continuous-archiving.html#BACKUP-BASE-BACKUP"
->Section 24.3.2</A
+>Section 25.3.2</A
 >) because such backups are immune to file
    system changes during the backup.  This requires enabling continuous
    archiving just during the backup process; restore is done using
    continuous archive recovery (<A
 HREF="continuous-archiving.html#BACKUP-PITR-RECOVERY"
->Section 24.3.4</A
+>Section 25.3.4</A
 >).
   </P
 ><P

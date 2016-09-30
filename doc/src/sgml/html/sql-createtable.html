@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN78523"
+NAME="AEN81872"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN78523"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN78526"
+NAME="AEN81875"
 ></A
 ><H2
 >Synopsis</H2
@@ -555,7 +555,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN78606"
+NAME="AEN81955"
 ></A
 ><H2
 >Parameters</H2
@@ -644,7 +644,7 @@ CLASS="LITERAL"
 >      If specified, the table is created as an unlogged table.  Data written
       to unlogged tables is not written to the write-ahead log (see <A
 HREF="wal.html"
->Chapter 29</A
+>Chapter 30</A
 >), which makes them considerably faster than ordinary
       tables.  However, they are not crash-safe: an unlogged table is
       automatically truncated after a crash or unclean shutdown.  The contents
@@ -877,19 +877,19 @@ CLASS="LITERAL"
       table.
      </P
 ><P
->      Default expressions for the copied column definitions will only be
-      copied if <TT
+>      Default expressions for the copied column definitions will be copied
+      only if <TT
 CLASS="LITERAL"
 >INCLUDING DEFAULTS</TT
-> is specified.
-      Defaults that call database-modification functions, like
-      <CODE
-CLASS="FUNCTION"
->nextval</CODE
->, create a linkage between the original and
-      new tables.  The
+> is specified.  The
       default behavior is to exclude default expressions, resulting in the
       copied columns in the new table having null defaults.
+      Note that copying defaults that call database-modification functions,
+      such as <CODE
+CLASS="FUNCTION"
+>nextval</CODE
+>, may create a functional linkage between
+      the original and new tables.
      </P
 ><P
 >      Not-null constraints are always copied to the new table.
@@ -901,27 +901,36 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >INCLUDING CONSTRAINTS</TT
 > is specified.
-      Indexes, <TT
-CLASS="LITERAL"
->PRIMARY KEY</TT
->, and <TT
-CLASS="LITERAL"
->UNIQUE</TT
-> constraints
-      on the original table will be created on the new table only if the
-      <TT
-CLASS="LITERAL"
->INCLUDING INDEXES</TT
-> clause is specified.
       No distinction is made between column constraints and table
       constraints.
      </P
 ><P
-><TT
+>      Indexes, <TT
+CLASS="LITERAL"
+>PRIMARY KEY</TT
+>, <TT
+CLASS="LITERAL"
+>UNIQUE</TT
+>,
+      and <TT
+CLASS="LITERAL"
+>EXCLUDE</TT
+> constraints on the original table will be
+      created on the new table only if <TT
+CLASS="LITERAL"
+>INCLUDING INDEXES</TT
+>
+      is specified.  Names for the new indexes and constraints are
+      chosen according to the default rules, regardless of how the originals
+      were named.  (This behavior avoids possible duplicate-name failures for
+      the new indexes.)
+     </P
+><P
+>      <TT
 CLASS="LITERAL"
 >STORAGE</TT
-> settings for the copied column definitions will only
-      be copied if <TT
+> settings for the copied column definitions will be
+      copied only if <TT
 CLASS="LITERAL"
 >INCLUDING STORAGE</TT
 > is specified.  The
@@ -936,12 +945,12 @@ CLASS="LITERAL"
 > settings, see
       <A
 HREF="storage-toast.html"
->Section 63.2</A
+>Section 65.2</A
 >.
      </P
 ><P
 >      Comments for the copied columns, constraints, and indexes
-      will only be copied if <TT
+      will be copied only if <TT
 CLASS="LITERAL"
 >INCLUDING COMMENTS</TT
 >
@@ -949,7 +958,7 @@ CLASS="LITERAL"
       the copied columns and constraints in the new table having no comments.
      </P
 ><P
-><TT
+>      <TT
 CLASS="LITERAL"
 >INCLUDING ALL</TT
 > is an abbreviated form of
@@ -959,7 +968,7 @@ CLASS="LITERAL"
 >.
      </P
 ><P
->      Note also that unlike <TT
+>      Note that unlike <TT
 CLASS="LITERAL"
 >INHERITS</TT
 >, columns and
@@ -978,12 +987,13 @@ CLASS="LITERAL"
 >      The <TT
 CLASS="LITERAL"
 >LIKE</TT
-> clause can also be used to copy columns from
-      views, foreign tables, or composite types.  Inapplicable options (e.g., <TT
+> clause can also be used to copy column
+      definitions from views, foreign tables, or composite types.
+      Inapplicable options (e.g., <TT
 CLASS="LITERAL"
->INCLUDING
-      INDEXES</TT
-> from a view) are ignored.
+>INCLUDING INDEXES</TT
+> from
+      a view) are ignored.
      </P
 ></DD
 ><DT
@@ -1306,7 +1316,7 @@ CLASS="LITERAL"
 >amgettuple</TT
 > (see <A
 HREF="indexam.html"
->Chapter 58</A
+>Chapter 59</A
 >); at present this means <ACRONYM
 CLASS="ACRONYM"
 >GIN</ACRONYM
@@ -1926,7 +1936,7 @@ CLASS="ACRONYM"
 > table, if any
     (see <A
 HREF="storage-toast.html"
->Section 63.2</A
+>Section 65.2</A
 > for more information about TOAST).
     If a table parameter value is set and the
     equivalent <TT
@@ -1971,6 +1981,26 @@ CLASS="COMMAND"
 ><DT
 ><TT
 CLASS="LITERAL"
+>parallel_workers</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)</DT
+><DD
+><P
+>      This sets the number of workers that should be used to assist a parallel
+      scan of this table.  If not set, the system will determine a value based
+      on the relation size.  The actual number of workers chosen by the planner
+      may be less, for example due to
+      the setting of <A
+HREF="runtime-config-resource.html#GUC-MAX-WORKER-PROCESSES"
+>max_worker_processes</A
+>.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
 >autovacuum_enabled</TT
 >, <TT
 CLASS="LITERAL"
@@ -1992,12 +2022,12 @@ CLASS="COMMAND"
 > operations on this table following the rules
      discussed in <A
 HREF="routine-vacuuming.html#AUTOVACUUM"
->Section 23.1.6</A
+>Section 24.1.6</A
 >.
      If false, this table will not be autovacuumed, except to prevent
      transaction ID wraparound. See <A
 HREF="routine-vacuuming.html#VACUUM-FOR-WRAPAROUND"
->Section 23.1.5</A
+>Section 24.1.5</A
 > for
      more about wraparound prevention.
      Note that the autovacuum daemon does not run at all (except to prevent
@@ -2316,7 +2346,7 @@ CLASS="TYPE"
       logical replication. See
       <A
 HREF="logicaldecoding-output-plugin.html#LOGICALDECODING-CAPABILITIES"
->Section 46.6.2</A
+>Section 47.6.2</A
 > for details.
       This parameter cannot be set for TOAST tables.
      </P
@@ -2672,7 +2702,7 @@ CLASS="ACRONYM"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN79200"
+NAME="AEN82558"
 ></A
 ><H3
 >Temporary Tables</H3
@@ -2771,7 +2801,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN79223"
+NAME="AEN82581"
 ></A
 ><H3
 >Non-deferred Uniqueness Constraints</H3
@@ -2806,7 +2836,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN79231"
+NAME="AEN82589"
 ></A
 ><H3
 >Column Check Constraints</H3
@@ -2830,7 +2860,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN79237"
+NAME="AEN82595"
 ></A
 ><H3
 ><TT
@@ -2851,7 +2881,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN79243"
+NAME="AEN82601"
 ></A
 ><H3
 ><TT
@@ -2885,7 +2915,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN79252"
+NAME="AEN82610"
 ></A
 ><H3
 >Inheritance</H3
@@ -2910,7 +2940,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN79258"
+NAME="AEN82616"
 ></A
 ><H3
 >Zero-column Tables</H3
@@ -2935,7 +2965,33 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN79264"
+NAME="AEN82622"
+></A
+><H3
+><TT
+CLASS="LITERAL"
+>LIKE</TT
+> Clause</H3
+><P
+>    While a <TT
+CLASS="LITERAL"
+>LIKE</TT
+> clause exists in the SQL standard, many of the
+    options that <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> accepts for it are not
+    in the standard, and some of the standard's options are not implemented
+    by <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>.
+   </P
+></DIV
+><DIV
+CLASS="REFSECT2"
+><A
+NAME="AEN82629"
 ></A
 ><H3
 ><TT
@@ -2956,7 +3012,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN79270"
+NAME="AEN82635"
 ></A
 ><H3
 >Tablespaces</H3
@@ -2978,7 +3034,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN79276"
+NAME="AEN82641"
 ></A
 ><H3
 >Typed Tables</H3
@@ -2998,7 +3054,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN79280"
+NAME="AEN82645"
 ></A
 ><H2
 >See Also</H2

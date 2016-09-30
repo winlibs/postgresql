@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 17. Server Setup and Operation</TD
+>Chapter 18. Server Setup and Operation</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="KERNEL-RESOURCES"
->17.4. Managing Kernel Resources</A
+>18.4. Managing Kernel Resources</A
 ></H1
 ><P
 >   <SPAN
@@ -114,7 +114,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SYSVIPC"
->17.4.1. Shared Memory and Semaphores</A
+>18.4.1. Shared Memory and Semaphores</A
 ></H2
 ><P
 >    Shared memory and semaphores are collectively referred to as
@@ -172,11 +172,11 @@ CLASS="ACRONYM"
     should leave an instructive error message describing the problem
     and what to do about it. (See also <A
 HREF="server-start.html#SERVER-START-FAILURES"
->Section 17.3.1</A
+>Section 18.3.1</A
 >.) The relevant kernel
     parameters are named consistently across different systems; <A
 HREF="kernel-resources.html#SYSVIPC-PARAMETERS"
->Table 17-1</A
+>Table 18-1</A
 > gives an overview. The methods to set
     them, however, vary. Suggestions for some platforms are given below.
    </P
@@ -204,7 +204,7 @@ NAME="SYSVIPC-PARAMETERS"
 ></A
 ><P
 ><B
->Table 17-1. <SPAN
+>Table 18-1. <SPAN
 CLASS="SYSTEMITEM"
 >System V</SPAN
 > <ACRONYM
@@ -439,7 +439,7 @@ CLASS="VARNAME"
     plus one extra for each 16
     allowed connections plus workers (see the formula in <A
 HREF="kernel-resources.html#SYSVIPC-PARAMETERS"
->Table 17-1</A
+>Table 18-1</A
 >).  The parameter <TT
 CLASS="VARNAME"
 >SEMMNI</TT
@@ -1250,8 +1250,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN29900"
->17.4.2. Resource Limits</A
+NAME="AEN31552"
+>18.4.2. Resource Limits</A
 ></H2
 ><P
 >    Unix-like operating systems enforce various kinds of resource limits
@@ -1399,7 +1399,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LINUX-MEMORY-OVERCOMMIT"
->17.4.3. Linux Memory Overcommit</A
+>18.4.3. Linux Memory Overcommit</A
 ></H2
 ><P
 >    In Linux 2.4 and later, the default virtual memory behavior is not
@@ -1514,9 +1514,10 @@ CLASS="FILENAME"
 CLASS="VARNAME"
 >vm.overcommit_ratio</TT
 >.  For details see the kernel documentation
-    file <TT
-CLASS="FILENAME"
->Documentation/vm/overcommit-accounting</TT
+    file <A
+HREF="https://www.kernel.org/doc/Documentation/vm/overcommit-accounting"
+TARGET="_top"
+>https://www.kernel.org/doc/Documentation/vm/overcommit-accounting</A
 >.
    </P
 ><P
@@ -1635,7 +1636,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LINUX-HUGE-PAGES"
->17.4.4. Linux huge pages</A
+>18.4.4. Linux huge pages</A
 ></H2
 ><P
 >    Using huge pages reduces overhead when using large contiguous chunks of

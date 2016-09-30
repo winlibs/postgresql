@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -105,35 +105,11 @@ CLASS="PRODUCTNAME"
     and for converting from formatted strings to specific data types.
     <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-TABLE"
->Table 9-21</A
+>Table 9-23</A
 > lists them.
     These functions all follow a common calling convention: the first
     argument is the value to be formatted and the second argument is a
     template that defines the output or input format.
-   </P
-><P
->    A single-argument <CODE
-CLASS="FUNCTION"
->to_timestamp</CODE
-> function is also
-    available;  it accepts a
-    <TT
-CLASS="TYPE"
->double precision</TT
-> argument and converts from Unix epoch
-    (seconds since 1970-01-01 00:00:00+00) to
-    <TT
-CLASS="TYPE"
->timestamp with time zone</TT
->.
-    (<TT
-CLASS="TYPE"
->Integer</TT
-> Unix epochs are implicitly cast to
-    <TT
-CLASS="TYPE"
->double precision</TT
->.)
    </P
 ><DIV
 CLASS="TABLE"
@@ -142,7 +118,7 @@ NAME="FUNCTIONS-FORMATTING-TABLE"
 ></A
 ><P
 ><B
->Table 9-21. Formatting Functions</B
+>Table 9-23. Formatting Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -393,33 +369,26 @@ CLASS="LITERAL"
 >to_timestamp('05&nbsp;Dec&nbsp;2000', 'DD&nbsp;Mon&nbsp;YYYY')</TT
 ></TD
 ></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
-><CODE
-CLASS="FUNCTION"
->to_timestamp(<TT
-CLASS="TYPE"
->double precision</TT
->)</CODE
-></TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->timestamp with time zone</TT
-></TD
-><TD
->convert Unix epoch to time stamp</TD
-><TD
-><TT
-CLASS="LITERAL"
->to_timestamp(1284352323)</TT
-></TD
-></TR
 ></TBODY
 ></TABLE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>     There is also a single-argument <CODE
+CLASS="FUNCTION"
+>to_timestamp</CODE
+>
+     function; see <A
+HREF="functions-datetime.html#FUNCTIONS-DATETIME-TABLE"
+>Table 9-30</A
+>.
+    </P
+></BLOCKQUOTE
 ></DIV
 ><P
 >    In a <CODE
@@ -435,7 +404,7 @@ CLASS="FUNCTION"
 ><P
 >   <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-DATETIME-TABLE"
->Table 9-22</A
+>Table 9-24</A
 > shows the
    template patterns available for formatting date and time values.
   </P
@@ -446,7 +415,7 @@ NAME="FUNCTIONS-FORMATTING-DATETIME-TABLE"
 ></A
 ><P
 ><B
->Table 9-22. Template Patterns for Date/Time Formatting</B
+>Table 9-24. Template Patterns for Date/Time Formatting</B
 ></P
 ><TABLE
 BORDER="1"
@@ -987,7 +956,7 @@ CLASS="LITERAL"
 > modifier.
     <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-DATETIMEMOD-TABLE"
->Table 9-23</A
+>Table 9-25</A
 > shows the
     modifier patterns for date/time formatting.
    </P
@@ -998,7 +967,7 @@ NAME="FUNCTIONS-FORMATTING-DATETIMEMOD-TABLE"
 ></A
 ><P
 ><B
->Table 9-23. Template Pattern Modifiers for Date/Time Formatting</B
+>Table 9-25. Template Pattern Modifiers for Date/Time Formatting</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1565,7 +1534,7 @@ CLASS="LITERAL"
 ><P
 >   <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE"
->Table 9-24</A
+>Table 9-26</A
 > shows the
    template patterns available for formatting numeric values.
   </P
@@ -1576,7 +1545,7 @@ NAME="FUNCTIONS-FORMATTING-NUMERIC-TABLE"
 ></A
 ><P
 ><B
->Table 9-24. Template Patterns for Numeric Formatting</B
+>Table 9-26. Template Patterns for Numeric Formatting</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1838,7 +1807,10 @@ CLASS="PRODUCTNAME"
 >       <TT
 CLASS="LITERAL"
 >V</TT
-> effectively
+> with <CODE
+CLASS="FUNCTION"
+>to_char</CODE
+>
        multiplies the input values by
        <TT
 CLASS="LITERAL"
@@ -1858,11 +1830,22 @@ CLASS="REPLACEABLE"
        <TT
 CLASS="LITERAL"
 >V</TT
->.
+>.  <TT
+CLASS="LITERAL"
+>V</TT
+> with
+       <CODE
+CLASS="FUNCTION"
+>to_number</CODE
+> divides in a similar manner.
        <CODE
 CLASS="FUNCTION"
 >to_char</CODE
-> does not support the use of
+> and <CODE
+CLASS="FUNCTION"
+>to_number</CODE
+>
+       do not support the use of
        <TT
 CLASS="LITERAL"
 >V</TT
@@ -1906,7 +1889,7 @@ CLASS="LITERAL"
 > modifier.
     <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-NUMERICMOD-TABLE"
->Table 9-25</A
+>Table 9-27</A
 > shows the
     modifier patterns for numeric formatting.
    </P
@@ -1917,7 +1900,7 @@ NAME="FUNCTIONS-FORMATTING-NUMERICMOD-TABLE"
 ></A
 ><P
 ><B
->Table 9-25. Template Pattern Modifiers for Numeric Formatting</B
+>Table 9-27. Template Pattern Modifiers for Numeric Formatting</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1981,7 +1964,7 @@ CLASS="LITERAL"
 ><P
 >   <A
 HREF="functions-formatting.html#FUNCTIONS-FORMATTING-EXAMPLES-TABLE"
->Table 9-26</A
+>Table 9-28</A
 > shows some
    examples of the use of the <CODE
 CLASS="FUNCTION"
@@ -1995,7 +1978,7 @@ NAME="FUNCTIONS-FORMATTING-EXAMPLES-TABLE"
 ></A
 ><P
 ><B
->Table 9-26. <CODE
+>Table 9-28. <CODE
 CLASS="FUNCTION"
 >to_char</CODE
 > Examples</B

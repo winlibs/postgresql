@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="The Rule System"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 38. The Rule System</TD
+>Chapter 39. The Rule System</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="RULES-PRIVILEGES"
->38.5. Rules and Privileges</A
+>39.5. Rules and Privileges</A
 ></H1
 ><P
 >    Due to rewriting of queries by the <SPAN
@@ -114,12 +114,12 @@ CLASS="PRODUCTNAME"
     behavior of the default access control system. Relations that
     are used due to rules get checked against the
     privileges of the rule owner, not the user invoking the rule.
-    This means that a user only needs the required privileges
-    for the tables/views that he names explicitly in his queries.</P
+    This means that users only need the required privileges
+    for the tables/views that are explicitly named in their queries.</P
 ><P
 >    For example: A user has a list of phone numbers where some of
-    them are private, the others are of interest for the secretary of the office.
-    He can construct the following:
+    them are private, the others are of interest for the assistant of the office.
+    The user can construct the following:
 
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -127,10 +127,10 @@ CLASS="PROGRAMLISTING"
 CREATE VIEW phone_number AS
     SELECT person, CASE WHEN NOT private THEN phone END AS phone
     FROM phone_data;
-GRANT SELECT ON phone_number TO secretary;</PRE
+GRANT SELECT ON phone_number TO assistant;</PRE
 ><P>
 
-    Nobody except him (and the database superusers) can access the
+    Nobody except that user (and the database superusers) can access the
     <TT
 CLASS="LITERAL"
 >phone_data</TT
@@ -138,7 +138,7 @@ CLASS="LITERAL"
 CLASS="COMMAND"
 >GRANT</TT
 >,
-    the secretary can run a <TT
+    the assistant can run a <TT
 CLASS="COMMAND"
 >SELECT</TT
 > on the
@@ -168,43 +168,43 @@ CLASS="LITERAL"
     read access to <TT
 CLASS="LITERAL"
 >phone_data</TT
-> is now checked against his
+> is now checked against the user's
     privileges and the query is permitted. The check for accessing
     <TT
 CLASS="LITERAL"
 >phone_number</TT
 > is also performed, but this is done
     against the invoking user, so nobody but the user and the
-    secretary can use it.</P
+    assistant can use it.</P
 ><P
->    The privileges are checked rule by rule. So the secretary is for now the
-    only one who can see the public phone numbers. But the secretary can setup
+>    The privileges are checked rule by rule. So the assistant is for now the
+    only one who can see the public phone numbers. But the assistant can set up
     another view and grant access to that to the public. Then, anyone
     can see the <TT
 CLASS="LITERAL"
 >phone_number</TT
-> data through the secretary's view.
-    What the secretary cannot do is to create a view that directly
+> data through the assistant's view.
+    What the assistant cannot do is to create a view that directly
     accesses <TT
 CLASS="LITERAL"
 >phone_data</TT
->.  (Actually he can, but it will not work since
+>.  (Actually the assistant can, but it will not work since
     every access will be denied during the permission checks.)
-    And as soon as the user will notice, that the secretary opened
-    his <TT
+    And as soon as the user notices that the assistant opened
+    their <TT
 CLASS="LITERAL"
 >phone_number</TT
-> view, he can revoke his access. Immediately, any
-    access to the secretary's view would fail.</P
+> view, the user can revoke the assistant's access. Immediately, any
+    access to the assistant's view would fail.</P
 ><P
 >    One might think that this rule-by-rule checking is a security
-    hole, but in fact it isn't.   But if it did not work this way, the secretary
+    hole, but in fact it isn't.   But if it did not work this way, the assistant
     could set up a table with the same columns as <TT
 CLASS="LITERAL"
 >phone_number</TT
 > and
-    copy the data to there once per day. Then it's his own data and
-    he can grant access to everyone he wants. A
+    copy the data to there once per day. Then it's the assistant's own data and
+    the assistant can grant access to everyone they want. A
     <TT
 CLASS="COMMAND"
 >GRANT</TT
@@ -250,7 +250,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >phone</TT
 > does not begin
-    with 412 are wanted.  But if the user can create his or her own functions,
+    with 412 are wanted.  But if the user can create their own functions,
     it is not difficult to convince the planner to execute the user-defined
     function prior to the <CODE
 CLASS="FUNCTION"
@@ -261,7 +261,7 @@ CLASS="FUNCTION"
 CLASS="PROGRAMLISTING"
 >CREATE FUNCTION tricky(text, text) RETURNS bool AS $$
 BEGIN
-    RAISE NOTICE '% =&#62; %', $1, $2;
+    RAISE NOTICE '% =&gt; %', $1, $2;
     RETURN true;
 END
 $$ LANGUAGE plpgsql COST 0.0000000000000000000001;
@@ -316,8 +316,8 @@ CLASS="LITERAL"
 >shoelace_log</TT
 >. The rule action to
     write log entries will still be executed successfully, and that
-    other user could see the log entries.  But he cannot create fake
-    entries, nor could he manipulate or remove existing ones.  In this
+    other user could see the log entries.  But they could not create fake
+    entries, nor could they manipulate or remove existing ones.  In this
     case, there is no possibility of subverting the rules by convincing
     the planner to alter the order of operations, because the only rule
     which references <TT

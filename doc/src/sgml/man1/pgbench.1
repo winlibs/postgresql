@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "PGBENCH" "1" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "PGBENCH" "1" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -54,7 +54,7 @@ looks like:
 .RS 4
 .\}
 .nf
-transaction type: TPC\-B (sort of)
+transaction type: <builtin: TPC\-B (sort of)>
 scaling factor: 10
 query mode: simple
 number of clients: 10
@@ -241,6 +241,20 @@ Create all tables as unlogged tables, rather than permanent tables\&.
 pgbench
 accepts the following command\-line benchmarking arguments:
 .PP
+\fB\-b\fR \fIscriptname[@weight]\fR
+.br
+\fB\-\-builtin\fR=\fIscriptname[@weight]\fR
+.RS 4
+Add the specified built\-in script to the list of executed scripts\&. An optional integer weight after
+@
+allows to adjust the probability of drawing the script\&. If not specified, it is set to 1\&. Available built\-in scripts are:
+tpcb\-like,
+simple\-update
+and
+select\-only\&. Unambiguous prefixes of built\-in names are accepted\&. With special name
+list, show the list of built\-in scripts and exit immediately\&.
+.RE
+.PP
 \fB\-c\fR \fIclients\fR
 .br
 \fB\-\-client=\fR\fIclients\fR
@@ -271,16 +285,15 @@ Define a variable for use by a custom script (see below)\&. Multiple
 options are allowed\&.
 .RE
 .PP
-\fB\-f\fR \fIfilename\fR
+\fB\-f\fR \fIfilename[@weight]\fR
 .br
-\fB\-\-file=\fR\fIfilename\fR
+\fB\-\-file=\fR\fIfilename[@weight]\fR
 .RS 4
-Read transaction script from
-\fIfilename\fR\&. See below for details\&.
-\fB\-N\fR,
-\fB\-S\fR, and
-\fB\-f\fR
-are mutually exclusive\&.
+Add a transaction script read from
+\fIfilename\fR
+to the list of executed scripts\&. An optional integer weight after
+@
+allows to adjust the probability of drawing the test\&. See below for details\&.
 .RE
 .PP
 \fB\-j\fR \fIthreads\fR
@@ -288,7 +301,7 @@ are mutually exclusive\&.
 \fB\-\-jobs=\fR\fIthreads\fR
 .RS 4
 Number of worker threads within
-pgbench\&. Using more than one thread can be helpful on multi\-CPU machines\&. The number of clients must be a multiple of the number of threads, since each thread is given the same number of client sessions to manage\&. Default is 1\&.
+pgbench\&. Using more than one thread can be helpful on multi\-CPU machines\&. Clients are distributed as evenly as possible among available threads\&. Default is 1\&.
 .RE
 .PP
 \fB\-l\fR
@@ -353,7 +366,7 @@ prepared: use extended query protocol with prepared statements\&.
 .RE
 .sp
 The default is simple query protocol\&. (See
-Chapter 50, Frontend/Backend Protocol, in the documentation
+Chapter 51, Frontend/Backend Protocol, in the documentation
 for more information\&.)
 .RE
 .PP
@@ -374,10 +387,8 @@ pgbench_tellers\&.
 .br
 \fB\-\-skip\-some\-updates\fR
 .RS 4
-Do not update
-pgbench_tellers
-and
-pgbench_branches\&. This will avoid update contention on these tables, but it makes the test case even less like TPC\-B\&.
+Run built\-in simple\-update script\&. Shorthand for
+\fB\-b simple\-update\fR\&.
 .RE
 .PP
 \fB\-P\fR \fIsec\fR
@@ -385,7 +396,7 @@ pgbench_branches\&. This will avoid update contention on these tables, but it ma
 \fB\-\-progress=\fR\fIsec\fR
 .RS 4
 Show progress report every
-sec
+\fIsec\fR
 seconds\&. The report includes the time since the beginning of the run, the tps since the last report, and the transaction latency average and standard deviation since the last report\&. Under throttling (\fB\-R\fR), the latency is computed with respect to the transaction scheduled start time, not the actual transaction beginning time, thus it also includes the average schedule lag time\&.
 .RE
 .PP
@@ -421,7 +432,7 @@ A high schedule lag time is an indication that the system cannot process transac
 Report the specified scale factor in
 pgbench\*(Aqs output\&. With the built\-in tests, this is not necessary; the correct scale factor will be detected by counting the number of rows in the
 pgbench_branches
-table\&. However, when testing custom benchmarks (\fB\-f\fR
+table\&. However, when testing only custom benchmarks (\fB\-f\fR
 option), the scale factor will be reported as 1 unless this option is used\&.
 .RE
 .PP
@@ -429,7 +440,8 @@ option), the scale factor will be reported as 1 unless this option is used\&.
 .br
 \fB\-\-select\-only\fR
 .RS 4
-Perform select\-only transactions instead of TPC\-B\-like test\&.
+Run built\-in select\-only script\&. Shorthand for
+\fB\-b select\-only\fR\&.
 .RE
 .PP
 \fB\-t\fR \fItransactions\fR
@@ -474,6 +486,12 @@ Length of aggregation interval (in seconds)\&. May be used only together with
 \- with this option, the log contains per\-interval summary (number of transactions, min/max latency and two additional fields useful for variance estimation)\&.
 .sp
 This option is not currently supported on Windows\&.
+.RE
+.PP
+\fB\-\-progress\-timestamp\fR
+.RS 4
+When showing progress (option
+\fB\-P\fR), use a timestamp (Unix epoch) instead of the number of seconds since the beginning of the run\&. The unit is in seconds, with millisecond precision after the dot\&. This helps compare logs generated by various tools\&.
 .RE
 .PP
 \fB\-\-sampling\-rate=\fR\fB\fIrate\fR\fR
@@ -528,7 +546,24 @@ command line arguments, and exit\&.
 .SH "NOTES"
 .SS "What is the \(lqTransaction\(rq Actually Performed in pgbench?"
 .PP
-The default transaction script issues seven commands per transaction:
+pgbench
+executes test scripts chosen randomly from a specified list\&. They include built\-in scripts with
+\fB\-b\fR
+and user\-provided custom scripts with
+\fB\-f\fR\&. Each script may be given a relative weight specified after a
+@
+so as to change its drawing probability\&. The default weight is
+1\&. Scripts with a weight of
+0
+are ignored\&.
+.PP
+The default built\-in transaction script (also invoked with
+\fB\-b tpcb\-like\fR) issues seven commands per transaction over randomly chosen
+aid,
+tid,
+bid
+and
+balance\&. The scenario is inspired by the TPC\-B benchmark, but is not actually TPC\-B, hence the name\&.
 .sp
 .RS 4
 .ie n \{\
@@ -607,9 +642,15 @@ INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :a
 END;
 .RE
 .PP
-If you specify
-\fB\-N\fR, steps 4 and 5 aren\*(Aqt included in the transaction\&. If you specify
-\fB\-S\fR, only the
+If you select the
+simple\-update
+built\-in (also
+\fB\-N\fR), steps 4 and 5 aren\*(Aqt included in the transaction\&. This will avoid update contention on these tables, but it makes the test case even less like TPC\-B\&.
+.PP
+If you select the
+select\-only
+built\-in (also
+\fB\-S\fR), only the
 \fBSELECT\fR
 is issued\&.
 .SS "Custom Scripts"
@@ -618,23 +659,42 @@ pgbench
 has support for running custom benchmark scenarios by replacing the default transaction script (described above) with a transaction script read from a file (\fB\-f\fR
 option)\&. In this case a
 \(lqtransaction\(rq
-counts as one execution of a script file\&. You can even specify multiple scripts (multiple
-\fB\-f\fR
-options), in which case a random one of the scripts is chosen each time a client session starts a new transaction\&.
+counts as one execution of a script file\&.
 .PP
-The format of a script file is one SQL command per line; multiline SQL commands are not supported\&. Empty lines and lines beginning with
+A script file contains one or more SQL commands terminated by semicolons\&. Empty lines and lines beginning with
 \-\-
-are ignored\&. Script file lines can also be
+are ignored\&. Script files can also contain
 \(lqmeta commands\(rq, which are interpreted by
 pgbench
 itself, as described below\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+Before
+PostgreSQL
+9\&.6, SQL commands in script files were terminated by newlines, and so they could not be continued across lines\&. Now a semicolon is
+\fIrequired\fR
+to separate consecutive SQL commands (though a SQL command does not need one if it is followed by a meta command)\&. If you need to create a script file that works with both old and new versions of
+pgbench, be sure to write each SQL command on a single line ending with a semicolon\&.
+.sp .5v
+.RE
 .PP
 There is a simple variable\-substitution facility for script files\&. Variables can be set by the command\-line
 \fB\-D\fR
 option, explained above, or by the meta commands explained below\&. In addition to any variables preset by
 \fB\-D\fR
 command\-line options, there are a few variables that are preset automatically, listed in
-Table\ \&221, \(lqAutomatic variables\(rq\&. A value specified for these variables using
+Table\ \&237, \(lqAutomatic Variables\(rq\&. A value specified for these variables using
 \fB\-D\fR
 takes precedence over the automatic presets\&. Once set, a variable\*(Aqs value can be inserted into a SQL command by writing
 :\fIvariablename\fR\&. When running more than one client session, each session has its own set of variables\&.
@@ -643,7 +703,7 @@ takes precedence over the automatic presets\&. Once set, a variable\*(Aqs value 
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&221.\ \&Automatic variables
+.B Table\ \&237.\ \&Automatic Variables
 .TS
 allbox tab(:);
 lB lB.
@@ -668,20 +728,23 @@ T}
 .TE
 .sp 1
 .PP
-Script file meta commands begin with a backslash (\e)\&. Arguments to a meta command are separated by white space\&. These meta commands are supported:
+Script file meta commands begin with a backslash (\e) and extend to the end of the line\&. Arguments to a meta command are separated by white space\&. These meta commands are supported:
 .PP
 \eset \fIvarname\fR \fIexpression\fR
 .RS 4
 Sets variable
 \fIvarname\fR
-to an integer value calculated from
+to a value calculated from
 \fIexpression\fR\&. The expression may contain integer constants such as
-5432, references to variables
-:\fIvariablename\fR, and expressions composed of unary (\-) or binary operators (+,
+5432, double constants such as
+3\&.14159, references to variables
+:\fIvariablename\fR, unary operators (+,
+\-) and binary operators (+,
 \-,
 *,
 /,
-%) with their usual associativity, and parentheses\&.
+%) with their usual precedence and associativity,
+function calls, and parentheses\&.
 .sp
 Examples:
 .sp
@@ -690,123 +753,7 @@ Examples:
 .\}
 .nf
 \eset ntellers 10 * :scale
-\eset aid (1021 * :aid) % (100000 * :scale) + 1
-.fi
-.if n \{\
-.RE
-.\}
-.RE
-.PP
-\esetrandom \fIvarname\fR \fImin\fR \fImax\fR [ uniform | { gaussian | exponential } \fIparameter\fR ]
-.RS 4
-Sets variable
-\fIvarname\fR
-to a random integer value between the limits
-\fImin\fR
-and
-\fImax\fR
-inclusive\&. Each limit can be either an integer constant or a
-:\fIvariablename\fR
-reference to a variable having an integer value\&.
-.sp
-By default, or when
-uniform
-is specified, all values in the range are drawn with equal probability\&. Specifying
-gaussian
-or
-exponential
-options modifies this behavior; each requires a mandatory parameter which determines the precise shape of the distribution\&.
-.sp
-For a Gaussian distribution, the interval is mapped onto a standard normal distribution (the classical bell\-shaped Gaussian curve) truncated at
-\-parameter
-on the left and
-+parameter
-on the right\&. Values in the middle of the interval are more likely to be drawn\&. To be precise, if
-PHI(x)
-is the cumulative distribution function of the standard normal distribution, with mean
-mu
-defined as
-(max + min) / 2\&.0, with
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
- f(x) = PHI(2\&.0 * parameter * (x \- mu) / (max \- min + 1)) /
-        (2\&.0 * PHI(parameter) \- 1\&.0)
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-then value
-\fIi\fR
-between
-\fImin\fR
-and
-\fImax\fR
-inclusive is drawn with probability:
-f(i + 0\&.5) \- f(i \- 0\&.5)\&. Intuitively, the larger
-\fIparameter\fR, the more frequently values close to the middle of the interval are drawn, and the less frequently values close to the
-\fImin\fR
-and
-\fImax\fR
-bounds\&. About 67% of values are drawn from the middle
-1\&.0 / parameter, that is a relative
-0\&.5 / parameter
-around the mean, and 95% in the middle
-2\&.0 / parameter, that is a relative
-1\&.0 / parameter
-around the mean; for instance, if
-\fIparameter\fR
-is 4\&.0, 67% of values are drawn from the middle quarter (1\&.0 / 4\&.0) of the interval (i\&.e\&. from
-3\&.0 / 8\&.0
-to
-5\&.0 / 8\&.0) and 95% from the middle half (2\&.0 / 4\&.0) of the interval (second and third quartiles)\&. The minimum
-\fIparameter\fR
-is 2\&.0 for performance of the Box\-Muller transform\&.
-.sp
-For an exponential distribution,
-\fIparameter\fR
-controls the distribution by truncating a quickly\-decreasing exponential distribution at
-\fIparameter\fR, and then projecting onto integers between the bounds\&. To be precise, with
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-f(x) = exp(\-parameter * (x \- min) / (max \- min + 1)) / (1\&.0 \- exp(\-parameter))
-.fi
-.if n \{\
-.RE
-.\}
-.sp
-Then value
-\fIi\fR
-between
-\fImin\fR
-and
-\fImax\fR
-inclusive is drawn with probability:
-f(x) \- f(x + 1)\&. Intuitively, the larger
-\fIparameter\fR, the more frequently values close to
-\fImin\fR
-are accessed, and the less frequently values close to
-\fImax\fR
-are accessed\&. The closer to 0
-\fIparameter\fR, the flatter (more uniform) the access distribution\&. A crude approximation of the distribution is that the most frequent 1% values in the range, close to
-\fImin\fR, are drawn
-\fIparameter\fR% of the time\&.
-\fIparameter\fR
-value must be strictly positive\&.
-.sp
-Example:
-.sp
-.if n \{\
-.RS 4
-.\}
-.nf
-\esetrandom aid 1 :naccounts gaussian 5\&.0
+\eset aid (1021 * random(1, 100000 * :scale)) % (100000 * :scale) + 1
 .fi
 .if n \{\
 .RE
@@ -839,14 +786,18 @@ Example:
 Sets variable
 \fIvarname\fR
 to the result of the shell command
-\fIcommand\fR\&. The command must return an integer value through its standard output\&.
+\fIcommand\fR
+with the given
+\fIargument\fR(s)\&. The command must return an integer value through its standard output\&.
 .sp
+\fIcommand\fR
+and each
 \fIargument\fR
 can be either a text constant or a
 :\fIvariablename\fR
-reference to a variable of any types\&. If you want to use
+reference to a variable\&. If you want to use an
 \fIargument\fR
-starting with colons, you need to add an additional colon at the beginning of
+starting with a colon, write an additional colon at the beginning of
 \fIargument\fR\&.
 .sp
 Example:
@@ -865,7 +816,7 @@ Example:
 \eshell \fIcommand\fR [ \fIargument\fR \&.\&.\&. ]
 .RS 4
 Same as
-\esetshell, but the result is ignored\&.
+\esetshell, but the result of the command is discarded\&.
 .sp
 Example:
 .sp
@@ -879,6 +830,284 @@ Example:
 .RE
 .\}
 .RE
+.SS "Built\-In Functions"
+.PP
+The functions listed in
+Table\ \&238, \(lqpgbench Functions\(rq
+are built into
+pgbench
+and may be used in expressions appearing in
+\eset\&.
+.sp
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.B Table\ \&238.\ \&pgbench Functions
+.TS
+allbox tab(:);
+lB lB lB lB lB.
+T{
+Function
+T}:T{
+Return Type
+T}:T{
+Description
+T}:T{
+Example
+T}:T{
+Result
+T}
+.T&
+l l l l l
+l l l l l
+l l l l l
+l l l l l
+l l l l l
+l l l l l
+l l l l l
+l l l l l
+l l l l l
+l l l l l
+l l l l l.
+T{
+\fBabs(\fR\fB\fIa\fR\fR\fB)\fR
+T}:T{
+same as \fIa\fR
+T}:T{
+absolute value
+T}:T{
+abs(\-17)
+T}:T{
+17
+T}
+T{
+\fBdebug(\fR\fB\fIa\fR\fR\fB)\fR
+T}:T{
+same as \fIa\fR
+T}:T{
+print \fIa\fR to stderr,
+        and return \fIa\fR
+T}:T{
+debug(5432\&.1)
+T}:T{
+5432\&.1
+T}
+T{
+\fBdouble(\fR\fB\fIi\fR\fR\fB)\fR
+T}:T{
+double
+T}:T{
+cast to double
+T}:T{
+double(5432)
+T}:T{
+5432\&.0
+T}
+T{
+\fBgreatest(\fR\fB\fIa\fR\fR\fB [, \fR\fB\fI\&.\&.\&.\fR\fR\fB ] )\fR
+T}:T{
+double if any \fIa\fR is double, else integer
+T}:T{
+largest value among arguments
+T}:T{
+greatest(5, 4, 3, 2)
+T}:T{
+5
+T}
+T{
+\fBint(\fR\fB\fIx\fR\fR\fB)\fR
+T}:T{
+integer
+T}:T{
+cast to int
+T}:T{
+int(5\&.4 + 3\&.8)
+T}:T{
+9
+T}
+T{
+\fBleast(\fR\fB\fIa\fR\fR\fB [, \fR\fB\fI\&.\&.\&.\fR\fR\fB ] )\fR
+T}:T{
+double if any \fIa\fR is double, else integer
+T}:T{
+smallest value among arguments
+T}:T{
+least(5, 4, 3, 2\&.1)
+T}:T{
+2\&.1
+T}
+T{
+\fBpi()\fR
+T}:T{
+double
+T}:T{
+value of the constant PI
+T}:T{
+pi()
+T}:T{
+3\&.14159265358979323846
+T}
+T{
+\fBrandom(\fR\fB\fIlb\fR\fR\fB, \fR\fB\fIub\fR\fR\fB)\fR
+T}:T{
+integer
+T}:T{
+uniformly\-distributed random integer in [lb, ub]
+T}:T{
+random(1, 10)
+T}:T{
+an integer between 1 and 10
+T}
+T{
+\fBrandom_exponential(\fR\fB\fIlb\fR\fR\fB, \fR\fB\fIub\fR\fR\fB, \fR\fB\fIparameter\fR\fR\fB)\fR
+T}:T{
+integer
+T}:T{
+exponentially\-distributed random integer in [lb, ub],
+              see below
+T}:T{
+random_exponential(1, 10, 3\&.0)
+T}:T{
+an integer between 1 and 10
+T}
+T{
+\fBrandom_gaussian(\fR\fB\fIlb\fR\fR\fB, \fR\fB\fIub\fR\fR\fB, \fR\fB\fIparameter\fR\fR\fB)\fR
+T}:T{
+integer
+T}:T{
+Gaussian\-distributed random integer in [lb, ub],
+              see below
+T}:T{
+random_gaussian(1, 10, 2\&.5)
+T}:T{
+an integer between 1 and 10
+T}
+T{
+\fBsqrt(\fR\fB\fIx\fR\fR\fB)\fR
+T}:T{
+double
+T}:T{
+square root
+T}:T{
+sqrt(2\&.0)
+T}:T{
+1\&.414213562
+T}
+.TE
+.sp 1
+.PP
+The
+random
+function generates values using a uniform distribution, that is all the values are drawn within the specified range with equal probability\&. The
+random_exponential
+and
+random_gaussian
+functions require an additional double parameter which determines the precise shape of the distribution\&.
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+For an exponential distribution,
+\fIparameter\fR
+controls the distribution by truncating a quickly\-decreasing exponential distribution at
+\fIparameter\fR, and then projecting onto integers between the bounds\&. To be precise, with
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+f(x) = exp(\-parameter * (x \- min) / (max \- min + 1)) / (1 \- exp(\-parameter))
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Then value
+\fIi\fR
+between
+\fImin\fR
+and
+\fImax\fR
+inclusive is drawn with probability:
+f(x) \- f(x + 1)\&.
+.sp
+Intuitively, the larger the
+\fIparameter\fR, the more frequently values close to
+\fImin\fR
+are accessed, and the less frequently values close to
+\fImax\fR
+are accessed\&. The closer to 0
+\fIparameter\fR
+is, the flatter (more uniform) the access distribution\&. A crude approximation of the distribution is that the most frequent 1% values in the range, close to
+\fImin\fR, are drawn
+\fIparameter\fR% of the time\&. The
+\fIparameter\fR
+value must be strictly positive\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+For a Gaussian distribution, the interval is mapped onto a standard normal distribution (the classical bell\-shaped Gaussian curve) truncated at
+\-parameter
+on the left and
++parameter
+on the right\&. Values in the middle of the interval are more likely to be drawn\&. To be precise, if
+PHI(x)
+is the cumulative distribution function of the standard normal distribution, with mean
+mu
+defined as
+(max + min) / 2\&.0, with
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+f(x) = PHI(2\&.0 * parameter * (x \- mu) / (max \- min + 1)) /
+       (2\&.0 * PHI(parameter) \- 1)
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+then value
+\fIi\fR
+between
+\fImin\fR
+and
+\fImax\fR
+inclusive is drawn with probability:
+f(i + 0\&.5) \- f(i \- 0\&.5)\&. Intuitively, the larger the
+\fIparameter\fR, the more frequently values close to the middle of the interval are drawn, and the less frequently values close to the
+\fImin\fR
+and
+\fImax\fR
+bounds\&. About 67% of values are drawn from the middle
+1\&.0 / parameter, that is a relative
+0\&.5 / parameter
+around the mean, and 95% in the middle
+2\&.0 / parameter, that is a relative
+1\&.0 / parameter
+around the mean; for instance, if
+\fIparameter\fR
+is 4\&.0, 67% of values are drawn from the middle quarter (1\&.0 / 4\&.0) of the interval (i\&.e\&. from
+3\&.0 / 8\&.0
+to
+5\&.0 / 8\&.0) and 95% from the middle half (2\&.0 / 4\&.0) of the interval (second and third quartiles)\&. The minimum
+\fIparameter\fR
+is 2\&.0 for performance of the Box\-Muller transform\&.
+.RE
 .PP
 As an example, the full definition of the built\-in TPC\-B\-like transaction is:
 .sp
@@ -886,13 +1115,10 @@ As an example, the full definition of the built\-in TPC\-B\-like transaction is:
 .RS 4
 .\}
 .nf
-\eset nbranches :scale
-\eset ntellers 10 * :scale
-\eset naccounts 100000 * :scale
-\esetrandom aid 1 :naccounts
-\esetrandom bid 1 :nbranches
-\esetrandom tid 1 :ntellers
-\esetrandom delta \-5000 5000
+\eset aid random(1, 100000 * :scale)
+\eset bid random(1, 1 * :scale)
+\eset tid random(1, 10 * :scale)
+\eset delta random(\-5000, 5000)
 BEGIN;
 UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
 SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
@@ -931,7 +1157,7 @@ The format of the log is:
 .RS 4
 .\}
 .nf
-\fIclient_id\fR \fItransaction_no\fR \fItime\fR \fIfile_no\fR \fItime_epoch\fR \fItime_us\fR [\fIschedule_lag\fR]
+\fIclient_id\fR \fItransaction_no\fR \fItime\fR \fIscript_no\fR \fItime_epoch\fR \fItime_us\fR [\fIschedule_lag\fR]
 .fi
 .if n \{\
 .RE
@@ -940,9 +1166,11 @@ The format of the log is:
 where
 \fItime\fR
 is the total elapsed transaction time in microseconds,
-\fIfile_no\fR
+\fIscript_no\fR
 identifies which script file was used (useful when multiple scripts were specified with
-\fB\-f\fR), and
+\fB\-f\fR
+or
+\fB\-b\fR), and
 \fItime_epoch\fR/\fItime_us\fR
 are a Unix epoch format time stamp and an offset in microseconds (suitable for creating an ISO 8601 time stamp with fractional seconds) showing when the transaction completed\&. Field
 \fIschedule_lag\fR
@@ -963,10 +1191,10 @@ Here is a snippet of the log file generated:
 .RS 4
 .\}
 .nf
- 0 199 2241 0 1175850568 995598
- 0 200 2465 0 1175850568 998079
- 0 201 2513 0 1175850569 608
- 0 202 2038 0 1175850569 2663
+0 199 2241 0 1175850568 995598
+0 200 2465 0 1175850568 998079
+0 201 2513 0 1175850569 608
+0 202 2038 0 1175850569 2663
 .fi
 .if n \{\
 .RE
@@ -980,13 +1208,13 @@ column):
 .RS 4
 .\}
 .nf
- 0 81 4621 0 1412881037 912698 3005
- 0 82 6173 0 1412881037 914578 4304
- 0 83 skipped 0 1412881037 914578 5217
- 0 83 skipped 0 1412881037 914578 5099
- 0 83 4722 0 1412881037 916203 3108
- 0 84 4142 0 1412881037 918023 2333
- 0 85 2465 0 1412881037 919759 740
+0 81 4621 0 1412881037 912698 3005
+0 82 6173 0 1412881037 914578 4304
+0 83 skipped 0 1412881037 914578 5217
+0 83 skipped 0 1412881037 914578 5099
+0 83 4722 0 1412881037 916203 3108
+0 84 4142 0 1412881037 918023 2333
+0 85 2465 0 1412881037 919759 740
 .fi
 .if n \{\
 .RE
@@ -1023,7 +1251,7 @@ is a sum of latencies (so you can compute average latency easily)\&. The followi
 \fIlatency_sum\fR
 is a sum of latencies and
 \fIlatency_2_sum\fR
-is a sum of 2nd powers of latencies\&. The last two fields are
+is a sum of 2nd powers of latencies\&. The next two fields are
 \fImin_latency\fR
 \- a minimum latency within the interval, and
 \fImax_latency\fR
@@ -1070,30 +1298,30 @@ For the default script, the output will look similar to this:
 .\}
 .nf
 starting vacuum\&.\&.\&.end\&.
-transaction type: TPC\-B (sort of)
+transaction type: <builtin: TPC\-B (sort of)>
 scaling factor: 1
 query mode: simple
 number of clients: 10
 number of threads: 1
 number of transactions per client: 1000
 number of transactions actually processed: 10000/10000
+latency average = 15\&.844 ms
+latency stddev = 2\&.715 ms
 tps = 618\&.764555 (including connections establishing)
 tps = 622\&.977698 (excluding connections establishing)
-statement latencies in milliseconds:
-        0\&.004386        \eset nbranches 1 * :scale
-        0\&.001343        \eset ntellers 10 * :scale
-        0\&.001212        \eset naccounts 100000 * :scale
-        0\&.001310        \esetrandom aid 1 :naccounts
-        0\&.001073        \esetrandom bid 1 :nbranches
-        0\&.001005        \esetrandom tid 1 :ntellers
-        0\&.001078        \esetrandom delta \-5000 5000
-        0\&.326152        BEGIN;
-        0\&.603376        UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
-        0\&.454643        SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
-        5\&.528491        UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;
-        7\&.335435        UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
-        0\&.371851        INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
-        1\&.212976        END;
+script statistics:
+ \- statement latencies in milliseconds:
+        0\&.002  \eset aid random(1, 100000 * :scale)
+        0\&.005  \eset bid random(1, 1 * :scale)
+        0\&.002  \eset tid random(1, 10 * :scale)
+        0\&.001  \eset delta random(\-5000, 5000)
+        0\&.326  BEGIN;
+        0\&.603  UPDATE pgbench_accounts SET abalance = abalance + :delta WHERE aid = :aid;
+        0\&.454  SELECT abalance FROM pgbench_accounts WHERE aid = :aid;
+        5\&.528  UPDATE pgbench_tellers SET tbalance = tbalance + :delta WHERE tid = :tid;
+        7\&.335  UPDATE pgbench_branches SET bbalance = bbalance + :delta WHERE bid = :bid;
+        0\&.371  INSERT INTO pgbench_history (tid, bid, aid, delta, mtime) VALUES (:tid, :bid, :aid, :delta, CURRENT_TIMESTAMP);
+        1\&.212  END;
 .fi
 .if n \{\
 .RE

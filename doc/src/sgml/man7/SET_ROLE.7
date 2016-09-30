@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "SET ROLE" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "SET ROLE" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -75,7 +75,7 @@ drops the privileges assigned directly to the session user and instead acquires 
 .PP
 In particular, when a superuser chooses to
 \fBSET ROLE\fR
-to a non\-superuser role, she loses her superuser privileges\&.
+to a non\-superuser role, they lose their superuser privileges\&.
 .PP
 \fBSET ROLE\fR
 has effects comparable to
@@ -123,7 +123,7 @@ SELECT SESSION_USER, CURRENT_USER;
 .SH "COMPATIBILITY"
 .PP
 PostgreSQL
-allows identifier syntax ("rolename"), while the SQL standard requires the role name to be written as a string literal\&. SQL does not allow this command during a transaction;
+allows identifier syntax ("\fIrolename\fR"), while the SQL standard requires the role name to be written as a string literal\&. SQL does not allow this command during a transaction;
 PostgreSQL
 does not make this restriction because there is no reason to\&. The
 SESSION

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 35. Extending <ACRONYM
+>Chapter 36. Extending <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 ></TD
@@ -96,7 +96,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="XAGGR"
->35.10. User-defined Aggregates</A
+>36.10. User-defined Aggregates</A
 ></H1
 ><P
 >   Aggregate functions in <SPAN
@@ -125,7 +125,7 @@ CLASS="FIRSTTERM"
 >
    can also be specified, in case the desired result of the aggregate
    is different from the data that needs to be kept in the running
-   state value.  The final function takes the last state value
+   state value.  The final function takes the ending state value
    and returns whatever is wanted as the aggregate result.
    In principle, the transition and final functions are just ordinary
    functions that could also be used outside the context of the
@@ -322,7 +322,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XAGGR-MOVING-AGGREGATES"
->35.10.1. Moving-Aggregate Mode</A
+>36.10.1. Moving-Aggregate Mode</A
 ></H2
 ><P
 >   Aggregate functions can optionally support <I
@@ -521,7 +521,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XAGGR-POLYMORPHIC-AGGREGATES"
->35.10.2. Polymorphic and Variadic Aggregates</A
+>36.10.2. Polymorphic and Variadic Aggregates</A
 ></H2
 ><P
 >   Aggregate functions can use polymorphic
@@ -529,7 +529,7 @@ NAME="XAGGR-POLYMORPHIC-AGGREGATES"
    can be used to implement multiple aggregates.
    See <A
 HREF="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC"
->Section 35.2.5</A
+>Section 36.2.5</A
 >
    for an explanation of polymorphic functions.
    Going a step further, the aggregate function itself can be specified
@@ -653,7 +653,7 @@ CLASS="LITERAL"
    the same fashion as for regular functions; see
    <A
 HREF="xfunc-sql.html#XFUNC-SQL-VARIADIC-FUNCTIONS"
->Section 35.4.5</A
+>Section 36.4.5</A
 >.  The aggregate's transition
    function(s) must have the same array type as their last argument.  The
    transition function(s) typically would also be marked <TT
@@ -713,7 +713,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XAGGR-ORDERED-SET-AGGREGATES"
->35.10.3. Ordered-Set Aggregates</A
+>36.10.3. Ordered-Set Aggregates</A
 ></H2
 ><P
 >   The aggregates we have been describing so far are <SPAN
@@ -847,12 +847,150 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
+NAME="XAGGR-PARTIAL-AGGREGATES"
+>36.10.4. Partial Aggregation</A
+></H2
+><P
+>   Optionally, an aggregate function can support <I
+CLASS="FIRSTTERM"
+>partial
+   aggregation</I
+>.  The idea of partial aggregation is to run the aggregate's
+   state transition function over different subsets of the input data
+   independently, and then to combine the state values resulting from those
+   subsets to produce the same state value that would have resulted from
+   scanning all the input in a single operation.  This mode can be used for
+   parallel aggregation by having different worker processes scan different
+   portions of a table.  Each worker produces a partial state value, and at
+   the end those state values are combined to produce a final state value.
+   (In the future this mode might also be used for purposes such as combining
+   aggregations over local and remote tables; but that is not implemented
+   yet.)
+  </P
+><P
+>   To support partial aggregation, the aggregate definition must provide
+   a <I
+CLASS="FIRSTTERM"
+>combine function</I
+>, which takes two values of the
+   aggregate's state type (representing the results of aggregating over two
+   subsets of the input rows) and produces a new value of the state type,
+   representing what the state would have been after aggregating over the
+   combination of those sets of rows.  It is unspecified what the relative
+   order of the input rows from the two sets would have been.  This means
+   that it's usually impossible to define a useful combine function for
+   aggregates that are sensitive to input row order.
+  </P
+><P
+>   As simple examples, <TT
+CLASS="LITERAL"
+>MAX</TT
+> and <TT
+CLASS="LITERAL"
+>MIN</TT
+> aggregates can be
+   made to support partial aggregation by specifying the combine function as
+   the same greater-of-two or lesser-of-two comparison function that is used
+   as their transition function.  <TT
+CLASS="LITERAL"
+>SUM</TT
+> aggregates just need an
+   addition function as combine function.  (Again, this is the same as their
+   transition function, unless the state value is wider than the input data
+   type.)
+  </P
+><P
+>   The combine function is treated much like a transition function that
+   happens to take a value of the state type, not of the underlying input
+   type, as its second argument.  In particular, the rules for dealing
+   with null values and strict functions are similar.  Also, if the aggregate
+   definition specifies a non-null <TT
+CLASS="LITERAL"
+>initcond</TT
+>, keep in mind that
+   that will be used not only as the initial state for each partial
+   aggregation run, but also as the initial state for the combine function,
+   which will be called to combine each partial result into that state.
+  </P
+><P
+>   If the aggregate's state type is declared as <TT
+CLASS="TYPE"
+>internal</TT
+>, it is
+   the combine function's responsibility that its result is allocated in
+   the correct memory context for aggregate state values.  This means in
+   particular that when the first input is <TT
+CLASS="LITERAL"
+>NULL</TT
+> it's invalid
+   to simply return the second input, as that value will be in the wrong
+   context and will not have sufficient lifespan.
+  </P
+><P
+>   When the aggregate's state type is declared as <TT
+CLASS="TYPE"
+>internal</TT
+>, it is
+   usually also appropriate for the aggregate definition to provide a
+   <I
+CLASS="FIRSTTERM"
+>serialization function</I
+> and a <I
+CLASS="FIRSTTERM"
+>deserialization
+   function</I
+>, which allow such a state value to be copied from one process
+   to another.  Without these functions, parallel aggregation cannot be
+   performed, and future applications such as local/remote aggregation will
+   probably not work either.
+  </P
+><P
+>   A serialization function must take a single argument of
+   type <TT
+CLASS="TYPE"
+>internal</TT
+> and return a result of type <TT
+CLASS="TYPE"
+>bytea</TT
+>, which
+   represents the state value packaged up into a flat blob of bytes.
+   Conversely, a deserialization function reverses that conversion.  It must
+   take two arguments of types <TT
+CLASS="TYPE"
+>bytea</TT
+> and <TT
+CLASS="TYPE"
+>internal</TT
+>, and
+   return a result of type <TT
+CLASS="TYPE"
+>internal</TT
+>.  (The second argument is unused
+   and is always zero, but it is required for type-safety reasons.)  The
+   result of the deserialization function should simply be allocated in the
+   current memory context, as unlike the combine function's result, it is not
+   long-lived.
+  </P
+><P
+>   Worth noting also is that for an aggregate to be executed in parallel,
+   the aggregate itself must be marked <TT
+CLASS="LITERAL"
+>PARALLEL SAFE</TT
+>.  The
+   parallel-safety markings on its support functions are not consulted.
+  </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
 NAME="XAGGR-SUPPORT-FUNCTIONS"
->35.10.4. Support Functions for Aggregates</A
+>36.10.5. Support Functions for Aggregates</A
 ></H2
 ><P
 >   A function written in C can detect that it is being called as an
-   aggregate transition or final function by calling
+   aggregate support function by calling
    <CODE
 CLASS="FUNCTION"
 >AggCheckCallContext</CODE

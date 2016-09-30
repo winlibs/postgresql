@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Indexes"
 HREF="indexes.html"><LINK
 REL="PREVIOUS"
-TITLE="Indexes and Collations"
-HREF="indexes-collations.html"><LINK
+TITLE="Index-Only Scans"
+HREF="indexes-index-only-scans.html"><LINK
 REL="NEXT"
 TITLE="Full Text Search"
 HREF="textsearch.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="Indexes and Collations"
-HREF="indexes-collations.html"
+TITLE="Index-Only Scans"
+HREF="indexes-index-only-scans.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="INDEXES-EXAMINE"
->11.11. Examining Index Usage</A
+>11.12. Examining Index Usage</A
 ></H1
 ><P
 >   Although indexes in <SPAN
@@ -115,7 +115,7 @@ HREF="using-explain.html"
    It is also possible to gather overall statistics about index usage
    in a running server, as described in <A
 HREF="monitoring-stats.html"
->Section 27.2</A
+>Section 28.2</A
 >.
   </P
 ><P
@@ -148,11 +148,11 @@ CLASS="COMMAND"
      therefore a lost cause.
      See <A
 HREF="routine-vacuuming.html#VACUUM-FOR-STATISTICS"
->Section 23.1.3</A
+>Section 24.1.3</A
 >
      and <A
 HREF="routine-vacuuming.html#AUTOVACUUM"
->Section 23.1.6</A
+>Section 24.1.6</A
 > for more information.
     </P
 ></LI
@@ -183,7 +183,7 @@ HREF="routine-vacuuming.html#AUTOVACUUM"
      their use.  There are run-time parameters that can turn off
      various plan types (see <A
 HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-ENABLE"
->Section 18.7.1</A
+>Section 19.7.1</A
 >).
      For instance, turning off sequential scans
      (<TT
@@ -223,7 +223,7 @@ CLASS="COMMAND"
      the plan node.  The costs estimated for the plan nodes can be adjusted
      via run-time parameters (described in <A
 HREF="runtime-config-query.html#RUNTIME-CONFIG-QUERY-CONSTANTS"
->Section 18.7.2</A
+>Section 19.7.2</A
 >).
      An inaccurate selectivity estimate is due to
      insufficient statistics.  It might be possible to improve this by
@@ -261,7 +261,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="indexes-collations.html"
+HREF="indexes-index-only-scans.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -289,7 +289,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Indexes and Collations</TD
+>Index-Only Scans</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

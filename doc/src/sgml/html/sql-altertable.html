@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERTABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN71920"
+NAME="AEN75089"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN71920"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN71923"
+NAME="AEN75092"
 ></A
 ><H2
 >Synopsis</H2
@@ -210,7 +210,7 @@ CLASS="REPLACEABLE"
 ></SPAN
 >
 
-    ADD [ COLUMN ] <TT
+    ADD [ COLUMN ] [ IF NOT EXISTS ] <TT
 CLASS="REPLACEABLE"
 ><I
 >column_name</I
@@ -502,7 +502,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN71990"
+NAME="AEN75159"
 ></A
 ><H2
 >Description</H2
@@ -527,7 +527,7 @@ CLASS="VARIABLELIST"
 ><DT
 ><TT
 CLASS="LITERAL"
->ADD COLUMN</TT
+>ADD COLUMN [ IF NOT EXISTS ]</TT
 ></DT
 ><DD
 ><P
@@ -535,7 +535,12 @@ CLASS="LITERAL"
       <A
 HREF="sql-createtable.html"
 >CREATE TABLE</A
->.
+>. If <TT
+CLASS="LITERAL"
+>IF NOT EXISTS</TT
+>
+      is specified and a column already exists with this name,
+      no error is thrown.
      </P
 ></DD
 ><DT
@@ -817,7 +822,7 @@ CLASS="LITERAL"
       it just sets the strategy to be pursued during future table updates.
       See <A
 HREF="storage-toast.html"
->Section 63.2</A
+>Section 65.2</A
 > for more information.
      </P
 ></DD
@@ -1340,6 +1345,12 @@ CLASS="COMMAND"
 >ALTER TABLE</TT
 > that forces a table rewrite.
      </P
+><P
+>      Changing fillfactor and autovacuum storage parameters acquires a <TT
+CLASS="LITERAL"
+>SHARE UPDATE EXCLUSIVE</TT
+> lock.
+     </P
 ><DIV
 CLASS="NOTE"
 ><BLOCKQUOTE
@@ -1647,7 +1658,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72326"
+NAME="AEN75498"
 ></A
 ><H2
 >Parameters</H2
@@ -1774,7 +1785,12 @@ CLASS="LITERAL"
 ><DD
 ><P
 >        Automatically drop objects that depend on the dropped column
-        or constraint (for example, views referencing the column).
+        or constraint (for example, views referencing the column),
+        and in turn all objects that depend on those objects
+        (see <A
+HREF="ddl-depend.html"
+>Section 5.13</A
+>).
        </P
 ></DD
 ><DT
@@ -1918,7 +1934,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72432"
+NAME="AEN75605"
 ></A
 ><H2
 >Notes</H2
@@ -2142,7 +2158,7 @@ HREF="ddl.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72485"
+NAME="AEN75658"
 ></A
 ><H2
 >Examples</H2
@@ -2322,7 +2338,7 @@ ALTER TABLE distributors DROP CONSTRAINT distributors_pkey,
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72531"
+NAME="AEN75704"
 ></A
 ><H2
 >Compatibility</H2
@@ -2371,7 +2387,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72544"
+NAME="AEN75717"
 ></A
 ><H2
 >See Also</H2

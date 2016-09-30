@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Full Text Search"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -389,23 +389,32 @@ CLASS="PRODUCTNAME"
     functions <CODE
 CLASS="FUNCTION"
 >to_tsquery</CODE
-> and
+>,
     <CODE
 CLASS="FUNCTION"
 >plainto_tsquery</CODE
-> for converting a query to
-    the <TT
+>, and
+    <CODE
+CLASS="FUNCTION"
+>phraseto_tsquery</CODE
+>
+    for converting a query to the <TT
 CLASS="TYPE"
 >tsquery</TT
-> data type.  <CODE
+> data type.
+    <CODE
 CLASS="FUNCTION"
 >to_tsquery</CODE
->
-    offers access to more features than <CODE
+> offers access to more features
+    than either <CODE
 CLASS="FUNCTION"
 >plainto_tsquery</CODE
->,
-    but is less forgiving about its input.
+> or
+    <CODE
+CLASS="FUNCTION"
+>phraseto_tsquery</CODE
+>, but it is less forgiving
+    about its input.
    </P
 ><PRE
 CLASS="SYNOPSIS"
@@ -446,18 +455,25 @@ CLASS="REPLACEABLE"
 >querytext</I
 ></TT
 >, which must consist of single tokens
-    separated by the Boolean operators <TT
+    separated by the <TT
+CLASS="TYPE"
+>tsquery</TT
+> operators <TT
 CLASS="LITERAL"
 >&amp;</TT
 > (AND),
     <TT
 CLASS="LITERAL"
 >|</TT
-> (OR) and <TT
+> (OR), <TT
 CLASS="LITERAL"
 >!</TT
-> (NOT).  These operators
-    can be grouped using parentheses.  In other words, the input to
+> (NOT), and
+    <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+> (FOLLOWED BY), possibly grouped
+    using parentheses.  In other words, the input to
     <CODE
 CLASS="FUNCTION"
 >to_tsquery</CODE
@@ -466,8 +482,8 @@ CLASS="FUNCTION"
 CLASS="TYPE"
 >tsquery</TT
 > input, as described in <A
-HREF="datatype-textsearch.html"
->Section 8.11</A
+HREF="datatype-textsearch.html#DATATYPE-TSQUERY"
+>Section 8.11.2</A
 >.  The difference is that while basic
     <TT
 CLASS="TYPE"
@@ -476,7 +492,7 @@ CLASS="TYPE"
     <CODE
 CLASS="FUNCTION"
 >to_tsquery</CODE
-> normalizes each token to a lexeme using
+> normalizes each token into a lexeme using
     the specified or default configuration, and discards any tokens that are
     stop words according to the configuration.  For example:
 
@@ -550,7 +566,8 @@ CLASS="SCREEN"
 CLASS="FUNCTION"
 >to_tsquery</CODE
 > will generate a syntax
-    error for tokens that are not separated by an AND or OR operator.
+    error for tokens that are not separated by an AND, OR, or FOLLOWED BY
+    operator.
    </P
 ><PRE
 CLASS="SYNOPSIS"
@@ -581,16 +598,16 @@ CLASS="TYPE"
 >    <CODE
 CLASS="FUNCTION"
 >plainto_tsquery</CODE
-> transforms unformatted text
+> transforms the unformatted text
     <TT
 CLASS="REPLACEABLE"
 ><I
 >querytext</I
 ></TT
-> to <TT
+> to a <TT
 CLASS="TYPE"
 >tsquery</TT
->.
+> value.
     The text is parsed and normalized much as for <CODE
 CLASS="FUNCTION"
 >to_tsvector</CODE
@@ -598,8 +615,11 @@ CLASS="FUNCTION"
     then the <TT
 CLASS="LITERAL"
 >&amp;</TT
-> (AND) Boolean operator is inserted
-    between surviving words.
+> (AND) <TT
+CLASS="TYPE"
+>tsquery</TT
+> operator is
+    inserted between surviving words.
    </P
 ><P
 >    Example:
@@ -615,9 +635,12 @@ CLASS="SCREEN"
     Note that <CODE
 CLASS="FUNCTION"
 >plainto_tsquery</CODE
-> cannot
-    recognize Boolean operators, weight labels, or prefix-match labels
-    in its input:
+> will not
+    recognize <TT
+CLASS="TYPE"
+>tsquery</TT
+> operators, weight labels,
+    or prefix-match labels in its input:
 
 </P><PRE
 CLASS="SCREEN"
@@ -628,6 +651,98 @@ CLASS="SCREEN"
 ><P>
 
     Here, all the input punctuation was discarded as being space symbols.
+   </P
+><PRE
+CLASS="SYNOPSIS"
+>phraseto_tsquery([<SPAN
+CLASS="OPTIONAL"
+> <TT
+CLASS="REPLACEABLE"
+><I
+>config</I
+></TT
+> <TT
+CLASS="TYPE"
+>regconfig</TT
+>, </SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>querytext</I
+></TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>) returns <TT
+CLASS="TYPE"
+>tsquery</TT
+></PRE
+><P
+>    <CODE
+CLASS="FUNCTION"
+>phraseto_tsquery</CODE
+> behaves much like
+    <CODE
+CLASS="FUNCTION"
+>plainto_tsquery</CODE
+>, except that it inserts
+    the <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+> (FOLLOWED BY) operator between
+    surviving words instead of the <TT
+CLASS="LITERAL"
+>&amp;</TT
+> (AND) operator.
+    Also, stop words are not simply discarded, but are accounted for by
+    inserting <TT
+CLASS="LITERAL"
+>&lt;<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+>&gt;</TT
+> operators rather
+    than <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+> operators.  This function is useful
+    when searching for exact lexeme sequences, since the FOLLOWED BY
+    operators check lexeme order not just the presence of all the lexemes.
+   </P
+><P
+>    Example:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT phraseto_tsquery('english', 'The Fat Rats');
+ phraseto_tsquery
+------------------
+ 'fat' &lt;-&gt; 'rat'</PRE
+><P>
+
+    Like <CODE
+CLASS="FUNCTION"
+>plainto_tsquery</CODE
+>, the
+    <CODE
+CLASS="FUNCTION"
+>phraseto_tsquery</CODE
+> function will not
+    recognize <TT
+CLASS="TYPE"
+>tsquery</TT
+> operators, weight labels,
+    or prefix-match labels in its input:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT phraseto_tsquery('english', 'The Fat &amp; Rats:C');
+      phraseto_tsquery
+-----------------------------
+ 'fat' &lt;-&gt; 'rat' &lt;-&gt; 'c'</PRE
+><P>
    </P
 ></DIV
 ><DIV

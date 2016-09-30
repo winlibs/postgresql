@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Monitoring Database Activity"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 27. Monitoring Database Activity</TD
+>Chapter 28. Monitoring Database Activity</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="MONITORING-STATS"
->27.2. The Statistics Collector</A
+>28.2. The Statistics Collector</A
 ></H1
 ><P
 >   <SPAN
@@ -126,7 +126,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="MONITORING-STATS-SETUP"
->27.2.1. Statistics Collection Configuration</A
+>28.2.1. Statistics Collection Configuration</A
 ></H2
 ><P
 >   Since collection of statistics adds some overhead to query execution,
@@ -137,7 +137,7 @@ CLASS="FILENAME"
 >postgresql.conf</TT
 >.  (See <A
 HREF="runtime-config.html"
->Chapter 18</A
+>Chapter 19</A
 > for
    details about setting configuration parameters.)
   </P
@@ -222,23 +222,23 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="MONITORING-STATS-VIEWS"
->27.2.2. Viewing Statistics</A
+>28.2.2. Viewing Statistics</A
 ></H2
 ><P
 >   Several predefined views, listed in <A
 HREF="monitoring-stats.html#MONITORING-STATS-DYNAMIC-VIEWS-TABLE"
->Table 27-1</A
+>Table 28-1</A
 >, are available to show
    the current state of the system. There are also several other
    views, listed in <A
 HREF="monitoring-stats.html#MONITORING-STATS-VIEWS-TABLE"
->Table 27-2</A
+>Table 28-2</A
 >, available to show the results
    of statistics collection.  Alternatively, one can
    build custom views using the underlying statistics functions, as discussed
    in <A
 HREF="monitoring-stats.html#MONITORING-STATS-FUNCTIONS"
->Section 27.2.3</A
+>Section 28.2.3</A
 >.
   </P
 ><P
@@ -308,7 +308,7 @@ NAME="MONITORING-STATS-DYNAMIC-VIEWS-TABLE"
 ></A
 ><P
 ><B
->Table 27-1. Dynamic Statistics Views</B
+>Table 28-1. Dynamic Statistics Views</B
 ></P
 ><TABLE
 BORDER="1"
@@ -358,6 +358,21 @@ HREF="monitoring-stats.html#PG-STAT-REPLICATION-VIEW"
 ><TD
 ><TT
 CLASS="STRUCTNAME"
+>pg_stat_wal_receiver</TT
+></TD
+><TD
+>Only one row, showing statistics about the WAL receiver from
+       that receiver's connected server.
+       See <A
+HREF="monitoring-stats.html#PG-STAT-WAL-RECEIVER-VIEW"
+>pg_stat_wal_receiver</A
+> for details.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTNAME"
 >pg_stat_ssl</TT
 ></TD
 ><TD
@@ -379,7 +394,7 @@ NAME="MONITORING-STATS-VIEWS-TABLE"
 ></A
 ><P
 ><B
->Table 27-2. Collected Statistics Views</B
+>Table 28-2. Collected Statistics Views</B
 ></P
 ><TABLE
 BORDER="1"
@@ -747,6 +762,23 @@ CLASS="STRUCTNAME"
 >pg_stat_user_functions</TT
 >).</TD
 ></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTNAME"
+>pg_stat_progress_vacuum</TT
+></TD
+><TD
+>One row for each backend (including autovacuum worker processes) running
+      <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>, showing current progress.
+      See <A
+HREF="progress-reporting.html#VACUUM-PROGRESS-REPORTING"
+>Section 28.4.1</A
+>.</TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -792,7 +824,7 @@ NAME="PG-STAT-ACTIVITY-VIEW"
 ></A
 ><P
 ><B
->Table 27-3. <TT
+>Table 28-3. <TT
 CLASS="STRUCTNAME"
 >pg_stat_activity</TT
 > View</B
@@ -1037,15 +1069,97 @@ CLASS="STRUCTFIELD"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
->waiting</TT
+>wait_event_type</TT
 ></TD
 ><TD
 ><TT
 CLASS="TYPE"
->boolean</TT
+>text</TT
 ></TD
 ><TD
->True if this backend is currently waiting on a lock</TD
+>The type of event for which the backend is waiting, if any;
+       otherwise NULL. Possible values are:
+       <P
+></P
+><UL
+><LI
+><P
+>          <TT
+CLASS="LITERAL"
+>LWLockNamed</TT
+>: The backend is waiting for a specific named
+          lightweight lock.  Each such lock protects a particular data
+          structure in shared memory.  <TT
+CLASS="LITERAL"
+>wait_event</TT
+> will contain
+          the name of the lightweight lock.
+         </P
+></LI
+><LI
+><P
+>          <TT
+CLASS="LITERAL"
+>LWLockTranche</TT
+>: The backend is waiting for one of a
+          group of related lightweight locks.  All locks in the group perform
+          a similar function; <TT
+CLASS="LITERAL"
+>wait_event</TT
+> will identify the general
+          purpose of locks in that group.
+         </P
+></LI
+><LI
+><P
+>          <TT
+CLASS="LITERAL"
+>Lock</TT
+>: The backend is waiting for a heavyweight lock.
+          Heavyweight locks, also known as lock manager locks or simply locks,
+          primarily protect SQL-visible objects such as tables.  However,
+          they are also used to ensure mutual exclusion for certain internal
+          operations such as relation extension.  <TT
+CLASS="LITERAL"
+>wait_event</TT
+> will
+          identify the type of lock awaited.
+         </P
+></LI
+><LI
+><P
+>          <TT
+CLASS="LITERAL"
+>BufferPin</TT
+>: The server process is waiting to access to
+          a data buffer during a period when no other process can be
+          examining that buffer.  Buffer pin waits can be protracted if
+          another process holds an open cursor which last read data from the
+          buffer in question.
+         </P
+></LI
+></UL
+>
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>wait_event</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Wait event name if backend is currently waiting, otherwise NULL.
+     See <A
+HREF="monitoring-stats.html#WAIT-EVENT-TABLE"
+>Table 28-4</A
+> for details.
+     </TD
 ></TR
 ><TR
 ><TD
@@ -1201,7 +1315,7 @@ CLASS="NOTE"
 >Note: </B
 >    The <TT
 CLASS="STRUCTFIELD"
->waiting</TT
+>wait_event</TT
 > and <TT
 CLASS="STRUCTFIELD"
 >state</TT
@@ -1213,19 +1327,749 @@ CLASS="LITERAL"
     it may or may not be <TT
 CLASS="LITERAL"
 >waiting</TT
->.  If the state is
-    <TT
+> on some event.  If the state
+    is <TT
 CLASS="LITERAL"
 >active</TT
 > and <TT
 CLASS="STRUCTFIELD"
->waiting</TT
-> is true, it means
-    that a query is being executed, but is being blocked by a lock
-    somewhere in the system.
+>wait_event</TT
+> is non-null, it
+    means that a query is being executed, but is being blocked somewhere
+    in the system.
    </P
 ></BLOCKQUOTE
 ></DIV
+><DIV
+CLASS="TABLE"
+><A
+NAME="WAIT-EVENT-TABLE"
+></A
+><P
+><B
+>Table 28-4. <TT
+CLASS="STRUCTNAME"
+>wait_event</TT
+> Description</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Wait Event Type</TH
+><TH
+>Wait Event Name</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+ROWSPAN="42"
+><TT
+CLASS="LITERAL"
+>LWLockNamed</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>ShmemIndexLock</TT
+></TD
+><TD
+>Waiting to find or allocate space in shared memory.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>OidGenLock</TT
+></TD
+><TD
+>Waiting to allocate or assign an OID.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>XidGenLock</TT
+></TD
+><TD
+>Waiting to allocate or assign a transaction id.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>ProcArrayLock</TT
+></TD
+><TD
+>Waiting to get a snapshot or clearing a transaction id at
+         transaction end.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>SInvalReadLock</TT
+></TD
+><TD
+>Waiting to retrieve or remove messages from shared invalidation
+         queue.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>SInvalWriteLock</TT
+></TD
+><TD
+>Waiting to add a message in shared invalidation queue.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>WALBufMappingLock</TT
+></TD
+><TD
+>Waiting to replace a page in WAL buffers.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>WALWriteLock</TT
+></TD
+><TD
+>Waiting for WAL buffers to be written to disk.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>ControlFileLock</TT
+></TD
+><TD
+>Waiting to read or update the control file or creation of a
+         new WAL file.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>CheckpointLock</TT
+></TD
+><TD
+>Waiting to perform checkpoint.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>CLogControlLock</TT
+></TD
+><TD
+>Waiting to read or update transaction status.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>SubtransControlLock</TT
+></TD
+><TD
+>Waiting to read or update sub-transaction information.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>MultiXactGenLock</TT
+></TD
+><TD
+>Waiting to read or update shared multixact state.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>MultiXactOffsetControlLock</TT
+></TD
+><TD
+>Waiting to read or update multixact offset mappings.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>MultiXactMemberControlLock</TT
+></TD
+><TD
+>Waiting to read or update multixact member mappings.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>RelCacheInitLock</TT
+></TD
+><TD
+>Waiting to read or write relation cache initialization
+         file.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>CheckpointerCommLock</TT
+></TD
+><TD
+>Waiting to manage fsync requests.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>TwoPhaseStateLock</TT
+></TD
+><TD
+>Waiting to read or update the state of prepared transactions.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>TablespaceCreateLock</TT
+></TD
+><TD
+>Waiting to create or drop the tablespace.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>BtreeVacuumLock</TT
+></TD
+><TD
+>Waiting to read or update vacuum-related information for a
+          B-tree index.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>AddinShmemInitLock</TT
+></TD
+><TD
+>Waiting to manage space allocation in shared memory.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>AutovacuumLock</TT
+></TD
+><TD
+>Autovacuum worker or launcher waiting to update or
+         read the current state of autovacuum workers.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>AutovacuumScheduleLock</TT
+></TD
+><TD
+>Waiting to ensure that the table it has selected for a vacuum
+         still needs vacuuming.
+         </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>SyncScanLock</TT
+></TD
+><TD
+>Waiting to get the start location of a scan on a table for
+         synchronized scans.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>RelationMappingLock</TT
+></TD
+><TD
+>Waiting to update the relation map file used to store catalog
+         to filenode mapping.
+         </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>AsyncCtlLock</TT
+></TD
+><TD
+>Waiting to read or update shared notification state.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>AsyncQueueLock</TT
+></TD
+><TD
+>Waiting to read or update notification messages.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>SerializableXactHashLock</TT
+></TD
+><TD
+>Waiting to retrieve or store information about serializable
+         transactions.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>SerializableFinishedListLock</TT
+></TD
+><TD
+>Waiting to access the list of finished serializable
+         transactions.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>SerializablePredicateLockListLock</TT
+></TD
+><TD
+>Waiting to perform an operation on a list of locks held by
+         serializable transactions.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>OldSerXidLock</TT
+></TD
+><TD
+>Waiting to read or record conflicting serializable
+         transactions.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>SyncRepLock</TT
+></TD
+><TD
+>Waiting to read or update information about synchronous
+         replicas.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>BackgroundWorkerLock</TT
+></TD
+><TD
+>Waiting to read or update background worker state.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>DynamicSharedMemoryControlLock</TT
+></TD
+><TD
+>Waiting to read or update dynamic shared memory state.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>AutoFileLock</TT
+></TD
+><TD
+>Waiting to update the <TT
+CLASS="FILENAME"
+>postgresql.auto.conf</TT
+> file.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>ReplicationSlotAllocationLock</TT
+></TD
+><TD
+>Waiting to allocate or free a replication slot.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>ReplicationSlotControlLock</TT
+></TD
+><TD
+>Waiting to read or update replication slot state.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>CommitTsControlLock</TT
+></TD
+><TD
+>Waiting to read or update transaction commit timestamps.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>CommitTsLock</TT
+></TD
+><TD
+>Waiting to read or update the last value set for the
+         transaction timestamp.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>ReplicationOriginLock</TT
+></TD
+><TD
+>Waiting to setup, drop or use replication origin.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>MultiXactTruncationLock</TT
+></TD
+><TD
+>Waiting to read or truncate multixact information.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>OldSnapshotTimeMapLock</TT
+></TD
+><TD
+>Waiting to read or update old snapshot control information.</TD
+></TR
+><TR
+><TD
+ROWSPAN="16"
+><TT
+CLASS="LITERAL"
+>LWLockTranche</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>clog</TT
+></TD
+><TD
+>Waiting for I/O on a clog (transaction status) buffer.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>commit_timestamp</TT
+></TD
+><TD
+>Waiting for I/O on commit timestamp buffer.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>subtrans</TT
+></TD
+><TD
+>Waiting for I/O a subtransaction buffer.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>multixact_offset</TT
+></TD
+><TD
+>Waiting for I/O on a multixact offset buffer.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>multixact_member</TT
+></TD
+><TD
+>Waiting for I/O on a multixact_member buffer.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>async</TT
+></TD
+><TD
+>Waiting for I/O on an async (notify) buffer.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>oldserxid</TT
+></TD
+><TD
+>Waiting to I/O on an oldserxid buffer.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>wal_insert</TT
+></TD
+><TD
+>Waiting to insert WAL into a memory buffer.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>buffer_content</TT
+></TD
+><TD
+>Waiting to read or write a data page in memory.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>buffer_io</TT
+></TD
+><TD
+>Waiting for I/O on a data page.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>replication_origin</TT
+></TD
+><TD
+>Waiting to read or update the replication progress.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>replication_slot_io</TT
+></TD
+><TD
+>Waiting for I/O on a replication slot.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>proc</TT
+></TD
+><TD
+>Waiting to read or update the fast-path lock information.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>buffer_mapping</TT
+></TD
+><TD
+>Waiting to associate a data block with a buffer in the buffer
+         pool.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>lock_manager</TT
+></TD
+><TD
+>Waiting to add or examine locks for backends, or waiting to
+         join or exit a locking group (used by parallel query).</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>predicate_lock_manager</TT
+></TD
+><TD
+>Waiting to add or examine predicate lock information.</TD
+></TR
+><TR
+><TD
+ROWSPAN="10"
+><TT
+CLASS="LITERAL"
+>Lock</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>relation</TT
+></TD
+><TD
+>Waiting to acquire a lock on a relation.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>extend</TT
+></TD
+><TD
+>Waiting to extend a relation.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>page</TT
+></TD
+><TD
+>Waiting to acquire a lock on page of a relation.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>tuple</TT
+></TD
+><TD
+>Waiting to acquire a lock on a tuple.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>transactionid</TT
+></TD
+><TD
+>Waiting for a transaction to finish.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>virtualxid</TT
+></TD
+><TD
+>Waiting to acquire a virtual xid lock.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>speculative token</TT
+></TD
+><TD
+>Waiting to acquire a speculative insertion lock.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>object</TT
+></TD
+><TD
+>Waiting to acquire a lock on a non-relation database object.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>userlock</TT
+></TD
+><TD
+>Waiting to acquire a userlock.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>advisory</TT
+></TD
+><TD
+>Waiting to acquire an advisory user lock.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>BufferPin</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>BufferPin</TT
+></TD
+><TD
+>Waiting to acquire a pin on a buffer.</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>     For tranches registered by extensions, the name is specified by extension
+     and this will be displayed as <TT
+CLASS="STRUCTFIELD"
+>wait_event</TT
+>.  It is quite
+     possible that user has registered the tranche in one of the backends (by
+     having allocation in dynamic shared memory) in which case other backends
+     won't have that information, so we display <TT
+CLASS="LITERAL"
+>extension</TT
+> for such
+     cases.
+    </P
+></BLOCKQUOTE
+></DIV
+><P
+>     Here is an example of how wait events can be viewed
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT pid, wait_event_type, wait_event FROM pg_stat_activity WHERE wait_event is NOT NULL;
+ pid  | wait_event_type |  wait_event
+------+-----------------+---------------
+ 2540 | Lock            | relation
+ 6644 | LWLockNamed     | ProcArrayLock
+(2 rows)</PRE
+><P>
+   </P
 ><DIV
 CLASS="TABLE"
 ><A
@@ -1233,7 +2077,7 @@ NAME="PG-STAT-REPLICATION-VIEW"
 ></A
 ><P
 ><B
->Table 27-4. <TT
+>Table 28-5. <TT
 CLASS="STRUCTNAME"
 >pg_stat_replication</TT
 > View</B
@@ -1522,11 +2366,224 @@ CLASS="STRUCTNAME"
 ><DIV
 CLASS="TABLE"
 ><A
+NAME="PG-STAT-WAL-RECEIVER-VIEW"
+></A
+><P
+><B
+>Table 28-6. <TT
+CLASS="STRUCTNAME"
+>pg_stat_wal_receiver</TT
+> View</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Column</TH
+><TH
+>Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>pid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>Process ID of the WAL receiver process</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>status</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Activity status of the WAL receiver process</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>receive_start_lsn</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+><TD
+>First transaction log position used when WAL receiver is
+      started</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>receive_start_tli</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>First timeline number used when WAL receiver is started</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>received_lsn</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+><TD
+>Last transaction log position already received and flushed to
+      disk, the initial value of this field being the first log position used
+      when WAL receiver is started</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>received_tli</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>Timeline number of last transaction log position received and
+      flushed to disk, the initial value of this field being the timeline
+      number of the first log position used when WAL receiver is started
+     </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>last_msg_send_time</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>Send time of last message received from origin WAL sender</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>last_msg_receipt_time</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>Receipt time of last message received from origin WAL sender</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>latest_end_lsn</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+><TD
+>Last transaction log position reported to origin WAL sender</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>latest_end_time</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+><TD
+>Time of last transaction log position reported to origin WAL sender</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>slot_name</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Replication slot name used by this WAL receiver</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>conninfo</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>      Connection string used by this WAL receiver,
+      with security-sensitive fields obfuscated.
+     </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   The <TT
+CLASS="STRUCTNAME"
+>pg_stat_wal_receiver</TT
+> view will contain only
+   one row, showing statistics about the WAL receiver from that receiver's
+   connected server.
+  </P
+><DIV
+CLASS="TABLE"
+><A
 NAME="PG-STAT-SSL-VIEW"
 ></A
 ><P
 ><B
->Table 27-5. <TT
+>Table 28-7. <TT
 CLASS="STRUCTNAME"
 >pg_stat_ssl</TT
 > View</B
@@ -1685,7 +2742,7 @@ NAME="PG-STAT-ARCHIVER-VIEW"
 ></A
 ><P
 ><B
->Table 27-6. <TT
+>Table 28-8. <TT
 CLASS="STRUCTNAME"
 >pg_stat_archiver</TT
 > View</B
@@ -1819,7 +2876,7 @@ NAME="PG-STAT-BGWRITER-VIEW"
 ></A
 ><P
 ><B
->Table 27-7. <TT
+>Table 28-9. <TT
 CLASS="STRUCTNAME"
 >pg_stat_bgwriter</TT
 > View</B
@@ -2020,7 +3077,7 @@ NAME="PG-STAT-DATABASE-VIEW"
 ></A
 ><P
 ><B
->Table 27-8. <TT
+>Table 28-10. <TT
 CLASS="STRUCTNAME"
 >pg_stat_database</TT
 > View</B
@@ -2352,7 +3409,7 @@ NAME="PG-STAT-DATABASE-CONFLICTS-VIEW"
 ></A
 ><P
 ><B
->Table 27-9. <TT
+>Table 28-11. <TT
 CLASS="STRUCTNAME"
 >pg_stat_database_conflicts</TT
 > View</B
@@ -2494,7 +3551,7 @@ NAME="PG-STAT-ALL-TABLES-VIEW"
 ></A
 ><P
 ><B
->Table 27-10. <TT
+>Table 28-12. <TT
 CLASS="STRUCTNAME"
 >pg_stat_all_tables</TT
 > View</B
@@ -2862,7 +3919,7 @@ NAME="PG-STAT-ALL-INDEXES-VIEW"
 ></A
 ><P
 ><B
->Table 27-11. <TT
+>Table 28-13. <TT
 CLASS="STRUCTNAME"
 >pg_stat_all_indexes</TT
 > View</B
@@ -3088,7 +4145,7 @@ NAME="PG-STATIO-ALL-TABLES-VIEW"
 ></A
 ><P
 ><B
->Table 27-12. <TT
+>Table 28-14. <TT
 CLASS="STRUCTNAME"
 >pg_statio_all_tables</TT
 > View</B
@@ -3289,7 +4346,7 @@ NAME="PG-STATIO-ALL-INDEXES-VIEW"
 ></A
 ><P
 ><B
->Table 27-13. <TT
+>Table 28-15. <TT
 CLASS="STRUCTNAME"
 >pg_statio_all_indexes</TT
 > View</B
@@ -3434,7 +4491,7 @@ NAME="PG-STATIO-ALL-SEQUENCES-VIEW"
 ></A
 ><P
 ><B
->Table 27-14. <TT
+>Table 28-16. <TT
 CLASS="STRUCTNAME"
 >pg_statio_all_sequences</TT
 > View</B
@@ -3541,7 +4598,7 @@ NAME="PG-STAT-USER-FUNCTIONS-VIEW"
 ></A
 ><P
 ><B
->Table 27-15. <TT
+>Table 28-17. <TT
 CLASS="STRUCTNAME"
 >pg_stat_user_functions</TT
 > View</B
@@ -3668,7 +4725,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="MONITORING-STATS-FUNCTIONS"
->27.2.3. Statistics Functions</A
+>28.2.3. Statistics Functions</A
 ></H2
 ><P
 >   Other ways of looking at the statistics can be set up by writing
@@ -3692,7 +4749,7 @@ CLASS="LITERAL"
 ><P
 >   Additional functions related to statistics collection are listed in <A
 HREF="monitoring-stats.html#MONITORING-STATS-FUNCS-TABLE"
->Table 27-16</A
+>Table 28-18</A
 >.
   </P
 ><DIV
@@ -3702,7 +4759,7 @@ NAME="MONITORING-STATS-FUNCS-TABLE"
 ></A
 ><P
 ><B
->Table 27-16. Additional Statistics Functions</B
+>Table 28-18. Additional Statistics Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3818,7 +4875,8 @@ CLASS="TYPE"
 ></TD
 ><TD
 >       Reset all statistics counters for the current database to zero
-       (requires superuser privileges)
+       (requires superuser privileges by default, but EXECUTE for this
+       function can be granted to others.)
       </TD
 ></TR
 ><TR
@@ -3837,7 +4895,8 @@ CLASS="TYPE"
 ></TD
 ><TD
 >       Reset some cluster-wide statistics counters to zero, depending on the
-       argument (requires superuser privileges).
+       argument (requires superuser privileges by default, but EXECUTE for
+       this function can be granted to others).
        Calling <TT
 CLASS="LITERAL"
 >pg_stat_reset_shared('bgwriter')</TT
@@ -3872,7 +4931,8 @@ CLASS="TYPE"
 ></TD
 ><TD
 >       Reset statistics for a single table or index in the current database to
-       zero (requires superuser privileges)
+       zero (requires superuser privileges by default, but EXECUTE for this
+       function can be granted to others)
       </TD
 ></TR
 ><TR
@@ -3891,7 +4951,8 @@ CLASS="TYPE"
 ></TD
 ><TD
 >       Reset statistics for a single function in the current database to
-       zero (requires superuser privileges)
+       zero (requires superuser privileges by default, but EXECUTE for this
+       function can be granted to others)
       </TD
 ></TR
 ></TBODY
@@ -3911,7 +4972,7 @@ CLASS="STRUCTNAME"
    information.  In such cases, an older set of per-backend statistics
    access functions can be used; these are shown in <A
 HREF="monitoring-stats.html#MONITORING-STATS-BACKEND-FUNCS-TABLE"
->Table 27-17</A
+>Table 28-19</A
 >.
    These access functions use a backend ID number, which ranges from one
    to the number of currently active backends.
@@ -3940,7 +5001,7 @@ NAME="MONITORING-STATS-BACKEND-FUNCS-TABLE"
 ></A
 ><P
 ><B
->Table 27-17. Per-Backend Statistics Functions</B
+>Table 28-19. Per-Backend Statistics Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -4116,16 +5177,43 @@ CLASS="TYPE"
 CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
->pg_stat_get_backend_waiting(integer)</CODE
+>pg_stat_get_backend_wait_event_type(integer)</CODE
 ></TT
 ></TD
 ><TD
 ><TT
 CLASS="TYPE"
->boolean</TT
+>text</TT
 ></TD
 ><TD
->True if this backend is currently waiting on a lock</TD
+>Wait event type name if backend is currently waiting, otherwise NULL.
+        See <A
+HREF="monitoring-stats.html#WAIT-EVENT-TABLE"
+>Table 28-4</A
+> for details.
+        </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_stat_get_backend_wait_event(integer)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>Wait event name if backend is currently waiting, otherwise NULL.
+       See <A
+HREF="monitoring-stats.html#WAIT-EVENT-TABLE"
+>Table 28-4</A
+> for details.
+       </TD
 ></TR
 ><TR
 ><TD

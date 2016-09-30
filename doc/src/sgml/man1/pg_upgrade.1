@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "PG_UPGRADE" "1" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "PG_UPGRADE" "1" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -308,7 +308,7 @@ pg_hba\&.conf
 or use a
 ~/\&.pgpass
 file (see
-Section 31.15, \(lqThe Password File\(rq, in the documentation)\&.
+Section 32.15, \(lqThe Password File\(rq, in the documentation)\&.
 .RE
 .sp
 .RS 4
@@ -459,16 +459,14 @@ module from the old cluster and install it in the new cluster after the upgrade,
 .sp -1
 .IP "  10." 4.2
 .\}
-Upgrade Streaming Replication and Log\-Shipping standby
-    servers: If you have Streaming Replication (see
-Section 25.2.5, \(lqStreaming Replication\(rq, in the documentation) or Log\-Shipping (see
-Section 25.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation) standby servers, follow these steps to upgrade them\&. You will not be running
+Upgrade Streaming Replication and Log\-Shipping standby servers: If you have Streaming Replication (see
+Section 26.2.5, \(lqStreaming Replication\(rq, in the documentation) or Log\-Shipping (see
+Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation) standby servers, follow these steps to upgrade them\&. You will not be running
 pg_upgrade
 on the standby servers, but rather
 rsync\&. Do not start any servers yet\&.
 Install the new PostgreSQL binaries on standby servers: Make sure the new binaries and support files are installed on all standby servers\&.
-Make sure the new standby data directories do \fInot\fR
-      exist: Make sure the new standby data directories do
+Make sure the new standby data directories do \fInot\fR exist: Make sure the new standby data directories do
 \fInot\fR
 exist or are empty\&. If
 initdb
@@ -481,7 +479,7 @@ recovery\&.conf, as these will be overwritten or removed in the next step\&.
 Start and stop the new master cluster: In the new master cluster, change
 \fIwal_level\fR
 to
-hot_standby
+replica
 in the
 postgresql\&.conf
 file and then start and stop the cluster\&.
@@ -513,7 +511,9 @@ rsync
 will be fast when
 pg_upgrade\*(Aqs
 \fB\-\-link\fR
-mode is used because it will create hard links on the remote server rather than transferring user data\&.
+mode is used because it will create hard links on the remote server rather than transferring user data\&. Unfortunately,
+rsync
+needlessly copies the files associated with temporary and unlogged tables\&.
 .sp
 If you have tablespaces, you will need to run a similar
 rsync
@@ -522,8 +522,7 @@ pg_xlog
 outside the data directories,
 rsync
 must be run on those directories too\&.
-Configure streaming replication and log\-shipping standby
-      servers: Configure the servers for log shipping\&. (You do not need to run
+Configure streaming replication and log\-shipping standby servers: Configure the servers for log shipping\&. (You do not need to run
 \fBpg_start_backup()\fR
 and
 \fBpg_stop_backup()\fR
@@ -717,6 +716,6 @@ is necessary because
 \fBrsync\fR
 only has file modification\-time granularity of one second\&.) You might want to exclude some files, e\&.g\&.
 postmaster\&.pid, as documented in
-Section 24.3.3, \(lqMaking a Base Backup Using the Low Level API\(rq, in the documentation\&. If your file system supports file system snapshots or copy\-on\-write file copies, you can use that to make a backup of the old cluster and tablespaces, though the snapshot and copies must be created simultaneously or while the database server is down\&.
+Section 25.3.3, \(lqMaking a Base Backup Using the Low Level API\(rq, in the documentation\&. If your file system supports file system snapshots or copy\-on\-write file copies, you can use that to make a backup of the old cluster and tablespaces, though the snapshot and copies must be created simultaneously or while the database server is down\&.
 .SH "SEE ALSO"
 \fBinitdb\fR(1), \fBpg_ctl\fR(1), \fBpg_dump\fR(1), \fBpostgres\fR(1)

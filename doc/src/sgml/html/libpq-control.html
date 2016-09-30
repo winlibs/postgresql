@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 31. <SPAN
+>Chapter 32. <SPAN
 CLASS="APPLICATION"
 >libpq</SPAN
 > - C Library</TD
@@ -96,7 +96,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="LIBPQ-CONTROL"
->31.10. Control Functions</A
+>32.10. Control Functions</A
 ></H1
 ><P
 >   These functions control miscellaneous details of <SPAN
@@ -250,6 +250,95 @@ CLASS="FIRSTTERM"
 CLASS="STRUCTNAME"
 >PGresult</TT
 > objects, only subsequently-created ones.
+      (But see <CODE
+CLASS="FUNCTION"
+>PQresultVerboseErrorMessage</CODE
+> if you
+      want to print a previous error with a different verbosity.)
+     </P
+></DD
+><DT
+><A
+NAME="LIBPQ-PQSETERRORCONTEXTVISIBILITY"
+></A
+><CODE
+CLASS="FUNCTION"
+>PQsetErrorContextVisibility</CODE
+>
+     </DT
+><DD
+><P
+>      Determines the handling of <TT
+CLASS="LITERAL"
+>CONTEXT</TT
+> fields in messages
+      returned by <CODE
+CLASS="FUNCTION"
+>PQerrorMessage</CODE
+>
+      and <CODE
+CLASS="FUNCTION"
+>PQresultErrorMessage</CODE
+>.
+</P><PRE
+CLASS="SYNOPSIS"
+>typedef enum
+{
+    PQSHOW_CONTEXT_NEVER,
+    PQSHOW_CONTEXT_ERRORS,
+    PQSHOW_CONTEXT_ALWAYS
+} PGContextVisibility;
+
+PGContextVisibility PQsetErrorContextVisibility(PGconn *conn, PGContextVisibility show_context);</PRE
+><P>
+
+      <CODE
+CLASS="FUNCTION"
+>PQsetErrorContextVisibility</CODE
+> sets the context display mode,
+      returning the connection's previous setting.  This mode controls
+      whether the <TT
+CLASS="LITERAL"
+>CONTEXT</TT
+> field is included in messages
+      (unless the verbosity setting is <I
+CLASS="FIRSTTERM"
+>TERSE</I
+>, in which
+      case <TT
+CLASS="LITERAL"
+>CONTEXT</TT
+> is never shown).  The <I
+CLASS="FIRSTTERM"
+>NEVER</I
+> mode
+      never includes <TT
+CLASS="LITERAL"
+>CONTEXT</TT
+>, while <I
+CLASS="FIRSTTERM"
+>ALWAYS</I
+> always
+      includes it if available.  In <I
+CLASS="FIRSTTERM"
+>ERRORS</I
+> mode (the
+      default), <TT
+CLASS="LITERAL"
+>CONTEXT</TT
+> fields are included only for error
+      messages, not for notices and warnings.  Changing this mode does not
+      affect the messages available from
+      already-existing <TT
+CLASS="STRUCTNAME"
+>PGresult</TT
+> objects, only
+      subsequently-created ones.
+      (But see <CODE
+CLASS="FUNCTION"
+>PQresultVerboseErrorMessage</CODE
+> if you
+      want to print a previous error with a different display mode.)
      </P
 ></DD
 ><DT

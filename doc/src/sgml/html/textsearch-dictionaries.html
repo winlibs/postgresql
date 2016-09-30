@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Full Text Search"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1233,20 +1233,70 @@ TARGET="_top"
 >    To create an <SPAN
 CLASS="APPLICATION"
 >Ispell</SPAN
-> dictionary, use the built-in
-    <TT
-CLASS="LITERAL"
->ispell</TT
-> template and specify several parameters:
+> dictionary perform these steps:
    </P
-><PRE
+><P
+></P
+><UL
+COMPACT="COMPACT"
+><LI
+STYLE="list-style-type: disc"
+><P
+>      download dictionary configuration files. <SPAN
+CLASS="PRODUCTNAME"
+>OpenOffice</SPAN
+>
+      extension files have the <TT
+CLASS="FILENAME"
+>.oxt</TT
+> extension. It is necessary
+      to extract <TT
+CLASS="FILENAME"
+>.aff</TT
+> and <TT
+CLASS="FILENAME"
+>.dic</TT
+> files, change
+      extensions to <TT
+CLASS="FILENAME"
+>.affix</TT
+> and <TT
+CLASS="FILENAME"
+>.dict</TT
+>. For some
+      dictionary files it is also needed to convert characters to the UTF-8
+      encoding with commands (for example, for a Norwegian language dictionary):
+</P><PRE
 CLASS="PROGRAMLISTING"
->CREATE TEXT SEARCH DICTIONARY english_ispell (
+>iconv -f ISO_8859-1 -t UTF-8 -o nn_no.affix nn_NO.aff
+iconv -f ISO_8859-1 -t UTF-8 -o nn_no.dict nn_NO.dic</PRE
+><P>
+     </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>      copy files to the <TT
+CLASS="FILENAME"
+>$SHAREDIR/tsearch_data</TT
+> directory
+     </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>      load files into PostgreSQL with the following command:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TEXT SEARCH DICTIONARY english_hunspell (
     TEMPLATE = ispell,
-    DictFile = english,
-    AffFile = english,
-    StopWords = english
-);</PRE
+    DictFile = en_us,
+    AffFile = en_us,
+    Stopwords = english);</PRE
+><P>
+     </P
+></LI
+></UL
 ><P
 >    Here, <TT
 CLASS="LITERAL"
@@ -1272,6 +1322,107 @@ CLASS="LITERAL"
     example, a Snowball dictionary, which recognizes everything.
    </P
 ><P
+>    The <TT
+CLASS="FILENAME"
+>.affix</TT
+> file of <SPAN
+CLASS="APPLICATION"
+>Ispell</SPAN
+> has the following
+    structure:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>prefixes
+flag *A:
+    .           &#62;   RE      # As in enter &#62; reenter
+suffixes
+flag T:
+    E           &#62;   ST      # As in late &#62; latest
+    [^AEIOU]Y   &#62;   -Y,IEST # As in dirty &#62; dirtiest
+    [AEIOU]Y    &#62;   EST     # As in gray &#62; grayest
+    [^EY]       &#62;   EST     # As in small &#62; smallest</PRE
+><P>
+   </P
+><P
+>    And the <TT
+CLASS="FILENAME"
+>.dict</TT
+> file has the following structure:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>lapse/ADGRS
+lard/DGRS
+large/PRTY
+lark/MRS</PRE
+><P>
+   </P
+><P
+>    Format of the <TT
+CLASS="FILENAME"
+>.dict</TT
+> file is:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>basic_form/affix_class_name</PRE
+><P>
+   </P
+><P
+>    In the <TT
+CLASS="FILENAME"
+>.affix</TT
+> file every affix flag is described in the
+    following format:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>condition &#62; [-stripping_letters,] adding_affix</PRE
+><P>
+   </P
+><P
+>    Here, condition has a format similar to the format of regular expressions.
+    It can use groupings <TT
+CLASS="LITERAL"
+>[...]</TT
+> and <TT
+CLASS="LITERAL"
+>[^...]</TT
+>.
+    For example, <TT
+CLASS="LITERAL"
+>[AEIOU]Y</TT
+> means that the last letter of the word
+    is <TT
+CLASS="LITERAL"
+>"y"</TT
+> and the penultimate letter is <TT
+CLASS="LITERAL"
+>"a"</TT
+>,
+    <TT
+CLASS="LITERAL"
+>"e"</TT
+>, <TT
+CLASS="LITERAL"
+>"i"</TT
+>, <TT
+CLASS="LITERAL"
+>"o"</TT
+> or <TT
+CLASS="LITERAL"
+>"u"</TT
+>.
+    <TT
+CLASS="LITERAL"
+>[^EY]</TT
+> means that the last letter is neither <TT
+CLASS="LITERAL"
+>"e"</TT
+>
+    nor <TT
+CLASS="LITERAL"
+>"y"</TT
+>.
+   </P
+><P
 >    Ispell dictionaries support splitting compound words;
     a useful feature.
     Notice that the affix file should specify a special flag using the
@@ -1294,6 +1445,93 @@ CLASS="PROGRAMLISTING"
    {over,buljong,terning,pakk,mester,assistent}
 SELECT ts_lexize('norwegian_ispell', 'sjokoladefabrikk');
    {sjokoladefabrikk,sjokolade,fabrikk}</PRE
+><P>
+   </P
+><P
+>    <SPAN
+CLASS="APPLICATION"
+>MySpell</SPAN
+> format is a subset of <SPAN
+CLASS="APPLICATION"
+>Hunspell</SPAN
+>.
+    The <TT
+CLASS="FILENAME"
+>.affix</TT
+> file of <SPAN
+CLASS="APPLICATION"
+>Hunspell</SPAN
+> has the following
+    structure:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>PFX A Y 1
+PFX A   0     re         .
+SFX T N 4
+SFX T   0     st         e
+SFX T   y     iest       [^aeiou]y
+SFX T   0     est        [aeiou]y
+SFX T   0     est        [^ey]</PRE
+><P>
+   </P
+><P
+>    The first line of an affix class is the header. Fields of an affix rules are
+    listed after the header:
+   </P
+><P
+></P
+><UL
+COMPACT="COMPACT"
+><LI
+STYLE="list-style-type: disc"
+><P
+>      parameter name (PFX or SFX)
+     </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>      flag (name of the affix class)
+     </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>      stripping characters from beginning (at prefix) or end (at suffix) of the
+      word
+     </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>      adding affix
+     </P
+></LI
+><LI
+STYLE="list-style-type: disc"
+><P
+>      condition that has a format similar to the format of regular expressions.
+     </P
+></LI
+></UL
+><P
+>    The <TT
+CLASS="FILENAME"
+>.dict</TT
+> file looks like the <TT
+CLASS="FILENAME"
+>.dict</TT
+> file of
+    <SPAN
+CLASS="APPLICATION"
+>Ispell</SPAN
+>:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>larder/M
+lardy/RT
+large/RSPMYT
+largehearted</PRE
 ><P>
    </P
 ><DIV

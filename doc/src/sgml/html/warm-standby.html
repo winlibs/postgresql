@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="High Availability, Load Balancing, and Replication"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 25. High Availability, Load Balancing, and Replication</TD
+>Chapter 26. High Availability, Load Balancing, and Replication</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="WARM-STANDBY"
->25.2. Log-Shipping Standby Servers</A
+>26.2. Log-Shipping Standby Servers</A
 ></H1
 ><P
 >   Continuous archiving can be used to create a <I
@@ -139,7 +139,7 @@ CLASS="PRODUCTNAME"
    Record-based log shipping is more granular and streams WAL changes
    incrementally over a network connection (see <A
 HREF="warm-standby.html#STREAMING-REPLICATION"
->Section 25.2.5</A
+>Section 26.2.5</A
 >).
   </P
 ><P
@@ -156,7 +156,7 @@ CLASS="VARNAME"
    substantially increase the bandwidth required for file shipping.
    Streaming replication (see <A
 HREF="warm-standby.html#STREAMING-REPLICATION"
->Section 25.2.5</A
+>Section 26.2.5</A
 >)
    allows a much smaller window of data loss.
   </P
@@ -171,7 +171,7 @@ HREF="warm-standby.html#STREAMING-REPLICATION"
    A standby server can also be used for read-only queries, in which case
    it is called a Hot Standby server. See <A
 HREF="hot-standby.html"
->Section 25.5</A
+>Section 26.5</A
 > for
    more information.
   </P
@@ -181,7 +181,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="STANDBY-PLANNING"
->25.2.1. Planning</A
+>26.2.1. Planning</A
 ></H2
 ><P
 >    It is usually wise to create the primary and standby servers
@@ -226,7 +226,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="STANDBY-SERVER-OPERATION"
->25.2.2. Standby Server Operation</A
+>26.2.2. Standby Server Operation</A
 ></H2
 ><P
 >    In standby mode, the server continuously applies WAL received from the
@@ -300,14 +300,14 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PREPARING-MASTER-FOR-STANDBY"
->25.2.3. Preparing the Master for Standby Servers</A
+>26.2.3. Preparing the Master for Standby Servers</A
 ></H2
 ><P
 >    Set up continuous archiving on the primary to an archive directory
     accessible from the standby, as described
     in <A
 HREF="continuous-archiving.html"
->Section 24.3</A
+>Section 25.3</A
 >. The archive location should be
     accessible from the standby even when the master is down, i.e. it should
     reside on the standby server itself or another trusted server, not on
@@ -339,7 +339,7 @@ CLASS="VARNAME"
 ><P
 >    Take a base backup as described in <A
 HREF="continuous-archiving.html#BACKUP-BASE-BACKUP"
->Section 24.3.2</A
+>Section 25.3.2</A
 >
     to bootstrap the standby server.
    </P
@@ -350,13 +350,13 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="STANDBY-SERVER-SETUP"
->25.2.4. Setting Up a Standby Server</A
+>26.2.4. Setting Up a Standby Server</A
 ></H2
 ><P
 >    To set up the standby server, restore the base backup taken from primary
     server (see <A
 HREF="continuous-archiving.html#BACKUP-PITR-RECOVERY"
->Section 24.3.4</A
+>Section 25.3.4</A
 >). Create a recovery
     command file <TT
 CLASS="FILENAME"
@@ -396,7 +396,7 @@ CLASS="VARNAME"
      if the file does not exist; the server will retry the command again if
      necessary. See <A
 HREF="log-shipping-alternative.html"
->Section 25.4</A
+>Section 26.4</A
 >
      for using tools like pg_standby.
     </P
@@ -475,7 +475,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="STREAMING-REPLICATION"
->25.2.5. Streaming Replication</A
+>26.2.5. Streaming Replication</A
 ></H2
 ><P
 >    Streaming replication allows a standby server to stay more up-to-date
@@ -487,7 +487,7 @@ NAME="STREAMING-REPLICATION"
 >    Streaming replication is asynchronous by default
     (see <A
 HREF="warm-standby.html#SYNCHRONOUS-REPLICATION"
->Section 25.2.8</A
+>Section 26.2.8</A
 >), in which case there is
     a small delay between committing a transaction in the primary and the
     changes becoming visible in the standby. This delay is however much
@@ -517,7 +517,7 @@ CLASS="VARNAME"
 >    To use streaming replication, set up a file-based log-shipping standby
     server as described in <A
 HREF="warm-standby.html"
->Section 25.2</A
+>Section 26.2</A
 >. The step that
     turns a file-based log-shipping standby into streaming replication
     standby is setting <TT
@@ -542,7 +542,7 @@ CLASS="LITERAL"
 > pseudo-database on the primary
     server (see <A
 HREF="warm-standby.html#STREAMING-REPLICATION-AUTHENTICATION"
->Section 25.2.5.1</A
+>Section 26.2.5.1</A
 >).
    </P
 ><P
@@ -584,7 +584,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="STREAMING-REPLICATION-AUTHENTICATION"
->25.2.5.1. Authentication</A
+>26.2.5.1. Authentication</A
 ></H3
 ><P
 >     It is very important that the access privileges for replication be set up
@@ -704,7 +704,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="STREAMING-REPLICATION-MONITORING"
->25.2.5.2. Monitoring</A
+>26.2.5.2. Monitoring</A
 ></H3
 ><P
 >     An important health indicator of streaming replication is the amount
@@ -722,11 +722,11 @@ CLASS="FUNCTION"
 > on the standby,
      respectively (see <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-BACKUP-TABLE"
->Table 9-68</A
+>Table 9-78</A
 > and
      <A
 HREF="functions-admin.html#FUNCTIONS-RECOVERY-INFO-TABLE"
->Table 9-69</A
+>Table 9-79</A
 > for details).
      The last WAL receive location in the standby is also displayed in the
      process status of the WAL receiver process, displayed using the
@@ -735,7 +735,7 @@ CLASS="COMMAND"
 >ps</TT
 > command (see <A
 HREF="monitoring-ps.html"
->Section 27.1</A
+>Section 28.1</A
 > for details).
     </P
 ><P
@@ -773,7 +773,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="STREAMING-REPLICATION-SLOTS"
->25.2.6. Replication Slots</A
+>26.2.6. Replication Slots</A
 ></H2
 ><P
 >    Replication slots provide an automated way to ensure that the master does
@@ -825,7 +825,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="STREAMING-REPLICATION-SLOTS-MANIPULATION"
->25.2.6.1. Querying and manipulating replication slots</A
+>26.2.6.1. Querying and manipulating replication slots</A
 ></H3
 ><P
 >     Each replication slot has a name, which can contain lower-case letters,
@@ -846,7 +846,7 @@ CLASS="STRUCTNAME"
 >     Slots can be created and dropped either via the streaming replication
      protocol (see <A
 HREF="protocol-replication.html"
->Section 50.3</A
+>Section 51.3</A
 >) or via SQL
      functions (see <A
 HREF="functions-admin.html#FUNCTIONS-REPLICATION"
@@ -860,7 +860,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="STREAMING-REPLICATION-SLOTS-CONFIG"
->25.2.6.2. Configuration Example</A
+>26.2.6.2. Configuration Example</A
 ></H3
 ><P
 >     You can create a replication slot like this:
@@ -872,9 +872,9 @@ CLASS="PROGRAMLISTING"
  node_a_slot |
 
 postgres=# SELECT * FROM pg_replication_slots;
-  slot_name  | slot_type | datoid | database | active | xmin | restart_lsn
--------------+-----------+--------+----------+--------+------+-------------
- node_a_slot | physical  |        |          | f      |      |
+  slot_name  | slot_type | datoid | database | active | xmin | restart_lsn | confirmed_flush_lsn
+-------------+-----------+--------+----------+--------+------+-------------+---------------------
+ node_a_slot | physical  |        |          | f      |      |             |
 (1 row)</PRE
 ><P>
      To configure the standby to use this slot, <TT
@@ -901,7 +901,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="CASCADING-REPLICATION"
->25.2.7. Cascading Replication</A
+>26.2.7. Cascading Replication</A
 ></H2
 ><P
 >    The cascading replication feature allows a standby server to accept replication
@@ -928,7 +928,7 @@ NAME="CASCADING-REPLICATION"
 >    Cascading replication is currently asynchronous. Synchronous replication
     (see <A
 HREF="warm-standby.html#SYNCHRONOUS-REPLICATION"
->Section 25.2.8</A
+>Section 26.2.8</A
 >) settings have no effect on
     cascading replication at present.
    </P
@@ -974,7 +974,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SYNCHRONOUS-REPLICATION"
->25.2.8. Synchronous Replication</A
+>26.2.8. Synchronous Replication</A
 ></H2
 ><P
 >    <SPAN
@@ -989,10 +989,18 @@ CLASS="PRODUCTNAME"
    </P
 ><P
 >    Synchronous replication offers the ability to confirm that all changes
-    made by a transaction have been transferred to one synchronous standby
-    server. This extends the standard level of durability
+    made by a transaction have been transferred to one or more synchronous
+    standby servers. This extends that standard level of durability
     offered by a transaction commit. This level of protection is referred
-    to as 2-safe replication in computer science theory.
+    to as 2-safe replication in computer science theory, and group-1-safe
+    (group-safe and 1-safe) when <TT
+CLASS="VARNAME"
+>synchronous_commit</TT
+> is set to
+    <TT
+CLASS="LITERAL"
+>remote_write</TT
+>.
    </P
 ><P
 >    When requesting synchronous replication, each commit of a
@@ -1005,7 +1013,7 @@ CLASS="PRODUCTNAME"
     servers.  Waiting for confirmation increases the user's confidence that the
     changes will not be lost in the event of server crashes but it also
     necessarily increases the response time for the requesting transaction.
-    The minimum wait time is the roundtrip time between primary to standby.
+    The minimum wait time is the round-trip time between primary to standby.
    </P
 ><P
 >    Read only transactions and transaction rollbacks need not wait for
@@ -1021,7 +1029,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="SYNCHRONOUS-REPLICATION-CONFIG"
->25.2.8.1. Basic Configuration</A
+>26.2.8.1. Basic Configuration</A
 ></H3
 ><P
 >    Once streaming replication has been configured, configuring synchronous
@@ -1040,11 +1048,11 @@ CLASS="LITERAL"
 >, but since this is the default value, typically no change is
     required.  (See <A
 HREF="runtime-config-wal.html#RUNTIME-CONFIG-WAL-SETTINGS"
->Section 18.5.1</A
+>Section 19.5.1</A
 > and
     <A
 HREF="runtime-config-replication.html#RUNTIME-CONFIG-REPLICATION-MASTER"
->Section 18.6.2</A
+>Section 19.6.2</A
 >.)
     This configuration will cause each commit to wait for
     confirmation that the standby has written the commit record to durable
@@ -1065,12 +1073,22 @@ CLASS="VARNAME"
 CLASS="VARNAME"
 >wal_receiver_status_interval</TT
 > is set to zero on the standby.
-    If the standby is the first matching standby, as specified in
+    In the case that <TT
+CLASS="VARNAME"
+>synchronous_commit</TT
+> is set to
     <TT
+CLASS="LITERAL"
+>remote_apply</TT
+>, the standby sends reply messages when the commit
+    record is replayed, making the transaction visible.
+    If the standby is chosen as a synchronous standby, from a priority
+    list of <TT
 CLASS="VARNAME"
 >synchronous_standby_names</TT
 > on the primary, the reply
-    messages from that standby will be used to wake users waiting for
+    messages from that standby will be considered along with those from other
+    synchronous standbys to decide when to release transactions waiting for
     confirmation that the commit record has been received. These parameters
     allow the administrator to specify which standby servers should be
     synchronous standbys. Note that the configuration of synchronous
@@ -1104,6 +1122,19 @@ CLASS="PRODUCTNAME"
     the database of the primary gets corrupted at the same time.
    </P
 ><P
+>    Setting <TT
+CLASS="VARNAME"
+>synchronous_commit</TT
+> to <TT
+CLASS="LITERAL"
+>remote_apply</TT
+> will
+    cause each commit to wait until the current synchronous standbys report
+    that they have replayed the transaction, making it visible to user
+    queries.  In simple cases, this allows for load balancing with causal
+    consistency.
+   </P
+><P
 >    Users will stop waiting if a fast shutdown is requested.  However, as
     when using asynchronous replication, the server will not fully
     shutdown until all outstanding WAL records are transferred to the currently
@@ -1115,8 +1146,83 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
+NAME="SYNCHRONOUS-REPLICATION-MULTIPLE-STANDBYS"
+>26.2.8.2. Multiple Synchronous Standbys</A
+></H3
+><P
+>    Synchronous replication supports one or more synchronous standby servers;
+    transactions will wait until all the standby servers which are considered
+    as synchronous confirm receipt of their data. The number of synchronous
+    standbys that transactions must wait for replies from is specified in
+    <TT
+CLASS="VARNAME"
+>synchronous_standby_names</TT
+>. This parameter also specifies
+    a list of standby names, which determines the priority of each standby
+    for being chosen as a synchronous standby. The standbys whose names
+    appear earlier in the list are given higher priority and will be considered
+    as synchronous. Other standby servers appearing later in this list
+    represent potential synchronous standbys. If any of the current
+    synchronous standbys disconnects for whatever reason, it will be replaced
+    immediately with the next-highest-priority standby.
+   </P
+><P
+>    An example of <TT
+CLASS="VARNAME"
+>synchronous_standby_names</TT
+> for multiple
+    synchronous standbys is:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>synchronous_standby_names = '2 (s1, s2, s3)'</PRE
+><P>
+    In this example, if four standby servers <TT
+CLASS="LITERAL"
+>s1</TT
+>, <TT
+CLASS="LITERAL"
+>s2</TT
+>,
+    <TT
+CLASS="LITERAL"
+>s3</TT
+> and <TT
+CLASS="LITERAL"
+>s4</TT
+> are running, the two standbys
+    <TT
+CLASS="LITERAL"
+>s1</TT
+> and <TT
+CLASS="LITERAL"
+>s2</TT
+> will be chosen as synchronous standbys
+    because their names appear early in the list of standby names.
+    <TT
+CLASS="LITERAL"
+>s3</TT
+> is a potential synchronous standby and will take over
+    the role of synchronous standby when either of <TT
+CLASS="LITERAL"
+>s1</TT
+> or
+    <TT
+CLASS="LITERAL"
+>s2</TT
+> fails. <TT
+CLASS="LITERAL"
+>s4</TT
+> is an asynchronous standby since
+    its name is not in the list.
+   </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
 NAME="SYNCHRONOUS-REPLICATION-PERFORMANCE"
->25.2.8.2. Planning for Performance</A
+>26.2.8.3. Planning for Performance</A
 ></H3
 ><P
 >    Synchronous replication usually requires carefully planned and placed
@@ -1159,32 +1265,41 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="SYNCHRONOUS-REPLICATION-HA"
->25.2.8.3. Planning for High Availability</A
+>26.2.8.4. Planning for High Availability</A
 ></H3
 ><P
->    Commits made when <TT
+>    <TT
+CLASS="VARNAME"
+>synchronous_standby_names</TT
+> specifies the number and
+    names of synchronous standbys that transaction commits made when
+    <TT
 CLASS="VARNAME"
 >synchronous_commit</TT
 > is set to <TT
 CLASS="LITERAL"
 >on</TT
->
-    or <TT
+>,
+    <TT
+CLASS="LITERAL"
+>remote_apply</TT
+> or <TT
 CLASS="LITERAL"
 >remote_write</TT
-> will wait until the synchronous standby responds. The response
-    may never occur if the last, or only, standby should crash.
+> will wait for
+    responses from. Such transaction commits may never be completed
+    if any one of synchronous standbys should crash.
    </P
 ><P
->    The best solution for avoiding data loss is to ensure you don't lose
-    your last remaining synchronous standby. This can be achieved by naming multiple
+>    The best solution for high availability is to ensure you keep as many
+    synchronous standbys as requested. This can be achieved by naming multiple
     potential synchronous standbys using <TT
 CLASS="VARNAME"
 >synchronous_standby_names</TT
 >.
-    The first named standby will be used as the synchronous standby. Standbys
-    listed after this will take over the role of synchronous standby if the
-    first one should fail.
+    The standbys whose names appear earlier in the list will be used as
+    synchronous standbys. Standbys listed after these will take over
+    the role of synchronous standby if one of current ones should fail.
    </P
 ><P
 >    When a standby first attaches to the primary, it will not yet be properly
@@ -1216,15 +1331,17 @@ CLASS="LITERAL"
     they show as committed on the primary. The guarantee we offer is that
     the application will not receive explicit acknowledgement of the
     successful commit of a transaction until the WAL data is known to be
-    safely received by the standby.
+    safely received by all the synchronous standbys.
    </P
 ><P
->    If you really do lose your last standby server then you should disable
-    <TT
+>    If you really cannot keep as many synchronous standbys as requested
+    then you should decrease the number of synchronous standbys that
+    transaction commits must wait for responses from
+    in <TT
 CLASS="VARNAME"
 >synchronous_standby_names</TT
-> and reload the configuration file
-    on the primary server.
+> (or disable it) and
+    reload the configuration file on the primary server.
    </P
 ><P
 >    If the primary is isolated from remaining standby servers you should
@@ -1251,7 +1368,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="CONTINUOUS-ARCHIVING-IN-STANDBY"
->25.2.9. Continuous archiving in standby</A
+>26.2.9. Continuous archiving in standby</A
 ></H2
 ><P
 >     When continuous WAL archiving is used in a standby, there are two

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 35. Extending <ACRONYM
+>Chapter 36. Extending <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 ></TD
@@ -96,7 +96,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="EXTEND-EXTENSIONS"
->35.15. Packaging Related Objects into an Extension</A
+>36.15. Packaging Related Objects into an Extension</A
 ></H1
 ><P
 >    A useful extension to <SPAN
@@ -189,7 +189,67 @@ CLASS="APPLICATION"
 >.  Such a change is usually only sensible if
     you concurrently make the same change in the extension's script file.
     (But there are special provisions for tables containing configuration
-    data; see below.)
+    data; see <A
+HREF="extend-extensions.html#EXTEND-EXTENSIONS-CONFIG-TABLES"
+>Section 36.15.3</A
+>.)
+    In production situations, it's generally better to create an extension
+    update script to perform changes to extension member objects.
+   </P
+><P
+>    The extension script may set privileges on objects that are part of the
+    extension via <TT
+CLASS="COMMAND"
+>GRANT</TT
+> and <TT
+CLASS="COMMAND"
+>REVOKE</TT
+>
+    statements.  The final set of privileges for each object (if any are set)
+    will be stored in the
+    <A
+HREF="catalog-pg-init-privs.html"
+><TT
+CLASS="STRUCTNAME"
+>pg_init_privs</TT
+></A
+>
+    system catalog.  When <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+> is used, the
+    <TT
+CLASS="COMMAND"
+>CREATE EXTENSION</TT
+> command will be included in the dump, followed
+    by the set of <TT
+CLASS="COMMAND"
+>GRANT</TT
+> and <TT
+CLASS="COMMAND"
+>REVOKE</TT
+>
+    statements necessary to set the privileges on the objects to what they were
+    at the time the dump was taken.
+   </P
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> does not currently support extension scripts
+    issuing <TT
+CLASS="COMMAND"
+>CREATE POLICY</TT
+> or <TT
+CLASS="COMMAND"
+>SECURITY LABEL</TT
+>
+    statements.  These are expected to be set after the extension has been
+    created.  All RLS policies and security labels on extension objects will be
+    included in dumps created by <SPAN
+CLASS="APPLICATION"
+>pg_dump</SPAN
+>.
    </P
 ><P
 >    The extension mechanism also has provisions for packaging modification
@@ -235,8 +295,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN58955"
->35.15.1. Extension Files</A
+NAME="AEN61876"
+>36.15.1. Extension Files</A
 ></H2
 ><P
 >     The <A
@@ -385,12 +445,14 @@ CLASS="TYPE"
 >)</DT
 ><DD
 ><P
->        A comment (any string) about the extension.  Alternatively,
-        the comment can be set by means of the <A
+>        A comment (any string) about the extension.  The comment is applied
+        when initially creating an extension, but not during extension updates
+        (since that might override user-added comments).  Alternatively,
+        the extension's comment can be set by writing
+        a <A
 HREF="sql-comment.html"
 >COMMENT</A
->
-        command in the script file.
+> command in the script file.
        </P
 ></DD
 ><DT
@@ -505,7 +567,10 @@ CLASS="LITERAL"
 >false</TT
 >, i.e. the
         extension is not relocatable.
-        See below for more information.
+        See <A
+HREF="extend-extensions.html#EXTEND-EXTENSIONS-RELOCATION"
+>Section 36.15.2</A
+> for more information.
        </P
 ></DD
 ><DT
@@ -520,7 +585,16 @@ CLASS="TYPE"
 ><P
 >        This parameter can only be set for non-relocatable extensions.
         It forces the extension to be loaded into exactly the named schema
-        and not any other.  See below for more information.
+        and not any other.
+        The <TT
+CLASS="VARNAME"
+>schema</TT
+> parameter is consulted only when
+        initially creating an extension, not during extension updates.
+        See <A
+HREF="extend-extensions.html#EXTEND-EXTENSIONS-RELOCATION"
+>Section 36.15.2</A
+> for more information.
        </P
 ></DD
 ></DL
@@ -601,7 +675,11 @@ CLASS="APPLICATION"
 CLASS="COMMAND"
 >CREATE EXTENSION</TT
 > (see example
-     script below).  Without that, users might accidentally load the
+     script in <A
+HREF="extend-extensions.html#EXTEND-EXTENSIONS-EXAMPLE"
+>Section 36.15.5</A
+>).
+     Without that, users might accidentally load the
      extension's contents as <SPAN
 CLASS="QUOTE"
 >"loose"</SPAN
@@ -633,8 +711,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN59073"
->35.15.2. Extension Relocatability</A
+NAME="EXTEND-EXTENSIONS-RELOCATION"
+>36.15.2. Extension Relocatability</A
 ></H2
 ><P
 >     Users often wish to load the objects contained in an extension into a
@@ -809,8 +887,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN59114"
->35.15.3. Extension Configuration Tables</A
+NAME="EXTEND-EXTENSIONS-CONFIG-TABLES"
+>36.15.3. Extension Configuration Tables</A
 ></H2
 ><P
 >     Some extensions include configuration tables, which contain data that
@@ -827,24 +905,34 @@ CLASS="APPLICATION"
     </P
 ><P
 >     To solve this problem, an extension's script file can mark a table
-     it has created as a configuration table, which will cause
-     <SPAN
+     or a sequence it has created as a configuration relation, which will
+     cause <SPAN
 CLASS="APPLICATION"
 >pg_dump</SPAN
-> to include the table's contents (not its
-     definition) in dumps.  To do that, call the function
+> to include the table's or the sequence's
+     contents (not its definition) in dumps.  To do that, call the function
      <CODE
 CLASS="FUNCTION"
 >pg_extension_config_dump(regclass, text)</CODE
 > after creating the
-     table, for example
+     table or the sequence, for example
 </P><PRE
 CLASS="PROGRAMLISTING"
 >CREATE TABLE my_config (key text, value text);
+CREATE SEQUENCE my_config_seq;
 
-SELECT pg_catalog.pg_extension_config_dump('my_config', '');</PRE
+SELECT pg_catalog.pg_extension_config_dump('my_config', '');
+SELECT pg_catalog.pg_extension_config_dump('my_config_seq', '');</PRE
 ><P>
-     Any number of tables can be marked this way.
+     Any number of tables or sequences can be marked this way. Sequences
+     associated with <TT
+CLASS="TYPE"
+>serial</TT
+> or <TT
+CLASS="TYPE"
+>bigserial</TT
+> columns can
+     be marked as well.
     </P
 ><P
 >     When the second argument of <CODE
@@ -880,6 +968,13 @@ CLASS="STRUCTFIELD"
      in the rows created by the extension's script.
     </P
 ><P
+>     For sequences, the second argument of <CODE
+CLASS="FUNCTION"
+>pg_extension_config_dump</CODE
+>
+     has no effect.
+    </P
+><P
 >     More complicated situations, such as initially-provided rows that might
      be modified by users, can be handled by creating triggers on the
      configuration table to ensure that modified rows are marked correctly.
@@ -907,14 +1002,25 @@ CLASS="COMMAND"
      out but the dump will not be able to be restored directly and user
      intervention will be required.
     </P
+><P
+>     Sequences associated with <TT
+CLASS="TYPE"
+>serial</TT
+> or <TT
+CLASS="TYPE"
+>bigserial</TT
+> columns
+     need to be directly marked to dump their state. Marking their parent
+     relation is not enough for this purpose.
+    </P
 ></DIV
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN59136"
->35.15.4. Extension Updates</A
+NAME="AEN62068"
+>36.15.4. Extension Updates</A
 ></H2
 ><P
 >     One advantage of the extension mechanism is that it provides convenient
@@ -1166,8 +1272,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN59191"
->35.15.5. Extension Example</A
+NAME="EXTEND-EXTENSIONS-EXAMPLE"
+>36.15.5. Extension Example</A
 ></H2
 ><P
 >     Here is a complete example of an <ACRONYM
@@ -1252,7 +1358,7 @@ CLASS="ACRONYM"
 >, which is described
      in <A
 HREF="extend-pgxs.html"
->Section 35.16</A
+>Section 36.16</A
 >.  The command <TT
 CLASS="LITERAL"
 >make install</TT

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 17. Server Setup and Operation</TD
+>Chapter 18. Server Setup and Operation</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="SSL-TCP"
->17.9. Secure TCP/IP Connections with SSL</A
+>18.9. Secure TCP/IP Connections with SSL</A
 ></H1
 ><P
 >   <SPAN
@@ -115,7 +115,7 @@ CLASS="PRODUCTNAME"
 > is
    enabled at build time (see <A
 HREF="installation.html"
->Chapter 15</A
+>Chapter 16</A
 >).
   </P
 ><P
@@ -152,7 +152,7 @@ CLASS="ACRONYM"
 >.  By
    default, this is at the client's option; see <A
 HREF="auth-pg-hba-conf.html"
->Section 19.1</A
+>Section 20.1</A
 > about how to set up the server to require
    use of <ACRONYM
 CLASS="ACRONYM"
@@ -246,7 +246,9 @@ HREF="runtime-config-connection.html#GUC-SSL-CERT-FILE"
 HREF="runtime-config-connection.html#GUC-SSL-KEY-FILE"
 >ssl_key_file</A
 >.
-   On Unix systems, the permissions on <TT
+  </P
+><P
+>   On Unix systems, the permissions on <TT
 CLASS="FILENAME"
 >server.key</TT
 > must
@@ -254,8 +256,21 @@ CLASS="FILENAME"
    <TT
 CLASS="COMMAND"
 >chmod 0600 server.key</TT
->.
-   If the private key is protected with a passphrase, the
+>.  Alternatively, the file can be
+   owned by root and have group read access (that is, <TT
+CLASS="LITERAL"
+>0640</TT
+>
+   permissions).  That setup is intended for installations where certificate
+   and key files are managed by the operating system.  The user under which
+   the <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> server runs should then be made a
+   member of the group that has access to those certificate and key files.
+  </P
+><P
+>   If the private key is protected with a passphrase, the
    server will prompt for the passphrase and will not start until it has
    been entered.
   </P
@@ -290,7 +305,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SSL-CLIENT-CERTIFICATES"
->17.9.1. Using Client Certificates</A
+>18.9.1. Using Client Certificates</A
 ></H2
 ><P
 >   To require the client to supply a trusted certificate, place
@@ -313,26 +328,28 @@ CLASS="FILENAME"
 CLASS="LITERAL"
 >root.crt</TT
 >,
-   and set the <TT
+   and add the authentication option <TT
 CLASS="LITERAL"
->clientcert</TT
-> parameter
-   to 1 on the appropriate <TT
+>clientcert=1</TT
+> to the
+   appropriate <TT
 CLASS="LITERAL"
 >hostssl</TT
-> line(s) in
-   <TT
+> line(s) in <TT
 CLASS="FILENAME"
 >pg_hba.conf</TT
 >.
    A certificate will then be requested from the client during
    SSL connection startup.  (See <A
 HREF="libpq-ssl.html"
->Section 31.18</A
+>Section 32.18</A
 > for a
    description of how to set up certificates on the client.)  The server will
    verify that the client's certificate is signed by one of the trusted
-   certificate authorities.  If intermediate <ACRONYM
+   certificate authorities.
+  </P
+><P
+>   If intermediate <ACRONYM
 CLASS="ACRONYM"
 >CA</ACRONYM
 >s appear in
@@ -361,21 +378,21 @@ TARGET="_top"
 >   The <TT
 CLASS="LITERAL"
 >clientcert</TT
-> option in <TT
+> authentication option is available for
+   all authentication methods, but only in <TT
 CLASS="FILENAME"
 >pg_hba.conf</TT
-> is
-   available for all authentication methods, but only for rows specified as
-   <TT
+> lines
+   specified as <TT
 CLASS="LITERAL"
 >hostssl</TT
 >.  When <TT
 CLASS="LITERAL"
 >clientcert</TT
-> is not specified
-   or is set to 0, the server will still verify presented client
-   certificates against its CA list, if one is configured,
-   &mdash; but it will not insist that a client certificate be presented.
+> is
+   not specified or is set to 0, the server will still verify any presented
+   client certificates against its CA file, if one is configured &mdash; but
+   it will not insist that a client certificate be presented.
   </P
 ><P
 >   Note that the server's <TT
@@ -396,8 +413,16 @@ CLASS="LITERAL"
    control user authentication as well as providing connection security.
    See <A
 HREF="auth-methods.html#AUTH-CERT"
->Section 19.3.9</A
-> for details.
+>Section 20.3.9</A
+> for details.  (It is not necessary to
+   specify <TT
+CLASS="LITERAL"
+>clientcert=1</TT
+> explicitly when using
+   the <TT
+CLASS="LITERAL"
+>cert</TT
+> authentication method.)
   </P
 ></DIV
 ><DIV
@@ -406,12 +431,12 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SSL-SERVER-FILES"
->17.9.2. SSL Server File Usage</A
+>18.9.2. SSL Server File Usage</A
 ></H2
 ><P
 >    <A
 HREF="ssl-tcp.html#SSL-FILE-USAGE"
->Table 17-2</A
+>Table 18-2</A
 > summarizes the files that are
     relevant to the SSL setup on the server.  (The shown file names are default
     or typical names.  The locally configured names could be different.)
@@ -423,7 +448,7 @@ NAME="SSL-FILE-USAGE"
 ></A
 ><P
 ><B
->Table 17-2. SSL Server File Usage</B
+>Table 18-2. SSL Server File Usage</B
 ></P
 ><TABLE
 BORDER="1"
@@ -526,7 +551,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SSL-CERTIFICATE-CREATION"
->17.9.3. Creating a Self-signed Certificate</A
+>18.9.3. Creating a Self-signed Certificate</A
 ></H2
 ><P
 >    To create a quick self-signed certificate for the server, use the

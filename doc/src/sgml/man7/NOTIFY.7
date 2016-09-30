@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "NOTIFY" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "NOTIFY" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -63,7 +63,7 @@ When
 \fBNOTIFY\fR
 is used to signal the occurrence of changes to a particular table, a useful programming technique is to put the
 \fBNOTIFY\fR
-in a rule that is triggered by table updates\&. In this way, notification happens automatically when the table is changed, and the application programmer cannot accidentally forget to do it\&.
+in a statement trigger that is triggered by table updates\&. In this way, notification happens automatically when the table is changed, and the application programmer cannot accidentally forget to do it\&.
 .PP
 \fBNOTIFY\fR
 interacts with SQL transactions in some important ways\&. Firstly, if a
@@ -107,6 +107,12 @@ There is a queue that holds notifications that have been sent but not yet proces
 will fail at commit\&. The queue is quite large (8GB in a standard installation) and should be sufficiently sized for almost every use case\&. However, no cleanup can take place if a session executes
 \fBLISTEN\fR
 and then enters a transaction for a very long time\&. Once the queue is half full you will see warnings in the log file pointing you to the session that is preventing cleanup\&. In this case you should make sure that this session ends its current transaction so that cleanup can proceed\&.
+.PP
+The function
+\fBpg_notification_queue_usage\fR
+returns the fraction of the queue that is currently occupied by pending notifications\&. See
+Section 9.25, \(lqSystem Information Functions\(rq, in the documentation
+for more information\&.
 .PP
 A transaction that has executed
 \fBNOTIFY\fR

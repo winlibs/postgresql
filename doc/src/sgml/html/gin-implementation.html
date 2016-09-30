@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="GIN Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 61. GIN Indexes</TD
+>Chapter 63. GIN Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="GIN-IMPLEMENTATION"
->61.4. Implementation</A
+>63.4. Implementation</A
 ></H1
 ><P
 >  Internally, a <ACRONYM
@@ -140,7 +140,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="GIN-FAST-UPDATE"
->61.4.1. GIN Fast Update Technique</A
+>63.4.1. GIN Fast Update Technique</A
 ></H2
 ><P
 >   Updating a <ACRONYM
@@ -158,7 +158,12 @@ CLASS="ACRONYM"
 >GIN</ACRONYM
 > is capable of postponing much of this work by inserting
    new tuples into a temporary, unsorted list of pending entries.
-   When the table is vacuumed, or if the pending list becomes larger than
+   When the table is vacuumed or autoanalyzed, or when
+   <CODE
+CLASS="FUNCTION"
+>gin_clean_pending_list</CODE
+> function is called, or if the
+   pending list becomes larger than
    <A
 HREF="runtime-config-client.html#GUC-GIN-PENDING-LIST-LIMIT"
 >gin_pending_list_limit</A
@@ -210,7 +215,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="GIN-PARTIAL-MATCH"
->61.4.2. Partial Match Algorithm</A
+>63.4.2. Partial Match Algorithm</A
 ></H2
 ><P
 >   GIN can support <SPAN

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 17. Server Setup and Operation</TD
+>Chapter 18. Server Setup and Operation</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="SERVER-START"
->17.3. Starting the Database Server</A
+>18.3. Starting the Database Server</A
 ></H1
 ><P
 >   Before anyone can access the database, you must start the database
@@ -157,7 +157,7 @@ CLASS="SYSTEMITEM"
 > output somewhere, as shown above. It will help
    for auditing purposes and to diagnose problems. (See <A
 HREF="logfile-maintenance.html"
->Section 23.3</A
+>Section 24.3</A
 > for a more thorough discussion of log
    file handling.)
   </P
@@ -176,7 +176,7 @@ CLASS="APPLICATION"
 > reference page
    and <A
 HREF="runtime-config.html"
->Chapter 18</A
+>Chapter 19</A
 > below.
   </P
 ><P
@@ -335,6 +335,58 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > source distribution.
      </P
+><P
+>      When using <SPAN
+CLASS="APPLICATION"
+>systemd</SPAN
+>, you can use the following
+      service unit file (e.g.,
+      at <TT
+CLASS="FILENAME"
+>/etc/systemd/system/postgresql.service</TT
+>):
+</P><PRE
+CLASS="PROGRAMLISTING"
+>[Unit]
+Description=PostgreSQL database server
+Documentation=man:postgres(1)
+
+[Service]
+Type=notify
+User=postgres
+ExecStart=/usr/local/pgsql/bin/postgres -D /usr/local/pgsql/data
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+KillSignal=SIGINT
+TimeoutSec=0
+
+[Install]
+WantedBy=multi-user.target</PRE
+><P>
+      Using <TT
+CLASS="LITERAL"
+>Type=notify</TT
+> requires that the server binary was
+      built with <TT
+CLASS="LITERAL"
+>configure --with-systemd</TT
+>.
+     </P
+><P
+>      Consider carefully the timeout
+      setting.  <SPAN
+CLASS="APPLICATION"
+>systemd</SPAN
+> has a default timeout of 90
+      seconds as of this writing and will kill a process that does not notify
+      readiness within that time.  But a <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+      server that might have to perform crash recovery at startup could take
+      much longer to become ready.  The suggested value of 0 disables the
+      timeout logic.
+     </P
 ></LI
 ><LI
 ><P
@@ -404,7 +456,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="SERVER-START-FAILURES"
->17.3.1. Server Start-up Failures</A
+>18.3.1. Server Start-up Failures</A
 ></H2
 ><P
 >     There are several common reasons the server might fail to
@@ -514,7 +566,7 @@ CLASS="ACRONYM"
 >IPC</ACRONYM
 > facilities are given in <A
 HREF="kernel-resources.html#SYSVIPC"
->Section 17.4.1</A
+>Section 18.4.1</A
 >.
     </P
 ></DIV
@@ -524,7 +576,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="CLIENT-CONNECTION-PROBLEMS"
->17.3.2. Client Connection Problems</A
+>18.3.2. Client Connection Problems</A
 ></H2
 ><P
 >     Although the error conditions possible on the client side are quite
@@ -585,7 +637,7 @@ CLASS="EMPHASIS"
      connection request and rejected it. That case will produce a
      different message, as shown in <A
 HREF="client-authentication-problems.html"
->Section 19.4</A
+>Section 20.4</A
 >.) Other error messages
      such as <SAMP
 CLASS="COMPUTEROUTPUT"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="GIN Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 61. GIN Indexes</TD
+>Chapter 63. GIN Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="GIN-EXTENSIBILITY"
->61.3. Extensibility</A
+>63.3. Extensibility</A
 ></H1
 ><P
 >   The <ACRONYM
@@ -205,7 +205,7 @@ CLASS="LITERAL"
 > is the strategy number of the operator within the
        operator class (see <A
 HREF="xindex.html#XINDEX-STRATEGIES"
->Section 35.14.2</A
+>Section 36.14.2</A
 >).
        Often, <CODE
 CLASS="FUNCTION"
@@ -357,7 +357,7 @@ CLASS="FUNCTION"
        an array of <TT
 CLASS="LITERAL"
 >*nkeys</TT
-> Pointers and store its address at
+> pointers and store its address at
        <TT
 CLASS="LITERAL"
 >*extra_data</TT
@@ -398,10 +398,14 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >triConsistent</CODE
 > covers the functionality of both, so providing
-  triConsistent alone is sufficient. However, if the boolean variant is
-  significantly cheaper to calculate, it can be advantageous to provide both.
-  If only the boolean variant is provided, some optimizations that depend on
-  refuting index items before fetching all the keys are disabled.
+  <CODE
+CLASS="FUNCTION"
+>triConsistent</CODE
+> alone is sufficient. However, if the boolean
+  variant is significantly cheaper to calculate, it can be advantageous to
+  provide both.  If only the boolean variant is provided, some optimizations
+  that depend on refuting index items before fetching all the keys are
+  disabled.
 
   <P
 ></P
@@ -552,11 +556,12 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >consistent</CODE
 >,
-       but instead of a boolean <TT
+       but instead of booleans in the <TT
 CLASS="LITERAL"
->check[]</TT
->, there are three possible
-       values for each key: <TT
+>check</TT
+> vector, there are
+       three possible values for each
+       key: <TT
 CLASS="LITERAL"
 >GIN_TRUE</TT
 >, <TT
@@ -573,7 +578,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >GIN_TRUE</TT
 >
-       have the same meaning as regular boolean values.
+       have the same meaning as regular boolean values, while
        <TT
 CLASS="LITERAL"
 >GIN_MAYBE</TT
@@ -582,26 +587,46 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >GIN_MAYBE</TT
 > values are present, the function should only
-       return GIN_TRUE if the item matches whether or not the index item
-       contains the corresponding query keys. Likewise, the function must
-       return GIN_FALSE only if the item does not match, whether or not it
-       contains the GIN_MAYBE keys. If the result depends on the GIN_MAYBE
-       entries, i.e. the match cannot be confirmed or refuted based on the
-       known query keys, the function must return GIN_MAYBE.
-      </P
-><P
->       When there are no GIN_MAYBE values in the <TT
+       return <TT
 CLASS="LITERAL"
->check</TT
-> vector,
-       <TT
+>GIN_TRUE</TT
+> if the item certainly matches whether or
+       not the index item contains the corresponding query keys. Likewise, the
+       function must return <TT
+CLASS="LITERAL"
+>GIN_FALSE</TT
+> only if the item certainly
+       does not match, whether or not it contains the <TT
 CLASS="LITERAL"
 >GIN_MAYBE</TT
-> return value is equivalent of setting
-       <TT
+>
+       keys. If the result depends on the <TT
+CLASS="LITERAL"
+>GIN_MAYBE</TT
+> entries, i.e.,
+       the match cannot be confirmed or refuted based on the known query keys,
+       the function must return <TT
+CLASS="LITERAL"
+>GIN_MAYBE</TT
+>.
+      </P
+><P
+>       When there are no <TT
+CLASS="LITERAL"
+>GIN_MAYBE</TT
+> values in the <TT
+CLASS="LITERAL"
+>check</TT
+>
+       vector, a <TT
+CLASS="LITERAL"
+>GIN_MAYBE</TT
+> return value is the equivalent of
+       setting the <TT
 CLASS="LITERAL"
 >recheck</TT
-> flag in the boolean <CODE
+> flag in the
+       boolean <CODE
 CLASS="FUNCTION"
 >consistent</CODE
 > function.
@@ -678,7 +703,7 @@ CLASS="LITERAL"
   parameter when a partial-match query is encountered.  See
   <A
 HREF="gin-implementation.html#GIN-PARTIAL-MATCH"
->Section 61.4.2</A
+>Section 63.4.2</A
 > for details.
  </P
 ><P
@@ -708,11 +733,16 @@ CLASS="FUNCTION"
 > and <CODE
 CLASS="FUNCTION"
 >triConsistent</CODE
-> is whatever is
-  specified as the right-hand input
-  type of the class member operator identified by the strategy number.
-  This need not be the same as the item type, so long as key values of the
-  correct type can be extracted from it.
+> is whatever is the
+  right-hand input type of the class member operator identified by the
+  strategy number.  This need not be the same as the indexed type, so long as
+  key values of the correct type can be extracted from it.  However, it is
+  recommended that the SQL declarations of these three support functions use
+  the opclass's indexed data type for the <TT
+CLASS="LITERAL"
+>query</TT
+> argument, even
+  though the actual type might be something else depending on the operator.
  </P
 ></DIV
 ><DIV

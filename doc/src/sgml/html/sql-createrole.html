@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEROLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN77662"
+NAME="AEN81021"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN77662"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN77665"
+NAME="AEN81024"
 ></A
 ><H2
 >Synopsis</H2
@@ -137,7 +137,6 @@ CLASS="REPLACEABLE"
       SUPERUSER | NOSUPERUSER
     | CREATEDB | NOCREATEDB
     | CREATEROLE | NOCREATEROLE
-    | CREATEUSER | NOCREATEUSER
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
     | REPLICATION | NOREPLICATION
@@ -200,7 +199,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77680"
+NAME="AEN81039"
 ></A
 ><H2
 >Description</H2
@@ -224,10 +223,10 @@ CLASS="QUOTE"
    depending on how it is used.  Refer to
    <A
 HREF="user-manag.html"
->Chapter 20</A
+>Chapter 21</A
 > and <A
 HREF="client-authentication.html"
->Chapter 19</A
+>Chapter 20</A
 > for information about managing
    users and authentication.  You must have <TT
 CLASS="LITERAL"
@@ -243,7 +242,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77691"
+NAME="AEN81050"
 ></A
 ><H2
 >Parameters</H2
@@ -340,37 +339,6 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >NOCREATEROLE</TT
 > is the default.
-       </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->CREATEUSER</TT
-><BR><TT
-CLASS="LITERAL"
->NOCREATEUSER</TT
-></DT
-><DD
-><P
->        These clauses are an obsolete, but still accepted, spelling of
-        <TT
-CLASS="LITERAL"
->SUPERUSER</TT
-> and <TT
-CLASS="LITERAL"
->NOSUPERUSER</TT
->.
-        Note that they are <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->not</I
-></SPAN
-> equivalent to
-        <TT
-CLASS="LITERAL"
->CREATEROLE</TT
-> as one might naively expect!
        </P
 ></DD
 ><DT
@@ -740,7 +708,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77861"
+NAME="AEN81209"
 ></A
 ><H2
 >Notes</H2
@@ -923,7 +891,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77904"
+NAME="AEN81252"
 ></A
 ><H2
 >Examples</H2
@@ -972,7 +940,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77917"
+NAME="AEN81265"
 ></A
 ><H2
 >Compatibility</H2
@@ -1032,7 +1000,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN77931"
+NAME="AEN81279"
 ></A
 ><H2
 >See Also</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN92897"
+NAME="AEN96620"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN92901"
+NAME="AEN96624"
 ></A
 ><H2
 >Synopsis</H2
@@ -206,14 +206,14 @@ CLASS="FILENAME"
 >~/.pgpass</TT
 > file in such cases. See <A
 HREF="libpq-pgpass.html"
->Section 31.15</A
+>Section 32.15</A
 > for more information.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92927"
+NAME="AEN96650"
 ></A
 ><H2
 >Options</H2
@@ -684,9 +684,28 @@ CLASS="OPTION"
 ></DT
 ><DD
 ><P
->        Force quoting of all identifiers.  This may be useful when dumping a
-        database for migration to a future version that may have introduced
-        additional keywords.
+>        Force quoting of all identifiers.  This option is recommended when
+        dumping a database from a server whose <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+        major version is different from <SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+>'s, or when
+        the output is intended to be loaded into a server of a different
+        major version.  By default, <SPAN
+CLASS="APPLICATION"
+>pg_dumpall</SPAN
+> quotes only
+        identifiers that are reserved words in its own major version.
+        This sometimes results in compatibility issues when dealing with
+        servers of other versions that may have slightly different sets
+        of reserved words.  Using <TT
+CLASS="OPTION"
+>--quote-all-identifiers</TT
+> prevents
+        such issues, at the price of a harder-to-read dump script.
        </P
 ></DD
 ><DT
@@ -761,7 +780,7 @@ CLASS="REPLACEABLE"
 >        Specifies parameters used to connect to the server, as a connection
         string. See <A
 HREF="libpq-connect.html#LIBPQ-CONNSTRING"
->Section 31.1.1</A
+>Section 32.1.1</A
 > for more information.
        </P
 ><P
@@ -1008,7 +1027,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN93218"
+NAME="AEN96945"
 ></A
 ><H2
 >Environment</H2
@@ -1049,14 +1068,14 @@ CLASS="APPLICATION"
 >
    (see <A
 HREF="libpq-envars.html"
->Section 31.14</A
+>Section 32.14</A
 >).
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN93236"
+NAME="AEN96963"
 ></A
 ><H2
 >Notes</H2
@@ -1141,7 +1160,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN93258"
+NAME="AEN96985"
 ></A
 ><H2
 >See Also</H2

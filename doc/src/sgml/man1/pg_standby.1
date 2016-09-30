@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "PG_STANDBY" "1" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "PG_STANDBY" "1" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -42,7 +42,7 @@ database server\&. It is designed to be a production\-ready program, as well as 
 pg_standby
 is designed to be a waiting
 \fIrestore_command\fR, which is needed to turn a standard archive recovery into a warm standby operation\&. Other configuration is required as well, all of which is described in the main server manual (see
-Section 25.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation)\&.
+Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation)\&.
 .PP
 To configure a standby server to use
 pg_standby, put this into its
@@ -152,7 +152,7 @@ so that the wait time increases progressively\&. So by default, we will wait 5 s
 \fB\-s\fR \fIsleeptime\fR
 .RS 4
 Set the number of seconds (up to 60, default 5) to sleep between tests to see if the WAL file to be restored is available in the archive yet\&. The default setting is not necessarily recommended; consult
-Section 25.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation
+Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation
 for discussion\&.
 .RE
 .PP
@@ -174,7 +174,7 @@ version and exit\&.
 \fB\-w\fR \fImaxwaittime\fR
 .RS 4
 Set the maximum number of seconds to wait for the next WAL file, after which a fast failover will be performed\&. A setting of zero (the default) means wait forever\&. The default setting is not necessarily recommended; consult
-Section 25.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation
+Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation
 for discussion\&.
 .RE
 .PP
@@ -393,7 +393,7 @@ command on Windows sets the final file size before the file is completely copied
 pg_standby\&. Therefore
 pg_standby
 waits
-sleeptime
+\fIsleeptime\fR
 seconds once it sees the proper file size\&. GNUWin32\*(Aqs
 cp
 sets the file size only after the file copy is complete\&.

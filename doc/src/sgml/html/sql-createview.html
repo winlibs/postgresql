@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEVIEW"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN80827"
+NAME="AEN84194"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN80827"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN80830"
+NAME="AEN84197"
 ></A
 ><H2
 >Synopsis</H2
@@ -142,7 +142,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80837"
+NAME="AEN84204"
 ></A
 ><H2
 >Description</H2
@@ -181,7 +181,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80845"
+NAME="AEN84212"
 ></A
 ><H2
 >Parameters</H2
@@ -372,7 +372,7 @@ CLASS="TYPE"
 >          This should be used if the view is intended to provide row-level
           security.  See <A
 HREF="rules-privileges.html"
->Section 38.5</A
+>Section 39.5</A
 > for full details.
          </P
 ></DD
@@ -405,12 +405,12 @@ HREF="sql-values.html"
 ><TT
 CLASS="LITERAL"
 >WITH [ CASCADED | LOCAL ] CHECK OPTION</TT
-></DT
+>
+      
+      </DT
 ><DD
 ><P
->      
-      
-      This option controls the behavior of automatically updatable views.  When
+>      This option controls the behavior of automatically updatable views.  When
       this option is specified, <TT
 CLASS="COMMAND"
 >INSERT</TT
@@ -548,7 +548,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80958"
+NAME="AEN84325"
 ></A
 ><H2
 >Notes</H2
@@ -586,7 +586,7 @@ CLASS="PROGRAMLISTING"
     restricted access to the underlying tables.  However, not all views are
     secure against tampering; see <A
 HREF="rules-privileges.html"
->Section 38.5</A
+>Section 39.5</A
 > for
     details.  Functions called in the view are treated the same as if they had
     been called directly from the query using the view.  Therefore the user of
@@ -784,7 +784,7 @@ CLASS="LITERAL"
     will always be evaluated before any conditions that a user of the view has
     added.   See <A
 HREF="rules-privileges.html"
->Section 38.5</A
+>Section 39.5</A
 > for full details.  Note that,
     due to this, rows which are not ultimately returned (because they do not
     pass the user's <TT
@@ -825,7 +825,7 @@ HREF="sql-createrule.html"
     not need any permissions on the underlying base relations (see
     <A
 HREF="rules-privileges.html"
->Section 38.5</A
+>Section 39.5</A
 >).
    </P
 ></DIV
@@ -833,7 +833,7 @@ HREF="rules-privileges.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81032"
+NAME="AEN84399"
 ></A
 ><H2
 >Examples</H2
@@ -973,7 +973,7 @@ UNION ALL
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81063"
+NAME="AEN84430"
 ></A
 ><H2
 >Compatibility</H2
@@ -996,7 +996,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81069"
+NAME="AEN84436"
 ></A
 ><H2
 >See Also</H2

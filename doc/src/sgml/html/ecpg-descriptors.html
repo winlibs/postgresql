@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="ECPG - Embedded SQL in C"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 33. <SPAN
+>Chapter 34. <SPAN
 CLASS="APPLICATION"
 >ECPG</SPAN
 > - Embedded <ACRONYM
@@ -99,7 +99,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="ECPG-DESCRIPTORS"
->33.7. Using Descriptor Areas</A
+>34.7. Using Descriptor Areas</A
 ></H1
 ><P
 >   An SQL descriptor area is a more sophisticated method for processing
@@ -127,7 +127,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="ECPG-NAMED-DESCRIPTORS"
->33.7.1. Named SQL Descriptor Areas</A
+>34.7.1. Named SQL Descriptor Areas</A
 ></H2
 ><P
 >    A named SQL descriptor area consists of a header, which contains
@@ -211,7 +211,7 @@ CLASS="LITERAL"
 > keyword produces SQLDA Descriptor Areas,
     see <A
 HREF="ecpg-descriptors.html#ECPG-SQLDA-DESCRIPTORS"
->Section 33.7.2</A
+>Section 34.7.2</A
 >.
    </P
 ><P
@@ -539,7 +539,7 @@ CLASS="REPLACEABLE"
 ></TT
 ></TT
 >
-    is the way to pass the input parameters into a parametrized query. The statement
+    is the way to pass the input parameters into a parameterized query. The statement
     to build a named SQL Descriptor Area is below:
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -592,7 +592,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="ECPG-SQLDA-DESCRIPTORS"
->33.7.2. SQLDA Descriptor Areas</A
+>34.7.2. SQLDA Descriptor Areas</A
 ></H2
 ><P
 >    An SQLDA Descriptor Area is a C language structure which can be also used
@@ -618,7 +618,7 @@ CLASS="LITERAL"
 >
     keywords in <A
 HREF="ecpg-descriptors.html#ECPG-NAMED-DESCRIPTORS"
->Section 33.7.1</A
+>Section 34.7.1</A
 > also apply here with an addition.
     In a <TT
 CLASS="COMMAND"
@@ -690,8 +690,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN48311"
->33.7.2.1. SQLDA Data Structure</A
+NAME="AEN51182"
+>34.7.2.1. SQLDA Data Structure</A
 ></H3
 ><P
 >     SQLDA uses three data structure
@@ -726,7 +726,7 @@ CLASS="SECT4"
 CLASS="SECT4"
 ><A
 NAME="ECPG-SQLDA-SQLDA"
->33.7.2.1.1. sqlda_t Structure</A
+>34.7.2.1.1. sqlda_t Structure</A
 ></H4
 ><P
 >      The structure type <TT
@@ -811,7 +811,7 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        It contains the number of input parameters for a parametrized query in
+>        It contains the number of input parameters for a parameterized query in
         case it's passed into <TT
 CLASS="COMMAND"
 >OPEN</TT
@@ -890,7 +890,7 @@ CLASS="SECT4"
 CLASS="SECT4"
 ><A
 NAME="ECPG-SQLDA-SQLVAR"
->33.7.2.1.2. sqlvar_t Structure</A
+>34.7.2.1.2. sqlvar_t Structure</A
 ></H4
 ><P
 >      The structure type <TT
@@ -961,7 +961,7 @@ CLASS="LITERAL"
 >            Points to the data.  The format of the data is described
             in <A
 HREF="ecpg-variables.html#ECPG-VARIABLES-TYPE-MAPPING"
->Section 33.4.4</A
+>Section 34.4.4</A
 >.
            </P
 ></DD
@@ -997,7 +997,7 @@ CLASS="SECT4"
 CLASS="SECT4"
 ><A
 NAME="ECPG-SQLDA-SQLNAME"
->33.7.2.1.3. struct sqlname Structure</A
+>34.7.2.1.3. struct sqlname Structure</A
 ></H4
 ><P
 >      A <TT
@@ -1057,7 +1057,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="ECPG-SQLDA-OUTPUT"
->33.7.2.2. Retrieving a Result Set Using an SQLDA</A
+>34.7.2.2. Retrieving a Result Set Using an SQLDA</A
 ></H3
 ><DIV
 CLASS="PROCEDURE"
@@ -1231,7 +1231,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="ECPG-SQLDA-INPUT"
->33.7.2.3. Passing Query Parameters Using an SQLDA</A
+>34.7.2.3. Passing Query Parameters Using an SQLDA</A
 ></H3
 ><DIV
 CLASS="PROCEDURE"
@@ -1359,7 +1359,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="ECPG-SQLDA-EXAMPLE"
->33.7.2.4. A Sample Application Using SQLDA</A
+>34.7.2.4. A Sample Application Using SQLDA</A
 ></H3
 ><P
 >     Here is an example program, which describes how to fetch access
@@ -1568,7 +1568,7 @@ CLASS="PROGRAMLISTING"
 >     The whole program is shown
      in <A
 HREF="ecpg-descriptors.html#ECPG-SQLDA-EXAMPLE-EXAMPLE"
->Example 33-1</A
+>Example 34-1</A
 >.
     </P
 ><DIV
@@ -1578,7 +1578,7 @@ NAME="ECPG-SQLDA-EXAMPLE-EXAMPLE"
 ></A
 ><P
 ><B
->Example 33-1. Example SQLDA Program</B
+>Example 34-1. Example SQLDA Program</B
 ></P
 ><PRE
 CLASS="PROGRAMLISTING"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="LTREE"
->F.20. ltree</A
+>F.21. ltree</A
 ></H1
 ><P
 >  This module implements a data type <TT
@@ -108,8 +108,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN171036"
->F.20.1. Definitions</A
+NAME="AEN177879"
+>F.21.1. Definitions</A
 ></H2
 ><P
 >   A <I
@@ -142,7 +142,7 @@ CLASS="LITERAL"
 >L1.L2.L3</TT
 >, representing
    a path from the root of a hierarchical tree to a particular node.  The
-   length of a label path must be less than 65Kb, but keeping it under 2Kb is
+   length of a label path must be less than 65kB, but keeping it under 2kB is
    preferable.  In practice this is not a major limitation; for example,
    the longest label path in the DMOZ catalog (<A
 HREF="http://www.dmoz.org"
@@ -529,8 +529,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN171151"
->F.20.2. Operators and Functions</A
+NAME="AEN177994"
+>F.21.2. Operators and Functions</A
 ></H2
 ><P
 >   Type <TT
@@ -561,7 +561,7 @@ CLASS="LITERAL"
    of a node sorted by label text.  In addition, the specialized
    operators shown in <A
 HREF="ltree.html#LTREE-OP-TABLE"
->Table F-12</A
+>Table F-14</A
 > are available.
   </P
 ><DIV
@@ -571,7 +571,7 @@ NAME="LTREE-OP-TABLE"
 ></A
 ><P
 ><B
->Table F-12. <TT
+>Table F-14. <TT
 CLASS="TYPE"
 >ltree</TT
 > Operators</B
@@ -1220,7 +1220,7 @@ CLASS="LITERAL"
 ><P
 >   The available functions are shown in <A
 HREF="ltree.html#LTREE-FUNC-TABLE"
->Table F-13</A
+>Table F-15</A
 >.
   </P
 ><DIV
@@ -1230,7 +1230,7 @@ NAME="LTREE-FUNC-TABLE"
 ></A
 ><P
 ><B
->Table F-13. <TT
+>Table F-15. <TT
 CLASS="TYPE"
 >ltree</TT
 > Functions</B
@@ -1581,8 +1581,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN171562"
->F.20.3. Indexes</A
+NAME="AEN178405"
+>F.21.3. Indexes</A
 ></H2
 ><P
 >   <TT
@@ -1708,8 +1708,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN171601"
->F.20.4. Example</A
+NAME="AEN178444"
+>F.21.4. Example</A
 ></H2
 ><P
 >   This example uses the following data (also available in file
@@ -1852,8 +1852,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN171619"
->F.20.5. Transforms</A
+NAME="AEN178462"
+>F.21.5. Transforms</A
 ></H2
 ><P
 >   Additional extensions are available that implement transforms for
@@ -1874,7 +1874,7 @@ CLASS="LITERAL"
 >
    (see <A
 HREF="plpython-python23.html"
->Section 43.1</A
+>Section 44.1</A
 > for the PL/Python naming
    convention).  If you install these transforms and specify them when
    creating a function, <TT
@@ -1889,8 +1889,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN171628"
->F.20.6. Authors</A
+NAME="AEN178471"
+>F.21.6. Authors</A
 ></H2
 ><P
 >   All work was done by Teodor Sigaev (<CODE

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ NAME="FUNCTIONS-INFO"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-SESSION-TABLE"
->Table 9-57</A
+>Table 9-59</A
 > shows several
    functions that extract session and system information.
   </P
@@ -107,7 +107,7 @@ HREF="functions-info.html#FUNCTIONS-INFO-SESSION-TABLE"
    functions related to the statistics system that also provide system
    information. See <A
 HREF="monitoring-stats.html#MONITORING-STATS-VIEWS"
->Section 27.2.2</A
+>Section 28.2.2</A
 > for more
    information.
   </P
@@ -118,7 +118,7 @@ NAME="FUNCTIONS-INFO-SESSION-TABLE"
 ></A
 ><P
 ><B
->Table 9-57. Session Information Functions</B
+>Table 9-59. Session Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -335,6 +335,26 @@ CLASS="TYPE"
 CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
+>pg_blocking_pids(<TT
+CLASS="TYPE"
+>int</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>int[]</TT
+></TD
+><TD
+>Process ID(s) that are blocking specified server process ID</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
 >pg_conf_load_time()</CODE
 ></TT
 ></TD
@@ -345,6 +365,23 @@ CLASS="TYPE"
 ></TD
 ><TD
 >configuration load time</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_my_temp_schema()</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD
+>OID of session's temporary schema, or 0 if none</TD
 ></TR
 ><TR
 ><TD
@@ -389,16 +426,16 @@ CLASS="TYPE"
 CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
->pg_my_temp_schema()</CODE
+>pg_notification_queue_usage()</CODE
 ></TT
 ></TD
 ><TD
 ><TT
 CLASS="TYPE"
->oid</TT
+>double</TT
 ></TD
 ><TD
->OID of session's temporary schema, or 0 if none</TD
+>fraction of the asynchronous notification queue currently occupied (0-1)</TD
 ></TR
 ><TR
 ><TD
@@ -620,16 +657,6 @@ CLASS="REPLACEABLE"
 ></BLOCKQUOTE
 ></DIV
 ><P
->    <CODE
-CLASS="FUNCTION"
->pg_listening_channels</CODE
-> returns a set of names of
-    channels that the current session is listening to.  See <A
-HREF="sql-listen.html"
->LISTEN</A
-> for more information.
-   </P
-><P
 >     <CODE
 CLASS="FUNCTION"
 >inet_client_addr</CODE
@@ -654,28 +681,26 @@ CLASS="FUNCTION"
 ><P
 >    <CODE
 CLASS="FUNCTION"
->pg_my_temp_schema</CODE
-> returns the OID of the current
-    session's temporary schema, or zero if it has none (because it has not
-    created any temporary tables).
-    <CODE
+>pg_blocking_pids</CODE
+> returns an array of the process IDs
+    of the sessions that are blocking the server process with the specified
+    process ID, or an empty array if there is no such server process or it is
+    not blocked.  One server process blocks another if it either holds a lock
+    that conflicts with the blocked process's lock request (hard block), or is
+    waiting for a lock that would conflict with the blocked process's lock
+    request and is ahead of it in the wait queue (soft block).  When using
+    parallel queries the result always lists client-visible process IDs (that
+    is, <CODE
 CLASS="FUNCTION"
->pg_is_other_temp_schema</CODE
-> returns true if the
-    given OID is the OID of another session's temporary schema.
-    (This can be useful, for example, to exclude other sessions' temporary
-    tables from a catalog display.)
-   </P
-><P
->    <CODE
-CLASS="FUNCTION"
->pg_postmaster_start_time</CODE
-> returns the
-    <TT
-CLASS="TYPE"
->timestamp with time zone</TT
-> when the
-    server started.
+>pg_backend_pid</CODE
+> results) even if the actual lock is held
+    or awaited by a child worker process.  As a result of that, there may be
+    duplicated PIDs in the result.  Also note that when a prepared transaction
+    holds a conflicting lock, it will be represented by a zero process ID in
+    the result of this function.
+    Frequent calls to this function could have some impact on database
+    performance, because it needs exclusive access to the lock manager's
+    shared state for a short time.
    </P
 ><P
 >    <CODE
@@ -691,6 +716,57 @@ CLASS="TYPE"
     when the session itself re-read the configuration files, so the
     reading will vary a little in different sessions.  Otherwise it is
     the time when the postmaster process re-read the configuration files.)
+   </P
+><P
+>    <CODE
+CLASS="FUNCTION"
+>pg_my_temp_schema</CODE
+> returns the OID of the current
+    session's temporary schema, or zero if it has none (because it has not
+    created any temporary tables).
+    <CODE
+CLASS="FUNCTION"
+>pg_is_other_temp_schema</CODE
+> returns true if the
+    given OID is the OID of another session's temporary schema.
+    (This can be useful, for example, to exclude other sessions' temporary
+    tables from a catalog display.)
+   </P
+><P
+>    <CODE
+CLASS="FUNCTION"
+>pg_listening_channels</CODE
+> returns a set of names of
+    asynchronous notification channels that the current session is listening
+    to.  <CODE
+CLASS="FUNCTION"
+>pg_notification_queue_usage</CODE
+> returns the
+    fraction of the total available space for notifications currently
+    occupied by notifications that are waiting to be processed, as a
+    <TT
+CLASS="TYPE"
+>double</TT
+> in the range 0-1.
+    See <A
+HREF="sql-listen.html"
+>LISTEN</A
+> and <A
+HREF="sql-notify.html"
+>NOTIFY</A
+>
+    for more information.
+   </P
+><P
+>    <CODE
+CLASS="FUNCTION"
+>pg_postmaster_start_time</CODE
+> returns the
+    <TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+> when the
+    server started.
    </P
 ><P
 >    <CODE
@@ -730,7 +806,7 @@ CLASS="FUNCTION"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-ACCESS-TABLE"
->Table 9-58</A
+>Table 9-60</A
 > lists functions that
    allow the user to query object access privileges programmatically.
    See <A
@@ -746,7 +822,7 @@ NAME="FUNCTIONS-INFO-ACCESS-TABLE"
 ></A
 ><P
 ><B
->Table 9-58. Access Privilege Inquiry Functions</B
+>Table 9-60. Access Privilege Inquiry Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1370,6 +1446,60 @@ CLASS="TYPE"
 CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
+>has_type_privilege</CODE
+>(<TT
+CLASS="PARAMETER"
+>user</TT
+>,
+                                  <TT
+CLASS="PARAMETER"
+>type</TT
+>,
+                                  <TT
+CLASS="PARAMETER"
+>privilege</TT
+>)</TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>does user have privilege for type</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>has_type_privilege</CODE
+>(<TT
+CLASS="PARAMETER"
+>type</TT
+>,
+                                  <TT
+CLASS="PARAMETER"
+>privilege</TT
+>)</TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>does current user have privilege for type</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
 >pg_has_role</CODE
 >(<TT
 CLASS="PARAMETER"
@@ -1772,6 +1902,32 @@ CLASS="LITERAL"
 ><P
 >    <CODE
 CLASS="FUNCTION"
+>has_type_privilege</CODE
+> checks whether a user
+    can access a type in a particular way.
+    Its argument possibilities
+    are analogous to <CODE
+CLASS="FUNCTION"
+>has_table_privilege</CODE
+>.
+    When specifying a type by a text string rather than by OID,
+    the allowed input is the same as for the <TT
+CLASS="TYPE"
+>regtype</TT
+> data type
+    (see <A
+HREF="datatype-oid.html"
+>Section 8.18</A
+>).
+    The desired access privilege type must evaluate to
+    <TT
+CLASS="LITERAL"
+>USAGE</TT
+>.
+   </P
+><P
+>    <CODE
+CLASS="FUNCTION"
 >pg_has_role</CODE
 > checks whether a user
     can access a role in a particular way.
@@ -1825,7 +1981,7 @@ CLASS="FUNCTION"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-SCHEMA-TABLE"
->Table 9-59</A
+>Table 9-61</A
 > shows functions that
    determine whether a certain object is <I
 CLASS="FIRSTTERM"
@@ -1849,7 +2005,7 @@ NAME="FUNCTIONS-INFO-SCHEMA-TABLE"
 ></A
 ><P
 ><B
->Table 9-59. Schema Visibility Inquiry Functions</B
+>Table 9-61. Schema Visibility Inquiry Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2177,7 +2333,7 @@ CLASS="PROGRAMLISTING"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-CATALOG-TABLE"
->Table 9-60</A
+>Table 9-62</A
 > lists functions that
    extract information from the system catalogs.
   </P
@@ -2188,7 +2344,7 @@ NAME="FUNCTIONS-INFO-CATALOG-TABLE"
 ></A
 ><P
 ><B
->Table 9-60. System Catalog Information Functions</B
+>Table 9-62. System Catalog Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2767,6 +2923,78 @@ CLASS="COMMAND"
 CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
+>pg_index_column_has_property(<TT
+CLASS="PARAMETER"
+>index_oid</TT
+>, <TT
+CLASS="PARAMETER"
+>column_no</TT
+>, <TT
+CLASS="PARAMETER"
+>prop_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>test whether an index column has a specified property</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_index_has_property(<TT
+CLASS="PARAMETER"
+>index_oid</TT
+>, <TT
+CLASS="PARAMETER"
+>prop_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>test whether an index has a specified property</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_indexam_has_property(<TT
+CLASS="PARAMETER"
+>am_oid</TT
+>, <TT
+CLASS="PARAMETER"
+>prop_name</TT
+>)</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>test whether an index access method has a specified property</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
 >pg_options_to_table(<TT
 CLASS="PARAMETER"
 >reloptions</TT
@@ -3196,15 +3424,328 @@ CLASS="FUNCTION"
 ><P
 >   <CODE
 CLASS="FUNCTION"
+>pg_index_column_has_property</CODE
+>,
+   <CODE
+CLASS="FUNCTION"
+>pg_index_has_property</CODE
+>, and
+   <CODE
+CLASS="FUNCTION"
+>pg_indexam_has_property</CODE
+> return whether the
+   specified index column, index, or index access method possesses the named
+   property. <TT
+CLASS="LITERAL"
+>NULL</TT
+> is returned if the property name is not
+   known or does not apply to the particular object, or if the OID or column
+   number does not identify a valid object.  Refer to
+   <A
+HREF="functions-info.html#FUNCTIONS-INFO-INDEX-COLUMN-PROPS"
+>Table 9-63</A
+> for column properties,
+   <A
+HREF="functions-info.html#FUNCTIONS-INFO-INDEX-PROPS"
+>Table 9-64</A
+> for index properties, and
+   <A
+HREF="functions-info.html#FUNCTIONS-INFO-INDEXAM-PROPS"
+>Table 9-65</A
+> for access method properties.
+   (Note that extension access methods can define additional property names
+   for their indexes.)
+  </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-INFO-INDEX-COLUMN-PROPS"
+></A
+><P
+><B
+>Table 9-63. Index Column Properties</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>Name</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>asc</TT
+></TD
+><TD
+>Does the column sort in ascending order on a forward scan?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>desc</TT
+></TD
+><TD
+>Does the column sort in descending order on a forward scan?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>nulls_first</TT
+></TD
+><TD
+>Does the column sort with nulls first on a forward scan?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>nulls_last</TT
+></TD
+><TD
+>Does the column sort with nulls last on a forward scan?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>orderable</TT
+></TD
+><TD
+>Does the column possess any defined sort ordering?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>distance_orderable</TT
+></TD
+><TD
+>Can the column be scanned in order by a <SPAN
+CLASS="QUOTE"
+>"distance"</SPAN
+>
+      operator, for example <TT
+CLASS="LITERAL"
+>ORDER BY col &lt;-&gt; constant</TT
+> ?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>returnable</TT
+></TD
+><TD
+>Can the column value be returned by an index-only scan?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>search_array</TT
+></TD
+><TD
+>Does the column natively support <TT
+CLASS="LITERAL"
+>col = ANY(array)</TT
+>
+      searches?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>search_nulls</TT
+></TD
+><TD
+>Does the column support <TT
+CLASS="LITERAL"
+>IS NULL</TT
+> and
+      <TT
+CLASS="LITERAL"
+>IS NOT NULL</TT
+> searches?
+      </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-INFO-INDEX-PROPS"
+></A
+><P
+><B
+>Table 9-64. Index Properties</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>Name</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>clusterable</TT
+></TD
+><TD
+>Can the index be used in a <TT
+CLASS="LITERAL"
+>CLUSTER</TT
+> command?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>index_scan</TT
+></TD
+><TD
+>Does the index support plain (non-bitmap) scans?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>bitmap_scan</TT
+></TD
+><TD
+>Does the index support bitmap scans?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>backward_scan</TT
+></TD
+><TD
+>Can the index be scanned backwards?
+      </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-INFO-INDEXAM-PROPS"
+></A
+><P
+><B
+>Table 9-65. Index Access Method Properties</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>Name</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>can_order</TT
+></TD
+><TD
+>Does the access method support <TT
+CLASS="LITERAL"
+>ASC</TT
+>,
+      <TT
+CLASS="LITERAL"
+>DESC</TT
+> and related keywords in
+      <TT
+CLASS="LITERAL"
+>CREATE INDEX</TT
+>?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>can_unique</TT
+></TD
+><TD
+>Does the access method support unique indexes?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>can_multi_col</TT
+></TD
+><TD
+>Does the access method support indexes with multiple columns?
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>can_exclude</TT
+></TD
+><TD
+>Does the access method support exclusion constraints?
+      </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>   <CODE
+CLASS="FUNCTION"
 >pg_options_to_table</CODE
 > returns the set of storage
    option name/value pairs
    (<TT
-CLASS="LITERAL"
->option_name</TT
+CLASS="REPLACEABLE"
+><I
+>option_name</I
+></TT
 >/<TT
-CLASS="LITERAL"
->option_value</TT
+CLASS="REPLACEABLE"
+><I
+>option_value</I
+></TT
 >) when passed
    <TT
 CLASS="STRUCTNAME"
@@ -3325,7 +3866,10 @@ CLASS="FUNCTION"
 >to_regrole</CODE
 >
    functions translate relation, function, operator, type, schema, and role
-   names to objects of
+   names (given as <TT
+CLASS="TYPE"
+>text</TT
+>) to objects of
    type <TT
 CLASS="TYPE"
 >regclass</TT
@@ -3368,7 +3912,7 @@ CLASS="FUNCTION"
 ><P
 >   <A
 HREF="functions-info.html#FUNCTIONS-INFO-OBJECT-TABLE"
->Table 9-61</A
+>Table 9-66</A
 > lists functions related to
    database object identification and addressing.
   </P
@@ -3379,7 +3923,7 @@ NAME="FUNCTIONS-INFO-OBJECT-TABLE"
 ></A
 ><P
 ><B
->Table 9-61. Object Information and Addressing Functions</B
+>Table 9-66. Object Information and Addressing Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3701,7 +4245,7 @@ CLASS="FUNCTION"
 ><P
 >    The functions shown in <A
 HREF="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE"
->Table 9-62</A
+>Table 9-67</A
 >
     extract comments previously stored with the <A
 HREF="sql-comment.html"
@@ -3717,7 +4261,7 @@ NAME="FUNCTIONS-INFO-COMMENT-TABLE"
 ></A
 ><P
 ><B
->Table 9-62. Comment Information Functions</B
+>Table 9-67. Comment Information Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -3879,7 +4423,7 @@ CLASS="FUNCTION"
 ><P
 >    The functions shown in <A
 HREF="functions-info.html#FUNCTIONS-TXID-SNAPSHOT"
->Table 9-63</A
+>Table 9-68</A
 >
     provide server transaction information in an exportable form.  The main
     use of these functions is to determine which transactions were committed
@@ -3892,7 +4436,7 @@ NAME="FUNCTIONS-TXID-SNAPSHOT"
 ></A
 ><P
 ><B
->Table 9-63. Transaction IDs and Snapshots</B
+>Table 9-68. Transaction IDs and Snapshots</B
 ></P
 ><TABLE
 BORDER="1"
@@ -4053,7 +4597,7 @@ CLASS="TYPE"
     visibility at a particular moment in time.  Its components are
     described in <A
 HREF="functions-info.html#FUNCTIONS-TXID-SNAPSHOT-PARTS"
->Table 9-64</A
+>Table 9-69</A
 >.
    </P
 ><DIV
@@ -4063,7 +4607,7 @@ NAME="FUNCTIONS-TXID-SNAPSHOT-PARTS"
 ></A
 ><P
 ><B
->Table 9-64. Snapshot Components</B
+>Table 9-69. Snapshot Components</B
 ></P
 ><TABLE
 BORDER="1"
@@ -4168,7 +4712,7 @@ CLASS="LITERAL"
 ><P
 >    The functions shown in <A
 HREF="functions-info.html#FUNCTIONS-COMMIT-TIMESTAMP"
->Table 9-65</A
+>Table 9-70</A
 >
     provide information about transactions that have been already committed.
     These functions mainly provide information about when the transactions
@@ -4186,7 +4730,7 @@ NAME="FUNCTIONS-COMMIT-TIMESTAMP"
 ></A
 ><P
 ><B
->Table 9-65. Committed transaction information</B
+>Table 9-70. Committed transaction information</B
 ></P
 ><TABLE
 BORDER="1"
@@ -4251,6 +4795,777 @@ CLASS="TYPE"
 ></TD
 ><TD
 >get transaction ID and commit timestamp of latest committed transaction</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    The functions shown in <A
+HREF="functions-info.html#FUNCTIONS-CONTROLDATA"
+>Table 9-71</A
+>
+    print information initialized during <TT
+CLASS="COMMAND"
+>initdb</TT
+>, such
+    as the catalog version. They also show information about write-ahead
+    logging and checkpoint processing. This information is cluster-wide,
+    and not specific to any one database. They provide most of the same
+    information, from the same source, as
+    <A
+HREF="app-pgcontroldata.html"
+><SPAN
+CLASS="APPLICATION"
+>pg_controldata</SPAN
+></A
+>, although in a form better suited
+    to <ACRONYM
+CLASS="ACRONYM"
+>SQL</ACRONYM
+> functions.
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-CONTROLDATA"
+></A
+><P
+><B
+>Table 9-71. Control Data Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Name</TH
+><TH
+>Return Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_control_checkpoint()</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>record</TT
+></TD
+><TD
+>        Returns information about current checkpoint state.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_control_system()</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>record</TT
+></TD
+><TD
+>        Returns information about current control file state.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_control_init()</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>record</TT
+></TD
+><TD
+>        Returns information about cluster initialization state.
+       </TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>pg_control_recovery()</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>record</TT
+></TD
+><TD
+>        Returns information about recovery state.
+       </TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    <CODE
+CLASS="FUNCTION"
+>pg_control_checkpoint</CODE
+> returns a record, shown in
+    <A
+HREF="functions-info.html#FUNCTIONS-PG-CONTROL-CHECKPOINT"
+>Table 9-72</A
+>
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-PG-CONTROL-CHECKPOINT"
+></A
+><P
+><B
+>Table 9-72. <CODE
+CLASS="FUNCTION"
+>pg_control_checkpoint</CODE
+> Columns</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>Column Name</TH
+><TH
+>Data Type</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>checkpoint_location</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>prior_location</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>redo_location</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>redo_wal_file</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>timeline_id</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>prev_timeline_id</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>full_page_writes</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>next_xid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>next_oid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>next_multixact_id</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>next_multi_offset</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>oldest_xid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>oldest_xid_dbid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>oldest_active_xid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>oldest_multi_xid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>oldest_multi_dbid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>oldest_commit_ts_xid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>newest_commit_ts_xid</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>xid</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>checkpoint_time</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    <CODE
+CLASS="FUNCTION"
+>pg_control_system</CODE
+> returns a record, shown in
+    <A
+HREF="functions-info.html#FUNCTIONS-PG-CONTROL-SYSTEM"
+>Table 9-73</A
+>
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-PG-CONTROL-SYSTEM"
+></A
+><P
+><B
+>Table 9-73. <CODE
+CLASS="FUNCTION"
+>pg_control_system</CODE
+> Columns</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>Column Name</TH
+><TH
+>Data Type</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>pg_control_version</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>catalog_version_no</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>system_identifier</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>pg_control_last_modified</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>timestamp with time zone</TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    <CODE
+CLASS="FUNCTION"
+>pg_control_init</CODE
+> returns a record, shown in
+    <A
+HREF="functions-info.html#FUNCTIONS-PG-CONTROL-INIT"
+>Table 9-74</A
+>
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-PG-CONTROL-INIT"
+></A
+><P
+><B
+>Table 9-74. <CODE
+CLASS="FUNCTION"
+>pg_control_init</CODE
+> Columns</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>Column Name</TH
+><TH
+>Data Type</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>max_data_alignment</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>database_block_size</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>blocks_per_segment</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>wal_block_size</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>bytes_per_wal_segment</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>max_identifier_length</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>max_index_columns</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>max_toast_chunk_size</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>large_object_chunk_size</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>bigint_timestamps</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>float4_pass_by_value</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>float8_pass_by_value</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>data_page_checksum_version</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
+>    <CODE
+CLASS="FUNCTION"
+>pg_control_recovery</CODE
+> returns a record, shown in
+    <A
+HREF="functions-info.html#FUNCTIONS-PG-CONTROL-RECOVERY"
+>Table 9-75</A
+>
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-PG-CONTROL-RECOVERY"
+></A
+><P
+><B
+>Table 9-75. <CODE
+CLASS="FUNCTION"
+>pg_control_recovery</CODE
+> Columns</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>Column Name</TH
+><TH
+>Data Type</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>min_recovery_end_location</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>min_recovery_end_timeline</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>backup_start_location</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>backup_end_location</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>pg_lsn</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>end_of_backup_record_required</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
 ></TR
 ></TBODY
 ></TABLE

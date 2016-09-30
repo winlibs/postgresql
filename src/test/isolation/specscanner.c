@@ -521,7 +521,7 @@ char *spec_yytext;
  * specscanner.l
  *	  a lexical scanner for an isolation test specification
  *
- * Portions Copyright (c) 1996-2015, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *-------------------------------------------------------------------------
@@ -642,7 +642,7 @@ static int input (void );
 	if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
 		{ \
 		int c = '*'; \
-		size_t n; \
+		int n; \
 		for ( n = 0; n < max_size && \
 			     (c = getc( spec_yyin )) != EOF && c != '\n'; ++n ) \
 			buf[n] = (char) c; \
@@ -655,7 +655,7 @@ static int input (void );
 	else \
 		{ \
 		errno=0; \
-		while ( (result = fread(buf, 1, max_size, spec_yyin))==0 && ferror(spec_yyin)) \
+		while ( (result = fread(buf, 1, (yy_size_t) max_size, spec_yyin)) == 0 && ferror(spec_yyin)) \
 			{ \
 			if( errno != EINTR) \
 				{ \
@@ -1125,7 +1125,7 @@ static int yy_get_next_buffer (void)
 
 	else
 		{
-			yy_size_t num_to_read =
+			int num_to_read =
 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
 
 		while ( num_to_read <= 0 )

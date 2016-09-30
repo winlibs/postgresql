@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Client Authentication"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 19. Client Authentication</TD
+>Chapter 20. Client Authentication</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="AUTH-PG-HBA-CONF"
->19.1. The <TT
+>20.1. The <TT
 CLASS="FILENAME"
 >pg_hba.conf</TT
 > File</A
@@ -475,7 +475,7 @@ HREF="runtime-config-connection.html#GUC-SSL"
 > configuration parameter (see
        <A
 HREF="ssl-tcp.html"
->Section 17.9</A
+>Section 18.9</A
 > for more information).
       </P
 ></DD
@@ -774,7 +774,7 @@ CLASS="SIDEBAR"
 ><P
 ></P
 ><A
-NAME="AEN35125"
+NAME="AEN37037"
 ></A
 ><P
 >        Users sometimes wonder why host names are handled
@@ -881,7 +881,7 @@ CLASS="REPLACEABLE"
        this record. The possible choices are summarized here; details
        are in <A
 HREF="auth-methods.html"
->Section 19.3</A
+>Section 20.3</A
 >.
 
        <P
@@ -908,7 +908,7 @@ CLASS="PRODUCTNAME"
 > user they wish,
           without the need for a password or any other authentication.  See <A
 HREF="auth-methods.html#AUTH-TRUST"
->Section 19.3.1</A
+>Section 20.3.1</A
 > for details.
          </P
 ></DD
@@ -943,7 +943,7 @@ CLASS="LITERAL"
           authentication.
           See <A
 HREF="auth-methods.html#AUTH-PASSWORD"
->Section 19.3.2</A
+>Section 20.3.2</A
 > for details.
          </P
 ></DD
@@ -960,7 +960,7 @@ CLASS="LITERAL"
           network, this should not be used on untrusted networks.
           See <A
 HREF="auth-methods.html#AUTH-PASSWORD"
->Section 19.3.2</A
+>Section 20.3.2</A
 > for details.
          </P
 ></DD
@@ -974,7 +974,7 @@ CLASS="LITERAL"
 >          Use GSSAPI to authenticate the user. This is only
           available for TCP/IP connections. See <A
 HREF="auth-methods.html#GSSAPI-AUTH"
->Section 19.3.3</A
+>Section 20.3.3</A
 > for details.
          </P
 ></DD
@@ -988,7 +988,7 @@ CLASS="LITERAL"
 >          Use SSPI to authenticate the user. This is only
           available on Windows. See <A
 HREF="auth-methods.html#SSPI-AUTH"
->Section 19.3.4</A
+>Section 20.3.4</A
 > for details.
          </P
 ></DD
@@ -1007,7 +1007,7 @@ CLASS="LITERAL"
           authentication will be used instead.
           See <A
 HREF="auth-methods.html#AUTH-IDENT"
->Section 19.3.5</A
+>Section 20.3.5</A
 > for details.
          </P
 ></DD
@@ -1023,7 +1023,7 @@ CLASS="LITERAL"
           This is only available for local connections.
           See <A
 HREF="auth-methods.html#AUTH-PEER"
->Section 19.3.6</A
+>Section 20.3.6</A
 > for details.
          </P
 ></DD
@@ -1039,7 +1039,7 @@ CLASS="ACRONYM"
 >LDAP</ACRONYM
 > server. See <A
 HREF="auth-methods.html#AUTH-LDAP"
->Section 19.3.7</A
+>Section 20.3.7</A
 > for details.
          </P
 ></DD
@@ -1052,7 +1052,7 @@ CLASS="LITERAL"
 ><P
 >          Authenticate using a RADIUS server. See <A
 HREF="auth-methods.html#AUTH-RADIUS"
->Section 19.3.8</A
+>Section 20.3.8</A
 > for details.
          </P
 ></DD
@@ -1066,7 +1066,7 @@ CLASS="LITERAL"
 >          Authenticate using SSL client certificates. See
           <A
 HREF="auth-methods.html#AUTH-CERT"
->Section 19.3.9</A
+>Section 20.3.9</A
 > for details.
          </P
 ></DD
@@ -1080,7 +1080,21 @@ CLASS="LITERAL"
 >          Authenticate using the Pluggable Authentication Modules
           (PAM) service provided by the operating system.  See <A
 HREF="auth-methods.html#AUTH-PAM"
->Section 19.3.10</A
+>Section 20.3.10</A
+> for details.
+         </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>bsd</TT
+></DT
+><DD
+><P
+>          Authenticate using the BSD Authentication service provided by the
+          operating system. See <A
+HREF="auth-methods.html#AUTH-BSD"
+>Section 20.3.11</A
 > for details.
          </P
 ></DD
@@ -1121,6 +1135,23 @@ CLASS="REPLACEABLE"
 > that
        specify options for the authentication method. Details about which
        options are available for which authentication methods appear below.
+      </P
+><P
+>       In addition to the method-specific options listed below, there is one
+       method-independent authentication option <TT
+CLASS="LITERAL"
+>clientcert</TT
+>, which
+       can be specified in any <TT
+CLASS="LITERAL"
+>hostssl</TT
+> record.  When set
+       to <TT
+CLASS="LITERAL"
+>1</TT
+>, this option requires the client to present a valid
+       (trusted) SSL certificate, in addition to the other requirements of the
+       authentication method.
       </P
 ></DD
 ></DL
@@ -1229,7 +1260,7 @@ CLASS="FILENAME"
 > entries are shown in
    <A
 HREF="auth-pg-hba-conf.html#EXAMPLE-PG-HBA.CONF"
->Example 19-1</A
+>Example 20-1</A
 >. See the next section for details on the
    different authentication methods.
   </P
@@ -1240,7 +1271,7 @@ NAME="EXAMPLE-PG-HBA.CONF"
 ></A
 ><P
 ><B
->Example 19-1. Example <TT
+>Example 20-1. Example <TT
 CLASS="FILENAME"
 >pg_hba.conf</TT
 > Entries</B

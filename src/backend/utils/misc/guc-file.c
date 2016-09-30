@@ -528,7 +528,7 @@ char *GUC_yytext;
 /*
  * Scanner for the configuration file
  *
- * Copyright (c) 2000-2015, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2016, PostgreSQL Global Development Group
  *
  * src/backend/utils/misc/guc-file.l
  */
@@ -686,7 +686,7 @@ static int input (void );
 	if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
 		{ \
 		int c = '*'; \
-		size_t n; \
+		int n; \
 		for ( n = 0; n < max_size && \
 			     (c = getc( GUC_yyin )) != EOF && c != '\n'; ++n ) \
 			buf[n] = (char) c; \
@@ -699,7 +699,7 @@ static int input (void );
 	else \
 		{ \
 		errno=0; \
-		while ( (result = fread(buf, 1, max_size, GUC_yyin))==0 && ferror(GUC_yyin)) \
+		while ( (result = fread(buf, 1, (yy_size_t) max_size, GUC_yyin)) == 0 && ferror(GUC_yyin)) \
 			{ \
 			if( errno != EINTR) \
 				{ \
@@ -1100,7 +1100,7 @@ static int yy_get_next_buffer (void)
 
 	else
 		{
-			yy_size_t num_to_read =
+			int num_to_read =
 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
 
 		while ( num_to_read <= 0 )
@@ -1913,9 +1913,7 @@ ProcessConfigFile(GucContext context)
 	 */
 	config_cxt = AllocSetContextCreate(CurrentMemoryContext,
 									   "config file processing",
-									   ALLOCSET_DEFAULT_MINSIZE,
-									   ALLOCSET_DEFAULT_MINSIZE,
-									   ALLOCSET_DEFAULT_MAXSIZE);
+									   ALLOCSET_DEFAULT_SIZES);
 	caller_cxt = MemoryContextSwitchTo(config_cxt);
 
 	/*

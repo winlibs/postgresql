@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 40. <SPAN
+>Chapter 41. <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > - <ACRONYM
@@ -99,7 +99,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPGSQL-STATEMENTS"
->40.5. Basic Statements</A
+>41.5. Basic Statements</A
 ></H1
 ><P
 >    In this section and the following ones, we describe all the statement
@@ -112,11 +112,11 @@ CLASS="APPLICATION"
     to be an SQL command and is sent to the main database engine to execute,
     as described in <A
 HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-SQL-NORESULT"
->Section 40.5.2</A
+>Section 41.5.2</A
 >
     and <A
 HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-SQL-ONEROW"
->Section 40.5.3</A
+>Section 41.5.3</A
 >.
    </P
 ><DIV
@@ -125,7 +125,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-ASSIGNMENT"
->40.5.1. Assignment</A
+>41.5.1. Assignment</A
 ></H2
 ><P
 >     An assignment of a value to a <SPAN
@@ -197,7 +197,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-SQL-NORESULT"
->40.5.2. Executing a Command With No Result</A
+>41.5.2. Executing a Command With No Result</A
 ></H2
 ><P
 >     For any SQL command that does not return rows, for example
@@ -224,7 +224,7 @@ CLASS="APPLICATION"
      at run time.  This is exactly like the processing described earlier
      for expressions; for details see <A
 HREF="plpgsql-implementation.html#PLPGSQL-VAR-SUBST"
->Section 40.10.1</A
+>Section 41.10.1</A
 >.
     </P
 ><P
@@ -236,7 +236,7 @@ CLASS="APPLICATION"
      plan for the command, as discussed in
      <A
 HREF="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING"
->Section 40.10.2</A
+>Section 41.10.2</A
 >.
     </P
 ><P
@@ -310,7 +310,7 @@ CLASS="LITERAL"
      least one row, or false if it produced no rows (see
      <A
 HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS"
->Section 40.5.5</A
+>Section 41.5.5</A
 >).
     </P
 ><DIV
@@ -356,7 +356,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-SQL-ONEROW"
->40.5.3. Executing a Query with a Single-row Result</A
+>41.5.3. Executing a Query with a Single-row Result</A
 ></H2
 ><P
 >     The result of a SQL command yielding a single row (possibly of multiple
@@ -573,7 +573,7 @@ CLASS="LITERAL"
 > variable (see
      <A
 HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-DIAGNOSTICS"
->Section 40.5.5</A
+>Section 41.5.5</A
 >) to
      determine whether a row was returned:
 
@@ -719,7 +719,7 @@ CLASS="COMMAND"
 >     To handle cases where you need to process multiple result rows
      from a SQL query, see <A
 HREF="plpgsql-control-structures.html#PLPGSQL-RECORDS-ITERATING"
->Section 40.6.4</A
+>Section 41.6.4</A
 >.
     </P
 ></DIV
@@ -729,7 +729,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-EXECUTING-DYN"
->40.5.4. Executing Dynamic Commands</A
+>41.5.4. Executing Dynamic Commands</A
 ></H2
 ><P
 >     Oftentimes you will want to generate dynamic commands inside your
@@ -745,7 +745,7 @@ CLASS="APPLICATION"
      normal attempts to cache plans for commands (as discussed in
      <A
 HREF="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING"
->Section 40.10.2</A
+>Section 41.10.2</A
 >) will not work in such
      scenarios.  To handle this sort of problem, the
      <TT
@@ -1031,7 +1031,7 @@ NAME="PLPGSQL-QUOTE-LITERAL-EXAMPLE"
 ></A
 ><P
 ><B
->Example 40-1. Quoting Values In Dynamic Queries</B
+>Example 41-1. Quoting Values In Dynamic Queries</B
 ></P
 ><P
 >     When working with dynamic commands you will often have to handle escaping
@@ -1040,7 +1040,7 @@ NAME="PLPGSQL-QUOTE-LITERAL-EXAMPLE"
      not use dollar quoting, please refer to the
      overview in <A
 HREF="plpgsql-development-tips.html#PLPGSQL-QUOTE-TIPS"
->Section 40.11.1</A
+>Section 41.11.1</A
 >, which can save you
      some effort when translating said code to a more reasonable scheme.)
     </P
@@ -1284,7 +1284,7 @@ CLASS="COMMAND"
 >EXECUTE</TT
 > can be seen in <A
 HREF="plpgsql-porting.html#PLPGSQL-PORTING-EX2"
->Example 40-9</A
+>Example 41-9</A
 >, which builds and executes a
      <TT
 CLASS="COMMAND"
@@ -1298,7 +1298,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-DIAGNOSTICS"
->40.5.5. Obtaining the Result Status</A
+>41.5.5. Obtaining the Result Status</A
 ></H2
 ><P
 >     There are several ways to determine the effect of a command. The
@@ -1329,62 +1329,134 @@ CLASS="OPTIONAL"
 >];</PRE
 ><P>
 
-     This command allows retrieval of system status indicators.  Each
+     This command allows retrieval of system status indicators.
      <TT
+CLASS="LITERAL"
+>CURRENT</TT
+> is a noise word (but see also <TT
+CLASS="COMMAND"
+>GET STACKED
+     DIAGNOSTICS</TT
+> in <A
+HREF="plpgsql-control-structures.html#PLPGSQL-EXCEPTION-DIAGNOSTICS"
+>Section 41.6.6.1</A
+>).
+     Each <TT
 CLASS="REPLACEABLE"
 ><I
 >item</I
 ></TT
 > is a key word identifying a status
-     value to be assigned to the specified variable (which should be
-     of the right data type to receive it).  The currently available
-     status items are <TT
-CLASS="VARNAME"
->ROW_COUNT</TT
->, the number of rows
-     processed by the last <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> command sent to
-     the <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> engine, and <TT
-CLASS="VARNAME"
->RESULT_OID</TT
->,
-     the OID of the last row inserted by the most recent
-     <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> command.  Note that <TT
-CLASS="VARNAME"
->RESULT_OID</TT
+     value to be assigned to the specified <TT
+CLASS="REPLACEABLE"
+><I
+>variable</I
+></TT
 >
-     is only useful after an <TT
-CLASS="COMMAND"
->INSERT</TT
-> command into a
-     table containing OIDs.
-     Colon-equal (<TT
+     (which should be of the right data type to receive it).  The currently
+     available status items are shown
+     in <A
+HREF="plpgsql-statements.html#PLPGSQL-CURRENT-DIAGNOSTICS-VALUES"
+>Table 41-1</A
+>.  Colon-equal
+     (<TT
 CLASS="LITERAL"
 >:=</TT
->) can be used instead of SQL-standard
-     <TT
+>) can be used instead of the SQL-standard <TT
 CLASS="LITERAL"
 >=</TT
-> for <TT
-CLASS="COMMAND"
->GET DIAGNOSTICS</TT
->.
-    </P
-><P
->     An example:
+>
+     token.  An example:
 </P><PRE
 CLASS="PROGRAMLISTING"
 >GET DIAGNOSTICS integer_var = ROW_COUNT;</PRE
 ><P>
     </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="PLPGSQL-CURRENT-DIAGNOSTICS-VALUES"
+></A
+><P
+><B
+>Table 41-1. Available Diagnostics Items</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><THEAD
+><TR
+><TH
+>Name</TH
+><TH
+>Type</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+><TT
+CLASS="VARNAME"
+>ROW_COUNT</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bigint</TT
+></TD
+><TD
+>the number of rows processed by the most
+          recent <ACRONYM
+CLASS="ACRONYM"
+>SQL</ACRONYM
+> command</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="VARNAME"
+>RESULT_OID</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>oid</TT
+></TD
+><TD
+>the OID of the last row inserted by the most
+          recent <ACRONYM
+CLASS="ACRONYM"
+>SQL</ACRONYM
+> command (only useful after
+          an <TT
+CLASS="COMMAND"
+>INSERT</TT
+> command into a table having
+          OIDs)</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>PG_CONTEXT</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>text</TT
+></TD
+><TD
+>line(s) of text describing the current call stack
+          (see <A
+HREF="plpgsql-control-structures.html#PLPGSQL-CALL-STACK"
+>Section 41.6.7</A
+>)</TD
+></TR
+></TBODY
+></TABLE
+></DIV
 ><P
 >     The second method to determine the effects of a command is to check the
      special variable named <TT
@@ -1562,7 +1634,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-STATEMENTS-NULL"
->40.5.6. Doing Nothing At All</A
+>41.5.6. Doing Nothing At All</A
 ></H2
 ><P
 >     Sometimes a placeholder statement that does nothing is useful.

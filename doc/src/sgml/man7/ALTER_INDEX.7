@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "ALTER INDEX" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "ALTER INDEX" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,6 +34,7 @@ ALTER_INDEX \- change the definition of an index
 .nf
 ALTER INDEX [ IF EXISTS ] \fIname\fR RENAME TO \fInew_name\fR
 ALTER INDEX [ IF EXISTS ] \fIname\fR SET TABLESPACE \fItablespace_name\fR
+ALTER INDEX \fIname\fR DEPENDS ON EXTENSION \fIextension_name\fR
 ALTER INDEX [ IF EXISTS ] \fIname\fR SET ( \fIstorage_parameter\fR = \fIvalue\fR [, \&.\&.\&. ] )
 ALTER INDEX [ IF EXISTS ] \fIname\fR RESET ( \fIstorage_parameter\fR [, \&.\&.\&. ] )
 ALTER INDEX ALL IN TABLESPACE \fIname\fR [ OWNED BY \fIrole_name\fR [, \&.\&.\&. ] ]
@@ -66,6 +67,11 @@ or explicit
 \fBALTER INDEX\fR
 invocations instead if desired\&. See also
 CREATE TABLESPACE (\fBCREATE_TABLESPACE\fR(7))\&.
+.RE
+.PP
+DEPENDS ON EXTENSION
+.RS 4
+This form marks the index as dependent on the extension, such that if the extension is dropped, the index will automatically be dropped as well\&.
 .RE
 .PP
 SET ( \fIstorage_parameter\fR = \fIvalue\fR [, \&.\&.\&. ] )
@@ -104,6 +110,11 @@ The new name for the index\&.
 \fItablespace_name\fR
 .RS 4
 The tablespace to which the index will be moved\&.
+.RE
+.PP
+\fIextension_name\fR
+.RS 4
+The name of the extension that the index is to depend on\&.
 .RE
 .PP
 \fIstorage_parameter\fR

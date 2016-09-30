@@ -9,13 +9,13 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
 HREF="functions.html"><LINK
 REL="PREVIOUS"
-TITLE="Comparison Operators"
+TITLE="Comparison Functions and Operators"
 HREF="functions-comparison.html"><LINK
 REL="NEXT"
 TITLE="String Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,7 +53,7 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="Comparison Operators"
+TITLE="Comparison Functions and Operators"
 HREF="functions-comparison.html"
 ACCESSKEY="P"
 >Prev</A
@@ -108,7 +108,7 @@ CLASS="PRODUCTNAME"
 ><P
 >    <A
 HREF="functions-math.html#FUNCTIONS-MATH-OP-TABLE"
->Table 9-2</A
+>Table 9-4</A
 > shows the available mathematical operators.
    </P
 ><DIV
@@ -118,7 +118,7 @@ NAME="FUNCTIONS-MATH-OP-TABLE"
 ></A
 ><P
 ><B
->Table 9-2. Mathematical Operators</B
+>Table 9-4. Mathematical Operators</B
 ></P
 ><TABLE
 BORDER="1"
@@ -475,13 +475,13 @@ CLASS="TYPE"
 >, as
     shown in <A
 HREF="functions-bitstring.html#FUNCTIONS-BIT-STRING-OP-TABLE"
->Table 9-11</A
+>Table 9-13</A
 >.
    </P
 ><P
 >   <A
 HREF="functions-math.html#FUNCTIONS-MATH-FUNC-TABLE"
->Table 9-3</A
+>Table 9-5</A
 > shows the available
    mathematical functions.  In the table, <TT
 CLASS="LITERAL"
@@ -508,7 +508,7 @@ NAME="FUNCTIONS-MATH-FUNC-TABLE"
 ></A
 ><P
 ><B
->Table 9-3. Mathematical Functions</B
+>Table 9-5. Mathematical Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -611,7 +611,7 @@ CLASS="TYPE"
 ><TD
 >(same as input)</TD
 ><TD
->smallest integer not less than argument</TD
+>nearest integer greater than or equal to argument</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -643,7 +643,7 @@ CLASS="TYPE"
 ><TD
 >(same as input)</TD
 ><TD
->smallest integer not less than argument (alias for <CODE
+>nearest integer greater than or equal to argument (same as <CODE
 CLASS="FUNCTION"
 >ceil</CODE
 >)</TD
@@ -790,7 +790,7 @@ CLASS="TYPE"
 ><TD
 >(same as input)</TD
 ><TD
->largest integer not greater than argument</TD
+>nearest integer less than or equal to argument</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -1187,6 +1187,38 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
+>scale(<TT
+CLASS="TYPE"
+>numeric</TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+><TT
+CLASS="TYPE"
+>numeric</TT
+></TD
+><TD
+>scale of the argument (the number of decimal digits in the fractional part)</TD
+><TD
+><TT
+CLASS="LITERAL"
+>scale(8.41)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>2</TT
+></TD
+></TR
+><TR
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
 >sign(<TT
 CLASS="TYPE"
 >dp</TT
@@ -1535,7 +1567,7 @@ CLASS="LITERAL"
 ><P
 >    <A
 HREF="functions-math.html#FUNCTIONS-MATH-RANDOM-TABLE"
->Table 9-4</A
+>Table 9-6</A
 > shows functions for
     generating random numbers.
   </P
@@ -1546,7 +1578,7 @@ NAME="FUNCTIONS-MATH-RANDOM-TABLE"
 ></A
 ><P
 ><B
->Table 9-4. Random Functions</B
+>Table 9-6. Random Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1628,30 +1660,16 @@ HREF="pgcrypto.html"
 ><P
 >   Finally, <A
 HREF="functions-math.html#FUNCTIONS-MATH-TRIG-TABLE"
->Table 9-5</A
+>Table 9-7</A
 > shows the
    available trigonometric functions.  All trigonometric functions
    take arguments and return values of type <TT
 CLASS="TYPE"
 >double
    precision</TT
->. Trigonometric functions arguments are expressed
-   in radians. Inverse functions return values are expressed in
-   radians.  See unit transformation functions
-   <TT
-CLASS="LITERAL"
-><CODE
-CLASS="FUNCTION"
->radians()</CODE
-></TT
-> and
-   <TT
-CLASS="LITERAL"
-><CODE
-CLASS="FUNCTION"
->degrees()</CODE
-></TT
-> above.
+>.  Each of the trigonometric functions comes in
+   two variants, one that measures angles in radians and one that
+   measures angles in degrees.
   </P
 ><DIV
 CLASS="TABLE"
@@ -1660,15 +1678,17 @@ NAME="FUNCTIONS-MATH-TRIG-TABLE"
 ></A
 ><P
 ><B
->Table 9-5. Trigonometric Functions</B
+>Table 9-7. Trigonometric Functions</B
 ></P
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><THEAD
+><COL><COL><COL><THEAD
 ><TR
 ><TH
->Function</TH
+>Function (radians)</TH
+><TH
+>Function (degrees)</TH
 ><TH
 >Description</TH
 ></TR
@@ -1681,6 +1701,20 @@ CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
 >acos(<TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>acosd(<TT
 CLASS="REPLACEABLE"
 ><I
 >x</I
@@ -1709,6 +1743,21 @@ CLASS="REPLACEABLE"
 >
        </TD
 ><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>asind(<TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
 >inverse sine</TD
 ></TR
 ><TR
@@ -1728,6 +1777,21 @@ CLASS="REPLACEABLE"
 >
        </TD
 ><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>atand(<TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
 >inverse tangent</TD
 ></TR
 ><TR
@@ -1738,6 +1802,27 @@ CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
 >atan2(<TT
+CLASS="REPLACEABLE"
+><I
+>y</I
+></TT
+>,
+        <TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>atan2d(<TT
 CLASS="REPLACEABLE"
 ><I
 >y</I
@@ -1786,6 +1871,21 @@ CLASS="REPLACEABLE"
 >
        </TD
 ><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>cosd(<TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
 >cosine</TD
 ></TR
 ><TR
@@ -1796,6 +1896,21 @@ CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
 >cot(<TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>cotd(<TT
 CLASS="REPLACEABLE"
 ><I
 >x</I
@@ -1824,6 +1939,21 @@ CLASS="REPLACEABLE"
 >
        </TD
 ><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>sind(<TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
 >sine</TD
 ></TR
 ><TR
@@ -1843,10 +1973,56 @@ CLASS="REPLACEABLE"
 >
        </TD
 ><TD
+>        
+        <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>tand(<TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+>)</CODE
+></TT
+>
+       </TD
+><TD
 >tangent</TD
 ></TR
 ></TBODY
 ></TABLE
+></DIV
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>    Another way to work with angles measured in degrees is to use the unit
+    transformation functions <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>radians()</CODE
+></TT
+>
+    and <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>degrees()</CODE
+></TT
+> shown earlier.
+    However, using the degree-based trigonometric functions is preferred,
+    as that way avoids roundoff error for special cases such
+    as <TT
+CLASS="LITERAL"
+>sind(30)</TT
+>.
+   </P
+></BLOCKQUOTE
 ></DIV
 ></DIV
 ><DIV
@@ -1893,7 +2069,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Comparison Operators</TD
+>Comparison Functions and Operators</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

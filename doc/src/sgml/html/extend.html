@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Programming"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="CHAPTER"
 ><A
 NAME="EXTEND"
 ></A
->Chapter 35. Extending <ACRONYM
+>Chapter 36. Extending <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 ></H1
@@ -105,12 +105,12 @@ CLASS="TOC"
 >Table of Contents</B
 ></DT
 ><DT
->35.1. <A
+>36.1. <A
 HREF="extend-how.html"
 >How Extensibility Works</A
 ></DT
 ><DT
->35.2. <A
+>36.2. <A
 HREF="extend-type-system.html"
 >The <SPAN
 CLASS="PRODUCTNAME"
@@ -120,39 +120,39 @@ CLASS="PRODUCTNAME"
 ><DD
 ><DL
 ><DT
->35.2.1. <A
-HREF="extend-type-system.html#AEN56389"
+>36.2.1. <A
+HREF="extend-type-system.html#AEN59248"
 >Base Types</A
 ></DT
 ><DT
->35.2.2. <A
-HREF="extend-type-system.html#AEN56395"
+>36.2.2. <A
+HREF="extend-type-system.html#AEN59254"
 >Composite Types</A
 ></DT
 ><DT
->35.2.3. <A
+>36.2.3. <A
 HREF="extend-type-system.html#EXTEND-TYPE-SYSTEM-DOMAINS"
 >Domains</A
 ></DT
 ><DT
->35.2.4. <A
-HREF="extend-type-system.html#AEN56408"
+>36.2.4. <A
+HREF="extend-type-system.html#AEN59267"
 >Pseudo-Types</A
 ></DT
 ><DT
->35.2.5. <A
+>36.2.5. <A
 HREF="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC"
 >Polymorphic Types</A
 ></DT
 ></DL
 ></DD
 ><DT
->35.3. <A
+>36.3. <A
 HREF="xfunc.html"
 >User-defined Functions</A
 ></DT
 ><DT
->35.4. <A
+>36.4. <A
 HREF="xfunc-sql.html"
 >Query Language (<ACRONYM
 CLASS="ACRONYM"
@@ -162,7 +162,7 @@ CLASS="ACRONYM"
 ><DD
 ><DL
 ><DT
->35.4.1. <A
+>36.4.1. <A
 HREF="xfunc-sql.html#XFUNC-SQL-FUNCTION-ARGUMENTS"
 >Arguments for <ACRONYM
 CLASS="ACRONYM"
@@ -170,7 +170,7 @@ CLASS="ACRONYM"
 > Functions</A
 ></DT
 ><DT
->35.4.2. <A
+>36.4.2. <A
 HREF="xfunc-sql.html#XFUNC-SQL-BASE-FUNCTIONS"
 ><ACRONYM
 CLASS="ACRONYM"
@@ -178,7 +178,7 @@ CLASS="ACRONYM"
 > Functions on Base Types</A
 ></DT
 ><DT
->35.4.3. <A
+>36.4.3. <A
 HREF="xfunc-sql.html#XFUNC-SQL-COMPOSITE-FUNCTIONS"
 ><ACRONYM
 CLASS="ACRONYM"
@@ -186,7 +186,7 @@ CLASS="ACRONYM"
 > Functions on Composite Types</A
 ></DT
 ><DT
->35.4.4. <A
+>36.4.4. <A
 HREF="xfunc-sql.html#XFUNC-OUTPUT-PARAMETERS"
 ><ACRONYM
 CLASS="ACRONYM"
@@ -194,7 +194,7 @@ CLASS="ACRONYM"
 > Functions with Output Parameters</A
 ></DT
 ><DT
->35.4.5. <A
+>36.4.5. <A
 HREF="xfunc-sql.html#XFUNC-SQL-VARIADIC-FUNCTIONS"
 ><ACRONYM
 CLASS="ACRONYM"
@@ -202,7 +202,7 @@ CLASS="ACRONYM"
 > Functions with Variable Numbers of Arguments</A
 ></DT
 ><DT
->35.4.6. <A
+>36.4.6. <A
 HREF="xfunc-sql.html#XFUNC-SQL-PARAMETER-DEFAULTS"
 ><ACRONYM
 CLASS="ACRONYM"
@@ -210,7 +210,7 @@ CLASS="ACRONYM"
 > Functions with Default Values for Arguments</A
 ></DT
 ><DT
->35.4.7. <A
+>36.4.7. <A
 HREF="xfunc-sql.html#XFUNC-SQL-TABLE-FUNCTIONS"
 ><ACRONYM
 CLASS="ACRONYM"
@@ -218,7 +218,7 @@ CLASS="ACRONYM"
 > Functions as Table Sources</A
 ></DT
 ><DT
->35.4.8. <A
+>36.4.8. <A
 HREF="xfunc-sql.html#XFUNC-SQL-FUNCTIONS-RETURNING-SET"
 ><ACRONYM
 CLASS="ACRONYM"
@@ -226,7 +226,7 @@ CLASS="ACRONYM"
 > Functions Returning Sets</A
 ></DT
 ><DT
->35.4.9. <A
+>36.4.9. <A
 HREF="xfunc-sql.html#XFUNC-SQL-FUNCTIONS-RETURNING-TABLE"
 ><ACRONYM
 CLASS="ACRONYM"
@@ -237,16 +237,16 @@ CLASS="LITERAL"
 ></A
 ></DT
 ><DT
->35.4.10. <A
-HREF="xfunc-sql.html#AEN56797"
+>36.4.10. <A
+HREF="xfunc-sql.html#AEN59663"
 >Polymorphic <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 > Functions</A
 ></DT
 ><DT
->35.4.11. <A
-HREF="xfunc-sql.html#AEN56823"
+>36.4.11. <A
+HREF="xfunc-sql.html#AEN59689"
 ><ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
@@ -255,188 +255,193 @@ CLASS="ACRONYM"
 ></DL
 ></DD
 ><DT
->35.5. <A
+>36.5. <A
 HREF="xfunc-overload.html"
 >Function Overloading</A
 ></DT
 ><DT
->35.6. <A
+>36.6. <A
 HREF="xfunc-volatility.html"
 >Function Volatility Categories</A
 ></DT
 ><DT
->35.7. <A
+>36.7. <A
 HREF="xfunc-pl.html"
 >Procedural Language Functions</A
 ></DT
 ><DT
->35.8. <A
+>36.8. <A
 HREF="xfunc-internal.html"
 >Internal Functions</A
 ></DT
 ><DT
->35.9. <A
+>36.9. <A
 HREF="xfunc-c.html"
 >C-Language Functions</A
 ></DT
 ><DD
 ><DL
 ><DT
->35.9.1. <A
+>36.9.1. <A
 HREF="xfunc-c.html#XFUNC-C-DYNLOAD"
 >Dynamic Loading</A
 ></DT
 ><DT
->35.9.2. <A
+>36.9.2. <A
 HREF="xfunc-c.html#XFUNC-C-BASETYPE"
 >Base Types in C-Language Functions</A
 ></DT
 ><DT
->35.9.3. <A
-HREF="xfunc-c.html#AEN57351"
+>36.9.3. <A
+HREF="xfunc-c.html#AEN60224"
 >Version 0 Calling Conventions</A
 ></DT
 ><DT
->35.9.4. <A
-HREF="xfunc-c.html#AEN57378"
+>36.9.4. <A
+HREF="xfunc-c.html#AEN60251"
 >Version 1 Calling Conventions</A
 ></DT
 ><DT
->35.9.5. <A
-HREF="xfunc-c.html#AEN57436"
+>36.9.5. <A
+HREF="xfunc-c.html#AEN60309"
 >Writing Code</A
 ></DT
 ><DT
->35.9.6. <A
+>36.9.6. <A
 HREF="xfunc-c.html#DFUNC"
 >Compiling and Linking Dynamically-loaded Functions</A
 ></DT
 ><DT
->35.9.7. <A
-HREF="xfunc-c.html#AEN57637"
+>36.9.7. <A
+HREF="xfunc-c.html#AEN60510"
 >Composite-type Arguments</A
 ></DT
 ><DT
->35.9.8. <A
-HREF="xfunc-c.html#AEN57661"
+>36.9.8. <A
+HREF="xfunc-c.html#AEN60534"
 >Returning Rows (Composite Types)</A
 ></DT
 ><DT
->35.9.9. <A
+>36.9.9. <A
 HREF="xfunc-c.html#XFUNC-C-RETURN-SET"
 >Returning Sets</A
 ></DT
 ><DT
->35.9.10. <A
-HREF="xfunc-c.html#AEN57790"
+>36.9.10. <A
+HREF="xfunc-c.html#AEN60663"
 >Polymorphic Arguments and Return Types</A
 ></DT
 ><DT
->35.9.11. <A
+>36.9.11. <A
 HREF="xfunc-c.html#XFUNC-TRANSFORM-FUNCTIONS"
 >Transform Functions</A
 ></DT
 ><DT
->35.9.12. <A
-HREF="xfunc-c.html#AEN57841"
+>36.9.12. <A
+HREF="xfunc-c.html#AEN60714"
 >Shared Memory and LWLocks</A
 ></DT
 ><DT
->35.9.13. <A
+>36.9.13. <A
 HREF="xfunc-c.html#EXTEND-CPP"
 >Using C++ for Extensibility</A
 ></DT
 ></DL
 ></DD
 ><DT
->35.10. <A
+>36.10. <A
 HREF="xaggr.html"
 >User-defined Aggregates</A
 ></DT
 ><DD
 ><DL
 ><DT
->35.10.1. <A
+>36.10.1. <A
 HREF="xaggr.html#XAGGR-MOVING-AGGREGATES"
 >Moving-Aggregate Mode</A
 ></DT
 ><DT
->35.10.2. <A
+>36.10.2. <A
 HREF="xaggr.html#XAGGR-POLYMORPHIC-AGGREGATES"
 >Polymorphic and Variadic Aggregates</A
 ></DT
 ><DT
->35.10.3. <A
+>36.10.3. <A
 HREF="xaggr.html#XAGGR-ORDERED-SET-AGGREGATES"
 >Ordered-Set Aggregates</A
 ></DT
 ><DT
->35.10.4. <A
+>36.10.4. <A
+HREF="xaggr.html#XAGGR-PARTIAL-AGGREGATES"
+>Partial Aggregation</A
+></DT
+><DT
+>36.10.5. <A
 HREF="xaggr.html#XAGGR-SUPPORT-FUNCTIONS"
 >Support Functions for Aggregates</A
 ></DT
 ></DL
 ></DD
 ><DT
->35.11. <A
+>36.11. <A
 HREF="xtypes.html"
 >User-defined Types</A
 ></DT
 ><DT
->35.12. <A
+>36.12. <A
 HREF="xoper.html"
 >User-defined Operators</A
 ></DT
 ><DT
->35.13. <A
+>36.13. <A
 HREF="xoper-optimization.html"
 >Operator Optimization Information</A
 ></DT
 ><DD
 ><DL
 ><DT
->35.13.1. <A
-HREF="xoper-optimization.html#AEN58182"
+>36.13.1. <A
+HREF="xoper-optimization.html#AEN61088"
 ><TT
 CLASS="LITERAL"
 >COMMUTATOR</TT
 ></A
 ></DT
 ><DT
->35.13.2. <A
-HREF="xoper-optimization.html#AEN58217"
+>36.13.2. <A
+HREF="xoper-optimization.html#AEN61123"
 ><TT
 CLASS="LITERAL"
 >NEGATOR</TT
 ></A
 ></DT
 ><DT
->35.13.3. <A
-HREF="xoper-optimization.html#AEN58233"
+>36.13.3. <A
+HREF="xoper-optimization.html#AEN61139"
 ><TT
 CLASS="LITERAL"
 >RESTRICT</TT
 ></A
 ></DT
 ><DT
->35.13.4. <A
-HREF="xoper-optimization.html#AEN58283"
+>36.13.4. <A
+HREF="xoper-optimization.html#AEN61189"
 ><TT
 CLASS="LITERAL"
 >JOIN</TT
 ></A
 ></DT
 ><DT
->35.13.5. <A
-HREF="xoper-optimization.html#AEN58315"
+>36.13.5. <A
+HREF="xoper-optimization.html#AEN61221"
 ><TT
 CLASS="LITERAL"
 >HASHES</TT
 ></A
 ></DT
 ><DT
->35.13.6. <A
-HREF="xoper-optimization.html#AEN58337"
+>36.13.6. <A
+HREF="xoper-optimization.html#AEN61243"
 ><TT
 CLASS="LITERAL"
 >MERGES</TT
@@ -445,90 +450,90 @@ CLASS="LITERAL"
 ></DL
 ></DD
 ><DT
->35.14. <A
+>36.14. <A
 HREF="xindex.html"
 >Interfacing Extensions To Indexes</A
 ></DT
 ><DD
 ><DL
 ><DT
->35.14.1. <A
+>36.14.1. <A
 HREF="xindex.html#XINDEX-OPCLASS"
 >Index Methods and Operator Classes</A
 ></DT
 ><DT
->35.14.2. <A
+>36.14.2. <A
 HREF="xindex.html#XINDEX-STRATEGIES"
 >Index Method Strategies</A
 ></DT
 ><DT
->35.14.3. <A
+>36.14.3. <A
 HREF="xindex.html#XINDEX-SUPPORT"
 >Index Method Support Routines</A
 ></DT
 ><DT
->35.14.4. <A
+>36.14.4. <A
 HREF="xindex.html#XINDEX-EXAMPLE"
 >An Example</A
 ></DT
 ><DT
->35.14.5. <A
+>36.14.5. <A
 HREF="xindex.html#XINDEX-OPFAMILY"
 >Operator Classes and Operator Families</A
 ></DT
 ><DT
->35.14.6. <A
+>36.14.6. <A
 HREF="xindex.html#XINDEX-OPCLASS-DEPENDENCIES"
 >System Dependencies on Operator Classes</A
 ></DT
 ><DT
->35.14.7. <A
+>36.14.7. <A
 HREF="xindex.html#XINDEX-ORDERING-OPS"
 >Ordering Operators</A
 ></DT
 ><DT
->35.14.8. <A
+>36.14.8. <A
 HREF="xindex.html#XINDEX-OPCLASS-FEATURES"
 >Special Features of Operator Classes</A
 ></DT
 ></DL
 ></DD
 ><DT
->35.15. <A
+>36.15. <A
 HREF="extend-extensions.html"
 >Packaging Related Objects into an Extension</A
 ></DT
 ><DD
 ><DL
 ><DT
->35.15.1. <A
-HREF="extend-extensions.html#AEN58955"
+>36.15.1. <A
+HREF="extend-extensions.html#AEN61876"
 >Extension Files</A
 ></DT
 ><DT
->35.15.2. <A
-HREF="extend-extensions.html#AEN59073"
+>36.15.2. <A
+HREF="extend-extensions.html#EXTEND-EXTENSIONS-RELOCATION"
 >Extension Relocatability</A
 ></DT
 ><DT
->35.15.3. <A
-HREF="extend-extensions.html#AEN59114"
+>36.15.3. <A
+HREF="extend-extensions.html#EXTEND-EXTENSIONS-CONFIG-TABLES"
 >Extension Configuration Tables</A
 ></DT
 ><DT
->35.15.4. <A
-HREF="extend-extensions.html#AEN59136"
+>36.15.4. <A
+HREF="extend-extensions.html#AEN62068"
 >Extension Updates</A
 ></DT
 ><DT
->35.15.5. <A
-HREF="extend-extensions.html#AEN59191"
+>36.15.5. <A
+HREF="extend-extensions.html#EXTEND-EXTENSIONS-EXAMPLE"
 >Extension Example</A
 ></DT
 ></DL
 ></DD
 ><DT
->35.16. <A
+>36.16. <A
 HREF="extend-pgxs.html"
 >Extension Building Infrastructure</A
 ></DT
@@ -554,7 +559,7 @@ STYLE="list-style-type: disc"
 ><P
 >      functions (starting in <A
 HREF="xfunc.html"
->Section 35.3</A
+>Section 36.3</A
 >)
      </P
 ></LI
@@ -563,7 +568,7 @@ STYLE="list-style-type: disc"
 ><P
 >      aggregates (starting in <A
 HREF="xaggr.html"
->Section 35.10</A
+>Section 36.10</A
 >)
      </P
 ></LI
@@ -572,7 +577,7 @@ STYLE="list-style-type: disc"
 ><P
 >      data types (starting in <A
 HREF="xtypes.html"
->Section 35.11</A
+>Section 36.11</A
 >)
      </P
 ></LI
@@ -581,7 +586,7 @@ STYLE="list-style-type: disc"
 ><P
 >      operators (starting in <A
 HREF="xoper.html"
->Section 35.12</A
+>Section 36.12</A
 >)
      </P
 ></LI
@@ -590,7 +595,7 @@ STYLE="list-style-type: disc"
 ><P
 >      operator classes for indexes (starting in <A
 HREF="xindex.html"
->Section 35.14</A
+>Section 36.14</A
 >)
      </P
 ></LI
@@ -599,7 +604,7 @@ STYLE="list-style-type: disc"
 ><P
 >      packages of related objects (starting in <A
 HREF="extend-extensions.html"
->Section 35.15</A
+>Section 36.15</A
 >)
      </P
 ></LI

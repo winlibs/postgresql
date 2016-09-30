@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-ALTERTRIGGER"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN72926"
+NAME="AEN76099"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN72926"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN72929"
+NAME="AEN76102"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,12 +124,28 @@ CLASS="REPLACEABLE"
 ><I
 >new_name</I
 ></TT
+>
+ALTER TRIGGER <TT
+CLASS="REPLACEABLE"
+><I
+>name</I
+></TT
+> ON <TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+> DEPENDS ON EXTENSION <TT
+CLASS="REPLACEABLE"
+><I
+>extension_name</I
+></TT
 ></PRE
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72934"
+NAME="AEN76110"
 ></A
 ><H2
 >Description</H2
@@ -143,7 +159,12 @@ CLASS="LITERAL"
 >RENAME</TT
 > clause changes the name of
    the given trigger without otherwise changing the trigger
-   definition.
+   definition.  The <TT
+CLASS="LITERAL"
+>DEPENDS ON EXTENSION</TT
+> clause marks
+   the trigger as dependent on an extension, such that if the extension is
+   dropped, the trigger will automatically be dropped as well.
   </P
 ><P
 >   You must own the table on which the trigger acts to be allowed to change its properties.
@@ -152,7 +173,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72940"
+NAME="AEN76117"
 ></A
 ><H2
 >Parameters</H2
@@ -197,13 +218,25 @@ CLASS="REPLACEABLE"
 >      The new name for the trigger.
      </P
 ></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>extension_name</I
+></TT
+></DT
+><DD
+><P
+>      The name of the extension that the trigger is to depend on.
+     </P
+></DD
 ></DL
 ></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72958"
+NAME="AEN76140"
 ></A
 ><H2
 >Notes</H2
@@ -227,7 +260,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72964"
+NAME="AEN76146"
 ></A
 ><H2
 >Examples</H2
@@ -237,11 +270,17 @@ NAME="AEN72964"
 CLASS="PROGRAMLISTING"
 >ALTER TRIGGER emp_stamp ON emp RENAME TO emp_track_chgs;</PRE
 ><P></P
+><P
+>   To mark a trigger as being dependent on an extension:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>ALTER TRIGGER emp_stamp ON emp DEPENDS ON EXTENSION emplib;</PRE
+><P></P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72968"
+NAME="AEN76152"
 ></A
 ><H2
 >Compatibility</H2
@@ -259,7 +298,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN72973"
+NAME="AEN76157"
 ></A
 ><H2
 >See Also</H2

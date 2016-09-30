@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-SET-ROLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN88087"
+NAME="AEN91574"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN88087"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN88090"
+NAME="AEN91577"
 ></A
 ><H2
 >Synopsis</H2
@@ -121,7 +121,7 @@ RESET ROLE</PRE
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN88093"
+NAME="AEN91580"
 ></A
 ><H2
 >Description</H2
@@ -180,7 +180,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN88107"
+NAME="AEN91594"
 ></A
 ><H2
 >Notes</H2
@@ -216,7 +216,7 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >SET ROLE</TT
 > to a
-   non-superuser role, she loses her superuser privileges.
+   non-superuser role, they lose their superuser privileges.
   </P
 ><P
 >   <TT
@@ -270,7 +270,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN88130"
+NAME="AEN91617"
 ></A
 ><H2
 >Examples</H2
@@ -293,7 +293,7 @@ SELECT SESSION_USER, CURRENT_USER;
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN88133"
+NAME="AEN91620"
 ></A
 ><H2
 >Compatibility</H2
@@ -304,7 +304,12 @@ CLASS="PRODUCTNAME"
 >
    allows identifier syntax (<TT
 CLASS="LITERAL"
->"rolename"</TT
+>"<TT
+CLASS="REPLACEABLE"
+><I
+>rolename</I
+></TT
+>"</TT
 >), while
    the SQL standard requires the role name to be written as a string
    literal.  SQL does not allow this command during a transaction;
@@ -333,7 +338,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN88143"
+NAME="AEN91631"
 ></A
 ><H2
 >See Also</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Monitoring Disk Usage"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 28. Monitoring Disk Usage</TD
+>Chapter 29. Monitoring Disk Usage</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="DISK-USAGE"
->28.1. Determining Disk Usage</A
+>29.1. Determining Disk Usage</A
 ></H1
 ><P
 >   Each table has a primary heap disk file where most of the data is
@@ -105,7 +105,7 @@ CLASS="ACRONYM"
    which is used to store values too wide to fit comfortably in the main
    table (see <A
 HREF="storage-toast.html"
->Section 63.2</A
+>Section 65.2</A
 >).  There will be one valid index
    on the <ACRONYM
 CLASS="ACRONYM"
@@ -116,14 +116,14 @@ CLASS="ACRONYM"
    exceed one gigabyte.  Naming conventions for these files are described
    in <A
 HREF="storage-file-layout.html"
->Section 63.1</A
+>Section 65.1</A
 >.
   </P
 ><P
 >   You can monitor disk space in three ways:
    using the SQL functions listed in <A
 HREF="functions-admin.html#FUNCTIONS-ADMIN-DBSIZE"
->Table 9-73</A
+>Table 9-83</A
 >,
    using the <A
 HREF="oid2name.html"

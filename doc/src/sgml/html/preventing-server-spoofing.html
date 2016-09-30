@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 17. Server Setup and Operation</TD
+>Chapter 18. Server Setup and Operation</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PREVENTING-SERVER-SPOOFING"
->17.7. Preventing Server Spoofing</A
+>18.7. Preventing Server Spoofing</A
 ></H1
 ><P
 >   While the server is running, it is not possible for a malicious user
@@ -110,7 +110,7 @@ CLASS="VARNAME"
    unless it is specially configured.
   </P
 ><P
->   The simplest way to prevent spoofing for <TT
+>   One way to prevent spoofing of <TT
 CLASS="LITERAL"
 >local</TT
 >
@@ -136,6 +136,21 @@ CLASS="FILENAME"
 > cleanup script to prevent removal of the symbolic link.
   </P
 ><P
+>   Another option for <TT
+CLASS="LITERAL"
+>local</TT
+> connections is for clients to use
+   <A
+HREF="libpq-connect.html#LIBPQ-CONNECT-REQUIREPEER"
+><TT
+CLASS="LITERAL"
+>requirepeer</TT
+></A
+>
+   to specify the required owner of the server process connected to
+   the socket.
+  </P
+><P
 >   To prevent spoofing on TCP connections, the best solution is to use
    SSL certificates and make sure that clients check the server's certificate.
    To do that, the server
@@ -144,11 +159,11 @@ CLASS="LITERAL"
 >hostssl</TT
 > connections (<A
 HREF="auth-pg-hba-conf.html"
->Section 19.1</A
+>Section 20.1</A
 >) and have SSL key and certificate files
    (<A
 HREF="ssl-tcp.html"
->Section 17.9</A
+>Section 18.9</A
 >). The TCP client must connect using
    <TT
 CLASS="LITERAL"
@@ -160,7 +175,7 @@ CLASS="LITERAL"
 > and have the appropriate root certificate
    file installed (<A
 HREF="libpq-ssl.html#LIBQ-SSL-CERTIFICATES"
->Section 31.18.1</A
+>Section 32.18.1</A
 >).
   </P
 ></DIV

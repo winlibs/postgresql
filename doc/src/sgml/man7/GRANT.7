@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "GRANT" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "GRANT" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -126,7 +126,7 @@ WITH GRANT OPTION
 is specified, the recipient of the privilege can in turn grant it to others\&. Without a grant option, the recipient cannot do that\&. Grant options cannot be granted to
 PUBLIC\&.
 .PP
-There is no need to grant privileges to the owner of an object (usually the user that created it), as the owner has all privileges by default\&. (The owner could, however, choose to revoke some of his own privileges for safety\&.)
+There is no need to grant privileges to the owner of an object (usually the user that created it), as the owner has all privileges by default\&. (The owner could, however, choose to revoke some of their own privileges for safety\&.)
 .PP
 The right to drop an object, or to alter its definition in any way, is not treated as a grantable privilege; it is inherent in the owner, and cannot be granted or revoked\&. (However, a similar effect can be obtained by granting or revoking membership in the role that owns the object; see below\&.) The owner implicitly has all grant options for the object, too\&.
 .PP
@@ -278,7 +278,7 @@ of the type, such as values of the type appearing in queries\&. It only prevents
 .sp
 For foreign\-data wrappers, this privilege enables the grantee to create new servers using that foreign\-data wrapper\&.
 .sp
-For servers, this privilege enables the grantee to create foreign tables using the server, and also to create, alter, or drop his own user\*(Aqs user mappings associated with that server\&.
+For servers, this privilege enables the grantee to create foreign tables using the server, and also to create, alter, or drop their own user\*(Aqs user mappings associated with that server\&.
 .RE
 .PP
 ALL PRIVILEGES
@@ -322,7 +322,7 @@ is still allowed in the command, but it is a noise word\&.
 .PP
 A user may perform
 \fBSELECT\fR,
-\fBINSERT\fR, etc\&. on a column if he holds that privilege for either the specific column or its whole table\&. Granting the privilege at the table level and then revoking it for one column will not do what you might wish: the table\-level grant is unaffected by a column\-level operation\&.
+\fBINSERT\fR, etc\&. on a column if they hold that privilege for either the specific column or its whole table\&. Granting the privilege at the table level and then revoking it for one column will not do what one might wish: the table\-level grant is unaffected by a column\-level operation\&.
 .PP
 When a non\-owner of an object attempts to
 \fBGRANT\fR
@@ -527,14 +527,14 @@ ALL PRIVILEGES
 is required\&. The SQL standard does not support setting the privileges on more than one object per command\&.
 .PP
 PostgreSQL
-allows an object owner to revoke his own ordinary privileges: for example, a table owner can make the table read\-only to himself by revoking his own
+allows an object owner to revoke their own ordinary privileges: for example, a table owner can make the table read\-only to themselves by revoking their own
 INSERT,
 UPDATE,
 DELETE, and
 TRUNCATE
 privileges\&. This is not possible according to the SQL standard\&. The reason is that
 PostgreSQL
-treats the owner\*(Aqs privileges as having been granted by the owner to himself; therefore he can revoke them too\&. In the SQL standard, the owner\*(Aqs privileges are granted by an assumed entity
+treats the owner\*(Aqs privileges as having been granted by the owner to themselves; therefore they can revoke them too\&. In the SQL standard, the owner\*(Aqs privileges are granted by an assumed entity
 \(lq_SYSTEM\(rq\&. Not being
 \(lq_SYSTEM\(rq, the owner cannot revoke these rights\&.
 .PP

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Programming Interface"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 44. Server Programming Interface</TD
+>Chapter 45. Server Programming Interface</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="SPI-EXAMPLES"
->44.5. Examples</A
+>45.5. Examples</A
 ></H1
 ><P
 >   This section contains a very simple example of SPI usage. The
@@ -128,14 +128,14 @@ CLASS="PROGRAMLISTING"
 PG_MODULE_MAGIC;
 #endif
 
-int execq(text *sql, int cnt);
+int64 execq(text *sql, int cnt);
 
-int
+int64
 execq(text *sql, int cnt)
 {
     char *command;
     int ret;
-    int proc;
+    uint64 proc;
 
     /* Convert given text object to a C string */
     command = text_to_cstring(sql);
@@ -153,11 +153,12 @@ execq(text *sql, int cnt)
         TupleDesc tupdesc = SPI_tuptable-&gt;tupdesc;
         SPITupleTable *tuptable = SPI_tuptable;
         char buf[8192];
-        int i, j;
+        uint64 j;
 
         for (j = 0; j &lt; proc; j++)
         {
             HeapTuple tuple = tuptable-&gt;vals[j];
+            int i;
 
             for (i = 1, buf[0] = 0; i &lt;= tupdesc-&gt;natts; i++)
                 snprintf(buf + strlen (buf), sizeof(buf) - strlen(buf), " %s%s",
@@ -181,19 +182,19 @@ execq(text *sql, int cnt)
 >   This is how you declare the function after having compiled it into
    a shared library (details are in <A
 HREF="xfunc-c.html#DFUNC"
->Section 35.9.6</A
+>Section 36.9.6</A
 >.):
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE FUNCTION execq(text, integer) RETURNS integer
+>CREATE FUNCTION execq(text, integer) RETURNS int8
     AS '<TT
 CLASS="REPLACEABLE"
 ><I
 >filename</I
 ></TT
 >'
-    LANGUAGE C;</PRE
+    LANGUAGE C STRICT;</PRE
 ><P>
   </P
 ><P

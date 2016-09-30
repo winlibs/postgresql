@@ -353,6 +353,10 @@
 },
 
 {
+	"idle_in_transaction_session_timeout", ERRCODE_IDLE_IN_TRANSACTION_SESSION_TIMEOUT
+},
+
+{
 	"invalid_sql_statement_name", ERRCODE_INVALID_SQL_STATEMENT_NAME
 },
 
@@ -750,6 +754,10 @@
 
 {
 	"duplicate_file", ERRCODE_DUPLICATE_FILE
+},
+
+{
+	"snapshot_too_old", ERRCODE_SNAPSHOT_TOO_OLD
 },
 
 {

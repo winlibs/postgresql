@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Database Physical Storage"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 63. Database Physical Storage</TD
+>Chapter 65. Database Physical Storage</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="STORAGE-TOAST"
->63.2. TOAST</A
+>65.2. TOAST</A
 ></H1
 ><P
 >This section provides an overview of <ACRONYM
@@ -171,7 +171,7 @@ CLASS="FUNCTION"
 but in some cases more efficient approaches are possible.
 See <A
 HREF="xtypes.html#XTYPES-TOAST"
->Section 35.11.1</A
+>Section 36.11.1</A
 > for more detail.)</P
 ><P
 ><ACRONYM
@@ -249,7 +249,7 @@ CLASS="FILENAME"
 when a tuple to be stored on disk is too large to be stored as-is.
 Further details appear in <A
 HREF="storage-toast.html#STORAGE-TOAST-ONDISK"
->Section 63.2.1</A
+>Section 65.2.1</A
 >.
 Alternatively, a <ACRONYM
 CLASS="ACRONYM"
@@ -260,7 +260,7 @@ necessarily short-lived, and will never appear on-disk, but they are very
 useful for avoiding copying and redundant processing of large data values.
 Further details appear in <A
 HREF="storage-toast.html#STORAGE-TOAST-INMEMORY"
->Section 63.2.2</A
+>Section 65.2.2</A
 >.</P
 ><P
 >The compression technique used for either in-line or out-of-line compressed
@@ -276,7 +276,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="STORAGE-TOAST-ONDISK"
->63.2.1. Out-of-line, on-disk TOAST storage</A
+>65.2.1. Out-of-line, on-disk TOAST storage</A
 ></H2
 ><P
 >If any of the columns of a table are <ACRONYM
@@ -504,7 +504,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="STORAGE-TOAST-INMEMORY"
->63.2.2. Out-of-line, in-memory TOAST storage</A
+>65.2.2. Out-of-line, in-memory TOAST storage</A
 ></H2
 ><P
 ><ACRONYM

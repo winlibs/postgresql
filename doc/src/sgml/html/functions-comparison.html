@@ -2,14 +2,14 @@
 <HTML
 ><HEAD
 ><TITLE
->Comparison Operators</TITLE
+>Comparison Functions and Operators</TITLE
 ><META
 NAME="GENERATOR"
 CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,18 +93,18 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="FUNCTIONS-COMPARISON"
->9.2. Comparison Operators</A
+>9.2. Comparison Functions and Operators</A
 ></H1
 ><P
->    The usual comparison operators are available, shown in <A
-HREF="functions-comparison.html#FUNCTIONS-COMPARISON-TABLE"
+>    The usual comparison operators are available, as shown in <A
+HREF="functions-comparison.html#FUNCTIONS-COMPARISON-OP-TABLE"
 >Table 9-1</A
 >.
    </P
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="FUNCTIONS-COMPARISON-TABLE"
+NAME="FUNCTIONS-COMPARISON-OP-TABLE"
 ></A
 ><P
 ><B
@@ -229,12 +229,328 @@ CLASS="LITERAL"
 >).
    </P
 ><P
+>    There are also some comparison predicates, as shown in <A
+HREF="functions-comparison.html#FUNCTIONS-COMPARISON-PRED-TABLE"
+>Table 9-2</A
+>.  These behave much like
+    operators, but have special syntax mandated by the SQL standard.
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-COMPARISON-PRED-TABLE"
+></A
+><P
+><B
+>Table 9-2. Comparison Predicates</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><THEAD
+><TR
+><TH
+>Predicate</TH
+><TH
+>Description</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> <TT
+CLASS="LITERAL"
+>BETWEEN</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+> <TT
+CLASS="LITERAL"
+>AND</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>y</I
+></TT
+> </TD
+><TD
+>between</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> <TT
+CLASS="LITERAL"
+>NOT BETWEEN</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+> <TT
+CLASS="LITERAL"
+>AND</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>y</I
+></TT
+> </TD
+><TD
+>not between</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> <TT
+CLASS="LITERAL"
+>BETWEEN SYMMETRIC</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+> <TT
+CLASS="LITERAL"
+>AND</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>y</I
+></TT
+> </TD
+><TD
+>between, after sorting the comparison values</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> <TT
+CLASS="LITERAL"
+>NOT BETWEEN SYMMETRIC</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>x</I
+></TT
+> <TT
+CLASS="LITERAL"
+>AND</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>y</I
+></TT
+> </TD
+><TD
+>not between, after sorting the comparison values</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS DISTINCT FROM</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>b</I
+></TT
+> </TD
+><TD
+>not equal, treating null like an ordinary value</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS NOT DISTINCT FROM</TT
+> <TT
+CLASS="REPLACEABLE"
+><I
+>b</I
+></TT
+></TD
+><TD
+>equal, treating null like an ordinary value</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS NULL</TT
+> </TD
+><TD
+>is null</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS NOT NULL</TT
+> </TD
+><TD
+>is not null</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> <TT
+CLASS="LITERAL"
+>ISNULL</TT
+> </TD
+><TD
+>is null (nonstandard syntax)</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> <TT
+CLASS="LITERAL"
+>NOTNULL</TT
+> </TD
+><TD
+>is not null (nonstandard syntax)</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>boolean_expression</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS TRUE</TT
+> </TD
+><TD
+>is true</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>boolean_expression</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS NOT TRUE</TT
+> </TD
+><TD
+>is false or unknown</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>boolean_expression</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS FALSE</TT
+> </TD
+><TD
+>is false</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>boolean_expression</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS NOT FALSE</TT
+> </TD
+><TD
+>is true or unknown</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>boolean_expression</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS UNKNOWN</TT
+> </TD
+><TD
+>is unknown</TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="REPLACEABLE"
+><I
+>boolean_expression</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS NOT UNKNOWN</TT
+> </TD
+><TD
+>is true or false</TD
+></TR
+></TBODY
+></TABLE
+></DIV
+><P
 >    
-    In addition to the comparison operators, the special
-    <TT
+    The <TT
 CLASS="TOKEN"
 >BETWEEN</TT
-> construct is available:
+> predicate simplifies range tests:
 </P><PRE
 CLASS="SYNOPSIS"
 ><TT
@@ -336,7 +652,7 @@ CLASS="REPLACEABLE"
     <TT
 CLASS="LITERAL"
 >BETWEEN SYMMETRIC</TT
-> is the same as <TT
+> is like <TT
 CLASS="LITERAL"
 >BETWEEN</TT
 >
@@ -351,9 +667,81 @@ CLASS="LITERAL"
 ><P
 >    
     
+    Ordinary comparison operators yield null (signifying <SPAN
+CLASS="QUOTE"
+>"unknown"</SPAN
+>),
+    not true or false, when either input is null.  For example,
+    <TT
+CLASS="LITERAL"
+>7 = NULL</TT
+> yields null, as does <TT
+CLASS="LITERAL"
+>7 &lt;&gt; NULL</TT
+>.  When
+    this behavior is not suitable, use the
+    <TT
+CLASS="LITERAL"
+>IS [<SPAN
+CLASS="OPTIONAL"
+> NOT </SPAN
+>] DISTINCT FROM</TT
+> predicates:
+</P><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> IS DISTINCT FROM <TT
+CLASS="REPLACEABLE"
+><I
+>b</I
+></TT
+>
+<TT
+CLASS="REPLACEABLE"
+><I
+>a</I
+></TT
+> IS NOT DISTINCT FROM <TT
+CLASS="REPLACEABLE"
+><I
+>b</I
+></TT
+></PRE
+><P>
+    For non-null inputs, <TT
+CLASS="LITERAL"
+>IS DISTINCT FROM</TT
+> is
+    the same as the <TT
+CLASS="LITERAL"
+>&lt;&gt;</TT
+> operator.  However, if both
+    inputs are null it returns false, and if only one input is
+    null it returns true.  Similarly, <TT
+CLASS="LITERAL"
+>IS NOT DISTINCT
+    FROM</TT
+> is identical to <TT
+CLASS="LITERAL"
+>=</TT
+> for non-null
+    inputs, but it returns true when both inputs are null, and false when only
+    one input is null. Thus, these predicates effectively act as though null
+    were a normal data value, rather than <SPAN
+CLASS="QUOTE"
+>"unknown"</SPAN
+>.
+   </P
+><P
+>    
     
     
-    To check whether a value is or is not null, use the constructs:
+    
+    To check whether a value is or is not null, use the predicates:
 </P><PRE
 CLASS="SYNOPSIS"
 ><TT
@@ -369,7 +757,7 @@ CLASS="REPLACEABLE"
 ></TT
 > IS NOT NULL</PRE
 ><P>
-    or the equivalent, but nonstandard, constructs:
+    or the equivalent, but nonstandard, predicates:
 </P><PRE
 CLASS="SYNOPSIS"
 ><TT
@@ -415,8 +803,7 @@ CLASS="QUOTE"
 CLASS="LITERAL"
 >NULL</TT
 >.  (The null value represents an unknown value,
-    and it is not known whether two unknown values are equal.) This
-    behavior conforms to the SQL standard.
+    and it is not known whether two unknown values are equal.)
    </P
 ><DIV
 CLASS="TIP"
@@ -462,13 +849,7 @@ CLASS="LITERAL"
    </P
 ></BLOCKQUOTE
 ></DIV
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
 ><P
-><B
->Note: </B
 >    If the <TT
 CLASS="REPLACEABLE"
 ><I
@@ -492,89 +873,29 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >IS NOT NULL</TT
 > do not always return
-    inverse results for row-valued expressions, i.e., a row-valued
-    expression that contains both NULL and non-null values will return false
-    for both tests.
-    This definition conforms to the SQL standard, and is a change from the
-    inconsistent behavior exhibited by <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
+    inverse results for row-valued expressions; in particular, a row-valued
+    expression that contains both null and non-null fields will return false
+    for both tests.  In some cases, it may be preferable to
+    write <TT
+CLASS="REPLACEABLE"
+><I
+>row</I
+></TT
+> <TT
+CLASS="LITERAL"
+>IS DISTINCT FROM NULL</TT
 >
-    versions prior to 8.2.
-   </P
-></BLOCKQUOTE
-></DIV
-><P
->    
-    
-    Ordinary comparison operators yield null (signifying <SPAN
-CLASS="QUOTE"
->"unknown"</SPAN
->),
-    not true or false, when either input is null.  For example,
-    <TT
-CLASS="LITERAL"
->7 = NULL</TT
-> yields null, as does <TT
-CLASS="LITERAL"
->7 &lt;&gt; NULL</TT
->.  When
-    this behavior is not suitable, use the
-    <TT
-CLASS="LITERAL"
->IS [<SPAN
-CLASS="OPTIONAL"
-> NOT </SPAN
->] DISTINCT FROM</TT
-> constructs:
-</P><PRE
-CLASS="SYNOPSIS"
-><TT
+    or <TT
 CLASS="REPLACEABLE"
 ><I
->expression</I
+>row</I
 ></TT
-> IS DISTINCT FROM <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->
-<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> IS NOT DISTINCT FROM <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-></PRE
-><P>
-    For non-null inputs, <TT
+> <TT
 CLASS="LITERAL"
->IS DISTINCT FROM</TT
-> is
-    the same as the <TT
-CLASS="LITERAL"
->&lt;&gt;</TT
-> operator.  However, if both
-    inputs are null it returns false, and if only one input is
-    null it returns true.  Similarly, <TT
-CLASS="LITERAL"
->IS NOT DISTINCT
-    FROM</TT
-> is identical to <TT
-CLASS="LITERAL"
->=</TT
-> for non-null
-    inputs, but it returns true when both inputs are null, and false when only
-    one input is null. Thus, these constructs effectively act as though null
-    were a normal data value, rather than <SPAN
-CLASS="QUOTE"
->"unknown"</SPAN
->.
+>IS NOT DISTINCT FROM NULL</TT
+>,
+    which will simply check whether the overall row value is null without any
+    additional tests on the row fields.
    </P
 ><P
 >    
@@ -583,43 +904,43 @@ CLASS="QUOTE"
     
     
     
-    Boolean values can also be tested using the constructs
+    Boolean values can also be tested using the predicates
 </P><PRE
 CLASS="SYNOPSIS"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->expression</I
+>boolean_expression</I
 ></TT
 > IS TRUE
 <TT
 CLASS="REPLACEABLE"
 ><I
->expression</I
+>boolean_expression</I
 ></TT
 > IS NOT TRUE
 <TT
 CLASS="REPLACEABLE"
 ><I
->expression</I
+>boolean_expression</I
 ></TT
 > IS FALSE
 <TT
 CLASS="REPLACEABLE"
 ><I
->expression</I
+>boolean_expression</I
 ></TT
 > IS NOT FALSE
 <TT
 CLASS="REPLACEABLE"
 ><I
->expression</I
+>boolean_expression</I
 ></TT
 > IS UNKNOWN
 <TT
 CLASS="REPLACEABLE"
 ><I
->expression</I
+>boolean_expression</I
 ></TT
 > IS NOT UNKNOWN</PRE
 ><P>
@@ -646,6 +967,82 @@ CLASS="LITERAL"
 >, respectively, except that the input
     expression must be of Boolean type.
    </P
+><P
+>    Some comparison-related functions are also available, as shown in <A
+HREF="functions-comparison.html#FUNCTIONS-COMPARISON-FUNC-TABLE"
+>Table 9-3</A
+>.
+   </P
+><DIV
+CLASS="TABLE"
+><A
+NAME="FUNCTIONS-COMPARISON-FUNC-TABLE"
+></A
+><P
+><B
+>Table 9-3. Comparison Functions</B
+></P
+><TABLE
+BORDER="1"
+CLASS="CALSTABLE"
+><COL><COL><COL><COL><THEAD
+><TR
+><TH
+>Function</TH
+><TH
+>Description</TH
+><TH
+>Example</TH
+><TH
+>Example Result</TH
+></TR
+></THEAD
+><TBODY
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+>num_nonnulls(VARIADIC "any")</TT
+>
+       </TD
+><TD
+>returns the number of non-null arguments</TD
+><TD
+><TT
+CLASS="LITERAL"
+>num_nonnulls(1, NULL, 2)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>2</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+>num_nulls(VARIADIC "any")</TT
+>
+       </TD
+><TD
+>returns the number of null arguments</TD
+><TD
+><TT
+CLASS="LITERAL"
+>num_nulls(1, NULL, 2)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>1</TT
+></TD
+></TR
+></TBODY
+></TABLE
+></DIV
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-SELECT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN86558"
+NAME="AEN90028"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN86558"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN86563"
+NAME="AEN90033"
 ></A
 ><H2
 >Synopsis</H2
@@ -514,7 +514,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86636"
+NAME="AEN90106"
 ></A
 ><H2
 >Description</H2
@@ -870,7 +870,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN86720"
+NAME="AEN90190"
 ></A
 ><H2
 >Parameters</H2
@@ -1295,7 +1295,7 @@ CLASS="REPLACEABLE"
 CLASS="LITERAL"
 >REPEATABLE</TT
 > is not given then a new random
-        sample is selected for each query.
+        sample is selected for each query, based upon a system-generated seed.
         Note that some add-on sampling methods do not
         accept <TT
 CLASS="LITERAL"
@@ -1419,7 +1419,7 @@ CLASS="LITERAL"
 >.  The output of such an item is the
         concatenation of the first row from each function, then the second
         row from each function, etc.  If some of the functions produce fewer
-        rows than others, NULLs are substituted for the missing data, so
+        rows than others, null values are substituted for the missing data, so
         that the total number of rows returned is always the same as for the
         function that produced the most rows.
        </P
@@ -2831,6 +2831,82 @@ CLASS="LITERAL"
 >;
     the output column names will be the same as the table columns' names.
    </P
+><P
+>    According to the SQL standard, the expressions in the output list should
+    be computed before applying <TT
+CLASS="LITERAL"
+>DISTINCT</TT
+>, <TT
+CLASS="LITERAL"
+>ORDER
+    BY</TT
+>, or <TT
+CLASS="LITERAL"
+>LIMIT</TT
+>.  This is obviously necessary
+    when using <TT
+CLASS="LITERAL"
+>DISTINCT</TT
+>, since otherwise it's not clear
+    what values are being made distinct.  However, in many cases it is
+    convenient if output expressions are computed after <TT
+CLASS="LITERAL"
+>ORDER
+    BY</TT
+> and <TT
+CLASS="LITERAL"
+>LIMIT</TT
+>; particularly if the output list
+    contains any volatile or expensive functions.  With that behavior, the
+    order of function evaluations is more intuitive and there will not be
+    evaluations corresponding to rows that never appear in the output.
+    <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> will effectively evaluate output expressions
+    after sorting and limiting, so long as those expressions are not
+    referenced in <TT
+CLASS="LITERAL"
+>DISTINCT</TT
+>, <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+>
+    or <TT
+CLASS="LITERAL"
+>GROUP BY</TT
+>.  (As a counterexample, <TT
+CLASS="LITERAL"
+>SELECT
+    f(x) FROM tab ORDER BY 1</TT
+> clearly must evaluate <CODE
+CLASS="FUNCTION"
+>f(x)</CODE
+>
+    before sorting.)  Output expressions that contain set-returning functions
+    are effectively evaluated after sorting and before limiting, so
+    that <TT
+CLASS="LITERAL"
+>LIMIT</TT
+> will act to cut off the output from a
+    set-returning function.
+   </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>     <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> versions before 9.6 did not provide any
+     guarantees about the timing of evaluation of output expressions versus
+     sorting and limiting; it depended on the form of the chosen query plan.
+    </P
+></BLOCKQUOTE
+></DIV
 ></DIV
 ><DIV
 CLASS="REFSECT2"
@@ -3634,7 +3710,7 @@ HREF="sql-expressions.html#SQL-SYNTAX-COLLATE-EXPRS"
 > and
     <A
 HREF="collation.html"
->Section 22.2</A
+>Section 23.2</A
 >.
    </P
 ></DIV
@@ -4267,7 +4343,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87539"
+NAME="AEN91026"
 ></A
 ><H2
 >Examples</H2
@@ -4560,7 +4636,7 @@ FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;</P
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN87581"
+NAME="AEN91068"
 ></A
 ><H2
 >Compatibility</H2
@@ -4575,7 +4651,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87585"
+NAME="AEN91072"
 ></A
 ><H3
 >Omitted <TT
@@ -4636,7 +4712,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87599"
+NAME="AEN91086"
 ></A
 ><H3
 >Empty <TT
@@ -4664,7 +4740,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87606"
+NAME="AEN91093"
 ></A
 ><H3
 >Omitting the <TT
@@ -4713,7 +4789,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87618"
+NAME="AEN91105"
 ></A
 ><H3
 ><TT
@@ -4760,7 +4836,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87631"
+NAME="AEN91118"
 ></A
 ><H3
 ><TT
@@ -4782,7 +4858,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87637"
+NAME="AEN91124"
 ></A
 ><H3
 >Function Calls in <TT
@@ -4860,7 +4936,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87656"
+NAME="AEN91143"
 ></A
 ><H3
 >Namespace Available to <TT
@@ -4914,7 +4990,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87669"
+NAME="AEN91156"
 ></A
 ><H3
 >Functional Dependencies</H3
@@ -4938,7 +5014,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87675"
+NAME="AEN91162"
 ></A
 ><H3
 ><TT
@@ -4963,7 +5039,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87681"
+NAME="AEN91168"
 ></A
 ><H3
 ><TT
@@ -5021,7 +5097,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87695"
+NAME="AEN91182"
 ></A
 ><H3
 ><TT
@@ -5081,7 +5157,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87712"
+NAME="AEN91199"
 ></A
 ><H3
 >Data-Modifying Statements in <TT
@@ -5112,7 +5188,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN87721"
+NAME="AEN91208"
 ></A
 ><H3
 >Nonstandard Clauses</H3

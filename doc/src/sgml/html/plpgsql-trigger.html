@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 40. <SPAN
+>Chapter 41. <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > - <ACRONYM
@@ -99,40 +99,65 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPGSQL-TRIGGER"
->40.9. Trigger Procedures</A
+>41.9. Trigger Procedures</A
 ></H1
+><P
+>   <SPAN
+CLASS="APPLICATION"
+>PL/pgSQL</SPAN
+> can be used to define trigger
+   procedures on data changes or database events.
+   A trigger procedure is created with the <TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+>
+   command, declaring it as a function with no arguments and a return type of
+   <TT
+CLASS="TYPE"
+>trigger</TT
+> (for data change triggers) or
+   <TT
+CLASS="TYPE"
+>event_trigger</TT
+> (for database event triggers).
+   Special local variables named <TT
+CLASS="VARNAME"
+>PG_<TT
+CLASS="REPLACEABLE"
+><I
+>something</I
+></TT
+></TT
+> are
+   automatically defined to describe the condition that triggered the call.
+  </P
 ><DIV
 CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DML-TRIGGER"
->40.9.1. Triggers on Data Changes</A
+>41.9.1. Triggers on Data Changes</A
 ></H2
 ><P
->    <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> can be used to define trigger
-    procedures. A trigger procedure is created with the
-    <TT
-CLASS="COMMAND"
->CREATE FUNCTION</TT
-> command, declaring it as a function with
-    no arguments and a return type of <TT
+>   A <A
+HREF="triggers.html"
+>data change trigger</A
+> is declared as a
+   function with no arguments and a return type of <TT
 CLASS="TYPE"
 >trigger</TT
->.  Note that
-    the function must be declared with no arguments even if it expects
-    to receive arguments specified in <TT
+>.
+   Note that the function must be declared with no arguments even if it
+   expects to receive some arguments specified in <TT
 CLASS="COMMAND"
 >CREATE TRIGGER</TT
-> &mdash;
-    trigger arguments are passed via <TT
+>
+   &mdash; such arguments are passed via <TT
 CLASS="VARNAME"
 >TG_ARGV</TT
 >, as described
-    below.
+   below.
   </P
 ><P
 >   When a <SPAN
@@ -537,7 +562,7 @@ CLASS="LITERAL"
 ><P
 >    <A
 HREF="plpgsql-trigger.html#PLPGSQL-TRIGGER-EXAMPLE"
->Example 40-3</A
+>Example 41-3</A
 > shows an example of a
     trigger procedure in <SPAN
 CLASS="APPLICATION"
@@ -551,7 +576,7 @@ NAME="PLPGSQL-TRIGGER-EXAMPLE"
 ></A
 ><P
 ><B
->Example 40-3. A <SPAN
+>Example 41-3. A <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > Trigger Procedure</B
@@ -581,7 +606,7 @@ CREATE FUNCTION emp_stamp() RETURNS trigger AS $emp_stamp$
             RAISE EXCEPTION '% cannot have null salary', NEW.empname;
         END IF;
 
-        -- Who works for us when she must pay for it?
+        -- Who works for us when they must pay for it?
         IF NEW.salary &lt; 0 THEN
             RAISE EXCEPTION '% cannot have a negative salary', NEW.empname;
         END IF;
@@ -602,7 +627,7 @@ CREATE TRIGGER emp_stamp BEFORE INSERT OR UPDATE ON emp
     can be thought of as auditing changes to a table.
     <A
 HREF="plpgsql-trigger.html#PLPGSQL-TRIGGER-AUDIT-EXAMPLE"
->Example 40-4</A
+>Example 41-4</A
 > shows an example of an
     audit trigger procedure in <SPAN
 CLASS="APPLICATION"
@@ -616,7 +641,7 @@ NAME="PLPGSQL-TRIGGER-AUDIT-EXAMPLE"
 ></A
 ><P
 ><B
->Example 40-4. A <SPAN
+>Example 41-4. A <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > Trigger Procedure For Auditing</B
@@ -680,7 +705,7 @@ AFTER INSERT OR UPDATE OR DELETE ON emp
     the last modified timestamp derived from the audit trail for each entry.
     <A
 HREF="plpgsql-trigger.html#PLPGSQL-VIEW-TRIGGER-AUDIT-EXAMPLE"
->Example 40-5</A
+>Example 41-5</A
 > shows an example
     of an audit trigger on a view in <SPAN
 CLASS="APPLICATION"
@@ -694,7 +719,7 @@ NAME="PLPGSQL-VIEW-TRIGGER-AUDIT-EXAMPLE"
 ></A
 ><P
 ><B
->Example 40-5. A <SPAN
+>Example 41-5. A <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > View Trigger Procedure For Auditing</B
@@ -775,7 +800,7 @@ INSTEAD OF INSERT OR UPDATE OR DELETE ON emp_view
     of measured or observed data (called fact tables) might be extremely large.
     <A
 HREF="plpgsql-trigger.html#PLPGSQL-TRIGGER-SUMMARY-EXAMPLE"
->Example 40-6</A
+>Example 41-6</A
 > shows an example of a
     trigger procedure in <SPAN
 CLASS="APPLICATION"
@@ -790,7 +815,7 @@ NAME="PLPGSQL-TRIGGER-SUMMARY-EXAMPLE"
 ></A
 ><P
 ><B
->Example 40-6. A <SPAN
+>Example 41-6. A <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > Trigger Procedure For Maintaining A Summary Table</B
@@ -951,14 +976,18 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-EVENT-TRIGGER"
->40.9.2. Triggers on Events</A
+>41.9.2. Triggers on Events</A
 ></H2
 ><P
 >    <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
-> can be used to define event
-    triggers.  <SPAN
+> can be used to define
+    <A
+HREF="event-triggers.html"
+>event triggers</A
+>.
+    <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > requires that a procedure that
@@ -972,7 +1001,7 @@ CLASS="LITERAL"
 >    When a <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
-> function is called as a
+> function is called as an
     event trigger, several special variables are created automatically
     in the top-level block. They are:
 
@@ -1016,8 +1045,8 @@ CLASS="TYPE"
 ><P
 >    <A
 HREF="plpgsql-trigger.html#PLPGSQL-EVENT-TRIGGER-EXAMPLE"
->Example 40-7</A
-> shows an example of a
+>Example 41-7</A
+> shows an example of an
     event trigger procedure in <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
@@ -1030,7 +1059,7 @@ NAME="PLPGSQL-EVENT-TRIGGER-EXAMPLE"
 ></A
 ><P
 ><B
->Example 40-7. A <SPAN
+>Example 41-7. A <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > Event Trigger Procedure</B

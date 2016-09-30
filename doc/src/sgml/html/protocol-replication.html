@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Frontend/Backend Protocol"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 50. Frontend/Backend Protocol</TD
+>Chapter 51. Frontend/Backend Protocol</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PROTOCOL-REPLICATION"
->50.3. Streaming Replication Protocol</A
+>51.3. Streaming Replication Protocol</A
 ></H1
 ><P
 >To initiate streaming replication, the frontend sends the
@@ -139,14 +139,17 @@ CLASS="LITERAL"
 CLASS="PROGRAMLISTING"
 >psql "dbname=postgres replication=database" -c "IDENTIFY_SYSTEM;"</PRE
 ><P>
- However it is often more useful to use
- <SPAN
-CLASS="APPLICATION"
->pg_receivexlog</SPAN
+ However, it is often more useful to use
+ <A
+HREF="app-pgreceivexlog.html"
+>pg_receivexlog</A
 > (for physical replication) or
- <SPAN
+ <A
+HREF="app-pgrecvlogical.html"
+><SPAN
 CLASS="APPLICATION"
 >pg_recvlogical</SPAN
+></A
 > (for logical replication).</P
 ><P
 >The commands accepted in walsender mode are:
@@ -156,7 +159,10 @@ CLASS="APPLICATION"
 CLASS="VARIABLELIST"
 ><DL
 ><DT
->IDENTIFY_SYSTEM
+><TT
+CLASS="LITERAL"
+>IDENTIFY_SYSTEM</TT
+>
      </DT
 ><DD
 ><P
@@ -170,7 +176,13 @@ CLASS="VARIABLELIST"
 CLASS="VARIABLELIST"
 ><DL
 ><DT
->systemid</DT
+><TT
+CLASS="LITERAL"
+>systemid</TT
+> (<TT
+CLASS="TYPE"
+>text</TT
+>)</DT
 ><DD
 ><P
 >       The unique system identifier identifying the cluster. This
@@ -179,15 +191,27 @@ CLASS="VARIABLELIST"
       </P
 ></DD
 ><DT
->timeline</DT
+><TT
+CLASS="LITERAL"
+>timeline</TT
+> (<TT
+CLASS="TYPE"
+>int4</TT
+>)</DT
 ><DD
 ><P
->       Current TimelineID. Also useful to check that the standby is
+>       Current timeline ID. Also useful to check that the standby is
        consistent with the master.
       </P
 ></DD
 ><DT
->xlogpos</DT
+><TT
+CLASS="LITERAL"
+>xlogpos</TT
+> (<TT
+CLASS="TYPE"
+>text</TT
+>)</DT
 ><DD
 ><P
 >       Current xlog flush location. Useful to get a known location in the
@@ -195,10 +219,16 @@ CLASS="VARIABLELIST"
       </P
 ></DD
 ><DT
->dbname</DT
+><TT
+CLASS="LITERAL"
+>dbname</TT
+> (<TT
+CLASS="TYPE"
+>text</TT
+>)</DT
 ><DD
 ><P
->       Database connected to or NULL.
+>       Database connected to or null.
       </P
 ></DD
 ></DL
@@ -207,7 +237,10 @@ CLASS="VARIABLELIST"
      </P
 ></DD
 ><DT
->TIMELINE_HISTORY <TT
+><TT
+CLASS="LITERAL"
+>TIMELINE_HISTORY</TT
+> <TT
 CLASS="REPLACEABLE"
 ><I
 >tli</I
@@ -232,17 +265,29 @@ CLASS="REPLACEABLE"
 CLASS="VARIABLELIST"
 ><DL
 ><DT
->filename</DT
+><TT
+CLASS="LITERAL"
+>filename</TT
+> (<TT
+CLASS="TYPE"
+>text</TT
+>)</DT
 ><DD
 ><P
->       Filename of the timeline history file, e.g <TT
+>       File name of the timeline history file, e.g., <TT
 CLASS="FILENAME"
 >00000002.history</TT
 >.
       </P
 ></DD
 ><DT
->content</DT
+><TT
+CLASS="LITERAL"
+>content</TT
+> (<TT
+CLASS="TYPE"
+>bytea</TT
+>)</DT
 ><DD
 ><P
 >       Contents of the timeline history file.
@@ -254,7 +299,10 @@ CLASS="FILENAME"
      </P
 ></DD
 ><DT
->CREATE_REPLICATION_SLOT <TT
+><TT
+CLASS="LITERAL"
+>CREATE_REPLICATION_SLOT</TT
+> <TT
 CLASS="REPLACEABLE"
 ><I
 >slot_name</I
@@ -262,7 +310,10 @@ CLASS="REPLACEABLE"
 > { <TT
 CLASS="LITERAL"
 >PHYSICAL</TT
-> | <TT
+> [ <TT
+CLASS="LITERAL"
+>RESERVE_WAL</TT
+> ] | <TT
 CLASS="LITERAL"
 >LOGICAL</TT
 > <TT
@@ -277,7 +328,7 @@ CLASS="REPLACEABLE"
 >      Create a physical or logical replication
       slot. See <A
 HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
->Section 25.2.6</A
+>Section 26.2.6</A
 > for more about
       replication slots.
      </P
@@ -298,7 +349,7 @@ CLASS="REPLACEABLE"
 >          The name of the slot to create. Must be a valid replication slot
           name (see <A
 HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS-MANIPULATION"
->Section 25.2.6.1</A
+>Section 26.2.6.1</A
 >).
          </P
 ></DD
@@ -314,15 +365,36 @@ CLASS="REPLACEABLE"
 >          The name of the output plugin used for logical decoding
           (see <A
 HREF="logicaldecoding-output-plugin.html"
->Section 46.6</A
+>Section 47.6</A
 >).
          </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
+>RESERVE_WAL</TT
+></DT
+><DD
+><P
+>         Specify that this physical replication slot reserves <ACRONYM
+CLASS="ACRONYM"
+>WAL</ACRONYM
+>
+         immediately.  Otherwise, <ACRONYM
+CLASS="ACRONYM"
+>WAL</ACRONYM
+> is only reserved upon
+         connection from a streaming replication client.
+        </P
 ></DD
 ></DL
 ></DIV
 ></DD
 ><DT
->START_REPLICATION [<TT
+><TT
+CLASS="LITERAL"
+>START_REPLICATION</TT
+> [ <TT
 CLASS="LITERAL"
 >SLOT</TT
 > <TT
@@ -330,15 +402,15 @@ CLASS="REPLACEABLE"
 ><I
 >slot_name</I
 ></TT
->] [<TT
+> ] [ <TT
 CLASS="LITERAL"
 >PHYSICAL</TT
->] <TT
+> ] <TT
 CLASS="REPLACEABLE"
 ><I
 >XXX/XXX</I
 ></TT
-> [<TT
+> [ <TT
 CLASS="LITERAL"
 >TIMELINE</TT
 > <TT
@@ -346,7 +418,7 @@ CLASS="REPLACEABLE"
 ><I
 >tli</I
 ></TT
->]
+> ]
      </DT
 ><DD
 ><P
@@ -368,7 +440,7 @@ CLASS="REPLACEABLE"
 ></TT
 >;
       otherwise, the server's current timeline is selected. The server can
-      reply with an error, e.g. if the requested section of WAL has already
+      reply with an error, for example if the requested section of WAL has already
       been recycled. On success, server responds with a CopyBothResponse
       message, and then starts to stream WAL to the frontend.
      </P
@@ -388,9 +460,9 @@ CLASS="VARNAME"
       are still needed by the standby.
      </P
 ><P
->      If the client requests a timeline that's not the latest, but is part of
+>      If the client requests a timeline that's not the latest but is part of
       the history of the server, the server will stream all the WAL on that
-      timeline starting from the requested startpoint, up to the point where
+      timeline starting from the requested start point up to the point where
       the server switched to another timeline. If the client requests
       streaming at exactly the end of an old timeline, the server responds
       immediately with CommandComplete without entering COPY mode.
@@ -400,8 +472,14 @@ CLASS="VARNAME"
       the server will end streaming by exiting the COPY mode. When the client
       acknowledges this by also exiting COPY mode, the server sends a result
       set with one row and two columns, indicating the next timeline in this
-      server's history. The first column is the next timeline's ID, and the
-      second column is the XLOG position where the switch happened. Usually,
+      server's history. The first column is the next timeline's ID (type <TT
+CLASS="TYPE"
+>int8</TT
+>), and the
+      second column is the WAL position where the switch happened (type <TT
+CLASS="TYPE"
+>text</TT
+>). Usually,
       the switch position is the end of the WAL that was streamed, but there
       are corner cases where the server can send some WAL from the old
       timeline that it has not itself replayed before promoting. Finally, the
@@ -665,7 +743,10 @@ CLASS="VARIABLELIST"
      </P
 ></DD
 ><DT
->START_REPLICATION <TT
+><TT
+CLASS="LITERAL"
+>START_REPLICATION</TT
+> <TT
 CLASS="LITERAL"
 >SLOT</TT
 > <TT
@@ -686,12 +767,12 @@ CLASS="REPLACEABLE"
 ><I
 >option_name</I
 ></TT
-> [<TT
+> [ <TT
 CLASS="REPLACEABLE"
 ><I
 >option_value</I
 ></TT
->] [, ... ] ) ]</DT
+> ] [, ...] ) ]</DT
 ><DD
 ><P
 >      Instructs server to start streaming WAL for logical replication, starting
@@ -701,7 +782,7 @@ CLASS="REPLACEABLE"
 >XXX/XXX</I
 ></TT
 >. The server can
-      reply with an error, e.g. if the requested section of WAL has already
+      reply with an error, for example if the requested section of WAL has already
       been recycled. On success, server responds with a CopyBothResponse
       message, and then starts to stream WAL to the frontend.
      </P
@@ -786,7 +867,10 @@ CLASS="REPLACEABLE"
 ></DIV
 ></DD
 ><DT
->DROP_REPLICATION_SLOT <TT
+><TT
+CLASS="LITERAL"
+>DROP_REPLICATION_SLOT</TT
+> <TT
 CLASS="REPLACEABLE"
 ><I
 >slot_name</I
@@ -819,7 +903,10 @@ CLASS="REPLACEABLE"
 ></DIV
 ></DD
 ><DT
->BASE_BACKUP [<TT
+><TT
+CLASS="LITERAL"
+>BASE_BACKUP</TT
+> [ <TT
 CLASS="LITERAL"
 >LABEL</TT
 > <TT
@@ -827,19 +914,19 @@ CLASS="REPLACEABLE"
 ><I
 >'label'</I
 ></TT
->] [<TT
+> ] [ <TT
 CLASS="LITERAL"
 >PROGRESS</TT
->] [<TT
+> ] [ <TT
 CLASS="LITERAL"
 >FAST</TT
->] [<TT
+> ] [ <TT
 CLASS="LITERAL"
 >WAL</TT
->] [<TT
+> ] [ <TT
 CLASS="LITERAL"
 >NOWAIT</TT
->] [<TT
+> ] [ <TT
 CLASS="LITERAL"
 >MAX_RATE</TT
 > <TT
@@ -847,10 +934,10 @@ CLASS="REPLACEABLE"
 ><I
 >rate</I
 ></TT
->] [<TT
+> ] [ <TT
 CLASS="LITERAL"
 >TABLESPACE_MAP</TT
->]
+> ]
      </DT
 ><DD
 ><P
@@ -898,10 +985,10 @@ CLASS="LITERAL"
           send back an approximate size in the header of each tablespace, which
           can be used to calculate how far along the stream is done. This is
           calculated by enumerating all the file sizes once before the transfer
-          is even started, and may as such have a negative impact on the
-          performance - in particular it may take longer before the first data
+          is even started, and might as such have a negative impact on the
+          performance.  In particular, it might take longer before the first data
           is streamed. Since the database files can change during the backup,
-          the size is only approximate and may both grow and shrink between
+          the size is only approximate and might both grow and shrink between
           the time of approximation and the sending of the actual files.
          </P
 ></DD
@@ -938,7 +1025,7 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->          By default, the backup will wait until the last required xlog
+>          By default, the backup will wait until the last required WAL
           segment has been archived, or emit a warning if log archiving is
           not enabled. Specifying <TT
 CLASS="LITERAL"
@@ -1015,36 +1102,45 @@ CLASS="FILENAME"
 CLASS="VARIABLELIST"
 ><DL
 ><DT
->spcoid</DT
+><TT
+CLASS="LITERAL"
+>spcoid</TT
+> (<TT
+CLASS="TYPE"
+>oid</TT
+>)</DT
 ><DD
 ><P
->          The oid of the tablespace, or <TT
-CLASS="LITERAL"
->NULL</TT
-> if it's the base
+>          The OID of the tablespace, or null if it's the base
           directory.
          </P
 ></DD
 ><DT
->spclocation</DT
+><TT
+CLASS="LITERAL"
+>spclocation</TT
+> (<TT
+CLASS="TYPE"
+>text</TT
+>)</DT
 ><DD
 ><P
->          The full path of the tablespace directory, or <TT
-CLASS="LITERAL"
->NULL</TT
->
+>          The full path of the tablespace directory, or null
           if it's the base directory.
          </P
 ></DD
 ><DT
->size</DT
+><TT
+CLASS="LITERAL"
+>size</TT
+> (<TT
+CLASS="TYPE"
+>int8</TT
+>)</DT
 ><DD
 ><P
 >          The approximate size of the tablespace, if progress report has
-          been requested; otherwise it's <TT
-CLASS="LITERAL"
->NULL</TT
->.
+          been requested; otherwise it's null.
          </P
 ></DD
 ></DL
@@ -1053,7 +1149,7 @@ CLASS="LITERAL"
      </P
 ><P
 >      After the second regular result set, one or more CopyResponse results
-      will be sent, one for PGDATA and one for each additional tablespace other
+      will be sent, one for the main data directory and one for each additional tablespace other
       than <TT
 CLASS="LITERAL"
 >pg_default</TT
@@ -1145,13 +1241,8 @@ CLASS="FILENAME"
 ></LI
 ></UL
 ><P>
-      Owner, group and file mode are set if the underlying file system on
+      Owner, group, and file mode are set if the underlying file system on
       the server supports it.
-     </P
-><P
->      Once all tablespaces have been sent, a final regular result set will
-      be sent. This result set contains the end position of the
-      backup, given in XLogRecPtr format as a single column in a single row.
      </P
 ></DD
 ></DL

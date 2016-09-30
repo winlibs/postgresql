@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "ALTER FUNCTION" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "ALTER FUNCTION" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,12 +40,15 @@ ALTER FUNCTION \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR 
     OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
 ALTER FUNCTION \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] )
     SET SCHEMA \fInew_schema\fR
+ALTER FUNCTION \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] )
+    DEPENDS ON EXTENSION \fIextension_name\fR
 
 where \fIaction\fR is one of:
 
     CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT
     IMMUTABLE | STABLE | VOLATILE | [ NOT ] LEAKPROOF
     [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER
+    PARALLEL { UNSAFE | RESTRICTED | SAFE }
     COST \fIexecution_cost\fR
     ROWS \fIresult_rows\fR
     SET \fIconfiguration_parameter\fR { TO | = } { \fIvalue\fR | DEFAULT }
@@ -117,6 +120,11 @@ SECURITY DEFINER, it will subsequently execute as the new owner\&.
 The new schema for the function\&.
 .RE
 .PP
+\fIextension_name\fR
+.RS 4
+The name of the extension that the function is to depend on\&.
+.RE
+.PP
 CALLED ON NULL INPUT
 .br
 RETURNS NULL ON NULL INPUT
@@ -155,6 +163,13 @@ CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7))
 for more information about this capability\&.
 .RE
 .PP
+PARALLEL
+.RS 4
+Change whether the function is deemed safe for parallelism\&. See
+CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7))
+for details\&.
+.RE
+.PP
 LEAKPROOF
 .RS 4
 Change whether the function is considered leakproof or not\&. See
@@ -190,12 +205,14 @@ is used, the function\-local setting is removed, so that the function executes w
 RESET ALL
 to clear all function\-local settings\&.
 SET FROM CURRENT
-saves the session\*(Aqs current value of the parameter as the value to be applied when the function is entered\&.
+saves the value of the parameter that is current when
+\fBALTER FUNCTION\fR
+is executed as the value to be applied when the function is entered\&.
 .sp
 See
 \fBSET\fR(7)
 and
-Chapter 18, Server Configuration, in the documentation
+Chapter 19, Server Configuration, in the documentation
 for more information about allowed parameter names and values\&.
 .RE
 .PP
@@ -251,6 +268,23 @@ maths:
 .\}
 .nf
 ALTER FUNCTION sqrt(integer) SET SCHEMA maths;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To mark the function
+sqrt
+for type
+integer
+as being dependent on the extension
+mathlib:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER FUNCTION sqrt(integer) DEPENDS ON EXTENSION mathlib;
 .fi
 .if n \{\
 .RE

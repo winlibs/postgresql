@@ -806,6 +806,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> RowSecurityOptionalToRole
 %type <str> RowSecurityDefaultForCmd
 %type <str> row_security_cmd
+%type <str> CreateAmStmt
 %type <str> CreateTrigStmt
 %type <str> TriggerActionTime
 %type <str> TriggerEvents
@@ -955,7 +956,11 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> RenameStmt
 %type <str> opt_column
 %type <str> opt_set_data
+%type <str> AlterObjectDependsStmt
 %type <str> AlterObjectSchemaStmt
+%type <str> AlterOperatorStmt
+%type <str> operator_def_list
+%type <str> operator_def_elem
 %type <str> AlterOwnerStmt
 %type <str> RuleStmt
 %type <str> RuleActionList
@@ -1194,6 +1199,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> case_arg
 %type <str> columnref
 %type <str> indirection_el
+%type <str> opt_slice_bound
 %type <str> indirection
 %type <str> opt_indirection
 %type <str> opt_asymmetric
@@ -1401,7 +1407,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
  CURRENT_TIME CURRENT_TIMESTAMP CURRENT_USER CURSOR CYCLE
 
  DATA_P DATABASE DAY_P DEALLOCATE DEC DECIMAL_P DECLARE DEFAULT DEFAULTS
- DEFERRABLE DEFERRED DEFINER DELETE_P DELIMITER DELIMITERS DESC
+ DEFERRABLE DEFERRED DEFINER DELETE_P DELIMITER DELIMITERS DEPENDS DESC
  DICTIONARY DISABLE_P DISCARD DISTINCT DO DOCUMENT_P DOMAIN_P DOUBLE_P DROP
 
  EACH ELSE ENABLE_P ENCODING ENCRYPTED END_P ENUM_P ESCAPE EVENT EXCEPT
@@ -1428,7 +1434,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
  LEADING LEAKPROOF LEAST LEFT LEVEL LIKE LIMIT LISTEN LOAD LOCAL
  LOCALTIME LOCALTIMESTAMP LOCATION LOCK_P LOCKED LOGGED
 
- MAPPING MATCH MATERIALIZED MAXVALUE MINUTE_P MINVALUE MODE MONTH_P MOVE
+ MAPPING MATCH MATERIALIZED MAXVALUE METHOD MINUTE_P MINVALUE MODE MONTH_P MOVE
 
  NAME_P NAMES NATIONAL NATURAL NCHAR NEXT NO NONE
  NOT NOTHING NOTIFY NOTNULL NOWAIT NULL_P NULLIF
@@ -1437,8 +1443,8 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
  OBJECT_P OF OFF OFFSET OIDS ON ONLY OPERATOR OPTION OPTIONS OR
  ORDER ORDINALITY OUT_P OUTER_P OVER OVERLAPS OVERLAY OWNED OWNER
 
- PARSER PARTIAL PARTITION PASSING PASSWORD PLACING PLANS POLICY POSITION
- PRECEDING PRECISION PRESERVE PREPARE PREPARED PRIMARY
+ PARALLEL PARSER PARTIAL PARTITION PASSING PASSWORD PLACING PLANS POLICY
+ POSITION PRECEDING PRECISION PRESERVE PREPARE PREPARED PRIMARY
  PRIOR PRIVILEGES PROCEDURAL PROCEDURE PROGRAM
 
  QUOTE
@@ -1580,9 +1586,13 @@ prog: statements;
  { output_statement($1, 0, ECPGst_normal); }
 |  AlterGroupStmt
  { output_statement($1, 0, ECPGst_normal); }
+|  AlterObjectDependsStmt
+ { output_statement($1, 0, ECPGst_normal); }
 |  AlterObjectSchemaStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  AlterOwnerStmt
+ { output_statement($1, 0, ECPGst_normal); }
+|  AlterOperatorStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  AlterPolicyStmt
  { output_statement($1, 0, ECPGst_normal); }
@@ -1639,6 +1649,8 @@ prog: statements;
 |  ConstraintsSetStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  CopyStmt
+ { output_statement($1, 0, ECPGst_normal); }
+|  CreateAmStmt
  { output_statement($1, 0, ECPGst_normal); }
 |  CreateAsStmt
  { output_statement($1, 0, ECPGst_normal); }
@@ -2747,9 +2759,17 @@ SHOW var_name ecpg_into
  { 
  $$ = cat_str(2,mm_strdup("add"),$2);
 }
+|  ADD_P IF_P NOT EXISTS columnDef
+ { 
+ $$ = cat_str(2,mm_strdup("add if not exists"),$5);
+}
 |  ADD_P COLUMN columnDef
  { 
  $$ = cat_str(2,mm_strdup("add column"),$3);
+}
+|  ADD_P COLUMN IF_P NOT EXISTS columnDef
+ { 
+ $$ = cat_str(2,mm_strdup("add column if not exists"),$6);
 }
 |  ALTER opt_column ColId alter_column_default
  { 
@@ -3128,9 +3148,9 @@ SHOW var_name ecpg_into
 
  $$ = cat_str(11,mm_strdup("copy"),$2,$3,$4,$5,$6,$7,$8,$9,$10,$11);
 }
-|  COPY select_with_parens TO opt_program copy_file_name opt_with copy_options
+|  COPY '(' PreparableStmt ')' TO opt_program copy_file_name opt_with copy_options
  { 
- $$ = cat_str(7,mm_strdup("copy"),$2,mm_strdup("to"),$4,$5,$6,$7);
+ $$ = cat_str(7,mm_strdup("copy ("),$3,mm_strdup(") to"),$6,$7,$8,$9);
 }
 ;
 
@@ -4285,6 +4305,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(2,mm_strdup("from"),$2);
 }
+|  CASCADE
+ { 
+ $$ = mm_strdup("cascade");
+}
 ;
 
 
@@ -4849,6 +4873,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  DELETE_P
  { 
  $$ = mm_strdup("delete");
+}
+;
+
+
+ CreateAmStmt:
+ CREATE ACCESS METHOD name TYPE_P INDEX HANDLER handler_name
+ { 
+ $$ = cat_str(4,mm_strdup("create access method"),$4,mm_strdup("type index handler"),$8);
 }
 ;
 
@@ -5581,6 +5613,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("foreign table");
 }
+|  ACCESS METHOD
+ { 
+ $$ = mm_strdup("access method");
+}
 |  EVENT TRIGGER
  { 
  $$ = mm_strdup("event trigger");
@@ -5761,7 +5797,11 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 
  comment_type:
- COLUMN
+ ACCESS METHOD
+ { 
+ $$ = mm_strdup("access method");
+}
+|  COLUMN
  { 
  $$ = mm_strdup("column");
 }
@@ -6645,10 +6685,6 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = $1;
 }
-|  USING any_name
- { 
- $$ = cat_str(2,mm_strdup("using"),$2);
-}
 | 
  { 
  $$=EMPTY; }
@@ -6969,6 +7005,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  FunctionSetResetClause
  { 
  $$ = $1;
+}
+|  PARALLEL ColId
+ { 
+ $$ = cat_str(2,mm_strdup("parallel"),$2);
 }
 ;
 
@@ -7567,6 +7607,26 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 ;
 
 
+ AlterObjectDependsStmt:
+ ALTER FUNCTION function_with_argtypes DEPENDS ON EXTENSION name
+ { 
+ $$ = cat_str(4,mm_strdup("alter function"),$3,mm_strdup("depends on extension"),$7);
+}
+|  ALTER TRIGGER name ON qualified_name DEPENDS ON EXTENSION name
+ { 
+ $$ = cat_str(6,mm_strdup("alter trigger"),$3,mm_strdup("on"),$5,mm_strdup("depends on extension"),$9);
+}
+|  ALTER MATERIALIZED VIEW qualified_name DEPENDS ON EXTENSION name
+ { 
+ $$ = cat_str(4,mm_strdup("alter materialized view"),$4,mm_strdup("depends on extension"),$8);
+}
+|  ALTER INDEX qualified_name DEPENDS ON EXTENSION name
+ { 
+ $$ = cat_str(4,mm_strdup("alter index"),$3,mm_strdup("depends on extension"),$7);
+}
+;
+
+
  AlterObjectSchemaStmt:
  ALTER AGGREGATE func_name aggr_args SET SCHEMA name
  { 
@@ -7663,6 +7723,38 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  ALTER TYPE_P any_name SET SCHEMA name
  { 
  $$ = cat_str(4,mm_strdup("alter type"),$3,mm_strdup("set schema"),$6);
+}
+;
+
+
+ AlterOperatorStmt:
+ ALTER OPERATOR any_operator oper_argtypes SET '(' operator_def_list ')'
+ { 
+ $$ = cat_str(6,mm_strdup("alter operator"),$3,$4,mm_strdup("set ("),$7,mm_strdup(")"));
+}
+;
+
+
+ operator_def_list:
+ operator_def_elem
+ { 
+ $$ = $1;
+}
+|  operator_def_list ',' operator_def_elem
+ { 
+ $$ = cat_str(3,$1,mm_strdup(","),$3);
+}
+;
+
+
+ operator_def_elem:
+ ColLabel '=' NONE
+ { 
+ $$ = cat_str(2,$1,mm_strdup("= none"));
+}
+|  ColLabel '=' def_arg
+ { 
+ $$ = cat_str(3,$1,mm_strdup("="),$3);
 }
 ;
 
@@ -8403,6 +8495,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  FULL
  { 
  $$ = mm_strdup("full");
+}
+|  ecpg_ident
+ { 
+ $$ = $1;
 }
 ;
 
@@ -11811,10 +11907,21 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = cat_str(3,mm_strdup("["),$2,mm_strdup("]"));
 }
-|  '[' a_expr ':' a_expr ']'
+|  '[' opt_slice_bound ':' opt_slice_bound ']'
  { 
  $$ = cat_str(5,mm_strdup("["),$2,mm_strdup(":"),$4,mm_strdup("]"));
 }
+;
+
+
+ opt_slice_bound:
+ a_expr
+ { 
+ $$ = $1;
+}
+| 
+ { 
+ $$=EMPTY; }
 ;
 
 
@@ -12385,6 +12492,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("delimiters");
 }
+|  DEPENDS
+ { 
+ $$ = mm_strdup("depends");
+}
 |  DICTIONARY
  { 
  $$ = mm_strdup("dictionary");
@@ -12665,6 +12776,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  { 
  $$ = mm_strdup("maxvalue");
 }
+|  METHOD
+ { 
+ $$ = mm_strdup("method");
+}
 |  MINVALUE
  { 
  $$ = mm_strdup("minvalue");
@@ -12752,6 +12867,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 |  OWNER
  { 
  $$ = mm_strdup("owner");
+}
+|  PARALLEL
+ { 
+ $$ = mm_strdup("parallel");
 }
 |  PARSER
  { 
@@ -15703,11 +15822,3 @@ void parser_init(void)
 {
  /* This function is empty. It only exists for compatibility with the backend parser right now. */
 }
-
-/*
- * Must undefine base_yylex before including pgc.c, since we want it
- * to create the function base_yylex not filtered_base_yylex.
- */
-#undef base_yylex
-
-#include "pgc.c"

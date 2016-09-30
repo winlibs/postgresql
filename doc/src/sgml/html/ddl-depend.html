@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Definition"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -109,17 +109,17 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > makes sure that you cannot
    drop objects that other objects still depend on.  For example,
-   attempting to drop the products table we had considered in <A
+   attempting to drop the products table we considered in <A
 HREF="ddl-constraints.html#DDL-CONSTRAINTS-FK"
 >Section 5.3.5</A
 >, with the orders table depending on
-   it, would result in an error message such as this:
+   it, would result in an error message like this:
 </P><PRE
 CLASS="SCREEN"
 >DROP TABLE products;
 
-NOTICE:  constraint orders_product_no_fkey on table orders depends on table products
 ERROR:  cannot drop table products because other objects depend on it
+DETAIL:  constraint orders_product_no_fkey on table orders depends on table products
 HINT:  Use DROP ... CASCADE to drop the dependent objects too.</PRE
 ><P>
    The error message contains a useful hint: if you do not want to
@@ -128,9 +128,11 @@ HINT:  Use DROP ... CASCADE to drop the dependent objects too.</PRE
 CLASS="SCREEN"
 >DROP TABLE products CASCADE;</PRE
 ><P>
-   and all the dependent objects will be removed.  In this case, it
-   doesn't remove the orders table, it only removes the foreign key
-   constraint.  (If you want to check what <TT
+   and all the dependent objects will be removed, as will any objects
+   that depend on them, recursively.  In this case, it doesn't remove
+   the orders table, it only removes the foreign key constraint.
+   It stops there because nothing depends on the foreign key constraint.
+   (If you want to check what <TT
 CLASS="COMMAND"
 >DROP ... CASCADE</TT
 > will do,
@@ -140,13 +142,17 @@ CLASS="COMMAND"
 > without <TT
 CLASS="LITERAL"
 >CASCADE</TT
-> and read the <TT
+> and read the
+   <TT
 CLASS="LITERAL"
->NOTICE</TT
-> messages.)
+>DETAIL</TT
+> output.)
   </P
 ><P
->   All drop commands in <SPAN
+>   Almost all <TT
+CLASS="COMMAND"
+>DROP</TT
+> commands in <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > support
@@ -163,7 +169,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >CASCADE</TT
 > to get the default behavior, which is to
-   prevent the dropping of objects that other objects depend on.
+   prevent dropping objects that any other objects depend on.
   </P
 ><DIV
 CLASS="NOTE"
@@ -180,42 +186,109 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >CASCADE</TT
 > is
-    required.  No database system actually enforces that rule, but
-    whether the default behavior is <TT
+    required in a <TT
+CLASS="COMMAND"
+>DROP</TT
+> command.  No database system actually
+    enforces that rule, but whether the default behavior
+    is <TT
 CLASS="LITERAL"
 >RESTRICT</TT
-> or
-    <TT
+> or <TT
 CLASS="LITERAL"
 >CASCADE</TT
-> varies across systems.
+> varies
+    across systems.
    </P
 ></BLOCKQUOTE
 ></DIV
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
 ><P
-><B
->Note: </B
->    Foreign key constraint dependencies and serial column dependencies
-    from <SPAN
+>   If a <TT
+CLASS="COMMAND"
+>DROP</TT
+> command lists multiple
+   objects, <TT
+CLASS="LITERAL"
+>CASCADE</TT
+> is only required when there are
+   dependencies outside the specified group.  For example, when saying
+   <TT
+CLASS="LITERAL"
+>DROP TABLE tab1, tab2</TT
+> the existence of a foreign
+   key referencing <TT
+CLASS="LITERAL"
+>tab1</TT
+> from <TT
+CLASS="LITERAL"
+>tab2</TT
+> would not mean
+   that <TT
+CLASS="LITERAL"
+>CASCADE</TT
+> is needed to succeed.
+  </P
+><P
+>   For user-defined functions, <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> versions prior to 7.3
-    are <SPAN
+> tracks
+   dependencies associated with a function's externally-visible properties,
+   such as its argument and result types, but <SPAN
 CLASS="emphasis"
 ><I
 CLASS="EMPHASIS"
 >not</I
 ></SPAN
-> maintained or created during the
-    upgrade process.  All other dependency types will be properly
-    created during an upgrade from a pre-7.3 database.
-   </P
-></BLOCKQUOTE
-></DIV
+> dependencies
+   that could only be known by examining the function body.  As an example,
+   consider this situation:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>CREATE TYPE rainbow AS ENUM ('red', 'orange', 'yellow',
+                             'green', 'blue', 'purple');
+
+CREATE TABLE my_colors (color rainbow, note text);
+
+CREATE FUNCTION get_color_note (rainbow) RETURNS text AS
+  'SELECT note FROM my_colors WHERE color = $1'
+  LANGUAGE SQL;</PRE
+><P>
+
+   (See <A
+HREF="xfunc-sql.html"
+>Section 36.4</A
+> for an explanation of SQL-language
+   functions.)  <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> will be aware that
+   the <CODE
+CLASS="FUNCTION"
+>get_color_note</CODE
+> function depends on the <TT
+CLASS="TYPE"
+>rainbow</TT
+>
+   type: dropping the type would force dropping the function, because its
+   argument type would no longer be defined.  But <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+   will not consider <CODE
+CLASS="FUNCTION"
+>get_color_note</CODE
+> to depend on
+   the <TT
+CLASS="STRUCTNAME"
+>my_colors</TT
+> table, and so will not drop the function if
+   the table is dropped.  While there are disadvantages to this approach,
+   there are also benefits.  The function is still valid in some sense if the
+   table is missing, though executing it would cause an error; creating a new
+   table of the same name would allow the function to work again.
+  </P
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Monitoring Database Activity"
 HREF="monitoring.html"><LINK
 REL="PREVIOUS"
-TITLE="Viewing Locks"
-HREF="monitoring-locks.html"><LINK
+TITLE="Progress Reporting"
+HREF="progress-reporting.html"><LINK
 REL="NEXT"
 TITLE="Monitoring Disk Usage"
 HREF="diskusage.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="Viewing Locks"
-HREF="monitoring-locks.html"
+TITLE="Progress Reporting"
+HREF="progress-reporting.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 27. Monitoring Database Activity</TD
+>Chapter 28. Monitoring Database Activity</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="DYNAMIC-TRACE"
->27.4. Dynamic Tracing</A
+>28.5. Dynamic Tracing</A
 ></H1
 ><P
 >   <SPAN
@@ -141,7 +141,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="COMPILING-FOR-TRACE"
->27.4.1. Compiling for Dynamic Tracing</A
+>28.5.1. Compiling for Dynamic Tracing</A
 ></H2
 ><P
 >   By default, probes are not available, so you will need to
@@ -155,7 +155,7 @@ CLASS="OPTION"
 >--enable-dtrace</TT
 > to configure.  See <A
 HREF="install-procedure.html"
->Section 15.4</A
+>Section 16.4</A
 > for further information.
   </P
 ></DIV
@@ -165,17 +165,17 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="TRACE-POINTS"
->27.4.2. Built-in Probes</A
+>28.5.2. Built-in Probes</A
 ></H2
 ><P
 >   A number of standard probes are provided in the source code,
    as shown in <A
 HREF="dynamic-trace.html#DTRACE-PROBE-POINT-TABLE"
->Table 27-18</A
+>Table 28-22</A
 >;
    <A
 HREF="dynamic-trace.html#TYPEDEFS-TABLE"
->Table 27-19</A
+>Table 28-23</A
 >
    shows the types used in the probes.  More probes can certainly be
    added to enhance <SPAN
@@ -190,7 +190,7 @@ NAME="DTRACE-PROBE-POINT-TABLE"
 ></A
 ><P
 ><B
->Table 27-18. Built-in DTrace Probes</B
+>Table 28-22. Built-in DTrace Probes</B
 ></P
 ><TABLE
 BORDER="1"
@@ -208,122 +208,206 @@ CLASS="CALSTABLE"
 ><TBODY
 ><TR
 ><TD
->transaction-start</TD
+><TT
+CLASS="LITERAL"
+>transaction-start</TT
+></TD
 ><TD
->(LocalTransactionId)</TD
+><TT
+CLASS="LITERAL"
+>(LocalTransactionId)</TT
+></TD
 ><TD
 >Probe that fires at the start of a new transaction.
       arg0 is the transaction ID.</TD
 ></TR
 ><TR
 ><TD
->transaction-commit</TD
+><TT
+CLASS="LITERAL"
+>transaction-commit</TT
+></TD
 ><TD
->(LocalTransactionId)</TD
+><TT
+CLASS="LITERAL"
+>(LocalTransactionId)</TT
+></TD
 ><TD
 >Probe that fires when a transaction completes successfully.
       arg0 is the transaction ID.</TD
 ></TR
 ><TR
 ><TD
->transaction-abort</TD
+><TT
+CLASS="LITERAL"
+>transaction-abort</TT
+></TD
 ><TD
->(LocalTransactionId)</TD
+><TT
+CLASS="LITERAL"
+>(LocalTransactionId)</TT
+></TD
 ><TD
 >Probe that fires when a transaction completes unsuccessfully.
       arg0 is the transaction ID.</TD
 ></TR
 ><TR
 ><TD
->query-start</TD
+><TT
+CLASS="LITERAL"
+>query-start</TT
+></TD
 ><TD
->(const char *)</TD
+><TT
+CLASS="LITERAL"
+>(const char *)</TT
+></TD
 ><TD
 >Probe that fires when the processing of a query is started.
       arg0 is the query string.</TD
 ></TR
 ><TR
 ><TD
->query-done</TD
+><TT
+CLASS="LITERAL"
+>query-done</TT
+></TD
 ><TD
->(const char *)</TD
+><TT
+CLASS="LITERAL"
+>(const char *)</TT
+></TD
 ><TD
 >Probe that fires when the processing of a query is complete.
       arg0 is the query string.</TD
 ></TR
 ><TR
 ><TD
->query-parse-start</TD
+><TT
+CLASS="LITERAL"
+>query-parse-start</TT
+></TD
 ><TD
->(const char *)</TD
+><TT
+CLASS="LITERAL"
+>(const char *)</TT
+></TD
 ><TD
 >Probe that fires when the parsing of a query is started.
       arg0 is the query string.</TD
 ></TR
 ><TR
 ><TD
->query-parse-done</TD
+><TT
+CLASS="LITERAL"
+>query-parse-done</TT
+></TD
 ><TD
->(const char *)</TD
+><TT
+CLASS="LITERAL"
+>(const char *)</TT
+></TD
 ><TD
 >Probe that fires when the parsing of a query is complete.
       arg0 is the query string.</TD
 ></TR
 ><TR
 ><TD
->query-rewrite-start</TD
+><TT
+CLASS="LITERAL"
+>query-rewrite-start</TT
+></TD
 ><TD
->(const char *)</TD
+><TT
+CLASS="LITERAL"
+>(const char *)</TT
+></TD
 ><TD
 >Probe that fires when the rewriting of a query is started.
       arg0 is the query string.</TD
 ></TR
 ><TR
 ><TD
->query-rewrite-done</TD
+><TT
+CLASS="LITERAL"
+>query-rewrite-done</TT
+></TD
 ><TD
->(const char *)</TD
+><TT
+CLASS="LITERAL"
+>(const char *)</TT
+></TD
 ><TD
 >Probe that fires when the rewriting of a query is complete.
       arg0 is the query string.</TD
 ></TR
 ><TR
 ><TD
->query-plan-start</TD
+><TT
+CLASS="LITERAL"
+>query-plan-start</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when the planning of a query is started.</TD
 ></TR
 ><TR
 ><TD
->query-plan-done</TD
+><TT
+CLASS="LITERAL"
+>query-plan-done</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when the planning of a query is complete.</TD
 ></TR
 ><TR
 ><TD
->query-execute-start</TD
+><TT
+CLASS="LITERAL"
+>query-execute-start</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when the execution of a query is started.</TD
 ></TR
 ><TR
 ><TD
->query-execute-done</TD
+><TT
+CLASS="LITERAL"
+>query-execute-done</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when the execution of a query is complete.</TD
 ></TR
 ><TR
 ><TD
->statement-status</TD
+><TT
+CLASS="LITERAL"
+>statement-status</TT
+></TD
 ><TD
->(const char *)</TD
+><TT
+CLASS="LITERAL"
+>(const char *)</TT
+></TD
 ><TD
 >Probe that fires anytime the server process updates its
       <TT
@@ -337,9 +421,15 @@ CLASS="STRUCTFIELD"
 ></TR
 ><TR
 ><TD
->checkpoint-start</TD
+><TT
+CLASS="LITERAL"
+>checkpoint-start</TT
+></TD
 ><TD
->(int)</TD
+><TT
+CLASS="LITERAL"
+>(int)</TT
+></TD
 ><TD
 >Probe that fires when a checkpoint is started.
       arg0 holds the bitwise flags used to distinguish different checkpoint
@@ -347,21 +437,33 @@ CLASS="STRUCTFIELD"
 ></TR
 ><TR
 ><TD
->checkpoint-done</TD
+><TT
+CLASS="LITERAL"
+>checkpoint-done</TT
+></TD
 ><TD
->(int, int, int, int, int)</TD
+><TT
+CLASS="LITERAL"
+>(int, int, int, int, int)</TT
+></TD
 ><TD
 >Probe that fires when a checkpoint is complete.
       (The probes listed next fire in sequence during checkpoint processing.)
       arg0 is the number of buffers written. arg1 is the total number of
-      buffers. arg2, arg3 and arg4 contain the number of xlog file(s) added,
+      buffers. arg2, arg3 and arg4 contain the number of WAL files added,
       removed and recycled respectively.</TD
 ></TR
 ><TR
 ><TD
->clog-checkpoint-start</TD
+><TT
+CLASS="LITERAL"
+>clog-checkpoint-start</TT
+></TD
 ><TD
->(bool)</TD
+><TT
+CLASS="LITERAL"
+>(bool)</TT
+></TD
 ><TD
 >Probe that fires when the CLOG portion of a checkpoint is started.
       arg0 is true for normal checkpoint, false for shutdown
@@ -369,18 +471,33 @@ CLASS="STRUCTFIELD"
 ></TR
 ><TR
 ><TD
->clog-checkpoint-done</TD
+><TT
+CLASS="LITERAL"
+>clog-checkpoint-done</TT
+></TD
 ><TD
->(bool)</TD
+><TT
+CLASS="LITERAL"
+>(bool)</TT
+></TD
 ><TD
 >Probe that fires when the CLOG portion of a checkpoint is
-      complete. arg0 has the same meaning as for clog-checkpoint-start.</TD
+      complete. arg0 has the same meaning as for <TT
+CLASS="LITERAL"
+>clog-checkpoint-start</TT
+>.</TD
 ></TR
 ><TR
 ><TD
->subtrans-checkpoint-start</TD
+><TT
+CLASS="LITERAL"
+>subtrans-checkpoint-start</TT
+></TD
 ><TD
->(bool)</TD
+><TT
+CLASS="LITERAL"
+>(bool)</TT
+></TD
 ><TD
 >Probe that fires when the SUBTRANS portion of a checkpoint is
       started.
@@ -389,19 +506,34 @@ CLASS="STRUCTFIELD"
 ></TR
 ><TR
 ><TD
->subtrans-checkpoint-done</TD
+><TT
+CLASS="LITERAL"
+>subtrans-checkpoint-done</TT
+></TD
 ><TD
->(bool)</TD
+><TT
+CLASS="LITERAL"
+>(bool)</TT
+></TD
 ><TD
 >Probe that fires when the SUBTRANS portion of a checkpoint is
       complete. arg0 has the same meaning as for
-      subtrans-checkpoint-start.</TD
+      <TT
+CLASS="LITERAL"
+>subtrans-checkpoint-start</TT
+>.</TD
 ></TR
 ><TR
 ><TD
->multixact-checkpoint-start</TD
+><TT
+CLASS="LITERAL"
+>multixact-checkpoint-start</TT
+></TD
 ><TD
->(bool)</TD
+><TT
+CLASS="LITERAL"
+>(bool)</TT
+></TD
 ><TD
 >Probe that fires when the MultiXact portion of a checkpoint is
       started.
@@ -410,19 +542,34 @@ CLASS="STRUCTFIELD"
 ></TR
 ><TR
 ><TD
->multixact-checkpoint-done</TD
+><TT
+CLASS="LITERAL"
+>multixact-checkpoint-done</TT
+></TD
 ><TD
->(bool)</TD
+><TT
+CLASS="LITERAL"
+>(bool)</TT
+></TD
 ><TD
 >Probe that fires when the MultiXact portion of a checkpoint is
       complete. arg0 has the same meaning as for
-      multixact-checkpoint-start.</TD
+      <TT
+CLASS="LITERAL"
+>multixact-checkpoint-start</TT
+>.</TD
 ></TR
 ><TR
 ><TD
->buffer-checkpoint-start</TD
+><TT
+CLASS="LITERAL"
+>buffer-checkpoint-start</TT
+></TD
 ><TD
->(int)</TD
+><TT
+CLASS="LITERAL"
+>(int)</TT
+></TD
 ><TD
 >Probe that fires when the buffer-writing portion of a checkpoint
       is started.
@@ -431,9 +578,15 @@ CLASS="STRUCTFIELD"
 ></TR
 ><TR
 ><TD
->buffer-sync-start</TD
+><TT
+CLASS="LITERAL"
+>buffer-sync-start</TT
+></TD
 ><TD
->(int, int)</TD
+><TT
+CLASS="LITERAL"
+>(int, int)</TT
+></TD
 ><TD
 >Probe that fires when we begin to write dirty buffers during
       checkpoint (after identifying which buffers must be written).
@@ -442,67 +595,112 @@ CLASS="STRUCTFIELD"
 ></TR
 ><TR
 ><TD
->buffer-sync-written</TD
+><TT
+CLASS="LITERAL"
+>buffer-sync-written</TT
+></TD
 ><TD
->(int)</TD
+><TT
+CLASS="LITERAL"
+>(int)</TT
+></TD
 ><TD
 >Probe that fires after each buffer is written during checkpoint.
       arg0 is the ID number of the buffer.</TD
 ></TR
 ><TR
 ><TD
->buffer-sync-done</TD
+><TT
+CLASS="LITERAL"
+>buffer-sync-done</TT
+></TD
 ><TD
->(int, int, int)</TD
+><TT
+CLASS="LITERAL"
+>(int, int, int)</TT
+></TD
 ><TD
 >Probe that fires when all dirty buffers have been written.
       arg0 is the total number of buffers.
       arg1 is the number of buffers actually written by the checkpoint process.
       arg2 is the number that were expected to be written (arg1 of
-      buffer-sync-start); any difference reflects other processes flushing
+      <TT
+CLASS="LITERAL"
+>buffer-sync-start</TT
+>); any difference reflects other processes flushing
       buffers during the checkpoint.</TD
 ></TR
 ><TR
 ><TD
->buffer-checkpoint-sync-start</TD
+><TT
+CLASS="LITERAL"
+>buffer-checkpoint-sync-start</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires after dirty buffers have been written to the
       kernel, and before starting to issue fsync requests.</TD
 ></TR
 ><TR
 ><TD
->buffer-checkpoint-done</TD
+><TT
+CLASS="LITERAL"
+>buffer-checkpoint-done</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when syncing of buffers to disk is
       complete.</TD
 ></TR
 ><TR
 ><TD
->twophase-checkpoint-start</TD
+><TT
+CLASS="LITERAL"
+>twophase-checkpoint-start</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when the two-phase portion of a checkpoint is
       started.</TD
 ></TR
 ><TR
 ><TD
->twophase-checkpoint-done</TD
+><TT
+CLASS="LITERAL"
+>twophase-checkpoint-done</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when the two-phase portion of a checkpoint is
       complete.</TD
 ></TR
 ><TR
 ><TD
->buffer-read-start</TD
+><TT
+CLASS="LITERAL"
+>buffer-read-start</TT
+></TD
 ><TD
->(ForkNumber, BlockNumber, Oid, Oid, Oid, int, bool)</TD
+><TT
+CLASS="LITERAL"
+>(ForkNumber, BlockNumber, Oid, Oid, Oid, int, bool)</TT
+></TD
 ><TD
 >Probe that fires when a buffer read is started.
       arg0 and arg1 contain the fork and block numbers of the page (but
@@ -510,15 +708,24 @@ CLASS="STRUCTFIELD"
       arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
       identifying the relation.
       arg5 is the ID of the backend which created the temporary relation for a
-      local buffer, or InvalidBackendId (-1) for a shared buffer.
+      local buffer, or <TT
+CLASS="SYMBOL"
+>InvalidBackendId</TT
+> (-1) for a shared buffer.
       arg6 is true for a relation extension request, false for normal
       read.</TD
 ></TR
 ><TR
 ><TD
->buffer-read-done</TD
+><TT
+CLASS="LITERAL"
+>buffer-read-done</TT
+></TD
 ><TD
->(ForkNumber, BlockNumber, Oid, Oid, Oid, int, bool, bool)</TD
+><TT
+CLASS="LITERAL"
+>(ForkNumber, BlockNumber, Oid, Oid, Oid, int, bool, bool)</TT
+></TD
 ><TD
 >Probe that fires when a buffer read is complete.
       arg0 and arg1 contain the fork and block numbers of the page (if this
@@ -527,16 +734,25 @@ CLASS="STRUCTFIELD"
       arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
       identifying the relation.
       arg5 is the ID of the backend which created the temporary relation for a
-      local buffer, or InvalidBackendId (-1) for a shared buffer.
+      local buffer, or <TT
+CLASS="SYMBOL"
+>InvalidBackendId</TT
+> (-1) for a shared buffer.
       arg6 is true for a relation extension request, false for normal
       read.
       arg7 is true if the buffer was found in the pool, false if not.</TD
 ></TR
 ><TR
 ><TD
->buffer-flush-start</TD
+><TT
+CLASS="LITERAL"
+>buffer-flush-start</TT
+></TD
 ><TD
->(ForkNumber, BlockNumber, Oid, Oid, Oid)</TD
+><TT
+CLASS="LITERAL"
+>(ForkNumber, BlockNumber, Oid, Oid, Oid)</TT
+></TD
 ><TD
 >Probe that fires before issuing any write request for a shared
       buffer.
@@ -546,20 +762,35 @@ CLASS="STRUCTFIELD"
 ></TR
 ><TR
 ><TD
->buffer-flush-done</TD
+><TT
+CLASS="LITERAL"
+>buffer-flush-done</TT
+></TD
 ><TD
->(ForkNumber, BlockNumber, Oid, Oid, Oid)</TD
+><TT
+CLASS="LITERAL"
+>(ForkNumber, BlockNumber, Oid, Oid, Oid)</TT
+></TD
 ><TD
 >Probe that fires when a write request is complete.  (Note
       that this just reflects the time to pass the data to the kernel;
       it's typically not actually been written to disk yet.)
-      The arguments are the same as for buffer-flush-start.</TD
+      The arguments are the same as for <TT
+CLASS="LITERAL"
+>buffer-flush-start</TT
+>.</TD
 ></TR
 ><TR
 ><TD
->buffer-write-dirty-start</TD
+><TT
+CLASS="LITERAL"
+>buffer-write-dirty-start</TT
+></TD
 ><TD
->(ForkNumber, BlockNumber, Oid, Oid, Oid)</TD
+><TT
+CLASS="LITERAL"
+>(ForkNumber, BlockNumber, Oid, Oid, Oid)</TT
+></TD
 ><TD
 >Probe that fires when a server process begins to write a dirty
       buffer.  (If this happens often, it implies that
@@ -567,25 +798,40 @@ CLASS="STRUCTFIELD"
 HREF="runtime-config-resource.html#GUC-SHARED-BUFFERS"
 >shared_buffers</A
 > is too
-      small or the bgwriter control parameters need adjustment.)
+      small or the background writer control parameters need adjustment.)
       arg0 and arg1 contain the fork and block numbers of the page.
       arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
       identifying the relation.</TD
 ></TR
 ><TR
 ><TD
->buffer-write-dirty-done</TD
+><TT
+CLASS="LITERAL"
+>buffer-write-dirty-done</TT
+></TD
 ><TD
->(ForkNumber, BlockNumber, Oid, Oid, Oid)</TD
+><TT
+CLASS="LITERAL"
+>(ForkNumber, BlockNumber, Oid, Oid, Oid)</TT
+></TD
 ><TD
 >Probe that fires when a dirty-buffer write is complete.
-      The arguments are the same as for buffer-write-dirty-start.</TD
+      The arguments are the same as for <TT
+CLASS="LITERAL"
+>buffer-write-dirty-start</TT
+>.</TD
 ></TR
 ><TR
 ><TD
->wal-buffer-write-dirty-start</TD
+><TT
+CLASS="LITERAL"
+>wal-buffer-write-dirty-start</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when a server process begins to write a
       dirty WAL buffer because no more WAL buffer space is available.
@@ -597,17 +843,29 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->wal-buffer-write-dirty-done</TD
+><TT
+CLASS="LITERAL"
+>wal-buffer-write-dirty-done</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when a dirty WAL buffer write is complete.</TD
 ></TR
 ><TR
 ><TD
->xlog-insert</TD
+><TT
+CLASS="LITERAL"
+>xlog-insert</TT
+></TD
 ><TD
->(unsigned char, unsigned char)</TD
+><TT
+CLASS="LITERAL"
+>(unsigned char, unsigned char)</TT
+></TD
 ><TD
 >Probe that fires when a WAL record is inserted.
       arg0 is the resource manager (rmid) for the record.
@@ -615,73 +873,121 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->xlog-switch</TD
+><TT
+CLASS="LITERAL"
+>xlog-switch</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when a WAL segment switch is requested.</TD
 ></TR
 ><TR
 ><TD
->smgr-md-read-start</TD
+><TT
+CLASS="LITERAL"
+>smgr-md-read-start</TT
+></TD
 ><TD
->(ForkNumber, BlockNumber, Oid, Oid, Oid, int)</TD
+><TT
+CLASS="LITERAL"
+>(ForkNumber, BlockNumber, Oid, Oid, Oid, int)</TT
+></TD
 ><TD
 >Probe that fires when beginning to read a block from a relation.
       arg0 and arg1 contain the fork and block numbers of the page.
       arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
       identifying the relation.
       arg5 is the ID of the backend which created the temporary relation for a
-      local buffer, or InvalidBackendId (-1) for a shared buffer.</TD
+      local buffer, or <TT
+CLASS="SYMBOL"
+>InvalidBackendId</TT
+> (-1) for a shared buffer.</TD
 ></TR
 ><TR
 ><TD
->smgr-md-read-done</TD
+><TT
+CLASS="LITERAL"
+>smgr-md-read-done</TT
+></TD
 ><TD
->(ForkNumber, BlockNumber, Oid, Oid, Oid, int, int, int)</TD
+><TT
+CLASS="LITERAL"
+>(ForkNumber, BlockNumber, Oid, Oid, Oid, int, int, int)</TT
+></TD
 ><TD
 >Probe that fires when a block read is complete.
       arg0 and arg1 contain the fork and block numbers of the page.
       arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
       identifying the relation.
       arg5 is the ID of the backend which created the temporary relation for a
-      local buffer, or InvalidBackendId (-1) for a shared buffer.
+      local buffer, or <TT
+CLASS="SYMBOL"
+>InvalidBackendId</TT
+> (-1) for a shared buffer.
       arg6 is the number of bytes actually read, while arg7 is the number
       requested (if these are different it indicates trouble).</TD
 ></TR
 ><TR
 ><TD
->smgr-md-write-start</TD
+><TT
+CLASS="LITERAL"
+>smgr-md-write-start</TT
+></TD
 ><TD
->(ForkNumber, BlockNumber, Oid, Oid, Oid, int)</TD
+><TT
+CLASS="LITERAL"
+>(ForkNumber, BlockNumber, Oid, Oid, Oid, int)</TT
+></TD
 ><TD
 >Probe that fires when beginning to write a block to a relation.
       arg0 and arg1 contain the fork and block numbers of the page.
       arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
       identifying the relation.
       arg5 is the ID of the backend which created the temporary relation for a
-      local buffer, or InvalidBackendId (-1) for a shared buffer.</TD
+      local buffer, or <TT
+CLASS="SYMBOL"
+>InvalidBackendId</TT
+> (-1) for a shared buffer.</TD
 ></TR
 ><TR
 ><TD
->smgr-md-write-done</TD
+><TT
+CLASS="LITERAL"
+>smgr-md-write-done</TT
+></TD
 ><TD
->(ForkNumber, BlockNumber, Oid, Oid, Oid, int, int, int)</TD
+><TT
+CLASS="LITERAL"
+>(ForkNumber, BlockNumber, Oid, Oid, Oid, int, int, int)</TT
+></TD
 ><TD
 >Probe that fires when a block write is complete.
       arg0 and arg1 contain the fork and block numbers of the page.
       arg2, arg3, and arg4 contain the tablespace, database, and relation OIDs
       identifying the relation.
       arg5 is the ID of the backend which created the temporary relation for a
-      local buffer, or InvalidBackendId (-1) for a shared buffer.
+      local buffer, or <TT
+CLASS="SYMBOL"
+>InvalidBackendId</TT
+> (-1) for a shared buffer.
       arg6 is the number of bytes actually written, while arg7 is the number
       requested (if these are different it indicates trouble).</TD
 ></TR
 ><TR
 ><TD
->sort-start</TD
+><TT
+CLASS="LITERAL"
+>sort-start</TT
+></TD
 ><TD
->(int, bool, int, int, bool)</TD
+><TT
+CLASS="LITERAL"
+>(int, bool, int, int, bool)</TT
+></TD
 ><TD
 >Probe that fires when a sort operation is started.
       arg0 indicates heap, index or datum sort.
@@ -692,9 +998,15 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->sort-done</TD
+><TT
+CLASS="LITERAL"
+>sort-done</TT
+></TD
 ><TD
->(bool, long)</TD
+><TT
+CLASS="LITERAL"
+>(bool, long)</TT
+></TD
 ><TD
 >Probe that fires when a sort is complete.
       arg0 is true for external sort, false for internal sort.
@@ -703,9 +1015,15 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->lwlock-acquire</TD
+><TT
+CLASS="LITERAL"
+>lwlock-acquire</TT
+></TD
 ><TD
->(char *, int, LWLockMode)</TD
+><TT
+CLASS="LITERAL"
+>(char *, int, LWLockMode)</TT
+></TD
 ><TD
 >Probe that fires when an LWLock has been acquired.
       arg0 is the LWLock's tranche.
@@ -714,9 +1032,15 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->lwlock-release</TD
+><TT
+CLASS="LITERAL"
+>lwlock-release</TT
+></TD
 ><TD
->(char *, int)</TD
+><TT
+CLASS="LITERAL"
+>(char *, int)</TT
+></TD
 ><TD
 >Probe that fires when an LWLock has been released (but note
       that any released waiters have not yet been awakened).
@@ -725,9 +1049,15 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->lwlock-wait-start</TD
+><TT
+CLASS="LITERAL"
+>lwlock-wait-start</TT
+></TD
 ><TD
->(char *, int, LWLockMode)</TD
+><TT
+CLASS="LITERAL"
+>(char *, int, LWLockMode)</TT
+></TD
 ><TD
 >Probe that fires when an LWLock was not immediately available and
       a server process has begun to wait for the lock to become available.
@@ -737,9 +1067,15 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->lwlock-wait-done</TD
+><TT
+CLASS="LITERAL"
+>lwlock-wait-done</TT
+></TD
 ><TD
->(char *, int, LWLockMode)</TD
+><TT
+CLASS="LITERAL"
+>(char *, int, LWLockMode)</TT
+></TD
 ><TD
 >Probe that fires when a server process has been released from its
       wait for an LWLock (it does not actually have the lock yet).
@@ -749,9 +1085,15 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->lwlock-condacquire</TD
+><TT
+CLASS="LITERAL"
+>lwlock-condacquire</TT
+></TD
 ><TD
->(char *, int, LWLockMode)</TD
+><TT
+CLASS="LITERAL"
+>(char *, int, LWLockMode)</TT
+></TD
 ><TD
 >Probe that fires when an LWLock was successfully acquired when the
       caller specified no waiting.
@@ -761,9 +1103,15 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->lwlock-condacquire-fail</TD
+><TT
+CLASS="LITERAL"
+>lwlock-condacquire-fail</TT
+></TD
 ><TD
->(char *, int, LWLockMode)</TD
+><TT
+CLASS="LITERAL"
+>(char *, int, LWLockMode)</TT
+></TD
 ><TD
 >Probe that fires when an LWLock was not successfully acquired when
       the caller specified no waiting.
@@ -773,9 +1121,15 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->lock-wait-start</TD
+><TT
+CLASS="LITERAL"
+>lock-wait-start</TT
+></TD
 ><TD
->(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, LOCKMODE)</TD
+><TT
+CLASS="LITERAL"
+>(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, LOCKMODE)</TT
+></TD
 ><TD
 >Probe that fires when a request for a heavyweight lock (lmgr lock)
       has begun to wait because the lock is not available.
@@ -785,19 +1139,34 @@ HREF="runtime-config-wal.html#GUC-WAL-BUFFERS"
 ></TR
 ><TR
 ><TD
->lock-wait-done</TD
+><TT
+CLASS="LITERAL"
+>lock-wait-done</TT
+></TD
 ><TD
->(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, LOCKMODE)</TD
+><TT
+CLASS="LITERAL"
+>(unsigned int, unsigned int, unsigned int, unsigned int, unsigned int, LOCKMODE)</TT
+></TD
 ><TD
 >Probe that fires when a request for a heavyweight lock (lmgr lock)
       has finished waiting (i.e., has acquired the lock).
-      The arguments are the same as for lock-wait-start.</TD
+      The arguments are the same as for <TT
+CLASS="LITERAL"
+>lock-wait-start</TT
+>.</TD
 ></TR
 ><TR
 ><TD
->deadlock-found</TD
+><TT
+CLASS="LITERAL"
+>deadlock-found</TT
+></TD
 ><TD
->()</TD
+><TT
+CLASS="LITERAL"
+>()</TT
+></TD
 ><TD
 >Probe that fires when a deadlock is found by the deadlock
       detector.</TD
@@ -812,7 +1181,7 @@ NAME="TYPEDEFS-TABLE"
 ></A
 ><P
 ><B
->Table 27-19. Defined Types Used in Probe Parameters</B
+>Table 28-23. Defined Types Used in Probe Parameters</B
 ></P
 ><TABLE
 BORDER="1"
@@ -828,45 +1197,87 @@ CLASS="CALSTABLE"
 ><TBODY
 ><TR
 ><TD
->LocalTransactionId</TD
+><TT
+CLASS="TYPE"
+>LocalTransactionId</TT
+></TD
 ><TD
->unsigned int</TD
+><TT
+CLASS="TYPE"
+>unsigned int</TT
+></TD
 ></TR
 ><TR
 ><TD
->LWLockMode</TD
+><TT
+CLASS="TYPE"
+>LWLockMode</TT
+></TD
 ><TD
->int</TD
+><TT
+CLASS="TYPE"
+>int</TT
+></TD
 ></TR
 ><TR
 ><TD
->LOCKMODE</TD
+><TT
+CLASS="TYPE"
+>LOCKMODE</TT
+></TD
 ><TD
->int</TD
+><TT
+CLASS="TYPE"
+>int</TT
+></TD
 ></TR
 ><TR
 ><TD
->BlockNumber</TD
+><TT
+CLASS="TYPE"
+>BlockNumber</TT
+></TD
 ><TD
->unsigned int</TD
+><TT
+CLASS="TYPE"
+>unsigned int</TT
+></TD
 ></TR
 ><TR
 ><TD
->Oid</TD
+><TT
+CLASS="TYPE"
+>Oid</TT
+></TD
 ><TD
->unsigned int</TD
+><TT
+CLASS="TYPE"
+>unsigned int</TT
+></TD
 ></TR
 ><TR
 ><TD
->ForkNumber</TD
+><TT
+CLASS="TYPE"
+>ForkNumber</TT
+></TD
 ><TD
->int</TD
+><TT
+CLASS="TYPE"
+>int</TT
+></TD
 ></TR
 ><TR
 ><TD
->bool</TD
+><TT
+CLASS="TYPE"
+>bool</TT
+></TD
 ><TD
->char</TD
+><TT
+CLASS="TYPE"
+>char</TT
+></TD
 ></TR
 ></TBODY
 ></TABLE
@@ -878,7 +1289,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="USING-TRACE-POINTS"
->27.4.3. Using Probes</A
+>28.5.3. Using Probes</A
 ></H2
 ><P
 >   The example below shows a DTrace script for analyzing transaction
@@ -951,7 +1362,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="DEFINING-TRACE-POINTS"
->27.4.4. Defining New Probes</A
+>28.5.4. Defining New Probes</A
 ></H2
 ><P
 >   New probes can be defined within the code wherever the developer
@@ -1020,7 +1431,10 @@ CLASS="STEP"
 CLASS="LITERAL"
 >transaction-start</TT
 > and
-     requires a parameter of type LocalTransactionId
+     requires a parameter of type <TT
+CLASS="TYPE"
+>LocalTransactionId</TT
+>
     </P
 ></LI
 ><LI
@@ -1159,7 +1573,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="monitoring-locks.html"
+HREF="progress-reporting.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -1187,7 +1601,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Viewing Locks</TD
+>Progress Reporting</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

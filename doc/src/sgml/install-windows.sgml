@@ -84,7 +84,7 @@
 
  <para>
   Both 32-bit and 64-bit builds are possible with the Microsoft Compiler suite.
-  32-bit PostgreSQL buils are possible with
+  32-bit PostgreSQL builds are possible with
   <productname>Visual Studio 2005</productname> to
   <productname>Visual Studio 2015</productname> (including Express editions),
   as well as standalone Windows SDK releases 6.0 to 7.1.
@@ -243,10 +243,10 @@ $ENV{PATH}=$ENV{PATH} . ';c:\some\where\bison\bin';
 
      <note>
        <para>
-       The obsolete "winflex" binaries distributed on the PostgreSQL FTP site
-       and referenced in older documentation will fail with "flex: fatal
-       internal error, exec failed" on 64-bit Windows hosts. Use flex from
-       msys instead.
+       The obsolete <literal>winflex</literal> binaries distributed on the PostgreSQL FTP site
+       and referenced in older documentation will fail with <quote>flex: fatal
+       internal error, exec failed</quote> on 64-bit Windows hosts. Use Flex from
+       MSYS instead.
        </para>
      </note>
      </listitem>
@@ -443,6 +443,7 @@ $ENV{CONFIG}="Debug";
 <userinput>vcregress ecpgcheck</userinput>
 <userinput>vcregress isolationcheck</userinput>
 <userinput>vcregress bincheck</userinput>
+<userinput>vcregress recoverycheck</userinput>
 <userinput>vcregress upgradecheck</userinput>
 </screen>
 
@@ -457,8 +458,10 @@ $ENV{CONFIG}="Debug";
   </para>
 
   <para>
-   Running the regression tests on client programs, with "vcregress bincheck",
-   requires an additional Perl module to be installed:
+   Running the regression tests on client programs, with
+   <command>vcregress bincheck</>, or on recovery tests, with
+   <command>vcregress recoverycheck</>, requires an additional Perl module
+   to be installed:
    <variablelist>
     <varlistentry>
      <term><productname>IPC::Run</productname></term>

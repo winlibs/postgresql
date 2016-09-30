@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
 REL="PREVIOUS"
-TITLE="DO"
-HREF="sql-do.html"><LINK
+TITLE="DROP ACCESS METHOD"
+HREF="sql-drop-access-method.html"><LINK
 REL="NEXT"
 TITLE="DROP CAST"
 HREF="sql-dropcast.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="DO"
-HREF="sql-do.html"
+TITLE="DROP ACCESS METHOD"
+HREF="sql-drop-access-method.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-DROPAGGREGATE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN81594"
+NAME="AEN85017"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN81594"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN81597"
+NAME="AEN85020"
 ></A
 ><H2
 >Synopsis</H2
@@ -186,7 +186,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81612"
+NAME="AEN85035"
 ></A
 ><H2
 >Description</H2
@@ -202,7 +202,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81616"
+NAME="AEN85039"
 ></A
 ><H2
 >Parameters</H2
@@ -304,7 +304,13 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->      Automatically drop objects that depend on the aggregate function.
+>      Automatically drop objects that depend on the aggregate function
+      (such as views using it),
+      and in turn all objects that depend on those objects
+      (see <A
+HREF="ddl-depend.html"
+>Section 5.13</A
+>).
      </P
 ></DD
 ><DT
@@ -324,7 +330,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81660"
+NAME="AEN85084"
 ></A
 ><H2
 >Notes</H2
@@ -339,7 +345,7 @@ HREF="sql-alteraggregate.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81664"
+NAME="AEN85088"
 ></A
 ><H2
 >Examples</H2
@@ -373,7 +379,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81673"
+NAME="AEN85097"
 ></A
 ><H2
 >Compatibility</H2
@@ -388,7 +394,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81677"
+NAME="AEN85101"
 ></A
 ><H2
 >See Also</H2
@@ -415,7 +421,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="sql-do.html"
+HREF="sql-drop-access-method.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -443,7 +449,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->DO</TD
+>DROP ACCESS METHOD</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

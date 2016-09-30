@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "SELECT" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "SELECT" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -458,7 +458,7 @@ number or expression to use for generating random numbers within the sampling me
 \fIargument\fR
 values will select the same sample of the table, if the table has not been changed meanwhile\&. But different seed values will usually produce different samples\&. If
 REPEATABLE
-is not given then a new random sample is selected for each query\&. Note that some add\-on sampling methods do not accept
+is not given then a new random sample is selected for each query, based upon a system\-generated seed\&. Note that some add\-on sampling methods do not accept
 REPEATABLE, and will always produce new samples on each use\&.
 .RE
 .PP
@@ -502,7 +502,7 @@ if present\&.
 .sp
 Multiple function calls can be combined into a single
 FROM\-clause item by surrounding them with
-ROWS FROM( \&.\&.\&. )\&. The output of such an item is the concatenation of the first row from each function, then the second row from each function, etc\&. If some of the functions produce fewer rows than others, NULLs are substituted for the missing data, so that the total number of rows returned is always the same as for the function that produced the most rows\&.
+ROWS FROM( \&.\&.\&. )\&. The output of such an item is the concatenation of the first row from each function, then the second row from each function, etc\&. If some of the functions produce fewer rows than others, null values are substituted for the missing data, so that the total number of rows returned is always the same as for the function that produced the most rows\&.
 .sp
 If the function has been defined as returning the
 record
@@ -1117,6 +1117,44 @@ can be written in the output list as a shorthand for all the columns of the sele
 \fItable_name\fR\&.*
 as a shorthand for the columns coming from just that table\&. In these cases it is not possible to specify new names with
 AS; the output column names will be the same as the table columns\*(Aq names\&.
+.PP
+According to the SQL standard, the expressions in the output list should be computed before applying
+DISTINCT,
+ORDER BY, or
+LIMIT\&. This is obviously necessary when using
+DISTINCT, since otherwise it\*(Aqs not clear what values are being made distinct\&. However, in many cases it is convenient if output expressions are computed after
+ORDER BY
+and
+LIMIT; particularly if the output list contains any volatile or expensive functions\&. With that behavior, the order of function evaluations is more intuitive and there will not be evaluations corresponding to rows that never appear in the output\&.
+PostgreSQL
+will effectively evaluate output expressions after sorting and limiting, so long as those expressions are not referenced in
+DISTINCT,
+ORDER BY
+or
+GROUP BY\&. (As a counterexample,
+SELECT f(x) FROM tab ORDER BY 1
+clearly must evaluate
+\fBf(x)\fR
+before sorting\&.) Output expressions that contain set\-returning functions are effectively evaluated after sorting and before limiting, so that
+LIMIT
+will act to cut off the output from a set\-returning function\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBNote\fR
+.ps -1
+.br
+.PP
+PostgreSQL
+versions before 9\&.6 did not provide any guarantees about the timing of evaluation of output expressions versus sorting and limiting; it depended on the form of the chosen query plan\&.
+.sp .5v
+.RE
 .SS "DISTINCT Clause"
 .PP
 If
@@ -1486,7 +1524,7 @@ clause in the
 ORDER BY mycolumn COLLATE "en_US"\&. For more information see
 Section 4.2.10, \(lqCollation Expressions\(rq, in the documentation
 and
-Section 22.2, \(lqCollation Support\(rq, in the documentation\&.
+Section 23.2, \(lqCollation Support\(rq, in the documentation\&.
 .SS "LIMIT Clause"
 .PP
 The

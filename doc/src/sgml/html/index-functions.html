@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Index Access Method Interface Definition"
 HREF="indexam.html"><LINK
 REL="PREVIOUS"
-TITLE="Catalog Entries for Indexes"
-HREF="index-catalog.html"><LINK
+TITLE="Basic API Structure for Indexes"
+HREF="index-api.html"><LINK
 REL="NEXT"
 TITLE="Index Scanning"
 HREF="index-scanning.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="Catalog Entries for Indexes"
-HREF="index-catalog.html"
+TITLE="Basic API Structure for Indexes"
+HREF="index-api.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 58. Index Access Method Interface Definition</TD
+>Chapter 59. Index Access Method Interface Definition</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,11 +93,14 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="INDEX-FUNCTIONS"
->58.2. Index Access Method Functions</A
+>59.2. Index Access Method Functions</A
 ></H1
 ><P
 >   The index construction and maintenance functions that an index access
-   method must provide are:
+   method must provide in <TT
+CLASS="STRUCTNAME"
+>IndexAmRoutine</TT
+> are:
   </P
 ><P
 ></P><PRE
@@ -132,7 +135,7 @@ ambuildempty (Relation indexRelation);</PRE
 CLASS="SYMBOL"
 >INIT_FORKNUM</TT
 >)
-   of the given relation.  This method is called only for unlogged tables; the
+   of the given relation.  This method is called only for unlogged indexes; the
    empty index written to the initialization fork will be copied over the main
    relation fork on each server restart.
   </P
@@ -161,9 +164,6 @@ CLASS="LITERAL"
 > is the TID to be indexed.
    If the access method supports unique indexes (its
    <TT
-CLASS="STRUCTNAME"
->pg_am</TT
->.<TT
 CLASS="STRUCTFIELD"
 >amcanunique</TT
 > flag is true) then
@@ -174,7 +174,7 @@ CLASS="LITERAL"
    perform.  This varies depending on whether the unique constraint is
    deferrable; see <A
 HREF="index-unique-checks.html"
->Section 58.5</A
+>Section 59.5</A
 > for details.
    Normally the access method only needs the <TT
 CLASS="LITERAL"
@@ -345,25 +345,28 @@ CLASS="PROGRAMLISTING"
 >bool
 amcanreturn (Relation indexRelation, int attno);</PRE
 ><P>
-   Check whether the index can support <I
+   Check whether the index can support <A
+HREF="indexes-index-only-scans.html"
+><I
 CLASS="FIRSTTERM"
 >index-only scans</I
-> on the
-   given column, by returning the indexed column values for an index entry in
-   the form of an <TT
+></A
+> on
+   the given column, by returning the indexed column values for an index entry
+   in the form of an <TT
 CLASS="STRUCTNAME"
 >IndexTuple</TT
 >.  The attribute number
-   is 1-based, i.e. the first columns attno is 1. Returns TRUE if supported,
+   is 1-based, i.e. the first column's attno is 1. Returns TRUE if supported,
    else FALSE.  If the access method does not support index-only scans at all,
    the <TT
 CLASS="STRUCTFIELD"
 >amcanreturn</TT
 > field in its <TT
 CLASS="STRUCTNAME"
->pg_am</TT
-> row can
-   be set to zero.
+>IndexAmRoutine</TT
+>
+   struct can be set to NULL.
   </P
 ><P
 ></P><PRE
@@ -380,7 +383,7 @@ amcostestimate (PlannerInfo *root,
    Estimate the costs of an index scan.  This function is described fully
    in <A
 HREF="index-cost-estimation.html"
->Section 58.6</A
+>Section 59.6</A
 >, below.
   </P
 ><P
@@ -452,6 +455,168 @@ CLASS="STRUCTNAME"
    It is OK to return NULL if default behavior is wanted.
   </P
 ><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>bool
+amproperty (Oid index_oid, int attno,
+            IndexAMProperty prop, const char *propname,
+            bool *res, bool *isnull);</PRE
+><P>
+   The <CODE
+CLASS="FUNCTION"
+>amproperty</CODE
+> method allows index access methods to override
+   the default behavior of <CODE
+CLASS="FUNCTION"
+>pg_index_column_has_property</CODE
+>
+   and related functions.
+   If the access method does not have any special behavior for index property
+   inquiries, the <TT
+CLASS="STRUCTFIELD"
+>amproperty</TT
+> field in
+   its <TT
+CLASS="STRUCTNAME"
+>IndexAmRoutine</TT
+> struct can be set to NULL.
+   Otherwise, the <CODE
+CLASS="FUNCTION"
+>amproperty</CODE
+> method will be called with
+   <TT
+CLASS="PARAMETER"
+>index_oid</TT
+> and <TT
+CLASS="PARAMETER"
+>attno</TT
+> both zero for
+   <CODE
+CLASS="FUNCTION"
+>pg_indexam_has_property</CODE
+> calls,
+   or with <TT
+CLASS="PARAMETER"
+>index_oid</TT
+> valid and <TT
+CLASS="PARAMETER"
+>attno</TT
+> zero for
+   <CODE
+CLASS="FUNCTION"
+>pg_index_has_property</CODE
+> calls,
+   or with <TT
+CLASS="PARAMETER"
+>index_oid</TT
+> valid and <TT
+CLASS="PARAMETER"
+>attno</TT
+> greater than
+   zero for <CODE
+CLASS="FUNCTION"
+>pg_index_column_has_property</CODE
+> calls.
+   <TT
+CLASS="PARAMETER"
+>prop</TT
+> is an enum value identifying the property being tested,
+   while <TT
+CLASS="PARAMETER"
+>propname</TT
+> is the original property name string.
+   If the core code does not recognize the property name
+   then <TT
+CLASS="PARAMETER"
+>prop</TT
+> is <TT
+CLASS="LITERAL"
+>AMPROP_UNKNOWN</TT
+>.
+   Access methods can define custom property names by
+   checking <TT
+CLASS="PARAMETER"
+>propname</TT
+> for a match (use <CODE
+CLASS="FUNCTION"
+>pg_strcasecmp</CODE
+>
+   to match, for consistency with the core code); for names known to the core
+   code, it's better to inspect <TT
+CLASS="PARAMETER"
+>prop</TT
+>.
+   If the <TT
+CLASS="STRUCTFIELD"
+>amproperty</TT
+> method returns <TT
+CLASS="LITERAL"
+>true</TT
+> then
+   it has determined the property test result: it must set <TT
+CLASS="LITERAL"
+>*res</TT
+>
+   to the boolean value to return, or set <TT
+CLASS="LITERAL"
+>*isnull</TT
+>
+   to <TT
+CLASS="LITERAL"
+>true</TT
+> to return a NULL.  (Both of the referenced variables
+   are initialized to <TT
+CLASS="LITERAL"
+>false</TT
+> before the call.)
+   If the <TT
+CLASS="STRUCTFIELD"
+>amproperty</TT
+> method returns <TT
+CLASS="LITERAL"
+>false</TT
+> then
+   the core code will proceed with its normal logic for determining the
+   property test result.
+  </P
+><P
+>   Access methods that support ordering operators should
+   implement <TT
+CLASS="LITERAL"
+>AMPROP_DISTANCE_ORDERABLE</TT
+> property testing, as the
+   core code does not know how to do that and will return NULL.  It may
+   also be advantageous to implement <TT
+CLASS="LITERAL"
+>AMPROP_RETURNABLE</TT
+> testing,
+   if that can be done more cheaply than by opening the index and calling
+   <TT
+CLASS="STRUCTFIELD"
+>amcanreturn</TT
+>, which is the core code's default behavior.
+   The default behavior should be satisfactory for all other standard
+   properties.
+  </P
+><P
+></P><PRE
+CLASS="PROGRAMLISTING"
+>bool
+amvalidate (Oid opclassoid);</PRE
+><P>
+   Validate the catalog entries for the specified operator class, so far as
+   the access method can reasonably do that.  For example, this might include
+   testing that all required support functions are provided.
+   The <CODE
+CLASS="FUNCTION"
+>amvalidate</CODE
+> function must return false if the opclass is
+   invalid.  Problems should be reported with <CODE
+CLASS="FUNCTION"
+>ereport</CODE
+> messages.
+  </P
+><P
 >   The purpose of an index, of course, is to support scans for tuples matching
    an indexable <TT
 CLASS="LITERAL"
@@ -466,7 +631,7 @@ CLASS="FIRSTTERM"
 >.  The semantics of
    index scanning are described more fully in <A
 HREF="index-scanning.html"
->Section 58.3</A
+>Section 59.3</A
 >,
    below.  An index access method can support <SPAN
 CLASS="QUOTE"
@@ -589,8 +754,11 @@ CLASS="FUNCTION"
    callers.
   </P
 ><P
->   If the index supports index-only scans (i.e.,
-   <CODE
+>   If the index supports <A
+HREF="indexes-index-only-scans.html"
+>index-only
+   scans</A
+> (i.e., <CODE
 CLASS="FUNCTION"
 >amcanreturn</CODE
 > returns TRUE for it),
@@ -639,9 +807,9 @@ CLASS="STRUCTFIELD"
 >amgettuple</TT
 > field in its <TT
 CLASS="STRUCTNAME"
->pg_am</TT
-> row must
-   be set to zero.
+>IndexAmRoutine</TT
+>
+   struct must be set to NULL.
   </P
 ><P
 ></P><PRE
@@ -688,7 +856,7 @@ CLASS="FUNCTION"
 >, as explained
    in <A
 HREF="index-scanning.html"
->Section 58.3</A
+>Section 59.3</A
 >.
   </P
 ><P
@@ -705,9 +873,9 @@ CLASS="STRUCTFIELD"
 >amgetbitmap</TT
 > field in its <TT
 CLASS="STRUCTNAME"
->pg_am</TT
-> row must
-   be set to zero.
+>IndexAmRoutine</TT
+>
+   struct must be set to NULL.
   </P
 ><P
 ></P><PRE
@@ -732,6 +900,21 @@ ammarkpos (IndexScanDesc scan);</PRE
    remembered scan position per scan.
   </P
 ><P
+>   The <CODE
+CLASS="FUNCTION"
+>ammarkpos</CODE
+> function need only be provided if the access
+   method supports ordered scans.  If it doesn't,
+   the <TT
+CLASS="STRUCTFIELD"
+>ammarkpos</TT
+> field in its <TT
+CLASS="STRUCTNAME"
+>IndexAmRoutine</TT
+>
+   struct may be set to NULL.
+  </P
+><P
 ></P><PRE
 CLASS="PROGRAMLISTING"
 >void
@@ -740,46 +923,19 @@ amrestrpos (IndexScanDesc scan);</PRE
    Restore the scan to the most recently marked position.
   </P
 ><P
->   By convention, the <TT
-CLASS="LITERAL"
->pg_proc</TT
-> entry for an index
-   access method function should show the correct number of arguments,
-   but declare them all as type <TT
-CLASS="TYPE"
->internal</TT
-> (since most of the arguments
-   have types that are not known to SQL, and we don't want users calling
-   the functions directly anyway).  The return type is declared as
-   <TT
-CLASS="TYPE"
->void</TT
->, <TT
-CLASS="TYPE"
->internal</TT
->, or <TT
-CLASS="TYPE"
->boolean</TT
-> as appropriate.
-   The only exception is <CODE
+>   The <CODE
 CLASS="FUNCTION"
->amoptions</CODE
->, which should be correctly
-   declared as taking <TT
-CLASS="TYPE"
->text[]</TT
-> and <TT
-CLASS="TYPE"
->bool</TT
-> and returning
-   <TT
-CLASS="TYPE"
->bytea</TT
->.  This provision allows client code to execute
-   <CODE
-CLASS="FUNCTION"
->amoptions</CODE
-> to test validity of options settings.
+>amrestrpos</CODE
+> function need only be provided if the access
+   method supports ordered scans.  If it doesn't,
+   the <TT
+CLASS="STRUCTFIELD"
+>amrestrpos</TT
+> field in its <TT
+CLASS="STRUCTNAME"
+>IndexAmRoutine</TT
+>
+   struct may be set to NULL.
   </P
 ></DIV
 ><DIV
@@ -798,7 +954,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="index-catalog.html"
+HREF="index-api.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -826,7 +982,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->Catalog Entries for Indexes</TD
+>Basic API Structure for Indexes</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

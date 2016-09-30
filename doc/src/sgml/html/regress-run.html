@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Regression Tests"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 30. Regression Tests</TD
+>Chapter 31. Regression Tests</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="REGRESS-RUN"
->30.1. Running the Tests</A
+>31.1. Running the Tests</A
 ></H1
 ><P
 >   The regression tests can be run against an already installed and
@@ -116,8 +116,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN41821"
->30.1.1. Running the Tests Against a Temporary Installation</A
+NAME="AEN44631"
+>31.1.1. Running the Tests Against a Temporary Installation</A
 ></H2
 ><P
 >   To run the parallel regression tests after building but before installation,
@@ -143,7 +143,7 @@ CLASS="COMPUTEROUTPUT"
 ><P>
    or otherwise a note about which tests failed.  See <A
 HREF="regress-evaluation.html"
->Section 30.2</A
+>Section 31.2</A
 > below before assuming that a
    <SPAN
 CLASS="QUOTE"
@@ -208,18 +208,18 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN41840"
->30.1.2. Running the Tests Against an Existing Installation</A
+NAME="AEN44650"
+>31.1.2. Running the Tests Against an Existing Installation</A
 ></H2
 ><P
 >   To run the tests after installation (see <A
 HREF="installation.html"
->Chapter 15</A
+>Chapter 16</A
 >),
    initialize a data area and start the
    server as explained in <A
 HREF="runtime.html"
->Chapter 17</A
+>Chapter 18</A
 >, then type:
 </P><PRE
 CLASS="SCREEN"
@@ -244,16 +244,19 @@ CLASS="LITERAL"
 >regression</TT
 >; any existing database by this name
    will be dropped.
-   The tests will also transiently create some cluster-wide objects, such as
-   user identities named <TT
+  </P
+><P
+>   The tests will also transiently create some cluster-wide objects, such as
+   roles and tablespaces.  These objects will have names beginning with
+   <TT
 CLASS="LITERAL"
->regressuser<TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
-></TT
->.
+>regress_</TT
+>.  Beware of using <TT
+CLASS="LITERAL"
+>installcheck</TT
+>
+   mode in installations that have any actual users or tablespaces named
+   that way.
   </P
 ></DIV
 ><DIV
@@ -261,8 +264,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN41852"
->30.1.3. Additional Test Suites</A
+NAME="AEN44663"
+>31.1.3. Additional Test Suites</A
 ></H2
 ><P
 >   The <TT
@@ -389,7 +392,7 @@ CLASS="FILENAME"
 >.  See
      also <A
 HREF="regress-tap.html"
->Section 30.4</A
+>Section 31.4</A
 >.
     </P
 ></LI
@@ -408,14 +411,14 @@ CLASS="LITERAL"
 >contrib_regression</TT
 >, <TT
 CLASS="LITERAL"
->isolationtest</TT
+>isolation_regression</TT
 >,
    <TT
 CLASS="LITERAL"
->regress1</TT
+>ecpg1_regression</TT
 >, or <TT
 CLASS="LITERAL"
->connectdb</TT
+>ecpg2_regression</TT
 >, as well as
    <TT
 CLASS="LITERAL"
@@ -428,8 +431,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN41898"
->30.1.4. Locale and Encoding</A
+NAME="AEN44709"
+>31.1.4. Locale and Encoding</A
 ></H2
 ><P
 >    By default, tests using a temporary installation use the
@@ -483,8 +486,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN41909"
->30.1.5. Extra Tests</A
+NAME="AEN44720"
+>31.1.5. Extra Tests</A
 ></H2
 ><P
 >    The core regression test suite contains a few test files that are not
@@ -519,8 +522,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN41917"
->30.1.6. Testing Hot Standby</A
+NAME="AEN44728"
+>31.1.6. Testing Hot Standby</A
 ></H2
 ><P
 >   The source distribution also contains regression tests for the static

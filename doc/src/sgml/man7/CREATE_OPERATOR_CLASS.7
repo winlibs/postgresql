@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "CREATE OPERATOR CLASS" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "CREATE OPERATOR CLASS" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -60,7 +60,7 @@ option in
 \fBCREATE OPERATOR CLASS\fR\&. Without this option, the new class is placed into a family named the same as the new class (creating that family if it doesn\*(Aqt already exist)\&.
 .PP
 Refer to
-Section 35.14, \(lqInterfacing Extensions To Indexes\(rq, in the documentation
+Section 36.14, \(lqInterfacing Extensions To Indexes\(rq, in the documentation
 for further information\&.
 .SH "PARAMETERS"
 .PP
@@ -193,7 +193,7 @@ CREATE OPERATOR CLASS gist__int_ops
         OPERATOR        7       @>,
         OPERATOR        8       <@,
         OPERATOR        20      @@ (_int4, query_int),
-        FUNCTION        1       g_int_consistent (internal, _int4, int, oid, internal),
+        FUNCTION        1       g_int_consistent (internal, _int4, smallint, oid, internal),
         FUNCTION        2       g_int_union (internal, internal),
         FUNCTION        3       g_int_compress (internal),
         FUNCTION        4       g_int_decompress (internal),

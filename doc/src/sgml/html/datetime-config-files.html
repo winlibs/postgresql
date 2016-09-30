@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Date/Time Support"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -193,31 +193,59 @@ CLASS="REPLACEABLE"
 >zone_abbreviation</I
 ></TT
 > is just the abbreviation
-    being defined.  The <TT
+    being defined.  An <TT
 CLASS="REPLACEABLE"
 ><I
 >offset</I
 ></TT
-> is the equivalent
-    offset in seconds from UTC, positive being east from Greenwich and
-    negative being west.  For example, -18000 would be five hours west
-    of Greenwich, or North American east coast standard time.  <TT
+> is an integer giving
+    the equivalent offset in seconds from UTC, positive being east from
+    Greenwich and negative being west.  For example, -18000 would be five
+    hours west of Greenwich, or North American east coast standard time.
+    <TT
 CLASS="LITERAL"
 >D</TT
->
-    indicates that the zone name represents local daylight-savings time rather
-    than standard time.  Alternatively, a <TT
+> indicates that the zone name represents local
+    daylight-savings time rather than standard time.
+   </P
+><P
+>    Alternatively, a <TT
 CLASS="REPLACEABLE"
 ><I
 >time_zone_name</I
 ></TT
-> can
-    be given, in which case that time zone definition is consulted, and the
-    abbreviation's meaning in that zone is used.  This alternative is
-    recommended only for abbreviations whose meaning has historically varied,
-    as looking up the meaning is noticeably more expensive than just using
-    a fixed integer value.
+> can be given, referencing
+    a zone name defined in the IANA timezone database.  The zone's definition
+    is consulted to see whether the abbreviation is or has been in use in
+    that zone, and if so, the appropriate meaning is used &mdash; that is,
+    the meaning that was currently in use at the timestamp whose value is
+    being determined, or the meaning in use immediately before that if it
+    wasn't current at that time, or the oldest meaning if it was used only
+    after that time.  This behavior is essential for dealing with
+    abbreviations whose meaning has historically varied.  It is also allowed
+    to define an abbreviation in terms of a zone name in which that
+    abbreviation does not appear; then using the abbreviation is just
+    equivalent to writing out the zone name.
    </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>Tip: </B
+>     Using a simple integer <TT
+CLASS="REPLACEABLE"
+><I
+>offset</I
+></TT
+> is preferred
+     when defining an abbreviation whose offset from UTC has never changed,
+     as such abbreviations are much cheaper to process than those that
+     require consulting a time zone definition.
+    </P
+></BLOCKQUOTE
+></DIV
 ><P
 >    The <TT
 CLASS="LITERAL"

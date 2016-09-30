@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Recovery Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 26. Recovery Configuration</TD
+>Chapter 27. Recovery Configuration</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="STANDBY-SETTINGS"
->26.3. Standby Server Settings</A
+>27.3. Standby Server Settings</A
 ></H1
 ><P
 ></P
@@ -153,12 +153,12 @@ CLASS="TYPE"
           to connect with the primary. This string is in the format
           described in <A
 HREF="libpq-connect.html#LIBPQ-CONNSTRING"
->Section 31.1.1</A
+>Section 32.1.1</A
 >. If any option is
           unspecified in this string, then the corresponding environment
           variable (see <A
 HREF="libpq-envars.html"
->Section 31.14</A
+>Section 32.14</A
 >) is checked. If the
           environment variable is not set either, then
           defaults are used.
@@ -171,7 +171,7 @@ HREF="libpq-envars.html"
           on the primary (see
           <A
 HREF="warm-standby.html#STREAMING-REPLICATION-AUTHENTICATION"
->Section 25.2.5.1</A
+>Section 26.2.5.1</A
 >).
           A password needs to be provided too, if the primary demands password
           authentication.  It can be provided in the
@@ -222,7 +222,7 @@ CLASS="TYPE"
           resource removal on the upstream node
           (see <A
 HREF="warm-standby.html#STREAMING-REPLICATION-SLOTS"
->Section 25.2.6</A
+>Section 26.2.6</A
 >).
           This setting has no effect if <TT
 CLASS="VARNAME"
@@ -312,13 +312,50 @@ CLASS="LITERAL"
 ><P
 >        This parameter is intended for use with streaming replication deployments;
         however, if the parameter is specified it will be honored in all cases.
-        Synchronous replication is not affected by this setting because there is
-        not yet any setting to request synchronous apply of transaction commits.
+
         <TT
 CLASS="VARNAME"
 >hot_standby_feedback</TT
 > will be delayed by use of this feature
         which could lead to bloat on the master; use both together with care.
+
+        <DIV
+CLASS="WARNING"
+><P
+></P
+><TABLE
+CLASS="WARNING"
+BORDER="1"
+WIDTH="90%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Warning</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>          Synchronous replication is affected by this setting when <TT
+CLASS="VARNAME"
+>synchronous_commit</TT
+>
+          is set to <TT
+CLASS="LITERAL"
+>remote_apply</TT
+>; every <TT
+CLASS="LITERAL"
+>COMMIT</TT
+>
+          will need to wait to be applied.
+         </P
+></TD
+></TR
+></TABLE
+></DIV
+>
        </P
 ></DD
 ></DL

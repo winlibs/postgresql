@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -255,13 +255,13 @@ CLASS="PROGRAMLISTING"
      <TT
 CLASS="TYPE"
 >tsvector</TT
-> type itself does not perform any normalization;
-     it assumes the words it is given are normalized appropriately
-     for the application.  For example,
+> type itself does not perform any word
+     normalization; it assumes the words it is given are normalized
+     appropriately for the application.  For example,
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->select 'The Fat Rats'::tsvector;
+>SELECT 'The Fat Rats'::tsvector;
       tsvector      
 --------------------
  'Fat' 'Rats' 'The'</PRE
@@ -309,7 +309,7 @@ CLASS="TYPE"
 CLASS="TYPE"
 >tsquery</TT
 > value stores lexemes that are to be
-     searched for, and combines them honoring the Boolean operators
+     searched for, and can combine them using the Boolean operators
      <TT
 CLASS="LITERAL"
 >&amp;</TT
@@ -320,8 +320,56 @@ CLASS="LITERAL"
      <TT
 CLASS="LITERAL"
 >!</TT
-> (NOT).  Parentheses can be used to enforce grouping
-     of the operators:
+> (NOT), as well as the phrase search operator
+     <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+> (FOLLOWED BY).  There is also a variant
+     <TT
+CLASS="LITERAL"
+>&lt;<TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+>&gt;</TT
+> of the FOLLOWED BY
+     operator, where <TT
+CLASS="REPLACEABLE"
+><I
+>N</I
+></TT
+> is an integer constant that
+     specifies the distance between the two lexemes being searched
+     for.  <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+> is equivalent to <TT
+CLASS="LITERAL"
+>&lt;1&gt;</TT
+>.
+    </P
+><P
+>     Parentheses can be used to enforce grouping of these operators.
+     In the absence of parentheses, <TT
+CLASS="LITERAL"
+>!</TT
+> (NOT) binds most tightly,
+     <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+> (FOLLOWED BY) next most tightly, then
+     <TT
+CLASS="LITERAL"
+>&amp;</TT
+> (AND), with <TT
+CLASS="LITERAL"
+>|</TT
+> (OR) binding
+     the least tightly.
+    </P
+><P
+>     Here are some examples:
 
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -338,21 +386,19 @@ SELECT 'fat &amp; (rat | cat)'::tsquery;
 SELECT 'fat &amp; rat &amp; ! cat'::tsquery;
         tsquery         
 ------------------------
- 'fat' &amp; 'rat' &amp; !'cat'</PRE
+ 'fat' &amp; 'rat' &amp; !'cat'
+
+SELECT '(fat | rat) &lt;-&gt; cat'::tsquery;
+              tsquery
+-----------------------------------
+ 'fat' &lt;-&gt; 'cat' | 'rat' &lt;-&gt; 'cat'</PRE
 ><P>
 
-     In the absence of parentheses, <TT
-CLASS="LITERAL"
->!</TT
-> (NOT) binds most tightly,
-     and <TT
-CLASS="LITERAL"
->&amp;</TT
-> (AND) binds more tightly than
-     <TT
-CLASS="LITERAL"
->|</TT
-> (OR).
+     The last example demonstrates that <TT
+CLASS="TYPE"
+>tsquery</TT
+> sometimes
+     rearranges nested operators into a logically equivalent formulation.
     </P
 ><P
 >     Optionally, lexemes in a <TT
@@ -363,7 +409,7 @@ CLASS="TYPE"
      <TT
 CLASS="TYPE"
 >tsvector</TT
-> lexemes with matching weights:
+> lexemes with one of those weights:
 
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -396,35 +442,6 @@ CLASS="TYPE"
      with <SPAN
 CLASS="QUOTE"
 >"super"</SPAN
->.  Note that prefixes are first processed by
-     text search configurations, which means this comparison returns
-     true:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT to_tsvector( 'postgraduate' ) @@ to_tsquery( 'postgres:*' );
- ?column? 
-----------
- t
-(1 row)</PRE
-><P>
-     because <TT
-CLASS="LITERAL"
->postgres</TT
-> gets stemmed to <TT
-CLASS="LITERAL"
->postgr</TT
->:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT to_tsquery('postgres:*');
- to_tsquery 
-------------
- 'postgr':*
-(1 row)</PRE
-><P>
-     which then matches <TT
-CLASS="LITERAL"
->postgraduate</TT
 >.
     </P
 ><P
@@ -453,6 +470,38 @@ CLASS="PROGRAMLISTING"
 ------------------
  'fat':AB &amp; 'cat'</PRE
 ><P>
+
+     Note that <CODE
+CLASS="FUNCTION"
+>to_tsquery</CODE
+> will process prefixes in the same way
+     as other words, which means this comparison returns true:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT to_tsvector( 'postgraduate' ) @@ to_tsquery( 'postgres:*' );
+ ?column?
+----------
+ t</PRE
+><P>
+     because <TT
+CLASS="LITERAL"
+>postgres</TT
+> gets stemmed to <TT
+CLASS="LITERAL"
+>postgr</TT
+>:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT to_tsvector( 'postgraduate' ), to_tsquery( 'postgres:*' );
+  to_tsvector  | to_tsquery
+---------------+------------
+ 'postgradu':1 | 'postgr':*</PRE
+><P>
+     which will match the stemmed form of <TT
+CLASS="LITERAL"
+>postgraduate</TT
+>.
     </P
 ></DIV
 ></DIV

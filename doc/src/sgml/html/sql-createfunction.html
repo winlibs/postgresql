@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEFUNCTION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN76025"
+NAME="AEN79370"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN76025"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN76028"
+NAME="AEN79373"
 ></A
 ><H2
 >Synopsis</H2
@@ -169,6 +169,7 @@ CLASS="REPLACEABLE"
     | IMMUTABLE | STABLE | VOLATILE | [ NOT ] LEAKPROOF
     | CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT
     | [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER
+    | PARALLEL { UNSAFE | RESTRICTED | SAFE }
     | COST <TT
 CLASS="REPLACEABLE"
 ><I
@@ -318,7 +319,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76070"
+NAME="AEN79415"
 ></A
 ><H2
 >Parameters</H2
@@ -746,7 +747,7 @@ CLASS="LITERAL"
 ><P
 >       For additional details see <A
 HREF="xfunc-volatility.html"
->Section 35.6</A
+>Section 36.6</A
 >.
       </P
 ></DD
@@ -784,7 +785,7 @@ HREF="sql-createview.html"
 >CREATE VIEW</A
 > and <A
 HREF="rules-privileges.html"
->Section 38.5</A
+>Section 39.5</A
 >.
        This option can only be set by the superuser.
       </P
@@ -865,6 +866,61 @@ CLASS="LITERAL"
 ></DD
 ><DT
 ><TT
+CLASS="LITERAL"
+>PARALLEL</TT
+></DT
+><DD
+><P
+><TT
+CLASS="LITERAL"
+>PARALLEL UNSAFE</TT
+> indicates that the function
+      can't be executed in parallel mode and the presence of such a
+      function in an SQL statement forces a serial execution plan.  This is
+      the default.  <TT
+CLASS="LITERAL"
+>PARALLEL RESTRICTED</TT
+> indicates that
+      the function can be executed in parallel mode, but the execution is
+      restricted to parallel group leader.  <TT
+CLASS="LITERAL"
+>PARALLEL SAFE</TT
+>
+      indicates that the function is safe to run in parallel mode without
+      restriction.
+     </P
+><P
+>      Functions should be labeled parallel unsafe if they modify any database
+      state, or if they make changes to the transaction such as using
+      sub-transactions, or if they access sequences or attempt to make
+      persistent changes to settings (e.g. <TT
+CLASS="LITERAL"
+>setval</TT
+>).  They should
+      be labeled as parallel restricted if they access temporary tables,
+      client connection state, cursors, prepared statements, or miscellaneous
+      backend-local state which the system cannot synchronize in parallel mode
+      (e.g.  <TT
+CLASS="LITERAL"
+>setseed</TT
+> cannot be executed other than by the group
+      leader because a change made by another process would not be reflected
+      in the leader).  In general, if a function is labeled as being safe when
+      it is restricted or unsafe, or if it is labeled as being restricted when
+      it is in fact unsafe, it may throw errors or produce wrong answers
+      when used in a parallel query.  C-language functions could in theory
+      exhibit totally undefined behavior if mislabeled, since there is no way
+      for the system to protect itself against arbitrary C code, but in most
+      likely cases the result will be no worse than for any other function.
+      If in doubt, functions should be labeled as <TT
+CLASS="LITERAL"
+>UNSAFE</TT
+>, which is
+      the default.
+     </P
+></DD
+><DT
+><TT
 CLASS="REPLACEABLE"
 ><I
 >execution_cost</I
@@ -922,8 +978,12 @@ CLASS="LITERAL"
        <TT
 CLASS="LITERAL"
 >SET FROM CURRENT</TT
-> saves the session's current value of
-       the parameter as the value to be applied when the function is entered.
+> saves the value of the parameter that
+       is current when <TT
+CLASS="COMMAND"
+>CREATE FUNCTION</TT
+> is executed as the value
+       to be applied when the function is entered.
       </P
 ><P
 >       If a <TT
@@ -961,7 +1021,7 @@ HREF="sql-set.html"
 > and
        <A
 HREF="runtime-config.html"
->Chapter 18</A
+>Chapter 19</A
 >
        for more information about allowed parameter names and values.
       </P
@@ -1102,7 +1162,7 @@ CLASS="LITERAL"
 ><P
 >    Refer to <A
 HREF="xfunc.html"
->Section 35.3</A
+>Section 36.3</A
 > for further information on writing
     functions.
    </P
@@ -1240,7 +1300,7 @@ NAME="SQL-CREATEFUNCTION-EXAMPLES"
 >   Here are some trivial examples to help you get started.  For more
    information and examples, see <A
 HREF="xfunc.html"
->Section 35.3</A
+>Section 36.3</A
 >.
 </P><PRE
 CLASS="PROGRAMLISTING"
@@ -1337,10 +1397,11 @@ HREF="runtime-config-client.html#GUC-SEARCH-PATH"
 >search_path</A
 > should be set to exclude any schemas
     writable by untrusted users.  This prevents
-    malicious users from creating objects that mask objects used by the
-    function.  Particularly important in this regard is the
+    malicious users from creating objects (e.g., tables, functions, and
+    operators) that mask objects intended to be used by the function.
+    Particularly important in this regard is the
     temporary-table schema, which is searched first by default, and
-    is normally writable by anyone.  A secure arrangement can be had
+    is normally writable by anyone.  A secure arrangement can be obtained
     by forcing the temporary schema to be searched last.  To do this,
     write <TT
 CLASS="LITERAL"
@@ -1350,8 +1411,8 @@ CLASS="VARNAME"
 >search_path</TT
 >.
     This function illustrates safe usage:
-   </P
-><PRE
+
+</P><PRE
 CLASS="PROGRAMLISTING"
 >CREATE FUNCTION check_password(uname TEXT, pass TEXT)
 RETURNS BOOLEAN AS $$
@@ -1367,6 +1428,28 @@ $$  LANGUAGE plpgsql
     SECURITY DEFINER
     -- Set a secure search_path: trusted schema(s), then 'pg_temp'.
     SET search_path = admin, pg_temp;</PRE
+><P>
+
+    This function's intention is to access a table <TT
+CLASS="LITERAL"
+>admin.pwds</TT
+>.
+    But without the <TT
+CLASS="LITERAL"
+>SET</TT
+> clause, or with a <TT
+CLASS="LITERAL"
+>SET</TT
+> clause
+    mentioning only <TT
+CLASS="LITERAL"
+>admin</TT
+>, the function could be subverted by
+    creating a temporary table named <TT
+CLASS="LITERAL"
+>pwds</TT
+>.
+   </P
 ><P
 >    Before <SPAN
 CLASS="PRODUCTNAME"
@@ -1375,7 +1458,7 @@ CLASS="PRODUCTNAME"
     <TT
 CLASS="LITERAL"
 >SET</TT
-> option was not available, and so older functions may
+> clause was not available, and so older functions may
     contain rather complicated logic to save, set, and restore
     <TT
 CLASS="VARNAME"
@@ -1383,7 +1466,7 @@ CLASS="VARNAME"
 >.  The <TT
 CLASS="LITERAL"
 >SET</TT
-> option is far easier
+> clause is far easier
     to use for this purpose.
    </P
 ><P
@@ -1464,7 +1547,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN76383"
+NAME="AEN79746"
 ></A
 ><H2
 >See Also</H2

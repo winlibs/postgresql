@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 49. System Catalogs</TD
+>Chapter 50. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="VIEW-PG-ROLES"
->49.70. <TT
+>50.72. <TT
 CLASS="STRUCTNAME"
 >pg_roles</TT
 ></A
@@ -121,11 +121,11 @@ CLASS="STRUCTNAME"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN107520"
+NAME="AEN111422"
 ></A
 ><P
 ><B
->Table 49-71. <TT
+>Table 50-73. <TT
 CLASS="STRUCTNAME"
 >pg_roles</TT
 > Columns</B
@@ -262,7 +262,7 @@ CLASS="TYPE"
 >       Role is a replication role. That is, this role can initiate streaming
        replication (see <A
 HREF="warm-standby.html#STREAMING-REPLICATION"
->Section 25.2.5</A
+>Section 26.2.5</A
 >) and set/unset
        the system backup mode using <CODE
 CLASS="FUNCTION"
@@ -327,6 +327,27 @@ CLASS="TYPE"
 ><TD
 >Password expiry time (only used for password authentication);
        null if no expiration</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTFIELD"
+>rolbypassrls</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>bool</TT
+></TD
+><TD
+>&nbsp;</TD
+><TD
+>       Role bypasses every row level security policy, see
+       <A
+HREF="ddl-rowsecurity.html"
+>Section 5.7</A
+> for more information.
+      </TD
 ></TR
 ><TR
 ><TD

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="  Installation from Source Code"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 15. Installation from Source Code</TD
+>Chapter 16. Installation from Source Code</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="INSTALL-PROCEDURE"
->15.4. Installation Procedure</A
+>16.4. Installation Procedure</A
 ></H1
 ><DIV
 CLASS="PROCEDURE"
@@ -989,6 +989,18 @@ CLASS="ACRONYM"
 ><DT
 ><TT
 CLASS="OPTION"
+>--with-bsd-auth</TT
+></DT
+><DD
+><P
+>         Build with BSD Authentication support.
+         (The BSD Authentication framework is
+         currently only available on OpenBSD.)
+        </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
 >--with-ldap</TT
 ></DT
 ><DD
@@ -1000,11 +1012,11 @@ CLASS="ACRONYM"
          support for authentication and connection parameter lookup (see
          <A
 HREF="libpq-ldap.html"
->Section 31.17</A
+>Section 32.17</A
 > and
          <A
 HREF="auth-methods.html#AUTH-LDAP"
->Section 19.3.7</A
+>Section 20.3.7</A
 > for more information). On Unix,
          this requires the <SPAN
 CLASS="PRODUCTNAME"
@@ -1024,6 +1036,35 @@ CLASS="PRODUCTNAME"
 >OpenLDAP</SPAN
 > installation is sufficient before
          proceeding.
+        </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>--with-systemd</TT
+></DT
+><DD
+><P
+>         Build with support
+         for <SPAN
+CLASS="APPLICATION"
+>systemd</SPAN
+>
+         service notifications.  This improves integration if the server binary
+         is started under <SPAN
+CLASS="APPLICATION"
+>systemd</SPAN
+> but has no impact
+         otherwise; see <A
+HREF="server-start.html"
+>Section 18.3</A
+> for more
+         information.  <SPAN
+CLASS="APPLICATION"
+>libsystemd</SPAN
+> and the
+         associated header files need to be installed to be able to use this
+         option.
         </P
 ></DD
 ><DT
@@ -1586,7 +1627,7 @@ CLASS="OPTION"
          metrics.
          See <A
 HREF="regress-coverage.html"
->Section 30.5</A
+>Section 31.5</A
 >
          for more information. This option is for use only with GCC
          and when doing development work.
@@ -1664,7 +1705,7 @@ CLASS="PRODUCTNAME"
          dynamic tracing tool DTrace.
          See <A
 HREF="dynamic-trace.html"
->Section 27.4</A
+>Section 28.5</A
 >
          for more information.
         </P
@@ -1728,7 +1769,7 @@ CLASS="LITERAL"
 >.
          See <A
 HREF="regress-tap.html"
->Section 30.4</A
+>Section 31.4</A
 > for more information.
         </P
 ></DD
@@ -1941,7 +1982,7 @@ CLASS="ENVAR"
          
          <A
 HREF="plpython-python23.html"
->Section 43.1</A
+>Section 44.1</A
 >
          for more information.
         </P
@@ -2053,7 +2094,7 @@ CLASS="APPLICATION"
     hardware. The last line displayed should be:
 </P><PRE
 CLASS="SCREEN"
->All of PostgreSQL is successfully made. Ready to install.</PRE
+>All of PostgreSQL successfully made. Ready to install.</PRE
 ><P>
    </P
 ><P
@@ -2073,7 +2114,7 @@ CLASS="USERINPUT"
    The last line displayed should be:
 </P><PRE
 CLASS="SCREEN"
->PostgreSQL, contrib and HTML documentation successfully made. Ready to install.</PRE
+>PostgreSQL, contrib, and documentation successfully made. Ready to install.</PRE
 ><P>
    </P
 ></LI
@@ -2103,7 +2144,7 @@ CLASS="USERINPUT"
     
     <A
 HREF="regress.html"
->Chapter 30</A
+>Chapter 31</A
 > contains
     detailed information about interpreting the test results. You can
     repeat this test at any later time by issuing the same command.
@@ -2129,7 +2170,7 @@ CLASS="NOTE"
      
      <A
 HREF="upgrading.html"
->Section 17.6</A
+>Section 18.6</A
 >
      which has instructions about upgrading a
      cluster.

@@ -1,6 +1,48 @@
 #line 2 "scan.c"
+#line 2 "scan.l"
+/*-------------------------------------------------------------------------
+ *
+ * scan.l
+ *	  lexical scanner for PostgreSQL
+ *
+ * NOTE NOTE NOTE:
+ *
+ * The rules in this file must be kept in sync with src/fe_utils/psqlscan.l!
+ *
+ * The rules are designed so that the scanner never has to backtrack,
+ * in the sense that there is always a rule that can match the input
+ * consumed so far (the rule action may internally throw back some input
+ * with yyless(), however).  As explained in the flex manual, this makes
+ * for a useful speed increase --- about a third faster than a plain -CF
+ * lexer, in simple testing.  The extra complexity is mostly in the rules
+ * for handling float numbers and continued string literals.  If you change
+ * the lexical rules, verify that you haven't broken the no-backtrack
+ * property by running flex with the "-b" option and checking that the
+ * resulting "lex.backup" file says that no backing up is needed.  (As of
+ * Postgres 9.2, this check is made automatically by the Makefile.)
+ *
+ *
+ * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1994, Regents of the University of California
+ *
+ * IDENTIFICATION
+ *	  src/backend/parser/scan.l
+ *
+ *-------------------------------------------------------------------------
+ */
+#include "postgres.h"
 
-#line 4 "scan.c"
+#include <ctype.h>
+#include <unistd.h>
+
+#include "parser/gramparse.h"
+#include "parser/parser.h"		/* only needed for GUC variables */
+#include "parser/scansup.h"
+#include "mb/pg_wchar.h"
+
+
+
+#line 46 "scan.c"
 
 #define  YY_INT_ALIGNED short int
 
@@ -8495,48 +8537,8 @@ static yyconst struct yy_trans_info *yy_start_state_list[27] =
 #define YY_MORE_ADJ 0
 #define YY_RESTORE_YY_MORE_OFFSET
 #line 1 "scan.l"
-#line 2 "scan.l"
-/*-------------------------------------------------------------------------
- *
- * scan.l
- *	  lexical scanner for PostgreSQL
- *
- * NOTE NOTE NOTE:
- *
- * The rules in this file must be kept in sync with psql's lexer!!!
- *
- * The rules are designed so that the scanner never has to backtrack,
- * in the sense that there is always a rule that can match the input
- * consumed so far (the rule action may internally throw back some input
- * with yyless(), however).  As explained in the flex manual, this makes
- * for a useful speed increase --- about a third faster than a plain -CF
- * lexer, in simple testing.  The extra complexity is mostly in the rules
- * for handling float numbers and continued string literals.  If you change
- * the lexical rules, verify that you haven't broken the no-backtrack
- * property by running flex with the "-b" option and checking that the
- * resulting "lex.backup" file says that no backing up is needed.  (As of
- * Postgres 9.2, this check is made automatically by the Makefile.)
- *
- *
- * Portions Copyright (c) 1996-2015, PostgreSQL Global Development Group
- * Portions Copyright (c) 1994, Regents of the University of California
- *
- * IDENTIFICATION
- *	  src/backend/parser/scan.l
- *
- *-------------------------------------------------------------------------
- */
-#include "postgres.h"
 
-#include <ctype.h>
-#include <unistd.h>
-
-#include "parser/parser.h"				/* only needed for GUC variables */
-#include "parser/scanner.h"
-#include "parser/scansup.h"
-#include "mb/pg_wchar.h"
-
-
+#line 44 "scan.l"
 /* Avoid exit() on fatal scanner errors (a bit ugly -- see yy_fatal_error) */
 #undef fprintf
 #define fprintf(file, fmt, msg)  fprintf_to_ereport(fmt, msg)
@@ -8551,12 +8553,11 @@ fprintf_to_ereport(const char *fmt, const char *msg)
  * GUC variables.  This is a DIRECT violation of the warning given at the
  * head of gram.y, ie flex/bison code must not depend on any GUC variables;
  * as such, changing their values can induce very unintuitive behavior.
- * But we shall have to live with it as a short-term thing until the switch
- * to SQL-standard string syntax is complete.
+ * But we shall have to live with it until we can remove these variables.
  */
-int				backslash_quote = BACKSLASH_QUOTE_SAFE_ENCODING;
-bool			escape_string_warning = true;
-bool			standard_conforming_strings = true;
+int			backslash_quote = BACKSLASH_QUOTE_SAFE_ENCODING;
+bool		escape_string_warning = true;
+bool		standard_conforming_strings = true;
 
 /*
  * Set the type of YYSTYPE.
@@ -8583,7 +8584,7 @@ bool			standard_conforming_strings = true;
  */
 #define ADVANCE_YYLLOC(delta)  ( *(yylloc) += (delta) )
 
-#define startlit()  ( yyextra->literallen = 0 )
+#define startlit()	( yyextra->literallen = 0 )
 static void addlit(char *ytext, int yleng, core_yyscan_t yyscanner);
 static void addlitchar(unsigned char ychar, core_yyscan_t yyscanner);
 static char *litbufdup(core_yyscan_t yyscanner);
@@ -8750,8 +8751,8 @@ extern void core_yyset_column(int column_no, yyscan_t yyscanner);
  * instead we pass it separately to parser. there it gets
  * coerced via doNegate() -- Leon aug 20 1999
  *
-* {decimalfail} is used because we would like "1..10" to lex as 1, dot_dot, 10.
-*
+ * {decimalfail} is used because we would like "1..10" to lex as 1, dot_dot, 10.
+ *
  * {realfail1} and {realfail2} are added to prevent the need for scanner
  * backup when the {real} rule fails to match completely.
  */
@@ -8767,7 +8768,7 @@ extern void core_yyset_column(int column_no, yyscan_t yyscanner);
  * Note that xcstart must appear before operator, as explained above!
  *  Also whitespace (comment) must appear before operator.
  */
-#line 8771 "scan.c"
+#line 8772 "scan.c"
 
 #define INITIAL 0
 #define xb 1
@@ -8942,7 +8943,7 @@ static int input (yyscan_t yyscanner );
 	if ( YY_CURRENT_BUFFER_LVALUE->yy_is_interactive ) \
 		{ \
 		int c = '*'; \
-		size_t n; \
+		int n; \
 		for ( n = 0; n < max_size && \
 			     (c = getc( yyin )) != EOF && c != '\n'; ++n ) \
 			buf[n] = (char) c; \
@@ -8955,7 +8956,7 @@ static int input (yyscan_t yyscanner );
 	else \
 		{ \
 		errno=0; \
-		while ( (result = fread(buf, 1, max_size, yyin))==0 && ferror(yyin)) \
+		while ( (result = fread(buf, 1, (yy_size_t) max_size, yyin)) == 0 && ferror(yyin)) \
 			{ \
 			if( errno != EINTR) \
 				{ \
@@ -9061,7 +9062,7 @@ YY_DECL
 #line 392 "scan.l"
 
 
-#line 9065 "scan.c"
+#line 9066 "scan.c"
 
 	while ( 1 )		/* loops until end-of-file is reached */
 		{
@@ -9264,7 +9265,7 @@ YY_RULE_SETUP
 					const ScanKeyword *keyword;
 
 					SET_YYLLOC();
-					yyless(1);				/* eat only 'n' this time */
+					yyless(1);	/* eat only 'n' this time */
 
 					keyword = ScanKeywordLookup("nchar",
 												yyextra->keywords,
@@ -9362,16 +9363,19 @@ case 26:
 /* rule 26 can match eol */
 YY_RULE_SETUP
 #line 560 "scan.l"
-{ /* stay in xusend state over whitespace */ }
+{
+					/* stay in xusend state over whitespace */
+				}
 	YY_BREAK
-case 27:
-#line 562 "scan.l"
-case 28:
-/* rule 28 can match eol */
-#line 563 "scan.l"
-YY_RULE_SETUP
 case YY_STATE_EOF(xusend):
 #line 563 "scan.l"
+case 27:
+/* rule 27 can match eol */
+#line 565 "scan.l"
+case 28:
+/* rule 28 can match eol */
+YY_RULE_SETUP
+#line 565 "scan.l"
 {
 					/* no UESCAPE after the quote, throw back everything */
 					yyless(0);
@@ -9383,23 +9387,24 @@ case YY_STATE_EOF(xusend):
 case 29:
 /* rule 29 can match eol */
 YY_RULE_SETUP
-#line 570 "scan.l"
+#line 572 "scan.l"
 {
 					/* found UESCAPE after the end quote */
 					BEGIN(INITIAL);
-					if (!check_uescapechar(yytext[yyleng-2]))
+					if (!check_uescapechar(yytext[yyleng - 2]))
 					{
 						SET_YYLLOC();
-						ADVANCE_YYLLOC(yyleng-2);
+						ADVANCE_YYLLOC(yyleng - 2);
 						yyerror("invalid Unicode escape character");
 					}
-					yylval->str = litbuf_udeescape(yytext[yyleng-2], yyscanner);
+					yylval->str = litbuf_udeescape(yytext[yyleng - 2],
+												   yyscanner);
 					return SCONST;
 				}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 582 "scan.l"
+#line 585 "scan.l"
 {
 					addlitchar('\'', yyscanner);
 				}
@@ -9407,7 +9412,7 @@ YY_RULE_SETUP
 case 31:
 /* rule 31 can match eol */
 YY_RULE_SETUP
-#line 585 "scan.l"
+#line 588 "scan.l"
 {
 					addlit(yytext, yyleng, yyscanner);
 				}
@@ -9415,16 +9420,16 @@ YY_RULE_SETUP
 case 32:
 /* rule 32 can match eol */
 YY_RULE_SETUP
-#line 588 "scan.l"
+#line 591 "scan.l"
 {
 					addlit(yytext, yyleng, yyscanner);
 				}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 591 "scan.l"
+#line 594 "scan.l"
 {
-					pg_wchar c = strtoul(yytext+2, NULL, 16);
+					pg_wchar	c = strtoul(yytext + 2, NULL, 16);
 
 					check_escape_warning(yyscanner);
 
@@ -9441,9 +9446,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 606 "scan.l"
+#line 609 "scan.l"
 {
-					pg_wchar c = strtoul(yytext+2, NULL, 16);
+					pg_wchar	c = strtoul(yytext + 2, NULL, 16);
 
 					if (!is_utf16_surrogate_second(c))
 						yyerror("invalid Unicode surrogate pair");
@@ -9457,34 +9462,34 @@ YY_RULE_SETUP
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 618 "scan.l"
+#line 621 "scan.l"
 { yyerror("invalid Unicode surrogate pair"); }
 	YY_BREAK
 case 36:
 /* rule 36 can match eol */
 YY_RULE_SETUP
-#line 619 "scan.l"
+#line 622 "scan.l"
 { yyerror("invalid Unicode surrogate pair"); }
 	YY_BREAK
 case YY_STATE_EOF(xeu):
-#line 620 "scan.l"
+#line 623 "scan.l"
 { yyerror("invalid Unicode surrogate pair"); }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 621 "scan.l"
+#line 624 "scan.l"
 {
-						ereport(ERROR,
-								(errcode(ERRCODE_INVALID_ESCAPE_SEQUENCE),
-								 errmsg("invalid Unicode escape"),
-								 errhint("Unicode escapes must be \\uXXXX or \\UXXXXXXXX."),
-								 lexer_errposition()));
+					ereport(ERROR,
+							(errcode(ERRCODE_INVALID_ESCAPE_SEQUENCE),
+							 errmsg("invalid Unicode escape"),
+							 errhint("Unicode escapes must be \\uXXXX or \\UXXXXXXXX."),
+							 lexer_errposition()));
 				}
 	YY_BREAK
 case 38:
 /* rule 38 can match eol */
 YY_RULE_SETUP
-#line 628 "scan.l"
+#line 631 "scan.l"
 {
 					if (yytext[1] == '\'')
 					{
@@ -9504,9 +9509,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 644 "scan.l"
+#line 647 "scan.l"
 {
-					unsigned char c = strtoul(yytext+1, NULL, 8);
+					unsigned char c = strtoul(yytext + 1, NULL, 8);
 
 					check_escape_warning(yyscanner);
 					addlitchar(c, yyscanner);
@@ -9516,9 +9521,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 652 "scan.l"
+#line 655 "scan.l"
 {
-					unsigned char c = strtoul(yytext+2, NULL, 16);
+					unsigned char c = strtoul(yytext + 2, NULL, 16);
 
 					check_escape_warning(yyscanner);
 					addlitchar(c, yyscanner);
@@ -9529,14 +9534,14 @@ YY_RULE_SETUP
 case 41:
 /* rule 41 can match eol */
 YY_RULE_SETUP
-#line 660 "scan.l"
+#line 663 "scan.l"
 {
 					/* ignore */
 				}
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 663 "scan.l"
+#line 666 "scan.l"
 {
 					/* This is only needed for \ just before EOF */
 					addlitchar(yytext[0], yyscanner);
@@ -9545,12 +9550,12 @@ YY_RULE_SETUP
 case YY_STATE_EOF(xq):
 case YY_STATE_EOF(xe):
 case YY_STATE_EOF(xus):
-#line 667 "scan.l"
+#line 670 "scan.l"
 { yyerror("unterminated quoted string"); }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 669 "scan.l"
+#line 672 "scan.l"
 {
 					SET_YYLLOC();
 					yyextra->dolqstart = pstrdup(yytext);
@@ -9560,7 +9565,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 675 "scan.l"
+#line 678 "scan.l"
 {
 					SET_YYLLOC();
 					/* throw back all but the initial "$" */
@@ -9571,7 +9576,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 682 "scan.l"
+#line 685 "scan.l"
 {
 					if (strcmp(yytext, yyextra->dolqstart) == 0)
 					{
@@ -9588,41 +9593,41 @@ YY_RULE_SETUP
 						 * the $... part to the output, but put back the final
 						 * $ for rescanning.  Consider $delim$...$junk$delim$
 						 */
-						addlit(yytext, yyleng-1, yyscanner);
-						yyless(yyleng-1);
+						addlit(yytext, yyleng - 1, yyscanner);
+						yyless(yyleng - 1);
 					}
 				}
 	YY_BREAK
 case 46:
 /* rule 46 can match eol */
 YY_RULE_SETUP
-#line 702 "scan.l"
+#line 705 "scan.l"
 {
 					addlit(yytext, yyleng, yyscanner);
 				}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 705 "scan.l"
+#line 708 "scan.l"
 {
 					addlit(yytext, yyleng, yyscanner);
 				}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 708 "scan.l"
+#line 711 "scan.l"
 {
 					/* This is only needed for $ inside the quoted text */
 					addlitchar(yytext[0], yyscanner);
 				}
 	YY_BREAK
 case YY_STATE_EOF(xdolq):
-#line 712 "scan.l"
+#line 715 "scan.l"
 { yyerror("unterminated dollar-quoted string"); }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 714 "scan.l"
+#line 717 "scan.l"
 {
 					SET_YYLLOC();
 					BEGIN(xd);
@@ -9631,7 +9636,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 719 "scan.l"
+#line 722 "scan.l"
 {
 					SET_YYLLOC();
 					BEGIN(xui);
@@ -9640,9 +9645,9 @@ YY_RULE_SETUP
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 724 "scan.l"
+#line 727 "scan.l"
 {
-					char		   *ident;
+					char	   *ident;
 
 					BEGIN(INITIAL);
 					if (yyextra->literallen == 0)
@@ -9656,7 +9661,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 736 "scan.l"
+#line 739 "scan.l"
 {
 					yyless(1);
 					/* xuiend state looks for possible UESCAPE */
@@ -9666,17 +9671,20 @@ YY_RULE_SETUP
 case 53:
 /* rule 53 can match eol */
 YY_RULE_SETUP
-#line 741 "scan.l"
-{ /* stay in xuiend state over whitespace */ }
+#line 744 "scan.l"
+{
+					/* stay in xuiend state over whitespace */
+				}
 	YY_BREAK
+case YY_STATE_EOF(xuiend):
+#line 747 "scan.l"
 case 54:
-#line 743 "scan.l"
+/* rule 54 can match eol */
+#line 749 "scan.l"
 case 55:
 /* rule 55 can match eol */
-#line 744 "scan.l"
 YY_RULE_SETUP
-case YY_STATE_EOF(xuiend):
-#line 744 "scan.l"
+#line 749 "scan.l"
 {
 					/* no UESCAPE after the quote, throw back everything */
 					char	   *ident;
@@ -9698,7 +9706,7 @@ case YY_STATE_EOF(xuiend):
 case 56:
 /* rule 56 can match eol */
 YY_RULE_SETUP
-#line 761 "scan.l"
+#line 766 "scan.l"
 {
 					/* found UESCAPE after the end quote */
 					char	   *ident;
@@ -9707,10 +9715,10 @@ YY_RULE_SETUP
 					BEGIN(INITIAL);
 					if (yyextra->literallen == 0)
 						yyerror("zero-length delimited identifier");
-					if (!check_uescapechar(yytext[yyleng-2]))
+					if (!check_uescapechar(yytext[yyleng - 2]))
 					{
 						SET_YYLLOC();
-						ADVANCE_YYLLOC(yyleng-2);
+						ADVANCE_YYLLOC(yyleng - 2);
 						yyerror("invalid Unicode escape character");
 					}
 					ident = litbuf_udeescape(yytext[yyleng - 2], yyscanner);
@@ -9723,7 +9731,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 782 "scan.l"
+#line 787 "scan.l"
 {
 					addlitchar('"', yyscanner);
 				}
@@ -9731,21 +9739,21 @@ YY_RULE_SETUP
 case 58:
 /* rule 58 can match eol */
 YY_RULE_SETUP
-#line 785 "scan.l"
+#line 790 "scan.l"
 {
 					addlit(yytext, yyleng, yyscanner);
 				}
 	YY_BREAK
 case YY_STATE_EOF(xd):
 case YY_STATE_EOF(xui):
-#line 788 "scan.l"
+#line 793 "scan.l"
 { yyerror("unterminated quoted identifier"); }
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 790 "scan.l"
+#line 795 "scan.l"
 {
-					char		   *ident;
+					char	   *ident;
 
 					SET_YYLLOC();
 					/* throw back all but the initial u/U */
@@ -9758,7 +9766,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 802 "scan.l"
+#line 807 "scan.l"
 {
 					SET_YYLLOC();
 					return TYPECAST;
@@ -9766,7 +9774,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 807 "scan.l"
+#line 812 "scan.l"
 {
 					SET_YYLLOC();
 					return DOT_DOT;
@@ -9774,7 +9782,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 62:
 YY_RULE_SETUP
-#line 812 "scan.l"
+#line 817 "scan.l"
 {
 					SET_YYLLOC();
 					return COLON_EQUALS;
@@ -9782,7 +9790,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 817 "scan.l"
+#line 822 "scan.l"
 {
 					SET_YYLLOC();
 					return EQUALS_GREATER;
@@ -9790,7 +9798,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 822 "scan.l"
+#line 827 "scan.l"
 {
 					SET_YYLLOC();
 					return LESS_EQUALS;
@@ -9798,7 +9806,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 827 "scan.l"
+#line 832 "scan.l"
 {
 					SET_YYLLOC();
 					return GREATER_EQUALS;
@@ -9806,7 +9814,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 832 "scan.l"
+#line 837 "scan.l"
 {
 					/* We accept both "<>" and "!=" as meaning NOT_EQUALS */
 					SET_YYLLOC();
@@ -9815,7 +9823,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 838 "scan.l"
+#line 843 "scan.l"
 {
 					/* We accept both "<>" and "!=" as meaning NOT_EQUALS */
 					SET_YYLLOC();
@@ -9824,7 +9832,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 844 "scan.l"
+#line 849 "scan.l"
 {
 					SET_YYLLOC();
 					return yytext[0];
@@ -9832,7 +9840,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 69:
 YY_RULE_SETUP
-#line 849 "scan.l"
+#line 854 "scan.l"
 {
 					/*
 					 * Check for embedded slash-star or dash-dash; those
@@ -9840,9 +9848,9 @@ YY_RULE_SETUP
 					 * Note that slash-star or dash-dash at the first
 					 * character will match a prior rule, not this one.
 					 */
-					int		nchars = yyleng;
-					char   *slashstar = strstr(yytext, "/*");
-					char   *dashdash = strstr(yytext, "--");
+					int			nchars = yyleng;
+					char	   *slashstar = strstr(yytext, "/*");
+					char	   *dashdash = strstr(yytext, "--");
 
 					if (slashstar && dashdash)
 					{
@@ -9864,12 +9872,12 @@ YY_RULE_SETUP
 					 * sequences of SQL operators.
 					 */
 					while (nchars > 1 &&
-						   (yytext[nchars-1] == '+' ||
-							yytext[nchars-1] == '-'))
+						   (yytext[nchars - 1] == '+' ||
+							yytext[nchars - 1] == '-'))
 					{
-						int		ic;
+						int			ic;
 
-						for (ic = nchars-2; ic >= 0; ic--)
+						for (ic = nchars - 2; ic >= 0; ic--)
 						{
 							if (strchr("~!@#^&|`?%", yytext[ic]))
 								break;
@@ -9911,7 +9919,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 70:
 YY_RULE_SETUP
-#line 925 "scan.l"
+#line 930 "scan.l"
 {
 					SET_YYLLOC();
 					yylval->ival = atol(yytext + 1);
@@ -9920,7 +9928,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 71:
 YY_RULE_SETUP
-#line 931 "scan.l"
+#line 936 "scan.l"
 {
 					SET_YYLLOC();
 					return process_integer_literal(yytext, yylval);
@@ -9928,7 +9936,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 72:
 YY_RULE_SETUP
-#line 935 "scan.l"
+#line 940 "scan.l"
 {
 					SET_YYLLOC();
 					yylval->str = pstrdup(yytext);
@@ -9937,17 +9945,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 73:
 YY_RULE_SETUP
-#line 940 "scan.l"
+#line 945 "scan.l"
 {
 					/* throw back the .., and treat as integer */
-					yyless(yyleng-2);
+					yyless(yyleng - 2);
 					SET_YYLLOC();
 					return process_integer_literal(yytext, yylval);
 				}
 	YY_BREAK
 case 74:
 YY_RULE_SETUP
-#line 946 "scan.l"
+#line 951 "scan.l"
 {
 					SET_YYLLOC();
 					yylval->str = pstrdup(yytext);
@@ -9956,7 +9964,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 75:
 YY_RULE_SETUP
-#line 951 "scan.l"
+#line 956 "scan.l"
 {
 					/*
 					 * throw back the [Ee], and treat as {decimal}.  Note
@@ -9964,7 +9972,7 @@ YY_RULE_SETUP
 					 * but since this case will almost certainly lead to a
 					 * syntax error anyway, we don't bother to distinguish.
 					 */
-					yyless(yyleng-1);
+					yyless(yyleng - 1);
 					SET_YYLLOC();
 					yylval->str = pstrdup(yytext);
 					return FCONST;
@@ -9972,10 +9980,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 76:
 YY_RULE_SETUP
-#line 963 "scan.l"
+#line 968 "scan.l"
 {
 					/* throw back the [Ee][+-], and proceed as above */
-					yyless(yyleng-2);
+					yyless(yyleng - 2);
 					SET_YYLLOC();
 					yylval->str = pstrdup(yytext);
 					return FCONST;
@@ -9983,10 +9991,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 77:
 YY_RULE_SETUP
-#line 972 "scan.l"
+#line 977 "scan.l"
 {
 					const ScanKeyword *keyword;
-					char		   *ident;
+					char	   *ident;
 
 					SET_YYLLOC();
 
@@ -10011,14 +10019,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 78:
 YY_RULE_SETUP
-#line 997 "scan.l"
+#line 1002 "scan.l"
 {
 					SET_YYLLOC();
 					return yytext[0];
 				}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
-#line 1002 "scan.l"
+#line 1007 "scan.l"
 {
 					SET_YYLLOC();
 					yyterminate();
@@ -10026,10 +10034,10 @@ case YY_STATE_EOF(INITIAL):
 	YY_BREAK
 case 79:
 YY_RULE_SETUP
-#line 1007 "scan.l"
+#line 1012 "scan.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 10033 "scan.c"
+#line 10041 "scan.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -10215,7 +10223,7 @@ static int yy_get_next_buffer (yyscan_t yyscanner)
 
 	else
 		{
-			yy_size_t num_to_read =
+			int num_to_read =
 			YY_CURRENT_BUFFER_LVALUE->yy_buf_size - number_to_move - 1;
 
 		while ( num_to_read <= 0 )
@@ -11123,7 +11131,7 @@ static int yy_flex_strlen (yyconst char * s , yyscan_t yyscanner)
 
 #define YYTABLES_NAME "yytables"
 
-#line 1006 "scan.l"
+#line 1011 "scan.l"
 
 
 
@@ -11138,9 +11146,9 @@ static int yy_flex_strlen (yyconst char * s , yyscan_t yyscanner)
 
 /* Likewise for a couple of other things we need. */
 #undef yylloc
-#define yylloc  (((struct yyguts_t *) yyscanner)->yylloc_r)
+#define yylloc	(((struct yyguts_t *) yyscanner)->yylloc_r)
 #undef yyleng
-#define yyleng  (((struct yyguts_t *) yyscanner)->yyleng_r)
+#define yyleng	(((struct yyguts_t *) yyscanner)->yyleng_r)
 
 
 /*
@@ -11157,7 +11165,7 @@ static int yy_flex_strlen (yyconst char * s , yyscan_t yyscanner)
 int
 scanner_errposition(int location, core_yyscan_t yyscanner)
 {
-	int		pos;
+	int			pos;
 
 	if (location < 0)
 		return 0;				/* no-op if location is unknown */
@@ -11189,7 +11197,7 @@ scanner_yyerror(const char *message, core_yyscan_t yyscanner)
 	{
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 /* translator: %s is typically the translation of "syntax error" */
+		/* translator: %s is typically the translation of "syntax error" */
 				 errmsg("%s at end of input", _(message)),
 				 lexer_errposition()));
 	}
@@ -11197,7 +11205,7 @@ scanner_yyerror(const char *message, core_yyscan_t yyscanner)
 	{
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
-				 /* translator: first %s is typically the translation of "syntax error" */
+		/* translator: first %s is typically the translation of "syntax error" */
 				 errmsg("%s at or near \"%s\"", _(message), loc),
 				 lexer_errposition()));
 	}
@@ -11253,11 +11261,11 @@ void
 scanner_finish(core_yyscan_t yyscanner)
 {
 	/*
-	 * We don't bother to call core_yylex_destroy(), because all it would do
-	 * is pfree a small amount of control storage.  It's cheaper to leak
-	 * the storage until the parsing context is destroyed.  The amount of
-	 * space involved is usually negligible compared to the output parse
-	 * tree anyway.
+	 * We don't bother to call core_yylex_destroy(), because all it would do is
+	 * pfree a small amount of control storage.  It's cheaper to leak the
+	 * storage until the parsing context is destroyed.  The amount of space
+	 * involved is usually negligible compared to the output parse tree
+	 * anyway.
 	 *
 	 * We do bother to pfree the scanbuf and literal buffer, but only if they
 	 * represent a nontrivial amount of space.  The 8K cutoff is arbitrary.
@@ -11275,7 +11283,8 @@ addlit(char *ytext, int yleng, core_yyscan_t yyscanner)
 	/* enlarge buffer if needed */
 	if ((yyextra->literallen + yleng) >= yyextra->literalalloc)
 	{
-		do {
+		do
+		{
 			yyextra->literalalloc *= 2;
 		} while ((yyextra->literallen + yleng) >= yyextra->literalalloc);
 		yyextra->literalbuf = (char *) repalloc(yyextra->literalbuf,
@@ -11328,7 +11337,7 @@ process_integer_literal(const char *token, YYSTYPE *lval)
 	val = strtol(token, &endptr, 10);
 	if (*endptr != '\0' || errno == ERANGE
 #ifdef HAVE_LONG_INT_64
-		/* if long > 32 bits, check for overflow of int4 */
+	/* if long > 32 bits, check for overflow of int4 */
 		|| val != (long) ((int32) val)
 #endif
 		)
@@ -11351,7 +11360,7 @@ hexval(unsigned char c)
 	if (c >= 'A' && c <= 'F')
 		return c - 'A' + 0xA;
 	elog(ERROR, "invalid hexadecimal digit");
-	return 0; /* not reached */
+	return 0;					/* not reached */
 }
 
 static void
@@ -11362,7 +11371,7 @@ check_unicode_value(pg_wchar c, char *loc, core_yyscan_t yyscanner)
 
 	if (c > 0x7F)
 	{
-		ADVANCE_YYLLOC(loc - yyextra->literalbuf + 3);   /* 3 for U&" */
+		ADVANCE_YYLLOC(loc - yyextra->literalbuf + 3);	/* 3 for U&" */
 		yyerror("Unicode escape values cannot be used for code point values above 007F when the server encoding is not UTF8");
 	}
 }
@@ -11388,7 +11397,7 @@ surrogate_pair_to_codepoint(pg_wchar first, pg_wchar second)
 static void
 addunicode(pg_wchar c, core_yyscan_t yyscanner)
 {
-	char buf[8];
+	char		buf[8];
 
 	if (c == 0 || c > 0x10FFFF)
 		yyerror("invalid Unicode escape value");
@@ -11422,17 +11431,19 @@ check_uescapechar(unsigned char escape)
 static char *
 litbuf_udeescape(unsigned char escape, core_yyscan_t yyscanner)
 {
-	char *new;
-	char *litbuf, *in, *out;
-	pg_wchar pair_first = 0;
+	char	   *new;
+	char	   *litbuf,
+			   *in,
+			   *out;
+	pg_wchar	pair_first = 0;
 
 	/* Make literalbuf null-terminated to simplify the scanning loop */
 	litbuf = yyextra->literalbuf;
 	litbuf[yyextra->literallen] = '\0';
 
 	/*
-	 * This relies on the subtle assumption that a UTF-8 expansion
-	 * cannot be longer than its escaped representation.
+	 * This relies on the subtle assumption that a UTF-8 expansion cannot be
+	 * longer than its escaped representation.
 	 */
 	new = palloc(yyextra->literallen + 1);
 
@@ -11446,7 +11457,7 @@ litbuf_udeescape(unsigned char escape, core_yyscan_t yyscanner)
 			{
 				if (pair_first)
 				{
-					ADVANCE_YYLLOC(in - litbuf + 3);   /* 3 for U&" */
+					ADVANCE_YYLLOC(in - litbuf + 3);	/* 3 for U&" */
 					yyerror("invalid Unicode surrogate pair");
 				}
 				*out++ = escape;
@@ -11457,7 +11468,7 @@ litbuf_udeescape(unsigned char escape, core_yyscan_t yyscanner)
 					 isxdigit((unsigned char) in[3]) &&
 					 isxdigit((unsigned char) in[4]))
 			{
-				pg_wchar unicode;
+				pg_wchar	unicode;
 
 				unicode = (hexval(in[1]) << 12) +
 					(hexval(in[2]) << 8) +
@@ -11473,7 +11484,7 @@ litbuf_udeescape(unsigned char escape, core_yyscan_t yyscanner)
 					}
 					else
 					{
-						ADVANCE_YYLLOC(in - litbuf + 3);   /* 3 for U&" */
+						ADVANCE_YYLLOC(in - litbuf + 3);		/* 3 for U&" */
 						yyerror("invalid Unicode surrogate pair");
 					}
 				}
@@ -11497,7 +11508,7 @@ litbuf_udeescape(unsigned char escape, core_yyscan_t yyscanner)
 					 isxdigit((unsigned char) in[6]) &&
 					 isxdigit((unsigned char) in[7]))
 			{
-				pg_wchar unicode;
+				pg_wchar	unicode;
 
 				unicode = (hexval(in[2]) << 20) +
 					(hexval(in[3]) << 16) +
@@ -11515,7 +11526,7 @@ litbuf_udeescape(unsigned char escape, core_yyscan_t yyscanner)
 					}
 					else
 					{
-						ADVANCE_YYLLOC(in - litbuf + 3);   /* 3 for U&" */
+						ADVANCE_YYLLOC(in - litbuf + 3);		/* 3 for U&" */
 						yyerror("invalid Unicode surrogate pair");
 					}
 				}
@@ -11533,7 +11544,7 @@ litbuf_udeescape(unsigned char escape, core_yyscan_t yyscanner)
 			}
 			else
 			{
-				ADVANCE_YYLLOC(in - litbuf + 3);   /* 3 for U&" */
+				ADVANCE_YYLLOC(in - litbuf + 3);		/* 3 for U&" */
 				yyerror("invalid Unicode escape value");
 			}
 		}
@@ -11541,7 +11552,7 @@ litbuf_udeescape(unsigned char escape, core_yyscan_t yyscanner)
 		{
 			if (pair_first)
 			{
-				ADVANCE_YYLLOC(in - litbuf + 3);   /* 3 for U&" */
+				ADVANCE_YYLLOC(in - litbuf + 3);		/* 3 for U&" */
 				yyerror("invalid Unicode surrogate pair");
 			}
 			*out++ = *in++;
@@ -11549,10 +11560,11 @@ litbuf_udeescape(unsigned char escape, core_yyscan_t yyscanner)
 	}
 
 	*out = '\0';
+
 	/*
 	 * We could skip pg_verifymbstr if we didn't process any non-7-bit-ASCII
-	 * codes; but it's probably not worth the trouble, since this isn't
-	 * likely to be a performance-critical path.
+	 * codes; but it's probably not worth the trouble, since this isn't likely
+	 * to be a performance-critical path.
 	 */
 	pg_verifymbstr(new, out - new, false);
 	return new;
@@ -11616,9 +11628,9 @@ check_escape_warning(core_yyscan_t yyscanner)
 		ereport(WARNING,
 				(errcode(ERRCODE_NONSTANDARD_USE_OF_ESCAPE_CHARACTER),
 				 errmsg("nonstandard use of escape in a string literal"),
-				 errhint("Use the escape string syntax for escapes, e.g., E'\\r\\n'."),
+		errhint("Use the escape string syntax for escapes, e.g., E'\\r\\n'."),
 				 lexer_errposition()));
-	yyextra->warn_on_first_escape = false;	/* warn only once per string */
+	yyextra->warn_on_first_escape = false;		/* warn only once per string */
 }
 
 /*

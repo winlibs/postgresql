@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "CREATE TABLE" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "CREATE TABLE" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -140,7 +140,7 @@ COMPATIBILITY\&.
 UNLOGGED
 .RS 4
 If specified, the table is created as an unlogged table\&. Data written to unlogged tables is not written to the write\-ahead log (see
-Chapter 29, Reliability and the Write-Ahead Log, in the documentation), which makes them considerably faster than ordinary tables\&. However, they are not crash\-safe: an unlogged table is automatically truncated after a crash or unclean shutdown\&. The contents of an unlogged table are also not replicated to standby servers\&. Any indexes created on an unlogged table are automatically unlogged as well\&.
+Chapter 30, Reliability and the Write-Ahead Log, in the documentation), which makes them considerably faster than ordinary tables\&. However, they are not crash\-safe: an unlogged table is automatically truncated after a crash or unclean shutdown\&. The contents of an unlogged table are also not replicated to standby servers\&. Any indexes created on an unlogged table are automatically unlogged as well\&.
 .RE
 .PP
 IF NOT EXISTS
@@ -220,33 +220,36 @@ clause specifies a table from which the new table automatically copies all colum
 Unlike
 INHERITS, the new table and original table are completely decoupled after creation is complete\&. Changes to the original table will not be applied to the new table, and it is not possible to include data of the new table in scans of the original table\&.
 .sp
-Default expressions for the copied column definitions will only be copied if
+Default expressions for the copied column definitions will be copied only if
 INCLUDING DEFAULTS
-is specified\&. Defaults that call database\-modification functions, like
-\fBnextval\fR, create a linkage between the original and new tables\&. The default behavior is to exclude default expressions, resulting in the copied columns in the new table having null defaults\&.
+is specified\&. The default behavior is to exclude default expressions, resulting in the copied columns in the new table having null defaults\&. Note that copying defaults that call database\-modification functions, such as
+\fBnextval\fR, may create a functional linkage between the original and new tables\&.
 .sp
 Not\-null constraints are always copied to the new table\&.
 CHECK
 constraints will be copied only if
 INCLUDING CONSTRAINTS
-is specified\&. Indexes,
-PRIMARY KEY, and
-UNIQUE
-constraints on the original table will be created on the new table only if the
+is specified\&. No distinction is made between column constraints and table constraints\&.
+.sp
+Indexes,
+PRIMARY KEY,
+UNIQUE, and
+EXCLUDE
+constraints on the original table will be created on the new table only if
 INCLUDING INDEXES
-clause is specified\&. No distinction is made between column constraints and table constraints\&.
+is specified\&. Names for the new indexes and constraints are chosen according to the default rules, regardless of how the originals were named\&. (This behavior avoids possible duplicate\-name failures for the new indexes\&.)
 .sp
 STORAGE
-settings for the copied column definitions will only be copied if
+settings for the copied column definitions will be copied only if
 INCLUDING STORAGE
 is specified\&. The default behavior is to exclude
 STORAGE
 settings, resulting in the copied columns in the new table having type\-specific default settings\&. For more on
 STORAGE
 settings, see
-Section 63.2, \(lqTOAST\(rq, in the documentation\&.
+Section 65.2, \(lqTOAST\(rq, in the documentation\&.
 .sp
-Comments for the copied columns, constraints, and indexes will only be copied if
+Comments for the copied columns, constraints, and indexes will be copied only if
 INCLUDING COMMENTS
 is specified\&. The default behavior is to exclude comments, resulting in the copied columns and constraints in the new table having no comments\&.
 .sp
@@ -254,7 +257,7 @@ INCLUDING ALL
 is an abbreviated form of
 INCLUDING DEFAULTS INCLUDING CONSTRAINTS INCLUDING INDEXES INCLUDING STORAGE INCLUDING COMMENTS\&.
 .sp
-Note also that unlike
+Note that unlike
 INHERITS, columns and constraints copied by
 LIKE
 are not merged with similarly named columns and constraints\&. If the same name is specified explicitly or in another
@@ -263,7 +266,7 @@ clause, an error is signaled\&.
 .sp
 The
 LIKE
-clause can also be used to copy columns from views, foreign tables, or composite types\&. Inapplicable options (e\&.g\&.,
+clause can also be used to copy column definitions from views, foreign tables, or composite types\&. Inapplicable options (e\&.g\&.,
 INCLUDING INDEXES
 from a view) are ignored\&.
 .RE
@@ -374,7 +377,7 @@ CREATE INDEX (\fBCREATE_INDEX\fR(7))\&.
 The access method must support
 amgettuple
 (see
-Chapter 58, Index Access Method Interface Definition, in the documentation); at present this means
+Chapter 59, Index Access Method Interface Definition, in the documentation); at present this means
 GIN
 cannot be used\&. Although it\*(Aqs allowed, there is little point in using B\-tree or hash indexes with an exclusion constraint, because this does nothing that an ordinary unique constraint doesn\*(Aqt do better\&. So in practice the access method will always be
 GiST
@@ -586,7 +589,7 @@ CREATE INDEX (\fBCREATE_INDEX\fR(7))\&. The storage parameters currently availab
 toast\&., which controls the behavior of the table\*(Aqs secondary
 TOAST
 table, if any (see
-Section 63.2, \(lqTOAST\(rq, in the documentation
+Section 65.2, \(lqTOAST\(rq, in the documentation
 for more information about TOAST)\&. If a table parameter value is set and the equivalent
 toast\&.
 parameter is not, the TOAST table will use the table\*(Aqs parameter value\&.
@@ -600,6 +603,12 @@ operations pack table pages only to the indicated percentage; the remaining spac
 a chance to place the updated copy of a row on the same page as the original, which is more efficient than placing it on a different page\&. For a table whose entries are never updated, complete packing is the best choice, but in heavily updated tables smaller fillfactors are appropriate\&. This parameter cannot be set for TOAST tables\&.
 .RE
 .PP
+parallel_workers (integer)
+.RS 4
+This sets the number of workers that should be used to assist a parallel scan of this table\&. If not set, the system will determine a value based on the relation size\&. The actual number of workers chosen by the planner may be less, for example due to the setting of
+max_worker_processes\&.
+.RE
+.PP
 autovacuum_enabled, toast\&.autovacuum_enabled (boolean)
 .RS 4
 Enables or disables the autovacuum daemon for a particular table\&. If true, the autovacuum daemon will perform automatic
@@ -607,8 +616,8 @@ Enables or disables the autovacuum daemon for a particular table\&. If true, the
 and/or
 \fBANALYZE\fR
 operations on this table following the rules discussed in
-Section 23.1.6, \(lqThe Autovacuum Daemon\(rq, in the documentation\&. If false, this table will not be autovacuumed, except to prevent transaction ID wraparound\&. See
-Section 23.1.5, \(lqPreventing Transaction ID Wraparound Failures\(rq, in the documentation
+Section 24.1.6, \(lqThe Autovacuum Daemon\(rq, in the documentation\&. If false, this table will not be autovacuumed, except to prevent transaction ID wraparound\&. See
+Section 24.1.5, \(lqPreventing Transaction ID Wraparound Failures\(rq, in the documentation
 for more about wraparound prevention\&. Note that the autovacuum daemon does not run at all (except to prevent transaction ID wraparound) if the
 autovacuum
 parameter is false; setting individual tables\*(Aq storage parameters does not override that\&. Therefore there is seldom much point in explicitly setting this storage parameter to
@@ -722,7 +731,7 @@ parameter\&.
 user_catalog_table (boolean)
 .RS 4
 Declare the table as an additional catalog table for purposes of logical replication\&. See
-Section 46.6.2, \(lqCapabilities\(rq, in the documentation
+Section 47.6.2, \(lqCapabilities\(rq, in the documentation
 for details\&. This parameter cannot be set for TOAST tables\&.
 .RE
 .SH "NOTES"
@@ -1137,6 +1146,14 @@ PostgreSQL
 allows a table of no columns to be created (for example,
 CREATE TABLE foo();)\&. This is an extension from the SQL standard, which does not allow zero\-column tables\&. Zero\-column tables are not in themselves very useful, but disallowing them creates odd special cases for
 \fBALTER TABLE DROP COLUMN\fR, so it seems cleaner to ignore this spec restriction\&.
+.SS "LIKE Clause"
+.PP
+While a
+LIKE
+clause exists in the SQL standard, many of the options that
+PostgreSQL
+accepts for it are not in the standard, and some of the standard\*(Aqs options are not implemented by
+PostgreSQL\&.
 .SS "WITH Clause"
 .PP
 The

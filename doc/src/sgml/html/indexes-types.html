@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -420,7 +420,7 @@ HREF="functions-geometry.html"
    The GiST operator classes included in the standard distribution are
    documented in <A
 HREF="gist-builtin-opclasses.html#GIST-BUILTIN-OPCLASSES-TABLE"
->Table 59-1</A
+>Table 61-1</A
 >.
    Many other GiST operator
    classes are available in the <TT
@@ -429,7 +429,7 @@ CLASS="LITERAL"
 > collection or as separate
    projects.  For more information see <A
 HREF="gist.html"
->Chapter 59</A
+>Chapter 61</A
 >.
   </P
 ><P
@@ -446,7 +446,7 @@ CLASS="PROGRAMLISTING"
    to do this is again dependent on the particular operator class being used.
    In <A
 HREF="gist-builtin-opclasses.html#GIST-BUILTIN-OPCLASSES-TABLE"
->Table 59-1</A
+>Table 61-1</A
 >, operators that can be
    used in this way are listed in the column <SPAN
 CLASS="QUOTE"
@@ -528,19 +528,28 @@ HREF="functions-geometry.html"
    The SP-GiST operator classes included in the standard distribution are
    documented in <A
 HREF="spgist-builtin-opclasses.html#SPGIST-BUILTIN-OPCLASSES-TABLE"
->Table 60-1</A
+>Table 62-1</A
 >.
    For more information see <A
 HREF="spgist.html"
->Chapter 60</A
+>Chapter 62</A
 >.
   </P
 ><P
 >   
    
-   GIN indexes are inverted indexes which can handle values that contain more
-   than one key, arrays for example. Like GiST and SP-GiST, GIN can support
-   many different user-defined indexing strategies and the particular
+   GIN indexes are <SPAN
+CLASS="QUOTE"
+>"inverted indexes"</SPAN
+> which are appropriate for
+   data values that contain multiple component values, such as arrays.  An
+   inverted index contains a separate entry for each component value, and
+   can efficiently handle queries that test for the presence of specific
+   component values.
+  </P
+><P
+>   Like GiST and SP-GiST, GIN can support
+   many different user-defined indexing strategies, and the particular
    operators with which a GIN index can be used vary depending on the
    indexing strategy.
    As an example, the standard distribution of
@@ -598,7 +607,7 @@ HREF="functions-array.html"
    The GIN operator classes included in the standard distribution are
    documented in <A
 HREF="gin-builtin-opclasses.html#GIN-BUILTIN-OPCLASSES-TABLE"
->Table 61-1</A
+>Table 63-1</A
 >.
    Many other GIN operator
    classes are available in the <TT
@@ -607,22 +616,22 @@ CLASS="LITERAL"
 > collection or as separate
    projects.  For more information see <A
 HREF="gin.html"
->Chapter 61</A
+>Chapter 63</A
 >.
   </P
 ><P
 >   
    
-   BRIN indexes (a shorthand for Block Range indexes)
-   store summaries about the values stored in consecutive table physical block ranges.
+   BRIN indexes (a shorthand for Block Range INdexes) store summaries about
+   the values stored in consecutive physical block ranges of a table.
    Like GiST, SP-GiST and GIN,
    BRIN can support many different indexing strategies,
    and the particular operators with which a BRIN index can be used
    vary depending on the indexing strategy.
    For data types that have a linear sort order, the indexed data
    corresponds to the minimum and maximum values of the
-   values in the column for each block range,
-   which support indexed queries using these operators:
+   values in the column for each block range.  This supports indexed queries
+   using these operators:
 
    <P
 ></P
@@ -673,11 +682,11 @@ CLASS="LITERAL"
    The BRIN operator classes included in the standard distribution are
    documented in <A
 HREF="brin-builtin-opclasses.html#BRIN-BUILTIN-OPCLASSES-TABLE"
->Table 62-1</A
+>Table 64-1</A
 >.
    For more information see <A
 HREF="brin.html"
->Chapter 62</A
+>Chapter 64</A
 >.
   </P
 ></DIV

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PGCRYPTO"
->F.24. pgcrypto</A
+>F.25. pgcrypto</A
 ></H1
 ><P
 >  The <TT
@@ -110,16 +110,16 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN171963"
->F.24.1. General Hashing Functions</A
+NAME="AEN178834"
+>F.25.1. General Hashing Functions</A
 ></H2
 ><DIV
 CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN171965"
->F.24.1.1. <CODE
+NAME="AEN178836"
+>F.25.1.1. <CODE
 CLASS="FUNCTION"
 >digest()</CODE
 ></A
@@ -165,7 +165,7 @@ CLASS="FILENAME"
     OpenSSL, more algorithms are available, as detailed in
     <A
 HREF="pgcrypto.html#PGCRYPTO-WITH-WITHOUT-OPENSSL"
->Table F-18</A
+>Table F-20</A
 >.
    </P
 ><P
@@ -187,8 +187,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN171985"
->F.24.1.2. <CODE
+NAME="AEN178856"
+>F.25.1.2. <CODE
 CLASS="FUNCTION"
 >hmac()</CODE
 ></A
@@ -232,8 +232,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN171999"
->F.24.2. Password Hashing Functions</A
+NAME="AEN178870"
+>F.25.2. Password Hashing Functions</A
 ></H2
 ><P
 >   The functions <CODE
@@ -297,7 +297,7 @@ CLASS="FIRSTTERM"
 ><P
 >   <A
 HREF="pgcrypto.html#PGCRYPTO-CRYPT-ALGORITHMS"
->Table F-15</A
+>Table F-17</A
 > lists the algorithms
    supported by the <CODE
 CLASS="FUNCTION"
@@ -311,7 +311,7 @@ NAME="PGCRYPTO-CRYPT-ALGORITHMS"
 ></A
 ><P
 ><B
->Table F-15. Supported Algorithms for <CODE
+>Table F-17. Supported Algorithms for <CODE
 CLASS="FUNCTION"
 >crypt()</CODE
 ></B
@@ -412,8 +412,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172066"
->F.24.2.1. <CODE
+NAME="AEN178937"
+>F.25.2.1. <CODE
 CLASS="FUNCTION"
 >crypt()</CODE
 ></A
@@ -464,8 +464,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172082"
->F.24.2.2. <CODE
+NAME="AEN178953"
+>F.25.2.2. <CODE
 CLASS="FUNCTION"
 >gen_salt()</CODE
 ></A
@@ -523,7 +523,7 @@ CLASS="PARAMETER"
 > depend on the algorithm and
     are shown in <A
 HREF="pgcrypto.html#PGCRYPTO-ICFC-TABLE"
->Table F-16</A
+>Table F-18</A
 >.
    </P
 ><DIV
@@ -533,7 +533,7 @@ NAME="PGCRYPTO-ICFC-TABLE"
 ></A
 ><P
 ><B
->Table F-16. Iteration Counts for <CODE
+>Table F-18. Iteration Counts for <CODE
 CLASS="FUNCTION"
 >crypt()</CODE
 ></B
@@ -600,7 +600,7 @@ CLASS="LITERAL"
 ><P
 >    <A
 HREF="pgcrypto.html#PGCRYPTO-HASH-SPEED-TABLE"
->Table F-17</A
+>Table F-19</A
 > gives an overview of the relative slowness
     of different hashing algorithms.
     The table shows how much time it would take to try all
@@ -627,7 +627,7 @@ NAME="PGCRYPTO-HASH-SPEED-TABLE"
 ></A
 ><P
 ><B
->Table F-17. Hash Algorithm Speeds</B
+>Table F-19. Hash Algorithm Speeds</B
 ></P
 ><TABLE
 BORDER="1"
@@ -832,7 +832,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >john
       -test</TT
-> shows 213 loops/sec for <TT
+> shows 13506 loops/sec for <TT
 CLASS="LITERAL"
 >crypt-bf/5</TT
 >.
@@ -867,8 +867,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN172227"
->F.24.3. PGP Encryption Functions</A
+NAME="AEN179098"
+>F.25.3. PGP Encryption Functions</A
 ></H2
 ><P
 >   The functions here implement the encryption part of the OpenPGP (RFC 4880)
@@ -981,8 +981,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172262"
->F.24.3.1. <CODE
+NAME="AEN179133"
+>F.25.3.1. <CODE
 CLASS="FUNCTION"
 >pgp_sym_encrypt()</CODE
 ></A
@@ -1011,8 +1011,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172274"
->F.24.3.2. <CODE
+NAME="AEN179145"
+>F.25.3.2. <CODE
 CLASS="FUNCTION"
 >pgp_sym_decrypt()</CODE
 ></A
@@ -1051,8 +1051,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172289"
->F.24.3.3. <CODE
+NAME="AEN179160"
+>F.25.3.3. <CODE
 CLASS="FUNCTION"
 >pgp_pub_encrypt()</CODE
 ></A
@@ -1084,8 +1084,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172302"
->F.24.3.4. <CODE
+NAME="AEN179173"
+>F.25.3.4. <CODE
 CLASS="FUNCTION"
 >pgp_pub_decrypt()</CODE
 ></A
@@ -1134,8 +1134,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172319"
->F.24.3.5. <CODE
+NAME="AEN179190"
+>F.25.3.5. <CODE
 CLASS="FUNCTION"
 >pgp_key_id()</CODE
 ></A
@@ -1200,8 +1200,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172340"
->F.24.3.6. <CODE
+NAME="AEN179211"
+>F.25.3.6. <CODE
 CLASS="FUNCTION"
 >armor()</CODE
 >, <CODE
@@ -1239,8 +1239,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172354"
->F.24.3.7. <CODE
+NAME="AEN179225"
+>F.25.3.7. <CODE
 CLASS="FUNCTION"
 >pgp_armor_headers</CODE
 ></A
@@ -1266,8 +1266,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172363"
->F.24.3.8. Options for PGP Functions</A
+NAME="AEN179234"
+>F.25.3.8. Options for PGP Functions</A
 ></H3
 ><P
 >    Options are named to be similar to GnuPG.  An option's value should be
@@ -1302,8 +1302,8 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN172372"
->F.24.3.8.1. cipher-algo</A
+NAME="AEN179243"
+>F.25.3.8.1. cipher-algo</A
 ></H4
 ><P
 >    Which cipher algorithm to use.
@@ -1325,8 +1325,8 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN172378"
->F.24.3.8.2. compress-algo</A
+NAME="AEN179249"
+>F.25.3.8.2. compress-algo</A
 ></H4
 ><P
 >    Which compression algorithm to use.  Only available if
@@ -1349,8 +1349,8 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN172383"
->F.24.3.8.3. compress-level</A
+NAME="AEN179254"
+>F.25.3.8.3. compress-level</A
 ></H4
 ><P
 >    How much to compress.  Higher levels compress smaller but are slower.
@@ -1367,8 +1367,8 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN172387"
->F.24.3.8.4. convert-crlf</A
+NAME="AEN179258"
+>F.25.3.8.4. convert-crlf</A
 ></H4
 ><P
 >    Whether to convert <TT
@@ -1403,8 +1403,8 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN172396"
->F.24.3.8.5. disable-mdc</A
+NAME="AEN179267"
+>F.25.3.8.5. disable-mdc</A
 ></H4
 ><P
 >    Do not protect data with SHA-1.  The only good reason to use this
@@ -1423,8 +1423,8 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN172400"
->F.24.3.8.6. sess-key</A
+NAME="AEN179271"
+>F.25.3.8.6. sess-key</A
 ></H4
 ><P
 >    Use separate session key.  Public-key encryption always uses a separate
@@ -1442,8 +1442,8 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN172404"
->F.24.3.8.7. s2k-mode</A
+NAME="AEN179275"
+>F.25.3.8.7. s2k-mode</A
 ></H4
 ><P
 >    Which S2K algorithm to use.
@@ -1462,8 +1462,25 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN172408"
->F.24.3.8.8. s2k-digest-algo</A
+NAME="AEN179279"
+>F.25.3.8.8. s2k-count</A
+></H4
+><P
+>    The number of iterations of the S2K algorithm to use.  It must
+    be a value between 1024 and 65011712, inclusive.
+   </P
+><P
+CLASS="LITERALLAYOUT"
+>Default:&nbsp;A&nbsp;random&nbsp;value&nbsp;between&nbsp;65536&nbsp;and&nbsp;253952<br>
+Applies&nbsp;to:&nbsp;pgp_sym_encrypt,&nbsp;only&nbsp;with&nbsp;s2k-mode=3</P
+></DIV
+><DIV
+CLASS="SECT4"
+><H4
+CLASS="SECT4"
+><A
+NAME="AEN179283"
+>F.25.3.8.9. s2k-digest-algo</A
 ></H4
 ><P
 >    Which digest algorithm to use in S2K calculation.
@@ -1479,8 +1496,8 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN172412"
->F.24.3.8.9. s2k-cipher-algo</A
+NAME="AEN179287"
+>F.25.3.8.10. s2k-cipher-algo</A
 ></H4
 ><P
 >    Which cipher to use for encrypting separate session key.
@@ -1496,8 +1513,8 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN172416"
->F.24.3.8.10. unicode-mode</A
+NAME="AEN179291"
+>F.25.3.8.11. unicode-mode</A
 ></H4
 ><P
 >    Whether to convert textual data from database internal encoding to
@@ -1517,8 +1534,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172420"
->F.24.3.9. Generating PGP Keys with GnuPG</A
+NAME="AEN179295"
+>F.25.3.9. Generating PGP Keys with GnuPG</A
 ></H3
 ><P
 >   To generate a new key:
@@ -1596,8 +1613,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172441"
->F.24.3.10. Limitations of PGP Code</A
+NAME="AEN179316"
+>F.25.3.10. Limitations of PGP Code</A
 ></H3
 ><P
 ></P
@@ -1633,8 +1650,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN172451"
->F.24.4. Raw Encryption Functions</A
+NAME="AEN179326"
+>F.25.4. Raw Encryption Functions</A
 ></H2
 ><P
 >   These functions only run a cipher over data; they don't have any advanced
@@ -1832,8 +1849,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN172514"
->F.24.5. Random-Data Functions</A
+NAME="AEN179389"
+>F.25.5. Random-Data Functions</A
 ></H2
 ><PRE
 CLASS="SYNOPSIS"
@@ -1858,16 +1875,16 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN172525"
->F.24.6. Notes</A
+NAME="AEN179400"
+>F.25.6. Notes</A
 ></H2
 ><DIV
 CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172527"
->F.24.6.1. Configuration</A
+NAME="AEN179402"
+>F.25.6.1. Configuration</A
 ></H3
 ><P
 >    <TT
@@ -1903,7 +1920,7 @@ NAME="PGCRYPTO-WITH-WITHOUT-OPENSSL"
 ></A
 ><P
 ><B
->Table F-18. Summary of Functionality with and without OpenSSL</B
+>Table F-20. Summary of Functionality with and without OpenSSL</B
 ></P
 ><TABLE
 BORDER="1"
@@ -2041,8 +2058,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172595"
->F.24.6.2. NULL Handling</A
+NAME="AEN179470"
+>F.25.6.2. NULL Handling</A
 ></H3
 ><P
 >    As is standard in SQL, all functions return NULL, if any of the arguments
@@ -2054,8 +2071,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172598"
->F.24.6.3. Security Limitations</A
+NAME="AEN179473"
+>F.25.6.3. Security Limitations</A
 ></H3
 ><P
 >    All <TT
@@ -2105,8 +2122,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172612"
->F.24.6.4. Useful Reading</A
+NAME="AEN179487"
+>F.25.6.4. Useful Reading</A
 ></H3
 ><P
 ></P
@@ -2170,8 +2187,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN172635"
->F.24.6.5. Technical References</A
+NAME="AEN179510"
+>F.25.6.5. Technical References</A
 ></H3
 ><P
 ></P
@@ -2244,9 +2261,9 @@ CLASS="FILENAME"
 ><LI
 ><P
 ><A
-HREF="http://research.cyber.ee/~lipmaa/crypto/"
+HREF="http://kodu.ut.ee/~lipmaa/crypto/"
 TARGET="_top"
->http://research.cyber.ee/~lipmaa/crypto/</A
+>http://kodu.ut.ee/~lipmaa/crypto/</A
 ></P
 ><P
 >Collection of cryptology pointers.</P
@@ -2259,8 +2276,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN172667"
->F.24.7. Author</A
+NAME="AEN179542"
+>F.25.7. Author</A
 ></H2
 ><P
 >   Marko Kreen <CODE
@@ -2282,7 +2299,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN172673"
+NAME="AEN179548"
 ></A
 ><TABLE
 BORDER="1"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/pgSQL - SQL Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 40. <SPAN
+>Chapter 41. <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > - <ACRONYM
@@ -99,7 +99,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PLPGSQL-DECLARATIONS"
->40.3. Declarations</A
+>41.3. Declarations</A
 ></H1
 ><P
 >     All variables used in a block must be declared in the
@@ -208,7 +208,7 @@ CLASS="LITERAL"
 > option specifies a collation to use for the
       variable (see <A
 HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-COLLATION"
->Section 40.3.6</A
+>Section 41.3.6</A
 >).
       If <TT
 CLASS="LITERAL"
@@ -258,7 +258,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-PARAMETERS"
->40.3.1. Declaring Function Parameters</A
+>41.3.1. Declaring Function Parameters</A
 ></H2
 ><P
 >      Parameters passed to functions are named with the identifiers
@@ -424,7 +424,7 @@ $$ LANGUAGE plpgsql;</PRE
 
       As discussed in <A
 HREF="xfunc-sql.html#XFUNC-OUTPUT-PARAMETERS"
->Section 35.4.4</A
+>Section 36.4.4</A
 >, this
       effectively creates an anonymous record type for the function's
       results.  If a <TT
@@ -501,12 +501,12 @@ CLASS="LITERAL"
       is created.  Its data type is the actual return type of the function,
       as deduced from the actual input types (see <A
 HREF="extend-type-system.html#EXTEND-TYPES-POLYMORPHIC"
->Section 35.2.5</A
+>Section 36.2.5</A
 >).
       This allows the function to access its actual return type
       as shown in <A
 HREF="plpgsql-declarations.html#PLPGSQL-DECLARATION-TYPE"
->Section 40.3.3</A
+>Section 41.3.3</A
 >.
       <TT
 CLASS="LITERAL"
@@ -537,7 +537,7 @@ $$ LANGUAGE plpgsql;</PRE
 ><P>
      </P
 ><P
->      The same effect can be had by declaring one or more output parameters as
+>      The same effect can be obtained by declaring one or more output parameters as
       polymorphic types.  In this case the
       special <TT
 CLASS="LITERAL"
@@ -563,7 +563,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-ALIAS"
->40.3.2. <TT
+>41.3.2. <TT
 CLASS="LITERAL"
 >ALIAS</TT
 ></A
@@ -622,7 +622,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-TYPE"
->40.3.3. Copying Types</A
+>41.3.3. Copying Types</A
 ></H2
 ><PRE
 CLASS="SYNOPSIS"
@@ -696,7 +696,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-ROWTYPES"
->40.3.4. Row Types</A
+>41.3.4. Row Types</A
 ></H2
 ><PRE
 CLASS="SYNOPSIS"
@@ -841,7 +841,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-RECORDS"
->40.3.5. Record Types</A
+>41.3.5. Record Types</A
 ></H2
 ><PRE
 CLASS="SYNOPSIS"
@@ -896,7 +896,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="PLPGSQL-DECLARATION-COLLATION"
->40.3.6. Collation of <SPAN
+>41.3.6. Collation of <SPAN
 CLASS="APPLICATION"
 >PL/pgSQL</SPAN
 > Variables</A
@@ -910,7 +910,7 @@ CLASS="APPLICATION"
     function call depending on the collations assigned to the actual
     arguments, as described in <A
 HREF="collation.html"
->Section 22.2</A
+>Section 23.2</A
 >.  If a collation is
     successfully identified (i.e., there are no conflicts of implicit
     collations among the arguments) then all the collatable parameters are

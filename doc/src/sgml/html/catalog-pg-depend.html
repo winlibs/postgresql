@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 49. System Catalogs</TD
+>Chapter 50. System Catalogs</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CATALOG-PG-DEPEND"
->49.18. <TT
+>50.18. <TT
 CLASS="STRUCTNAME"
 >pg_depend</TT
 ></A
@@ -131,11 +131,11 @@ CLASS="STRUCTNAME"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN102624"
+NAME="AEN106379"
 ></A
 ><P
 ><B
->Table 49-18. <TT
+>Table 50-18. <TT
 CLASS="STRUCTNAME"
 >pg_depend</TT
 > Columns</B
@@ -442,6 +442,23 @@ CLASS="COMMAND"
 CLASS="APPLICATION"
 >pg_dump</SPAN
 >.
+      </P
+></DD
+><DT
+><TT
+CLASS="SYMBOL"
+>DEPENDENCY_AUTO_EXTENSION</TT
+> (<TT
+CLASS="LITERAL"
+>x</TT
+>)</DT
+><DD
+><P
+>       The dependent object is not a member of the extension that is the
+       referenced object (and so should not be ignored by pg_dump), but
+       cannot function without it and should be dropped when the
+       extension itself is. The dependent object may be dropped on its
+       own as well.
       </P
 ></DD
 ><DT

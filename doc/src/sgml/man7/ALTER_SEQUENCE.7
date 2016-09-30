@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "ALTER SEQUENCE" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "ALTER SEQUENCE" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -83,7 +83,7 @@ The optional clause
 MINVALUE \fIminvalue\fR
 determines the minimum value a sequence can generate\&. If
 NO MINVALUE
-is specified, the defaults of 1 and \-263\-1 for ascending and descending sequences, respectively, will be used\&. If neither option is specified, the current minimum value will be maintained\&.
+is specified, the defaults of 1 and \-2^63\-1 for ascending and descending sequences, respectively, will be used\&. If neither option is specified, the current minimum value will be maintained\&.
 .RE
 .PP
 \fImaxvalue\fR
@@ -94,7 +94,7 @@ The optional clause
 MAXVALUE \fImaxvalue\fR
 determines the maximum value for the sequence\&. If
 NO MAXVALUE
-is specified, the defaults are 263\-1 and \-1 for ascending and descending sequences, respectively, will be used\&. If neither option is specified, the current maximum value will be maintained\&.
+is specified, the defaults are 2^63\-1 and \-1 for ascending and descending sequences, respectively, will be used\&. If neither option is specified, the current maximum value will be maintained\&.
 .RE
 .PP
 \fIstart\fR

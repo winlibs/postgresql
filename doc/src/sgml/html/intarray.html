@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="INTARRAY"
->F.17. intarray</A
+>F.18. intarray</A
 ></H1
 ><P
 >  The <TT
@@ -117,8 +117,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN170481"
->F.17.1. <TT
+NAME="AEN177322"
+>F.18.1. <TT
 CLASS="FILENAME"
 >intarray</TT
 > Functions and Operators</A
@@ -130,11 +130,11 @@ CLASS="FILENAME"
 > module
    are shown in <A
 HREF="intarray.html#INTARRAY-FUNC-TABLE"
->Table F-8</A
+>Table F-10</A
 >, the operators
    in <A
 HREF="intarray.html#INTARRAY-OP-TABLE"
->Table F-9</A
+>Table F-11</A
 >.
   </P
 ><DIV
@@ -144,7 +144,7 @@ NAME="INTARRAY-FUNC-TABLE"
 ></A
 ><P
 ><B
->Table F-8. <TT
+>Table F-10. <TT
 CLASS="FILENAME"
 >intarray</TT
 > Functions</B
@@ -438,7 +438,7 @@ NAME="INTARRAY-OP-TABLE"
 ></A
 ><P
 ><B
->Table F-9. <TT
+>Table F-11. <TT
 CLASS="FILENAME"
 >intarray</TT
 > Operators</B
@@ -760,8 +760,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN170744"
->F.17.2. Index Support</A
+NAME="AEN177585"
+>F.18.2. Index Support</A
 ></H2
 ><P
 >   <TT
@@ -809,9 +809,6 @@ CLASS="LITERAL"
 ><P
 >   The choice between GiST and GIN indexing depends on the relative
    performance characteristics of GiST and GIN, which are discussed elsewhere.
-   As a rule of thumb, a GIN index is faster to search than a GiST index, but
-   slower to build or update; so GIN is better suited for static data and GiST
-   for often-updated data.
   </P
 ></DIV
 ><DIV
@@ -819,8 +816,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN170758"
->F.17.3. Example</A
+NAME="AEN177599"
+>F.18.3. Example</A
 ></H2
 ><PRE
 CLASS="PROGRAMLISTING"
@@ -847,21 +844,29 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN170762"
->F.17.4. Benchmark</A
+NAME="AEN177603"
+>F.18.4. Benchmark</A
 ></H2
 ><P
 >   The source directory <TT
 CLASS="FILENAME"
 >contrib/intarray/bench</TT
 > contains a
-   benchmark test suite.  To run:
+   benchmark test suite, which can be run against an installed
+   <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> server.  (It also requires <TT
+CLASS="FILENAME"
+>DBD::Pg</TT
+>
+   to be installed.)  To run:
   </P
 ><PRE
 CLASS="PROGRAMLISTING"
->cd .../bench
+>cd .../contrib/intarray/bench
 createdb TEST
-psql TEST &lt; ../_int.sql
+psql -c "CREATE EXTENSION intarray" TEST
 ./create_test.pl | psql TEST
 ./bench.pl</PRE
 ><P
@@ -877,8 +882,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN170769"
->F.17.5. Authors</A
+NAME="AEN177612"
+>F.18.5. Authors</A
 ></H2
 ><P
 >   All work was done by Teodor Sigaev (<CODE

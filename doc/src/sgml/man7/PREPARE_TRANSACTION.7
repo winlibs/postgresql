@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "PREPARE TRANSACTION" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "PREPARE TRANSACTION" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -115,7 +115,7 @@ system view\&.
 It is unwise to leave transactions in the prepared state for a long time\&. This will interfere with the ability of
 \fBVACUUM\fR
 to reclaim storage, and in extreme cases could cause the database to shut down to prevent transaction ID wraparound (see
-Section 23.1.5, \(lqPreventing Transaction ID Wraparound Failures\(rq, in the documentation)\&. Keep in mind also that the transaction continues to hold whatever locks it held\&. The intended usage of the feature is that a prepared transaction will normally be committed or rolled back as soon as an external transaction manager has verified that other databases are also prepared to commit\&.
+Section 24.1.5, \(lqPreventing Transaction ID Wraparound Failures\(rq, in the documentation)\&. Keep in mind also that the transaction continues to hold whatever locks it held\&. The intended usage of the feature is that a prepared transaction will normally be committed or rolled back as soon as an external transaction manager has verified that other databases are also prepared to commit\&.
 .PP
 If you have not set up an external transaction manager to track prepared transactions and ensure they get closed out promptly, it is best to keep the prepared\-transaction feature disabled by setting
 max_prepared_transactions

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -596,6 +596,40 @@ CLASS="ACRONYM"
 >SQL</ACRONYM
 >
      standard.
+    </P
+><P
+>     When rounding values, the <TT
+CLASS="TYPE"
+>numeric</TT
+> type rounds ties away
+     from zero, while (on most machines) the <TT
+CLASS="TYPE"
+>real</TT
+>
+     and <TT
+CLASS="TYPE"
+>double precision</TT
+> types round ties to the nearest even
+     number.  For example:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT x,
+  round(x::numeric) AS num_round,
+  round(x::double precision) AS dbl_round
+FROM generate_series(-3.5, 3.5, 1) as x;
+  x   | num_round | dbl_round
+------+-----------+-----------
+ -3.5 |        -4 |        -4
+ -2.5 |        -3 |        -2
+ -1.5 |        -2 |        -2
+ -0.5 |        -1 |        -0
+  0.5 |         1 |         0
+  1.5 |         2 |         2
+  2.5 |         3 |         2
+  3.5 |         4 |         4
+(8 rows)</PRE
+><P>
     </P
 ></DIV
 ><DIV

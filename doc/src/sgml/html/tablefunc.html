@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="TABLEFUNC"
->F.36. tablefunc</A
+>F.38. tablefunc</A
 ></H1
 ><P
 >  The <TT
@@ -109,13 +109,13 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN174701"
->F.36.1. Functions Provided</A
+NAME="AEN181766"
+>F.38.1. Functions Provided</A
 ></H2
 ><P
 >   <A
 HREF="tablefunc.html#TABLEFUNC-FUNCTIONS"
->Table F-29</A
+>Table F-31</A
 > shows the functions provided
    by the <TT
 CLASS="FILENAME"
@@ -129,7 +129,7 @@ NAME="TABLEFUNC-FUNCTIONS"
 ></A
 ><P
 ><B
->Table F-29. <TT
+>Table F-31. <TT
 CLASS="FILENAME"
 >tablefunc</TT
 > Functions</B
@@ -323,8 +323,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN174770"
->F.36.1.1. <CODE
+NAME="AEN181835"
+>F.38.1.1. <CODE
 CLASS="FUNCTION"
 >normal_rand</CODE
 ></A
@@ -381,8 +381,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN174784"
->F.36.1.2. <CODE
+NAME="AEN181849"
+>F.38.1.2. <CODE
 CLASS="FUNCTION"
 >crosstab(text)</CODE
 ></A
@@ -600,14 +600,39 @@ CLASS="LITERAL"
 >FROM</TT
 > clause in a view definition.
    </P
+><DIV
+CLASS="NOTE"
+><BLOCKQUOTE
+CLASS="NOTE"
+><P
+><B
+>Note: </B
+>     See also the <TT
+CLASS="COMMAND"
+><A
+HREF="app-psql.html#APP-PSQL-META-COMMANDS-CROSSTABVIEW"
+>\crosstabview</A
+></TT
+>
+     command in <SPAN
+CLASS="APPLICATION"
+>psql</SPAN
+>, which provides functionality similar
+     to <CODE
+CLASS="FUNCTION"
+>crosstab()</CODE
+>.
+    </P
+></BLOCKQUOTE
+></DIV
 ></DIV
 ><DIV
 CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN174830"
->F.36.1.3. <CODE
+NAME="AEN181901"
+>F.38.1.3. <CODE
 CLASS="FUNCTION"
 >crosstab<TT
 CLASS="REPLACEABLE"
@@ -791,8 +816,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN174871"
->F.36.1.4. <CODE
+NAME="AEN181942"
+>F.38.1.4. <CODE
 CLASS="FUNCTION"
 >crosstab(text, text)</CODE
 ></A
@@ -1139,8 +1164,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN174939"
->F.36.1.5. <CODE
+NAME="AEN182010"
+>F.38.1.5. <CODE
 CLASS="FUNCTION"
 >connectby</CODE
 ></A
@@ -1166,7 +1191,7 @@ CLASS="FUNCTION"
 ><P
 >    <A
 HREF="tablefunc.html#TABLEFUNC-CONNECTBY-PARAMETERS"
->Table F-30</A
+>Table F-32</A
 > explains the
     parameters.
    </P
@@ -1177,7 +1202,7 @@ NAME="TABLEFUNC-CONNECTBY-PARAMETERS"
 ></A
 ><P
 ><B
->Table F-30. <CODE
+>Table F-32. <CODE
 CLASS="FUNCTION"
 >connectby</CODE
 > Parameters</B
@@ -1454,8 +1479,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN175018"
->F.36.2. Author</A
+NAME="AEN182089"
+>F.38.2. Author</A
 ></H2
 ><P
 >   Joe Conway

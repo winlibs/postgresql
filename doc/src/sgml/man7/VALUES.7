@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "VALUES" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "VALUES" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -256,7 +256,9 @@ WHERE ip_address IN (VALUES(\*(Aq192\&.168\&.0\&.1\*(Aq::inet), (\*(Aq192\&.168\
 .PP
 For simple
 IN
-tests, it\*(Aqs better to rely on the list\-of\-scalars form of
+tests, it\*(Aqs better to rely on the
+list-of-scalars
+form of
 IN
 than to write a
 \fBVALUES\fR

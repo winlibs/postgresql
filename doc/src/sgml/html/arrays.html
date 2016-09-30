@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -518,6 +518,39 @@ CLASS="LITERAL"
 >.
  </P
 ><P
+>  It is possible to omit the <TT
+CLASS="REPLACEABLE"
+><I
+>lower-bound</I
+></TT
+> and/or
+  <TT
+CLASS="REPLACEABLE"
+><I
+>upper-bound</I
+></TT
+> of a slice specifier; the missing
+  bound is replaced by the lower or upper limit of the array's subscripts.
+  For example:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT schedule[:2][2:] FROM sal_emp WHERE name = 'Bill';
+
+        schedule
+------------------------
+ {{lunch},{presentation}}
+(1 row)
+
+SELECT schedule[:][1:1] FROM sal_emp WHERE name = 'Bill';
+
+        schedule
+------------------------
+ {{meeting},{training}}
+(1 row)</PRE
+><P>
+ </P
+><P
 >  An array subscript expression will return null if either the array itself or
   any of the subscript expressions are null.  Also, null is returned if a
   subscript is outside the array bounds (this case does not raise an error).
@@ -673,6 +706,20 @@ CLASS="PROGRAMLISTING"
     WHERE name = 'Carol';</PRE
 ><P>
 
+  The slice syntaxes with omitted <TT
+CLASS="REPLACEABLE"
+><I
+>lower-bound</I
+></TT
+> and/or
+  <TT
+CLASS="REPLACEABLE"
+><I
+>upper-bound</I
+></TT
+> can be used too, but only when
+  updating an array value that is not NULL or zero-dimensional (otherwise,
+  there is no existing subscript limit to substitute).
  </P
 ><P
 >  A stored array value can be enlarged by assigning to elements not already
@@ -978,7 +1025,7 @@ CLASS="PROGRAMLISTING"
 
   This function is described in <A
 HREF="functions-srf.html#FUNCTIONS-SRF-SUBSCRIPTS"
->Table 9-56</A
+>Table 9-58</A
 >.
  </P
 ><P

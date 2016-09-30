@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 17. Server Setup and Operation</TD
+>Chapter 18. Server Setup and Operation</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CREATING-CLUSTER"
->17.2. Creating a Database Cluster</A
+>18.2. Creating a Database Cluster</A
 ></H1
 ><P
 >   Before you can do anything, you must initialize a database storage
@@ -126,7 +126,7 @@ CLASS="LITERAL"
    as a template for subsequently created databases; it should not be
    used for actual work.  (See <A
 HREF="managing-databases.html"
->Chapter 21</A
+>Chapter 22</A
 > for
    information about creating new databases within a cluster.)
   </P
@@ -229,7 +229,7 @@ CLASS="COMMAND"
 > for starting and stopping the
    server (see <A
 HREF="server-start.html"
->Section 17.3</A
+>Section 18.3</A
 >), so
    that <TT
 CLASS="COMMAND"
@@ -350,7 +350,7 @@ CLASS="LITERAL"
 > authentication
    or file system permissions to restrict connections. See <A
 HREF="client-authentication.html"
->Chapter 19</A
+>Chapter 20</A
 > for more information.)
   </P
 ><P
@@ -364,7 +364,7 @@ CLASS="COMMAND"
    specify a different locale for the database; more information about
    that can be found in <A
 HREF="locale.html"
->Section 22.1</A
+>Section 23.1</A
 >.  The default sort order used
    within the particular database cluster is set by
    <TT
@@ -391,8 +391,22 @@ CLASS="COMMAND"
    for the database cluster.  Normally this should be chosen to match the
    locale setting.  For details see <A
 HREF="multibyte.html"
->Section 22.3</A
+>Section 23.3</A
 >.
+  </P
+><P
+>   Non-<TT
+CLASS="LITERAL"
+>C</TT
+> and non-<TT
+CLASS="LITERAL"
+>POSIX</TT
+> locales rely on the
+   operating system's collation library for character set ordering.
+   This controls the ordering of keys stored in indexes.  For this reason,
+   a cluster cannot switch to an incompatible collation library version,
+   either through snapshot restore, binary streaming replication, a
+   different operating system, or an operating system upgrade.
   </P
 ><DIV
 CLASS="SECT2"
@@ -400,7 +414,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="CREATING-CLUSTER-MOUNT-POINTS"
->17.2.1. Use of Secondary File Systems</A
+>18.2.1. Use of Secondary File Systems</A
 ></H2
 ><P
 >    Many installations create their database clusters on file systems
@@ -430,7 +444,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="CREATING-CLUSTER-NFS"
->17.2.2. Use of Network File Systems</A
+>18.2.2. Use of Network File Systems</A
 ></H2
 ><P
 >    Many installations create their database clusters on network file

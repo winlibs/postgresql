@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-COMMENT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN73795"
+NAME="AEN76979"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN73795"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN73798"
+NAME="AEN76982"
 ></A
 ><H2
 >Synopsis</H2
@@ -111,6 +111,12 @@ NAME="AEN73798"
 CLASS="SYNOPSIS"
 >COMMENT ON
 {
+  ACCESS METHOD <TT
+CLASS="REPLACEABLE"
+><I
+>object_name</I
+></TT
+> |
   AGGREGATE <TT
 CLASS="REPLACEABLE"
 ><I
@@ -485,7 +491,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73865"
+NAME="AEN77050"
 ></A
 ><H2
 >Description</H2
@@ -518,6 +524,8 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >CREATEROLE</TT
 > privilege to comment on non-superuser roles.
+   Likewise, access methods don't have owners either; you must be superuser
+   to comment on an access method.
    Of course, a superuser can comment on anything.
   </P
 ><P
@@ -547,14 +555,14 @@ CLASS="FUNCTION"
 >
     (see <A
 HREF="functions-info.html#FUNCTIONS-INFO-COMMENT-TABLE"
->Table 9-62</A
+>Table 9-67</A
 >).
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73883"
+NAME="AEN77068"
 ></A
 ><H2
 >Parameters</H2
@@ -645,9 +653,9 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->      When creating a comment on a constraint, a table, a domain or
+>      When creating a comment on a constraint, a trigger, a rule or
       a policy these parameters specify the name of the table or domain on
-      which the constraint is defined.
+      which that object is defined.
      </P
 ></DD
 ><DT
@@ -844,7 +852,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73986"
+NAME="AEN77171"
 ></A
 ><H2
 >Notes</H2
@@ -861,7 +869,7 @@ NAME="AEN73986"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73989"
+NAME="AEN77174"
 ></A
 ><H2
 >Examples</H2
@@ -888,7 +896,8 @@ CLASS="PROGRAMLISTING"
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->COMMENT ON AGGREGATE my_aggregate (double precision) IS 'Computes sample variance';
+>COMMENT ON ACCESS METHOD rtree IS 'R-Tree access method';
+COMMENT ON AGGREGATE my_aggregate (double precision) IS 'Computes sample variance';
 COMMENT ON CAST (text AS int4) IS 'Allow casts from text to int4';
 COMMENT ON COLLATION "fr_CA" IS 'Canadian French';
 COMMENT ON COLUMN my_table.my_column IS 'Employee ID number';
@@ -930,7 +939,7 @@ COMMENT ON VIEW my_view IS 'View of departmental costs';</PRE
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN73997"
+NAME="AEN77182"
 ></A
 ><H2
 >Compatibility</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 35. Extending <ACRONYM
+>Chapter 36. Extending <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
 ></TD
@@ -96,7 +96,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="XINDEX"
->35.14. Interfacing Extensions To Indexes</A
+>36.14. Interfacing Extensions To Indexes</A
 ></H1
 ><P
 >   The procedures described thus far let you define new types, new
@@ -125,7 +125,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XINDEX-OPCLASS"
->35.14.1. Index Methods and Operator Classes</A
+>36.14.1. Index Methods and Operator Classes</A
 ></H2
 ><P
 >   The <CODE
@@ -142,14 +142,14 @@ CLASS="PRODUCTNAME"
 CLASS="CLASSNAME"
 >pg_am</CODE
 >.  It is possible to add a
-   new index method by defining the required interface routines and
+   new index access method by writing the necessary code and
    then creating a row in <CODE
 CLASS="CLASSNAME"
 >pg_am</CODE
 > &mdash; but that is
    beyond the scope of this chapter (see <A
 HREF="indexam.html"
->Chapter 58</A
+>Chapter 59</A
 >).
   </P
 ><P
@@ -209,7 +209,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XINDEX-STRATEGIES"
->35.14.2. Index Method Strategies</A
+>36.14.2. Index Method Strategies</A
 ></H2
 ><P
 >   The operators associated with an operator class are identified by
@@ -255,7 +255,7 @@ CLASS="QUOTE"
 ><P
 >   The B-tree index method defines five strategies, shown in <A
 HREF="xindex.html#XINDEX-BTREE-STRAT-TABLE"
->Table 35-2</A
+>Table 36-2</A
 >.
   </P
 ><DIV
@@ -265,7 +265,7 @@ NAME="XINDEX-BTREE-STRAT-TABLE"
 ></A
 ><P
 ><B
->Table 35-2. B-tree Strategies</B
+>Table 36-2. B-tree Strategies</B
 ></P
 ><TABLE
 BORDER="1"
@@ -316,7 +316,7 @@ CLASS="CALSTABLE"
 >   Hash indexes support only equality comparisons, and so they use only one
    strategy, shown in <A
 HREF="xindex.html#XINDEX-HASH-STRAT-TABLE"
->Table 35-3</A
+>Table 36-3</A
 >.
   </P
 ><DIV
@@ -326,7 +326,7 @@ NAME="XINDEX-HASH-STRAT-TABLE"
 ></A
 ><P
 ><B
->Table 35-3. Hash Strategies</B
+>Table 36-3. Hash Strategies</B
 ></P
 ><TABLE
 BORDER="1"
@@ -364,7 +364,7 @@ CLASS="QUOTE"
 > strategies shown in
    <A
 HREF="xindex.html#XINDEX-RTREE-STRAT-TABLE"
->Table 35-4</A
+>Table 36-4</A
 >.  Four of these are true
    two-dimensional tests (overlaps, same, contains, contained by);
    four of them consider only the X direction; and the other four
@@ -377,7 +377,7 @@ NAME="XINDEX-RTREE-STRAT-TABLE"
 ></A
 ><P
 ><B
->Table 35-4. GiST Two-Dimensional <SPAN
+>Table 36-4. GiST Two-Dimensional <SPAN
 CLASS="QUOTE"
 >"R-tree"</SPAN
 > Strategies</B
@@ -476,7 +476,7 @@ CLASS="CALSTABLE"
    definition. As an example, the strategy numbers used by the built-in
    operator classes for points are shown in <A
 HREF="xindex.html#XINDEX-SPGIST-POINT-STRAT-TABLE"
->Table 35-5</A
+>Table 36-5</A
 >.
   </P
 ><DIV
@@ -486,7 +486,7 @@ NAME="XINDEX-SPGIST-POINT-STRAT-TABLE"
 ></A
 ><P
 ><B
->Table 35-5. SP-GiST Point Strategies</B
+>Table 36-5. SP-GiST Point Strategies</B
 ></P
 ><TABLE
 BORDER="1"
@@ -547,7 +547,7 @@ CLASS="CALSTABLE"
    the built-in operator classes for arrays are shown in
    <A
 HREF="xindex.html#XINDEX-GIN-ARRAY-STRAT-TABLE"
->Table 35-6</A
+>Table 36-6</A
 >.
   </P
 ><DIV
@@ -557,7 +557,7 @@ NAME="XINDEX-GIN-ARRAY-STRAT-TABLE"
 ></A
 ><P
 ><B
->Table 35-6. GIN Array Strategies</B
+>Table 36-6. GIN Array Strategies</B
 ></P
 ><TABLE
 BORDER="1"
@@ -609,7 +609,7 @@ CLASS="LITERAL"
 > operator classes are shown in
    <A
 HREF="xindex.html#XINDEX-BRIN-MINMAX-STRAT-TABLE"
->Table 35-7</A
+>Table 36-7</A
 >.
   </P
 ><DIV
@@ -619,7 +619,7 @@ NAME="XINDEX-BRIN-MINMAX-STRAT-TABLE"
 ></A
 ><P
 ><B
->Table 35-7. BRIN Minmax Strategies</B
+>Table 36-7. BRIN Minmax Strategies</B
 ></P
 ><TABLE
 BORDER="1"
@@ -684,7 +684,7 @@ CLASS="FIRSTTERM"
    which typically don't return Boolean values; that feature is discussed
    in <A
 HREF="xindex.html#XINDEX-ORDERING-OPS"
->Section 35.14.7</A
+>Section 36.14.7</A
 >.)
   </P
 ></DIV
@@ -694,7 +694,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XINDEX-SUPPORT"
->35.14.3. Index Method Support Routines</A
+>36.14.3. Index Method Support Routines</A
 ></H2
 ><P
 >   Strategies aren't usually enough information for the system to figure
@@ -722,7 +722,7 @@ CLASS="QUOTE"
 >   B-trees require a single support function, and allow a second one to be
    supplied at the operator class author's option, as shown in <A
 HREF="xindex.html#XINDEX-BTREE-SUPPORT-TABLE"
->Table 35-8</A
+>Table 36-8</A
 >.
   </P
 ><DIV
@@ -732,7 +732,7 @@ NAME="XINDEX-BTREE-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-8. B-tree Support Functions</B
+>Table 36-8. B-tree Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -772,7 +772,7 @@ CLASS="FILENAME"
 ><P
 >   Hash indexes require one support function, shown in <A
 HREF="xindex.html#XINDEX-HASH-SUPPORT-TABLE"
->Table 35-9</A
+>Table 36-9</A
 >.
   </P
 ><DIV
@@ -782,7 +782,7 @@ NAME="XINDEX-HASH-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-9. Hash Support Functions</B
+>Table 36-9. Hash Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -809,11 +809,11 @@ CLASS="CALSTABLE"
 >   GiST indexes have nine support functions, two of which are optional,
    as shown in <A
 HREF="xindex.html#XINDEX-GIST-SUPPORT-TABLE"
->Table 35-10</A
+>Table 36-10</A
 >.
    (For more information see <A
 HREF="gist.html"
->Chapter 59</A
+>Chapter 61</A
 >.)
   </P
 ><DIV
@@ -823,7 +823,7 @@ NAME="XINDEX-GIST-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-10. GiST Support Functions</B
+>Table 36-10. GiST Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -951,11 +951,11 @@ CLASS="FUNCTION"
 >   SP-GiST indexes require five support functions, as
    shown in <A
 HREF="xindex.html#XINDEX-SPGIST-SUPPORT-TABLE"
->Table 35-11</A
+>Table 36-11</A
 >.
    (For more information see <A
 HREF="spgist.html"
->Chapter 60</A
+>Chapter 62</A
 >.)
   </P
 ><DIV
@@ -965,7 +965,7 @@ NAME="XINDEX-SPGIST-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-11. SP-GiST Support Functions</B
+>Table 36-11. SP-GiST Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1045,11 +1045,11 @@ CLASS="FUNCTION"
 >   GIN indexes have six support functions, three of which are optional,
    as shown in <A
 HREF="xindex.html#XINDEX-GIN-SUPPORT-TABLE"
->Table 35-12</A
+>Table 36-12</A
 >.
    (For more information see <A
 HREF="gin.html"
->Chapter 61</A
+>Chapter 63</A
 >.)
   </P
 ><DIV
@@ -1059,7 +1059,7 @@ NAME="XINDEX-GIN-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-12. GIN Support Functions</B
+>Table 36-12. GIN Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1159,12 +1159,12 @@ CLASS="FUNCTION"
 >   BRIN indexes have four basic support functions, as shown in
    <A
 HREF="xindex.html#XINDEX-BRIN-SUPPORT-TABLE"
->Table 35-13</A
+>Table 36-13</A
 >; those basic functions
    may require additional support functions to be provided.
    (For more information see <A
 HREF="brin-extensibility.html"
->Section 62.3</A
+>Section 64.3</A
 >.)
   </P
 ><DIV
@@ -1174,7 +1174,7 @@ NAME="XINDEX-BRIN-SUPPORT-TABLE"
 ></A
 ><P
 ><B
->Table 35-13. BRIN Support Functions</B
+>Table 36-13. BRIN Support Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -1257,7 +1257,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XINDEX-EXAMPLE"
->35.14.4. An Example</A
+>36.14.4. An Example</A
 ></H2
 ><P
 >   Now that we have seen the ideas, here is the promised example of
@@ -1281,7 +1281,7 @@ CLASS="LITERAL"
    a set of operators.  The procedure for defining operators was
    discussed in <A
 HREF="xoper.html"
->Section 35.12</A
+>Section 36.12</A
 >.  For an operator class on
    B-trees, the operators we require are:
 
@@ -1524,7 +1524,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XINDEX-OPFAMILY"
->35.14.5. Operator Classes and Operator Families</A
+>36.14.5. Operator Classes and Operator Families</A
 ></H2
 ><P
 >   So far we have implicitly assumed that an operator class deals with
@@ -1798,7 +1798,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XINDEX-OPCLASS-DEPENDENCIES"
->35.14.6. System Dependencies on Operator Classes</A
+>36.14.6. System Dependencies on Operator Classes</A
 ></H2
 ><P
 >   <SPAN
@@ -1899,7 +1899,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XINDEX-ORDERING-OPS"
->35.14.7. Ordering Operators</A
+>36.14.7. Ordering Operators</A
 ></H2
 ><P
 >   Some index access methods (currently, only GiST) support the concept of
@@ -2021,7 +2021,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="XINDEX-OPCLASS-FEATURES"
->35.14.8. Special Features of Operator Classes</A
+>36.14.8. Special Features of Operator Classes</A
 ></H2
 ><P
 >   There are two special features of operator classes that we have

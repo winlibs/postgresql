@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="CUBE"
->F.8. cube</A
+>F.9. cube</A
 ></H1
 ><P
 >  This module implements a data type <TT
@@ -107,13 +107,13 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN168356"
->F.8.1. Syntax</A
+NAME="AEN175044"
+>F.9.1. Syntax</A
 ></H2
 ><P
 >   <A
 HREF="cube.html#CUBE-REPR-TABLE"
->Table F-1</A
+>Table F-3</A
 > shows the valid external
    representations for the <TT
 CLASS="TYPE"
@@ -139,12 +139,20 @@ NAME="CUBE-REPR-TABLE"
 ></A
 ><P
 ><B
->Table F-1. Cube External Representations</B
+>Table F-3. Cube External Representations</B
 ></P
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><TBODY
+><COL><COL><THEAD
+><TR
+><TH
+>External Syntax</TH
+><TH
+>Meaning</TH
+></TR
+></THEAD
+><TBODY
 ><TR
 ><TD
 ><TT
@@ -349,9 +357,18 @@ CLASS="TYPE"
 CLASS="QUOTE"
 >"lower left &mdash; upper right"</SPAN
 > internal representation.
+   When the corners coincide, <TT
+CLASS="TYPE"
+>cube</TT
+> stores only one corner
+   along with an <SPAN
+CLASS="QUOTE"
+>"is point"</SPAN
+> flag to avoid wasting space.
   </P
 ><P
->   White space is ignored, so <TT
+>   White space is ignored on input, so
+   <TT
 CLASS="LITERAL"
 >[(<TT
 CLASS="REPLACEABLE"
@@ -386,8 +403,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN168431"
->F.8.2. Precision</A
+NAME="AEN175125"
+>F.9.2. Precision</A
 ></H2
 ><P
 >   Values are stored internally as 64-bit floating point numbers. This means
@@ -399,39 +416,37 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN168434"
->F.8.3. Usage</A
+NAME="AEN175128"
+>F.9.3. Usage</A
 ></H2
 ><P
->   The <TT
-CLASS="FILENAME"
->cube</TT
-> module includes a GiST index operator class for
-   <TT
+>   <A
+HREF="cube.html#CUBE-OPERATORS-TABLE"
+>Table F-4</A
+> shows the operators provided for
+   type <TT
 CLASS="TYPE"
 >cube</TT
-> values.
-   The operators supported by the GiST operator class are shown in <A
-HREF="cube.html#CUBE-GIST-OPERATORS"
->Table F-2</A
 >.
   </P
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="CUBE-GIST-OPERATORS"
+NAME="CUBE-OPERATORS-TABLE"
 ></A
 ><P
 ><B
->Table F-2. Cube GiST Operators</B
+>Table F-4. Cube Operators</B
 ></P
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><THEAD
+><COL><COL><COL><THEAD
 ><TR
 ><TH
 >Operator</TH
+><TH
+>Result</TH
 ><TH
 >Description</TH
 ></TR
@@ -444,6 +459,11 @@ CLASS="LITERAL"
 >a = b</TT
 ></TD
 ><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
 >The cubes a and b are identical.</TD
 ></TR
 ><TR
@@ -451,6 +471,11 @@ CLASS="LITERAL"
 ><TT
 CLASS="LITERAL"
 >a &amp;&amp; b</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
 ></TD
 ><TD
 >The cubes a and b overlap.</TD
@@ -462,6 +487,11 @@ CLASS="LITERAL"
 >a @&gt; b</TT
 ></TD
 ><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
 >The cube a contains the cube b.</TD
 ></TR
 ><TR
@@ -471,7 +501,172 @@ CLASS="LITERAL"
 >a &lt;@ b</TT
 ></TD
 ><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
 >The cube a is contained in the cube b.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>a &lt; b</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>The cube a is less than the cube b.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>a &lt;= b</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>The cube a is less than or equal to the cube b.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>a &gt; b</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>The cube a is greater than the cube b.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>a &gt;= b</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>The cube a is greater than or equal to the cube b.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>a &lt;&gt; b</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>The cube a is not equal to the cube b.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>a -&gt; n</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>Get <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>-th coordinate of cube (counting from 1).</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>a ~&gt; n</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>        Get <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>-th coordinate in <SPAN
+CLASS="QUOTE"
+>"normalized"</SPAN
+> cube
+        representation, in which the coordinates have been rearranged into
+        the form <SPAN
+CLASS="QUOTE"
+>"lower left &mdash; upper right"</SPAN
+>; that is, the
+        smaller endpoint along each dimension appears first.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>a &lt;-&gt; b</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>Euclidean distance between a and b.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>a &lt;#&gt; b</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>Taxicab (L-1 metric) distance between a and b.</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>a &lt;=&gt; b</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>Chebyshev (L-inf metric) distance between a and b.</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -496,62 +691,106 @@ CLASS="LITERAL"
    data types!)
   </P
 ><P
->   The standard B-tree operators are also provided, for example
-
-   <DIV
-CLASS="INFORMALTABLE"
-><P
-></P
-><A
-NAME="AEN168470"
-></A
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><THEAD
-><TR
-><TH
->Operator</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><TT
+>   The scalar ordering operators (<TT
 CLASS="LITERAL"
->[a, b] &lt; [c, d]</TT
-></TD
-><TD
->Less than</TD
-></TR
-><TR
-><TD
-><TT
+>&lt;</TT
+>, <TT
 CLASS="LITERAL"
->[a, b] &gt; [c, d]</TT
-></TD
-><TD
->Greater than</TD
-></TR
-></TBODY
-></TABLE
+>&gt;=</TT
+>, etc)
+   do not make a lot of sense for any practical purpose but sorting.  These
+   operators first compare the first coordinates, and if those are equal,
+   compare the second coordinates, etc.  They exist mainly to support the
+   b-tree index operator class for <TT
+CLASS="TYPE"
+>cube</TT
+>, which can be useful for
+   example if you would like a UNIQUE constraint on a <TT
+CLASS="TYPE"
+>cube</TT
+> column.
+  </P
 ><P
-></P
-></DIV
->
-
-   These operators do not make a lot of sense for any practical
-   purpose but sorting. These operators first compare (a) to (c),
-   and if these are equal, compare (b) to (d). That results in
-   reasonably good sorting in most cases, which is useful if
-   you want to use ORDER BY with this type.
+>   The <TT
+CLASS="FILENAME"
+>cube</TT
+> module also provides a GiST index operator class for
+   <TT
+CLASS="TYPE"
+>cube</TT
+> values.
+   A <TT
+CLASS="TYPE"
+>cube</TT
+> GiST index can be used to search for values using the
+   <TT
+CLASS="LITERAL"
+>=</TT
+>, <TT
+CLASS="LITERAL"
+>&amp;&amp;</TT
+>, <TT
+CLASS="LITERAL"
+>@&gt;</TT
+>, and
+   <TT
+CLASS="LITERAL"
+>&lt;@</TT
+> operators in <TT
+CLASS="LITERAL"
+>WHERE</TT
+> clauses.
+  </P
+><P
+>   In addition, a <TT
+CLASS="TYPE"
+>cube</TT
+> GiST index can be used to find nearest
+   neighbors using the metric operators
+   <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+>, <TT
+CLASS="LITERAL"
+>&lt;#&gt;</TT
+>, and
+   <TT
+CLASS="LITERAL"
+>&lt;=&gt;</TT
+> in <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> clauses.
+   For example, the nearest neighbor of the 3-D point (0.5, 0.5, 0.5)
+   could be found efficiently with:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT c FROM test ORDER BY c &lt;-&gt; cube(array[0.5,0.5,0.5]) LIMIT 1;</PRE
+><P>
+  </P
+><P
+>   The <TT
+CLASS="LITERAL"
+>~&gt;</TT
+> operator can also be used in this way to
+   efficiently retrieve the first few values sorted by a selected coordinate.
+   For example, to get the first few cubes ordered by the first coordinate
+   (lower left corner) ascending one could use the following query:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT c FROM test ORDER BY c ~&gt; 1 LIMIT 5;</PRE
+><P>
+   And to get 2-D cubes ordered by the first coordinate of the upper right
+   corner descending:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT c FROM test ORDER BY c ~&gt; 3 DESC LIMIT 5;</PRE
+><P>
   </P
 ><P
 >   <A
 HREF="cube.html#CUBE-FUNCTIONS-TABLE"
->Table F-3</A
+>Table F-5</A
 > shows the available functions.
   </P
 ><DIV
@@ -561,21 +800,40 @@ NAME="CUBE-FUNCTIONS-TABLE"
 ></A
 ><P
 ><B
->Table F-3. Cube Functions</B
+>Table F-5. Cube Functions</B
 ></P
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><TBODY
+><COL><COL><COL><COL><THEAD
+><TR
+><TH
+>Function</TH
+><TH
+>Result</TH
+><TH
+>Description</TH
+><TH
+>Example</TH
+></TR
+></THEAD
+><TBODY
 ><TR
 ><TD
 ><TT
 CLASS="LITERAL"
->cube(float8) returns cube</TT
+>cube(float8)</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>cube</TT
 ></TD
 ><TD
 >Makes a one dimensional cube with both coordinates the same.
-       <TT
+      </TD
+><TD
+>       <TT
 CLASS="LITERAL"
 >cube(1) == '(1)'</TT
 >
@@ -585,11 +843,18 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->cube(float8, float8) returns cube</TT
+>cube(float8, float8)</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>cube</TT
 ></TD
 ><TD
 >Makes a one dimensional cube.
-       <TT
+      </TD
+><TD
+>       <TT
 CLASS="LITERAL"
 >cube(1,2) == '(1),(2)'</TT
 >
@@ -599,12 +864,19 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->cube(float8[]) returns cube</TT
+>cube(float8[])</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>cube</TT
 ></TD
 ><TD
 >Makes a zero-volume cube using the coordinates
        defined by the array.
-       <TT
+      </TD
+><TD
+>       <TT
 CLASS="LITERAL"
 >cube(ARRAY[1,2]) == '(1,2)'</TT
 >
@@ -614,15 +886,22 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->cube(float8[], float8[]) returns cube</TT
+>cube(float8[], float8[])</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>cube</TT
 ></TD
 ><TD
 >Makes a cube with upper right and lower left
        coordinates as defined by the two arrays, which must be of the
        same length.
-       <TT
+      </TD
+><TD
+>       <TT
 CLASS="LITERAL"
->cube('{1,2}'::float[], '{3,4}'::float[]) == '(1,2),(3,4)'
+>cube(ARRAY[1,2], ARRAY[3,4]) == '(1,2),(3,4)'
        </TT
 >
       </TD
@@ -631,15 +910,22 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->cube(cube, float8) returns cube</TT
+>cube(cube, float8)</TT
 ></TD
 ><TD
->Makes a new cube by adding a dimension on to an
-       existing cube with the same values for both parts of the new coordinate.
-       This is useful for building cubes piece by piece from calculated values.
-       <TT
+><TT
+CLASS="TYPE"
+>cube</TT
+></TD
+><TD
+>Makes a new cube by adding a dimension on to an existing cube,
+       with the same values for both endpoints of the new coordinate.  This
+       is useful for building cubes piece by piece from calculated values.
+      </TD
+><TD
+>       <TT
 CLASS="LITERAL"
->cube('(1)',2) == '(1,2),(1,2)'</TT
+>cube('(1,2),(3,4)'::cube, 5) == '(1,2,5),(3,4,5)'</TT
 >
       </TD
 ></TR
@@ -647,14 +933,22 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->cube(cube, float8, float8) returns cube</TT
+>cube(cube, float8, float8)</TT
 ></TD
 ><TD
->Makes a new cube by adding a dimension on to an
-       existing cube. This is useful for building cubes piece by piece from
-       calculated values. <TT
+><TT
+CLASS="TYPE"
+>cube</TT
+></TD
+><TD
+>Makes a new cube by adding a dimension on to an existing
+       cube. This is useful for building cubes piece by piece from calculated
+       values.
+      </TD
+><TD
+>       <TT
 CLASS="LITERAL"
->cube('(1,2)',3,4) == '(1,3),(2,4)'</TT
+>cube('(1,2),(3,4)'::cube, 5, 6) == '(1,2,5),(3,4,6)'</TT
 >
       </TD
 ></TR
@@ -662,116 +956,254 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->cube_dim(cube) returns int</TT
+>cube_dim(cube)</TT
 ></TD
 ><TD
->Returns the number of dimensions of the cube
+><TT
+CLASS="TYPE"
+>integer</TT
+></TD
+><TD
+>Returns the number of dimensions of the cube.
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>cube_dim('(1,2),(3,4)') == '2'</TT
+>
       </TD
 ></TR
 ><TR
 ><TD
 ><TT
 CLASS="LITERAL"
->cube_ll_coord(cube, int) returns double </TT
+>cube_ll_coord(cube, integer)</TT
 ></TD
 ><TD
->Returns the n'th coordinate value for the lower left
-       corner of a cube
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>Returns the <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>-th coordinate value for the lower
+       left corner of the cube.
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>cube_ll_coord('(1,2),(3,4)', 2) == '2'</TT
+>
       </TD
 ></TR
 ><TR
 ><TD
 ><TT
 CLASS="LITERAL"
->cube_ur_coord(cube, int) returns double
-      </TT
+>cube_ur_coord(cube, integer)</TT
 ></TD
 ><TD
->Returns the n'th coordinate value for the
-       upper right corner of a cube
+><TT
+CLASS="TYPE"
+>float8</TT
+></TD
+><TD
+>Returns the <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+>-th coordinate value for the
+       upper right corner of the cube.
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>cube_ur_coord('(1,2),(3,4)', 2) == '4'</TT
+>
       </TD
 ></TR
 ><TR
 ><TD
 ><TT
 CLASS="LITERAL"
->cube_is_point(cube) returns bool</TT
+>cube_is_point(cube)</TT
 ></TD
 ><TD
->Returns true if a cube is a point, that is,
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
+>Returns true if the cube is a point, that is,
        the two defining corners are the same.</TD
+><TD
+>&nbsp;</TD
 ></TR
 ><TR
 ><TD
 ><TT
 CLASS="LITERAL"
->cube_distance(cube, cube) returns double</TT
+>cube_distance(cube, cube)</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>float8</TT
 ></TD
 ><TD
 >Returns the distance between two cubes. If both
        cubes are points, this is the normal distance function.
       </TD
+><TD
+>&nbsp;</TD
 ></TR
 ><TR
 ><TD
 ><TT
 CLASS="LITERAL"
->cube_subset(cube, int[]) returns cube
-      </TT
+>cube_subset(cube, integer[])</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>cube</TT
 ></TD
 ><TD
 >Makes a new cube from an existing cube, using a list of
-       dimension indexes from an array. Can be used to find both the LL and UR
-       coordinates of a single dimension, e.g.
+       dimension indexes from an array. Can be used to extract the endpoints
+       of a single dimension, or to drop dimensions, or to reorder them as
+       desired.
+      </TD
+><TD
+>       <TT
+CLASS="LITERAL"
+>cube_subset(cube('(1,3,5),(6,7,8)'), ARRAY[2]) == '(3),(7)'</TT
+>
        <TT
 CLASS="LITERAL"
->cube_subset(cube('(1,3,5),(6,7,8)'), ARRAY[2]) = '(3),(7)'</TT
+>cube_subset(cube('(1,3,5),(6,7,8)'), ARRAY[3,2,1,1]) ==
+        '(5,3,1,1),(8,7,6,6)'</TT
+>
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>cube_union(cube, cube)</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>cube</TT
+></TD
+><TD
+>Produces the union of two cubes.
+      </TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>cube_inter(cube, cube)</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>cube</TT
+></TD
+><TD
+>Produces the intersection of two cubes.
+      </TD
+><TD
+>&nbsp;</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>cube_enlarge(c cube, r double, n integer)</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>cube</TT
+></TD
+><TD
+>Increases the size of the cube by the specified
+       radius <TT
+CLASS="REPLACEABLE"
+><I
+>r</I
+></TT
+> in at least <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> dimensions.
+       If the radius is negative the cube is shrunk instead.
+       All defined dimensions are changed by the radius <TT
+CLASS="REPLACEABLE"
+><I
+>r</I
+></TT
 >.
-       Or can be used to drop dimensions, or reorder them as desired, e.g.
-       <TT
-CLASS="LITERAL"
->cube_subset(cube('(1,3,5),(6,7,8)'), ARRAY[3,2,1,1]) = '(5, 3,
-       1, 1),(8, 7, 6, 6)'</TT
->.
+       Lower-left coordinates are decreased by <TT
+CLASS="REPLACEABLE"
+><I
+>r</I
+></TT
+> and
+       upper-right coordinates are increased by <TT
+CLASS="REPLACEABLE"
+><I
+>r</I
+></TT
+>.  If a
+       lower-left coordinate is increased to more than the corresponding
+       upper-right coordinate (this can only happen when <TT
+CLASS="REPLACEABLE"
+><I
+>r</I
+></TT
+>
+       &lt; 0) than both coordinates are set to their average.
+       If <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> is greater than the number of defined dimensions
+       and the cube is being enlarged (<TT
+CLASS="REPLACEABLE"
+><I
+>r</I
+></TT
+> &gt; 0), then extra
+       dimensions are added to make <TT
+CLASS="REPLACEABLE"
+><I
+>n</I
+></TT
+> altogether;
+       0 is used as the initial value for the extra coordinates.
+       This function is useful for creating bounding boxes around a point for
+       searching for nearby points.
       </TD
-></TR
-><TR
 ><TD
-><TT
+>       <TT
 CLASS="LITERAL"
->cube_union(cube, cube) returns cube</TT
-></TD
-><TD
->Produces the union of two cubes
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_inter(cube, cube) returns cube</TT
-></TD
-><TD
->Produces the intersection of two cubes
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_enlarge(cube c, double r, int n) returns cube</TT
-></TD
-><TD
->Increases the size of a cube by a specified radius in at least
-       n dimensions. If the radius is negative the cube is shrunk instead. This
-       is useful for creating bounding boxes around a point for searching for
-       nearby points. All defined dimensions are changed by the radius r.
-       LL coordinates are decreased by r and UR coordinates are increased by r.
-       If a LL coordinate is increased to larger than the corresponding UR
-       coordinate (this can only happen when r &lt; 0) than both coordinates
-       are set to their average.  If n is greater than the number of defined
-       dimensions and the cube is being increased (r &gt;= 0) then 0 is used
-       as the base for the extra coordinates.
+>cube_enlarge('(1,2),(3,4)', 0.5, 3) ==
+        '(0.5,1.5,-0.5),(3.5,4.5,0.5)'</TT
+>
       </TD
 ></TR
 ></TBODY
@@ -783,8 +1215,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN168559"
->F.8.4. Defaults</A
+NAME="AEN175400"
+>F.9.4. Defaults</A
 ></H2
 ><P
 >   I believe this union:
@@ -835,8 +1267,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN168569"
->F.8.5. Notes</A
+NAME="AEN175410"
+>F.9.5. Notes</A
 ></H2
 ><P
 >   For examples of usage, see the regression test <TT
@@ -858,8 +1290,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN168575"
->F.8.6. Credits</A
+NAME="AEN175416"
+>F.9.6. Credits</A
 ></H2
 ><P
 >   Original author: Gene Selkov, Jr. <CODE

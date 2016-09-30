@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "PG_ARCHIVECLEANUP" "1" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "PG_ARCHIVECLEANUP" "1" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,7 +38,7 @@ pg_archivecleanup
 is designed to be used as an
 archive_cleanup_command
 to clean up WAL file archives when running as a standby server (see
-Section 25.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation)\&.
+Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation)\&.
 pg_archivecleanup
 can also be used as a standalone program to clean WAL file archives\&.
 .PP
@@ -133,7 +133,7 @@ version and exit\&.
 .PP
 \fB\-x\fR \fIextension\fR
 .RS 4
-When using the program as a standalone utility, provide an extension that will be stripped from all file names before deciding if they should be deleted\&. This is typically useful for cleaning up archives that have been compressed during storage, and therefore have had an extension added by the compression program\&. For example:
+Provide an extension that will be stripped from all file names before deciding if they should be deleted\&. This is typically useful for cleaning up archives that have been compressed during storage, and therefore have had an extension added by the compression program\&. For example:
 \-x \&.gz\&.
 .RE
 .PP

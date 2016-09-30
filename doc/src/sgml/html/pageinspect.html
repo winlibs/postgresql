@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="PAGEINSPECT"
->F.21. pageinspect</A
+>F.22. pageinspect</A
 ></H1
 ><P
 >  The <TT
@@ -108,8 +108,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN171640"
->F.21.1. Functions</A
+NAME="AEN178483"
+>F.22.1. Functions</A
 ></H2
 ><P
 ></P
@@ -227,9 +227,10 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >heap_page_items</CODE
 > shows all line pointers on a heap
-      page.  For those line pointers that are in use, tuple headers are also
-      shown. All tuples are shown, whether or not the tuples were visible to
-      an MVCC snapshot at the time the raw page was copied.
+      page.  For those line pointers that are in use, tuple headers as well
+      as tuple raw data are also shown. All tuples are shown, whether or not
+      the tuples were visible to an MVCC snapshot at the time the raw page
+      was copied.
      </P
 ><P
 >      A heap page image obtained with <CODE
@@ -250,6 +251,82 @@ CLASS="FILENAME"
 >src/include/access/htup_details.h</TT
 > for explanations of the fields
       returned.
+     </P
+></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>tuple_data_split(rel_oid, t_data bytea, t_infomask integer, t_infomask2 integer, t_bits text [, do_detoast bool]) returns bytea[]</CODE
+>
+     </DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>tuple_data_split</CODE
+> splits tuple data into attributes
+      in the same way as backend internals.
+</P><PRE
+CLASS="SCREEN"
+>test=# SELECT tuple_data_split('pg_class'::regclass, t_data, t_infomask, t_infomask2, t_bits) FROM heap_page_items(get_raw_page('pg_class', 0));</PRE
+><P>
+      This function should be called with the same arguments as the return
+      attributes of <CODE
+CLASS="FUNCTION"
+>heap_page_items</CODE
+>.
+     </P
+><P
+>      If <TT
+CLASS="PARAMETER"
+>do_detoast</TT
+> is <TT
+CLASS="LITERAL"
+>true</TT
+>,
+      attribute that will be detoasted as needed. Default value is
+      <TT
+CLASS="LITERAL"
+>false</TT
+>.
+     </P
+></DD
+><DT
+><CODE
+CLASS="FUNCTION"
+>heap_page_item_attrs(rel_oid, t_data bytea, [, do_detoast bool]) returns bytea[]</CODE
+>
+     </DT
+><DD
+><P
+>      <CODE
+CLASS="FUNCTION"
+>heap_page_item_attrs</CODE
+> is equivalent to
+      <CODE
+CLASS="FUNCTION"
+>heap_page_items</CODE
+> except that it returns
+      tuple raw data as an array of attributes that can optionally
+      be detoasted by <TT
+CLASS="PARAMETER"
+>do_detoast</TT
+> which is
+      <TT
+CLASS="LITERAL"
+>false</TT
+> by default.
+     </P
+><P
+>      A heap page image obtained with <CODE
+CLASS="FUNCTION"
+>get_raw_page</CODE
+> should
+      be passed as argument.  For example:
+</P><PRE
+CLASS="SCREEN"
+>test=# SELECT * FROM heap_page_item_attrs(get_raw_page('pg_class', 0), 'pg_class'::regclass);</PRE
+><P>
      </P
 ></DD
 ><DT

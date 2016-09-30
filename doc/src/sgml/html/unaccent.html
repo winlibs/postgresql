@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="UNACCENT"
->F.42. unaccent</A
+>F.44. unaccent</A
 ></H1
 ><P
 >  <TT
@@ -121,8 +121,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN175198"
->F.42.1. Configuration</A
+NAME="AEN182269"
+>F.44.1. Configuration</A
 ></H2
 ><P
 >   An <TT
@@ -181,7 +181,7 @@ CLASS="PROGRAMLISTING"
 &Atilde;        A
 &Auml;        A
 &Aring;        A
-&AElig;        A</PRE
+&AElig;        AE</PRE
 ><P>
      The two characters must be separated by whitespace, and any leading or
      trailing whitespace on a line is ignored.
@@ -234,7 +234,10 @@ CLASS="FILENAME"
 CLASS="FILENAME"
 >unaccent</TT
 >
-   module is installed.
+   module is installed.  This rules file translates characters with accents
+   to the same characters without accents, and it also expands ligatures
+   into the equivalent series of simple characters (for example, &AElig; to
+   AE).
   </P
 ></DIV
 ><DIV
@@ -242,8 +245,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN175229"
->F.42.2. Usage</A
+NAME="AEN182300"
+>F.44.2. Usage</A
 ></H2
 ><P
 >   Installing the <TT
@@ -326,8 +329,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN175244"
->F.42.3. Functions</A
+NAME="AEN182315"
+>F.44.3. Functions</A
 ></H2
 ><P
 >  The <CODE

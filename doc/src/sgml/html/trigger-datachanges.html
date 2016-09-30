@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Triggers"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 36. Triggers</TD
+>Chapter 37. Triggers</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="TRIGGER-DATACHANGES"
->36.2. Visibility of Data Changes</A
+>37.2. Visibility of Data Changes</A
 ></H1
 ><P
 >    If you execute SQL commands in your trigger function, and these
@@ -109,7 +109,10 @@ NAME="TRIGGER-DATACHANGES"
 ><P
 >       Statement-level triggers follow simple visibility rules: none of
        the changes made by a statement are visible to statement-level
-       triggers that are invoked before the statement, whereas all
+       <TT
+CLASS="LITERAL"
+>BEFORE</TT
+> triggers, whereas all
        modifications are visible to statement-level <TT
 CLASS="LITERAL"
 >AFTER</TT
@@ -200,10 +203,10 @@ CLASS="LITERAL"
 >    Further information about data visibility rules can be found in
     <A
 HREF="spi-visibility.html"
->Section 44.4</A
+>Section 45.4</A
 >.  The example in <A
 HREF="trigger-example.html"
->Section 36.4</A
+>Section 37.4</A
 > contains a demonstration of these rules.
    </P
 ></DIV

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "PG_BASEBACKUP" "1" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "PG_BASEBACKUP" "1" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,8 +38,8 @@ pg_basebackup
 is used to take base backups of a running
 PostgreSQL
 database cluster\&. These are taken without affecting other clients to the database, and can be used both for point\-in\-time recovery (see
-Section 24.3, \(lqContinuous Archiving and Point-in-Time Recovery (PITR)\(rq, in the documentation) and as the starting point for a log shipping or streaming replication standby servers (see
-Section 25.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation)\&.
+Section 25.3, \(lqContinuous Archiving and Point-in-Time Recovery (PITR)\(rq, in the documentation) and as the starting point for a log shipping or streaming replication standby servers (see
+Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation)\&.
 .PP
 pg_basebackup
 makes a binary copy of the database cluster files, while making sure the system is put in and out of backup mode automatically\&. Backups are always taken of the entire database cluster; it is not possible to back up individual databases or database objects\&. For individual database backups, a tool such as
@@ -51,7 +51,7 @@ PostgreSQL
 connection, and uses the replication protocol\&. The connection must be made with a superuser or a user having
 REPLICATION
 permissions (see
-Section 20.2, \(lqRole Attributes\(rq, in the documentation), and
+Section 21.2, \(lqRole Attributes\(rq, in the documentation), and
 pg_hba\&.conf
 must explicitly permit the replication connection\&. The server must also be configured with
 max_wal_senders
@@ -198,7 +198,20 @@ fetch\&.
 .RS 4
 Write a minimal
 recovery\&.conf
-in the output directory (or into the base archive file when using tar format) to ease setting up a standby server\&.
+in the output directory (or into the base archive file when using tar format) to ease setting up a standby server\&. The
+recovery\&.conf
+file will record the connection settings and, if specified, the replication slot that
+pg_basebackup
+is using, so that the streaming replication will use the same settings later on\&.
+.RE
+.PP
+\fB\-S \fR\fB\fIslotname\fR\fR
+.br
+\fB\-\-slot=\fR\fB\fIslotname\fR\fR
+.RS 4
+This option can only be used together with
+\-X stream\&. It causes the WAL streaming to use the specified replication slot\&. If the base backup is intended to be used as a streaming replication standby using replication slots, it should then use the same replication slot name in
+recovery\&.conf\&. That way, it is ensured that the server does not remove any necessary WAL data in the time between the end of the base backup and the start of streaming replication\&.
 .RE
 .PP
 \fB\-T \fR\fB\fIolddir\fR\fR\fB=\fR\fB\fInewdir\fR\fR
@@ -280,7 +293,7 @@ Enables gzip compression of tar file output, with the default compression level\
 .br
 \fB\-\-compress=\fR\fB\fIlevel\fR\fR
 .RS 4
-Enables gzip compression of tar file output, and specifies the compression level (1 through 9, 9 being best compression)\&. Compression is only available when using the tar format\&.
+Enables gzip compression of tar file output, and specifies the compression level (0 through 9, 0 being no compression and 9 being best compression)\&. Compression is only available when using the tar format\&.
 .RE
 .PP
 The following command\-line options control the generation of the backup and the running of the program\&.
@@ -290,7 +303,7 @@ The following command\-line options control the generation of the backup and the
 \fB\-\-checkpoint=\fR\fB\fIfast|spread\fR\fR
 .RS 4
 Sets checkpoint mode to fast or spread (default) (see
-Section 24.3.3, \(lqMaking a Base Backup Using the Low Level API\(rq, in the documentation)\&.
+Section 25.3.3, \(lqMaking a Base Backup Using the Low Level API\(rq, in the documentation)\&.
 .RE
 .PP
 \fB\-l \fR\fB\fIlabel\fR\fR
@@ -326,7 +339,7 @@ The following command\-line options control the database connection parameters\&
 \fB\-\-dbname=\fR\fB\fIconnstr\fR\fR
 .RS 4
 Specifies parameters used to connect to the server, as a connection string\&. See
-Section 31.1.1, \(lqConnection Strings\(rq, in the documentation
+Section 32.1.1, \(lqConnection Strings\(rq, in the documentation
 for more information\&.
 .sp
 The option is called
@@ -420,11 +433,11 @@ PostgreSQL
 utilities, uses the environment variables supported by
 libpq
 (see
-Section 31.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
 .SH "NOTES"
 .PP
 The backup will include all files in the data directory and tablespaces, including the configuration files and any additional files placed in the directory by third parties\&. But only regular files and directories are copied\&. Symbolic links (other than those used for tablespaces) and special device files are skipped\&. (See
-Section 50.3, \(lqStreaming Replication Protocol\(rq, in the documentation
+Section 51.3, \(lqStreaming Replication Protocol\(rq, in the documentation
 for the precise details\&.)
 .PP
 Tablespaces will in plain format by default be backed up to the same path they have on the server, unless the option

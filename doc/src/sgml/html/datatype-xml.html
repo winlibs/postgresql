@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -157,7 +157,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN7438"
+NAME="AEN7472"
 >8.13.1. Creating XML Values</A
 ></H2
 ><P
@@ -323,7 +323,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN7482"
+NAME="AEN7516"
 >8.13.2. Encoding Handling</A
 ></H2
 ><P
@@ -335,7 +335,7 @@ NAME="AEN7482"
     server and vice versa to the character encoding of the respective
     end; see <A
 HREF="multibyte.html"
->Section 22.3</A
+>Section 23.3</A
 >.  This includes string
     representations of XML values, such as in the above examples.
     This would ordinarily mean that encoding declarations contained in
@@ -369,7 +369,7 @@ CLASS="TYPE"
    </P
 ><P
 >    When using binary mode to pass query parameters to the server
-    and query results back to the client, no character set conversion
+    and query results back to the client, no encoding conversion
     is performed, so the situation is different.  In this case, an
     encoding declaration in the XML data will be observed, and if it
     is absent, the data will be assumed to be in UTF-8 (as required by
@@ -421,7 +421,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN7494"
+NAME="AEN7528"
 >8.13.3. Accessing XML Values</A
 ></H2
 ><P

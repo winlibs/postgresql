@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SP-GiST Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 60. SP-GiST Indexes</TD
+>Chapter 62. SP-GiST Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="SPGIST-EXTENSIBILITY"
->60.3. Extensibility</A
+>62.3. Extensibility</A
 ></H1
 ><P
 >  <ACRONYM
@@ -127,14 +127,20 @@ CLASS="ACRONYM"
 CLASS="FIRSTTERM"
 >nodes</I
 >, which represent groups of similar leaf values.
-  A node contains a downlink that leads to either another, lower-level inner
-  tuple, or a short list of leaf tuples that all lie on the same index page.
-  Each node has a <I
+  A node contains a downlink that leads either to another, lower-level inner
+  tuple, or to a short list of leaf tuples that all lie on the same index page.
+  Each node normally has a <I
 CLASS="FIRSTTERM"
 >label</I
 > that describes it; for example,
   in a radix tree the node label could be the next character of the string
-  value.  Optionally, an inner tuple can have a <I
+  value.  (Alternatively, an operator class can omit the node labels, if it
+  works with a fixed set of nodes for all inner tuples;
+  see <A
+HREF="spgist-implementation.html#SPGIST-NULL-LABELS"
+>Section 62.4.2</A
+>.)
+  Optionally, an inner tuple can have a <I
 CLASS="FIRSTTERM"
 >prefix</I
 > value
@@ -154,7 +160,11 @@ CLASS="ACRONYM"
 > core provides the possibility for
   operator classes to manage level counting while descending the tree.
   There is also support for incrementally reconstructing the represented
-  value when that is needed.
+  value when that is needed, and for passing down additional data (called
+  <I
+CLASS="FIRSTTERM"
+>traverse values</I
+>) during a tree descent.
  </P
 ><DIV
 CLASS="NOTE"
@@ -303,7 +313,7 @@ CLASS="STRUCTFIELD"
       class is capable of segmenting long values by repeated suffixing
       (see <A
 HREF="spgist-implementation.html#SPGIST-LIMITS"
->Section 60.4.1</A
+>Section 62.4.1</A
 >).
      </P
 ></DD
@@ -427,7 +437,7 @@ CLASS="STRUCTFIELD"
        marked as containing multiple equivalent nodes
        (see <A
 HREF="spgist-implementation.html#SPGIST-ALL-THE-SAME"
->Section 60.4.3</A
+>Section 62.4.3</A
 >).
        <TT
 CLASS="STRUCTFIELD"
@@ -666,15 +676,8 @@ CLASS="STRUCTFIELD"
        set <TT
 CLASS="STRUCTFIELD"
 >nodeLabels</TT
-> to an array of their label values.
-       (If the nodes do not require labels, set <TT
-CLASS="STRUCTFIELD"
->nodeLabels</TT
->
-       to NULL; see <A
-HREF="spgist-implementation.html#SPGIST-NULL-LABELS"
->Section 60.4.2</A
-> for details.)
+> to an array of their label values,
+       or to NULL if node labels are not required.
        Set <TT
 CLASS="STRUCTFIELD"
 >mapTuplesToNodes</TT
@@ -737,7 +740,7 @@ CLASS="FUNCTION"
        must take suitable care with such inner tuples.
        See <A
 HREF="spgist-implementation.html#SPGIST-ALL-THE-SAME"
->Section 60.4.3</A
+>Section 62.4.3</A
 > for more information.
       </P
 ><P
@@ -758,7 +761,7 @@ CLASS="STRUCTFIELD"
        The call will be repeated until a leaf datum short enough to fit on
        a page has been produced.  See <A
 HREF="spgist-implementation.html#SPGIST-LIMITS"
->Section 60.4.1</A
+>Section 62.4.1</A
 > for
        more information.
       </P
@@ -800,6 +803,8 @@ CLASS="PROGRAMLISTING"
     int         nkeys;          /* length of array */
 
     Datum       reconstructedValue;     /* value reconstructed at parent */
+    void       *traversalValue; /* opclass-specific traverse value */
+    MemoryContext traversalMemoryContext;   /* put new traverse values here */
     int         level;          /* current level (counting from zero) */
     bool        returnData;     /* original data must be returned? */
 
@@ -817,6 +822,7 @@ typedef struct spgInnerConsistentOut
     int        *nodeNumbers;    /* their indexes in the node array */
     int        *levelAdds;      /* increment level by this much for each */
     Datum      *reconstructedValues;    /* associated reconstructed values */
+    void      **traversalValues;        /* opclass-specific traverse values */
 } spgInnerConsistentOut;</PRE
 ><P>
 
@@ -864,6 +870,20 @@ CLASS="FUNCTION"
        parent level.
        <TT
 CLASS="STRUCTFIELD"
+>traversalValue</TT
+> is a pointer to any traverse data
+       passed down from the previous call of <CODE
+CLASS="FUNCTION"
+>inner_consistent</CODE
+>
+       on the parent index tuple, or NULL at the root level.
+       <TT
+CLASS="STRUCTFIELD"
+>traversalMemoryContext</TT
+> is the memory context in which
+       to store output traverse values (see below).
+       <TT
+CLASS="STRUCTFIELD"
 >level</TT
 > is the current inner tuple's level, starting at
        zero for the root level.
@@ -893,7 +913,7 @@ CLASS="QUOTE"
        same label (if any) and so either all or none of them match the query
        (see <A
 HREF="spgist-implementation.html#SPGIST-ALL-THE-SAME"
->Section 60.4.3</A
+>Section 62.4.3</A
 >).
        <TT
 CLASS="STRUCTFIELD"
@@ -943,6 +963,20 @@ CLASS="STRUCTFIELD"
 CLASS="STRUCTFIELD"
 >reconstructedValues</TT
 > as NULL.
+       If it is desired to pass down additional out-of-band information
+       (<SPAN
+CLASS="QUOTE"
+>"traverse values"</SPAN
+>) to lower levels of the tree search,
+       set <TT
+CLASS="STRUCTFIELD"
+>traversalValues</TT
+> to an array of the appropriate
+       traverse values, one for each child node to be visited; otherwise,
+       leave <TT
+CLASS="STRUCTFIELD"
+>traversalValues</TT
+> as NULL.
        Note that the <CODE
 CLASS="FUNCTION"
 >inner_consistent</CODE
@@ -954,11 +988,25 @@ CLASS="STRUCTFIELD"
 >, <TT
 CLASS="STRUCTFIELD"
 >levelAdds</TT
-> and
+>,
        <TT
 CLASS="STRUCTFIELD"
 >reconstructedValues</TT
-> arrays.
+>, and
+       <TT
+CLASS="STRUCTFIELD"
+>traversalValues</TT
+> arrays in the current memory context.
+       However, any output traverse values pointed to by
+       the <TT
+CLASS="STRUCTFIELD"
+>traversalValues</TT
+> array should be allocated
+       in <TT
+CLASS="STRUCTFIELD"
+>traversalMemoryContext</TT
+>.
+       Each traverse value must be a single palloc'd chunk.
       </P
 ></DD
 ><DT
@@ -996,6 +1044,7 @@ CLASS="PROGRAMLISTING"
     ScanKey     scankeys;       /* array of operators and comparison values */
     int         nkeys;          /* length of array */
 
+    void       *traversalValue; /* opclass-specific traverse value */
     Datum       reconstructedValue;     /* value reconstructed at parent */
     int         level;          /* current level (counting from zero) */
     bool        returnData;     /* original data must be returned? */
@@ -1052,6 +1101,15 @@ CLASS="FUNCTION"
 >inner_consistent</CODE
 > function did not provide a value at the
        parent level.
+       <TT
+CLASS="STRUCTFIELD"
+>traversalValue</TT
+> is a pointer to any traverse data
+       passed down from the previous call of <CODE
+CLASS="FUNCTION"
+>inner_consistent</CODE
+>
+       on the parent index tuple, or NULL at the root level.
        <TT
 CLASS="STRUCTFIELD"
 >level</TT

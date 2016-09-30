@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Client Interfaces"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="CHAPTER"
 ><A
 NAME="LIBPQ"
 ></A
->Chapter 31. <SPAN
+>Chapter 32. <SPAN
 CLASS="APPLICATION"
 >libpq</SPAN
 > - C Library</H1
@@ -105,85 +105,85 @@ CLASS="TOC"
 >Table of Contents</B
 ></DT
 ><DT
->31.1. <A
+>32.1. <A
 HREF="libpq-connect.html"
 >Database Connection Control Functions</A
 ></DT
 ><DD
 ><DL
 ><DT
->31.1.1. <A
+>32.1.1. <A
 HREF="libpq-connect.html#LIBPQ-CONNSTRING"
 >Connection Strings</A
 ></DT
 ><DT
->31.1.2. <A
+>32.1.2. <A
 HREF="libpq-connect.html#LIBPQ-PARAMKEYWORDS"
 >Parameter Key Words</A
 ></DT
 ></DL
 ></DD
 ><DT
->31.2. <A
+>32.2. <A
 HREF="libpq-status.html"
 >Connection Status Functions</A
 ></DT
 ><DT
->31.3. <A
+>32.3. <A
 HREF="libpq-exec.html"
 >Command Execution Functions</A
 ></DT
 ><DD
 ><DL
 ><DT
->31.3.1. <A
+>32.3.1. <A
 HREF="libpq-exec.html#LIBPQ-EXEC-MAIN"
 >Main Functions</A
 ></DT
 ><DT
->31.3.2. <A
+>32.3.2. <A
 HREF="libpq-exec.html#LIBPQ-EXEC-SELECT-INFO"
 >Retrieving Query Result Information</A
 ></DT
 ><DT
->31.3.3. <A
+>32.3.3. <A
 HREF="libpq-exec.html#LIBPQ-EXEC-NONSELECT"
 >Retrieving Other Result Information</A
 ></DT
 ><DT
->31.3.4. <A
+>32.3.4. <A
 HREF="libpq-exec.html#LIBPQ-EXEC-ESCAPE-STRING"
 >Escaping Strings for Inclusion in SQL Commands</A
 ></DT
 ></DL
 ></DD
 ><DT
->31.4. <A
+>32.4. <A
 HREF="libpq-async.html"
 >Asynchronous Command Processing</A
 ></DT
 ><DT
->31.5. <A
+>32.5. <A
 HREF="libpq-single-row-mode.html"
 >Retrieving Query Results Row-By-Row</A
 ></DT
 ><DT
->31.6. <A
+>32.6. <A
 HREF="libpq-cancel.html"
 >Canceling Queries in Progress</A
 ></DT
 ><DT
->31.7. <A
+>32.7. <A
 HREF="libpq-fastpath.html"
 >The Fast-Path Interface</A
 ></DT
 ><DT
->31.8. <A
+>32.8. <A
 HREF="libpq-notify.html"
 >Asynchronous Notification</A
 ></DT
 ><DT
->31.9. <A
+>32.9. <A
 HREF="libpq-copy.html"
 >Functions Associated with the <TT
 CLASS="COMMAND"
@@ -193,7 +193,7 @@ CLASS="COMMAND"
 ><DD
 ><DL
 ><DT
->31.9.1. <A
+>32.9.1. <A
 HREF="libpq-copy.html#LIBPQ-COPY-SEND"
 >Functions for Sending <TT
 CLASS="COMMAND"
@@ -201,7 +201,7 @@ CLASS="COMMAND"
 > Data</A
 ></DT
 ><DT
->31.9.2. <A
+>32.9.2. <A
 HREF="libpq-copy.html#LIBPQ-COPY-RECEIVE"
 >Functions for Receiving <TT
 CLASS="COMMAND"
@@ -209,7 +209,7 @@ CLASS="COMMAND"
 > Data</A
 ></DT
 ><DT
->31.9.3. <A
+>32.9.3. <A
 HREF="libpq-copy.html#LIBPQ-COPY-DEPRECATED"
 >Obsolete Functions for <TT
 CLASS="COMMAND"
@@ -219,110 +219,110 @@ CLASS="COMMAND"
 ></DL
 ></DD
 ><DT
->31.10. <A
+>32.10. <A
 HREF="libpq-control.html"
 >Control Functions</A
 ></DT
 ><DT
->31.11. <A
+>32.11. <A
 HREF="libpq-misc.html"
 >Miscellaneous Functions</A
 ></DT
 ><DT
->31.12. <A
+>32.12. <A
 HREF="libpq-notice-processing.html"
 >Notice Processing</A
 ></DT
 ><DT
->31.13. <A
+>32.13. <A
 HREF="libpq-events.html"
 >Event System</A
 ></DT
 ><DD
 ><DL
 ><DT
->31.13.1. <A
+>32.13.1. <A
 HREF="libpq-events.html#LIBPQ-EVENTS-TYPES"
 >Event Types</A
 ></DT
 ><DT
->31.13.2. <A
+>32.13.2. <A
 HREF="libpq-events.html#LIBPQ-EVENTS-PROC"
 >Event Callback Procedure</A
 ></DT
 ><DT
->31.13.3. <A
+>32.13.3. <A
 HREF="libpq-events.html#LIBPQ-EVENTS-FUNCS"
 >Event Support Functions</A
 ></DT
 ><DT
->31.13.4. <A
+>32.13.4. <A
 HREF="libpq-events.html#LIBPQ-EVENTS-EXAMPLE"
 >Event Example</A
 ></DT
 ></DL
 ></DD
 ><DT
->31.14. <A
+>32.14. <A
 HREF="libpq-envars.html"
 >Environment Variables</A
 ></DT
 ><DT
->31.15. <A
+>32.15. <A
 HREF="libpq-pgpass.html"
 >The Password File</A
 ></DT
 ><DT
->31.16. <A
+>32.16. <A
 HREF="libpq-pgservice.html"
 >The Connection Service File</A
 ></DT
 ><DT
->31.17. <A
+>32.17. <A
 HREF="libpq-ldap.html"
 >LDAP Lookup of Connection Parameters</A
 ></DT
 ><DT
->31.18. <A
+>32.18. <A
 HREF="libpq-ssl.html"
 >SSL Support</A
 ></DT
 ><DD
 ><DL
 ><DT
->31.18.1. <A
+>32.18.1. <A
 HREF="libpq-ssl.html#LIBQ-SSL-CERTIFICATES"
 >Client Verification of Server Certificates</A
 ></DT
 ><DT
->31.18.2. <A
+>32.18.2. <A
 HREF="libpq-ssl.html#LIBPQ-SSL-CLIENTCERT"
 >Client Certificates</A
 ></DT
 ><DT
->31.18.3. <A
+>32.18.3. <A
 HREF="libpq-ssl.html#LIBPQ-SSL-PROTECTION"
 >Protection Provided in Different Modes</A
 ></DT
 ><DT
->31.18.4. <A
+>32.18.4. <A
 HREF="libpq-ssl.html#LIBPQ-SSL-FILEUSAGE"
 >SSL Client File Usage</A
 ></DT
 ><DT
->31.18.5. <A
+>32.18.5. <A
 HREF="libpq-ssl.html#LIBPQ-SSL-INITIALIZE"
 >SSL Library Initialization</A
 ></DT
 ></DL
 ></DD
 ><DT
->31.19. <A
+>32.19. <A
 HREF="libpq-threading.html"
 >Behavior in Threaded Programs</A
 ></DT
 ><DT
->31.20. <A
+>32.20. <A
 HREF="libpq-build.html"
 >Building <SPAN
 CLASS="APPLICATION"
@@ -330,7 +330,7 @@ CLASS="APPLICATION"
 > Programs</A
 ></DT
 ><DT
->31.21. <A
+>32.21. <A
 HREF="libpq-example.html"
 >Example Programs</A
 ></DT
@@ -378,15 +378,15 @@ CLASS="APPLICATION"
   important to you if you use one of those packages.  In particular,
   <A
 HREF="libpq-envars.html"
->Section 31.14</A
+>Section 32.14</A
 >,
   <A
 HREF="libpq-pgpass.html"
->Section 31.15</A
+>Section 32.15</A
 > and
   <A
 HREF="libpq-ssl.html"
->Section 31.18</A
+>Section 32.18</A
 >
   describe behavior that is visible to the user of any application
   that uses <SPAN
@@ -397,7 +397,7 @@ CLASS="APPLICATION"
 ><P
 >  Some short programs are included at the end of this chapter (<A
 HREF="libpq-example.html"
->Section 31.21</A
+>Section 32.21</A
 >) to show how
   to write programs that use <SPAN
 CLASS="APPLICATION"

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="GiST Indexes"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 59. GiST Indexes</TD
+>Chapter 61. GiST Indexes</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="GIST-EXTENSIBILITY"
->59.3. Extensibility</A
+>61.3. Extensibility</A
 ></H1
 ><P
 >   Traditionally, implementing a new index access method meant a lot of
@@ -399,12 +399,31 @@ CLASS="LITERAL"
        <TT
 CLASS="COMMAND"
 >CREATE OPERATOR CLASS</TT
-> command.  Depending on what operators
-       you have included in the class, the data type of <TT
+> command.
+      </P
+><P
+>       Depending on which operators you have included in the class, the data
+       type of <TT
 CLASS="VARNAME"
 >query</TT
-> could
-       vary with the operator, but the above skeleton assumes it doesn't.
+> could vary with the operator, since it will
+       be whatever type is on the righthand side of the operator, which might
+       be different from the indexed data type appearing on the lefthand side.
+       (The above code skeleton assumes that only one type is possible; if
+       not, fetching the <TT
+CLASS="VARNAME"
+>query</TT
+> argument value would have to depend
+       on the operator.)  It is recommended that the SQL declaration of
+       the <CODE
+CLASS="FUNCTION"
+>consistent</CODE
+> function use the opclass's indexed data
+       type for the <TT
+CLASS="VARNAME"
+>query</TT
+> argument, even though the actual type
+       might be something else depending on the operator.
       </P
 ></DD
 ><DT
@@ -427,7 +446,7 @@ CLASS="ACRONYM"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >CREATE OR REPLACE FUNCTION my_union(internal, internal)
-RETURNS internal
+RETURNS storage_type
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;</PRE
 ><P>
@@ -485,15 +504,41 @@ CLASS="ACRONYM"
 > support method.
       </P
 ><P
->        The <CODE
+>        The result of the <CODE
 CLASS="FUNCTION"
 >union</CODE
-> implementation function should return a
-        pointer to newly <CODE
+> function must be a value of the
+        index's storage type, whatever that is (it might or might not be
+        different from the indexed column's type).  The <CODE
+CLASS="FUNCTION"
+>union</CODE
+>
+        function should return a pointer to newly <CODE
 CLASS="FUNCTION"
 >palloc()</CODE
->ed memory. You can't just
-        return whatever the input is.
+>ed
+        memory. You can't just return the input value as-is, even if there is
+        no type change.
+      </P
+><P
+>       As shown above, the <CODE
+CLASS="FUNCTION"
+>union</CODE
+> function's
+       first <TT
+CLASS="TYPE"
+>internal</TT
+> argument is actually
+       a <TT
+CLASS="STRUCTNAME"
+>GistEntryVector</TT
+> pointer.  The second argument is a
+       pointer to an integer variable, which can be ignored.  (It used to be
+       required that the <CODE
+CLASS="FUNCTION"
+>union</CODE
+> function store the size of its
+       result value into that variable, but this is no longer necessary.)
       </P
 ></DD
 ><DT
@@ -664,6 +709,18 @@ my_penalty(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(penalty);
 }</PRE
 ><P>
+
+        For historical reasons, the <CODE
+CLASS="FUNCTION"
+>penalty</CODE
+> function doesn't
+        just return a <TT
+CLASS="TYPE"
+>float</TT
+> result; instead it has to store the value
+        at the location indicated by the third argument.  The return
+        value per se is ignored, though it's conventional to pass back the
+        address of that argument.
       </P
 ><P
 >        The <CODE
@@ -710,9 +767,9 @@ Datum
 my_picksplit(PG_FUNCTION_ARGS)
 {
     GistEntryVector *entryvec = (GistEntryVector *) PG_GETARG_POINTER(0);
+    GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
     OffsetNumber maxoff = entryvec-&gt;n - 1;
     GISTENTRY  *ent = entryvec-&gt;vector;
-    GIST_SPLITVEC *v = (GIST_SPLITVEC *) PG_GETARG_POINTER(1);
     int         i,
                 nbytes;
     OffsetNumber *left,
@@ -778,6 +835,20 @@ my_picksplit(PG_FUNCTION_ARGS)
     PG_RETURN_POINTER(v);
 }</PRE
 ><P>
+
+       Notice that the <CODE
+CLASS="FUNCTION"
+>picksplit</CODE
+> function's result is delivered
+       by modifying the passed-in <TT
+CLASS="STRUCTNAME"
+>v</TT
+> structure.  The return
+       value per se is ignored, though it's conventional to pass back the
+       address of <TT
+CLASS="STRUCTNAME"
+>v</TT
+>.
       </P
 ><P
 >        Like <CODE
@@ -810,6 +881,11 @@ CLASS="FUNCTION"
 ><DD
 ><P
 >       Returns true if two index entries are identical, false otherwise.
+       (An <SPAN
+CLASS="QUOTE"
+>"index entry"</SPAN
+> is a value of the index's storage type,
+       not necessarily the original indexed column's type.)
       </P
 ><P
 >        The <ACRONYM
@@ -819,7 +895,7 @@ CLASS="ACRONYM"
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE OR REPLACE FUNCTION my_same(internal, internal, internal)
+>CREATE OR REPLACE FUNCTION my_same(storage_type, storage_type, internal)
 RETURNS internal
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;</PRE
@@ -848,7 +924,9 @@ CLASS="FUNCTION"
 >same</CODE
 > function doesn't
         just return a Boolean result; instead it has to store the flag
-        at the location indicated by the third argument.
+        at the location indicated by the third argument.  The return
+        value per se is ignored, though it's conventional to pass back the
+        address of that argument.
       </P
 ></DD
 ><DT
@@ -889,7 +967,7 @@ CLASS="ACRONYM"
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE OR REPLACE FUNCTION my_distance(internal, data_type, smallint, oid)
+>CREATE OR REPLACE FUNCTION my_distance(internal, data_type, smallint, oid, internal)
 RETURNS float8
 AS 'MODULE_PATHNAME'
 LANGUAGE C STRICT;</PRE
@@ -980,7 +1058,7 @@ CLASS="FUNCTION"
 ></DT
 ><DD
 ><P
->       Converts the compressed index representation of the data item into the
+>       Converts the compressed index representation of a data item into the
        original data type, for index-only scans. The returned data must be an
        exact, non-lossy copy of the originally indexed value.
       </P
@@ -1002,14 +1080,24 @@ LANGUAGE C STRICT;</PRE
 CLASS="STRUCTNAME"
 >GISTENTRY</TT
 > struct. On
-        entry, its 'key' field contains a non-NULL leaf datum in its
+        entry, its <TT
+CLASS="STRUCTFIELD"
+>key</TT
+> field contains a non-NULL leaf datum in
         compressed form. The return value is another <TT
 CLASS="STRUCTNAME"
 >GISTENTRY</TT
 >
-        struct, whose 'key' field contains the same datum in the original,
-        uncompressed form. If the opclass' compress function does nothing for
-        leaf entries, the fetch method can return the argument as is.
+        struct, whose <TT
+CLASS="STRUCTFIELD"
+>key</TT
+> field contains the same datum in its
+        original, uncompressed form. If the opclass's compress function does
+        nothing for leaf entries, the <CODE
+CLASS="FUNCTION"
+>fetch</CODE
+> method can return the
+        argument as-is.
        </P
 ><P
 >        The matching code in the C module could then follow this skeleton:
@@ -1043,8 +1131,11 @@ my_fetch(PG_FUNCTION_ARGS)
       </P
 ><P
 >       If the compress method is lossy for leaf entries, the operator class
-       cannot support index-only scans, and must not define a 'fetch'
-       function.
+       cannot support index-only scans, and must not define
+       a <CODE
+CLASS="FUNCTION"
+>fetch</CODE
+> function.
       </P
 ></DD
 ></DL

@@ -9,14 +9,14 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
 HREF="sql-commands.html"><LINK
 REL="PREVIOUS"
-TITLE="COPY"
-HREF="sql-copy.html"><LINK
+TITLE="CREATE ACCESS METHOD"
+HREF="sql-create-access-method.html"><LINK
 REL="NEXT"
 TITLE="CREATE CAST"
 HREF="sql-createcast.html"><LINK
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -53,8 +53,8 @@ WIDTH="10%"
 ALIGN="left"
 VALIGN="top"
 ><A
-TITLE="COPY"
-HREF="sql-copy.html"
+TITLE="CREATE ACCESS METHOD"
+HREF="sql-create-access-method.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -95,7 +95,7 @@ NAME="SQL-CREATEAGGREGATE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN74635"
+NAME="AEN77894"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN74635"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN74638"
+NAME="AEN77897"
 ></A
 ><H2
 >Synopsis</H2
@@ -155,6 +155,24 @@ CLASS="REPLACEABLE"
 ></TT
 > ]
     [ , FINALFUNC_EXTRA ]
+    [ , COMBINEFUNC = <TT
+CLASS="REPLACEABLE"
+><I
+>combinefunc</I
+></TT
+> ]
+    [ , SERIALFUNC = <TT
+CLASS="REPLACEABLE"
+><I
+>serialfunc</I
+></TT
+> ]
+    [ , DESERIALFUNC = <TT
+CLASS="REPLACEABLE"
+><I
+>deserialfunc</I
+></TT
+> ]
     [ , INITCOND = <TT
 CLASS="REPLACEABLE"
 ><I
@@ -204,6 +222,7 @@ CLASS="REPLACEABLE"
 >sort_operator</I
 ></TT
 > ]
+    [ , PARALLEL = { SAFE | RESTRICTED | UNSAFE } ]
 )
 
 CREATE AGGREGATE <TT
@@ -274,6 +293,7 @@ CLASS="REPLACEABLE"
 >initial_condition</I
 ></TT
 > ]
+    [ , PARALLEL = { SAFE | RESTRICTED | UNSAFE } ]
     [ , HYPOTHETICAL ]
 )
 
@@ -322,6 +342,24 @@ CLASS="REPLACEABLE"
 ></TT
 > ]
     [ , FINALFUNC_EXTRA ]
+    [ , COMBINEFUNC = <TT
+CLASS="REPLACEABLE"
+><I
+>combinefunc</I
+></TT
+> ]
+    [ , SERIALFUNC = <TT
+CLASS="REPLACEABLE"
+><I
+>serialfunc</I
+></TT
+> ]
+    [ , DESERIALFUNC = <TT
+CLASS="REPLACEABLE"
+><I
+>deserialfunc</I
+></TT
+> ]
     [ , INITCOND = <TT
 CLASS="REPLACEABLE"
 ><I
@@ -376,7 +414,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74683"
+NAME="AEN77948"
 ></A
 ><H2
 >Description</H2
@@ -561,7 +599,7 @@ CLASS="FIRSTTERM"
 >,
    as described in <A
 HREF="xaggr.html#XAGGR-MOVING-AGGREGATES"
->Section 35.10.1</A
+>Section 36.10.1</A
 >.  This requires
    specifying the <TT
 CLASS="LITERAL"
@@ -632,6 +670,42 @@ CLASS="QUOTE"
 > row.
   </P
 ><P
+>   An aggregate can optionally support <I
+CLASS="FIRSTTERM"
+>partial aggregation</I
+>,
+   as described in <A
+HREF="xaggr.html#XAGGR-PARTIAL-AGGREGATES"
+>Section 36.10.4</A
+>.
+   This requires specifying the <TT
+CLASS="LITERAL"
+>COMBINEFUNC</TT
+> parameter.
+   If the <TT
+CLASS="REPLACEABLE"
+><I
+>state_data_type</I
+></TT
+>
+   is <TT
+CLASS="TYPE"
+>internal</TT
+>, it's usually also appropriate to provide the
+   <TT
+CLASS="LITERAL"
+>SERIALFUNC</TT
+> and <TT
+CLASS="LITERAL"
+>DESERIALFUNC</TT
+> parameters so that
+   parallel aggregation is possible.  Note that the aggregate must also be
+   marked <TT
+CLASS="LITERAL"
+>PARALLEL SAFE</TT
+> to enable parallel aggregation.
+  </P
+><P
 >   Aggregates that behave like <CODE
 CLASS="FUNCTION"
 >MIN</CODE
@@ -693,13 +767,13 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >EXECUTE</TT
 >
-   privilege on the transition and final functions.
+   privilege on the supporting functions.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74750"
+NAME="AEN78024"
 ></A
 ><H2
 >Parameters</H2
@@ -962,6 +1036,192 @@ CLASS="LITERAL"
 ><TT
 CLASS="REPLACEABLE"
 ><I
+>combinefunc</I
+></TT
+></DT
+><DD
+><P
+>      The <TT
+CLASS="REPLACEABLE"
+><I
+>combinefunc</I
+></TT
+> function
+      may optionally be specified to allow the aggregate function to support
+      partial aggregation.  If provided,
+      the <TT
+CLASS="REPLACEABLE"
+><I
+>combinefunc</I
+></TT
+> must
+      combine two <TT
+CLASS="REPLACEABLE"
+><I
+>state_data_type</I
+></TT
+>
+      values, each containing the result of aggregation over some subset of
+      the input values, to produce a
+      new <TT
+CLASS="REPLACEABLE"
+><I
+>state_data_type</I
+></TT
+> that
+      represents the result of aggregating over both sets of inputs.  This
+      function can be thought of as
+      an <TT
+CLASS="REPLACEABLE"
+><I
+>sfunc</I
+></TT
+>, where instead of
+      acting upon an individual input row and adding it to the running
+      aggregate state, it adds another aggregate state to the running state.
+     </P
+><P
+>      The <TT
+CLASS="REPLACEABLE"
+><I
+>combinefunc</I
+></TT
+> must be
+      declared as taking two arguments of
+      the <TT
+CLASS="REPLACEABLE"
+><I
+>state_data_type</I
+></TT
+> and
+      returning a value of
+      the <TT
+CLASS="REPLACEABLE"
+><I
+>state_data_type</I
+></TT
+>.
+      Optionally this function may be <SPAN
+CLASS="QUOTE"
+>"strict"</SPAN
+>. In this case the
+      function will not be called when either of the input states are null;
+      the other state will be taken as the correct result.
+     </P
+><P
+>      For aggregate functions
+      whose <TT
+CLASS="REPLACEABLE"
+><I
+>state_data_type</I
+></TT
+>
+      is <TT
+CLASS="TYPE"
+>internal</TT
+>,
+      the <TT
+CLASS="REPLACEABLE"
+><I
+>combinefunc</I
+></TT
+> must not
+      be strict. In this case
+      the <TT
+CLASS="REPLACEABLE"
+><I
+>combinefunc</I
+></TT
+> must
+      ensure that null states are handled correctly and that the state being
+      returned is properly stored in the aggregate memory context.
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>serialfunc</I
+></TT
+></DT
+><DD
+><P
+>      An aggregate function
+      whose <TT
+CLASS="REPLACEABLE"
+><I
+>state_data_type</I
+></TT
+>
+      is <TT
+CLASS="TYPE"
+>internal</TT
+> can participate in parallel aggregation only if it
+      has a <TT
+CLASS="REPLACEABLE"
+><I
+>serialfunc</I
+></TT
+> function,
+      which must serialize the aggregate state into a <TT
+CLASS="TYPE"
+>bytea</TT
+> value for
+      transmission to another process.  This function must take a single
+      argument of type <TT
+CLASS="TYPE"
+>internal</TT
+> and return type <TT
+CLASS="TYPE"
+>bytea</TT
+>.  A
+      corresponding <TT
+CLASS="REPLACEABLE"
+><I
+>deserialfunc</I
+></TT
+>
+      is also required.
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
+>deserialfunc</I
+></TT
+></DT
+><DD
+><P
+>      Deserialize a previously serialized aggregate state back into
+      <TT
+CLASS="REPLACEABLE"
+><I
+>state_data_type</I
+></TT
+>. This
+      function must take two arguments of types <TT
+CLASS="TYPE"
+>bytea</TT
+>
+      and <TT
+CLASS="TYPE"
+>internal</TT
+>, and produce a result of type <TT
+CLASS="TYPE"
+>internal</TT
+>.
+      (Note: the second, <TT
+CLASS="TYPE"
+>internal</TT
+> argument is unused, but is required
+      for type safety reasons.)
+     </P
+></DD
+><DT
+><TT
+CLASS="REPLACEABLE"
+><I
 >initial_condition</I
 ></TT
 ></DT
@@ -1143,6 +1403,41 @@ CLASS="FUNCTION"
 ><DT
 ><TT
 CLASS="LITERAL"
+>PARALLEL</TT
+></DT
+><DD
+><P
+>      The meanings of <TT
+CLASS="LITERAL"
+>PARALLEL SAFE</TT
+>, <TT
+CLASS="LITERAL"
+>PARALLEL
+      RESTRICTED</TT
+>, and <TT
+CLASS="LITERAL"
+>PARALLEL UNSAFE</TT
+> are the same as
+      for <A
+HREF="sql-createfunction.html"
+>CREATE FUNCTION</A
+>.  An aggregate will not be
+      considered for parallelization if it is marked <TT
+CLASS="LITERAL"
+>PARALLEL
+      UNSAFE</TT
+> (which is the default!) or <TT
+CLASS="LITERAL"
+>PARALLEL RESTRICTED</TT
+>.
+      Note that the parallel-safety markings of the aggregate's support
+      functions are not consulted by the planner, only the marking of the
+      aggregate itself.
+     </P
+></DD
+><DT
+><TT
+CLASS="LITERAL"
 >HYPOTHETICAL</TT
 ></DT
 ><DD
@@ -1175,7 +1470,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74886"
+NAME="AEN78213"
 ></A
 ><H2
 >Notes</H2
@@ -1289,25 +1584,37 @@ CLASS="LITERAL"
 >    Currently, ordered-set aggregates do not need to support
     moving-aggregate mode, since they cannot be used as window functions.
    </P
+><P
+>    Partial (including parallel) aggregation is currently not supported for
+    ordered-set aggregates.  Also, it will never be used for aggregate calls
+    that include <TT
+CLASS="LITERAL"
+>DISTINCT</TT
+> or <TT
+CLASS="LITERAL"
+>ORDER BY</TT
+> clauses, since
+    those semantics cannot be supported during partial aggregation.
+  </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74908"
+NAME="AEN78238"
 ></A
 ><H2
 >Examples</H2
 ><P
 >   See <A
 HREF="xaggr.html"
->Section 35.10</A
+>Section 36.10</A
 >.
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74912"
+NAME="AEN78242"
 ></A
 ><H2
 >Compatibility</H2
@@ -1326,7 +1633,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN74917"
+NAME="AEN78247"
 ></A
 ><H2
 >See Also</H2
@@ -1353,7 +1660,7 @@ WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
 ><A
-HREF="sql-copy.html"
+HREF="sql-create-access-method.html"
 ACCESSKEY="P"
 >Prev</A
 ></TD
@@ -1381,7 +1688,7 @@ ACCESSKEY="N"
 WIDTH="33%"
 ALIGN="left"
 VALIGN="top"
->COPY</TD
+>CREATE ACCESS METHOD</TD
 ><TD
 WIDTH="34%"
 ALIGN="center"

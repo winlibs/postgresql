@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "CREATE EXTENSION" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "CREATE EXTENSION" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,6 +36,7 @@ CREATE EXTENSION [ IF NOT EXISTS ] \fIextension_name\fR
     [ WITH ] [ SCHEMA \fIschema_name\fR ]
              [ VERSION \fIversion\fR ]
              [ FROM \fIold_version\fR ]
+             [ CASCADE ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -72,6 +73,24 @@ SHAREDIR/extension/\fIextension_name\fR\&.control\&.
 .RS 4
 The name of the schema in which to install the extension\*(Aqs objects, given that the extension allows its contents to be relocated\&. The named schema must already exist\&. If not specified, and the extension\*(Aqs control file does not specify a schema either, the current default object creation schema is used\&.
 .sp
+If the extension specifies a
+schema
+parameter in its control file, then that schema cannot be overridden with a
+SCHEMA
+clause\&. Normally, an error will be raised if a
+SCHEMA
+clause is given and it conflicts with the extension\*(Aqs
+schema
+parameter\&. However, if the
+CASCADE
+clause is also given, then
+\fIschema_name\fR
+is ignored when it conflicts\&. The given
+\fIschema_name\fR
+will be used for installation of any needed extensions that do not specify
+schema
+in their control files\&.
+.sp
 Remember that the extension itself is not considered to be within any schema: extensions have unqualified names that must be unique database\-wide\&. But objects belonging to the extension can be within schemas\&.
 .RE
 .PP
@@ -100,6 +119,13 @@ for
 \fIold_version\fR
 when updating a module to extension style\&.
 .RE
+.PP
+CASCADE
+.RS 4
+Automatically install any extensions that this extension depends on that are not already installed\&. Their dependencies are likewise automatically installed, recursively\&. The
+SCHEMA
+clause, if given, applies to all extensions that get installed this way\&. Other options of the statement are not applied to automatically\-installed extensions; in particular, their default versions are always selected\&.
+.RE
 .SH "NOTES"
 .PP
 Before you can use
@@ -116,7 +142,7 @@ pg_available_extension_versions
 system views\&.
 .PP
 For information about writing new extensions, see
-Section 35.15, \(lqPackaging Related Objects into an Extension\(rq, in the documentation\&.
+Section 36.15, \(lqPackaging Related Objects into an Extension\(rq, in the documentation\&.
 .SH "EXAMPLES"
 .PP
 Install the

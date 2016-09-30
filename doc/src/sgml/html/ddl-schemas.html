@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Definition"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -147,7 +147,7 @@ CLASS="LITERAL"
 >mytable</TT
 >.  Unlike databases,
    schemas are not rigidly separated: a user can access objects in any
-   of the schemas in the database he is connected to, if he has
+   of the schemas in the database they are connected to, if they have
    privileges to do so.
   </P
 ><P
@@ -300,12 +300,12 @@ CLASS="PROGRAMLISTING"
 >CREATE SCHEMA <TT
 CLASS="REPLACEABLE"
 ><I
->schemaname</I
+>schema_name</I
 ></TT
 > AUTHORIZATION <TT
 CLASS="REPLACEABLE"
 ><I
->username</I
+>user_name</I
 ></TT
 >;</PRE
 ><P>
@@ -693,12 +693,12 @@ CLASS="LITERAL"
 ><TT
 CLASS="REPLACEABLE"
 ><I
->username</I
+>user_name</I
 ></TT
 >.<TT
 CLASS="REPLACEABLE"
 ><I
->tablename</I
+>table_name</I
 ></TT
 ></TT
 >.

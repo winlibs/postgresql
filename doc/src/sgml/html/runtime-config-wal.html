@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -71,7 +71,7 @@ ACCESSKEY="U"
 WIDTH="60%"
 ALIGN="center"
 VALIGN="bottom"
->Chapter 18. Server Configuration</TD
+>Chapter 19. Server Configuration</TD
 ><TD
 WIDTH="20%"
 ALIGN="right"
@@ -93,13 +93,13 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="RUNTIME-CONFIG-WAL"
->18.5. Write Ahead Log</A
+>19.5. Write Ahead Log</A
 ></H1
 ><P
 >    For additional information on tuning these settings,
     see <A
 HREF="wal-configuration.html"
->Section 29.4</A
+>Section 30.4</A
 >.
    </P
 ><DIV
@@ -108,7 +108,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-WAL-SETTINGS"
->18.5.1. Settings</A
+>19.5.1. Settings</A
 ></H2
 ><P
 ></P
@@ -140,13 +140,10 @@ CLASS="LITERAL"
         only the information needed to recover from a crash or immediate
         shutdown. <TT
 CLASS="LITERAL"
->archive</TT
-> adds logging required for WAL archiving;
-        <TT
-CLASS="LITERAL"
->hot_standby</TT
-> further adds information required to run
-        read-only queries on a standby server; and, finally
+>replica</TT
+> adds logging required for WAL
+        archiving as well as information required to run
+        read-only queries on a standby server.  Finally,
         <TT
 CLASS="LITERAL"
 >logical</TT
@@ -207,7 +204,7 @@ CLASS="COMMAND"
         But minimal WAL does not contain enough information to reconstruct the
         data from a base backup and the WAL logs, so <TT
 CLASS="LITERAL"
->archive</TT
+>replica</TT
 > or
         higher must be used to enable WAL archiving
         (<A
@@ -218,43 +215,11 @@ HREF="runtime-config-wal.html#GUC-ARCHIVE-MODE"
 ><P
 >        In <TT
 CLASS="LITERAL"
->hot_standby</TT
-> level, the same information is logged as
-        with <TT
-CLASS="LITERAL"
->archive</TT
->, plus information needed to reconstruct
-        the status of running transactions from the WAL. To enable read-only
-        queries on a standby server, <TT
-CLASS="VARNAME"
->wal_level</TT
-> must be set to
-        <TT
-CLASS="LITERAL"
->hot_standby</TT
-> or higher on the primary, and
-        <A
-HREF="runtime-config-replication.html#GUC-HOT-STANDBY"
->hot_standby</A
-> must be enabled in the standby. It is
-        thought that there is little measurable difference in performance
-        between using <TT
-CLASS="LITERAL"
->hot_standby</TT
-> and <TT
-CLASS="LITERAL"
->archive</TT
-> levels,
-        so feedback is welcome if any production impacts are noticeable.
-       </P
-><P
->        In <TT
-CLASS="LITERAL"
 >logical</TT
 > level, the same information is logged as
         with <TT
 CLASS="LITERAL"
->hot_standby</TT
+>replica</TT
 >, plus information needed to allow
         extracting logical change sets from the WAL. Using a level of
         <TT
@@ -273,6 +238,20 @@ CLASS="COMMAND"
 >DELETE</TT
 > statements are
         executed.
+       </P
+><P
+>        In releases prior to 9.6, this parameter also allowed the
+        values <TT
+CLASS="LITERAL"
+>archive</TT
+> and <TT
+CLASS="LITERAL"
+>hot_standby</TT
+>.
+        These are still accepted but mapped to <TT
+CLASS="LITERAL"
+>replica</TT
+>.
        </P
 ></DD
 ><DT
@@ -406,15 +385,18 @@ CLASS="LITERAL"
 >,
         <TT
 CLASS="LITERAL"
+>remote_apply</TT
+>, <TT
+CLASS="LITERAL"
 >remote_write</TT
 >, <TT
 CLASS="LITERAL"
 >local</TT
->, and <TT
+>,
+        and <TT
 CLASS="LITERAL"
 >off</TT
->.
-        The default, and safe, setting
+>.  The default, and safe, setting
         is <TT
 CLASS="LITERAL"
 >on</TT
@@ -447,66 +429,73 @@ CLASS="VARNAME"
         exact certainty about the durability of a transaction.  For more
         discussion see <A
 HREF="wal-async-commit.html"
->Section 29.3</A
+>Section 30.3</A
 >.
        </P
 ><P
 >        If <A
 HREF="runtime-config-replication.html#GUC-SYNCHRONOUS-STANDBY-NAMES"
 >synchronous_standby_names</A
-> is set, this
+> is non-empty, this
         parameter also controls whether or not transaction commits will wait
-        for the transaction's WAL records to be replicated to the standby
-        server.
+        for their WAL records to be replicated to the standby server(s).
         When set to <TT
 CLASS="LITERAL"
 >on</TT
->, commits will wait until a reply
-        from the current synchronous standby indicates it has received
+>, commits will wait until replies
+        from the current synchronous standby(s) indicate they have received
         the commit record of the transaction and flushed it to disk.  This
-        ensures the transaction will not be lost unless both primary and
-        standby suffer corruption of their database storage.
+        ensures the transaction will not be lost unless both the primary and
+        all synchronous standbys suffer corruption of their database storage.
+        When set to <TT
+CLASS="LITERAL"
+>remote_apply</TT
+>, commits will wait until replies
+        from the current synchronous standby(s) indicate they have received the
+        commit record of the transaction and applied it, so that it has become
+        visible to queries on the standby(s).
         When set to <TT
 CLASS="LITERAL"
 >remote_write</TT
->, commits will wait
-        until a reply from the current synchronous standby indicates it has
+>, commits will wait until replies
+        from the current synchronous standby(s) indicate they have
         received the commit record of the transaction and written it out to
-        the standby's operating system, but the data has not necessarily
-        reached stable storage on the standby. This setting is sufficient to
-        ensure data preservation even if the standby instance of
+        their operating system. This setting is sufficient to
+        ensure data preservation even if a standby instance of
         <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > were to crash, but not if the standby
-        suffers an operating-system-level crash.
-       </P
-><P
->        When synchronous
-        replication is in use, it will normally be sensible either to wait
-        for both local flush to disk and replication of WAL records, or
-        to allow the transaction to commit asynchronously.  However, the
-        setting <TT
+        suffers an operating-system-level crash, since the data has not
+        necessarily reached stable storage on the standby.
+        Finally, the setting <TT
 CLASS="LITERAL"
 >local</TT
-> is available for transactions that
-        wish to wait for local flush to disk, but not synchronous replication.
-        If <TT
+> causes commits to wait for
+        local flush to disk, but not for replication.  This is not usually
+        desirable when synchronous replication is in use, but is provided for
+        completeness.
+       </P
+><P
+>        If <TT
 CLASS="VARNAME"
 >synchronous_standby_names</TT
-> is not set, the settings
+> is empty, the settings
         <TT
 CLASS="LITERAL"
 >on</TT
 >, <TT
 CLASS="LITERAL"
+>remote_apply</TT
+>, <TT
+CLASS="LITERAL"
 >remote_write</TT
-> and <TT
+>
+        and <TT
 CLASS="LITERAL"
 >local</TT
-> all
-        provide the same synchronization level: transaction commits only wait
-        for local flush to disk.
+> all provide the same synchronization level:
+        transaction commits only wait for local flush to disk.
        </P
 ><P
 >        This parameter can be changed at any time; the behavior for any
@@ -628,7 +617,7 @@ CLASS="LITERAL"
         achieve optimal performance.
         These aspects are discussed in <A
 HREF="wal-reliability.html"
->Section 29.1</A
+>Section 30.1</A
 >.
         This parameter can only be set in the <TT
 CLASS="FILENAME"
@@ -685,7 +674,7 @@ CLASS="VARNAME"
         WAL archiving for point-in-time recovery (PITR)
         (see <A
 HREF="continuous-archiving.html"
->Section 24.3</A
+>Section 25.3</A
 >).
        </P
 ><P
@@ -841,23 +830,74 @@ CLASS="TYPE"
       </DT
 ><DD
 ><P
->        Specifies the delay between activity rounds for the WAL writer.
-        In each round the writer will flush WAL to disk. It then sleeps for
-        <TT
+>        Specifies how often the WAL writer flushes WAL. After flushing WAL it
+        sleeps for <TT
 CLASS="VARNAME"
 >wal_writer_delay</TT
-> milliseconds, and repeats.  The default
-        value is 200 milliseconds (<TT
+> milliseconds, unless woken up
+        by an asynchronously committing transaction. In case the last flush
+        happened less than <TT
+CLASS="VARNAME"
+>wal_writer_delay</TT
+> milliseconds ago and
+        less than <TT
+CLASS="VARNAME"
+>wal_writer_flush_after</TT
+> bytes of WAL have been
+        produced since, WAL is only written to the OS, not flushed to disk.
+        The default value is 200 milliseconds (<TT
 CLASS="LITERAL"
 >200ms</TT
->).  Note that on many
-        systems, the effective resolution of sleep delays is 10 milliseconds;
-        setting <TT
+>).  Note that
+        on many systems, the effective resolution of sleep delays is 10
+        milliseconds; setting <TT
 CLASS="VARNAME"
 >wal_writer_delay</TT
-> to a value that is not a multiple
-        of 10 might have the same results as setting it to the next higher
-        multiple of 10. This parameter can only be set in the
+> to a value that is
+        not a multiple of 10 might have the same results as setting it to the
+        next higher multiple of 10. This parameter can only be set in the
+        <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file or on the server command line.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-WAL-WRITER-FLUSH-AFTER"
+></A
+><TT
+CLASS="VARNAME"
+>wal_writer_flush_after</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        Specifies how often the WAL writer flushes WAL. In case the last flush
+        happened less than <TT
+CLASS="VARNAME"
+>wal_writer_delay</TT
+> milliseconds ago and
+        less than <TT
+CLASS="VARNAME"
+>wal_writer_flush_after</TT
+> bytes of WAL have been
+        produced since, WAL is only written to the OS, not flushed to disk.
+        If <TT
+CLASS="VARNAME"
+>wal_writer_flush_after</TT
+> is set to <TT
+CLASS="LITERAL"
+>0</TT
+> WAL is
+        flushed every time the WAL writer has written WAL.  The default is
+        <TT
+CLASS="LITERAL"
+>1MB</TT
+>. This parameter can only be set in the
         <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
@@ -961,7 +1001,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-WAL-CHECKPOINTS"
->18.5.2. Checkpoints</A
+>19.5.2. Checkpoints</A
 ></H2
 ><P
 ></P
@@ -983,7 +1023,7 @@ CLASS="TYPE"
 ><DD
 ><P
 >        Maximum time between automatic WAL checkpoints, in seconds.
-        The valid range is between 30 seconds and one hour.
+        The valid range is between 30 seconds and one day.
         The default is five minutes (<TT
 CLASS="LITERAL"
 >5min</TT
@@ -1013,6 +1053,63 @@ CLASS="TYPE"
 ><P
 >        Specifies the target of checkpoint completion, as a fraction of
         total time between checkpoints. The default is 0.5.
+        This parameter can only be set in the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+>
+        file or on the server command line.
+       </P
+></DD
+><DT
+><A
+NAME="GUC-CHECKPOINT-FLUSH-AFTER"
+></A
+><TT
+CLASS="VARNAME"
+>checkpoint_flush_after</TT
+> (<TT
+CLASS="TYPE"
+>integer</TT
+>)
+      </DT
+><DD
+><P
+>        Whenever more than <TT
+CLASS="VARNAME"
+>checkpoint_flush_after</TT
+> bytes
+        have been written while performing a checkpoint, attempt to force the
+        OS to issue these writes to the underlying storage.  Doing so will
+        limit the amount of dirty data in the kernel's page cache, reducing
+        the likelihood of stalls when an fsync is issued at the end of the
+        checkpoint, or when the OS writes data back in larger batches in the
+        background.  Often that will result in greatly reduced transaction
+        latency, but there also are some cases, especially with workloads
+        that are bigger than <A
+HREF="runtime-config-resource.html#GUC-SHARED-BUFFERS"
+>shared_buffers</A
+>, but smaller
+        than the OS's page cache, where performance might degrade.  This
+        setting may have no effect on some platforms.  The valid range is
+        between <TT
+CLASS="LITERAL"
+>0</TT
+>, which disables controlled writeback,
+        and <TT
+CLASS="LITERAL"
+>2MB</TT
+>.  The default is <TT
+CLASS="LITERAL"
+>256kB</TT
+> on
+        Linux, <TT
+CLASS="LITERAL"
+>0</TT
+> elsewhere.  (Non-default values of
+        <TT
+CLASS="SYMBOL"
+>BLCKSZ</TT
+> change the default and maximum.)
         This parameter can only be set in the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
@@ -1132,7 +1229,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="RUNTIME-CONFIG-WAL-ARCHIVING"
->18.5.3. Archiving</A
+>19.5.3. Archiving</A
 ></H2
 ><P
 ></P
@@ -1185,7 +1282,7 @@ CLASS="LITERAL"
         or streamed with streaming replication will be archived (again). See
         <A
 HREF="warm-standby.html#CONTINUOUS-ARCHIVING-IN-STANDBY"
->Section 25.2.9</A
+>Section 26.2.9</A
 > for details.
        </P
 ><P
@@ -1252,7 +1349,7 @@ CLASS="LITERAL"
         exit status only if it succeeds. For more information see
         <A
 HREF="continuous-archiving.html#BACKUP-ARCHIVING-WAL"
->Section 24.3.1</A
+>Section 25.3.1</A
 >.
        </P
 ><P

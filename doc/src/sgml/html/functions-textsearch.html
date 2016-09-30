@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,15 +98,15 @@ NAME="FUNCTIONS-TEXTSEARCH"
 ><P
 >   <A
 HREF="functions-textsearch.html#TEXTSEARCH-OPERATORS-TABLE"
->Table 9-37</A
+>Table 9-39</A
 >,
    <A
 HREF="functions-textsearch.html#TEXTSEARCH-FUNCTIONS-TABLE"
->Table 9-38</A
+>Table 9-40</A
 > and
    <A
 HREF="functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE"
->Table 9-39</A
+>Table 9-41</A
 >
    summarize the functions and operators that are provided
    for full text searching.  See <A
@@ -126,15 +126,17 @@ NAME="TEXTSEARCH-OPERATORS-TABLE"
 ></A
 ><P
 ><B
->Table 9-37. Text Search Operators</B
+>Table 9-39. Text Search Operators</B
 ></P
 ><TABLE
 BORDER="1"
 CLASS="CALSTABLE"
-><COL><COL><COL><COL><THEAD
+><COL><COL><COL><COL><COL><THEAD
 ><TR
 ><TH
 >Operator</TH
+><TH
+>Return Type</TH
 ><TH
 >Description</TH
 ><TH
@@ -150,6 +152,11 @@ CLASS="CALSTABLE"
 CLASS="LITERAL"
 >@@</TT
 > </TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
 ><TD
 ><TT
 CLASS="TYPE"
@@ -176,6 +183,11 @@ CLASS="LITERAL"
 >@@@</TT
 > </TD
 ><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
+><TD
 >deprecated synonym for <TT
 CLASS="LITERAL"
 >@@</TT
@@ -197,6 +209,11 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >||</TT
 > </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsvector</TT
+></TD
 ><TD
 >concatenate <TT
 CLASS="TYPE"
@@ -220,6 +237,11 @@ CLASS="LITERAL"
 >&amp;&amp;</TT
 > </TD
 ><TD
+><TT
+CLASS="TYPE"
+>tsquery</TT
+></TD
+><TD
 >AND <TT
 CLASS="TYPE"
 >tsquery</TT
@@ -241,6 +263,11 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >||</TT
 > </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsquery</TT
+></TD
 ><TD
 >OR <TT
 CLASS="TYPE"
@@ -264,6 +291,11 @@ CLASS="LITERAL"
 >!!</TT
 > </TD
 ><TD
+><TT
+CLASS="TYPE"
+>tsquery</TT
+></TD
+><TD
 >negate a <TT
 CLASS="TYPE"
 >tsquery</TT
@@ -283,8 +315,43 @@ CLASS="LITERAL"
 ><TD
 > <TT
 CLASS="LITERAL"
+>&lt;-&gt;</TT
+> </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsquery</TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>tsquery</TT
+> followed by <TT
+CLASS="TYPE"
+>tsquery</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>to_tsquery('fat') &lt;-&gt; to_tsquery('rat')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>'fat' &lt;-&gt; 'rat'</TT
+></TD
+></TR
+><TR
+><TD
+> <TT
+CLASS="LITERAL"
 >@&gt;</TT
 > </TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
 ><TD
 ><TT
 CLASS="TYPE"
@@ -307,6 +374,11 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >&lt;@</TT
 > </TD
+><TD
+><TT
+CLASS="TYPE"
+>boolean</TT
+></TD
 ><TD
 ><TT
 CLASS="TYPE"
@@ -367,7 +439,7 @@ NAME="TEXTSEARCH-FUNCTIONS-TABLE"
 ></A
 ><P
 ><B
->Table 9-38. Text Search Functions</B
+>Table 9-40. Text Search Functions</B
 ></P
 ><TABLE
 BORDER="1"
@@ -387,6 +459,41 @@ CLASS="CALSTABLE"
 ></TR
 ></THEAD
 ><TBODY
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>array_to_tsvector(<TT
+CLASS="TYPE"
+>text[]</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsvector</TT
+></TD
+><TD
+>convert array of lexemes to <TT
+CLASS="TYPE"
+>tsvector</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>array_to_tsvector('{fat,cat,rat}'::text[])</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>'cat' 'fat' 'rat'</TT
+></TD
+></TR
 ><TR
 ><TD
 >         
@@ -544,6 +651,58 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
+>phraseto_tsquery([<SPAN
+CLASS="OPTIONAL"
+> <TT
+CLASS="REPLACEABLE"
+><I
+>config</I
+></TT
+> <TT
+CLASS="TYPE"
+>regconfig</TT
+> , </SPAN
+>] <TT
+CLASS="REPLACEABLE"
+><I
+>query</I
+></TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsquery</TT
+></TD
+><TD
+>produce <TT
+CLASS="TYPE"
+>tsquery</TT
+> that searches for a phrase,
+         ignoring punctuation</TD
+><TD
+><TT
+CLASS="LITERAL"
+>phraseto_tsquery('english', 'The Fat Rats')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>'fat' &lt;-&gt; 'rat'</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
 >querytree(<TT
 CLASS="REPLACEABLE"
 ><I
@@ -585,9 +744,19 @@ CLASS="LITERAL"
 ><CODE
 CLASS="FUNCTION"
 >setweight(<TT
+CLASS="REPLACEABLE"
+><I
+>vector</I
+></TT
+> <TT
 CLASS="TYPE"
 >tsvector</TT
 >, <TT
+CLASS="REPLACEABLE"
+><I
+>weight</I
+></TT
+> <TT
 CLASS="TYPE"
 >"char"</TT
 >)</CODE
@@ -600,9 +769,16 @@ CLASS="TYPE"
 >tsvector</TT
 ></TD
 ><TD
->assign weight to each element of <TT
-CLASS="TYPE"
->tsvector</TT
+>assign <TT
+CLASS="REPLACEABLE"
+><I
+>weight</I
+></TT
+> to each element of <TT
+CLASS="REPLACEABLE"
+><I
+>vector</I
+></TT
 ></TD
 ><TD
 ><TT
@@ -613,6 +789,74 @@ CLASS="LITERAL"
 ><TT
 CLASS="LITERAL"
 >'cat':3A 'fat':2A,4A 'rat':5A</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>setweight(<TT
+CLASS="REPLACEABLE"
+><I
+>vector</I
+></TT
+> <TT
+CLASS="TYPE"
+>tsvector</TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>weight</I
+></TT
+> <TT
+CLASS="TYPE"
+>"char"</TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>lexemes</I
+></TT
+> <TT
+CLASS="TYPE"
+>text[]</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsvector</TT
+></TD
+><TD
+>assign <TT
+CLASS="REPLACEABLE"
+><I
+>weight</I
+></TT
+> to elements of <TT
+CLASS="REPLACEABLE"
+><I
+>vector</I
+></TT
+> that are listed in <TT
+CLASS="REPLACEABLE"
+><I
+>lexemes</I
+></TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>setweight('fat:2,4 cat:3 rat:5B'::tsvector, 'A', '{cat,rat}')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>'cat':3A 'fat':2,4 'rat':5A</TT
 ></TD
 ></TR
 ><TR
@@ -750,6 +994,171 @@ CLASS="LITERAL"
 ><TT
 CLASS="LITERAL"
 >'fat':2 'rat':3</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>ts_delete(<TT
+CLASS="REPLACEABLE"
+><I
+>vector</I
+></TT
+> <TT
+CLASS="TYPE"
+>tsvector</TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>lexeme</I
+></TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsvector</TT
+></TD
+><TD
+>remove given <TT
+CLASS="REPLACEABLE"
+><I
+>lexeme</I
+></TT
+> from <TT
+CLASS="REPLACEABLE"
+><I
+>vector</I
+></TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>ts_delete('fat:2,4 cat:3 rat:5A'::tsvector, 'fat')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>'cat':3 'rat':5A</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>ts_delete(<TT
+CLASS="REPLACEABLE"
+><I
+>vector</I
+></TT
+> <TT
+CLASS="TYPE"
+>tsvector</TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>lexemes</I
+></TT
+> <TT
+CLASS="TYPE"
+>text[]</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsvector</TT
+></TD
+><TD
+>remove any occurrence of lexemes in <TT
+CLASS="REPLACEABLE"
+><I
+>lexemes</I
+></TT
+> from <TT
+CLASS="REPLACEABLE"
+><I
+>vector</I
+></TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>ts_delete('fat:2,4 cat:3 rat:5A'::tsvector, ARRAY['fat','rat'])</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>'cat':3</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>ts_filter(<TT
+CLASS="REPLACEABLE"
+><I
+>vector</I
+></TT
+> <TT
+CLASS="TYPE"
+>tsvector</TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>weights</I
+></TT
+> <TT
+CLASS="TYPE"
+>"char"[]</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsvector</TT
+></TD
+><TD
+>select only elements with given <TT
+CLASS="REPLACEABLE"
+><I
+>weights</I
+></TT
+> from <TT
+CLASS="REPLACEABLE"
+><I
+>vector</I
+></TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>ts_filter('fat:2,4 cat:3b rat:5A'::tsvector, '{a,b}')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>'cat':3B 'rat':5A</TT
 ></TD
 ></TR
 ><TR
@@ -994,7 +1403,18 @@ CLASS="TYPE"
 >tsquery</TT
 ></TD
 ><TD
->replace target with substitute within query</TD
+>replace <TT
+CLASS="REPLACEABLE"
+><I
+>target</I
+></TT
+> with <TT
+CLASS="REPLACEABLE"
+><I
+>substitute</I
+></TT
+>
+         within query</TD
 ><TD
 ><TT
 CLASS="LITERAL"
@@ -1050,6 +1470,169 @@ CLASS="LITERAL"
 ><TT
 CLASS="LITERAL"
 >'b' &amp; ( 'foo' | 'bar' )</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>tsquery_phrase(<TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> <TT
+CLASS="TYPE"
+>tsquery</TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+> <TT
+CLASS="TYPE"
+>tsquery</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsquery</TT
+></TD
+><TD
+>make query that searches for <TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> followed
+         by <TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+> (same as <TT
+CLASS="LITERAL"
+>&lt;-&gt;</TT
+>
+         operator)</TD
+><TD
+><TT
+CLASS="LITERAL"
+>tsquery_phrase(to_tsquery('fat'), to_tsquery('cat'))</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>'fat' &lt;-&gt; 'cat'</TT
+></TD
+></TR
+><TR
+><TD
+>         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>tsquery_phrase(<TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> <TT
+CLASS="TYPE"
+>tsquery</TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+> <TT
+CLASS="TYPE"
+>tsquery</TT
+>, <TT
+CLASS="REPLACEABLE"
+><I
+>distance</I
+></TT
+> <TT
+CLASS="TYPE"
+>integer</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>tsquery</TT
+></TD
+><TD
+>make query that searches for <TT
+CLASS="REPLACEABLE"
+><I
+>query1</I
+></TT
+> followed by
+         <TT
+CLASS="REPLACEABLE"
+><I
+>query2</I
+></TT
+> at maximum distance <TT
+CLASS="REPLACEABLE"
+><I
+>distance</I
+></TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>tsquery_phrase(to_tsquery('fat'), to_tsquery('cat'), 10)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>'fat' &lt;10&gt; 'cat'</TT
+></TD
+></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>tsvector_to_array(<TT
+CLASS="TYPE"
+>tsvector</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>text[]</TT
+></TD
+><TD
+>convert <TT
+CLASS="TYPE"
+>tsvector</TT
+> to array of lexemes</TD
+><TD
+><TT
+CLASS="LITERAL"
+>tsvector_to_array('fat:2,4 cat:3 rat:5A'::tsvector)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>{cat,fat,rat}</TT
 ></TD
 ></TR
 ><TR
@@ -1116,6 +1699,62 @@ CLASS="LITERAL"
 ></TT
 ></TD
 ></TR
+><TR
+><TD
+>         
+         <TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>unnest(<TT
+CLASS="TYPE"
+>tsvector</TT
+>, OUT <TT
+CLASS="REPLACEABLE"
+><I
+>lexeme</I
+></TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>, OUT <TT
+CLASS="REPLACEABLE"
+><I
+>positions</I
+></TT
+> <TT
+CLASS="TYPE"
+>smallint[]</TT
+>, OUT <TT
+CLASS="REPLACEABLE"
+><I
+>weights</I
+></TT
+> <TT
+CLASS="TYPE"
+>text</TT
+>)</CODE
+></TT
+>
+        </TD
+><TD
+><TT
+CLASS="TYPE"
+>setof record</TT
+></TD
+><TD
+>expand a tsvector to a set of rows</TD
+><TD
+><TT
+CLASS="LITERAL"
+>unnest('fat:2,4 cat:3 rat:5A'::tsvector)</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>(cat,{3},{D}) ...</TT
+></TD
+></TR
 ></TBODY
 ></TABLE
 ></DIV
@@ -1143,7 +1782,7 @@ HREF="runtime-config-client.html#GUC-DEFAULT-TEXT-SEARCH-CONFIG"
 >   The functions in
    <A
 HREF="functions-textsearch.html#TEXTSEARCH-FUNCTIONS-DEBUG-TABLE"
->Table 9-39</A
+>Table 9-41</A
 >
    are listed separately because they are not usually used in everyday text
    searching operations.  They are helpful for development and debugging
@@ -1156,7 +1795,7 @@ NAME="TEXTSEARCH-FUNCTIONS-DEBUG-TABLE"
 ></A
 ><P
 ><B
->Table 9-39. Text Search Debugging Functions</B
+>Table 9-41. Text Search Debugging Functions</B
 ></P
 ><TABLE
 BORDER="1"

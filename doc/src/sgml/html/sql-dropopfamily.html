@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-DROPOPFAMILY"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN82661"
+NAME="AEN86097"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN82661"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN82664"
+NAME="AEN86100"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82668"
+NAME="AEN86104"
 ></A
 ><H2
 >Description</H2
@@ -152,7 +152,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82675"
+NAME="AEN86111"
 ></A
 ><H2
 >Parameters</H2
@@ -203,7 +203,12 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->      Automatically drop objects that depend on the operator family.
+>      Automatically drop objects that depend on the operator family,
+      and in turn all objects that depend on those objects
+      (see <A
+HREF="ddl-depend.html"
+>Section 5.13</A
+>).
      </P
 ></DD
 ><DT
@@ -223,7 +228,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82703"
+NAME="AEN86140"
 ></A
 ><H2
 >Examples</H2
@@ -249,7 +254,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82709"
+NAME="AEN86146"
 ></A
 ><H2
 >Compatibility</H2
@@ -264,7 +269,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82713"
+NAME="AEN86150"
 ></A
 ><H2
 >See Also</H2

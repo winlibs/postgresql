@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="APP-PGBASEBACKUP"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN90848"
+NAME="AEN94345"
 ></A
 ><H2
 >Name</H2
@@ -106,7 +106,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN90852"
+NAME="AEN94349"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN90857"
+NAME="AEN94354"
 ></A
 ><H2
 >   Description
@@ -141,12 +141,12 @@ CLASS="PRODUCTNAME"
    are taken without affecting other clients to the database, and can be used
    both for point-in-time recovery (see <A
 HREF="continuous-archiving.html"
->Section 24.3</A
+>Section 25.3</A
 >)
    and as the starting point for a log shipping or streaming replication standby
    servers (see <A
 HREF="warm-standby.html"
->Section 25.2</A
+>Section 26.2</A
 >).
   </P
 ><P
@@ -175,7 +175,7 @@ CLASS="LITERAL"
 >
    permissions (see <A
 HREF="role-attributes.html"
->Section 20.2</A
+>Section 21.2</A
 >),
    and <TT
 CLASS="FILENAME"
@@ -270,7 +270,7 @@ CLASS="VARNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN90895"
+NAME="AEN94392"
 ></A
 ><H2
 >Options</H2
@@ -476,9 +476,55 @@ CLASS="OPTION"
 >        Write a minimal <TT
 CLASS="FILENAME"
 >recovery.conf</TT
-> in the output directory (or into
-        the base archive file when using tar format) to ease setting
-        up a standby server.
+> in the output
+        directory (or into the base archive file when using tar format) to
+        ease setting up a standby server.
+        The <TT
+CLASS="FILENAME"
+>recovery.conf</TT
+> file will record the connection
+        settings and, if specified, the replication slot
+        that <SPAN
+CLASS="APPLICATION"
+>pg_basebackup</SPAN
+> is using, so that the
+        streaming replication will use the same settings later on.
+       </P
+></DD
+><DT
+><TT
+CLASS="OPTION"
+>-S <TT
+CLASS="REPLACEABLE"
+><I
+>slotname</I
+></TT
+></TT
+><BR><TT
+CLASS="OPTION"
+>--slot=<TT
+CLASS="REPLACEABLE"
+><I
+>slotname</I
+></TT
+></TT
+></DT
+><DD
+><P
+>        This option can only be used together with <TT
+CLASS="LITERAL"
+>-X
+        stream</TT
+>.  It causes the WAL streaming to use the specified
+        replication slot.  If the base backup is intended to be used as a
+        streaming replication standby using replication slots, it should then
+        use the same replication slot name
+        in <TT
+CLASS="FILENAME"
+>recovery.conf</TT
+>.  That way, it is ensured that
+        the server does not remove any necessary WAL data in the time between
+        the end of the base backup and the start of streaming replication.
        </P
 ></DD
 ><DT
@@ -726,7 +772,7 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        Enables gzip compression of tar file output, and specifies the
-        compression level (1 through 9, 9 being best
+        compression level (0 through 9, 0 being no compression and 9 being best
         compression). Compression is only available when using the tar
         format.
        </P
@@ -766,7 +812,7 @@ CLASS="REPLACEABLE"
 ><P
 >        Sets checkpoint mode to fast or spread (default) (see <A
 HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
->Section 24.3.3</A
+>Section 25.3.3</A
 >).
        </P
 ></DD
@@ -878,7 +924,7 @@ CLASS="REPLACEABLE"
 >        Specifies parameters used to connect to the server, as a connection
         string. See <A
 HREF="libpq-connect.html#LIBPQ-CONNSTRING"
->Section 31.1.1</A
+>Section 32.1.1</A
 > for more information.
        </P
 ><P
@@ -1112,7 +1158,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91174"
+NAME="AEN94684"
 ></A
 ><H2
 >Environment</H2
@@ -1127,14 +1173,14 @@ CLASS="APPLICATION"
 >
    (see <A
 HREF="libpq-envars.html"
->Section 31.14</A
+>Section 32.14</A
 >).
   </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91180"
+NAME="AEN94690"
 ></A
 ><H2
 >Notes</H2
@@ -1145,7 +1191,7 @@ NAME="AEN91180"
    copied.  Symbolic links (other than those used for tablespaces) and special
    device files are skipped.  (See <A
 HREF="protocol-replication.html"
->Section 50.3</A
+>Section 51.3</A
 > for
    the precise details.)
   </P
@@ -1195,7 +1241,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91193"
+NAME="AEN94703"
 ></A
 ><H2
 >Examples</H2
@@ -1282,7 +1328,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91217"
+NAME="AEN94727"
 ></A
 ><H2
 >See Also</H2

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "CHECKPOINT" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "CHECKPOINT" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,20 +37,20 @@ CHECKPOINT
 .SH "DESCRIPTION"
 .PP
 A checkpoint is a point in the transaction log sequence at which all data files have been updated to reflect the information in the log\&. All data files will be flushed to disk\&. Refer to
-Section 29.4, \(lqWAL Configuration\(rq, in the documentation
+Section 30.4, \(lqWAL Configuration\(rq, in the documentation
 for more details about what happens during a checkpoint\&.
 .PP
 The
 \fBCHECKPOINT\fR
 command forces an immediate checkpoint when the command is issued, without waiting for a regular checkpoint scheduled by the system (controlled by the settings in
-Section 18.5.2, \(lqCheckpoints\(rq, in the documentation)\&.
+Section 19.5.2, \(lqCheckpoints\(rq, in the documentation)\&.
 \fBCHECKPOINT\fR
 is not intended for use during normal operation\&.
 .PP
 If executed during recovery, the
 \fBCHECKPOINT\fR
 command will force a restartpoint (see
-Section 29.4, \(lqWAL Configuration\(rq, in the documentation) rather than writing a new checkpoint\&.
+Section 30.4, \(lqWAL Configuration\(rq, in the documentation) rather than writing a new checkpoint\&.
 .PP
 Only superusers can call
 \fBCHECKPOINT\fR\&.

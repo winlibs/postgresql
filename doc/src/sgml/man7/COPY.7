@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2016
-.\"    Manual: PostgreSQL 9.5.3 Documentation
-.\"    Source: PostgreSQL 9.5.3
+.\"    Manual: PostgreSQL 9.6.0 Documentation
+.\"    Source: PostgreSQL 9.6.0
 .\"  Language: English
 .\"
-.TH "COPY" "7" "2016" "PostgreSQL 9.5.3" "PostgreSQL 9.5.3 Documentation"
+.TH "COPY" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -109,10 +109,24 @@ An optional list of columns to be copied\&. If no column list is specified, all 
 \fIquery\fR
 .RS 4
 A
-\fBSELECT\fR(7)
+\fBSELECT\fR(7),
+\fBVALUES\fR(7),
+\fBINSERT\fR(7),
+\fBUPDATE\fR(7)
 or
-\fBVALUES\fR(7)
+\fBDELETE\fR(7)
 command whose results are to be copied\&. Note that parentheses are required around the query\&.
+.sp
+For
+\fBINSERT\fR,
+\fBUPDATE\fR
+and
+\fBDELETE\fR
+queries a RETURNING clause must be provided, and the target relation must not have a conditional rule, nor an
+ALSO
+rule, nor an
+INSTEAD
+rule that expands to multiple statements\&.
 .RE
 .PP
 \fIfilename\fR

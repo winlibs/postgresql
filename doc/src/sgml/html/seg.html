@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.5.3 Documentation"
+TITLE="PostgreSQL 9.6.0 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-05-09T21:05:36"></HEAD
+CONTENT="2016-09-26T20:31:03"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.5.3 Documentation</A
+>PostgreSQL 9.6.0 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -93,7 +93,7 @@ CLASS="SECT1"
 CLASS="SECT1"
 ><A
 NAME="SEG"
->F.32. seg</A
+>F.34. seg</A
 ></H1
 ><P
 >  This module implements a data type <TT
@@ -112,8 +112,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN173970"
->F.32.1. Rationale</A
+NAME="AEN181026"
+>F.34.1. Rationale</A
 ></H2
 ><P
 >   The geometry of measurements is usually more complex than that of a
@@ -137,7 +137,7 @@ NAME="AEN173970"
 
 </P><PRE
 CLASS="SCREEN"
->test=&#62; select 6.50 :: float8 as "pH";
+>test=&gt; select 6.50 :: float8 as "pH";
  pH
 ---
 6.5
@@ -162,7 +162,7 @@ CLASS="SCREEN"
 
 </P><PRE
 CLASS="SCREEN"
->test=&#62; select '6.25 .. 6.50'::seg as "pH";
+>test=&gt; select '6.25 .. 6.50'::seg as "pH";
           pH
 ------------
 6.25 .. 6.50
@@ -175,8 +175,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN173979"
->F.32.2. Syntax</A
+NAME="AEN181035"
+>F.34.2. Syntax</A
 ></H2
 ><P
 >   The external representation of an interval is formed using one or two
@@ -203,18 +203,18 @@ CLASS="LITERAL"
    (Certainty indicators are ignored by all the built-in operators, however.)
    <A
 HREF="seg.html#SEG-REPR-TABLE"
->Table F-25</A
+>Table F-27</A
 > gives an overview of allowed
    representations; <A
 HREF="seg.html#SEG-INPUT-EXAMPLES"
->Table F-26</A
+>Table F-28</A
 > shows some
    examples.
   </P
 ><P
 >   In <A
 HREF="seg.html#SEG-REPR-TABLE"
->Table F-25</A
+>Table F-27</A
 >, <TT
 CLASS="REPLACEABLE"
 ><I
@@ -257,7 +257,7 @@ NAME="SEG-REPR-TABLE"
 ></A
 ><P
 ><B
->Table F-25. <TT
+>Table F-27. <TT
 CLASS="TYPE"
 >seg</TT
 > External Representations</B
@@ -402,7 +402,7 @@ NAME="SEG-INPUT-EXAMPLES"
 ></A
 ><P
 ><B
->Table F-26. Examples of Valid <TT
+>Table F-28. Examples of Valid <TT
 CLASS="TYPE"
 >seg</TT
 > Input</B
@@ -584,8 +584,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN174099"
->F.32.3. Precision</A
+NAME="AEN181155"
+>F.34.3. Precision</A
 ></H2
 ><P
 >   <TT
@@ -609,8 +609,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN174104"
->F.32.4. Usage</A
+NAME="AEN181160"
+>F.34.4. Usage</A
 ></H2
 ><P
 >   The <TT
@@ -623,7 +623,7 @@ CLASS="TYPE"
 > values.
    The operators supported by the GiST operator class are shown in <A
 HREF="seg.html#SEG-GIST-OPERATORS"
->Table F-27</A
+>Table F-29</A
 >.
   </P
 ><DIV
@@ -633,7 +633,7 @@ NAME="SEG-GIST-OPERATORS"
 ></A
 ><P
 ><B
->Table F-27. Seg GiST Operators</B
+>Table F-29. Seg GiST Operators</B
 ></P
 ><TABLE
 BORDER="1"
@@ -764,7 +764,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN174158"
+NAME="AEN181214"
 ></A
 ><TABLE
 BORDER="1"
@@ -815,8 +815,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN174173"
->F.32.5. Notes</A
+NAME="AEN181229"
+>F.34.5. Notes</A
 ></H2
 ><P
 >   For examples of usage, see the regression test <TT
@@ -835,7 +835,7 @@ CLASS="LITERAL"
 
 </P><PRE
 CLASS="SCREEN"
->postgres=&#62; select '10(+-)1'::seg as seg;
+>postgres=&gt; select '10(+-)1'::seg as seg;
       seg
 ---------
 9.0 .. 11             -- should be: 9 .. 11</PRE
@@ -859,8 +859,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN174183"
->F.32.6. Credits</A
+NAME="AEN181239"
+>F.34.6. Credits</A
 ></H2
 ><P
 >   Original author: Gene Selkov, Jr. <CODE

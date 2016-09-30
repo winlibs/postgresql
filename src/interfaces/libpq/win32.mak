@@ -32,6 +32,7 @@ LOPT=/DEBUG
 DEBUGDEF=/D _DEBUG
 OUTFILENAME=libpq_debug
 !ELSE
+# TODO /guard and inline are not supported with vc11, make them conditional by vc version
 OPT=/guard:cf /Zc:inline /fp:precise /Gw /Ox /Zi /MD /D _MBCS
 LOPT=
 DEBUGDEF=/D NDEBUG

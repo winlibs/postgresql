@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Syntax"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -479,11 +479,7 @@ CLASS="STRUCTNAME"
     in the second case.
    </P
 ><P
->    In a select list (see <A
-HREF="queries-select-lists.html"
->Section 7.3</A
->), you
-    can ask for all fields of a composite value by
+>    You can ask for all fields of a composite value by
     writing <TT
 CLASS="LITERAL"
 >.*</TT
@@ -492,6 +488,11 @@ CLASS="LITERAL"
 CLASS="PROGRAMLISTING"
 >(compositecol).*</PRE
 ><P>
+    This notation behaves differently depending on context;
+    see <A
+HREF="rowtypes.html#ROWTYPES-USAGE"
+>Section 8.16.5</A
+> for details.
    </P
 ></DIV
 ><DIV
@@ -701,8 +702,8 @@ CLASS="QUOTE"
 >"computed fields"</SPAN
 >.  For more information see
      <A
-HREF="xfunc-sql.html#XFUNC-SQL-COMPOSITE-FUNCTIONS"
->Section 36.4.3</A
+HREF="rowtypes.html#ROWTYPES-USAGE"
+>Section 8.16.5</A
 >.
     </P
 ></BLOCKQUOTE
@@ -1121,12 +1122,16 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > will actually accept either spelling, but
     only the first way conforms to the SQL standard.)
+   </P
+><P
+>    
+    
     An example of an ordered-set aggregate call is:
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->SELECT percentile_disc(0.5) WITHIN GROUP (ORDER BY income) FROM households;
- percentile_disc
+>SELECT percentile_cont(0.5) WITHIN GROUP (ORDER BY income) FROM households;
+ percentile_cont
 -----------------
            50489</PRE
 ><P>
@@ -2335,7 +2340,11 @@ CLASS="LITERAL"
     of a <TT
 CLASS="COMMAND"
 >SELECT</TT
-> list.  For example, if table <TT
+> list (see <A
+HREF="rowtypes.html#ROWTYPES-USAGE"
+>Section 8.16.5</A
+>).
+    For example, if table <TT
 CLASS="LITERAL"
 >t</TT
 > has
@@ -2366,12 +2375,12 @@ CLASS="PRODUCTNAME"
      <TT
 CLASS="LITERAL"
 >.*</TT
-> syntax was not expanded, so that writing
-     <TT
+> syntax was not expanded in row constructors, so
+     that writing <TT
 CLASS="LITERAL"
 >ROW(t.*, 42)</TT
-> created a two-field row whose first field
-     was another row value.  The new behavior is usually more useful.
+> created a two-field row whose first
+     field was another row value.  The new behavior is usually more useful.
      If you need the old behavior of nested row values, write the inner
      row value without <TT
 CLASS="LITERAL"

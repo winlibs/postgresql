@@ -2,12 +2,12 @@
 .\"     Title: CREATE ROLE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2016
-.\"    Manual: PostgreSQL 9.6.0 Documentation
-.\"    Source: PostgreSQL 9.6.0
+.\"      Date: 2017
+.\"    Manual: PostgreSQL 9.6.2 Documentation
+.\"    Source: PostgreSQL 9.6.2
 .\"  Language: English
 .\"
-.TH "CREATE ROLE" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
+.TH "CREATE ROLE" "7" "2017" "PostgreSQL 9.6.2" "PostgreSQL 9.6.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -167,7 +167,7 @@ by default, to ensure all contents of a table are dumped out\&. If the user runn
 .PP
 CONNECTION LIMIT \fIconnlimit\fR
 .RS 4
-If role can log in, this specifies how many concurrent connections the role can make\&. \-1 (the default) means no limit\&.
+If role can log in, this specifies how many concurrent connections the role can make\&. \-1 (the default) means no limit\&. Note that only normal connections are counted towards this limit\&. Neither prepared transactions nor background worker connections are counted towards this limit\&.
 .RE
 .PP
 PASSWORD \fIpassword\fR
@@ -188,8 +188,6 @@ ENCRYPTED
 or
 UNENCRYPTED
 is specified (since the system cannot decrypt the specified encrypted password string)\&. This allows reloading of encrypted passwords during dump/restore\&.
-.sp
-Note that older clients might lack support for the MD5 authentication mechanism that is needed to work with passwords that are stored encrypted\&.
 .RE
 .PP
 VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq

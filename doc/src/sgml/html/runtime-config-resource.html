@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1129,7 +1129,7 @@ HREF="runtime-config-resource.html#GUC-SHARED-BUFFERS"
          <TT
 CLASS="LITERAL"
 >0</TT
->, which disables controlled writeback, and
+>, which disables forced writeback, and
          <TT
 CLASS="LITERAL"
 >2MB</TT
@@ -1140,11 +1140,11 @@ CLASS="LITERAL"
          <TT
 CLASS="LITERAL"
 >0</TT
-> elsewhere.  (Non-default values of
-         <TT
+> elsewhere.  (If <TT
 CLASS="SYMBOL"
 >BLCKSZ</TT
-> change the default and maximum.)
+> is not 8kB,
+         the default and maximum values scale proportionally to it.)
          This parameter can only be set in the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
@@ -1357,19 +1357,19 @@ HREF="runtime-config-resource.html#GUC-SHARED-BUFFERS"
          between <TT
 CLASS="LITERAL"
 >0</TT
->, which disables controlled writeback,
+>, which disables forced writeback,
          and <TT
 CLASS="LITERAL"
 >2MB</TT
 >.  The default is <TT
 CLASS="LITERAL"
 >0</TT
-> (i.e. no
-         flush control).  (Non-default values of <TT
+>, i.e., no
+         forced writeback.  (If <TT
 CLASS="SYMBOL"
 >BLCKSZ</TT
->
-         change the maximum.)
+> is not 8kB,
+         the maximum value scales proportionally to it.)
         </P
 ></DD
 ><DT

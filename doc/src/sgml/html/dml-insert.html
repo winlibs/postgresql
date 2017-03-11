@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Manipulation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -178,6 +178,20 @@ CLASS="PROGRAMLISTING"
     (2, 'Bread', 1.99),
     (3, 'Milk', 2.99);</PRE
 ><P>
+  </P
+><P
+>   It is also possible to insert the result of a query (which might be no
+   rows, one row, or many rows):
+</P><PRE
+CLASS="PROGRAMLISTING"
+>INSERT INTO products (product_no, name, price)
+  SELECT product_no, name, price FROM new_products
+    WHERE release_date = 'today';</PRE
+><P>
+   This provides the full power of the SQL query mechanism (<A
+HREF="queries.html"
+>Chapter 7</A
+>) for computing the rows to be inserted.
   </P
 ><DIV
 CLASS="TIP"

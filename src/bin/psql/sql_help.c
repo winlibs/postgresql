@@ -265,6 +265,7 @@ sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
+					  "  ACCESS METHOD %s |\n"
 					  "  AGGREGATE %s ( %s ) |\n"
 					  "  CAST (%s AS %s) |\n"
 					  "  COLLATION %s |\n"
@@ -305,6 +306,7 @@ sql_help_ALTER_EXTENSION(PQExpBuffer buf)
 					  _("name"),
 					  _("member_object"),
 					  _("where member_object is:"),
+					  _("object_name"),
 					  _("aggregate_name"),
 					  _("aggregate_signature"),
 					  _("source_type"),
@@ -619,8 +621,7 @@ sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf)
 					  "    SET WITHOUT CLUSTER\n"
 					  "    SET ( %s = %s [, ... ] )\n"
 					  "    RESET ( %s [, ... ] )\n"
-					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }\n"
-					  "    SET TABLESPACE %s",
+					  "    OWNER TO { %s | CURRENT_USER | SESSION_USER }",
 					  _("name"),
 					  _("action"),
 					  _("name"),
@@ -648,8 +649,7 @@ sql_help_ALTER_MATERIALIZED_VIEW(PQExpBuffer buf)
 					  _("storage_parameter"),
 					  _("value"),
 					  _("storage_parameter"),
-					  _("new_owner"),
-					  _("new_tablespace"));
+					  _("new_owner"));
 }
 
 static void
@@ -4162,7 +4162,7 @@ const struct _helpStruct QL_HELP[] = {
     { "ALTER EXTENSION",
       N_("change the definition of an extension"),
       sql_help_ALTER_EXTENSION,
-      37 },
+      38 },
 
     { "ALTER FOREIGN DATA WRAPPER",
       N_("change the definition of a foreign-data wrapper"),
@@ -4202,7 +4202,7 @@ const struct _helpStruct QL_HELP[] = {
     { "ALTER MATERIALIZED VIEW",
       N_("change the definition of a materialized view"),
       sql_help_ALTER_MATERIALIZED_VIEW,
-      24 },
+      23 },
 
     { "ALTER OPERATOR",
       N_("change the definition of an operator"),

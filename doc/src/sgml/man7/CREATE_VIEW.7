@@ -2,12 +2,12 @@
 .\"     Title: CREATE VIEW
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2016
-.\"    Manual: PostgreSQL 9.6.0 Documentation
-.\"    Source: PostgreSQL 9.6.0
+.\"      Date: 2017
+.\"    Manual: PostgreSQL 9.6.2 Documentation
+.\"    Source: PostgreSQL 9.6.2
 .\"  Language: English
 .\"
-.TH "CREATE VIEW" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
+.TH "CREATE VIEW" "7" "2017" "PostgreSQL 9.6.2" "PostgreSQL 9.6.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -66,7 +66,7 @@ Creates a recursive view\&. The syntax
 .RS 4
 .\}
 .nf
-CREATE RECURSIVE VIEW \fIname\fR (\fIcolumns\fR) AS SELECT \fI\&.\&.\&.\fR;
+CREATE RECURSIVE VIEW [ \fIschema\fR \&. ] \fIview_name\fR (\fIcolumn_names\fR) AS SELECT \fI\&.\&.\&.\fR;
 .fi
 .if n \{\
 .RE
@@ -78,13 +78,13 @@ is equivalent to
 .RS 4
 .\}
 .nf
-CREATE VIEW \fIname\fR AS WITH RECURSIVE \fIname\fR (\fIcolumns\fR) AS (SELECT \fI\&.\&.\&.\fR) SELECT \fIcolumns\fR FROM \fIname\fR;
+CREATE VIEW [ \fIschema\fR \&. ] \fIview_name\fR AS WITH RECURSIVE \fIview_name\fR (\fIcolumn_names\fR) AS (SELECT \fI\&.\&.\&.\fR) SELECT \fIcolumn_names\fR FROM \fIview_name\fR;
 .fi
 .if n \{\
 .RE
 .\}
 .sp
-A view column list must be specified for a recursive view\&.
+A view column name list must be specified for a recursive view\&.
 .RE
 .PP
 \fIname\fR
@@ -470,7 +470,7 @@ Create a recursive view consisting of the numbers from 1 to 100:
 .RS 4
 .\}
 .nf
-CREATE RECURSIVE VIEW nums_1_100 (n) AS
+CREATE RECURSIVE VIEW public\&.nums_1_100 (n) AS
     VALUES (1)
 UNION ALL
     SELECT n+1 FROM nums_1_100 WHERE n < 100;
@@ -478,6 +478,9 @@ UNION ALL
 .if n \{\
 .RE
 .\}
+.sp
+Notice that although the recursive view\*(Aqs name is schema\-qualified in this
+\fBCREATE\fR, its internal self\-reference is not schema\-qualified\&. This is because the implicitly\-created CTE\*(Aqs name cannot be schema\-qualified\&.
 .SH "COMPATIBILITY"
 .PP
 \fBCREATE OR REPLACE VIEW\fR

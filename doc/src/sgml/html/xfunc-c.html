@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1250,7 +1250,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN60224"
+NAME="AEN60391"
 >36.9.3. Version 0 Calling Conventions</A
 ></H2
 ><P
@@ -1469,7 +1469,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN60251"
+NAME="AEN60418"
 >36.9.4. Version 1 Calling Conventions</A
 ></H2
 ><P
@@ -1836,7 +1836,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN60309"
+NAME="AEN60476"
 >36.9.5. Writing Code</A
 ></H2
 ><P
@@ -2461,7 +2461,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN60510"
+NAME="AEN60677"
 >36.9.7. Composite-type Arguments</A
 ></H2
 ><P
@@ -2621,7 +2621,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN60534"
+NAME="AEN60701"
 >36.9.8. Returning Rows (Composite Types)</A
 ></H2
 ><P
@@ -2954,7 +2954,7 @@ CLASS="STRUCTNAME"
      across calls.
 </P><PRE
 CLASS="PROGRAMLISTING"
->typedef struct
+>typedef struct FuncCallContext
 {
     /*
      * Number of times we've been called before
@@ -2962,7 +2962,7 @@ CLASS="PROGRAMLISTING"
      * call_cntr is initialized to 0 for you by SRF_FIRSTCALL_INIT(), and
      * incremented for you every time SRF_RETURN_NEXT() is called.
      */
-    uint32 call_cntr;
+    uint64 call_cntr;
 
     /*
      * OPTIONAL maximum number of calls
@@ -2971,7 +2971,7 @@ CLASS="PROGRAMLISTING"
      * If not set, you must provide alternative means to know when the
      * function is done.
      */
-    uint32 max_calls;
+    uint64 max_calls;
 
     /*
      * OPTIONAL pointer to result slot
@@ -3414,7 +3414,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN60663"
+NAME="AEN60830"
 >36.9.10. Polymorphic Arguments and Return Types</A
 ></H2
 ><P
@@ -3688,7 +3688,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN60714"
+NAME="AEN60881"
 >36.9.12. Shared Memory and LWLocks</A
 ></H2
 ><P

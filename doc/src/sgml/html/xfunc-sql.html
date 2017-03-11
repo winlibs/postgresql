@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -654,11 +654,16 @@ CLASS="LITERAL"
      how the calling <TT
 CLASS="COMMAND"
 >SELECT</TT
-> command uses <TT
+> command
+     uses <TT
+CLASS="REPLACEABLE"
+><I
+>table_name</I
+></TT
+><TT
 CLASS="LITERAL"
->*</TT
->
-     to select
+>.*</TT
+> to select
      the entire current row of a table as a composite value.  The table
      row can alternatively be referenced using just the table name,
      like this:
@@ -669,6 +674,11 @@ CLASS="SCREEN"
     WHERE emp.cubicle ~= point '(2,1)';</PRE
 ><P>
      but this usage is deprecated since it's easy to get confused.
+     (See <A
+HREF="rowtypes.html#ROWTYPES-USAGE"
+>Section 8.16.5</A
+> for details about these
+     two notations for the composite value of a table row.)
     </P
 ><P
 >     Sometimes it is handy to construct a composite argument value
@@ -755,7 +765,8 @@ CLASS="COMMAND"
      another function that returns the desired composite value.
     </P
 ><P
->     We could call this function directly in either of two ways:
+>     We could call this function directly either by using it in
+     a value expression:
 
 </P><PRE
 CLASS="SCREEN"
@@ -763,9 +774,14 @@ CLASS="SCREEN"
 
          new_emp
 --------------------------
- (None,1000.0,25,"(2,2)")
+ (None,1000.0,25,"(2,2)")</PRE
+><P>
 
-SELECT * FROM new_emp();
+     or by calling it as a table function:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT * FROM new_emp();
 
  name | salary | age | cubicle
 ------+--------+-----+---------
@@ -803,38 +819,7 @@ LINE 1: SELECT new_emp().name;
 ><P>
     </P
 ><P
->     Another option is to use
-     functional notation for extracting an attribute.  The  simple  way
-     to explain this is that we can use the
-     notations <TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->attribute</I
-></TT
->(<TT
-CLASS="REPLACEABLE"
-><I
->table</I
-></TT
->)</TT
->
-     and  <TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->table</I
-></TT
->.<TT
-CLASS="REPLACEABLE"
-><I
->attribute</I
-></TT
-></TT
->
-     interchangeably.
+>     Another option is to use functional notation for extracting an attribute:
 
 </P><PRE
 CLASS="SCREEN"
@@ -845,59 +830,12 @@ CLASS="SCREEN"
  None</PRE
 ><P>
 
-</P><PRE
-CLASS="SCREEN"
->-- This is the same as:
--- SELECT emp.name AS youngster FROM emp WHERE emp.age &lt; 30;
-
-SELECT name(emp) AS youngster FROM emp WHERE age(emp) &lt; 30;
-
- youngster
------------
- Sam
- Andy</PRE
-><P>
+     As explained in <A
+HREF="rowtypes.html#ROWTYPES-USAGE"
+>Section 8.16.5</A
+>, the field notation and
+     functional notation are equivalent.
     </P
-><DIV
-CLASS="TIP"
-><BLOCKQUOTE
-CLASS="TIP"
-><P
-><B
->Tip: </B
->      The equivalence between functional notation and attribute notation
-      makes it possible to use functions on composite types to emulate
-      <SPAN
-CLASS="QUOTE"
->"computed fields"</SPAN
->.
-      
-      
-      For example, using the previous definition
-      for <TT
-CLASS="LITERAL"
->double_salary(emp)</TT
->, we can write
-
-</P><PRE
-CLASS="SCREEN"
->SELECT emp.name, emp.double_salary FROM emp;</PRE
-><P>
-
-      An application using this wouldn't need to be directly aware that
-      <TT
-CLASS="LITERAL"
->double_salary</TT
-> isn't a real column of the table.
-      (You can also emulate computed fields with views.)
-     </P
-><P
->      Because of this behavior, it's unwise to give a function that takes
-      a single composite-type argument the same name as any of the fields of
-      that composite type.
-     </P
-></BLOCKQUOTE
-></DIV
 ><P
 >     Another way to use a function returning a composite type is to pass the
      result to another function that accepts the correct row type as input:
@@ -914,13 +852,6 @@ SELECT getname(new_emp());
  None
 (1 row)</PRE
 ><P>
-    </P
-><P
->     Still another way to use a function that returns a composite type is to
-     call it as a table function, as described in <A
-HREF="xfunc-sql.html#XFUNC-SQL-TABLE-FUNCTIONS"
->Section 36.4.7</A
->.
     </P
 ></DIV
 ><DIV
@@ -1630,7 +1561,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN59663"
+NAME="AEN59830"
 >36.4.10. Polymorphic <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
@@ -1784,7 +1715,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN59689"
+NAME="AEN59856"
 >36.4.11. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN98199"
+NAME="AEN98391"
 ></A
 ><H2
 >Name</H2
@@ -113,7 +113,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN98204"
+NAME="AEN98396"
 ></A
 ><H2
 >Synopsis</H2
@@ -142,7 +142,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN98213"
+NAME="AEN98405"
 ></A
 ><H2
 >Description</H2
@@ -1365,7 +1365,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN98626"
+NAME="AEN98818"
 ></A
 ><H2
 >Exit Status</H2
@@ -1386,7 +1386,7 @@ CLASS="VARNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN98631"
+NAME="AEN98823"
 ></A
 ><H2
 >Usage</H2
@@ -1572,7 +1572,7 @@ CLASS="PROGRAMLISTING"
 CLASS="USERINPUT"
 >psql testdb</KBD
 >
-psql (9.6.0)
+psql (9.6.2)
 Type "help" for help.
 
 testdb=&gt;</PRE
@@ -6610,7 +6610,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN100055"
+NAME="AEN100247"
 ></A
 ><H3
 >Advanced Features</H3
@@ -8020,7 +8020,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT3"
 ><A
-NAME="AEN100480"
+NAME="AEN100672"
 ></A
 ><H4
 >Command-Line Editing</H4
@@ -8124,8 +8124,12 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >less</TT
 >.  The default
-      is platform-dependent.  The use of the pager can be disabled by
-      using the <TT
+      is platform-dependent.  Use of the pager can be disabled by setting
+      <TT
+CLASS="ENVAR"
+>PAGER</TT
+> to empty, or by using pager-related options of
+      the <TT
 CLASS="COMMAND"
 >\pset</TT
 > command.
@@ -8316,7 +8320,7 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN100581"
+NAME="AEN100774"
 ></A
 ><H2
 >Files</H2
@@ -8461,7 +8465,7 @@ CLASS="ENVAR"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN100621"
+NAME="AEN100814"
 ></A
 ><H2
 >Notes</H2
@@ -8550,7 +8554,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN100644"
+NAME="AEN100837"
 ></A
 ><H2
 >Notes for Windows Users</H2
@@ -8780,7 +8784,7 @@ CLASS="PROGRAMLISTING"
 CLASS="USERINPUT"
 >SELECT first, second, first &gt; 2 AS gt2 FROM my_table;</KBD
 >
- first | second | ge2 
+ first | second | gt2 
 -------+--------+-----
      1 | one    | f
      2 | two    | f

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEROLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN81021"
+NAME="AEN81210"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN81021"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN81024"
+NAME="AEN81213"
 ></A
 ><H2
 >Synopsis</H2
@@ -199,7 +199,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81039"
+NAME="AEN81228"
 ></A
 ><H2
 >Description</H2
@@ -242,7 +242,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81050"
+NAME="AEN81239"
 ></A
 ><H2
 >Parameters</H2
@@ -478,7 +478,10 @@ CLASS="REPLACEABLE"
 ><DD
 ><P
 >        If role can log in, this specifies how many concurrent connections
-        the role can make.  -1 (the default) means no limit.
+        the role can make.  -1 (the default) means no limit. Note that only
+        normal connections are counted towards this limit. Neither prepared
+        transactions nor background worker connections are counted towards
+        this limit.
        </P
 ></DD
 ><DT
@@ -538,11 +541,6 @@ CLASS="LITERAL"
         (since the system cannot decrypt the specified encrypted
         password string).  This allows reloading of encrypted
         passwords during dump/restore.
-       </P
-><P
->        Note that older clients might lack support for the MD5
-        authentication mechanism that is needed to work with passwords
-        that are stored encrypted.
        </P
 ></DD
 ><DT
@@ -708,7 +706,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81209"
+NAME="AEN81397"
 ></A
 ><H2
 >Notes</H2
@@ -891,7 +889,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81252"
+NAME="AEN81440"
 ></A
 ><H2
 >Examples</H2
@@ -940,7 +938,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81265"
+NAME="AEN81453"
 ></A
 ><H2
 >Compatibility</H2
@@ -1000,7 +998,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81279"
+NAME="AEN81467"
 ></A
 ><H2
 >See Also</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-UPDATE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN92158"
+NAME="AEN92349"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN92158"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN92161"
+NAME="AEN92352"
 ></A
 ><H2
 >Synopsis</H2
@@ -192,7 +192,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92177"
+NAME="AEN92368"
 ></A
 ><H2
 >Description</H2
@@ -270,7 +270,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92195"
+NAME="AEN92386"
 ></A
 ><H2
 >Parameters</H2
@@ -573,7 +573,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92288"
+NAME="AEN92479"
 ></A
 ><H2
 >Outputs</H2
@@ -641,7 +641,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92303"
+NAME="AEN92494"
 ></A
 ><H2
 >Notes</H2
@@ -677,7 +677,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92310"
+NAME="AEN92501"
 ></A
 ><H2
 >Examples</H2
@@ -846,7 +846,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92348"
+NAME="AEN92539"
 ></A
 ><H2
 >Compatibility</H2
@@ -900,7 +900,7 @@ CLASS="LITERAL"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > only allows the source
-   value to be a parenthesized list of expressions (a row constructor) or a
+   value to be a parenthesized list of expressions or a
    sub-<TT
 CLASS="LITERAL"
 >SELECT</TT
@@ -908,7 +908,7 @@ CLASS="LITERAL"
    specified as <TT
 CLASS="LITERAL"
 >DEFAULT</TT
-> in the row-constructor case, but not
+> in the list-of-expressions case, but not
    inside a sub-<TT
 CLASS="LITERAL"
 >SELECT</TT

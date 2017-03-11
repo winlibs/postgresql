@@ -2,12 +2,12 @@
 .\"     Title: ALTER TABLE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2016
-.\"    Manual: PostgreSQL 9.6.0 Documentation
-.\"    Source: PostgreSQL 9.6.0
+.\"      Date: 2017
+.\"    Manual: PostgreSQL 9.6.2 Documentation
+.\"    Source: PostgreSQL 9.6.2
 .\"  Language: English
 .\"
-.TH "ALTER TABLE" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
+.TH "ALTER TABLE" "7" "2017" "PostgreSQL 9.6.2" "PostgreSQL 9.6.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -530,12 +530,10 @@ SET SCHEMA
 This form moves the table into another schema\&. Associated indexes, constraints, and sequences owned by table columns are moved as well\&.
 .RE
 .PP
-All the actions except
-RENAME,
-SET TABLESPACE
-and
+All the forms of ALTER TABLE that act on a single table, except
+RENAME, and
 SET SCHEMA
-can be combined into a list of multiple alterations to apply in parallel\&. For example, it is possible to add several columns and/or alter the type of several columns in a single command\&. This is particularly useful with large tables, since only one pass over the table need be made\&.
+can be combined into a list of multiple alterations to applied together\&. For example, it is possible to add several columns and/or alter the type of several columns in a single command\&. This is particularly useful with large tables, since only one pass over the table need be made\&.
 .PP
 You must own the table to use
 \fBALTER TABLE\fR\&. To change the schema or tablespace of a table, you must also have

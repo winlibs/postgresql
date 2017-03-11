@@ -2,12 +2,12 @@
 .\"     Title: COPY
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2016
-.\"    Manual: PostgreSQL 9.6.0 Documentation
-.\"    Source: PostgreSQL 9.6.0
+.\"      Date: 2017
+.\"    Manual: PostgreSQL 9.6.2 Documentation
+.\"    Source: PostgreSQL 9.6.2
 .\"  Language: English
 .\"
-.TH "COPY" "7" "2016" "PostgreSQL 9.6.0" "PostgreSQL 9.6.0 Documentation"
+.TH "COPY" "7" "2017" "PostgreSQL 9.6.2" "PostgreSQL 9.6.2 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -354,6 +354,16 @@ can be used to dump all of the data in an inheritance hierarchy\&.
 You must have select privilege on the table whose values are read by
 \fBCOPY TO\fR, and insert privilege on the table into which values are inserted by
 \fBCOPY FROM\fR\&. It is sufficient to have column privileges on the column(s) listed in the command\&.
+.PP
+If row\-level security is enabled for the table, the relevant
+\fBSELECT\fR
+policies will apply to
+COPY \fItable\fR TO
+statements\&. Currently,
+\fBCOPY FROM\fR
+is not supported for tables with row\-level security\&. Use equivalent
+\fBINSERT\fR
+statements instead\&.
 .PP
 Files named in a
 \fBCOPY\fR

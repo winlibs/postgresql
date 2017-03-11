@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1003,9 +1003,9 @@ CLASS="PROGRAMLISTING"
    function, the first input
    must be a temporary state value and can therefore safely be modified
    in-place rather than allocating a new copy.
-   See <TT
-CLASS="LITERAL"
->int8inc()</TT
+   See <CODE
+CLASS="FUNCTION"
+>int8inc()</CODE
 > for an example.
    (This is the <SPAN
 CLASS="emphasis"
@@ -1018,6 +1018,34 @@ CLASS="EMPHASIS"
    In particular, final functions for normal aggregates must not
    modify their inputs in any case, because in some cases they will be
    re-executed on the same final state value.)
+  </P
+><P
+>   The second argument of <CODE
+CLASS="FUNCTION"
+>AggCheckCallContext</CODE
+> can be used to
+   retrieve the memory context in which aggregate state values are being kept.
+   This is useful for transition functions that wish to use <SPAN
+CLASS="QUOTE"
+>"expanded"</SPAN
+>
+   objects (see <A
+HREF="xtypes.html#XTYPES-TOAST"
+>Section 36.11.1</A
+>) as their state values.
+   On first call, the transition function should return an expanded object
+   whose memory context is a child of the aggregate state context, and then
+   keep returning the same expanded object on subsequent calls.  See
+   <CODE
+CLASS="FUNCTION"
+>array_append()</CODE
+> for an example.  (<CODE
+CLASS="FUNCTION"
+>array_append()</CODE
+>
+   is not the transition function of any built-in aggregate, but it is written
+   to behave efficiently when used as transition function of a custom
+   aggregate.)
   </P
 ><P
 >   Another support routine available to aggregate functions written in C

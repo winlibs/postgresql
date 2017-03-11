@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="APP-PGDUMP"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN95853"
+NAME="AEN96042"
 ></A
 ><H2
 >Name</H2
@@ -107,7 +107,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN95857"
+NAME="AEN96046"
 ></A
 ><H2
 >Synopsis</H2
@@ -326,11 +326,14 @@ CLASS="OPTION"
         <TT
 CLASS="OPTION"
 >--schema-only</TT
-> is specified, so the <TT
+> is specified.  The <TT
 CLASS="OPTION"
 >-b</TT
 >
-        switch is only useful to add large objects to selective dumps.
+        switch is therefore only useful to add large objects to dumps
+        where a specific schema or table has been requested.  Note that
+        blobs are considered data and therefore will be included when
+        --data-only is used, but not when --schema-only is.
        </P
 ></DD
 ><DT
@@ -1435,6 +1438,17 @@ HREF="runtime-config-client.html#GUC-ROW-SECURITY"
 > to on instead, allowing the user
         to dump the parts of the contents of the table that they have access to.
        </P
+><P
+>        Note that if you use this option currently, you probably also want
+        the dump be in <TT
+CLASS="COMMAND"
+>INSERT</TT
+> format, as the
+        <TT
+CLASS="COMMAND"
+>COPY FROM</TT
+> during restore does not support row security.
+       </P
 ></DD
 ><DT
 ><TT
@@ -2109,7 +2123,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN96475"
+NAME="AEN96667"
 ></A
 ><H2
 >Environment</H2
@@ -2579,7 +2593,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN96603"
+NAME="AEN96795"
 ></A
 ><H2
 >See Also</H2

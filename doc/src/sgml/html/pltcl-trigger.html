@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PL/Tcl - Tcl Procedural Language"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -333,11 +333,8 @@ CLASS="LITERAL"
 > or <TT
 CLASS="LITERAL"
 >SKIP</TT
->, or a list as returned by the
-     <TT
-CLASS="LITERAL"
->array get</TT
-> Tcl command. If the return value is <TT
+>, or a list of column name/value pairs.
+     If the return value is <TT
 CLASS="LITERAL"
 >OK</TT
 >,
@@ -350,13 +347,17 @@ CLASS="COMMAND"
 >/<TT
 CLASS="COMMAND"
 >DELETE</TT
->) that fired the trigger will proceed
+>)
+     that fired the trigger will proceed
      normally. <TT
 CLASS="LITERAL"
 >SKIP</TT
 > tells the trigger manager to silently suppress
      the operation for this row. If a list is returned, it tells PL/Tcl to
-     return a modified row to the trigger manager. This is only meaningful
+     return a modified row to the trigger manager; the contents of the
+     modified row are specified by the column names and values in the list.
+     Any columns not mentioned in the list are set to null.
+     Returning a modified row is only meaningful
      for row-level <TT
 CLASS="LITERAL"
 >BEFORE</TT
@@ -367,7 +368,7 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >UPDATE</TT
 >
-     triggers for which the modified row will be inserted instead of the one
+     triggers, for which the modified row will be inserted instead of the one
      given in <TT
 CLASS="VARNAME"
 >$NEW</TT
@@ -382,16 +383,49 @@ CLASS="COMMAND"
 CLASS="COMMAND"
 >UPDATE</TT
 > triggers where the returned row
-     is used to support <TT
+     is used as the source data for <TT
 CLASS="COMMAND"
 >INSERT RETURNING</TT
-> and
+> or
      <TT
 CLASS="COMMAND"
 >UPDATE RETURNING</TT
-> commands. The return value is ignored for
-     other types of triggers.
+> clauses.
+     In row-level <TT
+CLASS="LITERAL"
+>BEFORE</TT
+> <TT
+CLASS="COMMAND"
+>DELETE</TT
+> or <TT
+CLASS="LITERAL"
+>INSTEAD
+     OF</TT
+> <TT
+CLASS="COMMAND"
+>DELETE</TT
+> triggers, returning a modified row has the same
+     effect as returning <TT
+CLASS="LITERAL"
+>OK</TT
+>, that is the operation proceeds.
+     The trigger return value is ignored for all other types of triggers.
     </P
+><DIV
+CLASS="TIP"
+><BLOCKQUOTE
+CLASS="TIP"
+><P
+><B
+>Tip: </B
+>      The result list can be made from an array representation of the
+      modified tuple with the <TT
+CLASS="LITERAL"
+>array get</TT
+> Tcl command.
+     </P
+></BLOCKQUOTE
+></DIV
 ><P
 >     Here's a little example trigger procedure that forces an integer value
      in a table to keep track of the number of updates that are performed on the

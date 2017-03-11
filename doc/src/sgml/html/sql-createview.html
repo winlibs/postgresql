@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.0 Documentation"
+TITLE="PostgreSQL 9.6.2 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2016-09-26T20:31:03"></HEAD
+CONTENT="2017-02-06T21:56:32"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.0 Documentation</A
+>PostgreSQL 9.6.2 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEVIEW"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN84194"
+NAME="AEN84382"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN84194"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN84197"
+NAME="AEN84385"
 ></A
 ><H2
 >Synopsis</H2
@@ -142,7 +142,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84204"
+NAME="AEN84392"
 ></A
 ><H2
 >Description</H2
@@ -181,7 +181,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84212"
+NAME="AEN84400"
 ></A
 ><H2
 >Parameters</H2
@@ -226,15 +226,20 @@ CLASS="LITERAL"
 >      Creates a recursive view.  The syntax
 </P><PRE
 CLASS="SYNOPSIS"
->CREATE RECURSIVE VIEW <TT
+>CREATE RECURSIVE VIEW [ <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>schema</I
+></TT
+> . ] <TT
+CLASS="REPLACEABLE"
+><I
+>view_name</I
 ></TT
 > (<TT
 CLASS="REPLACEABLE"
 ><I
->columns</I
+>column_names</I
 ></TT
 >) AS SELECT <TT
 CLASS="REPLACEABLE"
@@ -246,20 +251,25 @@ CLASS="REPLACEABLE"
       is equivalent to
 </P><PRE
 CLASS="SYNOPSIS"
->CREATE VIEW <TT
+>CREATE VIEW [ <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>schema</I
+></TT
+> . ] <TT
+CLASS="REPLACEABLE"
+><I
+>view_name</I
 ></TT
 > AS WITH RECURSIVE <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>view_name</I
 ></TT
 > (<TT
 CLASS="REPLACEABLE"
 ><I
->columns</I
+>column_names</I
 ></TT
 >) AS (SELECT <TT
 CLASS="REPLACEABLE"
@@ -269,16 +279,16 @@ CLASS="REPLACEABLE"
 >) SELECT <TT
 CLASS="REPLACEABLE"
 ><I
->columns</I
+>column_names</I
 ></TT
 > FROM <TT
 CLASS="REPLACEABLE"
 ><I
->name</I
+>view_name</I
 ></TT
 >;</PRE
 ><P>
-      A view column list must be specified for a recursive view.
+      A view column name list must be specified for a recursive view.
      </P
 ></DD
 ><DT
@@ -548,7 +558,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84325"
+NAME="AEN84515"
 ></A
 ><H2
 >Notes</H2
@@ -833,7 +843,7 @@ HREF="rules-privileges.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84399"
+NAME="AEN84589"
 ></A
 ><H2
 >Examples</H2
@@ -964,16 +974,24 @@ CLASS="LITERAL"
 >   Create a recursive view consisting of the numbers from 1 to 100:
 </P><PRE
 CLASS="PROGRAMLISTING"
->CREATE RECURSIVE VIEW nums_1_100 (n) AS
+>CREATE RECURSIVE VIEW public.nums_1_100 (n) AS
     VALUES (1)
 UNION ALL
     SELECT n+1 FROM nums_1_100 WHERE n &#60; 100;</PRE
-><P></P
+><P>
+   Notice that although the recursive view's name is schema-qualified in this
+   <TT
+CLASS="COMMAND"
+>CREATE</TT
+>, its internal self-reference is not schema-qualified.
+   This is because the implicitly-created CTE's name cannot be
+   schema-qualified.
+  </P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84430"
+NAME="AEN84621"
 ></A
 ><H2
 >Compatibility</H2
@@ -996,7 +1014,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84436"
+NAME="AEN84627"
 ></A
 ><H2
 >See Also</H2

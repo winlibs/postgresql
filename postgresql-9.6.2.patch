@@ -1,13 +1,13 @@
 diff --git a/src/interfaces/libpq/win32.mak b/src/interfaces/libpq/win32.mak
-index 1b71ebd..3071013 100644
+index 268991e7..13a60645 100644
 --- a/src/interfaces/libpq/win32.mak
 +++ b/src/interfaces/libpq/win32.mak
 @@ -16,7 +16,7 @@ CPU=i386
  !MESSAGE Building the Win32 static library...
  !MESSAGE
  !ELSEIF ("$(CPU)" == "IA64")||("$(CPU)" == "AMD64")
--ADD_DEFINES=/D "WIN64" /Wp64 /GS
-+ADD_DEFINES=/D "WIN64" /GS
+-ADD_DEFINES=/Wp64 /GS
++ADD_DEFINES=/GS
  ADD_SECLIB=bufferoverflowU.lib
  !MESSAGE Building the Win64 static library...
  !MESSAGE
@@ -31,20 +31,7 @@ index 1b71ebd..3071013 100644
  	-@erase "$(OUTDIR)\$(OUTFILENAME).lib"
  	-@erase "$(OUTDIR)\$(OUTFILENAME)dll.lib"
  	-@erase "$(OUTDIR)\libpq.res"
-@@ -166,9 +167,10 @@ LIB32_OBJS= \
- 	"$(INTDIR)\system.obj" \
- 	"$(INTDIR)\win32error.obj" \
- 	"$(INTDIR)\win32setlocale.obj" \
--	"$(INTDIR)\pthread-win32.obj"
-+	"$(INTDIR)\pthread-win32.obj" \
-+	"$(INTDIR)\fe_memutils.obj"
- !IFDEF USE_OPENSSL
--	LIB32_OBJS=$(LIB32_OBJS) "$(INTDIR)\fe-secure-openssl.obj"
-+LIB32_OBJS=$(LIB32_OBJS) "$(INTDIR)\fe-secure-openssl.obj"
- !ENDIF
- 
- 
-@@ -191,8 +193,8 @@ pg_config_paths.h: win32.mak
+@@ -192,14 +193,18 @@ pg_config_paths.h: win32.mak
  
  CPP_PROJ=/nologo /W3 /EHsc $(OPT) /I "..\..\include" /I "..\..\include\port\win32" /I "..\..\include\port\win32_msvc" /I "..\..\port" /I. /I "$(SSL_INC)" \
   /D "FRONTEND" $(DEBUGDEF) \
@@ -55,7 +42,17 @@ index 1b71ebd..3071013 100644
   /D "_CRT_SECURE_NO_DEPRECATE" $(ADD_DEFINES)
  
  !IFDEF USE_OPENSSL
-@@ -215,8 +217,8 @@ RSC_PROJ=/l 0x409 /fo"$(INTDIR)\libpq.res"
+ CPP_PROJ=$(CPP_PROJ) /D USE_OPENSSL
++!IF EXISTS("$(SSL_LIB_PATH)\libssl.lib")
++SSL_LIBS     = libssl.lib libcrypto.lib
++!ELSE
+ SSL_LIBS=ssleay32.lib libeay32.lib gdi32.lib
+ !ENDIF
++!ENDIF
+ 
+ !IFDEF USE_KFW
+ CPP_PROJ=$(CPP_PROJ) /D KRB5
+@@ -216,8 +221,8 @@ RSC_PROJ=/l 0x409 /fo"$(INTDIR)\libpq.res"
  
  LINK32=link.exe
  LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib shell32.lib ws2_32.lib secur32.lib $(SSL_LIBS)  $(KFW_LIB) $(ADD_SECLIB) \
@@ -66,7 +63,7 @@ index 1b71ebd..3071013 100644
   /out:"$(OUTDIR)\$(OUTFILENAME).dll"\
   /implib:"$(OUTDIR)\$(OUTFILENAME)dll.lib"  \
   /libpath:"$(SSL_LIB_PATH)" /libpath:"$(KFW_LIB_PATH)" \
-@@ -243,9 +245,11 @@ LINK32_OBJS= \
+@@ -244,9 +249,11 @@ LINK32_OBJS= \
  # Inclusion of manifest
  !IF "$(_NMAKE_VER)" != "6.00.8168.0" && "$(_NMAKE_VER)" != "7.00.9466"
  !IF "$(_NMAKE_VER)" != "6.00.9782.0" && "$(_NMAKE_VER)" != "7.10.3077"
@@ -78,7 +75,7 @@ index 1b71ebd..3071013 100644
  
  "$(INTDIR)\getaddrinfo.obj" : ..\..\port\getaddrinfo.c
  	$(CPP) @<<
-@@ -358,6 +362,11 @@ LINK32_OBJS= \
+@@ -359,6 +366,11 @@ LINK32_OBJS= \
  	$(CPP_PROJ) /I"." ..\..\port\win32setlocale.c
  <<
  

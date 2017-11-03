@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -188,6 +188,26 @@ CLASS="TYPE"
 ><TD
 >text of the currently executing query, as submitted
        by the client (might contain more than one statement)</TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+><CODE
+CLASS="FUNCTION"
+>current_role</CODE
+></TT
+></TD
+><TD
+><TT
+CLASS="TYPE"
+>name</TT
+></TD
+><TD
+>equivalent to <CODE
+CLASS="FUNCTION"
+>current_user</CODE
+></TD
 ></TR
 ><TR
 ><TD
@@ -548,14 +568,20 @@ CLASS="NOTE"
 >     <CODE
 CLASS="FUNCTION"
 >current_catalog</CODE
->, <CODE
+>,
+     <CODE
+CLASS="FUNCTION"
+>current_role</CODE
+>,
+     <CODE
 CLASS="FUNCTION"
 >current_schema</CODE
 >,
      <CODE
 CLASS="FUNCTION"
 >current_user</CODE
->, <CODE
+>,
+     <CODE
 CLASS="FUNCTION"
 >session_user</CODE
 >,
@@ -608,6 +634,29 @@ CLASS="QUOTE"
 CLASS="QUOTE"
 >"effective user"</SPAN
 >.
+    <CODE
+CLASS="FUNCTION"
+>current_role</CODE
+> and <CODE
+CLASS="FUNCTION"
+>user</CODE
+> are
+    synonyms for <CODE
+CLASS="FUNCTION"
+>current_user</CODE
+>.  (The SQL standard draws
+    a distinction between <CODE
+CLASS="FUNCTION"
+>current_role</CODE
+>
+    and <CODE
+CLASS="FUNCTION"
+>current_user</CODE
+>, but <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+    does not, since it unifies users and roles into a single kind of entity.)
    </P
 ><P
 >    <CODE

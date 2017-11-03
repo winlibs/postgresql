@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-VACUUM"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN92565"
+NAME="AEN92616"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN92565"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN92568"
+NAME="AEN92619"
 ></A
 ><H2
 >Synopsis</H2
@@ -141,7 +141,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92575"
+NAME="AEN92626"
 ></A
 ><H2
 >Description</H2
@@ -231,7 +231,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92596"
+NAME="AEN92647"
 ></A
 ><H2
 >Parameters</H2
@@ -374,7 +374,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92644"
+NAME="AEN92695"
 ></A
 ><H2
 >Outputs</H2
@@ -393,7 +393,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92649"
+NAME="AEN92700"
 ></A
 ><H2
 >Notes</H2
@@ -501,54 +501,26 @@ HREF="routine-vacuuming.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92675"
+NAME="AEN92726"
 ></A
 ><H2
 >Examples</H2
 ><P
->   The following is an example from running <TT
-CLASS="COMMAND"
->VACUUM</TT
-> on a
-   table in the regression database:
+>   To clean a single table <TT
+CLASS="LITERAL"
+>onek</TT
+>, analyze it for
+   the optimizer and print a detailed vacuum activity report:
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->regression=# VACUUM (VERBOSE, ANALYZE) onek;
-INFO:  vacuuming "public.onek"
-INFO:  index "onek_unique1" now contains 1000 tuples in 14 pages
-DETAIL:  3000 index tuples were removed.
-0 index pages have been deleted, 0 are currently reusable.
-CPU 0.01s/0.08u sec elapsed 0.18 sec.
-INFO:  index "onek_unique2" now contains 1000 tuples in 16 pages
-DETAIL:  3000 index tuples were removed.
-0 index pages have been deleted, 0 are currently reusable.
-CPU 0.00s/0.07u sec elapsed 0.23 sec.
-INFO:  index "onek_hundred" now contains 1000 tuples in 13 pages
-DETAIL:  3000 index tuples were removed.
-0 index pages have been deleted, 0 are currently reusable.
-CPU 0.01s/0.08u sec elapsed 0.17 sec.
-INFO:  index "onek_stringu1" now contains 1000 tuples in 48 pages
-DETAIL:  3000 index tuples were removed.
-0 index pages have been deleted, 0 are currently reusable.
-CPU 0.01s/0.09u sec elapsed 0.59 sec.
-INFO:  "onek": removed 3000 tuples in 108 pages
-DETAIL:  CPU 0.01s/0.06u sec elapsed 0.07 sec.
-INFO:  "onek": found 3000 removable, 1000 nonremovable tuples in 143 pages
-DETAIL:  0 dead tuples cannot be removed yet.
-There were 0 unused item pointers.
-Skipped 0 pages due to buffer pins.
-0 pages are entirely empty.
-CPU 0.07s/0.39u sec elapsed 1.56 sec.
-INFO:  analyzing "public.onek"
-INFO:  "onek": 36 pages, 1000 rows sampled, 1000 estimated total rows
-VACUUM</PRE
+>VACUUM (VERBOSE, ANALYZE) onek;</PRE
 ><P></P
 ></DIV
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92680"
+NAME="AEN92731"
 ></A
 ><H2
 >Compatibility</H2
@@ -562,7 +534,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN92684"
+NAME="AEN92735"
 ></A
 ><H2
 >See Also</H2

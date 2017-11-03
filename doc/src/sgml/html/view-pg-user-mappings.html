@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="System Catalogs"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -118,7 +118,7 @@ CLASS="STRUCTNAME"
 ><DIV
 CLASS="TABLE"
 ><A
-NAME="AEN112591"
+NAME="AEN112640"
 ></A
 ><P
 ><B
@@ -278,14 +278,47 @@ CLASS="TYPE"
 >       User mapping specific options, as <SPAN
 CLASS="QUOTE"
 >"keyword=value"</SPAN
->
-       strings, if the current user is the owner of the foreign
-       server, else null
+> strings
       </TD
 ></TR
 ></TBODY
 ></TABLE
 ></DIV
+><P
+>   To protect password information stored as a user mapping option,
+   the <TT
+CLASS="STRUCTFIELD"
+>umoptions</TT
+> column will read as null
+   unless one of the following applies:
+   <P
+></P
+></P><UL
+><LI
+><P
+>      current user is the user being mapped, and owns the server or
+      holds <TT
+CLASS="LITERAL"
+>USAGE</TT
+> privilege on it
+     </P
+></LI
+><LI
+><P
+>      current user is the server owner and mapping is for <TT
+CLASS="LITERAL"
+>PUBLIC</TT
+>
+     </P
+></LI
+><LI
+><P
+>      current user is a superuser
+     </P
+></LI
+></UL
+><P>
+  </P
 ></DIV
 ><DIV
 CLASS="NAVFOOTER"

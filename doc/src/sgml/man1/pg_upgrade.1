@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.2 Documentation
-.\"    Source: PostgreSQL 9.6.2
+.\"    Manual: PostgreSQL 9.6.5 Documentation
+.\"    Source: PostgreSQL 9.6.5
 .\"  Language: English
 .\"
-.TH "PG_UPGRADE" "1" "2017" "PostgreSQL 9.6.2" "PostgreSQL 9.6.2 Documentation"
+.TH "PG_UPGRADE" "1" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -110,7 +110,7 @@ number of simultaneous processes or threads to use
 .br
 \fB\-\-link\fR
 .RS 4
-use hard links instead of copying files to the new cluster (use junction points on Windows)
+use hard links instead of copying files to the new cluster
 .RE
 .PP
 \fB\-o\fR \fIoptions\fR
@@ -289,7 +289,7 @@ Install custom shared object files: Install any custom shared object files (or D
 pgcrypto\&.so, whether they are from
 contrib
 or some other source\&. Do not install the schema definitions, e\&.g\&.
-pgcrypto\&.sql, because these will be upgraded from the old cluster\&. Also, any custom full text search files (dictionary, synonym, thesaurus, stop words) must also be copied to the new cluster\&.
+\fBCREATE EXTENSION pgcrypto\fR, because these will be upgraded from the old cluster\&. Also, any custom full text search files (dictionary, synonym, thesaurus, stop words) must also be copied to the new cluster\&.
 .RE
 .sp
 .RS 4
@@ -356,11 +356,20 @@ Streaming replication and log\-shipping standby servers can remain running until
 .sp -1
 .IP "  8." 4.2
 .\}
-Verify standby servers: If you are upgrading Streaming Replication and Log\-Shipping standby servers, verify that the old standby servers are caught up by running
+Prepare for standby server upgrades: If you are upgrading standby servers (as outlined in section
+Step 10), verify that the old standby servers are caught up by running
 pg_controldata
 against the old primary and standby clusters\&. Verify that the
 \(lqLatest checkpoint location\(rq
 values match in all clusters\&. (There will be a mismatch if old standby servers were shut down before the old primary\&.)
+.sp
+Also, if upgrading standby servers, change
+\fIwal_level\fR
+to
+replica
+in the
+postgresql\&.conf
+file on the new master cluster\&.
 .RE
 .sp
 .RS 4
@@ -476,13 +485,6 @@ Stop standby servers: If the standby servers are still running, stop them now us
 Save configuration files: Save any configuration files from the standbys you need to keep, e\&.g\&.
 postgresql\&.conf,
 recovery\&.conf, as these will be overwritten or removed in the next step\&.
-Start and stop the new master cluster: In the new master cluster, change
-\fIwal_level\fR
-to
-replica
-in the
-postgresql\&.conf
-file and then start and stop the cluster\&.
 Run rsync: From a directory that is above the old and new database cluster directories, run this for each slave:
 .sp
 .if n \{\

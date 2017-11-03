@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Client Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="APP-PGBASEBACKUP"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN94534"
+NAME="AEN94585"
 ></A
 ><H2
 >Name</H2
@@ -106,7 +106,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN94538"
+NAME="AEN94589"
 ></A
 ><H2
 >Synopsis</H2
@@ -124,7 +124,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94543"
+NAME="AEN94594"
 ></A
 ><H2
 >   Description
@@ -270,7 +270,7 @@ CLASS="VARNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94581"
+NAME="AEN94632"
 ></A
 ><H2
 >Options</H2
@@ -810,7 +810,7 @@ CLASS="REPLACEABLE"
 ></DT
 ><DD
 ><P
->        Sets checkpoint mode to fast or spread (default) (see <A
+>        Sets checkpoint mode to fast (immediate) or spread (default) (see <A
 HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
 >Section 25.3.3</A
 >).
@@ -1158,7 +1158,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94873"
+NAME="AEN94924"
 ></A
 ><H2
 >Environment</H2
@@ -1180,10 +1180,23 @@ HREF="libpq-envars.html"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94879"
+NAME="AEN94930"
 ></A
 ><H2
 >Notes</H2
+><P
+>   At the beginning of the backup, a checkpoint needs to be written on the
+   server the backup is taken from.  Especially if the option
+   <TT
+CLASS="LITERAL"
+>--checkpoint=fast</TT
+> is not used, this can take some time
+   during which <SPAN
+CLASS="APPLICATION"
+>pg_basebackup</SPAN
+> will be appear
+   to be idle.
+  </P
 ><P
 >   The backup will include all files in the data directory and tablespaces,
    including the configuration files and any additional files placed in the
@@ -1241,7 +1254,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94892"
+NAME="AEN94946"
 ></A
 ><H2
 >Examples</H2
@@ -1328,7 +1341,7 @@ CLASS="USERINPUT"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN94916"
+NAME="AEN94970"
 ></A
 ><H2
 >See Also</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1402,7 +1402,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN45516"
+NAME="AEN45564"
 >32.1.1.1. Keyword/Value Connection Strings</A
 ></H3
 ><P
@@ -1445,7 +1445,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN45527"
+NAME="AEN45575"
 >32.1.1.2. Connection URIs</A
 ></H3
 ><P
@@ -1953,16 +1953,13 @@ CLASS="LITERAL"
 >        Controls the number of seconds of inactivity after which TCP should
         send a keepalive message to the server.  A value of zero uses the
         system default. This parameter is ignored for connections made via a
-        Unix-domain socket, or if keepalives are disabled. It is only supported
-        on systems where the <TT
+        Unix-domain socket, or if keepalives are disabled.
+        It is only supported on systems where <TT
 CLASS="SYMBOL"
 >TCP_KEEPIDLE</TT
-> or <TT
-CLASS="SYMBOL"
->TCP_KEEPALIVE</TT
->
-        socket option is available, and on Windows; on other systems, it has no
-        effect.
+> or
+        an equivalent socket option is available, and on Windows; on other
+        systems, it has no effect.
        </P
 ></DD
 ><DT
@@ -1979,12 +1976,12 @@ CLASS="LITERAL"
         that is not acknowledged by the server should be retransmitted.  A
         value of zero uses the system default. This parameter is ignored for
         connections made via a Unix-domain socket, or if keepalives are disabled.
-        It is only supported on systems where the <TT
+        It is only supported on systems where <TT
 CLASS="SYMBOL"
 >TCP_KEEPINTVL</TT
->
-        socket option is available, and on Windows; on other systems, it has no
-        effect.
+> or
+        an equivalent socket option is available, and on Windows; on other
+        systems, it has no effect.
        </P
 ></DD
 ><DT
@@ -2001,11 +1998,12 @@ CLASS="LITERAL"
         client's connection to the server is considered dead.  A value of
         zero uses the system default. This parameter is ignored for
         connections made via a Unix-domain socket, or if keepalives are disabled.
-        It is only supported on systems where the <TT
+        It is only supported on systems where <TT
 CLASS="SYMBOL"
 >TCP_KEEPCNT</TT
->
-        socket option is available; on other systems, it has no effect.
+> or
+        an equivalent socket option is available; on other systems, it has no
+        effect.
        </P
 ></DD
 ><DT

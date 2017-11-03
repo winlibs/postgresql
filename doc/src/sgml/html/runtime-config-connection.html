@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -502,14 +502,11 @@ CLASS="TYPE"
 >        Specifies the number of seconds of inactivity after which TCP
         should send a keepalive message to the client.  A value of 0 uses
         the system default.
-        This parameter is supported only on systems that support the
+        This parameter is supported only on systems that support
         <TT
 CLASS="SYMBOL"
 >TCP_KEEPIDLE</TT
-> or <TT
-CLASS="SYMBOL"
->TCP_KEEPALIVE</TT
-> symbols, and on
+> or an equivalent socket option, and on
         Windows; on other systems, it must be zero.
         In sessions connected via a Unix-domain socket, this parameter is
         ignored and always reads as zero.
@@ -544,12 +541,12 @@ CLASS="TYPE"
 >        Specifies the number of seconds after which a TCP keepalive message
         that is not acknowledged by the client should be retransmitted.
         A value of 0 uses the system default.
-        This parameter is supported only on systems that support the
+        This parameter is supported only on systems that support
         <TT
 CLASS="SYMBOL"
 >TCP_KEEPINTVL</TT
-> symbol, and on Windows; on other systems, it
-        must be zero.
+> or an equivalent socket option, and on
+        Windows; on other systems, it must be zero.
         In sessions connected via a Unix-domain socket, this parameter is
         ignored and always reads as zero.
        </P
@@ -581,13 +578,14 @@ CLASS="TYPE"
 ><DD
 ><P
 >        Specifies the number of TCP keepalives that can be lost before
-        the server's connection to the client is considered dead.  A value of 0
-        uses the system default.  This parameter is
-        supported only on systems that support the <TT
+        the server's connection to the client is considered dead.
+        A value of 0 uses the system default.
+        This parameter is supported only on systems that support
+        <TT
 CLASS="SYMBOL"
 >TCP_KEEPCNT</TT
->
-        symbol; on other systems, it must be zero.
+> or an equivalent socket option;
+        on other systems, it must be zero.
         In sessions connected via a Unix-domain socket, this parameter is
         ignored and always reads as zero.
        </P

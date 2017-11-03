@@ -1311,6 +1311,7 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> opt_bit_field
 %type <str> opt_connection_name
 %type <str> opt_database_name
+%type <str> opt_ecpg_into
 %type <str> opt_ecpg_fetch_into
 %type <str> opt_ecpg_using
 %type <str> opt_initializer
@@ -2143,9 +2144,13 @@ prog: statements;
 
 
  AlterUserSetStmt:
- ALTER USER RoleSpec SetResetClause
+ ALTER USER RoleSpec opt_in_database SetResetClause
  { 
- $$ = cat_str(3,mm_strdup("alter user"),$3,$4);
+ $$ = cat_str(4,mm_strdup("alter user"),$3,$4,$5);
+}
+|  ALTER USER ALL opt_in_database SetResetClause
+ { 
+ $$ = cat_str(3,mm_strdup("alter user all"),$4,$5);
 }
 ;
 
@@ -4122,6 +4127,10 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
  ecpg_fconst
  { 
  $$ = $1;
+}
+|  '+' ecpg_fconst
+ { 
+ $$ = cat_str(2,mm_strdup("+"),$2);
 }
 |  '-' ecpg_fconst
  { 
@@ -8837,7 +8846,7 @@ EXECUTE prepared_name execute_param_clause execute_rest
 
 
  returning_clause:
-RETURNING target_list ecpg_into
+RETURNING target_list opt_ecpg_into
  { 
  $$ = cat_str(2,mm_strdup("returning"),$2);
 }
@@ -15787,14 +15796,17 @@ Iresult:        Iconst				{ $$ = $1; }
                 ;
 
 execute_rest: /* EMPTY */	{ $$ = EMPTY; }
-	| ecpg_using ecpg_into  { $$ = EMPTY; }
+	| ecpg_using opt_ecpg_into  { $$ = EMPTY; }
 	| ecpg_into ecpg_using  { $$ = EMPTY; }
-	| ecpg_using			{ $$ = EMPTY; }
 	| ecpg_into				{ $$ = EMPTY; }
 	;
 
 ecpg_into: INTO into_list	{ $$ = EMPTY; }
 	| into_descriptor		{ $$ = $1; }
+	;
+
+opt_ecpg_into:	/* EMPTY */	{ $$ = EMPTY; }
+	| ecpg_into		{ $$ = $1; }
 	;
 
 ecpg_fetch_into: ecpg_into	{ $$ = $1; }

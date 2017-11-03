@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-SELECT"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN90219"
+NAME="AEN90268"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN90219"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN90224"
+NAME="AEN90273"
 ></A
 ><H2
 >Synopsis</H2
@@ -514,7 +514,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN90297"
+NAME="AEN90346"
 ></A
 ><H2
 >Description</H2
@@ -870,7 +870,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN90381"
+NAME="AEN90430"
 ></A
 ><H2
 >Parameters</H2
@@ -1742,7 +1742,7 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
-><TT
+>        <TT
 CLASS="LITERAL"
 >NATURAL</TT
 > is shorthand for a
@@ -1750,7 +1750,15 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >USING</TT
 > list that mentions all columns in the two
-        tables that have the same names.
+        tables that have matching names.  If there are no common
+        column names, <TT
+CLASS="LITERAL"
+>NATURAL</TT
+> is equivalent
+        to <TT
+CLASS="LITERAL"
+>ON TRUE</TT
+>.
        </P
 ></DD
 ><DT
@@ -4343,7 +4351,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91217"
+NAME="AEN91268"
 ></A
 ><H2
 >Examples</H2
@@ -4636,7 +4644,7 @@ FROM manufacturers m LEFT JOIN LATERAL get_product_names(m.id) pname ON true;</P
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN91259"
+NAME="AEN91310"
 ></A
 ><H2
 >Compatibility</H2
@@ -4651,7 +4659,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91263"
+NAME="AEN91314"
 ></A
 ><H3
 >Omitted <TT
@@ -4712,7 +4720,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91277"
+NAME="AEN91328"
 ></A
 ><H3
 >Empty <TT
@@ -4740,7 +4748,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91284"
+NAME="AEN91335"
 ></A
 ><H3
 >Omitting the <TT
@@ -4789,7 +4797,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91296"
+NAME="AEN91347"
 ></A
 ><H3
 ><TT
@@ -4836,7 +4844,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91309"
+NAME="AEN91360"
 ></A
 ><H3
 ><TT
@@ -4858,7 +4866,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91315"
+NAME="AEN91366"
 ></A
 ><H3
 >Function Calls in <TT
@@ -4936,7 +4944,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91334"
+NAME="AEN91385"
 ></A
 ><H3
 >Namespace Available to <TT
@@ -4990,7 +4998,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91347"
+NAME="AEN91398"
 ></A
 ><H3
 >Functional Dependencies</H3
@@ -5014,7 +5022,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91353"
+NAME="AEN91404"
 ></A
 ><H3
 ><TT
@@ -5039,7 +5047,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91359"
+NAME="AEN91410"
 ></A
 ><H3
 ><TT
@@ -5097,7 +5105,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91373"
+NAME="AEN91424"
 ></A
 ><H3
 ><TT
@@ -5157,7 +5165,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91390"
+NAME="AEN91441"
 ></A
 ><H3
 >Data-Modifying Statements in <TT
@@ -5188,7 +5196,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN91399"
+NAME="AEN91450"
 ></A
 ><H3
 >Nonstandard Clauses</H3

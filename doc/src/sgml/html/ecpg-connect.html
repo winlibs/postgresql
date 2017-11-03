@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="ECPG - Embedded SQL in C"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -456,8 +456,7 @@ CLASS="REPLACEABLE"
 ><P
 >   If your application uses multiple threads of execution, they cannot share a
    connection concurrently. You must either explicitly control access to the connection
-   (using mutexes) or use a connection for each thread. If each thread uses its own connection,
-   you will need to use the AT clause to specify which connection the thread will use.
+   (using mutexes) or use a connection for each thread.
   </P
 ><P
 >   The second option is to execute a statement to switch the current
@@ -472,7 +471,7 @@ CLASS="REPLACEABLE"
 >;</PRE
 ><P>
    This option is particularly convenient if many statements are to be
-   executed on the same connection.  It is not thread-aware.
+   executed on the same connection.
   </P
 ><P
 >   Here is an example program managing multiple database connections:

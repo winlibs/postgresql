@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
 .\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.2 Documentation
-.\"    Source: PostgreSQL 9.6.2
+.\"    Manual: PostgreSQL 9.6.5 Documentation
+.\"    Source: PostgreSQL 9.6.5
 .\"  Language: English
 .\"
-.TH "CREATE ROLE" "7" "2017" "PostgreSQL 9.6.2" "PostgreSQL 9.6.2 Documentation"
+.TH "CREATE ROLE" "7" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -145,7 +145,7 @@ REPLICATION
 .br
 NOREPLICATION
 .RS 4
-These clauses determine whether a role is allowed to initiate streaming replication or put the system in and out of backup mode\&. A role having the
+These clauses determine whether a role is a replication role\&. A role must have this attribute (or be a superuser) in order to be able to connect to the server in replication mode (physical or logical replication) and in order to be able to create or drop replication slots\&. A role having the
 REPLICATION
 attribute is a very highly privileged role, and should only be used on roles actually used for replication\&. If not specified,
 NOREPLICATION

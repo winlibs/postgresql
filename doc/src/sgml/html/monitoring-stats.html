@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Monitoring Database Activity"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -382,6 +382,24 @@ CLASS="STRUCTNAME"
 HREF="monitoring-stats.html#PG-STAT-SSL-VIEW"
 >pg_stat_ssl</A
 > for details.
+      </TD
+></TR
+><TR
+><TD
+><TT
+CLASS="STRUCTNAME"
+>pg_stat_progress_vacuum</TT
+></TD
+><TD
+>One row for each backend (including autovacuum worker processes) running
+       <TT
+CLASS="COMMAND"
+>VACUUM</TT
+>, showing current progress.
+       See <A
+HREF="progress-reporting.html#VACUUM-PROGRESS-REPORTING"
+>Section 28.4.1</A
+>.
       </TD
 ></TR
 ></TBODY
@@ -761,23 +779,6 @@ CLASS="EMPHASIS"
 CLASS="STRUCTNAME"
 >pg_stat_user_functions</TT
 >).</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTNAME"
->pg_stat_progress_vacuum</TT
-></TD
-><TD
->One row for each backend (including autovacuum worker processes) running
-      <TT
-CLASS="COMMAND"
->VACUUM</TT
->, showing current progress.
-      See <A
-HREF="progress-reporting.html#VACUUM-PROGRESS-REPORTING"
->Section 28.4.1</A
->.</TD
 ></TR
 ></TBODY
 ></TABLE

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="  Installation from Source Code"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -2017,6 +2017,72 @@ CLASS="COMMAND"
 ></DIV
 ><P>
     </P
+><P
+>     Sometimes it is useful to add compiler flags after-the-fact to the set
+     that were chosen by <TT
+CLASS="FILENAME"
+>configure</TT
+>.  An important example is
+     that <SPAN
+CLASS="APPLICATION"
+>gcc</SPAN
+>'s <TT
+CLASS="OPTION"
+>-Werror</TT
+> option cannot be included
+     in the <TT
+CLASS="ENVAR"
+>CFLAGS</TT
+> passed to <TT
+CLASS="FILENAME"
+>configure</TT
+>, because
+     it will break many of <TT
+CLASS="FILENAME"
+>configure</TT
+>'s built-in tests.  To add
+     such flags, include them in the <TT
+CLASS="ENVAR"
+>COPT</TT
+> environment variable
+     while running <TT
+CLASS="FILENAME"
+>make</TT
+>.  The contents of <TT
+CLASS="ENVAR"
+>COPT</TT
+>
+     are added to both the <TT
+CLASS="ENVAR"
+>CFLAGS</TT
+> and <TT
+CLASS="ENVAR"
+>LDFLAGS</TT
+>
+     options set up by <TT
+CLASS="FILENAME"
+>configure</TT
+>.  For example, you could do
+</P><PRE
+CLASS="SCREEN"
+><KBD
+CLASS="USERINPUT"
+>make COPT='-Werror'</KBD
+></PRE
+><P>
+     or
+</P><PRE
+CLASS="SCREEN"
+><KBD
+CLASS="USERINPUT"
+>export COPT='-Werror'</KBD
+>
+<KBD
+CLASS="USERINPUT"
+>make</KBD
+></PRE
+><P>
+    </P
 ><DIV
 CLASS="NOTE"
 ><BLOCKQUOTE
@@ -2061,6 +2127,28 @@ CLASS="APPLICATION"
 CLASS="COMMAND"
 >make PROFILE=-O0 file.o</TT
 >.
+     </P
+><P
+>      The <TT
+CLASS="ENVAR"
+>COPT</TT
+> and <TT
+CLASS="ENVAR"
+>PROFILE</TT
+> environment variables are
+      actually handled identically by the <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+>
+      makefiles.  Which to use is a matter of preference, but a common habit
+      among developers is to use <TT
+CLASS="ENVAR"
+>PROFILE</TT
+> for one-time flag
+      adjustments, while <TT
+CLASS="ENVAR"
+>COPT</TT
+> might be kept set all the time.
      </P
 ></BLOCKQUOTE
 ></DIV

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN102916"
+NAME="AEN102972"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN102920"
+NAME="AEN102976"
 ></A
 ><H2
 >Synopsis</H2
@@ -159,7 +159,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN102941"
+NAME="AEN102997"
 ></A
 ><H2
 >Description</H2
@@ -228,7 +228,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN102957"
+NAME="AEN103013"
 ></A
 ><H2
 >Options</H2
@@ -383,7 +383,7 @@ CLASS="OPTION"
 ><DD
 ><P
 >use hard links instead of copying files to the new
-      cluster (use junction points on Windows)</P
+      cluster</P
 ></DD
 ><DT
 ><TT
@@ -574,7 +574,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103101"
+NAME="AEN103157"
 ></A
 ><H2
 >Usage</H2
@@ -714,9 +714,10 @@ CLASS="FILENAME"
 >
      or some other source. Do not install the schema definitions, e.g.
      <TT
-CLASS="FILENAME"
->pgcrypto.sql</TT
->, because these will be upgraded from the old cluster.
+CLASS="COMMAND"
+>CREATE EXTENSION pgcrypto</TT
+>, because these will be upgraded
+     from the old cluster.
      Also, any custom full text search files (dictionary, synonym,
      thesaurus, stop words) must also be copied to the new cluster.
     </P
@@ -781,21 +782,38 @@ NET STOP postgresql-9.0</PRE
 CLASS="STEP"
 ><P
 ><B
->Verify standby servers</B
+>Prepare for standby server upgrades</B
 ></P
 ><P
->     If you are upgrading Streaming Replication and Log-Shipping standby
-     servers, verify that the old standby servers are caught up by running
-     <SPAN
+>     If you are upgrading standby servers (as outlined in section <A
+HREF="pgupgrade.html#PGUPGRADE-STEP-REPLICAS"
+>step 10</A
+>), verify that the old standby
+     servers are caught up by running <SPAN
 CLASS="APPLICATION"
 >pg_controldata</SPAN
-> against the old primary and standby
-     clusters.  Verify that the <SPAN
+>
+     against the old primary and standby clusters.  Verify that the
+     <SPAN
 CLASS="QUOTE"
 >"Latest checkpoint location"</SPAN
+> values match in all clusters.
+     (There will be a mismatch if old standby servers were shut down
+     before the old primary.)
+    </P
+><P
+>     Also, if upgrading standby servers, change <TT
+CLASS="VARNAME"
+>wal_level</TT
 >
-     values match in all clusters.  (There will be a mismatch if old
-     standby servers were shut down before the old primary.)
+     to <TT
+CLASS="LITERAL"
+>replica</TT
+> in the <TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+> file on
+     the new master cluster.
     </P
 ></LI
 ><LI
@@ -943,6 +961,9 @@ CLASS="FILENAME"
 ></LI
 ><LI
 CLASS="STEP"
+><A
+NAME="PGUPGRADE-STEP-REPLICAS"
+></A
 ><P
 ><B
 >Upgrade Streaming Replication and Log-Shipping standby servers</B
@@ -1044,27 +1065,6 @@ CLASS="LITERAL"
 >recovery.conf</TT
 >,
        as these will be overwritten or removed in the next step.
-      </P
-></LI
-><LI
-CLASS="STEP"
-><P
-><B
->Start and stop the new master cluster</B
-></P
-><P
->       In the new master cluster, change <TT
-CLASS="VARNAME"
->wal_level</TT
-> to
-       <TT
-CLASS="LITERAL"
->replica</TT
-> in the <TT
-CLASS="FILENAME"
->postgresql.conf</TT
-> file
-       and then start and stop the cluster.
       </P
 ></LI
 ><LI
@@ -1386,7 +1386,7 @@ CLASS="FILENAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103296"
+NAME="AEN103351"
 ></A
 ><H2
 >Notes</H2
@@ -1504,7 +1504,7 @@ HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103324"
+NAME="AEN103379"
 ></A
 ><H2
 >See Also</H2

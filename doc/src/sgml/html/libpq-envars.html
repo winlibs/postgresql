@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -261,31 +261,6 @@ HREF="libpq-pgservice.html"
 >      
       <TT
 CLASS="ENVAR"
->PGREALM</TT
-> sets the Kerberos realm to use with
-      <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, if  it is different from the
-      local realm.  If <TT
-CLASS="ENVAR"
->PGREALM</TT
-> is set,
-      <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> applications will attempt
-      authentication  with  servers for this realm and use separate ticket
-      files to avoid conflicts with local ticket files.   This
-      environment  variable is only used if GSSAPI authentication is
-      selected by the server.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
 >PGOPTIONS</TT
 > behaves the same as the <A
 HREF="libpq-connect.html#LIBPQ-CONNECT-OPTIONS"
@@ -327,6 +302,12 @@ CLASS="ENVAR"
 HREF="libpq-connect.html#LIBPQ-CONNECT-REQUIRESSL"
 >requiressl</A
 > connection parameter.
+      This environment variable is deprecated in favor of the
+      <TT
+CLASS="ENVAR"
+>PGSSLMODE</TT
+> variable; setting both variables suppresses the
+      effect of this one.
      </P
 ></LI
 ><LI

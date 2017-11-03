@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEROLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN81210"
+NAME="AEN81259"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN81210"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN81213"
+NAME="AEN81262"
 ></A
 ><H2
 >Synopsis</H2
@@ -199,7 +199,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81228"
+NAME="AEN81277"
 ></A
 ><H2
 >Description</H2
@@ -242,7 +242,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81239"
+NAME="AEN81288"
 ></A
 ><H2
 >Parameters</H2
@@ -423,8 +423,11 @@ CLASS="LITERAL"
 ></DT
 ><DD
 ><P
->        These clauses determine whether a role is allowed to initiate
-        streaming replication or put the system in and out of backup mode.
+>        These clauses determine whether a role is a replication role.  A role
+        must have this attribute (or be a superuser) in order to be able to
+        connect to the server in replication mode (physical or logical
+        replication) and in order to be able to create or drop replication
+        slots.
         A role having the <TT
 CLASS="LITERAL"
 >REPLICATION</TT
@@ -706,7 +709,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81397"
+NAME="AEN81446"
 ></A
 ><H2
 >Notes</H2
@@ -889,7 +892,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81440"
+NAME="AEN81489"
 ></A
 ><H2
 >Examples</H2
@@ -938,7 +941,7 @@ CLASS="PROGRAMLISTING"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81453"
+NAME="AEN81502"
 ></A
 ><H2
 >Compatibility</H2
@@ -998,7 +1001,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN81467"
+NAME="AEN81516"
 ></A
 ><H2
 >See Also</H2

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.2 Documentation"
+TITLE="PostgreSQL 9.6.5 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Backup and Restore"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-02-06T21:56:32"></HEAD
+CONTENT="2017-08-28T21:37:55"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.2 Documentation</A
+>PostgreSQL 9.6.5 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -764,7 +764,8 @@ HREF="runtime-config-wal.html#GUC-CHECKPOINT-COMPLETION-TARGET"
      possible, change the second parameter to <TT
 CLASS="LITERAL"
 >true</TT
->.
+>, which will
+     issue an immediate checkpoint using as much I/O as available.
     </P
 ><P
 >     The third parameter being <TT
@@ -796,7 +797,7 @@ CLASS="APPLICATION"
 >pg_dumpall</SPAN
 >).  It is neither
      necessary nor desirable to stop normal operation of the database
-     while you do this. See section
+     while you do this. See
      <A
 HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP-DATA"
 >Section 25.3.3.3</A
@@ -990,7 +991,7 @@ CLASS="APPLICATION"
 >pg_dumpall</SPAN
 >).  It is neither
      necessary nor desirable to stop normal operation of the database
-     while you do this. See section
+     while you do this. See
      <A
 HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP-DATA"
 >Section 25.3.3.3</A

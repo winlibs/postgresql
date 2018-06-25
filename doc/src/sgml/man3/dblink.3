@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dblink
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "DBLINK" "3" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "DBLINK" "3" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -83,7 +83,8 @@ would not know what to expect\&. Here is an example:
 .\}
 .nf
 SELECT *
-    FROM dblink(\*(Aqdbname=mydb\*(Aq, \*(Aqselect proname, prosrc from pg_proc\*(Aq)
+    FROM dblink(\*(Aqdbname=mydb options=\-csearch_path=\*(Aq,
+                \*(Aqselect proname, prosrc from pg_proc\*(Aq)
       AS t1(proname name, prosrc text)
     WHERE proname LIKE \*(Aqbytea%\*(Aq;
 .fi
@@ -122,7 +123,8 @@ with predetermined queries is to create a view\&. This allows the column type in
 .nf
 CREATE VIEW myremote_pg_proc AS
   SELECT *
-    FROM dblink(\*(Aqdbname=postgres\*(Aq, \*(Aqselect proname, prosrc from pg_proc\*(Aq)
+    FROM dblink(\*(Aqdbname=postgres options=\-csearch_path=\*(Aq,
+                \*(Aqselect proname, prosrc from pg_proc\*(Aq)
     AS t1(proname name, prosrc text);
 
 SELECT * FROM myremote_pg_proc WHERE proname LIKE \*(Aqbytea%\*(Aq;
@@ -136,7 +138,8 @@ SELECT * FROM myremote_pg_proc WHERE proname LIKE \*(Aqbytea%\*(Aq;
 .RS 4
 .\}
 .nf
-SELECT * FROM dblink(\*(Aqdbname=postgres\*(Aq, \*(Aqselect proname, prosrc from pg_proc\*(Aq)
+SELECT * FROM dblink(\*(Aqdbname=postgres options=\-csearch_path=\*(Aq,
+                     \*(Aqselect proname, prosrc from pg_proc\*(Aq)
   AS t1(proname name, prosrc text) WHERE proname LIKE \*(Aqbytea%\*(Aq;
   proname   |   prosrc
 \-\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-\-
@@ -154,7 +157,7 @@ SELECT * FROM dblink(\*(Aqdbname=postgres\*(Aq, \*(Aqselect proname, prosrc from
  byteaout   | byteaout
 (12 rows)
 
-SELECT dblink_connect(\*(Aqdbname=postgres\*(Aq);
+SELECT dblink_connect(\*(Aqdbname=postgres options=\-csearch_path=\*(Aq);
  dblink_connect
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
  OK
@@ -178,7 +181,7 @@ SELECT * FROM dblink(\*(Aqselect proname, prosrc from pg_proc\*(Aq)
  byteaout   | byteaout
 (12 rows)
 
-SELECT dblink_connect(\*(Aqmyconn\*(Aq, \*(Aqdbname=regression\*(Aq);
+SELECT dblink_connect(\*(Aqmyconn\*(Aq, \*(Aqdbname=regression options=\-csearch_path=\*(Aq);
  dblink_connect
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
  OK

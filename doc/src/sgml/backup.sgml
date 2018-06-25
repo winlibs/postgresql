@@ -35,7 +35,7 @@
    <xref linkend="app-pgdump"> for this purpose. The basic usage of this
    command is:
 <synopsis>
-pg_dump <replaceable class="parameter">dbname</replaceable> &gt; <replaceable class="parameter">outfile</replaceable>
+pg_dump <replaceable class="parameter">dbname</replaceable> &gt; <replaceable class="parameter">dumpfile</replaceable>
 </synopsis>
    As you see, <application>pg_dump</> writes its result to the
    standard output. We will see below how this can be useful.
@@ -109,9 +109,9 @@ pg_dump <replaceable class="parameter">dbname</replaceable> &gt; <replaceable cl
     be read in by the <application>psql</application> program. The
     general command form to restore a dump is
 <synopsis>
-psql <replaceable class="parameter">dbname</replaceable> &lt; <replaceable class="parameter">infile</replaceable>
+psql <replaceable class="parameter">dbname</replaceable> &lt; <replaceable class="parameter">dumpfile</replaceable>
 </synopsis>
-    where <replaceable class="parameter">infile</replaceable> is the
+    where <replaceable class="parameter">dumpfile</replaceable> is the
     file output by the <application>pg_dump</> command. The database <replaceable
     class="parameter">dbname</replaceable> will not be created by this
     command, so you must create it yourself from <literal>template0</>
@@ -141,7 +141,7 @@ psql <replaceable class="parameter">dbname</replaceable> &lt; <replaceable class
     behavior and have <application>psql</application> exit with an
     exit status of 3 if an SQL error occurs:
 <programlisting>
-psql --set ON_ERROR_STOP=on dbname &lt; infile
+psql --set ON_ERROR_STOP=on dbname &lt; dumpfile
 </programlisting>
     Either way, you will only have a partially restored database.
     Alternatively, you can specify that the whole dump should be
@@ -201,11 +201,11 @@ pg_dump -h <replaceable>host1</> <replaceable>dbname</> | psql -h <replaceable>h
     cluster, and also preserves cluster-wide data such as role and
     tablespace definitions. The basic usage of this command is:
 <synopsis>
-pg_dumpall &gt; <replaceable>outfile</>
+pg_dumpall &gt; <replaceable>dumpfile</>
 </synopsis>
     The resulting dump can be restored with <application>psql</>:
 <synopsis>
-psql -f <replaceable class="parameter">infile</replaceable> postgres
+psql -f <replaceable class="parameter">dumpfile</replaceable> postgres
 </synopsis>
     (Actually, you can specify any existing database name to start from,
     but if you are loading into an empty cluster then <literal>postgres</>
@@ -889,8 +889,11 @@ SELECT pg_start_backup('label', false, false);
 <programlisting>
 SELECT * FROM pg_stop_backup(false);
 </programlisting>
-     This terminates the backup mode and performs an automatic switch to
-     the next WAL segment.  The reason for the switch is to arrange for
+     This terminates backup mode. On a primary, it also performs an automatic
+     switch to the next WAL segment.  On a standby, it is not possible to
+     automatically switch WAL segments, so you may wish to run
+     <function>pg_switch_xlog</function> on the primary to perform a manual
+     switch. The reason for the switch is to arrange for
      the last WAL segment file written during the backup interval to be
      ready to archive.
     </para>
@@ -908,7 +911,7 @@ SELECT * FROM pg_stop_backup(false);
      Once the WAL segment files active during the backup are archived, you are
      done.  The file identified by <function>pg_stop_backup</>'s first return
      value is the last segment that is required to form a complete set of
-     backup files.  If <varname>archive_mode</> is enabled,
+     backup files.  On a primary, if <varname>archive_mode</> is enabled,
      <function>pg_stop_backup</> does not return until the last segment has
      been archived.
      Archiving of these files happens automatically since you have
@@ -924,6 +927,13 @@ SELECT * FROM pg_stop_backup(false);
      <function>pg_stop_backup</> terminates because of this your backup
      may not be valid.
     </para>
+
+    <para>
+     Note that on a standby <function>pg_stop_backup</> does not wait for
+     WAL segments to be archived so the backup process must ensure that all WAL
+     segments required for the backup are successfully archived.
+    </para>
+
    </listitem>
   </orderedlist>
     </para>
@@ -932,9 +942,9 @@ SELECT * FROM pg_stop_backup(false);
     <title>Making an exclusive low level backup</title>
     <para>
      The process for an exclusive backup is mostly the same as for a
-     non-exclusive one, but it differs in a few key steps. It does not allow
-     more than one concurrent backup to run, and there can be some issues on
-     the server if it crashes during the backup. Prior to PostgreSQL 9.6, this
+     non-exclusive one, but it differs in a few key steps. This type of backup
+     can only be taken on a primary and does not allow concurrent backups.
+     Prior to <productname>PostgreSQL</> 9.6, this
      was the only low-level method available, but it is now recommended that
      all users upgrade their scripts to use non-exclusive backups if possible.
     </para>
@@ -991,6 +1001,11 @@ SELECT pg_start_backup('label', true);
      while you do this. See
      <xref linkend="backup-lowlevel-base-backup-data"> for things to
      consider during this backup.
+    </para>
+    <para>
+      Note that if the server crashes during the backup it may not be
+      possible to restart until the <literal>backup_label</> file has been
+      manually deleted from the <envar>PGDATA</envar> directory.
     </para>
    </listitem>
    <listitem>

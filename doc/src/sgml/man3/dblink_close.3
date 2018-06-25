@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dblink_close
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "DBLINK_CLOSE" "3" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "DBLINK_CLOSE" "3" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -77,7 +77,7 @@ will issue the matching
 .RS 4
 .\}
 .nf
-SELECT dblink_connect(\*(Aqdbname=postgres\*(Aq);
+SELECT dblink_connect(\*(Aqdbname=postgres options=\-csearch_path=\*(Aq);
  dblink_connect
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
  OK

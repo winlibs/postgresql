@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: INSERT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "INSERT" "7" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "INSERT" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -270,7 +270,8 @@ arbiter indexes\&. Either performs
 ON CONFLICT DO NOTHING, it is optional to specify a
 \fIconflict_target\fR; when omitted, conflicts with all usable constraints (and unique indexes) are handled\&. For
 ON CONFLICT DO UPDATE, a
-\fIconflict_target\fR\fImust\fR
+\fIconflict_target\fR
+\fImust\fR
 be provided\&.
 .RE
 .PP
@@ -411,7 +412,8 @@ statement\&. This means that the command will not be allowed to affect any singl
 .br
 .PP
 It is often preferable to use unique index inference rather than naming a constraint directly using
-ON CONFLICT ON CONSTRAINT\fI constraint_name\fR\&. Inference will continue to work correctly when the underlying index is replaced by another more or less equivalent index in an overlapping way, for example when using
+ON CONFLICT ON CONSTRAINT
+\fI constraint_name\fR\&. Inference will continue to work correctly when the underlying index is replaced by another more or less equivalent index in an overlapping way, for example when using
 CREATE UNIQUE INDEX \&.\&.\&. CONCURRENTLY
 before dropping the index being replaced\&.
 .sp .5v

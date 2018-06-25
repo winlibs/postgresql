@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -144,7 +144,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN17717"
+NAME="AEN17758"
 >9.14.1.1. <TT
 CLASS="LITERAL"
 >xmlcomment</TT
@@ -200,7 +200,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN17733"
+NAME="AEN17774"
 >9.14.1.2. <TT
 CLASS="LITERAL"
 >xmlconcat</TT
@@ -278,7 +278,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN17751"
+NAME="AEN17792"
 >9.14.1.3. <TT
 CLASS="LITERAL"
 >xmlelement</TT
@@ -439,7 +439,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN17783"
+NAME="AEN17824"
 >9.14.1.4. <TT
 CLASS="LITERAL"
 >xmlforest</TT
@@ -530,7 +530,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN17804"
+NAME="AEN17845"
 >9.14.1.5. <TT
 CLASS="LITERAL"
 >xmlpi</TT
@@ -583,7 +583,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN17819"
+NAME="AEN17860"
 >9.14.1.6. <TT
 CLASS="LITERAL"
 >xmlroot</TT
@@ -738,7 +738,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN17857"
+NAME="AEN17898"
 >9.14.2.1. <TT
 CLASS="LITERAL"
 >IS DOCUMENT</TT
@@ -771,8 +771,36 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="XML-EXISTS"
+NAME="AEN17908"
 >9.14.2.2. <TT
+CLASS="LITERAL"
+>IS NOT DOCUMENT</TT
+></A
+></H3
+><PRE
+CLASS="SYNOPSIS"
+><TT
+CLASS="REPLACEABLE"
+><I
+>xml</I
+></TT
+> IS NOT DOCUMENT</PRE
+><P
+>     The expression <TT
+CLASS="LITERAL"
+>IS NOT DOCUMENT</TT
+> returns false if the
+     argument XML value is a proper XML document, true if it is not (that is,
+     it is a content fragment), or null if the argument is null.
+    </P
+></DIV
+><DIV
+CLASS="SECT3"
+><H3
+CLASS="SECT3"
+><A
+NAME="XML-EXISTS"
+>9.14.2.3. <TT
 CLASS="LITERAL"
 >XMLEXISTS</TT
 ></A
@@ -846,7 +874,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="XML-IS-WELL-FORMED"
->9.14.2.3. <TT
+>9.14.2.4. <TT
 CLASS="LITERAL"
 >xml_is_well_formed</TT
 ></A

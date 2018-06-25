@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -929,10 +929,29 @@ CLASS="FILENAME"
 >tablespace_map</TT
 > are returned
     in the result of the function, and should be written to files in the
-    backup (and not in the data directory).
+    backup (and not in the data directory).  When executed on a primary
+    <CODE
+CLASS="FUNCTION"
+>pg_stop_backup</CODE
+> will wait for WAL to be archived, provided that
+    archiving is enabled.
    </P
 ><P
->    The function also creates a backup history file in the transaction log
+>    On a standby <CODE
+CLASS="FUNCTION"
+>pg_stop_backup</CODE
+> will return immediately without
+    waiting, so it's important to verify that all required WAL segments have
+    been archived.  If write activity on the primary is low, it may be useful
+    to run <CODE
+CLASS="FUNCTION"
+>pg_switch_xlog</CODE
+> on the primary in order to trigger a
+    segment switch.
+   </P
+><P
+>    When executed on a primary, the function also creates a backup history file
+    in the write-ahead log
     archive area. The history file includes the label given to
     <CODE
 CLASS="FUNCTION"

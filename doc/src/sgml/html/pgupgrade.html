@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN102972"
+NAME="AEN103246"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN102976"
+NAME="AEN103250"
 ></A
 ><H2
 >Synopsis</H2
@@ -159,7 +159,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN102997"
+NAME="AEN103271"
 ></A
 ><H2
 >Description</H2
@@ -228,7 +228,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103013"
+NAME="AEN103287"
 ></A
 ><H2
 >Options</H2
@@ -574,7 +574,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103157"
+NAME="AEN103431"
 ></A
 ><H2
 >Usage</H2
@@ -785,10 +785,10 @@ CLASS="STEP"
 >Prepare for standby server upgrades</B
 ></P
 ><P
->     If you are upgrading standby servers (as outlined in section <A
+>     If you are upgrading standby servers using methods outlined in section <A
 HREF="pgupgrade.html#PGUPGRADE-STEP-REPLICAS"
 >step 10</A
->), verify that the old standby
+>, verify that the old standby
      servers are caught up by running <SPAN
 CLASS="APPLICATION"
 >pg_controldata</SPAN
@@ -799,21 +799,18 @@ CLASS="QUOTE"
 >"Latest checkpoint location"</SPAN
 > values match in all clusters.
      (There will be a mismatch if old standby servers were shut down
-     before the old primary.)
-    </P
-><P
->     Also, if upgrading standby servers, change <TT
+     before the old primary.)  Also, change <TT
 CLASS="VARNAME"
 >wal_level</TT
->
-     to <TT
+> to
+     <TT
 CLASS="LITERAL"
 >replica</TT
 > in the <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
-> file on
-     the new master cluster.
+> file on the
+     new primary cluster.
     </P
 ></LI
 ><LI
@@ -969,22 +966,41 @@ NAME="PGUPGRADE-STEP-REPLICAS"
 >Upgrade Streaming Replication and Log-Shipping standby servers</B
 ></P
 ><P
->     If you have Streaming Replication (see <A
+>     If you used link mode and have Streaming Replication (see <A
 HREF="warm-standby.html#STREAMING-REPLICATION"
 >Section 26.2.5</A
 >) or Log-Shipping (see <A
 HREF="warm-standby.html"
 >Section 26.2</A
->) standby servers, follow these steps to
-     upgrade them.  You will not be running <SPAN
+>) standby servers, you can follow these steps to
+     quickly upgrade them.  You will not be running <SPAN
 CLASS="APPLICATION"
 >pg_upgrade</SPAN
->
-     on the standby servers, but rather <SPAN
+> on
+     the standby servers, but rather <SPAN
 CLASS="APPLICATION"
 >rsync</SPAN
->.  Do not
-     start any servers yet.
+> on the primary.
+     Do not start any servers yet.
+    </P
+><P
+>     If you did <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>not</I
+></SPAN
+> use link mode, do not have or do not
+     want to use <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+>, or want an easier solution, skip
+     the instructions in this section and simply recreate the standby
+     servers once <SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+> completes and the new primary
+     is running.
     </P
 ><OL
 CLASS="SUBSTEPS"
@@ -1024,7 +1040,7 @@ CLASS="EMPHASIS"
 CLASS="APPLICATION"
 >initdb</SPAN
 > was run, delete
-       the standby server data directories.
+       the standby servers' new data directories.
       </P
 ></LI
 ><LI
@@ -1035,7 +1051,7 @@ CLASS="STEP"
 ></P
 ><P
 >       Install the same custom shared object files on the new standbys
-       that you installed in the new master cluster.
+       that you installed in the new primary cluster.
       </P
 ></LI
 ><LI
@@ -1056,15 +1072,16 @@ CLASS="STEP"
 >Save configuration files</B
 ></P
 ><P
->       Save any configuration files from the standbys you need to keep,
-       e.g.  <TT
+>       Save any configuration files from the old standbys' data
+       directories you need to keep, e.g.  <TT
 CLASS="FILENAME"
 >postgresql.conf</TT
->, <TT
+>,
+       <TT
 CLASS="LITERAL"
 >recovery.conf</TT
->,
-       as these will be overwritten or removed in the next step.
+>, because these will be overwritten or
+       removed in the next step.
       </P
 ></LI
 ><LI
@@ -1077,74 +1094,117 @@ CLASS="APPLICATION"
 ></B
 ></P
 ><P
->       From a directory that is above the old and new database cluster
-       directories, run this for each slave:
+>       When using link mode, standby servers can be quickly upgraded using
+       <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+>.  To accomplish this, from a directory on
+       the primary server that is above the old and new database cluster
+       directories, run this on the <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>primary</I
+></SPAN
+> for each standby
+       server:
 
 </P><PRE
 CLASS="PROGRAMLISTING"
->rsync --archive --delete --hard-links --size-only old_pgdata new_pgdata remote_dir</PRE
+>rsync --archive --delete --hard-links --size-only --no-inc-recursive old_cluster new_cluster remote_dir</PRE
 ><P>
 
        where <TT
 CLASS="OPTION"
->old_pgdata</TT
+>old_cluster</TT
 > and <TT
 CLASS="OPTION"
->new_pgdata</TT
+>new_cluster</TT
 > are relative
-       to the current directory, and <TT
+       to the current directory on the primary, and <TT
 CLASS="OPTION"
 >remote_dir</TT
-> is
-       <SPAN
+>
+       is <SPAN
 CLASS="emphasis"
 ><I
 CLASS="EMPHASIS"
 >above</I
 ></SPAN
-> the old and new cluster directories on
-       the standby server.  The old and new relative cluster paths
-       must match on the master and standby server.  Consult the
+> the old and new cluster directories
+       on the standby.  The directory structure under the specified
+       directories on the primary and standbys must match.  Consult the
        <SPAN
 CLASS="APPLICATION"
 >rsync</SPAN
 > manual page for details on specifying the
-       remote directory, e.g. <TT
-CLASS="LITERAL"
->standbyhost:/opt/PostgreSQL/</TT
->.
+       remote directory, e.g.
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>rsync --archive --delete --hard-links --size-only --no-inc-recursive /opt/PostgreSQL/9.5 \
+      /opt/PostgreSQL/9.6 standby.example.com:/opt/PostgreSQL</PRE
+><P>
+
+       You can verify what the command will do using
        <SPAN
 CLASS="APPLICATION"
 >rsync</SPAN
-> will be fast when <SPAN
-CLASS="APPLICATION"
->pg_upgrade</SPAN
->'s
-       <TT
+>'s <TT
 CLASS="OPTION"
->--link</TT
-> mode is used because it will create hard links
-       on the remote server rather than transferring user data.
-       Unfortunately, <SPAN
+>--dry-run</TT
+> option.  While
+       <SPAN
 CLASS="APPLICATION"
 >rsync</SPAN
-> needlessly copies the
-       files associated with temporary and unlogged tables.
+> must be run on the primary for at least one
+       standby, it is possible to run <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+> on an upgraded
+       standby to upgrade other standbys, as long as the upgraded standby
+       has not been started.
+      </P
+><P
+>       What this does is to record the links created by
+       <SPAN
+CLASS="APPLICATION"
+>pg_upgrade</SPAN
+>'s link mode that connect files in the
+       old and new clusters on the primary server.  It then finds matching
+       files in the standby's old cluster and creates links for them in the
+       standby's new cluster.  Files that were not linked on the primary
+       are copied from the primary to the standby.  (They are usually
+       small.)  This provides rapid standby upgrades.  Unfortunately,
+       <SPAN
+CLASS="APPLICATION"
+>rsync</SPAN
+> needlessly copies files associated with
+       temporary and unlogged tables because these files don't normally
+       exist on standby servers.
       </P
 ><P
 >       If you have tablespaces, you will need to run a similar
        <SPAN
 CLASS="APPLICATION"
 >rsync</SPAN
-> command for each tablespace directory.  If you
-       have relocated <TT
+> command for each tablespace directory, e.g.:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>rsync --archive --delete --hard-links --size-only --no-inc-recursive /vol1/pg_tblsp/PG_9.5_201510051 \
+      /vol1/pg_tblsp/PG_9.6_201608131 standby.example.com:/vol1/pg_tblsp</PRE
+><P>
+
+       If you have relocated <TT
 CLASS="FILENAME"
 >pg_xlog</TT
-> outside the data directories,
-       <SPAN
+> outside the data
+       directories, <SPAN
 CLASS="APPLICATION"
 >rsync</SPAN
-> must be run on those directories too.
+> must be run on those directories
+       too.
       </P
 ></LI
 ><LI
@@ -1162,8 +1222,8 @@ CLASS="FUNCTION"
 CLASS="FUNCTION"
 >pg_stop_backup()</CODE
 >
-       or take a file system backup as the slaves are still synchronized
-       with the master.)
+       or take a file system backup as the standbys are still synchronized
+       with the primary.)
       </P
 ></LI
 ></OL
@@ -1386,7 +1446,7 @@ CLASS="FILENAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103351"
+NAME="AEN103634"
 ></A
 ><H2
 >Notes</H2
@@ -1504,7 +1564,7 @@ HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103379"
+NAME="AEN103662"
 ></A
 ><H2
 >See Also</H2

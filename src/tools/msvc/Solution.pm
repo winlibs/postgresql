@@ -87,6 +87,7 @@ sub DeterminePlatform
 sub IsNewer
 {
 	my ($newfile, $oldfile) = @_;
+	-e $oldfile or warn "source file \"$oldfile\" does not exist";
 	if (   $oldfile ne 'src/tools/msvc/config.pl'
 		&& $oldfile ne 'src/tools/msvc/config_default.pl')
 	{
@@ -321,7 +322,7 @@ s{PG_VERSION_STR "[^"]+"}{__STRINGIFY(x) #x\n#define __STRINGIFY2(z) __STRINGIFY
 	if ($self->{options}->{python}
 		&& IsNewer(
 			'src/pl/plpython/spiexceptions.h',
-			'src/include/backend/errcodes.txt'))
+			'src/backend/utils/errcodes.txt'))
 	{
 		print "Generating spiexceptions.h...\n";
 		system(
@@ -419,12 +420,13 @@ s{PG_VERSION_STR "[^"]+"}{__STRINGIFY(x) #x\n#define __STRINGIFY2(z) __STRINGIFY
 		  || confess "Could not open ecpg_config.h";
 		print O <<EOF;
 #if (_MSC_VER > 1200)
-#define HAVE_LONG_LONG_INT_64
+#define HAVE_LONG_LONG_INT 1
+#define HAVE_LONG_LONG_INT_64 1
+#endif
 #define ENABLE_THREAD_SAFETY 1
 EOF
 		print O "#define USE_INTEGER_DATETIMES 1\n"
 		  if ($self->{options}->{integer_datetimes});
-		print O "#endif\n";
 		close(O);
 	}
 
@@ -532,10 +534,12 @@ sub AddProject
 		}
 		else
 		{
+			# We don't expect the config-specific library to be here,
+			# so don't ask for it in last parameter
 			$proj->AddLibrary(
-				$self->{options}->{openssl} . '\lib\ssleay32.lib', 1);
+				$self->{options}->{openssl} . '\lib\ssleay32.lib', 0);
 			$proj->AddLibrary(
-				$self->{options}->{openssl} . '\lib\libeay32.lib', 1);
+				$self->{options}->{openssl} . '\lib\libeay32.lib', 0);
 		}
 	}
 	if ($self->{options}->{nls})
@@ -822,6 +826,32 @@ sub new
 	$self->{vcver}                      = '14.00';
 	$self->{visualStudioName}           = 'Visual Studio 2015';
 	$self->{VisualStudioVersion}        = '14.0.24730.2';
+	$self->{MinimumVisualStudioVersion} = '10.0.40219.1';
+
+	return $self;
+}
+
+package VS2017Solution;
+
+#
+# Package that encapsulates a Visual Studio 2017 solution file
+#
+
+use Carp;
+use strict;
+use warnings;
+use base qw(Solution);
+
+sub new
+{
+	my $classname = shift;
+	my $self      = $classname->SUPER::_new(@_);
+	bless($self, $classname);
+
+	$self->{solutionFileVersion}        = '12.00';
+	$self->{vcver}                      = '15.00';
+	$self->{visualStudioName}           = 'Visual Studio 2017';
+	$self->{VisualStudioVersion}        = '15.0.26730.3';
 	$self->{MinimumVisualStudioVersion} = '10.0.40219.1';
 
 	return $self;

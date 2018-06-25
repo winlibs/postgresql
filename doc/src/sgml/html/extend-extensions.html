@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -191,7 +191,7 @@ CLASS="APPLICATION"
     (But there are special provisions for tables containing configuration
     data; see <A
 HREF="extend-extensions.html#EXTEND-EXTENSIONS-CONFIG-TABLES"
->Section 36.15.3</A
+>Section 36.15.4</A
 >.)
     In production situations, it's generally better to create an extension
     update script to perform changes to extension member objects.
@@ -295,8 +295,61 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN62086"
->36.15.1. Extension Files</A
+NAME="EXTEND-EXTENSIONS-STYLE"
+>36.15.1. Defining Extension Objects</A
+></H2
+><P
+>     Widely-distributed extensions should assume little about the database
+     they occupy.  In particular, unless you issued <TT
+CLASS="LITERAL"
+>SET search_path =
+     pg_temp</TT
+>, assume each unqualified name could resolve to an
+     object that a malicious user has defined.  Beware of constructs that
+     depend on <TT
+CLASS="VARNAME"
+>search_path</TT
+> implicitly: <TT
+CLASS="TOKEN"
+>IN</TT
+>
+     and <TT
+CLASS="LITERAL"
+>CASE <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+> WHEN</TT
+>
+     always select an operator using the search path.  In their place, use
+     <TT
+CLASS="LITERAL"
+>OPERATOR(<TT
+CLASS="REPLACEABLE"
+><I
+>schema</I
+></TT
+>.=) ANY</TT
+>
+     and <TT
+CLASS="LITERAL"
+>CASE WHEN <TT
+CLASS="REPLACEABLE"
+><I
+>expression</I
+></TT
+></TT
+>.
+    </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN62241"
+>36.15.2. Extension Files</A
 ></H2
 ><P
 >     The <A
@@ -569,7 +622,7 @@ CLASS="LITERAL"
         extension is not relocatable.
         See <A
 HREF="extend-extensions.html#EXTEND-EXTENSIONS-RELOCATION"
->Section 36.15.2</A
+>Section 36.15.3</A
 > for more information.
        </P
 ></DD
@@ -593,7 +646,7 @@ CLASS="VARNAME"
         initially creating an extension, not during extension updates.
         See <A
 HREF="extend-extensions.html#EXTEND-EXTENSIONS-RELOCATION"
->Section 36.15.2</A
+>Section 36.15.3</A
 > for more information.
        </P
 ></DD
@@ -677,7 +730,7 @@ CLASS="COMMAND"
 > (see example
      script in <A
 HREF="extend-extensions.html#EXTEND-EXTENSIONS-EXAMPLE"
->Section 36.15.5</A
+>Section 36.15.6</A
 >).
      Without that, users might accidentally load the
      extension's contents as <SPAN
@@ -712,7 +765,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="EXTEND-EXTENSIONS-RELOCATION"
->36.15.2. Extension Relocatability</A
+>36.15.3. Extension Relocatability</A
 ></H2
 ><P
 >     Users often wish to load the objects contained in an extension into a
@@ -888,7 +941,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="EXTEND-EXTENSIONS-CONFIG-TABLES"
->36.15.3. Extension Configuration Tables</A
+>36.15.4. Extension Configuration Tables</A
 ></H2
 ><P
 >     Some extensions include configuration tables, which contain data that
@@ -1019,8 +1072,8 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN62278"
->36.15.4. Extension Updates</A
+NAME="AEN62433"
+>36.15.5. Extension Updates</A
 ></H2
 ><P
 >     One advantage of the extension mechanism is that it provides convenient
@@ -1273,7 +1326,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="EXTEND-EXTENSIONS-EXAMPLE"
->36.15.5. Extension Example</A
+>36.15.6. Extension Example</A
 ></H2
 ><P
 >     Here is a complete example of an <ACRONYM
@@ -1303,22 +1356,21 @@ CLASS="PROGRAMLISTING"
 
 CREATE TYPE pair AS ( k text, v text );
 
-CREATE OR REPLACE FUNCTION pair(anyelement, text)
-RETURNS pair LANGUAGE SQL AS 'SELECT ROW($1, $2)::pair';
-
-CREATE OR REPLACE FUNCTION pair(text, anyelement)
-RETURNS pair LANGUAGE SQL AS 'SELECT ROW($1, $2)::pair';
-
-CREATE OR REPLACE FUNCTION pair(anyelement, anyelement)
-RETURNS pair LANGUAGE SQL AS 'SELECT ROW($1, $2)::pair';
-
 CREATE OR REPLACE FUNCTION pair(text, text)
-RETURNS pair LANGUAGE SQL AS 'SELECT ROW($1, $2)::pair;';
+RETURNS pair LANGUAGE SQL AS 'SELECT ROW($1, $2)::@extschema@.pair;';
 
-CREATE OPERATOR ~&#62; (LEFTARG = text, RIGHTARG = anyelement, PROCEDURE = pair);
-CREATE OPERATOR ~&#62; (LEFTARG = anyelement, RIGHTARG = text, PROCEDURE = pair);
-CREATE OPERATOR ~&#62; (LEFTARG = anyelement, RIGHTARG = anyelement, PROCEDURE = pair);
-CREATE OPERATOR ~&#62; (LEFTARG = text, RIGHTARG = text, PROCEDURE = pair);</PRE
+CREATE OPERATOR ~&#62; (LEFTARG = text, RIGHTARG = text, PROCEDURE = pair);
+
+-- "SET search_path" is easy to get right, but qualified names perform better.
+CREATE OR REPLACE FUNCTION lower(pair)
+RETURNS pair LANGUAGE SQL
+AS 'SELECT ROW(lower($1.k), lower($1.v))::@extschema@.pair;'
+SET search_path = pg_temp;
+
+CREATE OR REPLACE FUNCTION pair_concat(pair, pair)
+RETURNS pair LANGUAGE SQL
+AS 'SELECT ROW($1.k OPERATOR(pg_catalog.||) $2.k,
+               $1.v OPERATOR(pg_catalog.||) $2.v)::@extschema@.pair;';</PRE
 ><P>
     </P
 ><P
@@ -1332,7 +1384,7 @@ CLASS="PROGRAMLISTING"
 ># pair extension
 comment = 'A key/value pair data type'
 default_version = '1.0'
-relocatable = true</PRE
+relocatable = false</PRE
 ><P>
     </P
 ><P

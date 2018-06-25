@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: SELECT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "SELECT" "7" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "SELECT" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -672,7 +672,8 @@ LATERAL
 .RS 4
 The
 LATERAL
-key word can precede a sub\-\fBSELECT\fRFROM
+key word can precede a sub\-\fBSELECT\fR
+FROM
 item\&. This allows the sub\-\fBSELECT\fR
 to refer to columns of
 FROM
@@ -1020,9 +1021,11 @@ RANGE
 mode it means that the frame starts or ends with the current row\*(Aqs first or last peer in the
 ORDER BY
 ordering\&. The
-\fIvalue\fRPRECEDING
+\fIvalue\fR
+PRECEDING
 and
-\fIvalue\fRFOLLOWING
+\fIvalue\fR
+FOLLOWING
 cases are currently only allowed in
 ROWS
 mode\&. They indicate that the frame starts or ends with the row that many rows before or after the current row\&.
@@ -1093,7 +1096,8 @@ has a name\&. In a simple
 this name is just used to label the column for display, but when the
 \fBSELECT\fR
 is a sub\-query of a larger query, the name is seen by the larger query as the column name of the virtual table produced by the sub\-query\&. To specify the name to use for an output column, write
-AS\fIoutput_name\fR
+AS
+\fIoutput_name\fR
 after the column\*(Aqs expression\&. (You can omit
 AS, but only if the desired output name does not match any
 PostgreSQL
@@ -1545,6 +1549,7 @@ OFFSET \fIstart\fR
 .RE
 .\}
 .sp
+
 \fIcount\fR
 specifies the maximum number of rows to return, while
 \fIstart\fR
@@ -2174,6 +2179,7 @@ SELECT distributors\&.* WHERE distributors\&.name = \*(AqWestward\*(Aq;
 .RE
 .\}
 .sp
+
 PostgreSQL
 releases prior to 8\&.1 would accept queries of this form, and add an implicit entry to the query\*(Aqs
 FROM

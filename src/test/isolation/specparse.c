@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
+/* A Bison parser, made by GNU Bison 3.0.4.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.2"
+#define YYBISON_VERSION "3.0.4"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -136,7 +136,7 @@ extern int spec_yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
+
 union YYSTYPE
 {
 #line 26 "specparse.y" /* yacc.c:355  */
@@ -153,6 +153,8 @@ union YYSTYPE
 
 #line 155 "specparse.c" /* yacc.c:355  */
 };
+
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
@@ -166,7 +168,7 @@ int spec_yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 170 "specparse.c" /* yacc.c:358  */
+#line 172 "specparse.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -1267,7 +1269,7 @@ yyreduce:
 				parseresult.permutations = (Permutation **) (yyvsp[0].ptr_list).elements;
 				parseresult.npermutations = (yyvsp[0].ptr_list).nelements;
 			}
-#line 1271 "specparse.c" /* yacc.c:1646  */
+#line 1273 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 3:
@@ -1276,7 +1278,7 @@ yyreduce:
 				(yyval.ptr_list).elements = NULL;
 				(yyval.ptr_list).nelements = 0;
 			}
-#line 1280 "specparse.c" /* yacc.c:1646  */
+#line 1282 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 4:
@@ -1287,37 +1289,37 @@ yyreduce:
 				(yyval.ptr_list).elements[(yyvsp[-1].ptr_list).nelements] = (yyvsp[0].str);
 				(yyval.ptr_list).nelements = (yyvsp[-1].ptr_list).nelements + 1;
 			}
-#line 1291 "specparse.c" /* yacc.c:1646  */
+#line 1293 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 5:
 #line 84 "specparse.y" /* yacc.c:1646  */
     { (yyval.str) = NULL; }
-#line 1297 "specparse.c" /* yacc.c:1646  */
+#line 1299 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 6:
 #line 85 "specparse.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 1303 "specparse.c" /* yacc.c:1646  */
+#line 1305 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 7:
 #line 89 "specparse.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 1309 "specparse.c" /* yacc.c:1646  */
+#line 1311 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 8:
 #line 93 "specparse.y" /* yacc.c:1646  */
     { (yyval.str) = NULL; }
-#line 1315 "specparse.c" /* yacc.c:1646  */
+#line 1317 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 9:
 #line 94 "specparse.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 1321 "specparse.c" /* yacc.c:1646  */
+#line 1323 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 10:
@@ -1328,7 +1330,7 @@ yyreduce:
 				(yyval.ptr_list).elements[(yyvsp[-1].ptr_list).nelements] = (yyvsp[0].session);
 				(yyval.ptr_list).nelements = (yyvsp[-1].ptr_list).nelements + 1;
 			}
-#line 1332 "specparse.c" /* yacc.c:1646  */
+#line 1334 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 11:
@@ -1338,7 +1340,7 @@ yyreduce:
 				(yyval.ptr_list).elements = malloc(sizeof(void *));
 				(yyval.ptr_list).elements[0] = (yyvsp[0].session);
 			}
-#line 1342 "specparse.c" /* yacc.c:1646  */
+#line 1344 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 12:
@@ -1351,7 +1353,7 @@ yyreduce:
 				(yyval.session)->nsteps = (yyvsp[-1].ptr_list).nelements;
 				(yyval.session)->teardownsql = (yyvsp[0].str);
 			}
-#line 1355 "specparse.c" /* yacc.c:1646  */
+#line 1357 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 13:
@@ -1362,7 +1364,7 @@ yyreduce:
 				(yyval.ptr_list).elements[(yyvsp[-1].ptr_list).nelements] = (yyvsp[0].step);
 				(yyval.ptr_list).nelements = (yyvsp[-1].ptr_list).nelements + 1;
 			}
-#line 1366 "specparse.c" /* yacc.c:1646  */
+#line 1368 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 14:
@@ -1372,7 +1374,7 @@ yyreduce:
 				(yyval.ptr_list).elements = malloc(sizeof(void *));
 				(yyval.ptr_list).elements[0] = (yyvsp[0].step);
 			}
-#line 1376 "specparse.c" /* yacc.c:1646  */
+#line 1378 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 15:
@@ -1383,7 +1385,7 @@ yyreduce:
 				(yyval.step)->sql = (yyvsp[0].str);
 				(yyval.step)->errormsg = NULL;
 			}
-#line 1387 "specparse.c" /* yacc.c:1646  */
+#line 1389 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 16:
@@ -1391,7 +1393,7 @@ yyreduce:
     {
 				(yyval.ptr_list) = (yyvsp[0].ptr_list);
 			}
-#line 1395 "specparse.c" /* yacc.c:1646  */
+#line 1397 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 17:
@@ -1400,7 +1402,7 @@ yyreduce:
 				(yyval.ptr_list).elements = NULL;
 				(yyval.ptr_list).nelements = 0;
 			}
-#line 1404 "specparse.c" /* yacc.c:1646  */
+#line 1406 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 18:
@@ -1411,7 +1413,7 @@ yyreduce:
 				(yyval.ptr_list).elements[(yyvsp[-1].ptr_list).nelements] = (yyvsp[0].permutation);
 				(yyval.ptr_list).nelements = (yyvsp[-1].ptr_list).nelements + 1;
 			}
-#line 1415 "specparse.c" /* yacc.c:1646  */
+#line 1417 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 19:
@@ -1421,7 +1423,7 @@ yyreduce:
 				(yyval.ptr_list).elements = malloc(sizeof(void *));
 				(yyval.ptr_list).elements[0] = (yyvsp[0].permutation);
 			}
-#line 1425 "specparse.c" /* yacc.c:1646  */
+#line 1427 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 20:
@@ -1431,7 +1433,7 @@ yyreduce:
 				(yyval.permutation)->stepnames = (char **) (yyvsp[0].ptr_list).elements;
 				(yyval.permutation)->nsteps = (yyvsp[0].ptr_list).nelements;
 			}
-#line 1435 "specparse.c" /* yacc.c:1646  */
+#line 1437 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 21:
@@ -1442,7 +1444,7 @@ yyreduce:
 				(yyval.ptr_list).elements[(yyvsp[-1].ptr_list).nelements] = (yyvsp[0].str);
 				(yyval.ptr_list).nelements = (yyvsp[-1].ptr_list).nelements + 1;
 			}
-#line 1446 "specparse.c" /* yacc.c:1646  */
+#line 1448 "specparse.c" /* yacc.c:1646  */
     break;
 
   case 22:
@@ -1452,11 +1454,11 @@ yyreduce:
 				(yyval.ptr_list).elements = malloc(sizeof(void *));
 				(yyval.ptr_list).elements[0] = (yyvsp[0].str);
 			}
-#line 1456 "specparse.c" /* yacc.c:1646  */
+#line 1458 "specparse.c" /* yacc.c:1646  */
     break;
 
 
-#line 1460 "specparse.c" /* yacc.c:1646  */
+#line 1462 "specparse.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

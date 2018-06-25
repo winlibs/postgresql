@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1250,8 +1250,149 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN31782"
->18.4.2. Resource Limits</A
+NAME="SYSTEMD-REMOVEIPC"
+>18.4.2. systemd RemoveIPC</A
+></H2
+><P
+>    If <SPAN
+CLASS="PRODUCTNAME"
+>systemd</SPAN
+> is in use, some care must be taken
+    that IPC resources (shared memory and semaphores) are not prematurely
+    removed by the operating system.  This is especially of concern when
+    installing PostgreSQL from source.  Users of distribution packages of
+    PostgreSQL are less likely to be affected, as
+    the <TT
+CLASS="LITERAL"
+>postgres</TT
+> user is then normally created as a system
+    user.
+   </P
+><P
+>    The setting <TT
+CLASS="LITERAL"
+>RemoveIPC</TT
+>
+    in <TT
+CLASS="FILENAME"
+>logind.conf</TT
+> controls whether IPC objects are
+    removed when a user fully logs out.  System users are exempt.  This
+    setting defaults to on in stock <SPAN
+CLASS="PRODUCTNAME"
+>systemd</SPAN
+>, but
+    some operating system distributions default it to off.
+   </P
+><P
+>    A typical observed effect when this setting is on is that the semaphore
+    objects used by a PostgreSQL server are removed at apparently random
+    times, leading to the server crashing with log messages like
+</P><PRE
+CLASS="SCREEN"
+>LOG: semctl(1234567890, 0, IPC_RMID, ...) failed: Invalid argument</PRE
+><P>
+    Different types of IPC objects (shared memory vs. semaphores, System V
+    vs. POSIX) are treated slightly differently
+    by <SPAN
+CLASS="PRODUCTNAME"
+>systemd</SPAN
+>, so one might observe that some IPC
+    resources are not removed in the same way as others.  But it is not
+    advisable to rely on these subtle differences.
+   </P
+><P
+>    A <SPAN
+CLASS="QUOTE"
+>"user logging out"</SPAN
+> might happen as part of a maintenance
+    job or manually when an administrator logs in as
+    the <TT
+CLASS="LITERAL"
+>postgres</TT
+> user or something similar, so it is hard
+    to prevent in general.
+   </P
+><P
+>    What is a <SPAN
+CLASS="QUOTE"
+>"system user"</SPAN
+> is determined
+    at <SPAN
+CLASS="PRODUCTNAME"
+>systemd</SPAN
+> compile time from
+    the <TT
+CLASS="SYMBOL"
+>SYS_UID_MAX</TT
+> setting
+    in <TT
+CLASS="FILENAME"
+>/etc/login.defs</TT
+>.
+   </P
+><P
+>    Packaging and deployment scripts should be careful to create
+    the <TT
+CLASS="LITERAL"
+>postgres</TT
+> user as a system user by
+    using <TT
+CLASS="LITERAL"
+>useradd -r</TT
+>, <TT
+CLASS="LITERAL"
+>adduser --system</TT
+>,
+    or equivalent.
+   </P
+><P
+>    Alternatively, if the user account was created incorrectly or cannot be
+    changed, it is recommended to set
+</P><PRE
+CLASS="PROGRAMLISTING"
+>RemoveIPC=no</PRE
+><P>
+    in <TT
+CLASS="FILENAME"
+>/etc/systemd/logind.conf</TT
+> or another appropriate
+    configuration file.
+   </P
+><DIV
+CLASS="CAUTION"
+><P
+></P
+><TABLE
+CLASS="CAUTION"
+BORDER="1"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Caution</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>     At least one of these two things has to be ensured, or the PostgreSQL
+     server will be very unreliable.
+    </P
+></TD
+></TR
+></TABLE
+></DIV
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
+NAME="AEN31887"
+>18.4.3. Resource Limits</A
 ></H2
 ><P
 >    Unix-like operating systems enforce various kinds of resource limits
@@ -1399,7 +1540,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LINUX-MEMORY-OVERCOMMIT"
->18.4.3. Linux Memory Overcommit</A
+>18.4.4. Linux Memory Overcommit</A
 ></H2
 ><P
 >    In Linux 2.4 and later, the default virtual memory behavior is not
@@ -1636,7 +1777,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="LINUX-HUGE-PAGES"
->18.4.4. Linux Huge Pages</A
+>18.4.5. Linux Huge Pages</A
 ></H2
 ><P
 >    Using huge pages reduces overhead when using large contiguous chunks of

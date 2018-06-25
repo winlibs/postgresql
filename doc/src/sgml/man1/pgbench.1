@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pgbench
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "PGBENCH" "1" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "PGBENCH" "1" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -694,7 +694,7 @@ There is a simple variable\-substitution facility for script files\&. Variables 
 option, explained above, or by the meta commands explained below\&. In addition to any variables preset by
 \fB\-D\fR
 command\-line options, there are a few variables that are preset automatically, listed in
-Table\ \&237, \(lqAutomatic Variables\(rq\&. A value specified for these variables using
+Table\ \&238, \(lqAutomatic Variables\(rq\&. A value specified for these variables using
 \fB\-D\fR
 takes precedence over the automatic presets\&. Once set, a variable\*(Aqs value can be inserted into a SQL command by writing
 :\fIvariablename\fR\&. When running more than one client session, each session has its own set of variables\&.
@@ -703,7 +703,7 @@ takes precedence over the automatic presets\&. Once set, a variable\*(Aqs value 
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&237.\ \&Automatic Variables
+.B Table\ \&238.\ \&Automatic Variables
 .TS
 allbox tab(:);
 lB lB.
@@ -833,7 +833,7 @@ Example:
 .SS "Built\-In Functions"
 .PP
 The functions listed in
-Table\ \&238, \(lqpgbench Functions\(rq
+Table\ \&239, \(lqpgbench Functions\(rq
 are built into
 pgbench
 and may be used in expressions appearing in
@@ -843,7 +843,7 @@ and may be used in expressions appearing in
 .nr an-no-space-flag 1
 .nr an-break-flag 1
 .br
-.B Table\ \&238.\ \&pgbench Functions
+.B Table\ \&239.\ \&pgbench Functions
 .TS
 allbox tab(:);
 lB lB lB lB lB.
@@ -1363,3 +1363,11 @@ pgbench
 on a different machine from the database server, although low network latency will be essential\&. It might even be useful to run several
 pgbench
 instances concurrently, on several client machines, against the same database server\&.
+.SS "Security"
+.PP
+If untrusted users have access to a database that has not adopted a
+secure schema usage pattern, do not run
+pgbench
+in that database\&.
+pgbench
+uses unqualified names and does not manipulate the search path\&.

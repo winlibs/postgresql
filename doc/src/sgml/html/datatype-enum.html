@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -111,7 +111,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN6898"
+NAME="AEN6918"
 >8.7.1. Declaration of Enumerated Types</A
 ></H2
 ><P
@@ -149,7 +149,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN6904"
+NAME="AEN6924"
 >8.7.2. Ordering</A
 ></H2
 ><P
@@ -191,7 +191,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN6908"
+NAME="AEN6928"
 >8.7.3. Type Safety</A
 ></H2
 ><P
@@ -235,9 +235,30 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN6914"
+NAME="AEN6934"
 >8.7.4. Implementation Details</A
 ></H2
+><P
+>     Enum labels are case sensitive, so
+     <TT
+CLASS="TYPE"
+>'happy'</TT
+> is not the same as <TT
+CLASS="TYPE"
+>'HAPPY'</TT
+>.
+     White space in the labels is significant too.
+    </P
+><P
+>     Although enum types are primarily intended for static sets of values,
+     there is support for adding new values to an existing enum type, and for
+     renaming values (see <A
+HREF="sql-altertype.html"
+>ALTER TYPE</A
+>).  Existing values
+     cannot be removed from an enum type, nor can the sort ordering of such
+     values be changed, short of dropping and re-creating the enum type.
+    </P
 ><P
 >     An enum value occupies four bytes on disk.  The length of an enum
      value's textual label is limited by the <TT
@@ -249,17 +270,6 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 >; in standard
      builds this means at most 63 bytes.
-    </P
-><P
->     Enum labels are case sensitive, so
-     <TT
-CLASS="TYPE"
->'happy'</TT
-> is not the same as <TT
-CLASS="TYPE"
->'HAPPY'</TT
->.
-     White space in the labels is significant too.
     </P
 ><P
 >     The translations from internal enum values to textual labels are

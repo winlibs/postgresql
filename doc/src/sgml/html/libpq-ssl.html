@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -156,13 +156,39 @@ CLASS="PRODUCTNAME"
    the server certificate. This means that it is possible to spoof the server
    identity (for example by modifying a DNS record or by taking over the server
    IP address) without the client knowing. In order to prevent spoofing,
-   <ACRONYM
+   the client must be able to verify the server's identity via a chain of
+   trust.  A chain of trust is established by placing a root (self-signed)
+   certificate authority (<ACRONYM
 CLASS="ACRONYM"
->SSL</ACRONYM
-> certificate verification must be used.
+>CA</ACRONYM
+>) certificate on one
+   computer and a leaf certificate <SPAN
+CLASS="emphasis"
+><I
+CLASS="EMPHASIS"
+>signed</I
+></SPAN
+> by the
+   root certificate on another computer.  It is also possible to use an
+   <SPAN
+CLASS="QUOTE"
+>"intermediate"</SPAN
+> certificate which is signed by the root
+   certificate and signs leaf certificates.
   </P
 ><P
->   If the parameter <TT
+>   To allow the client to verify the identity of the server, place a root
+   certificate on the client and a leaf certificate signed by the root
+   certificate on the server.  To allow the server to verify the identity
+   of the client, place a root certificate on the server and a leaf
+   certificate signed by the root certificate on the client.  One or more
+   intermediate certificates (usually stored with the leaf certificate)
+   can also be used to link the leaf certificate to the root certificate.
+  </P
+><P
+>   Once a chain of trust has been established, there are two ways for
+   the client to validate the leaf certificate sent by the server.
+   If the parameter <TT
 CLASS="LITERAL"
 >sslmode</TT
 > is set to <TT
@@ -170,11 +196,8 @@ CLASS="LITERAL"
 >verify-ca</TT
 >,
    libpq will verify that the server is trustworthy by checking the
-   certificate chain up to a trusted certificate authority
-   (<ACRONYM
-CLASS="ACRONYM"
->CA</ACRONYM
->). If <TT
+   certificate chain up to the root certificate stored on the client.
+   If <TT
 CLASS="LITERAL"
 >sslmode</TT
 > is set to <TT
@@ -187,9 +210,10 @@ CLASS="emphasis"
 CLASS="EMPHASIS"
 >also</I
 ></SPAN
-> verify that the server host name matches its
-   certificate. The SSL connection will fail if the server certificate cannot
-   be verified. <TT
+> verify that the server host
+   name matches the name stored in the server certificate. The
+   SSL connection will fail if the server certificate cannot be
+   verified. <TT
 CLASS="LITERAL"
 >verify-full</TT
 > is recommended in most
@@ -225,31 +249,19 @@ CLASS="LITERAL"
    IP address will be matched (without doing any DNS lookups).
   </P
 ><P
->   To allow server certificate verification, the certificate(s) of one or more
-   trusted <ACRONYM
-CLASS="ACRONYM"
->CA</ACRONYM
->s must be
-   placed in the file <TT
+>   To allow server certificate verification, one or more root certificates
+   must be placed in the file <TT
 CLASS="FILENAME"
 >~/.postgresql/root.crt</TT
-> in the user's home
-   directory. If intermediate <ACRONYM
-CLASS="ACRONYM"
->CA</ACRONYM
->s appear in
-   <TT
-CLASS="FILENAME"
->root.crt</TT
->, the file must also contain certificate
-   chains to their root <ACRONYM
-CLASS="ACRONYM"
->CA</ACRONYM
->s. (On Microsoft Windows the file is named
+>
+   in the user's home directory.  (On Microsoft Windows the file is named
    <TT
 CLASS="FILENAME"
 >%APPDATA%\postgresql\root.crt</TT
->.)
+>.)  Intermediate
+   certificates should also be added to the file if they are needed to link
+   the certificate chain sent by the server to the root certificates
+   stored on the client.
   </P
 ><P
 >   Certificate Revocation List (CRL) entries are also checked
@@ -323,20 +335,18 @@ NAME="LIBPQ-SSL-CLIENTCERT"
 >32.18.2. Client Certificates</A
 ></H2
 ><P
->   If the server requests a trusted client certificate,
+>   If the server attempts to verify the identity of the
+   client by requesting the client's leaf certificate,
    <SPAN
 CLASS="APPLICATION"
 >libpq</SPAN
-> will send the certificate stored in
+> will send the certificates stored in
    file <TT
 CLASS="FILENAME"
 >~/.postgresql/postgresql.crt</TT
 > in the user's home
-   directory.  The certificate must be signed by one of the certificate
-   authorities (<ACRONYM
-CLASS="ACRONYM"
->CA</ACRONYM
->) trusted by the server.  A matching
+   directory.  The certificates must chain to the root certificate trusted
+   by the server.  A matching
    private key file <TT
 CLASS="FILENAME"
 >~/.postgresql/postgresql.key</TT
@@ -374,38 +384,26 @@ CLASS="ENVAR"
 >.
   </P
 ><P
->   In some cases, the client certificate might be signed by an
-   <SPAN
-CLASS="QUOTE"
->"intermediate"</SPAN
-> certificate authority, rather than one that is
-   directly trusted by the server.  To use such a certificate, append the
-   certificate of the signing authority to the <TT
+>   The first certificate in <TT
 CLASS="FILENAME"
 >postgresql.crt</TT
->
-   file, then its parent authority's certificate, and so on up to a certificate
-   authority, <SPAN
+> must be the
+   client's certificate because it must match the client's private key.
+   <SPAN
 CLASS="QUOTE"
->"root"</SPAN
-> or <SPAN
-CLASS="QUOTE"
->"intermediate"</SPAN
->, that is trusted by
-   the server, i.e. signed by a certificate in the server's
-   <TT
+>"Intermediate"</SPAN
+> certificates can be optionally appended
+   to the file &mdash; doing so avoids requiring storage of intermediate
+   certificates on the server's <TT
 CLASS="FILENAME"
 >root.crt</TT
 > file.
   </P
 ><P
->   Note that the client's <TT
-CLASS="FILENAME"
->~/.postgresql/root.crt</TT
-> lists the top-level CAs
-   that are considered trusted for signing server certificates.  In principle it need
-   not list the CA that signed the client's certificate, though in most cases
-   that CA would also be trusted for server certificates.
+>   For instructions on creating certificates, see <A
+HREF="ssl-tcp.html#SSL-CERTIFICATE-CREATION"
+>Section 18.9.3</A
+>.
   </P
 ></DIV
 ><DIV

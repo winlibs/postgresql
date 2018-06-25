@@ -807,7 +807,7 @@ sql_help_ALTER_ROLE(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "    [ GROUP ] %s\n"
+					  "    %s\n"
 					  "  | CURRENT_USER\n"
 					  "  | SESSION_USER",
 					  _("role_specification"),
@@ -1235,7 +1235,7 @@ sql_help_ALTER_USER(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "    [ GROUP ] %s\n"
+					  "    %s\n"
 					  "  | CURRENT_USER\n"
 					  "  | SESSION_USER",
 					  _("role_specification"),
@@ -2128,7 +2128,7 @@ sql_help_CREATE_SCHEMA(PQExpBuffer buf)
 					  "\n"
 					  "%s\n"
 					  "\n"
-					  "    [ GROUP ] %s\n"
+					  "    %s\n"
 					  "  | CURRENT_USER\n"
 					  "  | SESSION_USER",
 					  _("schema_name"),

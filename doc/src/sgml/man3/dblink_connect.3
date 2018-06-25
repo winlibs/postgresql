@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: dblink_connect
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "DBLINK_CONNECT" "3" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "DBLINK_CONNECT" "3" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -60,7 +60,7 @@ The name to use for this connection; if omitted, an unnamed connection is opened
 \fIconnstr\fR
 .RS 4
 libpq\-style connection info string, for example
-hostaddr=127\&.0\&.0\&.1 port=5432 dbname=mydb user=postgres password=mypasswd\&. For details see
+hostaddr=127\&.0\&.0\&.1 port=5432 dbname=mydb user=postgres password=mypasswd options=\-csearch_path=\&. For details see
 Section 32.1.1, \(lqConnection Strings\(rq, in the documentation\&. Alternatively, the name of a foreign server\&.
 .RE
 .SH "RETURN VALUE"
@@ -69,6 +69,14 @@ Returns status, which is always
 OK
 (since any error causes the function to throw an error instead of returning)\&.
 .SH "NOTES"
+.PP
+If untrusted users have access to a database that has not adopted a
+secure schema usage pattern, begin each session by removing publicly\-writable schemas from
+\fIsearch_path\fR\&. One could, for example, add
+options=\-csearch_path=
+to
+\fIconnstr\fR\&. This consideration is not specific to
+dblink; it applies to every interface for executing arbitrary SQL commands\&.
 .PP
 Only superusers may use
 \fBdblink_connect\fR
@@ -85,13 +93,13 @@ functions\&.
 .RS 4
 .\}
 .nf
-SELECT dblink_connect(\*(Aqdbname=postgres\*(Aq);
+SELECT dblink_connect(\*(Aqdbname=postgres options=\-csearch_path=\*(Aq);
  dblink_connect
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
  OK
 (1 row)
 
-SELECT dblink_connect(\*(Aqmyconn\*(Aq, \*(Aqdbname=postgres\*(Aq);
+SELECT dblink_connect(\*(Aqmyconn\*(Aq, \*(Aqdbname=postgres options=\-csearch_path=\*(Aq);
  dblink_connect
 \-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
  OK

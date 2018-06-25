@@ -739,6 +739,17 @@ select my_avg(one) filter (where one > 1),my_sum(one) from (values(1),(3)) t(one
 -- this should not share the state due to different input columns.
 select my_avg(one),my_sum(two) from (values(1,2),(3,4)) t(one,two);
 
+-- ideally these would share state, but we have to fix the OSAs first.
+select
+  percentile_cont(0.5) within group (order by a),
+  percentile_disc(0.5) within group (order by a)
+from (values(1::float8),(3),(5),(7)) t(a);
+
+select
+  rank(4) within group (order by a),
+  dense_rank(4) within group (order by a)
+from (values(1),(3),(5),(7)) t(a);
+
 -- test that aggs with the same sfunc and initcond share the same agg state
 create aggregate my_sum_init(int4)
 (
@@ -824,3 +835,68 @@ create aggregate my_half_sum(int4)
 select my_sum(one),my_half_sum(one) from (values(1),(2),(3),(4)) t(one);
 
 rollback;
+
+
+-- test that the aggregate transition logic correctly handles
+-- transition / combine functions returning NULL
+
+-- First test the case of a normal transition function returning NULL
+BEGIN;
+CREATE FUNCTION balkifnull(int8, int4)
+RETURNS int8
+STRICT
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF $1 IS NULL THEN
+       RAISE 'erroneously called with NULL argument';
+    END IF;
+    RETURN NULL;
+END$$;
+
+CREATE AGGREGATE balk(
+    BASETYPE = int4,
+    SFUNC = balkifnull(int8, int4),
+    STYPE = int8,
+    "PARALLEL" = SAFE,
+    INITCOND = '0');
+
+SELECT balk(hundred) FROM tenk1;
+
+ROLLBACK;
+
+-- Secondly test the case of a parallel aggregate combiner function
+-- returning NULL. For that use normal transition function, but a
+-- combiner function returning NULL.
+BEGIN ISOLATION LEVEL REPEATABLE READ;
+CREATE FUNCTION balkifnull(int8, int8)
+RETURNS int8
+PARALLEL SAFE
+STRICT
+LANGUAGE plpgsql AS $$
+BEGIN
+    IF $1 IS NULL THEN
+       RAISE 'erroneously called with NULL argument';
+    END IF;
+    RETURN NULL;
+END$$;
+
+CREATE AGGREGATE balk(
+    BASETYPE = int4,
+    SFUNC = int4_sum(int8, int4),
+    STYPE = int8,
+    COMBINEFUNC = balkifnull(int8, int8),
+    "PARALLEL" = SAFE,
+    INITCOND = '0'
+);
+
+-- force use of parallelism
+ALTER TABLE tenk1 set (parallel_workers = 4);
+SET LOCAL parallel_setup_cost=0;
+SET LOCAL max_parallel_workers_per_gather=4;
+SET LOCAL enable_indexscan = off;
+SET LOCAL enable_bitmapscan = off;
+
+EXPLAIN (COSTS OFF) SELECT balk(hundred) FROM tenk1;
+SELECT balk(hundred) FROM tenk1;
+
+ROLLBACK;

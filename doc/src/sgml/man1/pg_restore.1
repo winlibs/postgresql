@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_restore
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "PG_RESTORE" "1" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "PG_RESTORE" "1" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -557,7 +557,8 @@ to avoid the extra connection attempt\&.
 Specifies a role name to be used to perform the restore\&. This option causes
 pg_restore
 to issue a
-\fBSET ROLE\fR\fIrolename\fR
+\fBSET ROLE\fR
+\fIrolename\fR
 command after connecting to the database\&. It is useful when the authenticated user (specified by
 \fB\-U\fR) lacks privileges needed by
 pg_restore, but can switch to a role with the required rights\&. Some installations have a policy against logging in directly as a superuser, and use of this option allows restores to be performed without violating the policy\&.

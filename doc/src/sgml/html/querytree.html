@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="The Rule System"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -281,7 +281,7 @@ CLASS="LITERAL"
 CLASS="COMMAND"
 >DELETE</TT
 > commands don't need a normal target list
-        because they don't produce any result.  Instead, the rule system
+        because they don't produce any result.  Instead, the planner
         adds a special <ACRONYM
 CLASS="ACRONYM"
 >CTID</ACRONYM
@@ -291,8 +291,8 @@ CLASS="ACRONYM"
 CLASS="ACRONYM"
 >CTID</ACRONYM
 > is added when the result relation is an ordinary
-        table.  If it is a view, a whole-row variable is added instead,
-        as described in <A
+        table.  If it is a view, a whole-row variable is added instead, by
+        the rule system, as described in <A
 HREF="rules-views.html#RULES-VIEWS-UPDATE"
 >Section 39.2.4</A
 >.)
@@ -336,10 +336,10 @@ CLASS="LITERAL"
 CLASS="COMMAND"
 >DELETE</TT
 >,
-        the rule system adds a <ACRONYM
+        a <ACRONYM
 CLASS="ACRONYM"
 >CTID</ACRONYM
-> or whole-row variable so that
+> or whole-row variable is added so that
         the executor can identify the old row to be updated.
     </P
 ><P

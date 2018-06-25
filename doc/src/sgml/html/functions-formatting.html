@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1578,7 +1578,7 @@ CLASS="LITERAL"
 >9</TT
 ></TD
 ><TD
->value with the specified number of digits</TD
+>digit position (can be dropped if insignificant)</TD
 ></TR
 ><TR
 ><TD
@@ -1587,7 +1587,7 @@ CLASS="LITERAL"
 >0</TT
 ></TD
 ><TD
->value with leading zeros</TD
+>digit position (will not be dropped, even if insignificant)</TD
 ></TR
 ><TR
 ><TD
@@ -1605,7 +1605,7 @@ CLASS="LITERAL"
 >,</TT
 > (comma)</TD
 ><TD
->group (thousand) separator</TD
+>group (thousands) separator</TD
 ></TR
 ><TR
 ><TD
@@ -1729,6 +1729,72 @@ CLASS="LITERAL"
 ></P><UL
 ><LI
 ><P
+>       <TT
+CLASS="LITERAL"
+>0</TT
+> specifies a digit position that will always be printed,
+       even if it contains a leading/trailing zero.  <TT
+CLASS="LITERAL"
+>9</TT
+> also
+       specifies a digit position, but if it is a leading zero then it will
+       be replaced by a space, while if it is a trailing zero and fill mode
+       is specified then it will be deleted.  (For <CODE
+CLASS="FUNCTION"
+>to_number()</CODE
+>,
+       these two pattern characters are equivalent.)
+      </P
+></LI
+><LI
+><P
+>       The pattern characters <TT
+CLASS="LITERAL"
+>S</TT
+>, <TT
+CLASS="LITERAL"
+>L</TT
+>, <TT
+CLASS="LITERAL"
+>D</TT
+>,
+       and <TT
+CLASS="LITERAL"
+>G</TT
+> represent the sign, currency symbol, decimal point,
+       and thousands separator characters defined by the current locale
+       (see <A
+HREF="runtime-config-client.html#GUC-LC-MONETARY"
+>lc_monetary</A
+>
+       and <A
+HREF="runtime-config-client.html#GUC-LC-NUMERIC"
+>lc_numeric</A
+>).  The pattern characters period
+       and comma represent those exact characters, with the meanings of
+       decimal point and thousands separator, regardless of locale.
+      </P
+></LI
+><LI
+><P
+>       If no explicit provision is made for a sign
+       in <CODE
+CLASS="FUNCTION"
+>to_char()</CODE
+>'s pattern, one column will be reserved for
+       the sign, and it will be anchored to (appear just left of) the
+       number.  If <TT
+CLASS="LITERAL"
+>S</TT
+> appears just left of some <TT
+CLASS="LITERAL"
+>9</TT
+>'s,
+       it will likewise be anchored to the number.
+      </P
+></LI
+><LI
+><P
 >       A sign formatted using <TT
 CLASS="LITERAL"
 >SG</TT
@@ -1755,7 +1821,7 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >'&nbsp;&nbsp;-12'</TT
 >.
-       The Oracle implementation does not allow the use of
+       (The Oracle implementation does not allow the use of
        <TT
 CLASS="LITERAL"
 >MI</TT
@@ -1770,20 +1836,7 @@ CLASS="LITERAL"
        <TT
 CLASS="LITERAL"
 >MI</TT
->.
-      </P
-></LI
-><LI
-><P
->       <TT
-CLASS="LITERAL"
->9</TT
-> results in a value with the same number of
-       digits as there are <TT
-CLASS="LITERAL"
->9</TT
->s. If a digit is
-       not available it outputs a space.
+>.)
       </P
 ></LI
 ><LI
@@ -1889,11 +1942,11 @@ CLASS="LITERAL"
 >    Certain modifiers can be applied to any template pattern to alter its
     behavior.  For example, <TT
 CLASS="LITERAL"
->FM9999</TT
+>FM99.99</TT
 >
     is the <TT
 CLASS="LITERAL"
->9999</TT
+>99.99</TT
 > pattern with the
     <TT
 CLASS="LITERAL"
@@ -1935,11 +1988,11 @@ CLASS="LITERAL"
 >FM</TT
 > prefix</TD
 ><TD
->fill mode (suppress leading zeroes and padding blanks)</TD
+>fill mode (suppress trailing zeroes and padding blanks)</TD
 ><TD
 ><TT
 CLASS="LITERAL"
->FM9999</TT
+>FM99.99</TT
 ></TD
 ></TR
 ><TR
@@ -2053,6 +2106,18 @@ CLASS="LITERAL"
 ><TT
 CLASS="LITERAL"
 >'-.1'</TT
+></TD
+></TR
+><TR
+><TD
+><TT
+CLASS="LITERAL"
+>to_char(-0.1, 'FM90.99')</TT
+></TD
+><TD
+><TT
+CLASS="LITERAL"
+>'-0.1'</TT
 ></TD
 ></TR
 ><TR

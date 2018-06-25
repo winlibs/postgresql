@@ -75,6 +75,9 @@ main(int argc, char **argv)
 	char	   *deletion_script_file_name = NULL;
 	bool		live_check = false;
 
+	/* Ensure that all files created by pg_upgrade are non-world-readable */
+	umask(S_IRWXG | S_IRWXO);
+
 	parseCommandLine(argc, argv);
 
 	get_restricted_token(os_info.progname);
@@ -268,13 +271,13 @@ static void
 prepare_new_databases(void)
 {
 	/*
-	 * We set autovacuum_freeze_max_age to its maximum value so autovacuum
-	 * does not launch here and delete clog files, before the frozen xids are
-	 * set.
+	 * Before we restore anything, set frozenxids of initdb-created tables.
 	 */
-
 	set_frozenxids(false);
 
+	/*
+	 * Now restore global objects (roles and tablespaces).
+	 */
 	prep_status("Restoring global objects in the new cluster");
 
 	/*
@@ -492,14 +495,25 @@ copy_clog_xlog_xid(void)
 /*
  *	set_frozenxids()
  *
- *	We have frozen all xids, so set datfrozenxid, relfrozenxid, and
- *	relminmxid to be the old cluster's xid counter, which we just set
- *	in the new cluster.  User-table frozenxid and minmxid values will
- *	be set by pg_dump --binary-upgrade, but objects not set by the pg_dump
- *	must have proper frozen counters.
+ * This is called on the new cluster before we restore anything, with
+ * minmxid_only = false.  Its purpose is to ensure that all initdb-created
+ * vacuumable tables have relfrozenxid/relminmxid matching the old cluster's
+ * xid/mxid counters.  We also initialize the datfrozenxid/datminmxid of the
+ * built-in databases to match.
+ *
+ * As we create user tables later, their relfrozenxid/relminmxid fields will
+ * be restored properly by the binary-upgrade restore script.  Likewise for
+ * user-database datfrozenxid/datminmxid.  However, if we're upgrading from a
+ * pre-9.3 database, which does not store per-table or per-DB minmxid, then
+ * the relminmxid/datminmxid values filled in by the restore script will just
+ * be zeroes.
+ *
+ * Hence, with a pre-9.3 source database, a second call occurs after
+ * everything is restored, with minmxid_only = true.  This pass will
+ * initialize all tables and databases, both those made by initdb and user
+ * objects, with the desired minmxid value.  frozenxid values are left alone.
  */
-static
-void
+static void
 set_frozenxids(bool minmxid_only)
 {
 	int			dbnum;

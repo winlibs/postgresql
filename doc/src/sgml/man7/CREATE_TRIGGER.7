@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE TRIGGER
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "CREATE TRIGGER" "7" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "CREATE TRIGGER" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -384,6 +384,12 @@ AFTER
 trigger\*(Aqs
 WHEN
 condition does not return true, it is not necessary to queue an event nor to re\-fetch the row at end of statement\&. This can result in significant speedups in statements that modify many rows, if the trigger only needs to be fired for a few of the rows\&.
+.PP
+Statement\-level triggers on a view are fired only if the action on the view is handled by a row\-level
+INSTEAD OF
+trigger\&. If the action is handled by an
+INSTEAD
+rule, then whatever statements are emitted by the rule are executed in place of the original statement naming the view, so that the triggers that will be fired are those on tables named in the replacement statements\&. Similarly, if the view is automatically updatable, then the action is handled by automatically rewriting the statement into an action on the view\*(Aqs base table, so that the base table\*(Aqs statement\-level triggers are the ones that are fired\&.
 .PP
 In
 PostgreSQL

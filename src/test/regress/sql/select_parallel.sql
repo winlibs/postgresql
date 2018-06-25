@@ -39,7 +39,49 @@ explain (costs off)
 	select  sum(parallel_restricted(unique1)) from tenk1
 	group by(parallel_restricted(unique1));
 
+-- check parallelized int8 aggregate (bug #14897)
+explain (costs off)
+select avg(aa::int8) from a_star;
+
+select avg(aa::int8) from a_star;
+
+-- test accumulation of stats for parallel nodes
+set enable_indexscan to off;
+set enable_bitmapscan to off;
+set enable_material to off;
+alter table tenk2 set (parallel_workers = 0);
+create function explain_parallel_stats() returns setof text
+language plpgsql as
+$$
+declare ln text;
+begin
+    for ln in
+        explain (analyze, timing off, costs off)
+          select count(*) from tenk1, tenk2 where
+            tenk1.hundred > 1 and tenk2.thousand=0
+    loop
+        ln := regexp_replace(ln, 'Planning time: \S*',  'Planning time: xxx');
+        ln := regexp_replace(ln, 'Execution time: \S*', 'Execution time: xxx');
+        return next ln;
+    end loop;
+end;
+$$;
+select * from explain_parallel_stats();
+reset enable_indexscan;
+reset enable_bitmapscan;
+reset enable_material;
+alter table tenk2 reset (parallel_workers);
+drop function explain_parallel_stats();
+
+-- test the sanity of parallel query after the active role is dropped.
 set force_parallel_mode=1;
+drop role if exists regress_parallel_worker;
+create role regress_parallel_worker;
+set role regress_parallel_worker;
+reset session authorization;
+drop role regress_parallel_worker;
+select count(*) from tenk1;
+reset role;
 
 explain (costs off)
   select stringu1::int2 from tenk1 where unique1 = 1;

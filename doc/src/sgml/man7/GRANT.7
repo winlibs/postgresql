@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: GRANT
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "GRANT" "7" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "GRANT" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -133,17 +133,17 @@ The right to drop an object, or to alter its definition in any way, is not treat
 PostgreSQL grants default privileges on some types of objects to
 PUBLIC\&. No privileges are granted to
 PUBLIC
-by default on tables, columns, schemas or tablespaces\&. For other types, the default privileges granted to
+by default on tables, table columns, sequences, foreign data wrappers, foreign servers, large objects, schemas, or tablespaces\&. For other types of objects, the default privileges granted to
 PUBLIC
 are as follows:
 CONNECT
 and
-CREATE TEMP TABLE
-for databases;
+TEMPORARY
+(create temporary tables) privileges for databases;
 EXECUTE
 privilege for functions; and
 USAGE
-privilege for languages\&. The object owner can, of course,
+privilege for languages and data types (including domains)\&. The object owner can, of course,
 \fBREVOKE\fR
 both default and expressly granted privileges\&. (For maximum security, issue the
 \fBREVOKE\fR

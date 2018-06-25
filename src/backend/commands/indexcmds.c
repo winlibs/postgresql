@@ -831,6 +831,20 @@ DefineIndex(Oid relationId,
 	UnregisterSnapshot(snapshot);
 
 	/*
+	 * The snapshot subsystem could still contain registered snapshots that
+	 * are holding back our process's advertised xmin; in particular, if
+	 * default_transaction_isolation = serializable, there is a transaction
+	 * snapshot that is still active.  The CatalogSnapshot is likewise a
+	 * hazard.  To ensure no deadlocks, we must commit and start yet another
+	 * transaction, and do our wait before any snapshot has been taken in it.
+	 */
+	CommitTransactionCommand();
+	StartTransactionCommand();
+
+	/* We should now definitely not be advertising any xmin. */
+	Assert(MyPgXact->xmin == InvalidTransactionId);
+
+	/*
 	 * The index is now valid in the sense that it contains all currently
 	 * interesting tuples.  But since it might not contain tuples deleted just
 	 * before the reference snap was taken, we have to wait out any

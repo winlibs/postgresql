@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE CAST
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "CREATE CAST" "7" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "CREATE CAST" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -136,9 +136,13 @@ integer
 and
 numeric
 respectively\&. There is no
-integer+numeric
+integer
++
+numeric
 operator in the system catalogs, but there is a
-numeric+numeric
+numeric
++
+numeric
 operator\&. The query will therefore succeed if a cast from
 integer
 to
@@ -167,7 +171,9 @@ numeric
 constant to
 integer
 and applying the
-integer+integer
+integer
++
+integer
 operator\&. Lacking any knowledge of which choice to prefer, it would give up and declare the query ambiguous\&. The fact that only one of the two casts is implicit is the way in which we teach the parser to prefer resolution of a mixed
 numeric\-and\-integer
 expression as

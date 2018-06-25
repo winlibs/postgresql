@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -134,6 +134,66 @@ CLASS="FUNCTION"
 > function should be called to check
    the return value for a successful connection before queries are sent
    via the connection object.
+
+   <DIV
+CLASS="WARNING"
+><P
+></P
+><TABLE
+CLASS="WARNING"
+BORDER="1"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="CENTER"
+><B
+>Warning</B
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+><P
+>     If untrusted users have access to a database that has not adopted a
+     <A
+HREF="ddl-schemas.html#DDL-SCHEMAS-PATTERNS"
+>secure schema usage pattern</A
+>,
+     begin each session by removing publicly-writable schemas from
+     <TT
+CLASS="VARNAME"
+>search_path</TT
+>.  One can set parameter key
+     word <TT
+CLASS="LITERAL"
+>options</TT
+> to
+     value <TT
+CLASS="LITERAL"
+>-csearch_path=</TT
+>.  Alternately, one can
+     issue <TT
+CLASS="LITERAL"
+>PQexec(<TT
+CLASS="REPLACEABLE"
+><I
+>conn</I
+></TT
+>, "SELECT
+     pg_catalog.set_config('search_path', '', false)")</TT
+> after
+     connecting.  This consideration is not specific
+     to <SPAN
+CLASS="APPLICATION"
+>libpq</SPAN
+>; it applies to every interface for
+     executing arbitrary SQL commands.
+    </P
+></TD
+></TR
+></TABLE
+></DIV
+>
 
    <DIV
 CLASS="WARNING"
@@ -1402,7 +1462,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN45564"
+NAME="AEN45702"
 >32.1.1.1. Keyword/Value Connection Strings</A
 ></H3
 ><P
@@ -1445,7 +1505,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN45575"
+NAME="AEN45713"
 >32.1.1.2. Connection URIs</A
 ></H3
 ><P

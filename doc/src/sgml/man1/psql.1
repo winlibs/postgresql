@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: psql
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "PSQL" "1" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "PSQL" "1" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -406,7 +406,8 @@ command\&.
 \fB\-\-table\-attr=\fR\fB\fItable_options\fR\fR
 .RS 4
 Specifies options to be placed within the
-HTMLtable
+HTML
+table
 tag\&. See
 \fB\epset\fR
 for details\&.
@@ -640,7 +641,7 @@ is currently connected, followed by the string
 .\}
 .nf
 $ \fBpsql testdb\fR
-psql (9\&.6\&.5)
+psql (9\&.6\&.9)
 Type "help" for help\&.
 
 testdb=>
@@ -652,6 +653,15 @@ testdb=>
 At the prompt, the user can type in
 SQL
 commands\&. Ordinarily, input lines are sent to the server when a command\-terminating semicolon is reached\&. An end of line does not terminate a command\&. Thus commands can be spread over several lines for clarity\&. If the command was sent and executed without error, the results of the command are displayed on the screen\&.
+.PP
+If untrusted users have access to a database that has not adopted a
+secure schema usage pattern, begin your session by removing publicly\-writable schemas from
+\fIsearch_path\fR\&. One can add
+options=\-csearch_path=
+to the connection string or issue
+SELECT pg_catalog\&.set_config(\*(Aqsearch_path\*(Aq, \*(Aq\*(Aq, false)
+before other SQL commands\&. This consideration is not specific to
+psql; it applies to every interface for executing arbitrary SQL commands\&.
 .PP
 Whenever a command is executed,
 psql
@@ -817,7 +827,8 @@ Outputs information about the current database connection\&.
 \ecopy { \fItable\fR [ ( \fIcolumn_list\fR ) ] | ( \fIquery\fR ) } { from | to } { \fI\*(Aqfilename\*(Aq\fR | program \fI\*(Aqcommand\*(Aq\fR | stdin | stdout | pstdin | pstdout } [ [ with ] ( \fIoption\fR [, \&.\&.\&.] ) ]
 .RS 4
 Performs a frontend (client) copy\&. This is an operation that runs an
-SQL\fBCOPY\fR(7)
+SQL
+\fBCOPY\fR(7)
 command, but instead of the server reading or writing the specified file,
 psql
 reads or writes the file and routes the data between the server and the local file system\&. This means that file accessibility and privileges are those of the local user, not the server, and no SQL superuser privileges are required\&.
@@ -850,7 +861,8 @@ or
 to pstdout\&.
 .sp
 The syntax of this command is similar to that of the
-SQL\fBCOPY\fR(7)
+SQL
+\fBCOPY\fR(7)
 command\&. All options other than the data source/destination are as specified for
 \fBCOPY\fR(7)\&. Because of this, special parsing rules apply to the
 \fB\ecopy\fR
@@ -869,7 +881,8 @@ psql\*(Aqs variable substitution rules and backslash escapes do not apply\&.
 .ps -1
 .br
 This operation is not as efficient as the
-SQL\fBCOPY\fR
+SQL
+\fBCOPY\fR
 command because all data must pass through the client/server connection\&. For large amounts of data the
 SQL
 command might be preferable\&.
@@ -1054,7 +1067,8 @@ S
 modifier to include system objects\&.
 .sp
 Descriptions for objects can be created with the
-\fBCOMMENT\fR(7)SQL
+\fBCOMMENT\fR(7)
+SQL
 command\&.
 .RE
 .PP
@@ -1750,7 +1764,8 @@ is appended to the command name, database sizes, default tablespaces, and descri
 \elo_export \fIloid\fR \fIfilename\fR
 .RS 4
 Reads the large object with
-OID\fIloid\fR
+OID
+\fIloid\fR
 from the database and writes it to
 \fIfilename\fR\&. Note that this is subtly different from the server function
 \fBlo_export\fR, which acts with the permissions of the user that the database server runs as and on the server\*(Aqs file system\&.
@@ -1810,7 +1825,8 @@ large objects currently stored in the database, along with any comments provided
 \elo_unlink \fIloid\fR
 .RS 4
 Deletes the large object with
-OID\fIloid\fR
+OID
+\fIloid\fR
 from the database\&.
 .if n \{\
 .sp
@@ -2026,7 +2042,8 @@ LaTeX
 you must have a complete document wrapper\&.
 latex\-longtable
 also requires the
-LaTeXlongtable
+LaTeX
+longtable
 and
 booktabs
 packages\&.
@@ -2228,6 +2245,7 @@ There are various shortcut commands for
 \fB\epset\fR\&. See
 \fB\ea\fR,
 \fB\eC\fR,
+\fB\ef\fR,
 \fB\eH\fR,
 \fB\et\fR,
 \fB\eT\fR, and
@@ -3086,7 +3104,8 @@ issues can be customized to your preference\&. The three variables
 contain strings and special escape sequences that describe the appearance of the prompt\&. Prompt 1 is the normal prompt that is issued when
 psql
 requests a new command\&. Prompt 2 is issued when more input is expected during command entry, for example because the command was not terminated with a semicolon or a quote was not closed\&. Prompt 3 is issued when you are running an
-SQL\fBCOPY FROM STDIN\fR
+SQL
+\fBCOPY FROM STDIN\fR
 command and you need to type in a row value on the terminal\&.
 .PP
 The value of the selected prompt variable is printed literally, except where a percent sign (%) is encountered\&. Depending on the next character, certain other text is substituted instead\&. Defined substitutions are:

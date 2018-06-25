@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="ECPG - Embedded SQL in C"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -690,7 +690,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN51405"
+NAME="AEN51548"
 >34.7.2.1. SQLDA Data Structure</A
 ></H3
 ><P
@@ -1401,6 +1401,7 @@ main(void)
     EXEC SQL END DECLARE SECTION;
 
     EXEC SQL CONNECT TO testdb AS con1 USER testuser;
+    EXEC SQL SELECT pg_catalog.set_config('search_path', '', false); EXEC SQL COMMIT;
 
     EXEC SQL PREPARE stmt1 FROM :query;
     EXEC SQL DECLARE cur1 CURSOR FOR stmt1;</PRE
@@ -1607,6 +1608,7 @@ main(void)
     EXEC SQL END DECLARE SECTION;
 
     EXEC SQL CONNECT TO uptimedb AS con1 USER uptime;
+    EXEC SQL SELECT pg_catalog.set_config('search_path', '', false); EXEC SQL COMMIT;
 
     EXEC SQL PREPARE stmt1 FROM :query;
     EXEC SQL DECLARE cur1 CURSOR FOR stmt1;

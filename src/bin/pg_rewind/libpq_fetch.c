@@ -29,6 +29,7 @@
 #include "libpq-fe.h"
 #include "catalog/catalog.h"
 #include "catalog/pg_type.h"
+#include "fe_utils/connect.h"
 
 static PGconn *conn = NULL;
 
@@ -57,6 +58,12 @@ libpqConnect(const char *connstr)
 				 PQerrorMessage(conn));
 
 	pg_log(PG_PROGRESS, "connected to server\n");
+
+	res = PQexec(conn, ALWAYS_SECURE_SEARCH_PATH_SQL);
+	if (PQresultStatus(res) != PGRES_TUPLES_OK)
+		pg_fatal("could not clear search_path: %s",
+				 PQresultErrorMessage(res));
+	PQclear(res);
 
 	/*
 	 * Check that the server is not in hot standby mode. There is no
@@ -271,6 +278,7 @@ receiveFileChunks(const char *sql)
 		char	   *filename;
 		int			filenamelen;
 		int64		chunkoff;
+		char		chunkoff_str[32];
 		int			chunksize;
 		char	   *chunk;
 
@@ -329,22 +337,31 @@ receiveFileChunks(const char *sql)
 		chunk = PQgetvalue(res, 0, 2);
 
 		/*
-		 * It's possible that the file was deleted on remote side after we
-		 * created the file map. In this case simply ignore it, as if it was
-		 * not there in the first place, and move on.
+		 * If a file has been deleted on the source, remove it on the target
+		 * as well.  Note that multiple unlink() calls may happen on the same
+		 * file if multiple data chunks are associated with it, hence ignore
+		 * unconditionally anything missing.  If this file is not a relation
+		 * data file, then it has been already truncated when creating the
+		 * file chunk list at the previous execution of the filemap.
 		 */
 		if (PQgetisnull(res, 0, 2))
 		{
 			pg_log(PG_DEBUG,
 				   "received null value for chunk for file \"%s\", file has been deleted\n",
 				   filename);
+			remove_target_file(filename, true);
 			pg_free(filename);
 			PQclear(res);
 			continue;
 		}
 
-		pg_log(PG_DEBUG, "received chunk for file \"%s\", offset " INT64_FORMAT ", size %d\n",
-			   filename, chunkoff, chunksize);
+		/*
+		 * Separate step to keep platform-dependent format code out of
+		 * translatable strings.
+		 */
+		snprintf(chunkoff_str, sizeof(chunkoff_str), INT64_FORMAT, chunkoff);
+		pg_log(PG_DEBUG, "received chunk for file \"%s\", offset %s, size %d\n",
+			   filename, chunkoff_str, chunksize);
 
 		open_target_file(filename, false);
 

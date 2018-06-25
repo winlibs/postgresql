@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="ECPG - Embedded SQL in C"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -392,6 +392,37 @@ CLASS="REPLACEABLE"
    chapter).
   </P
 ><P
+>   If untrusted users have access to a database that has not adopted a
+   <A
+HREF="ddl-schemas.html#DDL-SCHEMAS-PATTERNS"
+>secure schema usage pattern</A
+>,
+   begin each session by removing publicly-writable schemas
+   from <TT
+CLASS="VARNAME"
+>search_path</TT
+>.  For example,
+   add <TT
+CLASS="LITERAL"
+>options=-csearch_path=</TT
+>
+   to <TT
+CLASS="LITERAL"
+><TT
+CLASS="REPLACEABLE"
+><I
+>options</I
+></TT
+></TT
+>, or
+   issue <TT
+CLASS="LITERAL"
+>EXEC SQL SELECT pg_catalog.set_config('search_path', '',
+   false);</TT
+> after connecting.  This consideration is not specific to
+   ECPG; it applies to every interface for executing arbitrary SQL commands.
+  </P
+><P
 >   Here are some examples of <TT
 CLASS="COMMAND"
 >CONNECT</TT
@@ -487,8 +518,11 @@ int
 main()
 {
     EXEC SQL CONNECT TO testdb1 AS con1 USER testuser;
+    EXEC SQL SELECT pg_catalog.set_config('search_path', '', false); EXEC SQL COMMIT;
     EXEC SQL CONNECT TO testdb2 AS con2 USER testuser;
+    EXEC SQL SELECT pg_catalog.set_config('search_path', '', false); EXEC SQL COMMIT;
     EXEC SQL CONNECT TO testdb3 AS con3 USER testuser;
+    EXEC SQL SELECT pg_catalog.set_config('search_path', '', false); EXEC SQL COMMIT;
 
     /* This query would be executed in the last opened database "testdb3". */
     EXEC SQL SELECT current_database() INTO :dbname;

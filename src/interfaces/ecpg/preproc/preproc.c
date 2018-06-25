@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.0.2.  */
+/* A Bison parser, made by GNU Bison 3.0.4.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2013 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015 Free Software Foundation, Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.0.2"
+#define YYBISON_VERSION "3.0.4"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -423,7 +423,7 @@ adjust_outofscope_cursor_vars(struct cursor *cur)
 				else
 				{
 					newvar = new_variable(cat_str(4, mm_strdup("("),
-												  mm_strdup(ecpg_type_name(ptr->variable->type->type)),
+												  mm_strdup(ecpg_type_name(ptr->variable->type->u.element->type)),
 												  mm_strdup(" *)(ECPGget_var("),
 												  mm_strdup(var_text)),
 										  ECPGmake_array_type(ECPGmake_simple_type(ptr->variable->type->u.element->type,
@@ -1198,7 +1198,7 @@ extern int base_yydebug;
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef union YYSTYPE YYSTYPE;
+
 union YYSTYPE
 {
 #line 581 "preproc.y" /* yacc.c:355  */
@@ -1218,6 +1218,8 @@ union YYSTYPE
 
 #line 1220 "preproc.c" /* yacc.c:355  */
 };
+
+typedef union YYSTYPE YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define YYSTYPE_IS_DECLARED 1
 #endif
@@ -1245,7 +1247,7 @@ int base_yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 1249 "preproc.c" /* yacc.c:358  */
+#line 1251 "preproc.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -30842,193 +30844,193 @@ yyreduce:
         case 3:
 #line 1565 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30846 "preproc.c" /* yacc.c:1646  */
+#line 30848 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 4:
 #line 1567 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30852 "preproc.c" /* yacc.c:1646  */
+#line 30854 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 5:
 #line 1569 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30858 "preproc.c" /* yacc.c:1646  */
+#line 30860 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 6:
 #line 1571 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30864 "preproc.c" /* yacc.c:1646  */
+#line 30866 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 7:
 #line 1573 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30870 "preproc.c" /* yacc.c:1646  */
+#line 30872 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 8:
 #line 1575 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30876 "preproc.c" /* yacc.c:1646  */
+#line 30878 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 9:
 #line 1577 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30882 "preproc.c" /* yacc.c:1646  */
+#line 30884 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 10:
 #line 1579 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30888 "preproc.c" /* yacc.c:1646  */
+#line 30890 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 11:
 #line 1581 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30894 "preproc.c" /* yacc.c:1646  */
+#line 30896 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 12:
 #line 1583 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30900 "preproc.c" /* yacc.c:1646  */
+#line 30902 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 13:
 #line 1585 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30906 "preproc.c" /* yacc.c:1646  */
+#line 30908 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 14:
 #line 1587 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30912 "preproc.c" /* yacc.c:1646  */
+#line 30914 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 15:
 #line 1589 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30918 "preproc.c" /* yacc.c:1646  */
+#line 30920 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 16:
 #line 1591 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30924 "preproc.c" /* yacc.c:1646  */
+#line 30926 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 17:
 #line 1593 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30930 "preproc.c" /* yacc.c:1646  */
+#line 30932 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 18:
 #line 1595 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30936 "preproc.c" /* yacc.c:1646  */
+#line 30938 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 19:
 #line 1597 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30942 "preproc.c" /* yacc.c:1646  */
+#line 30944 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 20:
 #line 1599 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30948 "preproc.c" /* yacc.c:1646  */
+#line 30950 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 21:
 #line 1601 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30954 "preproc.c" /* yacc.c:1646  */
+#line 30956 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 22:
 #line 1603 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30960 "preproc.c" /* yacc.c:1646  */
+#line 30962 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 23:
 #line 1605 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30966 "preproc.c" /* yacc.c:1646  */
+#line 30968 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 24:
 #line 1607 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30972 "preproc.c" /* yacc.c:1646  */
+#line 30974 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 25:
 #line 1609 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30978 "preproc.c" /* yacc.c:1646  */
+#line 30980 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 26:
 #line 1611 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30984 "preproc.c" /* yacc.c:1646  */
+#line 30986 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 27:
 #line 1613 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30990 "preproc.c" /* yacc.c:1646  */
+#line 30992 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 28:
 #line 1615 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 30996 "preproc.c" /* yacc.c:1646  */
+#line 30998 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 29:
 #line 1617 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31002 "preproc.c" /* yacc.c:1646  */
+#line 31004 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 30:
 #line 1619 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31008 "preproc.c" /* yacc.c:1646  */
+#line 31010 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 31:
 #line 1621 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31014 "preproc.c" /* yacc.c:1646  */
+#line 31016 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 32:
 #line 1623 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31020 "preproc.c" /* yacc.c:1646  */
+#line 31022 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 33:
 #line 1625 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31026 "preproc.c" /* yacc.c:1646  */
+#line 31028 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 34:
 #line 1627 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31032 "preproc.c" /* yacc.c:1646  */
+#line 31034 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 35:
@@ -31050,205 +31052,205 @@ yyreduce:
 
 		output_statement((yyvsp[0].str), 0, ECPGst_normal);
 	}
-#line 31054 "preproc.c" /* yacc.c:1646  */
+#line 31056 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 36:
 #line 1647 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31060 "preproc.c" /* yacc.c:1646  */
+#line 31062 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 37:
 #line 1649 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31066 "preproc.c" /* yacc.c:1646  */
+#line 31068 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 38:
 #line 1651 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31072 "preproc.c" /* yacc.c:1646  */
+#line 31074 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 39:
 #line 1653 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31078 "preproc.c" /* yacc.c:1646  */
+#line 31080 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 40:
 #line 1655 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31084 "preproc.c" /* yacc.c:1646  */
+#line 31086 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 41:
 #line 1657 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31090 "preproc.c" /* yacc.c:1646  */
+#line 31092 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 42:
 #line 1659 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31096 "preproc.c" /* yacc.c:1646  */
+#line 31098 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 43:
 #line 1661 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31102 "preproc.c" /* yacc.c:1646  */
+#line 31104 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 44:
 #line 1663 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31108 "preproc.c" /* yacc.c:1646  */
+#line 31110 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 45:
 #line 1665 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31114 "preproc.c" /* yacc.c:1646  */
+#line 31116 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 46:
 #line 1667 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31120 "preproc.c" /* yacc.c:1646  */
+#line 31122 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 47:
 #line 1669 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31126 "preproc.c" /* yacc.c:1646  */
+#line 31128 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 48:
 #line 1671 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31132 "preproc.c" /* yacc.c:1646  */
+#line 31134 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 49:
 #line 1673 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31138 "preproc.c" /* yacc.c:1646  */
+#line 31140 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 50:
 #line 1675 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31144 "preproc.c" /* yacc.c:1646  */
+#line 31146 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 51:
 #line 1677 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31150 "preproc.c" /* yacc.c:1646  */
+#line 31152 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 52:
 #line 1679 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31156 "preproc.c" /* yacc.c:1646  */
+#line 31158 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 53:
 #line 1681 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31162 "preproc.c" /* yacc.c:1646  */
+#line 31164 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 54:
 #line 1683 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31168 "preproc.c" /* yacc.c:1646  */
+#line 31170 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 55:
 #line 1685 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31174 "preproc.c" /* yacc.c:1646  */
+#line 31176 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 56:
 #line 1687 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31180 "preproc.c" /* yacc.c:1646  */
+#line 31182 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 57:
 #line 1689 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31186 "preproc.c" /* yacc.c:1646  */
+#line 31188 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 58:
 #line 1691 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31192 "preproc.c" /* yacc.c:1646  */
+#line 31194 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 59:
 #line 1693 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31198 "preproc.c" /* yacc.c:1646  */
+#line 31200 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 60:
 #line 1695 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31204 "preproc.c" /* yacc.c:1646  */
+#line 31206 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 61:
 #line 1697 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31210 "preproc.c" /* yacc.c:1646  */
+#line 31212 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 62:
 #line 1699 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31216 "preproc.c" /* yacc.c:1646  */
+#line 31218 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 63:
 #line 1701 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31222 "preproc.c" /* yacc.c:1646  */
+#line 31224 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 64:
 #line 1703 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31228 "preproc.c" /* yacc.c:1646  */
+#line 31230 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 65:
 #line 1705 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31234 "preproc.c" /* yacc.c:1646  */
+#line 31236 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 66:
 #line 1707 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31240 "preproc.c" /* yacc.c:1646  */
+#line 31242 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 67:
 #line 1709 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31246 "preproc.c" /* yacc.c:1646  */
+#line 31248 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 68:
 #line 1711 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31252 "preproc.c" /* yacc.c:1646  */
+#line 31254 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 69:
@@ -31256,229 +31258,229 @@ yyreduce:
     {
 		output_deallocate_prepare_statement((yyvsp[0].str));
 	}
-#line 31260 "preproc.c" /* yacc.c:1646  */
+#line 31262 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 70:
 #line 1717 "preproc.y" /* yacc.c:1646  */
     { output_simple_statement((yyvsp[0].str)); }
-#line 31266 "preproc.c" /* yacc.c:1646  */
+#line 31268 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 71:
 #line 1719 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31272 "preproc.c" /* yacc.c:1646  */
+#line 31274 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 72:
 #line 1721 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 1, ECPGst_prepnormal); }
-#line 31278 "preproc.c" /* yacc.c:1646  */
+#line 31280 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 73:
 #line 1723 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 1, ECPGst_normal); }
-#line 31284 "preproc.c" /* yacc.c:1646  */
+#line 31286 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 74:
 #line 1725 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31290 "preproc.c" /* yacc.c:1646  */
+#line 31292 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 75:
 #line 1727 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31296 "preproc.c" /* yacc.c:1646  */
+#line 31298 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 76:
 #line 1729 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31302 "preproc.c" /* yacc.c:1646  */
+#line 31304 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 77:
 #line 1731 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31308 "preproc.c" /* yacc.c:1646  */
+#line 31310 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 78:
 #line 1733 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31314 "preproc.c" /* yacc.c:1646  */
+#line 31316 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 79:
 #line 1735 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31320 "preproc.c" /* yacc.c:1646  */
+#line 31322 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 80:
 #line 1737 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31326 "preproc.c" /* yacc.c:1646  */
+#line 31328 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 81:
 #line 1739 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31332 "preproc.c" /* yacc.c:1646  */
+#line 31334 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 82:
 #line 1741 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31338 "preproc.c" /* yacc.c:1646  */
+#line 31340 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 83:
 #line 1743 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31344 "preproc.c" /* yacc.c:1646  */
+#line 31346 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 84:
 #line 1745 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31350 "preproc.c" /* yacc.c:1646  */
+#line 31352 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 85:
 #line 1747 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31356 "preproc.c" /* yacc.c:1646  */
+#line 31358 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 86:
 #line 1749 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31362 "preproc.c" /* yacc.c:1646  */
+#line 31364 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 87:
 #line 1751 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31368 "preproc.c" /* yacc.c:1646  */
+#line 31370 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 88:
 #line 1753 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31374 "preproc.c" /* yacc.c:1646  */
+#line 31376 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 89:
 #line 1755 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31380 "preproc.c" /* yacc.c:1646  */
+#line 31382 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 90:
 #line 1757 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31386 "preproc.c" /* yacc.c:1646  */
+#line 31388 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 91:
 #line 1759 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31392 "preproc.c" /* yacc.c:1646  */
+#line 31394 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 92:
 #line 1761 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31398 "preproc.c" /* yacc.c:1646  */
+#line 31400 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 93:
 #line 1763 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31404 "preproc.c" /* yacc.c:1646  */
+#line 31406 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 94:
 #line 1765 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 1, ECPGst_execute); }
-#line 31410 "preproc.c" /* yacc.c:1646  */
+#line 31412 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 95:
 #line 1767 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31416 "preproc.c" /* yacc.c:1646  */
+#line 31418 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 96:
 #line 1769 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 1, ECPGst_normal); }
-#line 31422 "preproc.c" /* yacc.c:1646  */
+#line 31424 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 97:
 #line 1771 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31428 "preproc.c" /* yacc.c:1646  */
+#line 31430 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 98:
 #line 1773 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31434 "preproc.c" /* yacc.c:1646  */
+#line 31436 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 99:
 #line 1775 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31440 "preproc.c" /* yacc.c:1646  */
+#line 31442 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 100:
 #line 1777 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31446 "preproc.c" /* yacc.c:1646  */
+#line 31448 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 101:
 #line 1779 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 1, ECPGst_prepnormal); }
-#line 31452 "preproc.c" /* yacc.c:1646  */
+#line 31454 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 102:
 #line 1781 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31458 "preproc.c" /* yacc.c:1646  */
+#line 31460 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 103:
 #line 1783 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31464 "preproc.c" /* yacc.c:1646  */
+#line 31466 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 104:
 #line 1785 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31470 "preproc.c" /* yacc.c:1646  */
+#line 31472 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 105:
 #line 1787 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31476 "preproc.c" /* yacc.c:1646  */
+#line 31478 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 106:
 #line 1789 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31482 "preproc.c" /* yacc.c:1646  */
+#line 31484 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 107:
@@ -31489,73 +31491,73 @@ yyreduce:
 		else
 			output_statement(cat_str(5, mm_strdup("prepare"), (yyvsp[0].prep).name, (yyvsp[0].prep).type, mm_strdup("as"), (yyvsp[0].prep).stmt), 0, ECPGst_normal);
 	}
-#line 31493 "preproc.c" /* yacc.c:1646  */
+#line 31495 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 108:
 #line 1798 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31499 "preproc.c" /* yacc.c:1646  */
+#line 31501 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 109:
 #line 1800 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31505 "preproc.c" /* yacc.c:1646  */
+#line 31507 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 110:
 #line 1802 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31511 "preproc.c" /* yacc.c:1646  */
+#line 31513 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 111:
 #line 1804 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31517 "preproc.c" /* yacc.c:1646  */
+#line 31519 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 112:
 #line 1806 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31523 "preproc.c" /* yacc.c:1646  */
+#line 31525 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 113:
 #line 1808 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31529 "preproc.c" /* yacc.c:1646  */
+#line 31531 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 114:
 #line 1810 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31535 "preproc.c" /* yacc.c:1646  */
+#line 31537 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 115:
 #line 1812 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31541 "preproc.c" /* yacc.c:1646  */
+#line 31543 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 116:
 #line 1814 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31547 "preproc.c" /* yacc.c:1646  */
+#line 31549 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 117:
 #line 1816 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31553 "preproc.c" /* yacc.c:1646  */
+#line 31555 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 118:
 #line 1818 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 1, ECPGst_prepnormal); }
-#line 31559 "preproc.c" /* yacc.c:1646  */
+#line 31561 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 119:
@@ -31565,55 +31567,55 @@ yyreduce:
 		whenever_action(2);
 		free((yyvsp[0].str));
 	}
-#line 31569 "preproc.c" /* yacc.c:1646  */
+#line 31571 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 120:
 #line 1826 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31575 "preproc.c" /* yacc.c:1646  */
+#line 31577 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 121:
 #line 1828 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31581 "preproc.c" /* yacc.c:1646  */
+#line 31583 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 122:
 #line 1830 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 1, ECPGst_prepnormal); }
-#line 31587 "preproc.c" /* yacc.c:1646  */
+#line 31589 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 123:
 #line 1832 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31593 "preproc.c" /* yacc.c:1646  */
+#line 31595 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 124:
 #line 1834 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31599 "preproc.c" /* yacc.c:1646  */
+#line 31601 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 125:
 #line 1836 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31605 "preproc.c" /* yacc.c:1646  */
+#line 31607 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 126:
 #line 1838 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31611 "preproc.c" /* yacc.c:1646  */
+#line 31613 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 127:
 #line 1840 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_normal); }
-#line 31617 "preproc.c" /* yacc.c:1646  */
+#line 31619 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 128:
@@ -31623,7 +31625,7 @@ yyreduce:
 		whenever_action(0);
 		free((yyvsp[0].str));
 	}
-#line 31627 "preproc.c" /* yacc.c:1646  */
+#line 31629 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 129:
@@ -31637,7 +31639,7 @@ yyreduce:
 		whenever_action(2);
 		free((yyvsp[0].str));
 	}
-#line 31641 "preproc.c" /* yacc.c:1646  */
+#line 31643 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 130:
@@ -31645,7 +31647,7 @@ yyreduce:
     {
 		output_simple_statement((yyvsp[0].str));
 	}
-#line 31649 "preproc.c" /* yacc.c:1646  */
+#line 31651 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 131:
@@ -31655,7 +31657,7 @@ yyreduce:
 		whenever_action(0);
 		free((yyvsp[0].str));
 	}
-#line 31659 "preproc.c" /* yacc.c:1646  */
+#line 31661 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 132:
@@ -31663,7 +31665,7 @@ yyreduce:
     {
 		output_simple_statement((yyvsp[0].str));
 	}
-#line 31667 "preproc.c" /* yacc.c:1646  */
+#line 31669 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 133:
@@ -31677,7 +31679,7 @@ yyreduce:
 
 		free((yyvsp[0].str));
 	}
-#line 31681 "preproc.c" /* yacc.c:1646  */
+#line 31683 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 134:
@@ -31691,13 +31693,13 @@ yyreduce:
 		whenever_action(2);
 		free((yyvsp[0].str));
 	}
-#line 31695 "preproc.c" /* yacc.c:1646  */
+#line 31697 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 135:
 #line 1891 "preproc.y" /* yacc.c:1646  */
     { output_statement((yyvsp[0].str), 0, ECPGst_exec_immediate); }
-#line 31701 "preproc.c" /* yacc.c:1646  */
+#line 31703 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 136:
@@ -31715,7 +31717,7 @@ yyreduce:
 		whenever_action(2);
 		free((yyvsp[0].str));
 	}
-#line 31719 "preproc.c" /* yacc.c:1646  */
+#line 31721 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 137:
@@ -31726,7 +31728,7 @@ yyreduce:
 		free((yyvsp[0].descriptor).name);
 		free((yyvsp[0].descriptor).str);
 	}
-#line 31730 "preproc.c" /* yacc.c:1646  */
+#line 31732 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 138:
@@ -31736,7 +31738,7 @@ yyreduce:
 		output_get_descr_header((yyvsp[0].str));
 		free((yyvsp[0].str));
 	}
-#line 31740 "preproc.c" /* yacc.c:1646  */
+#line 31742 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 139:
@@ -31751,7 +31753,7 @@ yyreduce:
 			ptr->opened = true;
 		}
 	}
-#line 31755 "preproc.c" /* yacc.c:1646  */
+#line 31757 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 140:
@@ -31761,7 +31763,7 @@ yyreduce:
 		whenever_action(2);
 		free((yyvsp[0].str));
 	}
-#line 31765 "preproc.c" /* yacc.c:1646  */
+#line 31767 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 141:
@@ -31774,7 +31776,7 @@ yyreduce:
 		whenever_action(2);
 		free((yyvsp[0].str));
 	}
-#line 31778 "preproc.c" /* yacc.c:1646  */
+#line 31780 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 142:
@@ -31785,7 +31787,7 @@ yyreduce:
 		free((yyvsp[0].descriptor).name);
 		free((yyvsp[0].descriptor).str);
 	}
-#line 31789 "preproc.c" /* yacc.c:1646  */
+#line 31791 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 143:
@@ -31795,7 +31797,7 @@ yyreduce:
 		output_set_descr_header((yyvsp[0].str));
 		free((yyvsp[0].str));
 	}
-#line 31799 "preproc.c" /* yacc.c:1646  */
+#line 31801 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 144:
@@ -31808,7 +31810,7 @@ yyreduce:
 		free((yyvsp[0].str));
 		output_line_number();
 	}
-#line 31812 "preproc.c" /* yacc.c:1646  */
+#line 31814 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 145:
@@ -31819,7 +31821,7 @@ yyreduce:
 
 		output_simple_statement((yyvsp[0].str));
 	}
-#line 31823 "preproc.c" /* yacc.c:1646  */
+#line 31825 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 146:
@@ -31830,13 +31832,13 @@ yyreduce:
 
 		output_simple_statement((yyvsp[0].str));
 	}
-#line 31834 "preproc.c" /* yacc.c:1646  */
+#line 31836 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 147:
 #line 1982 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = NULL; }
-#line 31840 "preproc.c" /* yacc.c:1646  */
+#line 31842 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 148:
@@ -31844,7 +31846,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(4,mm_strdup("create role"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 31848 "preproc.c" /* yacc.c:1646  */
+#line 31850 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 149:
@@ -31852,7 +31854,7 @@ yyreduce:
     { 
  (yyval.str) = mm_strdup("with");
 }
-#line 31856 "preproc.c" /* yacc.c:1646  */
+#line 31858 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 150:
@@ -31860,14 +31862,14 @@ yyreduce:
     { 
  (yyval.str) = mm_strdup("with");
 }
-#line 31864 "preproc.c" /* yacc.c:1646  */
+#line 31866 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 151:
 #line 2004 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 31871 "preproc.c" /* yacc.c:1646  */
+#line 31873 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 152:
@@ -31875,14 +31877,14 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 31879 "preproc.c" /* yacc.c:1646  */
+#line 31881 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 153:
 #line 2015 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 31886 "preproc.c" /* yacc.c:1646  */
+#line 31888 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 154:
@@ -31890,14 +31892,14 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 31894 "preproc.c" /* yacc.c:1646  */
+#line 31896 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 155:
 #line 2026 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 31901 "preproc.c" /* yacc.c:1646  */
+#line 31903 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 156:
@@ -31905,7 +31907,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("password"),(yyvsp[0].str));
 }
-#line 31909 "preproc.c" /* yacc.c:1646  */
+#line 31911 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 157:
@@ -31913,7 +31915,7 @@ yyreduce:
     { 
  (yyval.str) = mm_strdup("password null");
 }
-#line 31917 "preproc.c" /* yacc.c:1646  */
+#line 31919 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 158:
@@ -31921,7 +31923,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("encrypted password"),(yyvsp[0].str));
 }
-#line 31925 "preproc.c" /* yacc.c:1646  */
+#line 31927 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 159:
@@ -31929,7 +31931,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("unencrypted password"),(yyvsp[0].str));
 }
-#line 31933 "preproc.c" /* yacc.c:1646  */
+#line 31935 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 160:
@@ -31937,7 +31939,7 @@ yyreduce:
     { 
  (yyval.str) = mm_strdup("inherit");
 }
-#line 31941 "preproc.c" /* yacc.c:1646  */
+#line 31943 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 161:
@@ -31945,7 +31947,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("connection limit"),(yyvsp[0].str));
 }
-#line 31949 "preproc.c" /* yacc.c:1646  */
+#line 31951 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 162:
@@ -31953,7 +31955,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("valid until"),(yyvsp[0].str));
 }
-#line 31957 "preproc.c" /* yacc.c:1646  */
+#line 31959 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 163:
@@ -31961,7 +31963,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("user"),(yyvsp[0].str));
 }
-#line 31965 "preproc.c" /* yacc.c:1646  */
+#line 31967 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 164:
@@ -31969,7 +31971,7 @@ yyreduce:
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 31973 "preproc.c" /* yacc.c:1646  */
+#line 31975 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 165:
@@ -31977,7 +31979,7 @@ yyreduce:
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 31981 "preproc.c" /* yacc.c:1646  */
+#line 31983 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 166:
@@ -31985,7 +31987,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("sysid"),(yyvsp[0].str));
 }
-#line 31989 "preproc.c" /* yacc.c:1646  */
+#line 31991 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 167:
@@ -31993,7 +31995,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("admin"),(yyvsp[0].str));
 }
-#line 31997 "preproc.c" /* yacc.c:1646  */
+#line 31999 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 168:
@@ -32001,7 +32003,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("role"),(yyvsp[0].str));
 }
-#line 32005 "preproc.c" /* yacc.c:1646  */
+#line 32007 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 169:
@@ -32009,7 +32011,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("in role"),(yyvsp[0].str));
 }
-#line 32013 "preproc.c" /* yacc.c:1646  */
+#line 32015 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 170:
@@ -32017,7 +32019,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("in group"),(yyvsp[0].str));
 }
-#line 32021 "preproc.c" /* yacc.c:1646  */
+#line 32023 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 171:
@@ -32025,7 +32027,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(4,mm_strdup("create user"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32029 "preproc.c" /* yacc.c:1646  */
+#line 32031 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 172:
@@ -32033,14 +32035,14 @@ yyreduce:
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter role"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32037 "preproc.c" /* yacc.c:1646  */
+#line 32039 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 173:
 #line 2117 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 32044 "preproc.c" /* yacc.c:1646  */
+#line 32046 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 174:
@@ -32048,7 +32050,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("in database"),(yyvsp[0].str));
 }
-#line 32052 "preproc.c" /* yacc.c:1646  */
+#line 32054 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 175:
@@ -32056,7 +32058,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter role"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32060 "preproc.c" /* yacc.c:1646  */
+#line 32062 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 176:
@@ -32064,7 +32066,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter role all"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32068 "preproc.c" /* yacc.c:1646  */
+#line 32070 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 177:
@@ -32072,7 +32074,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter user"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32076 "preproc.c" /* yacc.c:1646  */
+#line 32078 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 178:
@@ -32080,7 +32082,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter user"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32084 "preproc.c" /* yacc.c:1646  */
+#line 32086 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 179:
@@ -32088,7 +32090,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter user all"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32092 "preproc.c" /* yacc.c:1646  */
+#line 32094 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 180:
@@ -32096,7 +32098,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop role"),(yyvsp[0].str));
 }
-#line 32100 "preproc.c" /* yacc.c:1646  */
+#line 32102 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 181:
@@ -32104,7 +32106,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop role if exists"),(yyvsp[0].str));
 }
-#line 32108 "preproc.c" /* yacc.c:1646  */
+#line 32110 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 182:
@@ -32112,7 +32114,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop user"),(yyvsp[0].str));
 }
-#line 32116 "preproc.c" /* yacc.c:1646  */
+#line 32118 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 183:
@@ -32120,7 +32122,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop user if exists"),(yyvsp[0].str));
 }
-#line 32124 "preproc.c" /* yacc.c:1646  */
+#line 32126 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 184:
@@ -32128,7 +32130,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(4,mm_strdup("create group"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32132 "preproc.c" /* yacc.c:1646  */
+#line 32134 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 185:
@@ -32136,7 +32138,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter group"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("user"),(yyvsp[0].str));
 }
-#line 32140 "preproc.c" /* yacc.c:1646  */
+#line 32142 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 186:
@@ -32144,7 +32146,7 @@ yyreduce:
     { 
  (yyval.str) = mm_strdup("add");
 }
-#line 32148 "preproc.c" /* yacc.c:1646  */
+#line 32150 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 187:
@@ -32152,7 +32154,7 @@ yyreduce:
     { 
  (yyval.str) = mm_strdup("drop");
 }
-#line 32156 "preproc.c" /* yacc.c:1646  */
+#line 32158 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 188:
@@ -32160,7 +32162,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop group"),(yyvsp[0].str));
 }
-#line 32164 "preproc.c" /* yacc.c:1646  */
+#line 32166 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 189:
@@ -32168,7 +32170,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop group if exists"),(yyvsp[0].str));
 }
-#line 32172 "preproc.c" /* yacc.c:1646  */
+#line 32174 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 190:
@@ -32176,7 +32178,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(5,mm_strdup("create schema"),(yyvsp[-3].str),mm_strdup("authorization"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32180 "preproc.c" /* yacc.c:1646  */
+#line 32182 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 191:
@@ -32184,7 +32186,7 @@ yyreduce:
     { 
  (yyval.str) = cat_str(3,mm_strdup("create schema"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32188 "preproc.c" /* yacc.c:1646  */
+#line 32190 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 192:
@@ -32193,7 +32195,7 @@ yyreduce:
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = cat_str(5,mm_strdup("create schema if not exists"),(yyvsp[-3].str),mm_strdup("authorization"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32197 "preproc.c" /* yacc.c:1646  */
+#line 32199 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 193:
@@ -32202,7 +32204,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = cat_str(3,mm_strdup("create schema if not exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32206 "preproc.c" /* yacc.c:1646  */
+#line 32208 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 194:
@@ -32210,14 +32212,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32214 "preproc.c" /* yacc.c:1646  */
+#line 32216 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 195:
 #line 2250 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 32221 "preproc.c" /* yacc.c:1646  */
+#line 32223 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 196:
@@ -32225,14 +32227,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32229 "preproc.c" /* yacc.c:1646  */
+#line 32231 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 197:
 #line 2261 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 32236 "preproc.c" /* yacc.c:1646  */
+#line 32238 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 198:
@@ -32240,7 +32242,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32244 "preproc.c" /* yacc.c:1646  */
+#line 32246 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 199:
@@ -32248,7 +32250,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32252 "preproc.c" /* yacc.c:1646  */
+#line 32254 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 200:
@@ -32256,7 +32258,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32260 "preproc.c" /* yacc.c:1646  */
+#line 32262 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 201:
@@ -32264,7 +32266,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32268 "preproc.c" /* yacc.c:1646  */
+#line 32270 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 202:
@@ -32272,7 +32274,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32276 "preproc.c" /* yacc.c:1646  */
+#line 32278 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 203:
@@ -32280,7 +32282,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32284 "preproc.c" /* yacc.c:1646  */
+#line 32286 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 204:
@@ -32288,7 +32290,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("set"),(yyvsp[0].str));
 }
-#line 32292 "preproc.c" /* yacc.c:1646  */
+#line 32294 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 205:
@@ -32296,7 +32298,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("set local"),(yyvsp[0].str));
 }
-#line 32300 "preproc.c" /* yacc.c:1646  */
+#line 32302 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 206:
@@ -32304,7 +32306,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("set session"),(yyvsp[0].str));
 }
-#line 32308 "preproc.c" /* yacc.c:1646  */
+#line 32310 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 207:
@@ -32312,7 +32314,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("transaction"),(yyvsp[0].str));
 }
-#line 32316 "preproc.c" /* yacc.c:1646  */
+#line 32318 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 208:
@@ -32320,7 +32322,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("session characteristics as transaction"),(yyvsp[0].str));
 }
-#line 32324 "preproc.c" /* yacc.c:1646  */
+#line 32326 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 209:
@@ -32328,7 +32330,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32332 "preproc.c" /* yacc.c:1646  */
+#line 32334 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 210:
@@ -32336,7 +32338,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 32340 "preproc.c" /* yacc.c:1646  */
+#line 32342 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 211:
@@ -32344,7 +32346,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("="),(yyvsp[0].str));
 }
-#line 32348 "preproc.c" /* yacc.c:1646  */
+#line 32350 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 212:
@@ -32352,7 +32354,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("to default"));
 }
-#line 32356 "preproc.c" /* yacc.c:1646  */
+#line 32358 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 214:
@@ -32360,7 +32362,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32364 "preproc.c" /* yacc.c:1646  */
+#line 32366 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 215:
@@ -32368,7 +32370,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("from current"));
 }
-#line 32372 "preproc.c" /* yacc.c:1646  */
+#line 32374 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 216:
@@ -32376,7 +32378,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("time zone"),(yyvsp[0].str));
 }
-#line 32380 "preproc.c" /* yacc.c:1646  */
+#line 32382 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 217:
@@ -32385,7 +32387,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = cat_str(2,mm_strdup("catalog"),(yyvsp[0].str));
 }
-#line 32389 "preproc.c" /* yacc.c:1646  */
+#line 32391 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 218:
@@ -32393,7 +32395,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("schema"),(yyvsp[0].str));
 }
-#line 32397 "preproc.c" /* yacc.c:1646  */
+#line 32399 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 219:
@@ -32401,7 +32403,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("names"),(yyvsp[0].str));
 }
-#line 32405 "preproc.c" /* yacc.c:1646  */
+#line 32407 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 220:
@@ -32409,7 +32411,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("role"),(yyvsp[0].str));
 }
-#line 32413 "preproc.c" /* yacc.c:1646  */
+#line 32415 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 221:
@@ -32417,7 +32419,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("session authorization"),(yyvsp[0].str));
 }
-#line 32421 "preproc.c" /* yacc.c:1646  */
+#line 32423 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 222:
@@ -32425,7 +32427,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("session authorization default");
 }
-#line 32429 "preproc.c" /* yacc.c:1646  */
+#line 32431 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 223:
@@ -32433,7 +32435,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("xml option"),(yyvsp[0].str));
 }
-#line 32437 "preproc.c" /* yacc.c:1646  */
+#line 32439 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 224:
@@ -32441,7 +32443,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("transaction snapshot"),(yyvsp[0].str));
 }
-#line 32445 "preproc.c" /* yacc.c:1646  */
+#line 32447 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 225:
@@ -32449,7 +32451,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32453 "preproc.c" /* yacc.c:1646  */
+#line 32455 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 226:
@@ -32457,7 +32459,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("."),(yyvsp[0].str));
 }
-#line 32461 "preproc.c" /* yacc.c:1646  */
+#line 32463 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 227:
@@ -32465,7 +32467,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32469 "preproc.c" /* yacc.c:1646  */
+#line 32471 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 228:
@@ -32473,7 +32475,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 32477 "preproc.c" /* yacc.c:1646  */
+#line 32479 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 229:
@@ -32481,7 +32483,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32485 "preproc.c" /* yacc.c:1646  */
+#line 32487 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 230:
@@ -32495,7 +32497,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32499 "preproc.c" /* yacc.c:1646  */
+#line 32501 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 231:
@@ -32503,7 +32505,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("read uncommitted");
 }
-#line 32507 "preproc.c" /* yacc.c:1646  */
+#line 32509 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 232:
@@ -32511,7 +32513,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("read committed");
 }
-#line 32515 "preproc.c" /* yacc.c:1646  */
+#line 32517 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 233:
@@ -32519,7 +32521,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("repeatable read");
 }
-#line 32523 "preproc.c" /* yacc.c:1646  */
+#line 32525 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 234:
@@ -32527,7 +32529,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("serializable");
 }
-#line 32531 "preproc.c" /* yacc.c:1646  */
+#line 32533 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 235:
@@ -32535,7 +32537,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("true");
 }
-#line 32539 "preproc.c" /* yacc.c:1646  */
+#line 32541 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 236:
@@ -32543,7 +32545,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("false");
 }
-#line 32547 "preproc.c" /* yacc.c:1646  */
+#line 32549 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 237:
@@ -32551,7 +32553,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("on");
 }
-#line 32555 "preproc.c" /* yacc.c:1646  */
+#line 32557 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 238:
@@ -32559,7 +32561,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32563 "preproc.c" /* yacc.c:1646  */
+#line 32565 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 239:
@@ -32567,7 +32569,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32571 "preproc.c" /* yacc.c:1646  */
+#line 32573 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 240:
@@ -32575,7 +32577,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32579 "preproc.c" /* yacc.c:1646  */
+#line 32581 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 241:
@@ -32583,7 +32585,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32587 "preproc.c" /* yacc.c:1646  */
+#line 32589 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 242:
@@ -32591,7 +32593,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),mm_strdup("("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 32595 "preproc.c" /* yacc.c:1646  */
+#line 32597 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 243:
@@ -32599,7 +32601,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32603 "preproc.c" /* yacc.c:1646  */
+#line 32605 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 244:
@@ -32607,7 +32609,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("default");
 }
-#line 32611 "preproc.c" /* yacc.c:1646  */
+#line 32613 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 245:
@@ -32615,7 +32617,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("local");
 }
-#line 32619 "preproc.c" /* yacc.c:1646  */
+#line 32621 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 246:
@@ -32623,7 +32625,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32627 "preproc.c" /* yacc.c:1646  */
+#line 32629 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 247:
@@ -32631,14 +32633,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("default");
 }
-#line 32635 "preproc.c" /* yacc.c:1646  */
+#line 32637 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 248:
 #line 2512 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 32642 "preproc.c" /* yacc.c:1646  */
+#line 32644 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 249:
@@ -32646,7 +32648,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32650 "preproc.c" /* yacc.c:1646  */
+#line 32652 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 250:
@@ -32654,7 +32656,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32658 "preproc.c" /* yacc.c:1646  */
+#line 32660 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 251:
@@ -32662,7 +32664,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("reset"),(yyvsp[0].str));
 }
-#line 32666 "preproc.c" /* yacc.c:1646  */
+#line 32668 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 252:
@@ -32670,7 +32672,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32674 "preproc.c" /* yacc.c:1646  */
+#line 32676 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 253:
@@ -32678,7 +32680,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("time zone");
 }
-#line 32682 "preproc.c" /* yacc.c:1646  */
+#line 32684 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 254:
@@ -32686,7 +32688,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("transaction isolation level");
 }
-#line 32690 "preproc.c" /* yacc.c:1646  */
+#line 32692 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 255:
@@ -32694,7 +32696,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("session authorization");
 }
-#line 32698 "preproc.c" /* yacc.c:1646  */
+#line 32700 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 256:
@@ -32702,7 +32704,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32706 "preproc.c" /* yacc.c:1646  */
+#line 32708 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 257:
@@ -32710,7 +32712,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all");
 }
-#line 32714 "preproc.c" /* yacc.c:1646  */
+#line 32716 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 258:
@@ -32718,7 +32720,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("set"),(yyvsp[0].str));
 }
-#line 32722 "preproc.c" /* yacc.c:1646  */
+#line 32724 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 259:
@@ -32726,7 +32728,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32730 "preproc.c" /* yacc.c:1646  */
+#line 32732 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 260:
@@ -32734,7 +32736,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("set"),(yyvsp[0].str));
 }
-#line 32738 "preproc.c" /* yacc.c:1646  */
+#line 32740 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 261:
@@ -32742,7 +32744,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32746 "preproc.c" /* yacc.c:1646  */
+#line 32748 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 262:
@@ -32750,7 +32752,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("show"),(yyvsp[-1].str));
 }
-#line 32754 "preproc.c" /* yacc.c:1646  */
+#line 32756 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 263:
@@ -32758,7 +32760,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("show time zone");
 }
-#line 32762 "preproc.c" /* yacc.c:1646  */
+#line 32764 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 264:
@@ -32766,7 +32768,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("show transaction isolation level");
 }
-#line 32770 "preproc.c" /* yacc.c:1646  */
+#line 32772 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 265:
@@ -32774,7 +32776,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("show session authorization");
 }
-#line 32778 "preproc.c" /* yacc.c:1646  */
+#line 32780 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 266:
@@ -32783,7 +32785,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		mmerror(PARSE_ERROR, ET_ERROR, "SHOW ALL is not implemented");
 		(yyval.str) = EMPTY;
 	}
-#line 32787 "preproc.c" /* yacc.c:1646  */
+#line 32789 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 267:
@@ -32791,7 +32793,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("set constraints"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32795 "preproc.c" /* yacc.c:1646  */
+#line 32797 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 268:
@@ -32799,7 +32801,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all");
 }
-#line 32803 "preproc.c" /* yacc.c:1646  */
+#line 32805 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 269:
@@ -32807,7 +32809,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 32811 "preproc.c" /* yacc.c:1646  */
+#line 32813 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 270:
@@ -32815,7 +32817,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("deferred");
 }
-#line 32819 "preproc.c" /* yacc.c:1646  */
+#line 32821 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 271:
@@ -32823,7 +32825,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("immediate");
 }
-#line 32827 "preproc.c" /* yacc.c:1646  */
+#line 32829 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 272:
@@ -32831,7 +32833,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("checkpoint");
 }
-#line 32835 "preproc.c" /* yacc.c:1646  */
+#line 32837 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 273:
@@ -32839,7 +32841,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("discard all");
 }
-#line 32843 "preproc.c" /* yacc.c:1646  */
+#line 32845 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 274:
@@ -32847,7 +32849,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("discard temp");
 }
-#line 32851 "preproc.c" /* yacc.c:1646  */
+#line 32853 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 275:
@@ -32855,7 +32857,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("discard temporary");
 }
-#line 32859 "preproc.c" /* yacc.c:1646  */
+#line 32861 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 276:
@@ -32863,7 +32865,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("discard plans");
 }
-#line 32867 "preproc.c" /* yacc.c:1646  */
+#line 32869 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 277:
@@ -32871,7 +32873,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("discard sequences");
 }
-#line 32875 "preproc.c" /* yacc.c:1646  */
+#line 32877 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 278:
@@ -32879,7 +32881,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter table"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32883 "preproc.c" /* yacc.c:1646  */
+#line 32885 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 279:
@@ -32887,7 +32889,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter table if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32891 "preproc.c" /* yacc.c:1646  */
+#line 32893 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 280:
@@ -32895,7 +32897,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter table all in tablespace"),(yyvsp[-4].str),mm_strdup("set tablespace"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32899 "preproc.c" /* yacc.c:1646  */
+#line 32901 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 281:
@@ -32903,7 +32905,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter table all in tablespace"),(yyvsp[-7].str),mm_strdup("owned by"),(yyvsp[-4].str),mm_strdup("set tablespace"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32907 "preproc.c" /* yacc.c:1646  */
+#line 32909 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 282:
@@ -32911,7 +32913,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter index"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32915 "preproc.c" /* yacc.c:1646  */
+#line 32917 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 283:
@@ -32919,7 +32921,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter index if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32923 "preproc.c" /* yacc.c:1646  */
+#line 32925 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 284:
@@ -32927,7 +32929,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter index all in tablespace"),(yyvsp[-4].str),mm_strdup("set tablespace"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32931 "preproc.c" /* yacc.c:1646  */
+#line 32933 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 285:
@@ -32935,7 +32937,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter index all in tablespace"),(yyvsp[-7].str),mm_strdup("owned by"),(yyvsp[-4].str),mm_strdup("set tablespace"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32939 "preproc.c" /* yacc.c:1646  */
+#line 32941 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 286:
@@ -32943,7 +32945,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter sequence"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32947 "preproc.c" /* yacc.c:1646  */
+#line 32949 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 287:
@@ -32951,7 +32953,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter sequence if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32955 "preproc.c" /* yacc.c:1646  */
+#line 32957 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 288:
@@ -32959,7 +32961,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter view"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32963 "preproc.c" /* yacc.c:1646  */
+#line 32965 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 289:
@@ -32967,7 +32969,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter view if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32971 "preproc.c" /* yacc.c:1646  */
+#line 32973 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 290:
@@ -32975,7 +32977,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter materialized view"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32979 "preproc.c" /* yacc.c:1646  */
+#line 32981 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 291:
@@ -32983,7 +32985,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter materialized view if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32987 "preproc.c" /* yacc.c:1646  */
+#line 32989 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 292:
@@ -32991,7 +32993,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter materialized view all in tablespace"),(yyvsp[-4].str),mm_strdup("set tablespace"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 32995 "preproc.c" /* yacc.c:1646  */
+#line 32997 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 293:
@@ -32999,7 +33001,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter materialized view all in tablespace"),(yyvsp[-7].str),mm_strdup("owned by"),(yyvsp[-4].str),mm_strdup("set tablespace"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33003 "preproc.c" /* yacc.c:1646  */
+#line 33005 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 294:
@@ -33007,7 +33009,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 33011 "preproc.c" /* yacc.c:1646  */
+#line 33013 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 295:
@@ -33015,7 +33017,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 33019 "preproc.c" /* yacc.c:1646  */
+#line 33021 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 296:
@@ -33023,7 +33025,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("add"),(yyvsp[0].str));
 }
-#line 33027 "preproc.c" /* yacc.c:1646  */
+#line 33029 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 297:
@@ -33031,7 +33033,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("add if not exists"),(yyvsp[0].str));
 }
-#line 33035 "preproc.c" /* yacc.c:1646  */
+#line 33037 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 298:
@@ -33039,7 +33041,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("add column"),(yyvsp[0].str));
 }
-#line 33043 "preproc.c" /* yacc.c:1646  */
+#line 33045 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 299:
@@ -33047,7 +33049,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("add column if not exists"),(yyvsp[0].str));
 }
-#line 33051 "preproc.c" /* yacc.c:1646  */
+#line 33053 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 300:
@@ -33055,7 +33057,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33059 "preproc.c" /* yacc.c:1646  */
+#line 33061 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 301:
@@ -33063,7 +33065,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("drop not null"));
 }
-#line 33067 "preproc.c" /* yacc.c:1646  */
+#line 33069 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 302:
@@ -33071,7 +33073,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("set not null"));
 }
-#line 33075 "preproc.c" /* yacc.c:1646  */
+#line 33077 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 303:
@@ -33079,7 +33081,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("set statistics"),(yyvsp[0].str));
 }
-#line 33083 "preproc.c" /* yacc.c:1646  */
+#line 33085 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 304:
@@ -33087,7 +33089,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("set"),(yyvsp[0].str));
 }
-#line 33091 "preproc.c" /* yacc.c:1646  */
+#line 33093 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 305:
@@ -33095,7 +33097,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("reset"),(yyvsp[0].str));
 }
-#line 33099 "preproc.c" /* yacc.c:1646  */
+#line 33101 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 306:
@@ -33103,7 +33105,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("set storage"),(yyvsp[0].str));
 }
-#line 33107 "preproc.c" /* yacc.c:1646  */
+#line 33109 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 307:
@@ -33111,7 +33113,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop"),(yyvsp[-4].str),mm_strdup("if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33115 "preproc.c" /* yacc.c:1646  */
+#line 33117 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 308:
@@ -33119,7 +33121,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("drop"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33123 "preproc.c" /* yacc.c:1646  */
+#line 33125 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 309:
@@ -33127,7 +33129,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(8,mm_strdup("alter"),(yyvsp[-6].str),(yyvsp[-5].str),(yyvsp[-4].str),mm_strdup("type"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33131 "preproc.c" /* yacc.c:1646  */
+#line 33133 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 310:
@@ -33135,7 +33137,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33139 "preproc.c" /* yacc.c:1646  */
+#line 33141 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 311:
@@ -33143,7 +33145,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("add"),(yyvsp[0].str));
 }
-#line 33147 "preproc.c" /* yacc.c:1646  */
+#line 33149 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 312:
@@ -33151,7 +33153,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter constraint"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33155 "preproc.c" /* yacc.c:1646  */
+#line 33157 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 313:
@@ -33159,7 +33161,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("validate constraint"),(yyvsp[0].str));
 }
-#line 33163 "preproc.c" /* yacc.c:1646  */
+#line 33165 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 314:
@@ -33167,7 +33169,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop constraint if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33171 "preproc.c" /* yacc.c:1646  */
+#line 33173 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 315:
@@ -33175,7 +33177,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop constraint"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33179 "preproc.c" /* yacc.c:1646  */
+#line 33181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 316:
@@ -33183,7 +33185,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("set with oids");
 }
-#line 33187 "preproc.c" /* yacc.c:1646  */
+#line 33189 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 317:
@@ -33191,7 +33193,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("set without oids");
 }
-#line 33195 "preproc.c" /* yacc.c:1646  */
+#line 33197 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 318:
@@ -33199,7 +33201,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("cluster on"),(yyvsp[0].str));
 }
-#line 33203 "preproc.c" /* yacc.c:1646  */
+#line 33205 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 319:
@@ -33207,7 +33209,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("set without cluster");
 }
-#line 33211 "preproc.c" /* yacc.c:1646  */
+#line 33213 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 320:
@@ -33215,7 +33217,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("set logged");
 }
-#line 33219 "preproc.c" /* yacc.c:1646  */
+#line 33221 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 321:
@@ -33223,7 +33225,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("set unlogged");
 }
-#line 33227 "preproc.c" /* yacc.c:1646  */
+#line 33229 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 322:
@@ -33231,7 +33233,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("enable trigger"),(yyvsp[0].str));
 }
-#line 33235 "preproc.c" /* yacc.c:1646  */
+#line 33237 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 323:
@@ -33239,7 +33241,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("enable always trigger"),(yyvsp[0].str));
 }
-#line 33243 "preproc.c" /* yacc.c:1646  */
+#line 33245 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 324:
@@ -33247,7 +33249,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("enable replica trigger"),(yyvsp[0].str));
 }
-#line 33251 "preproc.c" /* yacc.c:1646  */
+#line 33253 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 325:
@@ -33255,7 +33257,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("enable trigger all");
 }
-#line 33259 "preproc.c" /* yacc.c:1646  */
+#line 33261 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 326:
@@ -33263,7 +33265,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("enable trigger user");
 }
-#line 33267 "preproc.c" /* yacc.c:1646  */
+#line 33269 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 327:
@@ -33271,7 +33273,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("disable trigger"),(yyvsp[0].str));
 }
-#line 33275 "preproc.c" /* yacc.c:1646  */
+#line 33277 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 328:
@@ -33279,7 +33281,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("disable trigger all");
 }
-#line 33283 "preproc.c" /* yacc.c:1646  */
+#line 33285 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 329:
@@ -33287,7 +33289,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("disable trigger user");
 }
-#line 33291 "preproc.c" /* yacc.c:1646  */
+#line 33293 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 330:
@@ -33295,7 +33297,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("enable rule"),(yyvsp[0].str));
 }
-#line 33299 "preproc.c" /* yacc.c:1646  */
+#line 33301 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 331:
@@ -33303,7 +33305,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("enable always rule"),(yyvsp[0].str));
 }
-#line 33307 "preproc.c" /* yacc.c:1646  */
+#line 33309 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 332:
@@ -33311,7 +33313,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("enable replica rule"),(yyvsp[0].str));
 }
-#line 33315 "preproc.c" /* yacc.c:1646  */
+#line 33317 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 333:
@@ -33319,7 +33321,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("disable rule"),(yyvsp[0].str));
 }
-#line 33323 "preproc.c" /* yacc.c:1646  */
+#line 33325 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 334:
@@ -33327,7 +33329,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("inherit"),(yyvsp[0].str));
 }
-#line 33331 "preproc.c" /* yacc.c:1646  */
+#line 33333 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 335:
@@ -33335,7 +33337,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("no inherit"),(yyvsp[0].str));
 }
-#line 33339 "preproc.c" /* yacc.c:1646  */
+#line 33341 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 336:
@@ -33343,7 +33345,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("of"),(yyvsp[0].str));
 }
-#line 33347 "preproc.c" /* yacc.c:1646  */
+#line 33349 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 337:
@@ -33351,7 +33353,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("not of");
 }
-#line 33355 "preproc.c" /* yacc.c:1646  */
+#line 33357 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 338:
@@ -33359,7 +33361,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 33363 "preproc.c" /* yacc.c:1646  */
+#line 33365 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 339:
@@ -33367,7 +33369,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("set tablespace"),(yyvsp[0].str));
 }
-#line 33371 "preproc.c" /* yacc.c:1646  */
+#line 33373 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 340:
@@ -33375,7 +33377,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("set"),(yyvsp[0].str));
 }
-#line 33379 "preproc.c" /* yacc.c:1646  */
+#line 33381 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 341:
@@ -33383,7 +33385,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("reset"),(yyvsp[0].str));
 }
-#line 33387 "preproc.c" /* yacc.c:1646  */
+#line 33389 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 342:
@@ -33391,7 +33393,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("replica identity"),(yyvsp[0].str));
 }
-#line 33395 "preproc.c" /* yacc.c:1646  */
+#line 33397 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 343:
@@ -33399,7 +33401,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("enable row level security");
 }
-#line 33403 "preproc.c" /* yacc.c:1646  */
+#line 33405 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 344:
@@ -33407,7 +33409,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("disable row level security");
 }
-#line 33411 "preproc.c" /* yacc.c:1646  */
+#line 33413 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 345:
@@ -33415,7 +33417,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("force row level security");
 }
-#line 33419 "preproc.c" /* yacc.c:1646  */
+#line 33421 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 346:
@@ -33423,7 +33425,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no force row level security");
 }
-#line 33427 "preproc.c" /* yacc.c:1646  */
+#line 33429 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 347:
@@ -33431,7 +33433,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 33435 "preproc.c" /* yacc.c:1646  */
+#line 33437 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 348:
@@ -33439,7 +33441,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("set default"),(yyvsp[0].str));
 }
-#line 33443 "preproc.c" /* yacc.c:1646  */
+#line 33445 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 349:
@@ -33447,7 +33449,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("drop default");
 }
-#line 33451 "preproc.c" /* yacc.c:1646  */
+#line 33453 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 350:
@@ -33455,7 +33457,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cascade");
 }
-#line 33459 "preproc.c" /* yacc.c:1646  */
+#line 33461 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 351:
@@ -33463,14 +33465,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("restrict");
 }
-#line 33467 "preproc.c" /* yacc.c:1646  */
+#line 33469 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 352:
 #line 2996 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 33474 "preproc.c" /* yacc.c:1646  */
+#line 33476 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 353:
@@ -33478,14 +33480,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("collate"),(yyvsp[0].str));
 }
-#line 33482 "preproc.c" /* yacc.c:1646  */
+#line 33484 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 354:
 #line 3007 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 33489 "preproc.c" /* yacc.c:1646  */
+#line 33491 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 355:
@@ -33493,14 +33495,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("using"),(yyvsp[0].str));
 }
-#line 33497 "preproc.c" /* yacc.c:1646  */
+#line 33499 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 356:
 #line 3018 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 33504 "preproc.c" /* yacc.c:1646  */
+#line 33506 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 357:
@@ -33508,7 +33510,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nothing");
 }
-#line 33512 "preproc.c" /* yacc.c:1646  */
+#line 33514 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 358:
@@ -33516,7 +33518,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("full");
 }
-#line 33520 "preproc.c" /* yacc.c:1646  */
+#line 33522 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 359:
@@ -33524,7 +33526,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("default");
 }
-#line 33528 "preproc.c" /* yacc.c:1646  */
+#line 33530 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 360:
@@ -33532,7 +33534,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("using index"),(yyvsp[0].str));
 }
-#line 33536 "preproc.c" /* yacc.c:1646  */
+#line 33538 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 361:
@@ -33540,7 +33542,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 33544 "preproc.c" /* yacc.c:1646  */
+#line 33546 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 362:
@@ -33548,14 +33550,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("with"),(yyvsp[0].str));
 }
-#line 33552 "preproc.c" /* yacc.c:1646  */
+#line 33554 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 363:
 #line 3057 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 33559 "preproc.c" /* yacc.c:1646  */
+#line 33561 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 364:
@@ -33563,7 +33565,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 33567 "preproc.c" /* yacc.c:1646  */
+#line 33569 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 365:
@@ -33571,7 +33573,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 33575 "preproc.c" /* yacc.c:1646  */
+#line 33577 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 366:
@@ -33579,7 +33581,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("="),(yyvsp[0].str));
 }
-#line 33583 "preproc.c" /* yacc.c:1646  */
+#line 33585 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 367:
@@ -33587,7 +33589,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 33591 "preproc.c" /* yacc.c:1646  */
+#line 33593 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 368:
@@ -33595,7 +33597,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),mm_strdup("."),(yyvsp[-2].str),mm_strdup("="),(yyvsp[0].str));
 }
-#line 33599 "preproc.c" /* yacc.c:1646  */
+#line 33601 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 369:
@@ -33603,7 +33605,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("."),(yyvsp[0].str));
 }
-#line 33607 "preproc.c" /* yacc.c:1646  */
+#line 33609 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 370:
@@ -33611,7 +33613,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter type"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33615 "preproc.c" /* yacc.c:1646  */
+#line 33617 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 371:
@@ -33619,7 +33621,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 33623 "preproc.c" /* yacc.c:1646  */
+#line 33625 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 372:
@@ -33627,7 +33629,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 33631 "preproc.c" /* yacc.c:1646  */
+#line 33633 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 373:
@@ -33635,7 +33637,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("add attribute"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33639 "preproc.c" /* yacc.c:1646  */
+#line 33641 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 374:
@@ -33643,7 +33645,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop attribute if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33647 "preproc.c" /* yacc.c:1646  */
+#line 33649 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 375:
@@ -33651,7 +33653,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop attribute"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33655 "preproc.c" /* yacc.c:1646  */
+#line 33657 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 376:
@@ -33659,7 +33661,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter attribute"),(yyvsp[-5].str),(yyvsp[-4].str),mm_strdup("type"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33663 "preproc.c" /* yacc.c:1646  */
+#line 33665 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 377:
@@ -33668,7 +33670,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		char *cursor_marker = (yyvsp[0].str)[0] == ':' ? mm_strdup("$0") : (yyvsp[0].str);
 		(yyval.str) = cat2_str(mm_strdup("close"), cursor_marker);
 	}
-#line 33672 "preproc.c" /* yacc.c:1646  */
+#line 33674 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 378:
@@ -33676,7 +33678,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("close all");
 }
-#line 33680 "preproc.c" /* yacc.c:1646  */
+#line 33682 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 379:
@@ -33688,7 +33690,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(11,mm_strdup("copy"),(yyvsp[-9].str),(yyvsp[-8].str),(yyvsp[-7].str),(yyvsp[-6].str),(yyvsp[-5].str),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33692 "preproc.c" /* yacc.c:1646  */
+#line 33694 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 380:
@@ -33696,7 +33698,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("copy ("),(yyvsp[-6].str),mm_strdup(") to"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33700 "preproc.c" /* yacc.c:1646  */
+#line 33702 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 381:
@@ -33704,7 +33706,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("from");
 }
-#line 33708 "preproc.c" /* yacc.c:1646  */
+#line 33710 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 382:
@@ -33712,7 +33714,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("to");
 }
-#line 33716 "preproc.c" /* yacc.c:1646  */
+#line 33718 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 383:
@@ -33720,14 +33722,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("program");
 }
-#line 33724 "preproc.c" /* yacc.c:1646  */
+#line 33726 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 384:
 #line 3181 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 33731 "preproc.c" /* yacc.c:1646  */
+#line 33733 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 385:
@@ -33735,7 +33737,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 33739 "preproc.c" /* yacc.c:1646  */
+#line 33741 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 386:
@@ -33743,7 +33745,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("stdin");
 }
-#line 33747 "preproc.c" /* yacc.c:1646  */
+#line 33749 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 387:
@@ -33751,7 +33753,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("stdout");
 }
-#line 33755 "preproc.c" /* yacc.c:1646  */
+#line 33757 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 388:
@@ -33759,7 +33761,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 33763 "preproc.c" /* yacc.c:1646  */
+#line 33765 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 389:
@@ -33767,7 +33769,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 33771 "preproc.c" /* yacc.c:1646  */
+#line 33773 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 390:
@@ -33775,14 +33777,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33779 "preproc.c" /* yacc.c:1646  */
+#line 33781 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 391:
 #line 3220 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 33786 "preproc.c" /* yacc.c:1646  */
+#line 33788 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 392:
@@ -33790,7 +33792,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("binary");
 }
-#line 33794 "preproc.c" /* yacc.c:1646  */
+#line 33796 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 393:
@@ -33798,7 +33800,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("oids");
 }
-#line 33802 "preproc.c" /* yacc.c:1646  */
+#line 33804 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 394:
@@ -33806,7 +33808,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("freeze");
 }
-#line 33810 "preproc.c" /* yacc.c:1646  */
+#line 33812 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 395:
@@ -33814,7 +33816,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("delimiter"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33818 "preproc.c" /* yacc.c:1646  */
+#line 33820 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 396:
@@ -33822,7 +33824,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("null"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33826 "preproc.c" /* yacc.c:1646  */
+#line 33828 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 397:
@@ -33830,7 +33832,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("csv");
 }
-#line 33834 "preproc.c" /* yacc.c:1646  */
+#line 33836 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 398:
@@ -33838,7 +33840,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("header");
 }
-#line 33842 "preproc.c" /* yacc.c:1646  */
+#line 33844 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 399:
@@ -33846,7 +33848,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("quote"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33850 "preproc.c" /* yacc.c:1646  */
+#line 33852 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 400:
@@ -33854,7 +33856,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("escape"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33858 "preproc.c" /* yacc.c:1646  */
+#line 33860 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 401:
@@ -33862,7 +33864,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("force quote"),(yyvsp[0].str));
 }
-#line 33866 "preproc.c" /* yacc.c:1646  */
+#line 33868 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 402:
@@ -33870,7 +33872,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("force quote *");
 }
-#line 33874 "preproc.c" /* yacc.c:1646  */
+#line 33876 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 403:
@@ -33878,7 +33880,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("force not null"),(yyvsp[0].str));
 }
-#line 33882 "preproc.c" /* yacc.c:1646  */
+#line 33884 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 404:
@@ -33886,7 +33888,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("force null"),(yyvsp[0].str));
 }
-#line 33890 "preproc.c" /* yacc.c:1646  */
+#line 33892 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 405:
@@ -33894,7 +33896,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("encoding"),(yyvsp[0].str));
 }
-#line 33898 "preproc.c" /* yacc.c:1646  */
+#line 33900 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 406:
@@ -33902,14 +33904,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("binary");
 }
-#line 33906 "preproc.c" /* yacc.c:1646  */
+#line 33908 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 407:
 #line 3291 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 33913 "preproc.c" /* yacc.c:1646  */
+#line 33915 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 408:
@@ -33917,14 +33919,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with oids");
 }
-#line 33921 "preproc.c" /* yacc.c:1646  */
+#line 33923 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 409:
 #line 3302 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 33928 "preproc.c" /* yacc.c:1646  */
+#line 33930 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 410:
@@ -33932,14 +33934,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("delimiters"),(yyvsp[0].str));
 }
-#line 33936 "preproc.c" /* yacc.c:1646  */
+#line 33938 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 411:
 #line 3313 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 33943 "preproc.c" /* yacc.c:1646  */
+#line 33945 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 412:
@@ -33947,14 +33949,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("using");
 }
-#line 33951 "preproc.c" /* yacc.c:1646  */
+#line 33953 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 413:
 #line 3324 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 33958 "preproc.c" /* yacc.c:1646  */
+#line 33960 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 414:
@@ -33962,7 +33964,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 33966 "preproc.c" /* yacc.c:1646  */
+#line 33968 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 415:
@@ -33970,7 +33972,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 33974 "preproc.c" /* yacc.c:1646  */
+#line 33976 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 416:
@@ -33978,7 +33980,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 33982 "preproc.c" /* yacc.c:1646  */
+#line 33984 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 417:
@@ -33986,7 +33988,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 33990 "preproc.c" /* yacc.c:1646  */
+#line 33992 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 418:
@@ -33994,7 +33996,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 33998 "preproc.c" /* yacc.c:1646  */
+#line 34000 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 419:
@@ -34002,7 +34004,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("*");
 }
-#line 34006 "preproc.c" /* yacc.c:1646  */
+#line 34008 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 420:
@@ -34010,14 +34012,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 34014 "preproc.c" /* yacc.c:1646  */
+#line 34016 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 421:
 #line 3367 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34021 "preproc.c" /* yacc.c:1646  */
+#line 34023 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 422:
@@ -34025,7 +34027,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34029 "preproc.c" /* yacc.c:1646  */
+#line 34031 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 423:
@@ -34033,7 +34035,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 34037 "preproc.c" /* yacc.c:1646  */
+#line 34039 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 424:
@@ -34041,7 +34043,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34045 "preproc.c" /* yacc.c:1646  */
+#line 34047 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 425:
@@ -34049,7 +34051,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(11,mm_strdup("create"),(yyvsp[-9].str),mm_strdup("table"),(yyvsp[-7].str),mm_strdup("("),(yyvsp[-5].str),mm_strdup(")"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34053 "preproc.c" /* yacc.c:1646  */
+#line 34055 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 426:
@@ -34057,7 +34059,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(11,mm_strdup("create"),(yyvsp[-12].str),mm_strdup("table if not exists"),(yyvsp[-7].str),mm_strdup("("),(yyvsp[-5].str),mm_strdup(")"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34061 "preproc.c" /* yacc.c:1646  */
+#line 34063 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 427:
@@ -34065,7 +34067,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(10,mm_strdup("create"),(yyvsp[-8].str),mm_strdup("table"),(yyvsp[-6].str),mm_strdup("of"),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34069 "preproc.c" /* yacc.c:1646  */
+#line 34071 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 428:
@@ -34073,7 +34075,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(10,mm_strdup("create"),(yyvsp[-11].str),mm_strdup("table if not exists"),(yyvsp[-6].str),mm_strdup("of"),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34077 "preproc.c" /* yacc.c:1646  */
+#line 34079 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 429:
@@ -34081,7 +34083,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("temporary");
 }
-#line 34085 "preproc.c" /* yacc.c:1646  */
+#line 34087 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 430:
@@ -34089,7 +34091,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("temp");
 }
-#line 34093 "preproc.c" /* yacc.c:1646  */
+#line 34095 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 431:
@@ -34097,7 +34099,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("local temporary");
 }
-#line 34101 "preproc.c" /* yacc.c:1646  */
+#line 34103 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 432:
@@ -34105,7 +34107,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("local temp");
 }
-#line 34109 "preproc.c" /* yacc.c:1646  */
+#line 34111 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 433:
@@ -34113,7 +34115,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("global temporary");
 }
-#line 34117 "preproc.c" /* yacc.c:1646  */
+#line 34119 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 434:
@@ -34121,7 +34123,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("global temp");
 }
-#line 34125 "preproc.c" /* yacc.c:1646  */
+#line 34127 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 435:
@@ -34129,14 +34131,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unlogged");
 }
-#line 34133 "preproc.c" /* yacc.c:1646  */
+#line 34135 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 436:
 #line 3442 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34140 "preproc.c" /* yacc.c:1646  */
+#line 34142 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 437:
@@ -34144,14 +34146,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34148 "preproc.c" /* yacc.c:1646  */
+#line 34150 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 438:
 #line 3453 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34155 "preproc.c" /* yacc.c:1646  */
+#line 34157 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 439:
@@ -34159,14 +34161,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 34163 "preproc.c" /* yacc.c:1646  */
+#line 34165 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 440:
 #line 3464 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34170 "preproc.c" /* yacc.c:1646  */
+#line 34172 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 441:
@@ -34174,7 +34176,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34178 "preproc.c" /* yacc.c:1646  */
+#line 34180 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 442:
@@ -34182,7 +34184,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 34186 "preproc.c" /* yacc.c:1646  */
+#line 34188 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 443:
@@ -34190,7 +34192,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34194 "preproc.c" /* yacc.c:1646  */
+#line 34196 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 444:
@@ -34198,7 +34200,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 34202 "preproc.c" /* yacc.c:1646  */
+#line 34204 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 445:
@@ -34206,7 +34208,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34210 "preproc.c" /* yacc.c:1646  */
+#line 34212 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 446:
@@ -34214,7 +34216,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34218 "preproc.c" /* yacc.c:1646  */
+#line 34220 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 447:
@@ -34222,7 +34224,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34226 "preproc.c" /* yacc.c:1646  */
+#line 34228 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 448:
@@ -34230,7 +34232,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34234 "preproc.c" /* yacc.c:1646  */
+#line 34236 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 449:
@@ -34238,7 +34240,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34242 "preproc.c" /* yacc.c:1646  */
+#line 34244 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 450:
@@ -34246,7 +34248,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34250 "preproc.c" /* yacc.c:1646  */
+#line 34252 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 451:
@@ -34254,7 +34256,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-3].str),mm_strdup("with options"),(yyvsp[0].str));
 }
-#line 34258 "preproc.c" /* yacc.c:1646  */
+#line 34260 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 452:
@@ -34262,14 +34264,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34266 "preproc.c" /* yacc.c:1646  */
+#line 34268 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 453:
 #line 3543 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34273 "preproc.c" /* yacc.c:1646  */
+#line 34275 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 454:
@@ -34277,7 +34279,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("constraint"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34281 "preproc.c" /* yacc.c:1646  */
+#line 34283 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 455:
@@ -34285,7 +34287,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34289 "preproc.c" /* yacc.c:1646  */
+#line 34291 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 456:
@@ -34293,7 +34295,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34297 "preproc.c" /* yacc.c:1646  */
+#line 34299 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 457:
@@ -34301,7 +34303,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("collate"),(yyvsp[0].str));
 }
-#line 34305 "preproc.c" /* yacc.c:1646  */
+#line 34307 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 458:
@@ -34309,7 +34311,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("not null");
 }
-#line 34313 "preproc.c" /* yacc.c:1646  */
+#line 34315 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 459:
@@ -34317,7 +34319,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("null");
 }
-#line 34321 "preproc.c" /* yacc.c:1646  */
+#line 34323 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 460:
@@ -34325,7 +34327,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("unique"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34329 "preproc.c" /* yacc.c:1646  */
+#line 34331 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 461:
@@ -34333,7 +34335,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("primary key"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34337 "preproc.c" /* yacc.c:1646  */
+#line 34339 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 462:
@@ -34341,7 +34343,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("check ("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 34345 "preproc.c" /* yacc.c:1646  */
+#line 34347 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 463:
@@ -34349,7 +34351,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("default"),(yyvsp[0].str));
 }
-#line 34353 "preproc.c" /* yacc.c:1646  */
+#line 34355 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 464:
@@ -34357,7 +34359,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("references"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34361 "preproc.c" /* yacc.c:1646  */
+#line 34363 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 465:
@@ -34365,7 +34367,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("deferrable");
 }
-#line 34369 "preproc.c" /* yacc.c:1646  */
+#line 34371 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 466:
@@ -34373,7 +34375,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("not deferrable");
 }
-#line 34377 "preproc.c" /* yacc.c:1646  */
+#line 34379 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 467:
@@ -34381,7 +34383,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("initially deferred");
 }
-#line 34385 "preproc.c" /* yacc.c:1646  */
+#line 34387 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 468:
@@ -34389,7 +34391,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("initially immediate");
 }
-#line 34393 "preproc.c" /* yacc.c:1646  */
+#line 34395 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 469:
@@ -34397,7 +34399,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("like"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34401 "preproc.c" /* yacc.c:1646  */
+#line 34403 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 470:
@@ -34405,7 +34407,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("including"),(yyvsp[0].str));
 }
-#line 34409 "preproc.c" /* yacc.c:1646  */
+#line 34411 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 471:
@@ -34413,14 +34415,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("excluding"),(yyvsp[0].str));
 }
-#line 34417 "preproc.c" /* yacc.c:1646  */
+#line 34419 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 472:
 #line 3638 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34424 "preproc.c" /* yacc.c:1646  */
+#line 34426 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 473:
@@ -34428,7 +34430,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("defaults");
 }
-#line 34432 "preproc.c" /* yacc.c:1646  */
+#line 34434 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 474:
@@ -34436,7 +34438,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("constraints");
 }
-#line 34440 "preproc.c" /* yacc.c:1646  */
+#line 34442 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 475:
@@ -34444,7 +34446,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("indexes");
 }
-#line 34448 "preproc.c" /* yacc.c:1646  */
+#line 34450 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 476:
@@ -34452,7 +34454,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("storage");
 }
-#line 34456 "preproc.c" /* yacc.c:1646  */
+#line 34458 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 477:
@@ -34460,7 +34462,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("comments");
 }
-#line 34464 "preproc.c" /* yacc.c:1646  */
+#line 34466 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 478:
@@ -34468,7 +34470,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all");
 }
-#line 34472 "preproc.c" /* yacc.c:1646  */
+#line 34474 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 479:
@@ -34476,7 +34478,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("constraint"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34480 "preproc.c" /* yacc.c:1646  */
+#line 34482 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 480:
@@ -34484,7 +34486,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34488 "preproc.c" /* yacc.c:1646  */
+#line 34490 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 481:
@@ -34492,7 +34494,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("check ("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 34496 "preproc.c" /* yacc.c:1646  */
+#line 34498 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 482:
@@ -34500,7 +34502,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("unique ("),(yyvsp[-4].str),mm_strdup(")"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34504 "preproc.c" /* yacc.c:1646  */
+#line 34506 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 483:
@@ -34508,7 +34510,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("unique"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34512 "preproc.c" /* yacc.c:1646  */
+#line 34514 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 484:
@@ -34516,7 +34518,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("primary key ("),(yyvsp[-4].str),mm_strdup(")"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34520 "preproc.c" /* yacc.c:1646  */
+#line 34522 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 485:
@@ -34524,7 +34526,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("primary key"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34528 "preproc.c" /* yacc.c:1646  */
+#line 34530 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 486:
@@ -34532,7 +34534,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(9,mm_strdup("exclude"),(yyvsp[-7].str),mm_strdup("("),(yyvsp[-5].str),mm_strdup(")"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34536 "preproc.c" /* yacc.c:1646  */
+#line 34538 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 487:
@@ -34540,7 +34542,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(8,mm_strdup("foreign key ("),(yyvsp[-7].str),mm_strdup(") references"),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34544 "preproc.c" /* yacc.c:1646  */
+#line 34546 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 488:
@@ -34548,14 +34550,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no inherit");
 }
-#line 34552 "preproc.c" /* yacc.c:1646  */
+#line 34554 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 489:
 #line 3721 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34559 "preproc.c" /* yacc.c:1646  */
+#line 34561 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 490:
@@ -34563,14 +34565,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 34567 "preproc.c" /* yacc.c:1646  */
+#line 34569 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 491:
 #line 3732 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34574 "preproc.c" /* yacc.c:1646  */
+#line 34576 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 492:
@@ -34578,7 +34580,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34582 "preproc.c" /* yacc.c:1646  */
+#line 34584 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 493:
@@ -34586,7 +34588,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 34590 "preproc.c" /* yacc.c:1646  */
+#line 34592 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 494:
@@ -34594,7 +34596,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34598 "preproc.c" /* yacc.c:1646  */
+#line 34600 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 495:
@@ -34602,7 +34604,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("match full");
 }
-#line 34606 "preproc.c" /* yacc.c:1646  */
+#line 34608 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 496:
@@ -34611,7 +34613,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = mm_strdup("match partial");
 }
-#line 34615 "preproc.c" /* yacc.c:1646  */
+#line 34617 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 497:
@@ -34619,14 +34621,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("match simple");
 }
-#line 34623 "preproc.c" /* yacc.c:1646  */
+#line 34625 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 498:
 #line 3772 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34630 "preproc.c" /* yacc.c:1646  */
+#line 34632 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 499:
@@ -34634,7 +34636,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34638 "preproc.c" /* yacc.c:1646  */
+#line 34640 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 500:
@@ -34642,7 +34644,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 34646 "preproc.c" /* yacc.c:1646  */
+#line 34648 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 501:
@@ -34650,7 +34652,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("with"),(yyvsp[0].str));
 }
-#line 34654 "preproc.c" /* yacc.c:1646  */
+#line 34656 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 502:
@@ -34658,7 +34660,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-5].str),mm_strdup("with operator ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 34662 "preproc.c" /* yacc.c:1646  */
+#line 34664 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 503:
@@ -34666,14 +34668,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("where ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 34670 "preproc.c" /* yacc.c:1646  */
+#line 34672 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 504:
 #line 3807 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34677 "preproc.c" /* yacc.c:1646  */
+#line 34679 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 505:
@@ -34681,7 +34683,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34685 "preproc.c" /* yacc.c:1646  */
+#line 34687 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 506:
@@ -34689,7 +34691,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 34693 "preproc.c" /* yacc.c:1646  */
+#line 34695 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 507:
@@ -34697,7 +34699,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34701 "preproc.c" /* yacc.c:1646  */
+#line 34703 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 508:
@@ -34705,14 +34707,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34709 "preproc.c" /* yacc.c:1646  */
+#line 34711 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 509:
 #line 3830 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34716 "preproc.c" /* yacc.c:1646  */
+#line 34718 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 510:
@@ -34720,7 +34722,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("on update"),(yyvsp[0].str));
 }
-#line 34724 "preproc.c" /* yacc.c:1646  */
+#line 34726 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 511:
@@ -34728,7 +34730,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("on delete"),(yyvsp[0].str));
 }
-#line 34732 "preproc.c" /* yacc.c:1646  */
+#line 34734 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 512:
@@ -34736,7 +34738,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no action");
 }
-#line 34740 "preproc.c" /* yacc.c:1646  */
+#line 34742 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 513:
@@ -34744,7 +34746,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("restrict");
 }
-#line 34748 "preproc.c" /* yacc.c:1646  */
+#line 34750 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 514:
@@ -34752,7 +34754,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cascade");
 }
-#line 34756 "preproc.c" /* yacc.c:1646  */
+#line 34758 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 515:
@@ -34760,7 +34762,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("set null");
 }
-#line 34764 "preproc.c" /* yacc.c:1646  */
+#line 34766 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 516:
@@ -34768,7 +34770,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("set default");
 }
-#line 34772 "preproc.c" /* yacc.c:1646  */
+#line 34774 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 517:
@@ -34776,14 +34778,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("inherits ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 34780 "preproc.c" /* yacc.c:1646  */
+#line 34782 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 518:
 #line 3881 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34787 "preproc.c" /* yacc.c:1646  */
+#line 34789 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 519:
@@ -34791,7 +34793,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("with"),(yyvsp[0].str));
 }
-#line 34795 "preproc.c" /* yacc.c:1646  */
+#line 34797 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 520:
@@ -34799,7 +34801,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with oids");
 }
-#line 34803 "preproc.c" /* yacc.c:1646  */
+#line 34805 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 521:
@@ -34807,14 +34809,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("without oids");
 }
-#line 34811 "preproc.c" /* yacc.c:1646  */
+#line 34813 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 522:
 #line 3900 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34818 "preproc.c" /* yacc.c:1646  */
+#line 34820 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 523:
@@ -34822,7 +34824,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("on commit drop");
 }
-#line 34826 "preproc.c" /* yacc.c:1646  */
+#line 34828 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 524:
@@ -34830,7 +34832,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("on commit delete rows");
 }
-#line 34834 "preproc.c" /* yacc.c:1646  */
+#line 34836 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 525:
@@ -34838,14 +34840,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("on commit preserve rows");
 }
-#line 34842 "preproc.c" /* yacc.c:1646  */
+#line 34844 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 526:
 #line 3919 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34849 "preproc.c" /* yacc.c:1646  */
+#line 34851 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 527:
@@ -34853,14 +34855,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("tablespace"),(yyvsp[0].str));
 }
-#line 34857 "preproc.c" /* yacc.c:1646  */
+#line 34859 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 528:
 #line 3930 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34864 "preproc.c" /* yacc.c:1646  */
+#line 34866 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 529:
@@ -34868,14 +34870,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("using index tablespace"),(yyvsp[0].str));
 }
-#line 34872 "preproc.c" /* yacc.c:1646  */
+#line 34874 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 530:
 #line 3941 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34879 "preproc.c" /* yacc.c:1646  */
+#line 34881 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 531:
@@ -34883,7 +34885,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("using index"),(yyvsp[0].str));
 }
-#line 34887 "preproc.c" /* yacc.c:1646  */
+#line 34889 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 532:
@@ -34891,7 +34893,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34895 "preproc.c" /* yacc.c:1646  */
+#line 34897 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 533:
@@ -34899,7 +34901,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with data");
 }
-#line 34903 "preproc.c" /* yacc.c:1646  */
+#line 34905 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 534:
@@ -34907,14 +34909,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with no data");
 }
-#line 34911 "preproc.c" /* yacc.c:1646  */
+#line 34913 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 535:
 #line 3972 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34918 "preproc.c" /* yacc.c:1646  */
+#line 34920 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 536:
@@ -34922,7 +34924,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("create"),(yyvsp[-6].str),mm_strdup("materialized view"),(yyvsp[-3].str),mm_strdup("as"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34926 "preproc.c" /* yacc.c:1646  */
+#line 34928 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 537:
@@ -34930,7 +34932,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("create"),(yyvsp[-9].str),mm_strdup("materialized view if not exists"),(yyvsp[-3].str),mm_strdup("as"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34934 "preproc.c" /* yacc.c:1646  */
+#line 34936 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 538:
@@ -34938,7 +34940,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34942 "preproc.c" /* yacc.c:1646  */
+#line 34944 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 539:
@@ -34946,14 +34948,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unlogged");
 }
-#line 34950 "preproc.c" /* yacc.c:1646  */
+#line 34952 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 540:
 #line 4003 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 34957 "preproc.c" /* yacc.c:1646  */
+#line 34959 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 541:
@@ -34961,7 +34963,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("refresh materialized view"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34965 "preproc.c" /* yacc.c:1646  */
+#line 34967 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 542:
@@ -34969,7 +34971,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("create"),(yyvsp[-3].str),mm_strdup("sequence"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34973 "preproc.c" /* yacc.c:1646  */
+#line 34975 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 543:
@@ -34977,7 +34979,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("create"),(yyvsp[-6].str),mm_strdup("sequence if not exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34981 "preproc.c" /* yacc.c:1646  */
+#line 34983 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 544:
@@ -34985,7 +34987,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter sequence"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34989 "preproc.c" /* yacc.c:1646  */
+#line 34991 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 545:
@@ -34993,7 +34995,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter sequence if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 34997 "preproc.c" /* yacc.c:1646  */
+#line 34999 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 546:
@@ -35001,14 +35003,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35005 "preproc.c" /* yacc.c:1646  */
+#line 35007 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 547:
 #line 4046 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35012 "preproc.c" /* yacc.c:1646  */
+#line 35014 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 548:
@@ -35016,7 +35018,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35020 "preproc.c" /* yacc.c:1646  */
+#line 35022 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 549:
@@ -35024,7 +35026,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35028 "preproc.c" /* yacc.c:1646  */
+#line 35030 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 550:
@@ -35032,7 +35034,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("cache"),(yyvsp[0].str));
 }
-#line 35036 "preproc.c" /* yacc.c:1646  */
+#line 35038 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 551:
@@ -35040,7 +35042,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cycle");
 }
-#line 35044 "preproc.c" /* yacc.c:1646  */
+#line 35046 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 552:
@@ -35048,7 +35050,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no cycle");
 }
-#line 35052 "preproc.c" /* yacc.c:1646  */
+#line 35054 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 553:
@@ -35056,7 +35058,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("increment"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35060 "preproc.c" /* yacc.c:1646  */
+#line 35062 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 554:
@@ -35064,7 +35066,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("maxvalue"),(yyvsp[0].str));
 }
-#line 35068 "preproc.c" /* yacc.c:1646  */
+#line 35070 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 555:
@@ -35072,7 +35074,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("minvalue"),(yyvsp[0].str));
 }
-#line 35076 "preproc.c" /* yacc.c:1646  */
+#line 35078 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 556:
@@ -35080,7 +35082,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no maxvalue");
 }
-#line 35084 "preproc.c" /* yacc.c:1646  */
+#line 35086 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 557:
@@ -35088,7 +35090,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no minvalue");
 }
-#line 35092 "preproc.c" /* yacc.c:1646  */
+#line 35094 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 558:
@@ -35096,7 +35098,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("owned by"),(yyvsp[0].str));
 }
-#line 35100 "preproc.c" /* yacc.c:1646  */
+#line 35102 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 559:
@@ -35104,7 +35106,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("start"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35108 "preproc.c" /* yacc.c:1646  */
+#line 35110 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 560:
@@ -35112,7 +35114,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("restart");
 }
-#line 35116 "preproc.c" /* yacc.c:1646  */
+#line 35118 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 561:
@@ -35120,7 +35122,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("restart"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35124 "preproc.c" /* yacc.c:1646  */
+#line 35126 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 562:
@@ -35128,14 +35130,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("by");
 }
-#line 35132 "preproc.c" /* yacc.c:1646  */
+#line 35134 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 563:
 #line 4121 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35139 "preproc.c" /* yacc.c:1646  */
+#line 35141 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 564:
@@ -35143,7 +35145,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35147 "preproc.c" /* yacc.c:1646  */
+#line 35149 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 565:
@@ -35151,7 +35153,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("+"),(yyvsp[0].str));
 }
-#line 35155 "preproc.c" /* yacc.c:1646  */
+#line 35157 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 566:
@@ -35159,7 +35161,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("-"),(yyvsp[0].str));
 }
-#line 35163 "preproc.c" /* yacc.c:1646  */
+#line 35165 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 567:
@@ -35167,7 +35169,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35171 "preproc.c" /* yacc.c:1646  */
+#line 35173 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 568:
@@ -35175,7 +35177,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35179 "preproc.c" /* yacc.c:1646  */
+#line 35181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 569:
@@ -35183,7 +35185,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 35187 "preproc.c" /* yacc.c:1646  */
+#line 35189 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 570:
@@ -35191,7 +35193,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("create"),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("language"),(yyvsp[0].str));
 }
-#line 35195 "preproc.c" /* yacc.c:1646  */
+#line 35197 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 571:
@@ -35199,7 +35201,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(10,mm_strdup("create"),(yyvsp[-8].str),(yyvsp[-7].str),(yyvsp[-6].str),mm_strdup("language"),(yyvsp[-4].str),mm_strdup("handler"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35203 "preproc.c" /* yacc.c:1646  */
+#line 35205 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 572:
@@ -35207,14 +35209,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("trusted");
 }
-#line 35211 "preproc.c" /* yacc.c:1646  */
+#line 35213 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 573:
 #line 4176 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35218 "preproc.c" /* yacc.c:1646  */
+#line 35220 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 574:
@@ -35222,7 +35224,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35226 "preproc.c" /* yacc.c:1646  */
+#line 35228 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 575:
@@ -35230,7 +35232,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35234 "preproc.c" /* yacc.c:1646  */
+#line 35236 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 576:
@@ -35238,14 +35240,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("inline"),(yyvsp[0].str));
 }
-#line 35242 "preproc.c" /* yacc.c:1646  */
+#line 35244 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 577:
 #line 4199 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35249 "preproc.c" /* yacc.c:1646  */
+#line 35251 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 578:
@@ -35253,7 +35255,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("validator"),(yyvsp[0].str));
 }
-#line 35257 "preproc.c" /* yacc.c:1646  */
+#line 35259 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 579:
@@ -35261,7 +35263,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no validator");
 }
-#line 35265 "preproc.c" /* yacc.c:1646  */
+#line 35267 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 580:
@@ -35269,14 +35271,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35273 "preproc.c" /* yacc.c:1646  */
+#line 35275 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 581:
 #line 4222 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35280 "preproc.c" /* yacc.c:1646  */
+#line 35282 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 582:
@@ -35284,7 +35286,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop"),(yyvsp[-3].str),mm_strdup("language"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35288 "preproc.c" /* yacc.c:1646  */
+#line 35290 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 583:
@@ -35292,7 +35294,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop"),(yyvsp[-5].str),mm_strdup("language if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35296 "preproc.c" /* yacc.c:1646  */
+#line 35298 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 584:
@@ -35300,14 +35302,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("procedural");
 }
-#line 35304 "preproc.c" /* yacc.c:1646  */
+#line 35306 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 585:
 #line 4245 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35311 "preproc.c" /* yacc.c:1646  */
+#line 35313 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 586:
@@ -35315,7 +35317,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("create tablespace"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("location"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35319 "preproc.c" /* yacc.c:1646  */
+#line 35321 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 587:
@@ -35323,14 +35325,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("owner"),(yyvsp[0].str));
 }
-#line 35327 "preproc.c" /* yacc.c:1646  */
+#line 35329 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 588:
 #line 4264 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35334 "preproc.c" /* yacc.c:1646  */
+#line 35336 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 589:
@@ -35338,7 +35340,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop tablespace"),(yyvsp[0].str));
 }
-#line 35342 "preproc.c" /* yacc.c:1646  */
+#line 35344 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 590:
@@ -35346,7 +35348,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop tablespace if exists"),(yyvsp[0].str));
 }
-#line 35350 "preproc.c" /* yacc.c:1646  */
+#line 35352 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 591:
@@ -35354,7 +35356,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("create extension"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35358 "preproc.c" /* yacc.c:1646  */
+#line 35360 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 592:
@@ -35362,7 +35364,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("create extension if not exists"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35366 "preproc.c" /* yacc.c:1646  */
+#line 35368 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 593:
@@ -35370,14 +35372,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35374 "preproc.c" /* yacc.c:1646  */
+#line 35376 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 594:
 #line 4299 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35381 "preproc.c" /* yacc.c:1646  */
+#line 35383 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 595:
@@ -35385,7 +35387,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("schema"),(yyvsp[0].str));
 }
-#line 35389 "preproc.c" /* yacc.c:1646  */
+#line 35391 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 596:
@@ -35393,7 +35395,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("version"),(yyvsp[0].str));
 }
-#line 35397 "preproc.c" /* yacc.c:1646  */
+#line 35399 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 597:
@@ -35401,7 +35403,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("from"),(yyvsp[0].str));
 }
-#line 35405 "preproc.c" /* yacc.c:1646  */
+#line 35407 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 598:
@@ -35409,7 +35411,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cascade");
 }
-#line 35413 "preproc.c" /* yacc.c:1646  */
+#line 35415 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 599:
@@ -35417,7 +35419,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter extension"),(yyvsp[-2].str),mm_strdup("update"),(yyvsp[0].str));
 }
-#line 35421 "preproc.c" /* yacc.c:1646  */
+#line 35423 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 600:
@@ -35425,14 +35427,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35429 "preproc.c" /* yacc.c:1646  */
+#line 35431 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 601:
 #line 4338 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35436 "preproc.c" /* yacc.c:1646  */
+#line 35438 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 602:
@@ -35440,7 +35442,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("to"),(yyvsp[0].str));
 }
-#line 35444 "preproc.c" /* yacc.c:1646  */
+#line 35446 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 603:
@@ -35448,7 +35450,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("access method"),(yyvsp[0].str));
 }
-#line 35452 "preproc.c" /* yacc.c:1646  */
+#line 35454 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 604:
@@ -35456,7 +35458,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter extension"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("aggregate"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35460 "preproc.c" /* yacc.c:1646  */
+#line 35462 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 605:
@@ -35464,7 +35466,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(8,mm_strdup("alter extension"),(yyvsp[-7].str),(yyvsp[-6].str),mm_strdup("cast ("),(yyvsp[-3].str),mm_strdup("as"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 35468 "preproc.c" /* yacc.c:1646  */
+#line 35470 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 606:
@@ -35472,7 +35474,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("collation"),(yyvsp[0].str));
 }
-#line 35476 "preproc.c" /* yacc.c:1646  */
+#line 35478 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 607:
@@ -35480,7 +35482,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("conversion"),(yyvsp[0].str));
 }
-#line 35484 "preproc.c" /* yacc.c:1646  */
+#line 35486 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 608:
@@ -35488,7 +35490,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("domain"),(yyvsp[0].str));
 }
-#line 35492 "preproc.c" /* yacc.c:1646  */
+#line 35494 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 609:
@@ -35496,7 +35498,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("function"),(yyvsp[0].str));
 }
-#line 35500 "preproc.c" /* yacc.c:1646  */
+#line 35502 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 610:
@@ -35504,7 +35506,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter extension"),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("language"),(yyvsp[0].str));
 }
-#line 35508 "preproc.c" /* yacc.c:1646  */
+#line 35510 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 611:
@@ -35512,7 +35514,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter extension"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("operator"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35516 "preproc.c" /* yacc.c:1646  */
+#line 35518 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 612:
@@ -35520,7 +35522,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter extension"),(yyvsp[-6].str),(yyvsp[-5].str),mm_strdup("operator class"),(yyvsp[-2].str),mm_strdup("using"),(yyvsp[0].str));
 }
-#line 35524 "preproc.c" /* yacc.c:1646  */
+#line 35526 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 613:
@@ -35528,7 +35530,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter extension"),(yyvsp[-6].str),(yyvsp[-5].str),mm_strdup("operator family"),(yyvsp[-2].str),mm_strdup("using"),(yyvsp[0].str));
 }
-#line 35532 "preproc.c" /* yacc.c:1646  */
+#line 35534 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 614:
@@ -35536,7 +35538,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("schema"),(yyvsp[0].str));
 }
-#line 35540 "preproc.c" /* yacc.c:1646  */
+#line 35542 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 615:
@@ -35544,7 +35546,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("event trigger"),(yyvsp[0].str));
 }
-#line 35548 "preproc.c" /* yacc.c:1646  */
+#line 35550 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 616:
@@ -35552,7 +35554,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("table"),(yyvsp[0].str));
 }
-#line 35556 "preproc.c" /* yacc.c:1646  */
+#line 35558 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 617:
@@ -35560,7 +35562,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-5].str),(yyvsp[-4].str),mm_strdup("text search parser"),(yyvsp[0].str));
 }
-#line 35564 "preproc.c" /* yacc.c:1646  */
+#line 35566 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 618:
@@ -35568,7 +35570,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-5].str),(yyvsp[-4].str),mm_strdup("text search dictionary"),(yyvsp[0].str));
 }
-#line 35572 "preproc.c" /* yacc.c:1646  */
+#line 35574 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 619:
@@ -35576,7 +35578,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-5].str),(yyvsp[-4].str),mm_strdup("text search template"),(yyvsp[0].str));
 }
-#line 35580 "preproc.c" /* yacc.c:1646  */
+#line 35582 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 620:
@@ -35584,7 +35586,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-5].str),(yyvsp[-4].str),mm_strdup("text search configuration"),(yyvsp[0].str));
 }
-#line 35588 "preproc.c" /* yacc.c:1646  */
+#line 35590 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 621:
@@ -35592,7 +35594,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("sequence"),(yyvsp[0].str));
 }
-#line 35596 "preproc.c" /* yacc.c:1646  */
+#line 35598 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 622:
@@ -35600,7 +35602,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("view"),(yyvsp[0].str));
 }
-#line 35604 "preproc.c" /* yacc.c:1646  */
+#line 35606 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 623:
@@ -35608,7 +35610,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("materialized view"),(yyvsp[0].str));
 }
-#line 35612 "preproc.c" /* yacc.c:1646  */
+#line 35614 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 624:
@@ -35616,7 +35618,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("foreign table"),(yyvsp[0].str));
 }
-#line 35620 "preproc.c" /* yacc.c:1646  */
+#line 35622 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 625:
@@ -35624,7 +35626,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-5].str),(yyvsp[-4].str),mm_strdup("foreign data wrapper"),(yyvsp[0].str));
 }
-#line 35628 "preproc.c" /* yacc.c:1646  */
+#line 35630 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 626:
@@ -35632,7 +35634,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("server"),(yyvsp[0].str));
 }
-#line 35636 "preproc.c" /* yacc.c:1646  */
+#line 35638 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 627:
@@ -35640,7 +35642,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter extension"),(yyvsp[-6].str),(yyvsp[-5].str),mm_strdup("transform for"),(yyvsp[-2].str),mm_strdup("language"),(yyvsp[0].str));
 }
-#line 35644 "preproc.c" /* yacc.c:1646  */
+#line 35646 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 628:
@@ -35648,7 +35650,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter extension"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("type"),(yyvsp[0].str));
 }
-#line 35652 "preproc.c" /* yacc.c:1646  */
+#line 35654 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 629:
@@ -35656,7 +35658,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("create foreign data wrapper"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35660 "preproc.c" /* yacc.c:1646  */
+#line 35662 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 630:
@@ -35664,7 +35666,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("handler"),(yyvsp[0].str));
 }
-#line 35668 "preproc.c" /* yacc.c:1646  */
+#line 35670 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 631:
@@ -35672,7 +35674,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no handler");
 }
-#line 35676 "preproc.c" /* yacc.c:1646  */
+#line 35678 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 632:
@@ -35680,7 +35682,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("validator"),(yyvsp[0].str));
 }
-#line 35684 "preproc.c" /* yacc.c:1646  */
+#line 35686 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 633:
@@ -35688,7 +35690,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no validator");
 }
-#line 35692 "preproc.c" /* yacc.c:1646  */
+#line 35694 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 634:
@@ -35696,7 +35698,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35700 "preproc.c" /* yacc.c:1646  */
+#line 35702 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 635:
@@ -35704,7 +35706,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35708 "preproc.c" /* yacc.c:1646  */
+#line 35710 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 636:
@@ -35712,14 +35714,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35716 "preproc.c" /* yacc.c:1646  */
+#line 35718 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 637:
 #line 4505 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35723 "preproc.c" /* yacc.c:1646  */
+#line 35725 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 638:
@@ -35727,7 +35729,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop foreign data wrapper"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35731 "preproc.c" /* yacc.c:1646  */
+#line 35733 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 639:
@@ -35735,7 +35737,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop foreign data wrapper if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35739 "preproc.c" /* yacc.c:1646  */
+#line 35741 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 640:
@@ -35743,7 +35745,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter foreign data wrapper"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35747 "preproc.c" /* yacc.c:1646  */
+#line 35749 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 641:
@@ -35751,7 +35753,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter foreign data wrapper"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35755 "preproc.c" /* yacc.c:1646  */
+#line 35757 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 642:
@@ -35759,14 +35761,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("options ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 35763 "preproc.c" /* yacc.c:1646  */
+#line 35765 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 643:
 #line 4540 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35770 "preproc.c" /* yacc.c:1646  */
+#line 35772 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 644:
@@ -35774,7 +35776,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35778 "preproc.c" /* yacc.c:1646  */
+#line 35780 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 645:
@@ -35782,7 +35784,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 35786 "preproc.c" /* yacc.c:1646  */
+#line 35788 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 646:
@@ -35790,7 +35792,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("options ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 35794 "preproc.c" /* yacc.c:1646  */
+#line 35796 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 647:
@@ -35798,7 +35800,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35802 "preproc.c" /* yacc.c:1646  */
+#line 35804 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 648:
@@ -35806,7 +35808,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 35810 "preproc.c" /* yacc.c:1646  */
+#line 35812 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 649:
@@ -35814,7 +35816,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35818 "preproc.c" /* yacc.c:1646  */
+#line 35820 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 650:
@@ -35822,7 +35824,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("set"),(yyvsp[0].str));
 }
-#line 35826 "preproc.c" /* yacc.c:1646  */
+#line 35828 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 651:
@@ -35830,7 +35832,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("add"),(yyvsp[0].str));
 }
-#line 35834 "preproc.c" /* yacc.c:1646  */
+#line 35836 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 652:
@@ -35838,7 +35840,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop"),(yyvsp[0].str));
 }
-#line 35842 "preproc.c" /* yacc.c:1646  */
+#line 35844 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 653:
@@ -35846,7 +35848,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35850 "preproc.c" /* yacc.c:1646  */
+#line 35852 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 654:
@@ -35854,7 +35856,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35858 "preproc.c" /* yacc.c:1646  */
+#line 35860 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 655:
@@ -35862,7 +35864,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35866 "preproc.c" /* yacc.c:1646  */
+#line 35868 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 656:
@@ -35870,7 +35872,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("create server"),(yyvsp[-7].str),(yyvsp[-6].str),(yyvsp[-5].str),mm_strdup("foreign data wrapper"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35874 "preproc.c" /* yacc.c:1646  */
+#line 35876 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 657:
@@ -35878,14 +35880,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("type"),(yyvsp[0].str));
 }
-#line 35882 "preproc.c" /* yacc.c:1646  */
+#line 35884 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 658:
 #line 4635 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35889 "preproc.c" /* yacc.c:1646  */
+#line 35891 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 659:
@@ -35893,7 +35895,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("version"),(yyvsp[0].str));
 }
-#line 35897 "preproc.c" /* yacc.c:1646  */
+#line 35899 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 660:
@@ -35901,7 +35903,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("version null");
 }
-#line 35905 "preproc.c" /* yacc.c:1646  */
+#line 35907 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 661:
@@ -35909,14 +35911,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 35913 "preproc.c" /* yacc.c:1646  */
+#line 35915 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 662:
 #line 4658 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 35920 "preproc.c" /* yacc.c:1646  */
+#line 35922 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 663:
@@ -35924,7 +35926,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop server"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35928 "preproc.c" /* yacc.c:1646  */
+#line 35930 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 664:
@@ -35932,7 +35934,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop server if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35936 "preproc.c" /* yacc.c:1646  */
+#line 35938 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 665:
@@ -35940,7 +35942,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter server"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35944 "preproc.c" /* yacc.c:1646  */
+#line 35946 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 666:
@@ -35948,7 +35950,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter server"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35952 "preproc.c" /* yacc.c:1646  */
+#line 35954 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 667:
@@ -35956,7 +35958,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter server"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35960 "preproc.c" /* yacc.c:1646  */
+#line 35962 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 668:
@@ -35964,7 +35966,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(9,mm_strdup("create foreign table"),(yyvsp[-7].str),mm_strdup("("),(yyvsp[-5].str),mm_strdup(")"),(yyvsp[-3].str),mm_strdup("server"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35968 "preproc.c" /* yacc.c:1646  */
+#line 35970 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 669:
@@ -35972,7 +35974,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(9,mm_strdup("create foreign table if not exists"),(yyvsp[-7].str),mm_strdup("("),(yyvsp[-5].str),mm_strdup(")"),(yyvsp[-3].str),mm_strdup("server"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35976 "preproc.c" /* yacc.c:1646  */
+#line 35978 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 670:
@@ -35980,7 +35982,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter foreign table"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35984 "preproc.c" /* yacc.c:1646  */
+#line 35986 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 671:
@@ -35988,7 +35990,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter foreign table if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 35992 "preproc.c" /* yacc.c:1646  */
+#line 35994 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 672:
@@ -35996,7 +35998,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(8,mm_strdup("import foreign schema"),(yyvsp[-7].str),(yyvsp[-6].str),mm_strdup("from server"),(yyvsp[-3].str),mm_strdup("into"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36000 "preproc.c" /* yacc.c:1646  */
+#line 36002 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 673:
@@ -36004,7 +36006,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("limit to");
 }
-#line 36008 "preproc.c" /* yacc.c:1646  */
+#line 36010 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 674:
@@ -36012,7 +36014,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("except");
 }
-#line 36016 "preproc.c" /* yacc.c:1646  */
+#line 36018 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 675:
@@ -36020,14 +36022,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36024 "preproc.c" /* yacc.c:1646  */
+#line 36026 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 676:
 #line 4741 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36031 "preproc.c" /* yacc.c:1646  */
+#line 36033 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 677:
@@ -36035,7 +36037,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("create user mapping for"),(yyvsp[-3].str),mm_strdup("server"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36039 "preproc.c" /* yacc.c:1646  */
+#line 36041 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 678:
@@ -36043,7 +36045,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36047 "preproc.c" /* yacc.c:1646  */
+#line 36049 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 679:
@@ -36051,7 +36053,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("user");
 }
-#line 36055 "preproc.c" /* yacc.c:1646  */
+#line 36057 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 680:
@@ -36059,7 +36061,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("drop user mapping for"),(yyvsp[-2].str),mm_strdup("server"),(yyvsp[0].str));
 }
-#line 36063 "preproc.c" /* yacc.c:1646  */
+#line 36065 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 681:
@@ -36067,7 +36069,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("drop user mapping if exists for"),(yyvsp[-2].str),mm_strdup("server"),(yyvsp[0].str));
 }
-#line 36071 "preproc.c" /* yacc.c:1646  */
+#line 36073 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 682:
@@ -36075,7 +36077,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter user mapping for"),(yyvsp[-3].str),mm_strdup("server"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36079 "preproc.c" /* yacc.c:1646  */
+#line 36081 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 683:
@@ -36083,7 +36085,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(8,mm_strdup("create policy"),(yyvsp[-6].str),mm_strdup("on"),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36087 "preproc.c" /* yacc.c:1646  */
+#line 36089 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 684:
@@ -36091,7 +36093,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter policy"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36095 "preproc.c" /* yacc.c:1646  */
+#line 36097 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 685:
@@ -36099,7 +36101,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop policy"),(yyvsp[-3].str),mm_strdup("on"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36103 "preproc.c" /* yacc.c:1646  */
+#line 36105 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 686:
@@ -36107,7 +36109,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop policy if exists"),(yyvsp[-3].str),mm_strdup("on"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36111 "preproc.c" /* yacc.c:1646  */
+#line 36113 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 687:
@@ -36115,14 +36117,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("using ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36119 "preproc.c" /* yacc.c:1646  */
+#line 36121 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 688:
 #line 4820 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36126 "preproc.c" /* yacc.c:1646  */
+#line 36128 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 689:
@@ -36130,14 +36132,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("with check ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36134 "preproc.c" /* yacc.c:1646  */
+#line 36136 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 690:
 #line 4831 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36141 "preproc.c" /* yacc.c:1646  */
+#line 36143 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 691:
@@ -36145,14 +36147,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("to"),(yyvsp[0].str));
 }
-#line 36149 "preproc.c" /* yacc.c:1646  */
+#line 36151 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 692:
 #line 4842 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36156 "preproc.c" /* yacc.c:1646  */
+#line 36158 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 693:
@@ -36160,14 +36162,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("to"),(yyvsp[0].str));
 }
-#line 36164 "preproc.c" /* yacc.c:1646  */
+#line 36166 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 694:
 #line 4853 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36171 "preproc.c" /* yacc.c:1646  */
+#line 36173 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 695:
@@ -36175,14 +36177,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("for"),(yyvsp[0].str));
 }
-#line 36179 "preproc.c" /* yacc.c:1646  */
+#line 36181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 696:
 #line 4864 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36186 "preproc.c" /* yacc.c:1646  */
+#line 36188 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 697:
@@ -36190,7 +36192,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all");
 }
-#line 36194 "preproc.c" /* yacc.c:1646  */
+#line 36196 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 698:
@@ -36198,7 +36200,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("select");
 }
-#line 36202 "preproc.c" /* yacc.c:1646  */
+#line 36204 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 699:
@@ -36206,7 +36208,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("insert");
 }
-#line 36210 "preproc.c" /* yacc.c:1646  */
+#line 36212 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 700:
@@ -36214,7 +36216,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("update");
 }
-#line 36218 "preproc.c" /* yacc.c:1646  */
+#line 36220 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 701:
@@ -36222,7 +36224,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("delete");
 }
-#line 36226 "preproc.c" /* yacc.c:1646  */
+#line 36228 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 702:
@@ -36230,7 +36232,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("create access method"),(yyvsp[-4].str),mm_strdup("type index handler"),(yyvsp[0].str));
 }
-#line 36234 "preproc.c" /* yacc.c:1646  */
+#line 36236 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 703:
@@ -36238,7 +36240,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(13,mm_strdup("create trigger"),(yyvsp[-12].str),(yyvsp[-11].str),(yyvsp[-10].str),mm_strdup("on"),(yyvsp[-8].str),(yyvsp[-7].str),(yyvsp[-6].str),mm_strdup("execute procedure"),(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36242 "preproc.c" /* yacc.c:1646  */
+#line 36244 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 704:
@@ -36246,7 +36248,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(15,mm_strdup("create constraint trigger"),(yyvsp[-16].str),mm_strdup("after"),(yyvsp[-14].str),mm_strdup("on"),(yyvsp[-12].str),(yyvsp[-11].str),(yyvsp[-10].str),mm_strdup("for each row"),(yyvsp[-6].str),mm_strdup("execute procedure"),(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36250 "preproc.c" /* yacc.c:1646  */
+#line 36252 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 705:
@@ -36254,7 +36256,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("before");
 }
-#line 36258 "preproc.c" /* yacc.c:1646  */
+#line 36260 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 706:
@@ -36262,7 +36264,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("after");
 }
-#line 36266 "preproc.c" /* yacc.c:1646  */
+#line 36268 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 707:
@@ -36270,7 +36272,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("instead of");
 }
-#line 36274 "preproc.c" /* yacc.c:1646  */
+#line 36276 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 708:
@@ -36278,7 +36280,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36282 "preproc.c" /* yacc.c:1646  */
+#line 36284 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 709:
@@ -36286,7 +36288,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("or"),(yyvsp[0].str));
 }
-#line 36290 "preproc.c" /* yacc.c:1646  */
+#line 36292 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 710:
@@ -36294,7 +36296,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("insert");
 }
-#line 36298 "preproc.c" /* yacc.c:1646  */
+#line 36300 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 711:
@@ -36302,7 +36304,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("delete");
 }
-#line 36306 "preproc.c" /* yacc.c:1646  */
+#line 36308 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 712:
@@ -36310,7 +36312,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("update");
 }
-#line 36314 "preproc.c" /* yacc.c:1646  */
+#line 36316 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 713:
@@ -36318,7 +36320,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("update of"),(yyvsp[0].str));
 }
-#line 36322 "preproc.c" /* yacc.c:1646  */
+#line 36324 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 714:
@@ -36326,7 +36328,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("truncate");
 }
-#line 36330 "preproc.c" /* yacc.c:1646  */
+#line 36332 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 715:
@@ -36334,14 +36336,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("for"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36338 "preproc.c" /* yacc.c:1646  */
+#line 36340 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 716:
 #line 4971 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36345 "preproc.c" /* yacc.c:1646  */
+#line 36347 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 717:
@@ -36349,14 +36351,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("each");
 }
-#line 36353 "preproc.c" /* yacc.c:1646  */
+#line 36355 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 718:
 #line 4982 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36360 "preproc.c" /* yacc.c:1646  */
+#line 36362 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 719:
@@ -36364,7 +36366,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("row");
 }
-#line 36368 "preproc.c" /* yacc.c:1646  */
+#line 36370 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 720:
@@ -36372,7 +36374,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("statement");
 }
-#line 36376 "preproc.c" /* yacc.c:1646  */
+#line 36378 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 721:
@@ -36380,14 +36382,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("when ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36384 "preproc.c" /* yacc.c:1646  */
+#line 36386 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 722:
 #line 5005 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36391 "preproc.c" /* yacc.c:1646  */
+#line 36393 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 723:
@@ -36395,7 +36397,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36399 "preproc.c" /* yacc.c:1646  */
+#line 36401 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 724:
@@ -36403,14 +36405,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 36407 "preproc.c" /* yacc.c:1646  */
+#line 36409 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 725:
 #line 5020 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36414 "preproc.c" /* yacc.c:1646  */
+#line 36416 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 726:
@@ -36418,7 +36420,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36422 "preproc.c" /* yacc.c:1646  */
+#line 36424 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 727:
@@ -36426,7 +36428,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36430 "preproc.c" /* yacc.c:1646  */
+#line 36432 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 728:
@@ -36434,7 +36436,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36438 "preproc.c" /* yacc.c:1646  */
+#line 36440 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 729:
@@ -36442,7 +36444,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36446 "preproc.c" /* yacc.c:1646  */
+#line 36448 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 730:
@@ -36450,21 +36452,21 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("from"),(yyvsp[0].str));
 }
-#line 36454 "preproc.c" /* yacc.c:1646  */
+#line 36456 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 731:
 #line 5051 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36461 "preproc.c" /* yacc.c:1646  */
+#line 36463 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 732:
 #line 5058 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36468 "preproc.c" /* yacc.c:1646  */
+#line 36470 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 733:
@@ -36472,7 +36474,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36476 "preproc.c" /* yacc.c:1646  */
+#line 36478 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 734:
@@ -36480,7 +36482,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("not deferrable");
 }
-#line 36484 "preproc.c" /* yacc.c:1646  */
+#line 36486 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 735:
@@ -36488,7 +36490,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("deferrable");
 }
-#line 36492 "preproc.c" /* yacc.c:1646  */
+#line 36494 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 736:
@@ -36496,7 +36498,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("initially immediate");
 }
-#line 36500 "preproc.c" /* yacc.c:1646  */
+#line 36502 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 737:
@@ -36504,7 +36506,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("initially deferred");
 }
-#line 36508 "preproc.c" /* yacc.c:1646  */
+#line 36510 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 738:
@@ -36512,7 +36514,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("not valid");
 }
-#line 36516 "preproc.c" /* yacc.c:1646  */
+#line 36518 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 739:
@@ -36520,7 +36522,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no inherit");
 }
-#line 36524 "preproc.c" /* yacc.c:1646  */
+#line 36526 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 740:
@@ -36528,7 +36530,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop trigger"),(yyvsp[-3].str),mm_strdup("on"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36532 "preproc.c" /* yacc.c:1646  */
+#line 36534 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 741:
@@ -36536,7 +36538,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop trigger if exists"),(yyvsp[-3].str),mm_strdup("on"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36540 "preproc.c" /* yacc.c:1646  */
+#line 36542 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 742:
@@ -36544,7 +36546,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("create event trigger"),(yyvsp[-7].str),mm_strdup("on"),(yyvsp[-5].str),mm_strdup("execute procedure"),(yyvsp[-2].str),mm_strdup("( )"));
 }
-#line 36548 "preproc.c" /* yacc.c:1646  */
+#line 36550 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 743:
@@ -36552,7 +36554,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(9,mm_strdup("create event trigger"),(yyvsp[-9].str),mm_strdup("on"),(yyvsp[-7].str),mm_strdup("when"),(yyvsp[-5].str),mm_strdup("execute procedure"),(yyvsp[-2].str),mm_strdup("( )"));
 }
-#line 36556 "preproc.c" /* yacc.c:1646  */
+#line 36558 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 744:
@@ -36560,7 +36562,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36564 "preproc.c" /* yacc.c:1646  */
+#line 36566 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 745:
@@ -36568,7 +36570,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("and"),(yyvsp[0].str));
 }
-#line 36572 "preproc.c" /* yacc.c:1646  */
+#line 36574 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 746:
@@ -36576,7 +36578,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-4].str),mm_strdup("in ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36580 "preproc.c" /* yacc.c:1646  */
+#line 36582 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 747:
@@ -36584,7 +36586,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("sconst");
 }
-#line 36588 "preproc.c" /* yacc.c:1646  */
+#line 36590 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 748:
@@ -36592,7 +36594,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup(", sconst"));
 }
-#line 36596 "preproc.c" /* yacc.c:1646  */
+#line 36598 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 749:
@@ -36600,7 +36602,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter event trigger"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36604 "preproc.c" /* yacc.c:1646  */
+#line 36606 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 750:
@@ -36608,7 +36610,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("enable");
 }
-#line 36612 "preproc.c" /* yacc.c:1646  */
+#line 36614 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 751:
@@ -36616,7 +36618,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("enable replica");
 }
-#line 36620 "preproc.c" /* yacc.c:1646  */
+#line 36622 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 752:
@@ -36624,7 +36626,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("enable always");
 }
-#line 36628 "preproc.c" /* yacc.c:1646  */
+#line 36630 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 753:
@@ -36632,7 +36634,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("disable");
 }
-#line 36636 "preproc.c" /* yacc.c:1646  */
+#line 36638 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 754:
@@ -36641,7 +36643,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = cat_str(6,mm_strdup("create assertion"),(yyvsp[-5].str),mm_strdup("check ("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 36645 "preproc.c" /* yacc.c:1646  */
+#line 36647 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 755:
@@ -36650,7 +36652,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = cat_str(3,mm_strdup("drop assertion"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36654 "preproc.c" /* yacc.c:1646  */
+#line 36656 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 756:
@@ -36658,7 +36660,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("create aggregate"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36662 "preproc.c" /* yacc.c:1646  */
+#line 36664 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 757:
@@ -36666,7 +36668,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("create aggregate"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36670 "preproc.c" /* yacc.c:1646  */
+#line 36672 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 758:
@@ -36674,7 +36676,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("create operator"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36678 "preproc.c" /* yacc.c:1646  */
+#line 36680 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 759:
@@ -36682,7 +36684,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("create type"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36686 "preproc.c" /* yacc.c:1646  */
+#line 36688 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 760:
@@ -36690,7 +36692,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("create type"),(yyvsp[0].str));
 }
-#line 36694 "preproc.c" /* yacc.c:1646  */
+#line 36696 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 761:
@@ -36698,7 +36700,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("create type"),(yyvsp[-4].str),mm_strdup("as ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36702 "preproc.c" /* yacc.c:1646  */
+#line 36704 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 762:
@@ -36706,7 +36708,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("create type"),(yyvsp[-5].str),mm_strdup("as enum ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36710 "preproc.c" /* yacc.c:1646  */
+#line 36712 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 763:
@@ -36714,7 +36716,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("create type"),(yyvsp[-3].str),mm_strdup("as range"),(yyvsp[0].str));
 }
-#line 36718 "preproc.c" /* yacc.c:1646  */
+#line 36720 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 764:
@@ -36722,7 +36724,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("create text search parser"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36726 "preproc.c" /* yacc.c:1646  */
+#line 36728 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 765:
@@ -36730,7 +36732,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("create text search dictionary"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36734 "preproc.c" /* yacc.c:1646  */
+#line 36736 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 766:
@@ -36738,7 +36740,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("create text search template"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36742 "preproc.c" /* yacc.c:1646  */
+#line 36744 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 767:
@@ -36746,7 +36748,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("create text search configuration"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36750 "preproc.c" /* yacc.c:1646  */
+#line 36752 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 768:
@@ -36754,7 +36756,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("create collation"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36758 "preproc.c" /* yacc.c:1646  */
+#line 36760 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 769:
@@ -36762,7 +36764,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("create collation"),(yyvsp[-2].str),mm_strdup("from"),(yyvsp[0].str));
 }
-#line 36766 "preproc.c" /* yacc.c:1646  */
+#line 36768 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 770:
@@ -36770,7 +36772,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36774 "preproc.c" /* yacc.c:1646  */
+#line 36776 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 771:
@@ -36778,7 +36780,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36782 "preproc.c" /* yacc.c:1646  */
+#line 36784 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 772:
@@ -36786,7 +36788,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 36790 "preproc.c" /* yacc.c:1646  */
+#line 36792 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 773:
@@ -36794,7 +36796,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("="),(yyvsp[0].str));
 }
-#line 36798 "preproc.c" /* yacc.c:1646  */
+#line 36800 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 774:
@@ -36802,7 +36804,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36806 "preproc.c" /* yacc.c:1646  */
+#line 36808 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 775:
@@ -36810,7 +36812,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36814 "preproc.c" /* yacc.c:1646  */
+#line 36816 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 776:
@@ -36818,7 +36820,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36822 "preproc.c" /* yacc.c:1646  */
+#line 36824 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 777:
@@ -36826,7 +36828,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36830 "preproc.c" /* yacc.c:1646  */
+#line 36832 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 778:
@@ -36834,7 +36836,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36838 "preproc.c" /* yacc.c:1646  */
+#line 36840 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 779:
@@ -36842,7 +36844,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36846 "preproc.c" /* yacc.c:1646  */
+#line 36848 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 780:
@@ -36850,7 +36852,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 36854 "preproc.c" /* yacc.c:1646  */
+#line 36856 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 781:
@@ -36858,7 +36860,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36862 "preproc.c" /* yacc.c:1646  */
+#line 36864 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 782:
@@ -36866,7 +36868,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 36870 "preproc.c" /* yacc.c:1646  */
+#line 36872 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 783:
@@ -36874,7 +36876,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("="),(yyvsp[0].str));
 }
-#line 36878 "preproc.c" /* yacc.c:1646  */
+#line 36880 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 784:
@@ -36882,14 +36884,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36886 "preproc.c" /* yacc.c:1646  */
+#line 36888 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 785:
 #line 5347 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36893 "preproc.c" /* yacc.c:1646  */
+#line 36895 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 786:
@@ -36897,7 +36899,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36901 "preproc.c" /* yacc.c:1646  */
+#line 36903 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 787:
@@ -36905,7 +36907,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 36909 "preproc.c" /* yacc.c:1646  */
+#line 36911 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 788:
@@ -36913,7 +36915,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter type"),(yyvsp[-4].str),mm_strdup("add value"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36917 "preproc.c" /* yacc.c:1646  */
+#line 36919 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 789:
@@ -36921,7 +36923,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter type"),(yyvsp[-6].str),mm_strdup("add value"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("before"),(yyvsp[0].str));
 }
-#line 36925 "preproc.c" /* yacc.c:1646  */
+#line 36927 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 790:
@@ -36929,7 +36931,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter type"),(yyvsp[-6].str),mm_strdup("add value"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("after"),(yyvsp[0].str));
 }
-#line 36933 "preproc.c" /* yacc.c:1646  */
+#line 36935 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 791:
@@ -36937,14 +36939,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("if not exists");
 }
-#line 36941 "preproc.c" /* yacc.c:1646  */
+#line 36943 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 792:
 #line 5386 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 36948 "preproc.c" /* yacc.c:1646  */
+#line 36950 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 793:
@@ -36952,7 +36954,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(10,mm_strdup("create operator class"),(yyvsp[-9].str),(yyvsp[-8].str),mm_strdup("for type"),(yyvsp[-5].str),mm_strdup("using"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("as"),(yyvsp[0].str));
 }
-#line 36956 "preproc.c" /* yacc.c:1646  */
+#line 36958 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 794:
@@ -36960,7 +36962,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 36964 "preproc.c" /* yacc.c:1646  */
+#line 36966 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 795:
@@ -36968,7 +36970,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 36972 "preproc.c" /* yacc.c:1646  */
+#line 36974 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 796:
@@ -36976,7 +36978,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("operator"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36980 "preproc.c" /* yacc.c:1646  */
+#line 36982 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 797:
@@ -36984,7 +36986,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("operator"),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36988 "preproc.c" /* yacc.c:1646  */
+#line 36990 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 798:
@@ -36992,7 +36994,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("function"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 36996 "preproc.c" /* yacc.c:1646  */
+#line 36998 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 799:
@@ -37000,7 +37002,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("function"),(yyvsp[-5].str),mm_strdup("("),(yyvsp[-3].str),mm_strdup(")"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37004 "preproc.c" /* yacc.c:1646  */
+#line 37006 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 800:
@@ -37008,7 +37010,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("storage"),(yyvsp[0].str));
 }
-#line 37012 "preproc.c" /* yacc.c:1646  */
+#line 37014 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 801:
@@ -37016,14 +37018,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("default");
 }
-#line 37020 "preproc.c" /* yacc.c:1646  */
+#line 37022 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 802:
 #line 5441 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 37027 "preproc.c" /* yacc.c:1646  */
+#line 37029 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 803:
@@ -37031,14 +37033,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("family"),(yyvsp[0].str));
 }
-#line 37035 "preproc.c" /* yacc.c:1646  */
+#line 37037 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 804:
 #line 5452 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 37042 "preproc.c" /* yacc.c:1646  */
+#line 37044 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 805:
@@ -37046,7 +37048,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("for search");
 }
-#line 37050 "preproc.c" /* yacc.c:1646  */
+#line 37052 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 806:
@@ -37054,14 +37056,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("for order by"),(yyvsp[0].str));
 }
-#line 37058 "preproc.c" /* yacc.c:1646  */
+#line 37060 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 807:
 #line 5467 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 37065 "preproc.c" /* yacc.c:1646  */
+#line 37067 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 808:
@@ -37070,14 +37072,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = mm_strdup("recheck");
 }
-#line 37074 "preproc.c" /* yacc.c:1646  */
+#line 37076 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 809:
 #line 5479 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 37081 "preproc.c" /* yacc.c:1646  */
+#line 37083 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 810:
@@ -37085,7 +37087,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("create operator family"),(yyvsp[-2].str),mm_strdup("using"),(yyvsp[0].str));
 }
-#line 37089 "preproc.c" /* yacc.c:1646  */
+#line 37091 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 811:
@@ -37093,7 +37095,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter operator family"),(yyvsp[-4].str),mm_strdup("using"),(yyvsp[-2].str),mm_strdup("add"),(yyvsp[0].str));
 }
-#line 37097 "preproc.c" /* yacc.c:1646  */
+#line 37099 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 812:
@@ -37101,7 +37103,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter operator family"),(yyvsp[-4].str),mm_strdup("using"),(yyvsp[-2].str),mm_strdup("drop"),(yyvsp[0].str));
 }
-#line 37105 "preproc.c" /* yacc.c:1646  */
+#line 37107 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 813:
@@ -37109,7 +37111,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 37113 "preproc.c" /* yacc.c:1646  */
+#line 37115 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 814:
@@ -37117,7 +37119,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 37121 "preproc.c" /* yacc.c:1646  */
+#line 37123 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 815:
@@ -37125,7 +37127,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("operator"),(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 37129 "preproc.c" /* yacc.c:1646  */
+#line 37131 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 816:
@@ -37133,7 +37135,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("function"),(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 37137 "preproc.c" /* yacc.c:1646  */
+#line 37139 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 817:
@@ -37141,7 +37143,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop operator class"),(yyvsp[-3].str),mm_strdup("using"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37145 "preproc.c" /* yacc.c:1646  */
+#line 37147 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 818:
@@ -37149,7 +37151,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop operator class if exists"),(yyvsp[-3].str),mm_strdup("using"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37153 "preproc.c" /* yacc.c:1646  */
+#line 37155 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 819:
@@ -37157,7 +37159,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop operator family"),(yyvsp[-3].str),mm_strdup("using"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37161 "preproc.c" /* yacc.c:1646  */
+#line 37163 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 820:
@@ -37165,7 +37167,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop operator family if exists"),(yyvsp[-3].str),mm_strdup("using"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37169 "preproc.c" /* yacc.c:1646  */
+#line 37171 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 821:
@@ -37173,7 +37175,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop owned by"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37177 "preproc.c" /* yacc.c:1646  */
+#line 37179 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 822:
@@ -37181,7 +37183,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("reassign owned by"),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 37185 "preproc.c" /* yacc.c:1646  */
+#line 37187 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 823:
@@ -37189,7 +37191,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop"),(yyvsp[-4].str),mm_strdup("if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37193 "preproc.c" /* yacc.c:1646  */
+#line 37195 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 824:
@@ -37197,7 +37199,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("drop"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37201 "preproc.c" /* yacc.c:1646  */
+#line 37203 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 825:
@@ -37205,7 +37207,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop type"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37209 "preproc.c" /* yacc.c:1646  */
+#line 37211 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 826:
@@ -37213,7 +37215,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop type if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37217 "preproc.c" /* yacc.c:1646  */
+#line 37219 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 827:
@@ -37221,7 +37223,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop domain"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37225 "preproc.c" /* yacc.c:1646  */
+#line 37227 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 828:
@@ -37229,7 +37231,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop domain if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37233 "preproc.c" /* yacc.c:1646  */
+#line 37235 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 829:
@@ -37237,7 +37239,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop index concurrently"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37241 "preproc.c" /* yacc.c:1646  */
+#line 37243 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 830:
@@ -37245,7 +37247,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("drop index concurrently if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37249 "preproc.c" /* yacc.c:1646  */
+#line 37251 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 831:
@@ -37253,7 +37255,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("table");
 }
-#line 37257 "preproc.c" /* yacc.c:1646  */
+#line 37259 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 832:
@@ -37261,7 +37263,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("sequence");
 }
-#line 37265 "preproc.c" /* yacc.c:1646  */
+#line 37267 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 833:
@@ -37269,7 +37271,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("view");
 }
-#line 37273 "preproc.c" /* yacc.c:1646  */
+#line 37275 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 834:
@@ -37277,7 +37279,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("materialized view");
 }
-#line 37281 "preproc.c" /* yacc.c:1646  */
+#line 37283 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 835:
@@ -37285,7 +37287,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("index");
 }
-#line 37289 "preproc.c" /* yacc.c:1646  */
+#line 37291 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 836:
@@ -37293,7 +37295,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("foreign table");
 }
-#line 37297 "preproc.c" /* yacc.c:1646  */
+#line 37299 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 837:
@@ -37301,7 +37303,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("access method");
 }
-#line 37305 "preproc.c" /* yacc.c:1646  */
+#line 37307 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 838:
@@ -37309,7 +37311,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("event trigger");
 }
-#line 37313 "preproc.c" /* yacc.c:1646  */
+#line 37315 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 839:
@@ -37317,7 +37319,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("collation");
 }
-#line 37321 "preproc.c" /* yacc.c:1646  */
+#line 37323 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 840:
@@ -37325,7 +37327,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("conversion");
 }
-#line 37329 "preproc.c" /* yacc.c:1646  */
+#line 37331 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 841:
@@ -37333,7 +37335,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("schema");
 }
-#line 37337 "preproc.c" /* yacc.c:1646  */
+#line 37339 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 842:
@@ -37341,7 +37343,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("extension");
 }
-#line 37345 "preproc.c" /* yacc.c:1646  */
+#line 37347 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 843:
@@ -37349,7 +37351,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("text search parser");
 }
-#line 37353 "preproc.c" /* yacc.c:1646  */
+#line 37355 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 844:
@@ -37357,7 +37359,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("text search dictionary");
 }
-#line 37361 "preproc.c" /* yacc.c:1646  */
+#line 37363 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 845:
@@ -37365,7 +37367,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("text search template");
 }
-#line 37369 "preproc.c" /* yacc.c:1646  */
+#line 37371 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 846:
@@ -37373,7 +37375,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("text search configuration");
 }
-#line 37377 "preproc.c" /* yacc.c:1646  */
+#line 37379 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 847:
@@ -37381,7 +37383,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 37385 "preproc.c" /* yacc.c:1646  */
+#line 37387 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 848:
@@ -37389,7 +37391,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 37393 "preproc.c" /* yacc.c:1646  */
+#line 37395 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 849:
@@ -37397,7 +37399,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 37401 "preproc.c" /* yacc.c:1646  */
+#line 37403 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 850:
@@ -37405,7 +37407,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37409 "preproc.c" /* yacc.c:1646  */
+#line 37411 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 851:
@@ -37413,7 +37415,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("."),(yyvsp[0].str));
 }
-#line 37417 "preproc.c" /* yacc.c:1646  */
+#line 37419 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 852:
@@ -37421,7 +37423,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("."),(yyvsp[0].str));
 }
-#line 37425 "preproc.c" /* yacc.c:1646  */
+#line 37427 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 853:
@@ -37429,7 +37431,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 37433 "preproc.c" /* yacc.c:1646  */
+#line 37435 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 855:
@@ -37437,7 +37439,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("truncate"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 37441 "preproc.c" /* yacc.c:1646  */
+#line 37443 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 856:
@@ -37445,7 +37447,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("continue identity");
 }
-#line 37449 "preproc.c" /* yacc.c:1646  */
+#line 37451 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 857:
@@ -37453,14 +37455,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("restart identity");
 }
-#line 37457 "preproc.c" /* yacc.c:1646  */
+#line 37459 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 858:
 #line 5731 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 37464 "preproc.c" /* yacc.c:1646  */
+#line 37466 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 859:
@@ -37468,7 +37470,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("comment on"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37472 "preproc.c" /* yacc.c:1646  */
+#line 37474 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 860:
@@ -37476,7 +37478,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("comment on type"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37480 "preproc.c" /* yacc.c:1646  */
+#line 37482 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 861:
@@ -37484,7 +37486,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("comment on domain"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37488 "preproc.c" /* yacc.c:1646  */
+#line 37490 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 862:
@@ -37492,7 +37494,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("comment on aggregate"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37496 "preproc.c" /* yacc.c:1646  */
+#line 37498 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 863:
@@ -37500,7 +37502,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("comment on function"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37504 "preproc.c" /* yacc.c:1646  */
+#line 37506 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 864:
@@ -37508,7 +37510,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("comment on operator"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37512 "preproc.c" /* yacc.c:1646  */
+#line 37514 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 865:
@@ -37516,7 +37518,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("comment on constraint"),(yyvsp[-4].str),mm_strdup("on"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37520 "preproc.c" /* yacc.c:1646  */
+#line 37522 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 866:
@@ -37524,7 +37526,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("comment on constraint"),(yyvsp[-5].str),mm_strdup("on domain"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37528 "preproc.c" /* yacc.c:1646  */
+#line 37530 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 867:
@@ -37532,7 +37534,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("comment on policy"),(yyvsp[-4].str),mm_strdup("on"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37536 "preproc.c" /* yacc.c:1646  */
+#line 37538 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 868:
@@ -37540,7 +37542,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("comment on rule"),(yyvsp[-4].str),mm_strdup("on"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37544 "preproc.c" /* yacc.c:1646  */
+#line 37546 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 869:
@@ -37548,7 +37550,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("comment on rule"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37552 "preproc.c" /* yacc.c:1646  */
+#line 37554 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 870:
@@ -37556,7 +37558,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("comment on transform for"),(yyvsp[-4].str),mm_strdup("language"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37560 "preproc.c" /* yacc.c:1646  */
+#line 37562 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 871:
@@ -37564,7 +37566,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("comment on trigger"),(yyvsp[-4].str),mm_strdup("on"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37568 "preproc.c" /* yacc.c:1646  */
+#line 37570 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 872:
@@ -37572,7 +37574,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("comment on operator class"),(yyvsp[-4].str),mm_strdup("using"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37576 "preproc.c" /* yacc.c:1646  */
+#line 37578 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 873:
@@ -37580,7 +37582,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("comment on operator family"),(yyvsp[-4].str),mm_strdup("using"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37584 "preproc.c" /* yacc.c:1646  */
+#line 37586 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 874:
@@ -37588,7 +37590,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("comment on large object"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37592 "preproc.c" /* yacc.c:1646  */
+#line 37594 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 875:
@@ -37596,7 +37598,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("comment on cast ("),(yyvsp[-5].str),mm_strdup("as"),(yyvsp[-3].str),mm_strdup(") is"),(yyvsp[0].str));
 }
-#line 37600 "preproc.c" /* yacc.c:1646  */
+#line 37602 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 876:
@@ -37604,7 +37606,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("comment on"),(yyvsp[-4].str),mm_strdup("language"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37608 "preproc.c" /* yacc.c:1646  */
+#line 37610 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 877:
@@ -37612,7 +37614,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("access method");
 }
-#line 37616 "preproc.c" /* yacc.c:1646  */
+#line 37618 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 878:
@@ -37620,7 +37622,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("column");
 }
-#line 37624 "preproc.c" /* yacc.c:1646  */
+#line 37626 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 879:
@@ -37628,7 +37630,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("database");
 }
-#line 37632 "preproc.c" /* yacc.c:1646  */
+#line 37634 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 880:
@@ -37636,7 +37638,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("schema");
 }
-#line 37640 "preproc.c" /* yacc.c:1646  */
+#line 37642 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 881:
@@ -37644,7 +37646,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("index");
 }
-#line 37648 "preproc.c" /* yacc.c:1646  */
+#line 37650 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 882:
@@ -37652,7 +37654,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("sequence");
 }
-#line 37656 "preproc.c" /* yacc.c:1646  */
+#line 37658 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 883:
@@ -37660,7 +37662,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("table");
 }
-#line 37664 "preproc.c" /* yacc.c:1646  */
+#line 37666 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 884:
@@ -37668,7 +37670,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("view");
 }
-#line 37672 "preproc.c" /* yacc.c:1646  */
+#line 37674 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 885:
@@ -37676,7 +37678,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("materialized view");
 }
-#line 37680 "preproc.c" /* yacc.c:1646  */
+#line 37682 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 886:
@@ -37684,7 +37686,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("collation");
 }
-#line 37688 "preproc.c" /* yacc.c:1646  */
+#line 37690 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 887:
@@ -37692,7 +37694,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("conversion");
 }
-#line 37696 "preproc.c" /* yacc.c:1646  */
+#line 37698 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 888:
@@ -37700,7 +37702,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("tablespace");
 }
-#line 37704 "preproc.c" /* yacc.c:1646  */
+#line 37706 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 889:
@@ -37708,7 +37710,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("extension");
 }
-#line 37712 "preproc.c" /* yacc.c:1646  */
+#line 37714 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 890:
@@ -37716,7 +37718,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("role");
 }
-#line 37720 "preproc.c" /* yacc.c:1646  */
+#line 37722 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 891:
@@ -37724,7 +37726,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("foreign table");
 }
-#line 37728 "preproc.c" /* yacc.c:1646  */
+#line 37730 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 892:
@@ -37732,7 +37734,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("server");
 }
-#line 37736 "preproc.c" /* yacc.c:1646  */
+#line 37738 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 893:
@@ -37740,7 +37742,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("foreign data wrapper");
 }
-#line 37744 "preproc.c" /* yacc.c:1646  */
+#line 37746 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 894:
@@ -37748,7 +37750,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("event trigger");
 }
-#line 37752 "preproc.c" /* yacc.c:1646  */
+#line 37754 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 895:
@@ -37756,7 +37758,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("text search configuration");
 }
-#line 37760 "preproc.c" /* yacc.c:1646  */
+#line 37762 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 896:
@@ -37764,7 +37766,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("text search dictionary");
 }
-#line 37768 "preproc.c" /* yacc.c:1646  */
+#line 37770 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 897:
@@ -37772,7 +37774,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("text search parser");
 }
-#line 37776 "preproc.c" /* yacc.c:1646  */
+#line 37778 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 898:
@@ -37780,7 +37782,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("text search template");
 }
-#line 37784 "preproc.c" /* yacc.c:1646  */
+#line 37786 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 899:
@@ -37788,7 +37790,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 37792 "preproc.c" /* yacc.c:1646  */
+#line 37794 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 900:
@@ -37796,7 +37798,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("null");
 }
-#line 37800 "preproc.c" /* yacc.c:1646  */
+#line 37802 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 901:
@@ -37804,7 +37806,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("security label"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37808 "preproc.c" /* yacc.c:1646  */
+#line 37810 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 902:
@@ -37812,7 +37814,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("security label"),(yyvsp[-5].str),mm_strdup("on type"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37816 "preproc.c" /* yacc.c:1646  */
+#line 37818 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 903:
@@ -37820,7 +37822,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("security label"),(yyvsp[-5].str),mm_strdup("on domain"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37824 "preproc.c" /* yacc.c:1646  */
+#line 37826 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 904:
@@ -37828,7 +37830,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("security label"),(yyvsp[-6].str),mm_strdup("on aggregate"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37832 "preproc.c" /* yacc.c:1646  */
+#line 37834 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 905:
@@ -37836,7 +37838,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("security label"),(yyvsp[-6].str),mm_strdup("on function"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37840 "preproc.c" /* yacc.c:1646  */
+#line 37842 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 906:
@@ -37844,7 +37846,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("security label"),(yyvsp[-6].str),mm_strdup("on large object"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37848 "preproc.c" /* yacc.c:1646  */
+#line 37850 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 907:
@@ -37852,7 +37854,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(8,mm_strdup("security label"),(yyvsp[-6].str),mm_strdup("on"),(yyvsp[-4].str),mm_strdup("language"),(yyvsp[-2].str),mm_strdup("is"),(yyvsp[0].str));
 }
-#line 37856 "preproc.c" /* yacc.c:1646  */
+#line 37858 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 908:
@@ -37860,14 +37862,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("for"),(yyvsp[0].str));
 }
-#line 37864 "preproc.c" /* yacc.c:1646  */
+#line 37866 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 909:
 #line 5954 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 37871 "preproc.c" /* yacc.c:1646  */
+#line 37873 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 910:
@@ -37875,7 +37877,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("column");
 }
-#line 37879 "preproc.c" /* yacc.c:1646  */
+#line 37881 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 911:
@@ -37883,7 +37885,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("database");
 }
-#line 37887 "preproc.c" /* yacc.c:1646  */
+#line 37889 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 912:
@@ -37891,7 +37893,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("event trigger");
 }
-#line 37895 "preproc.c" /* yacc.c:1646  */
+#line 37897 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 913:
@@ -37899,7 +37901,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("foreign table");
 }
-#line 37903 "preproc.c" /* yacc.c:1646  */
+#line 37905 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 914:
@@ -37907,7 +37909,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("schema");
 }
-#line 37911 "preproc.c" /* yacc.c:1646  */
+#line 37913 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 915:
@@ -37915,7 +37917,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("sequence");
 }
-#line 37919 "preproc.c" /* yacc.c:1646  */
+#line 37921 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 916:
@@ -37923,7 +37925,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("table");
 }
-#line 37927 "preproc.c" /* yacc.c:1646  */
+#line 37929 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 917:
@@ -37931,7 +37933,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("role");
 }
-#line 37935 "preproc.c" /* yacc.c:1646  */
+#line 37937 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 918:
@@ -37939,7 +37941,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("tablespace");
 }
-#line 37943 "preproc.c" /* yacc.c:1646  */
+#line 37945 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 919:
@@ -37947,7 +37949,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("view");
 }
-#line 37951 "preproc.c" /* yacc.c:1646  */
+#line 37953 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 920:
@@ -37955,7 +37957,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("materialized view");
 }
-#line 37959 "preproc.c" /* yacc.c:1646  */
+#line 37961 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 921:
@@ -37963,7 +37965,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 37967 "preproc.c" /* yacc.c:1646  */
+#line 37969 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 922:
@@ -37971,7 +37973,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("null");
 }
-#line 37975 "preproc.c" /* yacc.c:1646  */
+#line 37977 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 923:
@@ -37979,7 +37981,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("fetch"),(yyvsp[0].str));
 }
-#line 37983 "preproc.c" /* yacc.c:1646  */
+#line 37985 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 924:
@@ -37987,7 +37989,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("move"),(yyvsp[0].str));
 }
-#line 37991 "preproc.c" /* yacc.c:1646  */
+#line 37993 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 925:
@@ -37995,7 +37997,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 		(yyval.str) = cat2_str(mm_strdup("fetch"), (yyvsp[-1].str));
 	}
-#line 37999 "preproc.c" /* yacc.c:1646  */
+#line 38001 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 926:
@@ -38005,7 +38007,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		add_additional_variables((yyvsp[-1].str), false);
 		(yyval.str) = cat_str(2, mm_strdup("fetch forward"), cursor_marker);
 	}
-#line 38009 "preproc.c" /* yacc.c:1646  */
+#line 38011 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 927:
@@ -38015,7 +38017,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		add_additional_variables((yyvsp[-1].str), false);
 		(yyval.str) = cat_str(2, mm_strdup("fetch forward from"), cursor_marker);
 	}
-#line 38019 "preproc.c" /* yacc.c:1646  */
+#line 38021 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 928:
@@ -38025,7 +38027,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		add_additional_variables((yyvsp[-1].str), false);
 		(yyval.str) = cat_str(2, mm_strdup("fetch backward"), cursor_marker);
 	}
-#line 38029 "preproc.c" /* yacc.c:1646  */
+#line 38031 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 929:
@@ -38035,7 +38037,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		add_additional_variables((yyvsp[-1].str), false);
 		(yyval.str) = cat_str(2, mm_strdup("fetch backward from"), cursor_marker);
 	}
-#line 38039 "preproc.c" /* yacc.c:1646  */
+#line 38041 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 930:
@@ -38045,7 +38047,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		add_additional_variables((yyvsp[0].str), false);
 		(yyval.str) = cat_str(2, mm_strdup("move forward"), cursor_marker);
 	}
-#line 38049 "preproc.c" /* yacc.c:1646  */
+#line 38051 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 931:
@@ -38055,7 +38057,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		add_additional_variables((yyvsp[0].str), false);
 		(yyval.str) = cat_str(2, mm_strdup("move forward from"), cursor_marker);
 	}
-#line 38059 "preproc.c" /* yacc.c:1646  */
+#line 38061 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 932:
@@ -38065,7 +38067,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		add_additional_variables((yyvsp[0].str), false);
 		(yyval.str) = cat_str(2, mm_strdup("move backward"), cursor_marker);
 	}
-#line 38069 "preproc.c" /* yacc.c:1646  */
+#line 38071 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 933:
@@ -38075,7 +38077,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		add_additional_variables((yyvsp[0].str), false);
 		(yyval.str) = cat_str(2, mm_strdup("move backward from"), cursor_marker);
 	}
-#line 38079 "preproc.c" /* yacc.c:1646  */
+#line 38081 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 934:
@@ -38090,7 +38092,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38094 "preproc.c" /* yacc.c:1646  */
+#line 38096 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 935:
@@ -38105,7 +38107,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38109 "preproc.c" /* yacc.c:1646  */
+#line 38111 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 936:
@@ -38120,7 +38122,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(3,mm_strdup("next"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38124 "preproc.c" /* yacc.c:1646  */
+#line 38126 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 937:
@@ -38135,7 +38137,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(3,mm_strdup("prior"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38139 "preproc.c" /* yacc.c:1646  */
+#line 38141 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 938:
@@ -38150,7 +38152,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(3,mm_strdup("first"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38154 "preproc.c" /* yacc.c:1646  */
+#line 38156 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 939:
@@ -38165,7 +38167,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(3,mm_strdup("last"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38169 "preproc.c" /* yacc.c:1646  */
+#line 38171 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 940:
@@ -38185,7 +38187,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(4,mm_strdup("absolute"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38189 "preproc.c" /* yacc.c:1646  */
+#line 38191 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 941:
@@ -38205,7 +38207,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(4,mm_strdup("relative"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38209 "preproc.c" /* yacc.c:1646  */
+#line 38211 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 942:
@@ -38225,7 +38227,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38229 "preproc.c" /* yacc.c:1646  */
+#line 38231 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 943:
@@ -38240,7 +38242,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(3,mm_strdup("all"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38244 "preproc.c" /* yacc.c:1646  */
+#line 38246 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 944:
@@ -38260,7 +38262,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(4,mm_strdup("forward"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38264 "preproc.c" /* yacc.c:1646  */
+#line 38266 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 945:
@@ -38275,7 +38277,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(3,mm_strdup("forward all"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38279 "preproc.c" /* yacc.c:1646  */
+#line 38281 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 946:
@@ -38295,7 +38297,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(4,mm_strdup("backward"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38299 "preproc.c" /* yacc.c:1646  */
+#line 38301 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 947:
@@ -38310,7 +38312,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(3,mm_strdup("backward all"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38314 "preproc.c" /* yacc.c:1646  */
+#line 38316 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 948:
@@ -38318,7 +38320,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("from");
 }
-#line 38322 "preproc.c" /* yacc.c:1646  */
+#line 38324 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 949:
@@ -38326,7 +38328,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("in");
 }
-#line 38330 "preproc.c" /* yacc.c:1646  */
+#line 38332 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 950:
@@ -38334,14 +38336,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38338 "preproc.c" /* yacc.c:1646  */
+#line 38340 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 951:
 #line 6284 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38345 "preproc.c" /* yacc.c:1646  */
+#line 38347 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 952:
@@ -38349,7 +38351,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("grant"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),mm_strdup("to"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38353 "preproc.c" /* yacc.c:1646  */
+#line 38355 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 953:
@@ -38357,7 +38359,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("revoke"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),mm_strdup("from"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38361 "preproc.c" /* yacc.c:1646  */
+#line 38363 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 954:
@@ -38365,7 +38367,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("revoke grant option for"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),mm_strdup("from"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38369 "preproc.c" /* yacc.c:1646  */
+#line 38371 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 955:
@@ -38373,7 +38375,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38377 "preproc.c" /* yacc.c:1646  */
+#line 38379 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 956:
@@ -38381,7 +38383,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all");
 }
-#line 38385 "preproc.c" /* yacc.c:1646  */
+#line 38387 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 957:
@@ -38389,7 +38391,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all privileges");
 }
-#line 38393 "preproc.c" /* yacc.c:1646  */
+#line 38395 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 958:
@@ -38397,7 +38399,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("all ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 38401 "preproc.c" /* yacc.c:1646  */
+#line 38403 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 959:
@@ -38405,7 +38407,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("all privileges ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 38409 "preproc.c" /* yacc.c:1646  */
+#line 38411 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 960:
@@ -38413,7 +38415,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38417 "preproc.c" /* yacc.c:1646  */
+#line 38419 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 961:
@@ -38421,7 +38423,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 38425 "preproc.c" /* yacc.c:1646  */
+#line 38427 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 962:
@@ -38429,7 +38431,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("select"),(yyvsp[0].str));
 }
-#line 38433 "preproc.c" /* yacc.c:1646  */
+#line 38435 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 963:
@@ -38437,7 +38439,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("references"),(yyvsp[0].str));
 }
-#line 38441 "preproc.c" /* yacc.c:1646  */
+#line 38443 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 964:
@@ -38445,7 +38447,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("create"),(yyvsp[0].str));
 }
-#line 38449 "preproc.c" /* yacc.c:1646  */
+#line 38451 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 965:
@@ -38453,7 +38455,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38457 "preproc.c" /* yacc.c:1646  */
+#line 38459 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 966:
@@ -38461,7 +38463,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38465 "preproc.c" /* yacc.c:1646  */
+#line 38467 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 967:
@@ -38469,7 +38471,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("table"),(yyvsp[0].str));
 }
-#line 38473 "preproc.c" /* yacc.c:1646  */
+#line 38475 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 968:
@@ -38477,7 +38479,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("sequence"),(yyvsp[0].str));
 }
-#line 38481 "preproc.c" /* yacc.c:1646  */
+#line 38483 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 969:
@@ -38485,7 +38487,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("foreign data wrapper"),(yyvsp[0].str));
 }
-#line 38489 "preproc.c" /* yacc.c:1646  */
+#line 38491 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 970:
@@ -38493,7 +38495,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("foreign server"),(yyvsp[0].str));
 }
-#line 38497 "preproc.c" /* yacc.c:1646  */
+#line 38499 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 971:
@@ -38501,7 +38503,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("function"),(yyvsp[0].str));
 }
-#line 38505 "preproc.c" /* yacc.c:1646  */
+#line 38507 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 972:
@@ -38509,7 +38511,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("database"),(yyvsp[0].str));
 }
-#line 38513 "preproc.c" /* yacc.c:1646  */
+#line 38515 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 973:
@@ -38517,7 +38519,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("domain"),(yyvsp[0].str));
 }
-#line 38521 "preproc.c" /* yacc.c:1646  */
+#line 38523 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 974:
@@ -38525,7 +38527,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("language"),(yyvsp[0].str));
 }
-#line 38529 "preproc.c" /* yacc.c:1646  */
+#line 38531 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 975:
@@ -38533,7 +38535,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("large object"),(yyvsp[0].str));
 }
-#line 38537 "preproc.c" /* yacc.c:1646  */
+#line 38539 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 976:
@@ -38541,7 +38543,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("schema"),(yyvsp[0].str));
 }
-#line 38545 "preproc.c" /* yacc.c:1646  */
+#line 38547 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 977:
@@ -38549,7 +38551,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("tablespace"),(yyvsp[0].str));
 }
-#line 38553 "preproc.c" /* yacc.c:1646  */
+#line 38555 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 978:
@@ -38557,7 +38559,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("type"),(yyvsp[0].str));
 }
-#line 38561 "preproc.c" /* yacc.c:1646  */
+#line 38563 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 979:
@@ -38565,7 +38567,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("all tables in schema"),(yyvsp[0].str));
 }
-#line 38569 "preproc.c" /* yacc.c:1646  */
+#line 38571 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 980:
@@ -38573,7 +38575,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("all sequences in schema"),(yyvsp[0].str));
 }
-#line 38577 "preproc.c" /* yacc.c:1646  */
+#line 38579 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 981:
@@ -38581,7 +38583,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("all functions in schema"),(yyvsp[0].str));
 }
-#line 38585 "preproc.c" /* yacc.c:1646  */
+#line 38587 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 982:
@@ -38589,7 +38591,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38593 "preproc.c" /* yacc.c:1646  */
+#line 38595 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 983:
@@ -38597,7 +38599,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 38601 "preproc.c" /* yacc.c:1646  */
+#line 38603 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 984:
@@ -38605,7 +38607,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38609 "preproc.c" /* yacc.c:1646  */
+#line 38611 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 985:
@@ -38613,7 +38615,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("group"),(yyvsp[0].str));
 }
-#line 38617 "preproc.c" /* yacc.c:1646  */
+#line 38619 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 986:
@@ -38621,14 +38623,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with grant option");
 }
-#line 38625 "preproc.c" /* yacc.c:1646  */
+#line 38627 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 987:
 #line 6463 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38632 "preproc.c" /* yacc.c:1646  */
+#line 38634 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 988:
@@ -38636,7 +38638,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38640 "preproc.c" /* yacc.c:1646  */
+#line 38642 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 989:
@@ -38644,7 +38646,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 38648 "preproc.c" /* yacc.c:1646  */
+#line 38650 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 990:
@@ -38652,7 +38654,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38656 "preproc.c" /* yacc.c:1646  */
+#line 38658 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 991:
@@ -38660,7 +38662,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("grant"),(yyvsp[-4].str),mm_strdup("to"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38664 "preproc.c" /* yacc.c:1646  */
+#line 38666 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 992:
@@ -38668,7 +38670,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("revoke"),(yyvsp[-4].str),mm_strdup("from"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38672 "preproc.c" /* yacc.c:1646  */
+#line 38674 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 993:
@@ -38676,7 +38678,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("revoke admin option for"),(yyvsp[-4].str),mm_strdup("from"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38680 "preproc.c" /* yacc.c:1646  */
+#line 38682 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 994:
@@ -38684,14 +38686,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with admin option");
 }
-#line 38688 "preproc.c" /* yacc.c:1646  */
+#line 38690 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 995:
 #line 6514 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38695 "preproc.c" /* yacc.c:1646  */
+#line 38697 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 996:
@@ -38699,14 +38701,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("granted by"),(yyvsp[0].str));
 }
-#line 38703 "preproc.c" /* yacc.c:1646  */
+#line 38705 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 997:
 #line 6525 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38710 "preproc.c" /* yacc.c:1646  */
+#line 38712 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 998:
@@ -38714,7 +38716,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter default privileges"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38718 "preproc.c" /* yacc.c:1646  */
+#line 38720 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 999:
@@ -38722,14 +38724,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38726 "preproc.c" /* yacc.c:1646  */
+#line 38728 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1000:
 #line 6544 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38733 "preproc.c" /* yacc.c:1646  */
+#line 38735 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1001:
@@ -38737,7 +38739,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("in schema"),(yyvsp[0].str));
 }
-#line 38741 "preproc.c" /* yacc.c:1646  */
+#line 38743 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1002:
@@ -38745,7 +38747,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("for role"),(yyvsp[0].str));
 }
-#line 38749 "preproc.c" /* yacc.c:1646  */
+#line 38751 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1003:
@@ -38753,7 +38755,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("for user"),(yyvsp[0].str));
 }
-#line 38757 "preproc.c" /* yacc.c:1646  */
+#line 38759 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1004:
@@ -38761,7 +38763,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("grant"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),mm_strdup("to"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38765 "preproc.c" /* yacc.c:1646  */
+#line 38767 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1005:
@@ -38769,7 +38771,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("revoke"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),mm_strdup("from"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38773 "preproc.c" /* yacc.c:1646  */
+#line 38775 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1006:
@@ -38777,7 +38779,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("revoke grant option for"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),mm_strdup("from"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38781 "preproc.c" /* yacc.c:1646  */
+#line 38783 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1007:
@@ -38785,7 +38787,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("tables");
 }
-#line 38789 "preproc.c" /* yacc.c:1646  */
+#line 38791 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1008:
@@ -38793,7 +38795,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("functions");
 }
-#line 38797 "preproc.c" /* yacc.c:1646  */
+#line 38799 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1009:
@@ -38801,7 +38803,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("sequences");
 }
-#line 38805 "preproc.c" /* yacc.c:1646  */
+#line 38807 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1010:
@@ -38809,7 +38811,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("types");
 }
-#line 38813 "preproc.c" /* yacc.c:1646  */
+#line 38815 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1011:
@@ -38817,7 +38819,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(14,mm_strdup("create"),(yyvsp[-12].str),mm_strdup("index"),(yyvsp[-10].str),(yyvsp[-9].str),mm_strdup("on"),(yyvsp[-7].str),(yyvsp[-6].str),mm_strdup("("),(yyvsp[-4].str),mm_strdup(")"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38821 "preproc.c" /* yacc.c:1646  */
+#line 38823 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1012:
@@ -38825,7 +38827,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(15,mm_strdup("create"),(yyvsp[-15].str),mm_strdup("index"),(yyvsp[-13].str),mm_strdup("if not exists"),(yyvsp[-9].str),mm_strdup("on"),(yyvsp[-7].str),(yyvsp[-6].str),mm_strdup("("),(yyvsp[-4].str),mm_strdup(")"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38829 "preproc.c" /* yacc.c:1646  */
+#line 38831 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1013:
@@ -38833,14 +38835,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unique");
 }
-#line 38837 "preproc.c" /* yacc.c:1646  */
+#line 38839 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1014:
 #line 6619 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38844 "preproc.c" /* yacc.c:1646  */
+#line 38846 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1015:
@@ -38848,14 +38850,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("concurrently");
 }
-#line 38852 "preproc.c" /* yacc.c:1646  */
+#line 38854 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1016:
 #line 6630 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38859 "preproc.c" /* yacc.c:1646  */
+#line 38861 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1017:
@@ -38863,14 +38865,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38867 "preproc.c" /* yacc.c:1646  */
+#line 38869 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1018:
 #line 6641 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38874 "preproc.c" /* yacc.c:1646  */
+#line 38876 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1019:
@@ -38878,14 +38880,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("using"),(yyvsp[0].str));
 }
-#line 38882 "preproc.c" /* yacc.c:1646  */
+#line 38884 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1020:
 #line 6652 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38889 "preproc.c" /* yacc.c:1646  */
+#line 38891 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1021:
@@ -38893,7 +38895,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38897 "preproc.c" /* yacc.c:1646  */
+#line 38899 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1022:
@@ -38901,7 +38903,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 38905 "preproc.c" /* yacc.c:1646  */
+#line 38907 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1023:
@@ -38909,7 +38911,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38913 "preproc.c" /* yacc.c:1646  */
+#line 38915 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1024:
@@ -38917,7 +38919,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38921 "preproc.c" /* yacc.c:1646  */
+#line 38923 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1025:
@@ -38925,7 +38927,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("("),(yyvsp[-5].str),mm_strdup(")"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 38929 "preproc.c" /* yacc.c:1646  */
+#line 38931 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1026:
@@ -38933,14 +38935,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("collate"),(yyvsp[0].str));
 }
-#line 38937 "preproc.c" /* yacc.c:1646  */
+#line 38939 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1027:
 #line 6691 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38944 "preproc.c" /* yacc.c:1646  */
+#line 38946 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1028:
@@ -38948,14 +38950,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 38952 "preproc.c" /* yacc.c:1646  */
+#line 38954 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1029:
 #line 6702 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38959 "preproc.c" /* yacc.c:1646  */
+#line 38961 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1030:
@@ -38963,7 +38965,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("asc");
 }
-#line 38967 "preproc.c" /* yacc.c:1646  */
+#line 38969 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1031:
@@ -38971,14 +38973,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("desc");
 }
-#line 38975 "preproc.c" /* yacc.c:1646  */
+#line 38977 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1032:
 #line 6717 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 38982 "preproc.c" /* yacc.c:1646  */
+#line 38984 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1033:
@@ -38986,7 +38988,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nulls first");
 }
-#line 38990 "preproc.c" /* yacc.c:1646  */
+#line 38992 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1034:
@@ -38994,14 +38996,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nulls last");
 }
-#line 38998 "preproc.c" /* yacc.c:1646  */
+#line 39000 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1035:
 #line 6732 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 39005 "preproc.c" /* yacc.c:1646  */
+#line 39007 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1036:
@@ -39009,7 +39011,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(9,mm_strdup("create"),(yyvsp[-7].str),mm_strdup("function"),(yyvsp[-5].str),(yyvsp[-4].str),mm_strdup("returns"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39013 "preproc.c" /* yacc.c:1646  */
+#line 39015 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1037:
@@ -39017,7 +39019,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(10,mm_strdup("create"),(yyvsp[-10].str),mm_strdup("function"),(yyvsp[-8].str),(yyvsp[-7].str),mm_strdup("returns table ("),(yyvsp[-3].str),mm_strdup(")"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39021 "preproc.c" /* yacc.c:1646  */
+#line 39023 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1038:
@@ -39025,7 +39027,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("create"),(yyvsp[-5].str),mm_strdup("function"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39029 "preproc.c" /* yacc.c:1646  */
+#line 39031 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1039:
@@ -39033,14 +39035,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("or replace");
 }
-#line 39037 "preproc.c" /* yacc.c:1646  */
+#line 39039 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1040:
 #line 6759 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 39044 "preproc.c" /* yacc.c:1646  */
+#line 39046 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1041:
@@ -39048,7 +39050,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 39052 "preproc.c" /* yacc.c:1646  */
+#line 39054 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1042:
@@ -39056,7 +39058,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("( )");
 }
-#line 39060 "preproc.c" /* yacc.c:1646  */
+#line 39062 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1043:
@@ -39064,7 +39066,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39068 "preproc.c" /* yacc.c:1646  */
+#line 39070 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1044:
@@ -39072,7 +39074,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 39076 "preproc.c" /* yacc.c:1646  */
+#line 39078 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1045:
@@ -39080,7 +39082,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 39084 "preproc.c" /* yacc.c:1646  */
+#line 39086 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1046:
@@ -39088,7 +39090,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("( )");
 }
-#line 39092 "preproc.c" /* yacc.c:1646  */
+#line 39094 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1047:
@@ -39096,7 +39098,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39100 "preproc.c" /* yacc.c:1646  */
+#line 39102 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1048:
@@ -39104,7 +39106,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 39108 "preproc.c" /* yacc.c:1646  */
+#line 39110 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1049:
@@ -39112,7 +39114,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39116 "preproc.c" /* yacc.c:1646  */
+#line 39118 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1050:
@@ -39120,7 +39122,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39124 "preproc.c" /* yacc.c:1646  */
+#line 39126 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1051:
@@ -39128,7 +39130,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39132 "preproc.c" /* yacc.c:1646  */
+#line 39134 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1052:
@@ -39136,7 +39138,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39140 "preproc.c" /* yacc.c:1646  */
+#line 39142 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1053:
@@ -39144,7 +39146,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39148 "preproc.c" /* yacc.c:1646  */
+#line 39150 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1054:
@@ -39152,7 +39154,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("in");
 }
-#line 39156 "preproc.c" /* yacc.c:1646  */
+#line 39158 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1055:
@@ -39160,7 +39162,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("out");
 }
-#line 39164 "preproc.c" /* yacc.c:1646  */
+#line 39166 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1056:
@@ -39168,7 +39170,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("inout");
 }
-#line 39172 "preproc.c" /* yacc.c:1646  */
+#line 39174 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1057:
@@ -39176,7 +39178,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("in out");
 }
-#line 39180 "preproc.c" /* yacc.c:1646  */
+#line 39182 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1058:
@@ -39184,7 +39186,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("variadic");
 }
-#line 39188 "preproc.c" /* yacc.c:1646  */
+#line 39190 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1059:
@@ -39192,7 +39194,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39196 "preproc.c" /* yacc.c:1646  */
+#line 39198 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1060:
@@ -39200,7 +39202,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39204 "preproc.c" /* yacc.c:1646  */
+#line 39206 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1061:
@@ -39208,7 +39210,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39212 "preproc.c" /* yacc.c:1646  */
+#line 39214 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1062:
@@ -39216,7 +39218,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("% type"));
 }
-#line 39220 "preproc.c" /* yacc.c:1646  */
+#line 39222 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1063:
@@ -39224,7 +39226,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("setof"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("% type"));
 }
-#line 39228 "preproc.c" /* yacc.c:1646  */
+#line 39230 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1064:
@@ -39232,7 +39234,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39236 "preproc.c" /* yacc.c:1646  */
+#line 39238 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1065:
@@ -39240,7 +39242,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("default"),(yyvsp[0].str));
 }
-#line 39244 "preproc.c" /* yacc.c:1646  */
+#line 39246 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1066:
@@ -39248,7 +39250,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("="),(yyvsp[0].str));
 }
-#line 39252 "preproc.c" /* yacc.c:1646  */
+#line 39254 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1067:
@@ -39257,7 +39259,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39261 "preproc.c" /* yacc.c:1646  */
+#line 39263 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1068:
@@ -39265,7 +39267,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("( * )");
 }
-#line 39269 "preproc.c" /* yacc.c:1646  */
+#line 39271 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1069:
@@ -39273,7 +39275,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 39277 "preproc.c" /* yacc.c:1646  */
+#line 39279 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1070:
@@ -39281,7 +39283,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("( order by"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 39285 "preproc.c" /* yacc.c:1646  */
+#line 39287 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1071:
@@ -39289,7 +39291,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("("),(yyvsp[-4].str),mm_strdup("order by"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 39293 "preproc.c" /* yacc.c:1646  */
+#line 39295 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1072:
@@ -39297,7 +39299,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39301 "preproc.c" /* yacc.c:1646  */
+#line 39303 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1073:
@@ -39305,7 +39307,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 39309 "preproc.c" /* yacc.c:1646  */
+#line 39311 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1074:
@@ -39313,7 +39315,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39317 "preproc.c" /* yacc.c:1646  */
+#line 39319 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1075:
@@ -39321,7 +39323,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39325 "preproc.c" /* yacc.c:1646  */
+#line 39327 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1076:
@@ -39329,7 +39331,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("called on null input");
 }
-#line 39333 "preproc.c" /* yacc.c:1646  */
+#line 39335 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1077:
@@ -39337,7 +39339,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("returns null on null input");
 }
-#line 39341 "preproc.c" /* yacc.c:1646  */
+#line 39343 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1078:
@@ -39345,7 +39347,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("strict");
 }
-#line 39349 "preproc.c" /* yacc.c:1646  */
+#line 39351 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1079:
@@ -39353,7 +39355,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("immutable");
 }
-#line 39357 "preproc.c" /* yacc.c:1646  */
+#line 39359 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1080:
@@ -39361,7 +39363,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("stable");
 }
-#line 39365 "preproc.c" /* yacc.c:1646  */
+#line 39367 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1081:
@@ -39369,7 +39371,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("volatile");
 }
-#line 39373 "preproc.c" /* yacc.c:1646  */
+#line 39375 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1082:
@@ -39377,7 +39379,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("external security definer");
 }
-#line 39381 "preproc.c" /* yacc.c:1646  */
+#line 39383 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1083:
@@ -39385,7 +39387,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("external security invoker");
 }
-#line 39389 "preproc.c" /* yacc.c:1646  */
+#line 39391 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1084:
@@ -39393,7 +39395,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("security definer");
 }
-#line 39397 "preproc.c" /* yacc.c:1646  */
+#line 39399 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1085:
@@ -39401,7 +39403,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("security invoker");
 }
-#line 39405 "preproc.c" /* yacc.c:1646  */
+#line 39407 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1086:
@@ -39409,7 +39411,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("leakproof");
 }
-#line 39413 "preproc.c" /* yacc.c:1646  */
+#line 39415 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1087:
@@ -39417,7 +39419,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("not leakproof");
 }
-#line 39421 "preproc.c" /* yacc.c:1646  */
+#line 39423 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1088:
@@ -39425,7 +39427,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("cost"),(yyvsp[0].str));
 }
-#line 39429 "preproc.c" /* yacc.c:1646  */
+#line 39431 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1089:
@@ -39433,7 +39435,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("rows"),(yyvsp[0].str));
 }
-#line 39437 "preproc.c" /* yacc.c:1646  */
+#line 39439 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1090:
@@ -39441,7 +39443,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39445 "preproc.c" /* yacc.c:1646  */
+#line 39447 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1091:
@@ -39449,7 +39451,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("parallel"),(yyvsp[0].str));
 }
-#line 39453 "preproc.c" /* yacc.c:1646  */
+#line 39455 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1092:
@@ -39457,7 +39459,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("as"),(yyvsp[0].str));
 }
-#line 39461 "preproc.c" /* yacc.c:1646  */
+#line 39463 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1093:
@@ -39465,7 +39467,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("language"),(yyvsp[0].str));
 }
-#line 39469 "preproc.c" /* yacc.c:1646  */
+#line 39471 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1094:
@@ -39473,7 +39475,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("transform"),(yyvsp[0].str));
 }
-#line 39477 "preproc.c" /* yacc.c:1646  */
+#line 39479 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1095:
@@ -39481,7 +39483,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("window");
 }
-#line 39485 "preproc.c" /* yacc.c:1646  */
+#line 39487 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1096:
@@ -39489,7 +39491,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39493 "preproc.c" /* yacc.c:1646  */
+#line 39495 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1097:
@@ -39497,7 +39499,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39501 "preproc.c" /* yacc.c:1646  */
+#line 39503 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1098:
@@ -39505,7 +39507,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 39509 "preproc.c" /* yacc.c:1646  */
+#line 39511 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1099:
@@ -39513,7 +39515,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("for type"),(yyvsp[0].str));
 }
-#line 39517 "preproc.c" /* yacc.c:1646  */
+#line 39519 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1100:
@@ -39521,7 +39523,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-4].str),mm_strdup(", for type"),(yyvsp[0].str));
 }
-#line 39525 "preproc.c" /* yacc.c:1646  */
+#line 39527 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1101:
@@ -39529,14 +39531,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("with"),(yyvsp[0].str));
 }
-#line 39533 "preproc.c" /* yacc.c:1646  */
+#line 39535 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1102:
 #line 7083 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 39540 "preproc.c" /* yacc.c:1646  */
+#line 39542 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1103:
@@ -39544,7 +39546,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39548 "preproc.c" /* yacc.c:1646  */
+#line 39550 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1104:
@@ -39552,7 +39554,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39556 "preproc.c" /* yacc.c:1646  */
+#line 39558 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1105:
@@ -39560,7 +39562,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 39564 "preproc.c" /* yacc.c:1646  */
+#line 39566 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1106:
@@ -39568,7 +39570,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter function"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39572 "preproc.c" /* yacc.c:1646  */
+#line 39574 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1107:
@@ -39576,7 +39578,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39580 "preproc.c" /* yacc.c:1646  */
+#line 39582 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1108:
@@ -39584,7 +39586,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39588 "preproc.c" /* yacc.c:1646  */
+#line 39590 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1109:
@@ -39592,14 +39594,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("restrict");
 }
-#line 39596 "preproc.c" /* yacc.c:1646  */
+#line 39598 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1110:
 #line 7134 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 39603 "preproc.c" /* yacc.c:1646  */
+#line 39605 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1111:
@@ -39607,7 +39609,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("drop function"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39611 "preproc.c" /* yacc.c:1646  */
+#line 39613 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1112:
@@ -39615,7 +39617,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("drop function if exists"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39619 "preproc.c" /* yacc.c:1646  */
+#line 39621 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1113:
@@ -39623,7 +39625,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("drop aggregate"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39627 "preproc.c" /* yacc.c:1646  */
+#line 39629 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1114:
@@ -39631,7 +39633,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("drop aggregate if exists"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39635 "preproc.c" /* yacc.c:1646  */
+#line 39637 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1115:
@@ -39639,7 +39641,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("drop operator"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39643 "preproc.c" /* yacc.c:1646  */
+#line 39645 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1116:
@@ -39647,7 +39649,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("drop operator if exists"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39651 "preproc.c" /* yacc.c:1646  */
+#line 39653 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1117:
@@ -39655,7 +39657,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 39659 "preproc.c" /* yacc.c:1646  */
+#line 39661 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1118:
@@ -39663,7 +39665,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("("),(yyvsp[-3].str),mm_strdup(","),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 39667 "preproc.c" /* yacc.c:1646  */
+#line 39669 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1119:
@@ -39671,7 +39673,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("( none ,"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 39675 "preproc.c" /* yacc.c:1646  */
+#line 39677 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1120:
@@ -39679,7 +39681,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-3].str),mm_strdup(", none )"));
 }
-#line 39683 "preproc.c" /* yacc.c:1646  */
+#line 39685 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1121:
@@ -39687,7 +39689,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39691 "preproc.c" /* yacc.c:1646  */
+#line 39693 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1122:
@@ -39695,7 +39697,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("."),(yyvsp[0].str));
 }
-#line 39699 "preproc.c" /* yacc.c:1646  */
+#line 39701 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1123:
@@ -39703,7 +39705,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("do"),(yyvsp[0].str));
 }
-#line 39707 "preproc.c" /* yacc.c:1646  */
+#line 39709 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1124:
@@ -39711,7 +39713,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39715 "preproc.c" /* yacc.c:1646  */
+#line 39717 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1125:
@@ -39719,7 +39721,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39723 "preproc.c" /* yacc.c:1646  */
+#line 39725 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1126:
@@ -39727,7 +39729,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39731 "preproc.c" /* yacc.c:1646  */
+#line 39733 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1127:
@@ -39735,7 +39737,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("language"),(yyvsp[0].str));
 }
-#line 39739 "preproc.c" /* yacc.c:1646  */
+#line 39741 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1128:
@@ -39743,7 +39745,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("create cast ("),(yyvsp[-7].str),mm_strdup("as"),(yyvsp[-5].str),mm_strdup(") with function"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39747 "preproc.c" /* yacc.c:1646  */
+#line 39749 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1129:
@@ -39751,7 +39753,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("create cast ("),(yyvsp[-6].str),mm_strdup("as"),(yyvsp[-4].str),mm_strdup(") without function"),(yyvsp[0].str));
 }
-#line 39755 "preproc.c" /* yacc.c:1646  */
+#line 39757 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1130:
@@ -39759,7 +39761,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("create cast ("),(yyvsp[-6].str),mm_strdup("as"),(yyvsp[-4].str),mm_strdup(") with inout"),(yyvsp[0].str));
 }
-#line 39763 "preproc.c" /* yacc.c:1646  */
+#line 39765 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1131:
@@ -39767,7 +39769,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("as implicit");
 }
-#line 39771 "preproc.c" /* yacc.c:1646  */
+#line 39773 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1132:
@@ -39775,14 +39777,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("as assignment");
 }
-#line 39779 "preproc.c" /* yacc.c:1646  */
+#line 39781 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1133:
 #line 7265 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 39786 "preproc.c" /* yacc.c:1646  */
+#line 39788 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1134:
@@ -39790,7 +39792,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(8,mm_strdup("drop cast"),(yyvsp[-6].str),mm_strdup("("),(yyvsp[-4].str),mm_strdup("as"),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 39794 "preproc.c" /* yacc.c:1646  */
+#line 39796 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1135:
@@ -39798,14 +39800,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("if exists");
 }
-#line 39802 "preproc.c" /* yacc.c:1646  */
+#line 39804 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1136:
 #line 7284 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 39809 "preproc.c" /* yacc.c:1646  */
+#line 39811 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1137:
@@ -39813,7 +39815,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(9,mm_strdup("create"),(yyvsp[-8].str),mm_strdup("transform for"),(yyvsp[-5].str),mm_strdup("language"),(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 39817 "preproc.c" /* yacc.c:1646  */
+#line 39819 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1138:
@@ -39821,7 +39823,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("from sql with function"),(yyvsp[-6].str),mm_strdup(", to sql with function"),(yyvsp[0].str));
 }
-#line 39825 "preproc.c" /* yacc.c:1646  */
+#line 39827 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1139:
@@ -39829,7 +39831,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("to sql with function"),(yyvsp[-6].str),mm_strdup(", from sql with function"),(yyvsp[0].str));
 }
-#line 39833 "preproc.c" /* yacc.c:1646  */
+#line 39835 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1140:
@@ -39837,7 +39839,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("from sql with function"),(yyvsp[0].str));
 }
-#line 39841 "preproc.c" /* yacc.c:1646  */
+#line 39843 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1141:
@@ -39845,7 +39847,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("to sql with function"),(yyvsp[0].str));
 }
-#line 39849 "preproc.c" /* yacc.c:1646  */
+#line 39851 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1142:
@@ -39853,7 +39855,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("drop transform"),(yyvsp[-5].str),mm_strdup("for"),(yyvsp[-3].str),mm_strdup("language"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39857 "preproc.c" /* yacc.c:1646  */
+#line 39859 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1143:
@@ -39861,7 +39863,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("reindex"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39865 "preproc.c" /* yacc.c:1646  */
+#line 39867 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1144:
@@ -39869,7 +39871,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("reindex"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39873 "preproc.c" /* yacc.c:1646  */
+#line 39875 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1145:
@@ -39877,7 +39879,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("reindex ("),(yyvsp[-3].str),mm_strdup(")"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39881 "preproc.c" /* yacc.c:1646  */
+#line 39883 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1146:
@@ -39885,7 +39887,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("reindex ("),(yyvsp[-3].str),mm_strdup(")"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 39889 "preproc.c" /* yacc.c:1646  */
+#line 39891 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1147:
@@ -39893,7 +39895,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("index");
 }
-#line 39897 "preproc.c" /* yacc.c:1646  */
+#line 39899 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1148:
@@ -39901,7 +39903,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("table");
 }
-#line 39905 "preproc.c" /* yacc.c:1646  */
+#line 39907 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1149:
@@ -39909,7 +39911,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("schema");
 }
-#line 39913 "preproc.c" /* yacc.c:1646  */
+#line 39915 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1150:
@@ -39917,7 +39919,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("system");
 }
-#line 39921 "preproc.c" /* yacc.c:1646  */
+#line 39923 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1151:
@@ -39925,7 +39927,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("database");
 }
-#line 39929 "preproc.c" /* yacc.c:1646  */
+#line 39931 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1152:
@@ -39933,7 +39935,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 39937 "preproc.c" /* yacc.c:1646  */
+#line 39939 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1153:
@@ -39941,7 +39943,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 39945 "preproc.c" /* yacc.c:1646  */
+#line 39947 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1154:
@@ -39949,7 +39951,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("verbose");
 }
-#line 39953 "preproc.c" /* yacc.c:1646  */
+#line 39955 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1155:
@@ -39957,7 +39959,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter tablespace"),(yyvsp[-2].str),mm_strdup("set"),(yyvsp[0].str));
 }
-#line 39961 "preproc.c" /* yacc.c:1646  */
+#line 39963 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1156:
@@ -39965,7 +39967,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter tablespace"),(yyvsp[-2].str),mm_strdup("reset"),(yyvsp[0].str));
 }
-#line 39969 "preproc.c" /* yacc.c:1646  */
+#line 39971 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1157:
@@ -39973,7 +39975,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter aggregate"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 39977 "preproc.c" /* yacc.c:1646  */
+#line 39979 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1158:
@@ -39981,7 +39983,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter collation"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 39985 "preproc.c" /* yacc.c:1646  */
+#line 39987 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1159:
@@ -39989,7 +39991,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter conversion"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 39993 "preproc.c" /* yacc.c:1646  */
+#line 39995 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1160:
@@ -39997,7 +39999,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter database"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40001 "preproc.c" /* yacc.c:1646  */
+#line 40003 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1161:
@@ -40005,7 +40007,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter domain"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40009 "preproc.c" /* yacc.c:1646  */
+#line 40011 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1162:
@@ -40013,7 +40015,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter domain"),(yyvsp[-5].str),mm_strdup("rename constraint"),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 40017 "preproc.c" /* yacc.c:1646  */
+#line 40019 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1163:
@@ -40021,7 +40023,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter foreign data wrapper"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40025 "preproc.c" /* yacc.c:1646  */
+#line 40027 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1164:
@@ -40029,7 +40031,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter function"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40033 "preproc.c" /* yacc.c:1646  */
+#line 40035 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1165:
@@ -40037,7 +40039,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter group"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40041 "preproc.c" /* yacc.c:1646  */
+#line 40043 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1166:
@@ -40045,7 +40047,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter"),(yyvsp[-5].str),mm_strdup("language"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40049 "preproc.c" /* yacc.c:1646  */
+#line 40051 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1167:
@@ -40053,7 +40055,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter operator class"),(yyvsp[-5].str),mm_strdup("using"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40057 "preproc.c" /* yacc.c:1646  */
+#line 40059 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1168:
@@ -40061,7 +40063,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter operator family"),(yyvsp[-5].str),mm_strdup("using"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40065 "preproc.c" /* yacc.c:1646  */
+#line 40067 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1169:
@@ -40069,7 +40071,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter policy"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40073 "preproc.c" /* yacc.c:1646  */
+#line 40075 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1170:
@@ -40077,7 +40079,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter policy if exists"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40081 "preproc.c" /* yacc.c:1646  */
+#line 40083 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1171:
@@ -40085,7 +40087,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter schema"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40089 "preproc.c" /* yacc.c:1646  */
+#line 40091 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1172:
@@ -40093,7 +40095,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter server"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40097 "preproc.c" /* yacc.c:1646  */
+#line 40099 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1173:
@@ -40101,7 +40103,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter table"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40105 "preproc.c" /* yacc.c:1646  */
+#line 40107 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1174:
@@ -40109,7 +40111,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter table if exists"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40113 "preproc.c" /* yacc.c:1646  */
+#line 40115 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1175:
@@ -40117,7 +40119,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter sequence"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40121 "preproc.c" /* yacc.c:1646  */
+#line 40123 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1176:
@@ -40125,7 +40127,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter sequence if exists"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40129 "preproc.c" /* yacc.c:1646  */
+#line 40131 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1177:
@@ -40133,7 +40135,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter view"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40137 "preproc.c" /* yacc.c:1646  */
+#line 40139 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1178:
@@ -40141,7 +40143,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter view if exists"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40145 "preproc.c" /* yacc.c:1646  */
+#line 40147 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1179:
@@ -40149,7 +40151,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter materialized view"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40153 "preproc.c" /* yacc.c:1646  */
+#line 40155 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1180:
@@ -40157,7 +40159,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter materialized view if exists"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40161 "preproc.c" /* yacc.c:1646  */
+#line 40163 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1181:
@@ -40165,7 +40167,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter index"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40169 "preproc.c" /* yacc.c:1646  */
+#line 40171 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1182:
@@ -40173,7 +40175,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter index if exists"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40177 "preproc.c" /* yacc.c:1646  */
+#line 40179 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1183:
@@ -40181,7 +40183,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter foreign table"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40185 "preproc.c" /* yacc.c:1646  */
+#line 40187 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1184:
@@ -40189,7 +40191,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter foreign table if exists"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40193 "preproc.c" /* yacc.c:1646  */
+#line 40195 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1185:
@@ -40197,7 +40199,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter table"),(yyvsp[-5].str),mm_strdup("rename"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 40201 "preproc.c" /* yacc.c:1646  */
+#line 40203 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1186:
@@ -40205,7 +40207,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter table if exists"),(yyvsp[-5].str),mm_strdup("rename"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 40209 "preproc.c" /* yacc.c:1646  */
+#line 40211 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1187:
@@ -40213,7 +40215,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter materialized view"),(yyvsp[-5].str),mm_strdup("rename"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 40217 "preproc.c" /* yacc.c:1646  */
+#line 40219 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1188:
@@ -40221,7 +40223,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter materialized view if exists"),(yyvsp[-5].str),mm_strdup("rename"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 40225 "preproc.c" /* yacc.c:1646  */
+#line 40227 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1189:
@@ -40229,7 +40231,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter table"),(yyvsp[-5].str),mm_strdup("rename constraint"),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 40233 "preproc.c" /* yacc.c:1646  */
+#line 40235 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1190:
@@ -40237,7 +40239,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter table if exists"),(yyvsp[-5].str),mm_strdup("rename constraint"),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 40241 "preproc.c" /* yacc.c:1646  */
+#line 40243 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1191:
@@ -40245,7 +40247,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter foreign table"),(yyvsp[-5].str),mm_strdup("rename"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 40249 "preproc.c" /* yacc.c:1646  */
+#line 40251 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1192:
@@ -40253,7 +40255,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter foreign table if exists"),(yyvsp[-5].str),mm_strdup("rename"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 40257 "preproc.c" /* yacc.c:1646  */
+#line 40259 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1193:
@@ -40261,7 +40263,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter rule"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40265 "preproc.c" /* yacc.c:1646  */
+#line 40267 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1194:
@@ -40269,7 +40271,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter trigger"),(yyvsp[-5].str),mm_strdup("on"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40273 "preproc.c" /* yacc.c:1646  */
+#line 40275 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1195:
@@ -40277,7 +40279,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter event trigger"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40281 "preproc.c" /* yacc.c:1646  */
+#line 40283 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1196:
@@ -40285,7 +40287,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter role"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40289 "preproc.c" /* yacc.c:1646  */
+#line 40291 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1197:
@@ -40293,7 +40295,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter user"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40297 "preproc.c" /* yacc.c:1646  */
+#line 40299 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1198:
@@ -40301,7 +40303,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter tablespace"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40305 "preproc.c" /* yacc.c:1646  */
+#line 40307 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1199:
@@ -40309,7 +40311,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search parser"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40313 "preproc.c" /* yacc.c:1646  */
+#line 40315 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1200:
@@ -40317,7 +40319,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search dictionary"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40321 "preproc.c" /* yacc.c:1646  */
+#line 40323 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1201:
@@ -40325,7 +40327,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search template"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40329 "preproc.c" /* yacc.c:1646  */
+#line 40331 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1202:
@@ -40333,7 +40335,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search configuration"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40337 "preproc.c" /* yacc.c:1646  */
+#line 40339 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1203:
@@ -40341,7 +40343,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter type"),(yyvsp[-3].str),mm_strdup("rename to"),(yyvsp[0].str));
 }
-#line 40345 "preproc.c" /* yacc.c:1646  */
+#line 40347 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1204:
@@ -40349,7 +40351,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("alter type"),(yyvsp[-6].str),mm_strdup("rename attribute"),(yyvsp[-3].str),mm_strdup("to"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 40353 "preproc.c" /* yacc.c:1646  */
+#line 40355 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1205:
@@ -40357,14 +40359,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("column");
 }
-#line 40361 "preproc.c" /* yacc.c:1646  */
+#line 40363 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1206:
 #line 7607 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 40368 "preproc.c" /* yacc.c:1646  */
+#line 40370 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1207:
@@ -40372,14 +40374,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("set data");
 }
-#line 40376 "preproc.c" /* yacc.c:1646  */
+#line 40378 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1208:
 #line 7618 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 40383 "preproc.c" /* yacc.c:1646  */
+#line 40385 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1209:
@@ -40387,7 +40389,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter function"),(yyvsp[-4].str),mm_strdup("depends on extension"),(yyvsp[0].str));
 }
-#line 40391 "preproc.c" /* yacc.c:1646  */
+#line 40393 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1210:
@@ -40395,7 +40397,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter trigger"),(yyvsp[-6].str),mm_strdup("on"),(yyvsp[-4].str),mm_strdup("depends on extension"),(yyvsp[0].str));
 }
-#line 40399 "preproc.c" /* yacc.c:1646  */
+#line 40401 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1211:
@@ -40403,7 +40405,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter materialized view"),(yyvsp[-4].str),mm_strdup("depends on extension"),(yyvsp[0].str));
 }
-#line 40407 "preproc.c" /* yacc.c:1646  */
+#line 40409 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1212:
@@ -40411,7 +40413,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter index"),(yyvsp[-4].str),mm_strdup("depends on extension"),(yyvsp[0].str));
 }
-#line 40415 "preproc.c" /* yacc.c:1646  */
+#line 40417 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1213:
@@ -40419,7 +40421,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter aggregate"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40423 "preproc.c" /* yacc.c:1646  */
+#line 40425 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1214:
@@ -40427,7 +40429,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter collation"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40431 "preproc.c" /* yacc.c:1646  */
+#line 40433 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1215:
@@ -40435,7 +40437,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter conversion"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40439 "preproc.c" /* yacc.c:1646  */
+#line 40441 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1216:
@@ -40443,7 +40445,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter domain"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40447 "preproc.c" /* yacc.c:1646  */
+#line 40449 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1217:
@@ -40451,7 +40453,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter extension"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40455 "preproc.c" /* yacc.c:1646  */
+#line 40457 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1218:
@@ -40459,7 +40461,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter function"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40463 "preproc.c" /* yacc.c:1646  */
+#line 40465 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1219:
@@ -40467,7 +40469,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter operator"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40471 "preproc.c" /* yacc.c:1646  */
+#line 40473 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1220:
@@ -40475,7 +40477,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter operator class"),(yyvsp[-5].str),mm_strdup("using"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40479 "preproc.c" /* yacc.c:1646  */
+#line 40481 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1221:
@@ -40483,7 +40485,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter operator family"),(yyvsp[-5].str),mm_strdup("using"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40487 "preproc.c" /* yacc.c:1646  */
+#line 40489 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1222:
@@ -40491,7 +40493,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter table"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40495 "preproc.c" /* yacc.c:1646  */
+#line 40497 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1223:
@@ -40499,7 +40501,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter table if exists"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40503 "preproc.c" /* yacc.c:1646  */
+#line 40505 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1224:
@@ -40507,7 +40509,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search parser"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40511 "preproc.c" /* yacc.c:1646  */
+#line 40513 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1225:
@@ -40515,7 +40517,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search dictionary"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40519 "preproc.c" /* yacc.c:1646  */
+#line 40521 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1226:
@@ -40523,7 +40525,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search template"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40527 "preproc.c" /* yacc.c:1646  */
+#line 40529 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1227:
@@ -40531,7 +40533,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search configuration"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40535 "preproc.c" /* yacc.c:1646  */
+#line 40537 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1228:
@@ -40539,7 +40541,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter sequence"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40543 "preproc.c" /* yacc.c:1646  */
+#line 40545 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1229:
@@ -40547,7 +40549,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter sequence if exists"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40551 "preproc.c" /* yacc.c:1646  */
+#line 40553 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1230:
@@ -40555,7 +40557,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter view"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40559 "preproc.c" /* yacc.c:1646  */
+#line 40561 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1231:
@@ -40563,7 +40565,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter view if exists"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40567 "preproc.c" /* yacc.c:1646  */
+#line 40569 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1232:
@@ -40571,7 +40573,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter materialized view"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40575 "preproc.c" /* yacc.c:1646  */
+#line 40577 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1233:
@@ -40579,7 +40581,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter materialized view if exists"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40583 "preproc.c" /* yacc.c:1646  */
+#line 40585 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1234:
@@ -40587,7 +40589,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter foreign table"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40591 "preproc.c" /* yacc.c:1646  */
+#line 40593 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1235:
@@ -40595,7 +40597,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter foreign table if exists"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40599 "preproc.c" /* yacc.c:1646  */
+#line 40601 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1236:
@@ -40603,7 +40605,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter type"),(yyvsp[-3].str),mm_strdup("set schema"),(yyvsp[0].str));
 }
-#line 40607 "preproc.c" /* yacc.c:1646  */
+#line 40609 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1237:
@@ -40611,7 +40613,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter operator"),(yyvsp[-5].str),(yyvsp[-4].str),mm_strdup("set ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 40615 "preproc.c" /* yacc.c:1646  */
+#line 40617 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1238:
@@ -40619,7 +40621,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 40623 "preproc.c" /* yacc.c:1646  */
+#line 40625 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1239:
@@ -40627,7 +40629,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 40631 "preproc.c" /* yacc.c:1646  */
+#line 40633 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1240:
@@ -40635,7 +40637,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("= none"));
 }
-#line 40639 "preproc.c" /* yacc.c:1646  */
+#line 40641 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1241:
@@ -40643,7 +40645,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("="),(yyvsp[0].str));
 }
-#line 40647 "preproc.c" /* yacc.c:1646  */
+#line 40649 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1242:
@@ -40651,7 +40653,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter aggregate"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40655 "preproc.c" /* yacc.c:1646  */
+#line 40657 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1243:
@@ -40659,7 +40661,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter collation"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40663 "preproc.c" /* yacc.c:1646  */
+#line 40665 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1244:
@@ -40667,7 +40669,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter conversion"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40671 "preproc.c" /* yacc.c:1646  */
+#line 40673 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1245:
@@ -40675,7 +40677,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter database"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40679 "preproc.c" /* yacc.c:1646  */
+#line 40681 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1246:
@@ -40683,7 +40685,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter domain"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40687 "preproc.c" /* yacc.c:1646  */
+#line 40689 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1247:
@@ -40691,7 +40693,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter function"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40695 "preproc.c" /* yacc.c:1646  */
+#line 40697 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1248:
@@ -40699,7 +40701,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter"),(yyvsp[-5].str),mm_strdup("language"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40703 "preproc.c" /* yacc.c:1646  */
+#line 40705 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1249:
@@ -40707,7 +40709,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter large object"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40711 "preproc.c" /* yacc.c:1646  */
+#line 40713 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1250:
@@ -40715,7 +40717,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter operator"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40719 "preproc.c" /* yacc.c:1646  */
+#line 40721 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1251:
@@ -40723,7 +40725,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter operator class"),(yyvsp[-5].str),mm_strdup("using"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40727 "preproc.c" /* yacc.c:1646  */
+#line 40729 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1252:
@@ -40731,7 +40733,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter operator family"),(yyvsp[-5].str),mm_strdup("using"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40735 "preproc.c" /* yacc.c:1646  */
+#line 40737 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1253:
@@ -40739,7 +40741,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter schema"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40743 "preproc.c" /* yacc.c:1646  */
+#line 40745 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1254:
@@ -40747,7 +40749,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter type"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40751 "preproc.c" /* yacc.c:1646  */
+#line 40753 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1255:
@@ -40755,7 +40757,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter tablespace"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40759 "preproc.c" /* yacc.c:1646  */
+#line 40761 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1256:
@@ -40763,7 +40765,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search dictionary"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40767 "preproc.c" /* yacc.c:1646  */
+#line 40769 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1257:
@@ -40771,7 +40773,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search configuration"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40775 "preproc.c" /* yacc.c:1646  */
+#line 40777 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1258:
@@ -40779,7 +40781,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter foreign data wrapper"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40783 "preproc.c" /* yacc.c:1646  */
+#line 40785 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1259:
@@ -40787,7 +40789,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter server"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40791 "preproc.c" /* yacc.c:1646  */
+#line 40793 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1260:
@@ -40795,7 +40797,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter event trigger"),(yyvsp[-3].str),mm_strdup("owner to"),(yyvsp[0].str));
 }
-#line 40799 "preproc.c" /* yacc.c:1646  */
+#line 40801 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1261:
@@ -40803,7 +40805,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(12,mm_strdup("create"),(yyvsp[-11].str),mm_strdup("rule"),(yyvsp[-9].str),mm_strdup("as on"),(yyvsp[-6].str),mm_strdup("to"),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("do"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 40807 "preproc.c" /* yacc.c:1646  */
+#line 40809 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1262:
@@ -40811,7 +40813,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nothing");
 }
-#line 40815 "preproc.c" /* yacc.c:1646  */
+#line 40817 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1263:
@@ -40819,7 +40821,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 40823 "preproc.c" /* yacc.c:1646  */
+#line 40825 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1264:
@@ -40827,7 +40829,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 40831 "preproc.c" /* yacc.c:1646  */
+#line 40833 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1265:
@@ -40835,7 +40837,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(";"),(yyvsp[0].str));
 }
-#line 40839 "preproc.c" /* yacc.c:1646  */
+#line 40841 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1266:
@@ -40843,7 +40845,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 40847 "preproc.c" /* yacc.c:1646  */
+#line 40849 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1267:
@@ -40851,7 +40853,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 40855 "preproc.c" /* yacc.c:1646  */
+#line 40857 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1268:
@@ -40859,7 +40861,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 40863 "preproc.c" /* yacc.c:1646  */
+#line 40865 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1269:
@@ -40867,7 +40869,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 40871 "preproc.c" /* yacc.c:1646  */
+#line 40873 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1270:
@@ -40875,7 +40877,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 40879 "preproc.c" /* yacc.c:1646  */
+#line 40881 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1271:
@@ -40883,7 +40885,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 40887 "preproc.c" /* yacc.c:1646  */
+#line 40889 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1272:
@@ -40891,14 +40893,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 40895 "preproc.c" /* yacc.c:1646  */
+#line 40897 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1273:
 #line 7921 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 40902 "preproc.c" /* yacc.c:1646  */
+#line 40904 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1274:
@@ -40906,7 +40908,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("select");
 }
-#line 40910 "preproc.c" /* yacc.c:1646  */
+#line 40912 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1275:
@@ -40914,7 +40916,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("update");
 }
-#line 40918 "preproc.c" /* yacc.c:1646  */
+#line 40920 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1276:
@@ -40922,7 +40924,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("delete");
 }
-#line 40926 "preproc.c" /* yacc.c:1646  */
+#line 40928 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1277:
@@ -40930,7 +40932,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("insert");
 }
-#line 40934 "preproc.c" /* yacc.c:1646  */
+#line 40936 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1278:
@@ -40938,7 +40940,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("instead");
 }
-#line 40942 "preproc.c" /* yacc.c:1646  */
+#line 40944 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1279:
@@ -40946,14 +40948,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("also");
 }
-#line 40950 "preproc.c" /* yacc.c:1646  */
+#line 40952 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1280:
 #line 7956 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 40957 "preproc.c" /* yacc.c:1646  */
+#line 40959 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1281:
@@ -40961,7 +40963,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop rule"),(yyvsp[-3].str),mm_strdup("on"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 40965 "preproc.c" /* yacc.c:1646  */
+#line 40967 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1282:
@@ -40969,7 +40971,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("drop rule if exists"),(yyvsp[-3].str),mm_strdup("on"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 40973 "preproc.c" /* yacc.c:1646  */
+#line 40975 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1283:
@@ -40977,7 +40979,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("notify"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 40981 "preproc.c" /* yacc.c:1646  */
+#line 40983 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1284:
@@ -40985,14 +40987,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup(","),(yyvsp[0].str));
 }
-#line 40989 "preproc.c" /* yacc.c:1646  */
+#line 40991 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1285:
 #line 7987 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 40996 "preproc.c" /* yacc.c:1646  */
+#line 40998 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1286:
@@ -41000,7 +41002,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("listen"),(yyvsp[0].str));
 }
-#line 41004 "preproc.c" /* yacc.c:1646  */
+#line 41006 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1287:
@@ -41008,7 +41010,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("unlisten"),(yyvsp[0].str));
 }
-#line 41012 "preproc.c" /* yacc.c:1646  */
+#line 41014 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1288:
@@ -41016,7 +41018,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unlisten *");
 }
-#line 41020 "preproc.c" /* yacc.c:1646  */
+#line 41022 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1289:
@@ -41024,7 +41026,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("abort"),(yyvsp[0].str));
 }
-#line 41028 "preproc.c" /* yacc.c:1646  */
+#line 41030 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1290:
@@ -41032,7 +41034,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("begin"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41036 "preproc.c" /* yacc.c:1646  */
+#line 41038 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1291:
@@ -41040,7 +41042,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("start transaction"),(yyvsp[0].str));
 }
-#line 41044 "preproc.c" /* yacc.c:1646  */
+#line 41046 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1292:
@@ -41048,7 +41050,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("commit"),(yyvsp[0].str));
 }
-#line 41052 "preproc.c" /* yacc.c:1646  */
+#line 41054 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1293:
@@ -41056,7 +41058,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("end"),(yyvsp[0].str));
 }
-#line 41060 "preproc.c" /* yacc.c:1646  */
+#line 41062 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1294:
@@ -41064,7 +41066,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("rollback"),(yyvsp[0].str));
 }
-#line 41068 "preproc.c" /* yacc.c:1646  */
+#line 41070 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1295:
@@ -41072,7 +41074,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("savepoint"),(yyvsp[0].str));
 }
-#line 41076 "preproc.c" /* yacc.c:1646  */
+#line 41078 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1296:
@@ -41080,7 +41082,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("release savepoint"),(yyvsp[0].str));
 }
-#line 41084 "preproc.c" /* yacc.c:1646  */
+#line 41086 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1297:
@@ -41088,7 +41090,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("release"),(yyvsp[0].str));
 }
-#line 41092 "preproc.c" /* yacc.c:1646  */
+#line 41094 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1298:
@@ -41096,7 +41098,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("rollback"),(yyvsp[-3].str),mm_strdup("to savepoint"),(yyvsp[0].str));
 }
-#line 41100 "preproc.c" /* yacc.c:1646  */
+#line 41102 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1299:
@@ -41104,7 +41106,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("rollback"),(yyvsp[-2].str),mm_strdup("to"),(yyvsp[0].str));
 }
-#line 41108 "preproc.c" /* yacc.c:1646  */
+#line 41110 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1300:
@@ -41112,7 +41114,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("prepare transaction"),(yyvsp[0].str));
 }
-#line 41116 "preproc.c" /* yacc.c:1646  */
+#line 41118 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1301:
@@ -41120,7 +41122,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("commit prepared"),(yyvsp[0].str));
 }
-#line 41124 "preproc.c" /* yacc.c:1646  */
+#line 41126 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1302:
@@ -41128,7 +41130,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("rollback prepared"),(yyvsp[0].str));
 }
-#line 41132 "preproc.c" /* yacc.c:1646  */
+#line 41134 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1303:
@@ -41136,7 +41138,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("work");
 }
-#line 41140 "preproc.c" /* yacc.c:1646  */
+#line 41142 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1304:
@@ -41144,14 +41146,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("transaction");
 }
-#line 41148 "preproc.c" /* yacc.c:1646  */
+#line 41150 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1305:
 #line 8082 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41155 "preproc.c" /* yacc.c:1646  */
+#line 41157 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1306:
@@ -41159,7 +41161,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("isolation level"),(yyvsp[0].str));
 }
-#line 41163 "preproc.c" /* yacc.c:1646  */
+#line 41165 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1307:
@@ -41167,7 +41169,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("read only");
 }
-#line 41171 "preproc.c" /* yacc.c:1646  */
+#line 41173 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1308:
@@ -41175,7 +41177,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("read write");
 }
-#line 41179 "preproc.c" /* yacc.c:1646  */
+#line 41181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1309:
@@ -41183,7 +41185,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("deferrable");
 }
-#line 41187 "preproc.c" /* yacc.c:1646  */
+#line 41189 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1310:
@@ -41191,7 +41193,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("not deferrable");
 }
-#line 41195 "preproc.c" /* yacc.c:1646  */
+#line 41197 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1311:
@@ -41199,7 +41201,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41203 "preproc.c" /* yacc.c:1646  */
+#line 41205 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1312:
@@ -41207,7 +41209,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 41211 "preproc.c" /* yacc.c:1646  */
+#line 41213 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1313:
@@ -41215,7 +41217,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41219 "preproc.c" /* yacc.c:1646  */
+#line 41221 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1314:
@@ -41223,14 +41225,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41227 "preproc.c" /* yacc.c:1646  */
+#line 41229 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1315:
 #line 8133 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41234 "preproc.c" /* yacc.c:1646  */
+#line 41236 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1316:
@@ -41238,7 +41240,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(9,mm_strdup("create"),(yyvsp[-7].str),mm_strdup("view"),(yyvsp[-5].str),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("as"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41242 "preproc.c" /* yacc.c:1646  */
+#line 41244 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1317:
@@ -41246,7 +41248,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(9,mm_strdup("create or replace"),(yyvsp[-7].str),mm_strdup("view"),(yyvsp[-5].str),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("as"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41250 "preproc.c" /* yacc.c:1646  */
+#line 41252 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1318:
@@ -41255,7 +41257,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = cat_str(11,mm_strdup("create"),(yyvsp[-10].str),mm_strdup("recursive view"),(yyvsp[-7].str),mm_strdup("("),(yyvsp[-5].str),mm_strdup(")"),(yyvsp[-3].str),mm_strdup("as"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41259 "preproc.c" /* yacc.c:1646  */
+#line 41261 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1319:
@@ -41264,7 +41266,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = cat_str(11,mm_strdup("create or replace"),(yyvsp[-10].str),mm_strdup("recursive view"),(yyvsp[-7].str),mm_strdup("("),(yyvsp[-5].str),mm_strdup(")"),(yyvsp[-3].str),mm_strdup("as"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41268 "preproc.c" /* yacc.c:1646  */
+#line 41270 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1320:
@@ -41272,7 +41274,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with check option");
 }
-#line 41276 "preproc.c" /* yacc.c:1646  */
+#line 41278 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1321:
@@ -41280,7 +41282,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with cascaded check option");
 }
-#line 41284 "preproc.c" /* yacc.c:1646  */
+#line 41286 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1322:
@@ -41288,14 +41290,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with local check option");
 }
-#line 41292 "preproc.c" /* yacc.c:1646  */
+#line 41294 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1323:
 #line 8174 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41299 "preproc.c" /* yacc.c:1646  */
+#line 41301 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1324:
@@ -41303,7 +41305,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("load"),(yyvsp[0].str));
 }
-#line 41307 "preproc.c" /* yacc.c:1646  */
+#line 41309 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1325:
@@ -41311,7 +41313,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("create database"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41315 "preproc.c" /* yacc.c:1646  */
+#line 41317 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1326:
@@ -41319,14 +41321,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41323 "preproc.c" /* yacc.c:1646  */
+#line 41325 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1327:
 #line 8201 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41330 "preproc.c" /* yacc.c:1646  */
+#line 41332 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1328:
@@ -41334,7 +41336,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41338 "preproc.c" /* yacc.c:1646  */
+#line 41340 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1329:
@@ -41342,7 +41344,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41346 "preproc.c" /* yacc.c:1646  */
+#line 41348 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1330:
@@ -41350,7 +41352,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41354 "preproc.c" /* yacc.c:1646  */
+#line 41356 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1331:
@@ -41358,7 +41360,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41362 "preproc.c" /* yacc.c:1646  */
+#line 41364 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1332:
@@ -41366,7 +41368,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup("default"));
 }
-#line 41370 "preproc.c" /* yacc.c:1646  */
+#line 41372 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1333:
@@ -41374,7 +41376,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41378 "preproc.c" /* yacc.c:1646  */
+#line 41380 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1334:
@@ -41382,7 +41384,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("connection limit");
 }
-#line 41386 "preproc.c" /* yacc.c:1646  */
+#line 41388 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1335:
@@ -41390,7 +41392,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("encoding");
 }
-#line 41394 "preproc.c" /* yacc.c:1646  */
+#line 41396 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1336:
@@ -41398,7 +41400,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("location");
 }
-#line 41402 "preproc.c" /* yacc.c:1646  */
+#line 41404 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1337:
@@ -41406,7 +41408,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("owner");
 }
-#line 41410 "preproc.c" /* yacc.c:1646  */
+#line 41412 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1338:
@@ -41414,7 +41416,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("tablespace");
 }
-#line 41418 "preproc.c" /* yacc.c:1646  */
+#line 41420 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1339:
@@ -41422,7 +41424,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("template");
 }
-#line 41426 "preproc.c" /* yacc.c:1646  */
+#line 41428 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1340:
@@ -41430,14 +41432,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("=");
 }
-#line 41434 "preproc.c" /* yacc.c:1646  */
+#line 41436 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1341:
 #line 8272 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41441 "preproc.c" /* yacc.c:1646  */
+#line 41443 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1342:
@@ -41445,7 +41447,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter database"),(yyvsp[-2].str),mm_strdup("with"),(yyvsp[0].str));
 }
-#line 41449 "preproc.c" /* yacc.c:1646  */
+#line 41451 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1343:
@@ -41453,7 +41455,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter database"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41457 "preproc.c" /* yacc.c:1646  */
+#line 41459 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1344:
@@ -41461,7 +41463,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter database"),(yyvsp[-3].str),mm_strdup("set tablespace"),(yyvsp[0].str));
 }
-#line 41465 "preproc.c" /* yacc.c:1646  */
+#line 41467 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1345:
@@ -41469,7 +41471,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter database"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41473 "preproc.c" /* yacc.c:1646  */
+#line 41475 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1346:
@@ -41477,7 +41479,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop database"),(yyvsp[0].str));
 }
-#line 41481 "preproc.c" /* yacc.c:1646  */
+#line 41483 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1347:
@@ -41485,7 +41487,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("drop database if exists"),(yyvsp[0].str));
 }
-#line 41489 "preproc.c" /* yacc.c:1646  */
+#line 41491 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1348:
@@ -41493,7 +41495,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("alter system set"),(yyvsp[0].str));
 }
-#line 41497 "preproc.c" /* yacc.c:1646  */
+#line 41499 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1349:
@@ -41501,7 +41503,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("alter system reset"),(yyvsp[0].str));
 }
-#line 41505 "preproc.c" /* yacc.c:1646  */
+#line 41507 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1350:
@@ -41509,7 +41511,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("create domain"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41513 "preproc.c" /* yacc.c:1646  */
+#line 41515 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1351:
@@ -41517,7 +41519,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter domain"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41521 "preproc.c" /* yacc.c:1646  */
+#line 41523 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1352:
@@ -41525,7 +41527,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter domain"),(yyvsp[-3].str),mm_strdup("drop not null"));
 }
-#line 41529 "preproc.c" /* yacc.c:1646  */
+#line 41531 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1353:
@@ -41533,7 +41535,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter domain"),(yyvsp[-3].str),mm_strdup("set not null"));
 }
-#line 41537 "preproc.c" /* yacc.c:1646  */
+#line 41539 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1354:
@@ -41541,7 +41543,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter domain"),(yyvsp[-2].str),mm_strdup("add"),(yyvsp[0].str));
 }
-#line 41545 "preproc.c" /* yacc.c:1646  */
+#line 41547 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1355:
@@ -41549,7 +41551,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter domain"),(yyvsp[-4].str),mm_strdup("drop constraint"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41553 "preproc.c" /* yacc.c:1646  */
+#line 41555 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1356:
@@ -41557,7 +41559,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("alter domain"),(yyvsp[-6].str),mm_strdup("drop constraint if exists"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41561 "preproc.c" /* yacc.c:1646  */
+#line 41563 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1357:
@@ -41565,7 +41567,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter domain"),(yyvsp[-3].str),mm_strdup("validate constraint"),(yyvsp[0].str));
 }
-#line 41569 "preproc.c" /* yacc.c:1646  */
+#line 41571 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1358:
@@ -41573,14 +41575,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("as");
 }
-#line 41577 "preproc.c" /* yacc.c:1646  */
+#line 41579 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1359:
 #line 8371 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41584 "preproc.c" /* yacc.c:1646  */
+#line 41586 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1360:
@@ -41588,7 +41590,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("alter text search dictionary"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41592 "preproc.c" /* yacc.c:1646  */
+#line 41594 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1361:
@@ -41596,7 +41598,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter text search configuration"),(yyvsp[-6].str),mm_strdup("add mapping for"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41600 "preproc.c" /* yacc.c:1646  */
+#line 41602 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1362:
@@ -41604,7 +41606,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter text search configuration"),(yyvsp[-6].str),mm_strdup("alter mapping for"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41608 "preproc.c" /* yacc.c:1646  */
+#line 41610 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1363:
@@ -41612,7 +41614,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("alter text search configuration"),(yyvsp[-6].str),mm_strdup("alter mapping replace"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41616 "preproc.c" /* yacc.c:1646  */
+#line 41618 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1364:
@@ -41620,7 +41622,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(8,mm_strdup("alter text search configuration"),(yyvsp[-8].str),mm_strdup("alter mapping for"),(yyvsp[-4].str),mm_strdup("replace"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41624 "preproc.c" /* yacc.c:1646  */
+#line 41626 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1365:
@@ -41628,7 +41630,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search configuration"),(yyvsp[-4].str),mm_strdup("drop mapping for"),(yyvsp[0].str));
 }
-#line 41632 "preproc.c" /* yacc.c:1646  */
+#line 41634 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1366:
@@ -41636,7 +41638,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("alter text search configuration"),(yyvsp[-6].str),mm_strdup("drop mapping if exists for"),(yyvsp[0].str));
 }
-#line 41640 "preproc.c" /* yacc.c:1646  */
+#line 41642 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1367:
@@ -41644,7 +41646,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with");
 }
-#line 41648 "preproc.c" /* yacc.c:1646  */
+#line 41650 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1368:
@@ -41652,7 +41654,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with");
 }
-#line 41656 "preproc.c" /* yacc.c:1646  */
+#line 41658 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1369:
@@ -41660,7 +41662,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(10,mm_strdup("create"),(yyvsp[-8].str),mm_strdup("conversion"),(yyvsp[-6].str),mm_strdup("for"),(yyvsp[-4].str),mm_strdup("to"),(yyvsp[-2].str),mm_strdup("from"),(yyvsp[0].str));
 }
-#line 41664 "preproc.c" /* yacc.c:1646  */
+#line 41666 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1370:
@@ -41668,7 +41670,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("cluster"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41672 "preproc.c" /* yacc.c:1646  */
+#line 41674 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1371:
@@ -41676,7 +41678,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("cluster"),(yyvsp[0].str));
 }
-#line 41680 "preproc.c" /* yacc.c:1646  */
+#line 41682 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1372:
@@ -41684,7 +41686,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("cluster"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("on"),(yyvsp[0].str));
 }
-#line 41688 "preproc.c" /* yacc.c:1646  */
+#line 41690 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1373:
@@ -41692,14 +41694,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("using"),(yyvsp[0].str));
 }
-#line 41696 "preproc.c" /* yacc.c:1646  */
+#line 41698 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1374:
 #line 8454 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41703 "preproc.c" /* yacc.c:1646  */
+#line 41705 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1375:
@@ -41707,7 +41709,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("vacuum"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41711 "preproc.c" /* yacc.c:1646  */
+#line 41713 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1376:
@@ -41715,7 +41717,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("vacuum"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41719 "preproc.c" /* yacc.c:1646  */
+#line 41721 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1377:
@@ -41723,7 +41725,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("vacuum"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41727 "preproc.c" /* yacc.c:1646  */
+#line 41729 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1378:
@@ -41731,7 +41733,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("vacuum ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 41735 "preproc.c" /* yacc.c:1646  */
+#line 41737 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1379:
@@ -41739,7 +41741,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("vacuum ("),(yyvsp[-3].str),mm_strdup(")"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41743 "preproc.c" /* yacc.c:1646  */
+#line 41745 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1380:
@@ -41747,7 +41749,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41751 "preproc.c" /* yacc.c:1646  */
+#line 41753 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1381:
@@ -41755,7 +41757,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 41759 "preproc.c" /* yacc.c:1646  */
+#line 41761 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1382:
@@ -41763,7 +41765,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41767 "preproc.c" /* yacc.c:1646  */
+#line 41769 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1383:
@@ -41771,7 +41773,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("verbose");
 }
-#line 41775 "preproc.c" /* yacc.c:1646  */
+#line 41777 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1384:
@@ -41779,7 +41781,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("freeze");
 }
-#line 41783 "preproc.c" /* yacc.c:1646  */
+#line 41785 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1385:
@@ -41787,7 +41789,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("full");
 }
-#line 41791 "preproc.c" /* yacc.c:1646  */
+#line 41793 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1386:
@@ -41795,7 +41797,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41799 "preproc.c" /* yacc.c:1646  */
+#line 41801 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1387:
@@ -41803,7 +41805,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41807 "preproc.c" /* yacc.c:1646  */
+#line 41809 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1388:
@@ -41811,7 +41813,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41815 "preproc.c" /* yacc.c:1646  */
+#line 41817 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1389:
@@ -41819,7 +41821,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("analyze");
 }
-#line 41823 "preproc.c" /* yacc.c:1646  */
+#line 41825 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1390:
@@ -41827,7 +41829,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("analyse");
 }
-#line 41831 "preproc.c" /* yacc.c:1646  */
+#line 41833 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1391:
@@ -41835,14 +41837,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("verbose");
 }
-#line 41839 "preproc.c" /* yacc.c:1646  */
+#line 41841 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1392:
 #line 8549 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41846 "preproc.c" /* yacc.c:1646  */
+#line 41848 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1393:
@@ -41850,14 +41852,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("full");
 }
-#line 41854 "preproc.c" /* yacc.c:1646  */
+#line 41856 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1394:
 #line 8560 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41861 "preproc.c" /* yacc.c:1646  */
+#line 41863 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1395:
@@ -41865,14 +41867,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("freeze");
 }
-#line 41869 "preproc.c" /* yacc.c:1646  */
+#line 41871 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1396:
 #line 8571 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41876 "preproc.c" /* yacc.c:1646  */
+#line 41878 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1397:
@@ -41880,14 +41882,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 41884 "preproc.c" /* yacc.c:1646  */
+#line 41886 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1398:
 #line 8582 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 41891 "preproc.c" /* yacc.c:1646  */
+#line 41893 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1399:
@@ -41895,7 +41897,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("explain"),(yyvsp[0].str));
 }
-#line 41899 "preproc.c" /* yacc.c:1646  */
+#line 41901 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1400:
@@ -41903,7 +41905,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("explain"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 41907 "preproc.c" /* yacc.c:1646  */
+#line 41909 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1401:
@@ -41911,7 +41913,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("explain verbose"),(yyvsp[0].str));
 }
-#line 41915 "preproc.c" /* yacc.c:1646  */
+#line 41917 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1402:
@@ -41919,7 +41921,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("explain ("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 41923 "preproc.c" /* yacc.c:1646  */
+#line 41925 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1403:
@@ -41927,7 +41929,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41931 "preproc.c" /* yacc.c:1646  */
+#line 41933 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1404:
@@ -41935,7 +41937,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41939 "preproc.c" /* yacc.c:1646  */
+#line 41941 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1405:
@@ -41943,7 +41945,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41947 "preproc.c" /* yacc.c:1646  */
+#line 41949 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1406:
@@ -41951,7 +41953,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41955 "preproc.c" /* yacc.c:1646  */
+#line 41957 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1407:
@@ -41959,7 +41961,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41963 "preproc.c" /* yacc.c:1646  */
+#line 41965 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1408:
@@ -41967,7 +41969,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41971 "preproc.c" /* yacc.c:1646  */
+#line 41973 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1409:
@@ -41975,7 +41977,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41979 "preproc.c" /* yacc.c:1646  */
+#line 41981 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1410:
@@ -41983,7 +41985,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41987 "preproc.c" /* yacc.c:1646  */
+#line 41989 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1411:
@@ -41991,7 +41993,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 41995 "preproc.c" /* yacc.c:1646  */
+#line 41997 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1412:
@@ -41999,7 +42001,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42003 "preproc.c" /* yacc.c:1646  */
+#line 42005 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1413:
@@ -42007,7 +42009,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 42011 "preproc.c" /* yacc.c:1646  */
+#line 42013 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1414:
@@ -42015,7 +42017,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42019 "preproc.c" /* yacc.c:1646  */
+#line 42021 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1415:
@@ -42023,7 +42025,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42027 "preproc.c" /* yacc.c:1646  */
+#line 42029 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1416:
@@ -42031,7 +42033,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42035 "preproc.c" /* yacc.c:1646  */
+#line 42037 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1417:
@@ -42039,7 +42041,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42043 "preproc.c" /* yacc.c:1646  */
+#line 42045 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1418:
@@ -42047,14 +42049,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42051 "preproc.c" /* yacc.c:1646  */
+#line 42053 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1419:
 #line 8689 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42058 "preproc.c" /* yacc.c:1646  */
+#line 42060 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1420:
@@ -42064,7 +42066,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		(yyval.prep).type = (yyvsp[-2].str);
 		(yyval.prep).stmt = cat_str(3, mm_strdup("\""), (yyvsp[0].str), mm_strdup("\""));
 	}
-#line 42068 "preproc.c" /* yacc.c:1646  */
+#line 42070 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1421:
@@ -42074,7 +42076,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		(yyval.prep).type = NULL;
 		(yyval.prep).stmt = (yyvsp[0].str);
 	}
-#line 42078 "preproc.c" /* yacc.c:1646  */
+#line 42080 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1422:
@@ -42082,14 +42084,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 42086 "preproc.c" /* yacc.c:1646  */
+#line 42088 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1423:
 #line 8716 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42093 "preproc.c" /* yacc.c:1646  */
+#line 42095 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1424:
@@ -42097,7 +42099,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42101 "preproc.c" /* yacc.c:1646  */
+#line 42103 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1425:
@@ -42105,7 +42107,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42109 "preproc.c" /* yacc.c:1646  */
+#line 42111 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1426:
@@ -42113,7 +42115,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42117 "preproc.c" /* yacc.c:1646  */
+#line 42119 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1427:
@@ -42121,13 +42123,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42125 "preproc.c" /* yacc.c:1646  */
+#line 42127 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1428:
 #line 8743 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[-2].str); }
-#line 42131 "preproc.c" /* yacc.c:1646  */
+#line 42133 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1429:
@@ -42135,7 +42137,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(8,mm_strdup("create"),(yyvsp[-7].str),mm_strdup("table"),(yyvsp[-5].str),mm_strdup("as execute"),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42139 "preproc.c" /* yacc.c:1646  */
+#line 42141 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1430:
@@ -42143,14 +42145,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 42147 "preproc.c" /* yacc.c:1646  */
+#line 42149 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1431:
 #line 8757 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42154 "preproc.c" /* yacc.c:1646  */
+#line 42156 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1432:
@@ -42158,7 +42160,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,(yyvsp[-6].str),mm_strdup("insert into"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42162 "preproc.c" /* yacc.c:1646  */
+#line 42164 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1433:
@@ -42166,7 +42168,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42170 "preproc.c" /* yacc.c:1646  */
+#line 42172 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1434:
@@ -42174,7 +42176,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("as"),(yyvsp[0].str));
 }
-#line 42178 "preproc.c" /* yacc.c:1646  */
+#line 42180 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1435:
@@ -42182,7 +42184,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42186 "preproc.c" /* yacc.c:1646  */
+#line 42188 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1436:
@@ -42190,7 +42192,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 42194 "preproc.c" /* yacc.c:1646  */
+#line 42196 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1437:
@@ -42198,7 +42200,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("default values");
 }
-#line 42202 "preproc.c" /* yacc.c:1646  */
+#line 42204 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1438:
@@ -42206,7 +42208,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42210 "preproc.c" /* yacc.c:1646  */
+#line 42212 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1439:
@@ -42214,7 +42216,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 42218 "preproc.c" /* yacc.c:1646  */
+#line 42220 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1440:
@@ -42222,7 +42224,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42226 "preproc.c" /* yacc.c:1646  */
+#line 42228 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1441:
@@ -42230,7 +42232,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("on conflict"),(yyvsp[-5].str),mm_strdup("do update set"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42234 "preproc.c" /* yacc.c:1646  */
+#line 42236 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1442:
@@ -42238,14 +42240,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("on conflict"),(yyvsp[-2].str),mm_strdup("do nothing"));
 }
-#line 42242 "preproc.c" /* yacc.c:1646  */
+#line 42244 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1443:
 #line 8828 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42249 "preproc.c" /* yacc.c:1646  */
+#line 42251 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1444:
@@ -42253,7 +42255,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 42257 "preproc.c" /* yacc.c:1646  */
+#line 42259 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1445:
@@ -42261,14 +42263,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("on constraint"),(yyvsp[0].str));
 }
-#line 42265 "preproc.c" /* yacc.c:1646  */
+#line 42267 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1446:
 #line 8843 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42272 "preproc.c" /* yacc.c:1646  */
+#line 42274 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1447:
@@ -42276,14 +42278,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("returning"),(yyvsp[-1].str));
 }
-#line 42280 "preproc.c" /* yacc.c:1646  */
+#line 42282 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1448:
 #line 8854 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42287 "preproc.c" /* yacc.c:1646  */
+#line 42289 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1449:
@@ -42291,7 +42293,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,(yyvsp[-6].str),mm_strdup("delete from"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42295 "preproc.c" /* yacc.c:1646  */
+#line 42297 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1450:
@@ -42299,14 +42301,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("using"),(yyvsp[0].str));
 }
-#line 42303 "preproc.c" /* yacc.c:1646  */
+#line 42305 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1451:
 #line 8873 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42310 "preproc.c" /* yacc.c:1646  */
+#line 42312 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1452:
@@ -42314,7 +42316,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("lock"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42318 "preproc.c" /* yacc.c:1646  */
+#line 42320 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1453:
@@ -42322,14 +42324,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("in"),(yyvsp[-1].str),mm_strdup("mode"));
 }
-#line 42326 "preproc.c" /* yacc.c:1646  */
+#line 42328 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1454:
 #line 8892 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42333 "preproc.c" /* yacc.c:1646  */
+#line 42335 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1455:
@@ -42337,7 +42339,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("access share");
 }
-#line 42341 "preproc.c" /* yacc.c:1646  */
+#line 42343 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1456:
@@ -42345,7 +42347,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("row share");
 }
-#line 42349 "preproc.c" /* yacc.c:1646  */
+#line 42351 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1457:
@@ -42353,7 +42355,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("row exclusive");
 }
-#line 42357 "preproc.c" /* yacc.c:1646  */
+#line 42359 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1458:
@@ -42361,7 +42363,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("share update exclusive");
 }
-#line 42365 "preproc.c" /* yacc.c:1646  */
+#line 42367 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1459:
@@ -42369,7 +42371,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("share");
 }
-#line 42373 "preproc.c" /* yacc.c:1646  */
+#line 42375 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1460:
@@ -42377,7 +42379,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("share row exclusive");
 }
-#line 42381 "preproc.c" /* yacc.c:1646  */
+#line 42383 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1461:
@@ -42385,7 +42387,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("exclusive");
 }
-#line 42389 "preproc.c" /* yacc.c:1646  */
+#line 42391 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1462:
@@ -42393,7 +42395,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("access exclusive");
 }
-#line 42397 "preproc.c" /* yacc.c:1646  */
+#line 42399 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1463:
@@ -42401,14 +42403,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nowait");
 }
-#line 42405 "preproc.c" /* yacc.c:1646  */
+#line 42407 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1464:
 #line 8939 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42412 "preproc.c" /* yacc.c:1646  */
+#line 42414 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1465:
@@ -42416,7 +42418,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nowait");
 }
-#line 42420 "preproc.c" /* yacc.c:1646  */
+#line 42422 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1466:
@@ -42424,14 +42426,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("skip locked");
 }
-#line 42428 "preproc.c" /* yacc.c:1646  */
+#line 42430 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1467:
 #line 8954 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42435 "preproc.c" /* yacc.c:1646  */
+#line 42437 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1468:
@@ -42439,7 +42441,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(8,(yyvsp[-7].str),mm_strdup("update"),(yyvsp[-5].str),mm_strdup("set"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42443 "preproc.c" /* yacc.c:1646  */
+#line 42445 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1469:
@@ -42447,7 +42449,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42451 "preproc.c" /* yacc.c:1646  */
+#line 42453 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1470:
@@ -42455,7 +42457,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 42459 "preproc.c" /* yacc.c:1646  */
+#line 42461 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1471:
@@ -42463,7 +42465,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42467 "preproc.c" /* yacc.c:1646  */
+#line 42469 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1472:
@@ -42471,7 +42473,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42475 "preproc.c" /* yacc.c:1646  */
+#line 42477 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1473:
@@ -42479,7 +42481,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("="),(yyvsp[0].str));
 }
-#line 42483 "preproc.c" /* yacc.c:1646  */
+#line 42485 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1474:
@@ -42487,7 +42489,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("("),(yyvsp[-3].str),mm_strdup(") ="),(yyvsp[0].str));
 }
-#line 42491 "preproc.c" /* yacc.c:1646  */
+#line 42493 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1475:
@@ -42495,7 +42497,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("("),(yyvsp[-3].str),mm_strdup(") ="),(yyvsp[0].str));
 }
-#line 42499 "preproc.c" /* yacc.c:1646  */
+#line 42501 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1476:
@@ -42503,7 +42505,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42507 "preproc.c" /* yacc.c:1646  */
+#line 42509 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1477:
@@ -42511,7 +42513,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42515 "preproc.c" /* yacc.c:1646  */
+#line 42517 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1478:
@@ -42519,7 +42521,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 42523 "preproc.c" /* yacc.c:1646  */
+#line 42525 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1479:
@@ -42572,7 +42574,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		else
 			(yyval.str) = cat2_str(adjust_outofscope_cursor_vars(this), comment);
 	}
-#line 42576 "preproc.c" /* yacc.c:1646  */
+#line 42578 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1480:
@@ -42580,7 +42582,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42584 "preproc.c" /* yacc.c:1646  */
+#line 42586 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1481:
@@ -42592,14 +42594,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyvsp[0].str) = curname;
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 42596 "preproc.c" /* yacc.c:1646  */
+#line 42598 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1482:
 #line 9102 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42603 "preproc.c" /* yacc.c:1646  */
+#line 42605 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1483:
@@ -42607,7 +42609,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("no scroll"));
 }
-#line 42611 "preproc.c" /* yacc.c:1646  */
+#line 42613 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1484:
@@ -42615,7 +42617,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),mm_strdup("scroll"));
 }
-#line 42619 "preproc.c" /* yacc.c:1646  */
+#line 42621 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1485:
@@ -42623,7 +42625,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),mm_strdup("binary"));
 }
-#line 42627 "preproc.c" /* yacc.c:1646  */
+#line 42629 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1486:
@@ -42631,7 +42633,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),mm_strdup("insensitive"));
 }
-#line 42635 "preproc.c" /* yacc.c:1646  */
+#line 42637 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1487:
@@ -42642,7 +42644,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		else
 			(yyval.str) = EMPTY;
 	}
-#line 42646 "preproc.c" /* yacc.c:1646  */
+#line 42648 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1488:
@@ -42650,7 +42652,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with hold");
 }
-#line 42654 "preproc.c" /* yacc.c:1646  */
+#line 42656 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1489:
@@ -42658,7 +42660,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("without hold");
 }
-#line 42662 "preproc.c" /* yacc.c:1646  */
+#line 42664 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1490:
@@ -42666,7 +42668,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42670 "preproc.c" /* yacc.c:1646  */
+#line 42672 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1491:
@@ -42674,7 +42676,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42678 "preproc.c" /* yacc.c:1646  */
+#line 42680 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1492:
@@ -42682,7 +42684,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 42686 "preproc.c" /* yacc.c:1646  */
+#line 42688 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1493:
@@ -42690,7 +42692,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 42694 "preproc.c" /* yacc.c:1646  */
+#line 42696 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1494:
@@ -42698,7 +42700,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42702 "preproc.c" /* yacc.c:1646  */
+#line 42704 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1495:
@@ -42706,7 +42708,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42710 "preproc.c" /* yacc.c:1646  */
+#line 42712 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1496:
@@ -42714,7 +42716,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42718 "preproc.c" /* yacc.c:1646  */
+#line 42720 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1497:
@@ -42722,7 +42724,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42726 "preproc.c" /* yacc.c:1646  */
+#line 42728 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1498:
@@ -42730,7 +42732,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42734 "preproc.c" /* yacc.c:1646  */
+#line 42736 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1499:
@@ -42738,7 +42740,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42742 "preproc.c" /* yacc.c:1646  */
+#line 42744 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1500:
@@ -42746,7 +42748,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42750 "preproc.c" /* yacc.c:1646  */
+#line 42752 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1501:
@@ -42754,7 +42756,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42758 "preproc.c" /* yacc.c:1646  */
+#line 42760 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1502:
@@ -42762,7 +42764,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42766 "preproc.c" /* yacc.c:1646  */
+#line 42768 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1503:
@@ -42770,7 +42772,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42774 "preproc.c" /* yacc.c:1646  */
+#line 42776 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1504:
@@ -42778,7 +42780,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(9,mm_strdup("select"),(yyvsp[-7].str),(yyvsp[-6].str),(yyvsp[-5].str),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42782 "preproc.c" /* yacc.c:1646  */
+#line 42784 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1505:
@@ -42786,7 +42788,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(9,mm_strdup("select"),(yyvsp[-7].str),(yyvsp[-6].str),(yyvsp[-5].str),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42790 "preproc.c" /* yacc.c:1646  */
+#line 42792 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1506:
@@ -42794,7 +42796,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42798 "preproc.c" /* yacc.c:1646  */
+#line 42800 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1507:
@@ -42802,7 +42804,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("table"),(yyvsp[0].str));
 }
-#line 42806 "preproc.c" /* yacc.c:1646  */
+#line 42808 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1508:
@@ -42810,7 +42812,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),mm_strdup("union"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42814 "preproc.c" /* yacc.c:1646  */
+#line 42816 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1509:
@@ -42818,7 +42820,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),mm_strdup("intersect"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42822 "preproc.c" /* yacc.c:1646  */
+#line 42824 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1510:
@@ -42826,7 +42828,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),mm_strdup("except"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42830 "preproc.c" /* yacc.c:1646  */
+#line 42832 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1511:
@@ -42834,7 +42836,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("with"),(yyvsp[0].str));
 }
-#line 42838 "preproc.c" /* yacc.c:1646  */
+#line 42840 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1512:
@@ -42842,7 +42844,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("with"),(yyvsp[0].str));
 }
-#line 42846 "preproc.c" /* yacc.c:1646  */
+#line 42848 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1513:
@@ -42850,7 +42852,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("with recursive"),(yyvsp[0].str));
 }
-#line 42854 "preproc.c" /* yacc.c:1646  */
+#line 42856 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1514:
@@ -42858,7 +42860,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42862 "preproc.c" /* yacc.c:1646  */
+#line 42864 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1515:
@@ -42866,7 +42868,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 42870 "preproc.c" /* yacc.c:1646  */
+#line 42872 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1516:
@@ -42874,7 +42876,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-5].str),(yyvsp[-4].str),mm_strdup("as ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 42878 "preproc.c" /* yacc.c:1646  */
+#line 42880 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1517:
@@ -42882,14 +42884,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42886 "preproc.c" /* yacc.c:1646  */
+#line 42888 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1518:
 #line 9288 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42893 "preproc.c" /* yacc.c:1646  */
+#line 42895 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1519:
@@ -42898,20 +42900,20 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 						FoundInto = 1;
 						(yyval.str)= cat2_str(mm_strdup("into"), (yyvsp[0].str));
 					}
-#line 42902 "preproc.c" /* yacc.c:1646  */
+#line 42904 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1520:
 #line 9299 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 42908 "preproc.c" /* yacc.c:1646  */
+#line 42910 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1521:
 #line 9301 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 42915 "preproc.c" /* yacc.c:1646  */
+#line 42917 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1522:
@@ -42919,7 +42921,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("temporary"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42923 "preproc.c" /* yacc.c:1646  */
+#line 42925 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1523:
@@ -42927,7 +42929,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("temp"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42931 "preproc.c" /* yacc.c:1646  */
+#line 42933 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1524:
@@ -42935,7 +42937,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("local temporary"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42939 "preproc.c" /* yacc.c:1646  */
+#line 42941 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1525:
@@ -42943,7 +42945,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("local temp"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42947 "preproc.c" /* yacc.c:1646  */
+#line 42949 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1526:
@@ -42951,7 +42953,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("global temporary"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42955 "preproc.c" /* yacc.c:1646  */
+#line 42957 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1527:
@@ -42959,7 +42961,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("global temp"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42963 "preproc.c" /* yacc.c:1646  */
+#line 42965 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1528:
@@ -42967,7 +42969,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("unlogged"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 42971 "preproc.c" /* yacc.c:1646  */
+#line 42973 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1529:
@@ -42975,7 +42977,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("table"),(yyvsp[0].str));
 }
-#line 42979 "preproc.c" /* yacc.c:1646  */
+#line 42981 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1530:
@@ -42983,7 +42985,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 42987 "preproc.c" /* yacc.c:1646  */
+#line 42989 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1531:
@@ -42991,14 +42993,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("table");
 }
-#line 42995 "preproc.c" /* yacc.c:1646  */
+#line 42997 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1532:
 #line 9352 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43002 "preproc.c" /* yacc.c:1646  */
+#line 43004 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1533:
@@ -43006,7 +43008,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all");
 }
-#line 43010 "preproc.c" /* yacc.c:1646  */
+#line 43012 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1534:
@@ -43014,14 +43016,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("distinct");
 }
-#line 43018 "preproc.c" /* yacc.c:1646  */
+#line 43020 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1535:
 #line 9367 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43025 "preproc.c" /* yacc.c:1646  */
+#line 43027 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1536:
@@ -43029,7 +43031,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("distinct");
 }
-#line 43033 "preproc.c" /* yacc.c:1646  */
+#line 43035 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1537:
@@ -43037,7 +43039,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("distinct on ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43041 "preproc.c" /* yacc.c:1646  */
+#line 43043 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1538:
@@ -43045,14 +43047,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all");
 }
-#line 43049 "preproc.c" /* yacc.c:1646  */
+#line 43051 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1539:
 #line 9390 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43056 "preproc.c" /* yacc.c:1646  */
+#line 43058 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1540:
@@ -43060,14 +43062,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43064 "preproc.c" /* yacc.c:1646  */
+#line 43066 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1541:
 #line 9401 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43071 "preproc.c" /* yacc.c:1646  */
+#line 43073 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1542:
@@ -43075,7 +43077,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("order by"),(yyvsp[0].str));
 }
-#line 43079 "preproc.c" /* yacc.c:1646  */
+#line 43081 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1543:
@@ -43083,7 +43085,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43087 "preproc.c" /* yacc.c:1646  */
+#line 43089 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1544:
@@ -43091,7 +43093,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 43095 "preproc.c" /* yacc.c:1646  */
+#line 43097 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1545:
@@ -43099,7 +43101,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),mm_strdup("using"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43103 "preproc.c" /* yacc.c:1646  */
+#line 43105 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1546:
@@ -43107,7 +43109,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43111 "preproc.c" /* yacc.c:1646  */
+#line 43113 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1547:
@@ -43115,7 +43117,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43119 "preproc.c" /* yacc.c:1646  */
+#line 43121 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1548:
@@ -43123,7 +43125,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43127 "preproc.c" /* yacc.c:1646  */
+#line 43129 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1549:
@@ -43131,7 +43133,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43135 "preproc.c" /* yacc.c:1646  */
+#line 43137 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1550:
@@ -43139,7 +43141,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43143 "preproc.c" /* yacc.c:1646  */
+#line 43145 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1551:
@@ -43147,14 +43149,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43151 "preproc.c" /* yacc.c:1646  */
+#line 43153 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1552:
 #line 9464 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43158 "preproc.c" /* yacc.c:1646  */
+#line 43160 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1553:
@@ -43162,7 +43164,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("limit"),(yyvsp[0].str));
 }
-#line 43166 "preproc.c" /* yacc.c:1646  */
+#line 43168 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1554:
@@ -43171,7 +43173,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		mmerror(PARSE_ERROR, ET_WARNING, "no longer supported LIMIT #,# syntax passed to server");
 		(yyval.str) = cat_str(4, mm_strdup("limit"), (yyvsp[-2].str), mm_strdup(","), (yyvsp[0].str));
 	}
-#line 43175 "preproc.c" /* yacc.c:1646  */
+#line 43177 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1555:
@@ -43179,7 +43181,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("fetch"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup("only"));
 }
-#line 43183 "preproc.c" /* yacc.c:1646  */
+#line 43185 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1556:
@@ -43187,7 +43189,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("offset"),(yyvsp[0].str));
 }
-#line 43191 "preproc.c" /* yacc.c:1646  */
+#line 43193 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1557:
@@ -43195,7 +43197,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("offset"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43199 "preproc.c" /* yacc.c:1646  */
+#line 43201 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1558:
@@ -43203,7 +43205,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43207 "preproc.c" /* yacc.c:1646  */
+#line 43209 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1559:
@@ -43211,7 +43213,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all");
 }
-#line 43215 "preproc.c" /* yacc.c:1646  */
+#line 43217 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1560:
@@ -43219,7 +43221,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43223 "preproc.c" /* yacc.c:1646  */
+#line 43225 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1561:
@@ -43227,7 +43229,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43231 "preproc.c" /* yacc.c:1646  */
+#line 43233 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1562:
@@ -43235,14 +43237,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43239 "preproc.c" /* yacc.c:1646  */
+#line 43241 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1563:
 #line 9528 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43246 "preproc.c" /* yacc.c:1646  */
+#line 43248 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1564:
@@ -43250,7 +43252,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43254 "preproc.c" /* yacc.c:1646  */
+#line 43256 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1565:
@@ -43258,7 +43260,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("row");
 }
-#line 43262 "preproc.c" /* yacc.c:1646  */
+#line 43264 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1566:
@@ -43266,7 +43268,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("rows");
 }
-#line 43270 "preproc.c" /* yacc.c:1646  */
+#line 43272 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1567:
@@ -43274,7 +43276,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("first");
 }
-#line 43278 "preproc.c" /* yacc.c:1646  */
+#line 43280 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1568:
@@ -43282,7 +43284,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("next");
 }
-#line 43286 "preproc.c" /* yacc.c:1646  */
+#line 43288 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1569:
@@ -43290,14 +43292,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("group by"),(yyvsp[0].str));
 }
-#line 43294 "preproc.c" /* yacc.c:1646  */
+#line 43296 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1570:
 #line 9571 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43301 "preproc.c" /* yacc.c:1646  */
+#line 43303 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1571:
@@ -43305,7 +43307,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43309 "preproc.c" /* yacc.c:1646  */
+#line 43311 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1572:
@@ -43313,7 +43315,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 43317 "preproc.c" /* yacc.c:1646  */
+#line 43319 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1573:
@@ -43321,7 +43323,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43325 "preproc.c" /* yacc.c:1646  */
+#line 43327 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1574:
@@ -43329,7 +43331,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43333 "preproc.c" /* yacc.c:1646  */
+#line 43335 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1575:
@@ -43337,7 +43339,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43341 "preproc.c" /* yacc.c:1646  */
+#line 43343 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1576:
@@ -43345,7 +43347,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43349 "preproc.c" /* yacc.c:1646  */
+#line 43351 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1577:
@@ -43353,7 +43355,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43357 "preproc.c" /* yacc.c:1646  */
+#line 43359 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1578:
@@ -43361,7 +43363,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("( )");
 }
-#line 43365 "preproc.c" /* yacc.c:1646  */
+#line 43367 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1579:
@@ -43369,7 +43371,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("rollup ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43373 "preproc.c" /* yacc.c:1646  */
+#line 43375 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1580:
@@ -43377,7 +43379,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("cube ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43381 "preproc.c" /* yacc.c:1646  */
+#line 43383 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1581:
@@ -43385,7 +43387,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("grouping sets ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43389 "preproc.c" /* yacc.c:1646  */
+#line 43391 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1582:
@@ -43393,14 +43395,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("having"),(yyvsp[0].str));
 }
-#line 43397 "preproc.c" /* yacc.c:1646  */
+#line 43399 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1583:
 #line 9650 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43404 "preproc.c" /* yacc.c:1646  */
+#line 43406 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1584:
@@ -43408,7 +43410,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43412 "preproc.c" /* yacc.c:1646  */
+#line 43414 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1585:
@@ -43416,7 +43418,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("for read only");
 }
-#line 43420 "preproc.c" /* yacc.c:1646  */
+#line 43422 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1586:
@@ -43424,14 +43426,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43428 "preproc.c" /* yacc.c:1646  */
+#line 43430 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1587:
 #line 9673 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43435 "preproc.c" /* yacc.c:1646  */
+#line 43437 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1588:
@@ -43439,7 +43441,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43443 "preproc.c" /* yacc.c:1646  */
+#line 43445 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1589:
@@ -43447,7 +43449,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43451 "preproc.c" /* yacc.c:1646  */
+#line 43453 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1590:
@@ -43455,7 +43457,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43459 "preproc.c" /* yacc.c:1646  */
+#line 43461 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1591:
@@ -43463,7 +43465,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("for update");
 }
-#line 43467 "preproc.c" /* yacc.c:1646  */
+#line 43469 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1592:
@@ -43471,7 +43473,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("for no key update");
 }
-#line 43475 "preproc.c" /* yacc.c:1646  */
+#line 43477 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1593:
@@ -43479,7 +43481,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("for share");
 }
-#line 43483 "preproc.c" /* yacc.c:1646  */
+#line 43485 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1594:
@@ -43487,7 +43489,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("for key share");
 }
-#line 43491 "preproc.c" /* yacc.c:1646  */
+#line 43493 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1595:
@@ -43495,14 +43497,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("of"),(yyvsp[0].str));
 }
-#line 43499 "preproc.c" /* yacc.c:1646  */
+#line 43501 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1596:
 #line 9724 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43506 "preproc.c" /* yacc.c:1646  */
+#line 43508 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1597:
@@ -43510,7 +43512,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("values"),(yyvsp[0].str));
 }
-#line 43514 "preproc.c" /* yacc.c:1646  */
+#line 43516 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1598:
@@ -43518,7 +43520,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 43522 "preproc.c" /* yacc.c:1646  */
+#line 43524 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1599:
@@ -43526,14 +43528,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("from"),(yyvsp[0].str));
 }
-#line 43530 "preproc.c" /* yacc.c:1646  */
+#line 43532 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1600:
 #line 9747 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43537 "preproc.c" /* yacc.c:1646  */
+#line 43539 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1601:
@@ -43541,7 +43543,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43545 "preproc.c" /* yacc.c:1646  */
+#line 43547 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1602:
@@ -43549,7 +43551,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 43553 "preproc.c" /* yacc.c:1646  */
+#line 43555 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1603:
@@ -43557,7 +43559,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43561 "preproc.c" /* yacc.c:1646  */
+#line 43563 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1604:
@@ -43565,7 +43567,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43569 "preproc.c" /* yacc.c:1646  */
+#line 43571 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1605:
@@ -43573,7 +43575,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43577 "preproc.c" /* yacc.c:1646  */
+#line 43579 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1606:
@@ -43581,7 +43583,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("lateral"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43585 "preproc.c" /* yacc.c:1646  */
+#line 43587 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1607:
@@ -43592,7 +43594,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43596 "preproc.c" /* yacc.c:1646  */
+#line 43598 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1608:
@@ -43603,7 +43605,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
  (yyval.str) = cat_str(3,mm_strdup("lateral"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43607 "preproc.c" /* yacc.c:1646  */
+#line 43609 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1609:
@@ -43611,7 +43613,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43615 "preproc.c" /* yacc.c:1646  */
+#line 43617 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1610:
@@ -43619,7 +43621,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 43623 "preproc.c" /* yacc.c:1646  */
+#line 43625 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1611:
@@ -43627,7 +43629,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43631 "preproc.c" /* yacc.c:1646  */
+#line 43633 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1612:
@@ -43635,7 +43637,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-3].str),mm_strdup("cross join"),(yyvsp[0].str));
 }
-#line 43639 "preproc.c" /* yacc.c:1646  */
+#line 43641 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1613:
@@ -43643,7 +43645,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("join"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43647 "preproc.c" /* yacc.c:1646  */
+#line 43649 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1614:
@@ -43651,7 +43653,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),mm_strdup("join"),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43655 "preproc.c" /* yacc.c:1646  */
+#line 43657 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1615:
@@ -43659,7 +43661,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),mm_strdup("natural"),(yyvsp[-2].str),mm_strdup("join"),(yyvsp[0].str));
 }
-#line 43663 "preproc.c" /* yacc.c:1646  */
+#line 43665 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1616:
@@ -43667,7 +43669,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-3].str),mm_strdup("natural join"),(yyvsp[0].str));
 }
-#line 43671 "preproc.c" /* yacc.c:1646  */
+#line 43673 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1617:
@@ -43675,7 +43677,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("as"),(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43679 "preproc.c" /* yacc.c:1646  */
+#line 43681 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1618:
@@ -43683,7 +43685,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("as"),(yyvsp[0].str));
 }
-#line 43687 "preproc.c" /* yacc.c:1646  */
+#line 43689 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1619:
@@ -43691,7 +43693,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43695 "preproc.c" /* yacc.c:1646  */
+#line 43697 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1620:
@@ -43699,7 +43701,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43703 "preproc.c" /* yacc.c:1646  */
+#line 43705 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1621:
@@ -43707,14 +43709,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43711 "preproc.c" /* yacc.c:1646  */
+#line 43713 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1622:
 #line 9860 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43718 "preproc.c" /* yacc.c:1646  */
+#line 43720 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1623:
@@ -43722,7 +43724,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43726 "preproc.c" /* yacc.c:1646  */
+#line 43728 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1624:
@@ -43730,7 +43732,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("as ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43734 "preproc.c" /* yacc.c:1646  */
+#line 43736 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1625:
@@ -43738,7 +43740,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("as"),(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43742 "preproc.c" /* yacc.c:1646  */
+#line 43744 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1626:
@@ -43746,14 +43748,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43750 "preproc.c" /* yacc.c:1646  */
+#line 43752 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1627:
 #line 9883 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43757 "preproc.c" /* yacc.c:1646  */
+#line 43759 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1628:
@@ -43761,7 +43763,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("full"),(yyvsp[0].str));
 }
-#line 43765 "preproc.c" /* yacc.c:1646  */
+#line 43767 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1629:
@@ -43769,7 +43771,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("left"),(yyvsp[0].str));
 }
-#line 43773 "preproc.c" /* yacc.c:1646  */
+#line 43775 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1630:
@@ -43777,7 +43779,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("right"),(yyvsp[0].str));
 }
-#line 43781 "preproc.c" /* yacc.c:1646  */
+#line 43783 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1631:
@@ -43785,7 +43787,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("inner");
 }
-#line 43789 "preproc.c" /* yacc.c:1646  */
+#line 43791 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1632:
@@ -43793,14 +43795,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("outer");
 }
-#line 43797 "preproc.c" /* yacc.c:1646  */
+#line 43799 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1633:
 #line 9914 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43804 "preproc.c" /* yacc.c:1646  */
+#line 43806 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1634:
@@ -43808,7 +43810,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("using ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43812 "preproc.c" /* yacc.c:1646  */
+#line 43814 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1635:
@@ -43816,7 +43818,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("on"),(yyvsp[0].str));
 }
-#line 43820 "preproc.c" /* yacc.c:1646  */
+#line 43822 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1636:
@@ -43824,7 +43826,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43828 "preproc.c" /* yacc.c:1646  */
+#line 43830 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1637:
@@ -43832,7 +43834,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),mm_strdup("*"));
 }
-#line 43836 "preproc.c" /* yacc.c:1646  */
+#line 43838 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1638:
@@ -43840,7 +43842,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("only"),(yyvsp[0].str));
 }
-#line 43844 "preproc.c" /* yacc.c:1646  */
+#line 43846 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1639:
@@ -43848,7 +43850,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("only ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43852 "preproc.c" /* yacc.c:1646  */
+#line 43854 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1640:
@@ -43856,7 +43858,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43860 "preproc.c" /* yacc.c:1646  */
+#line 43862 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1641:
@@ -43864,7 +43866,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 43868 "preproc.c" /* yacc.c:1646  */
+#line 43870 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1642:
@@ -43872,7 +43874,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43876 "preproc.c" /* yacc.c:1646  */
+#line 43878 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1643:
@@ -43880,7 +43882,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43884 "preproc.c" /* yacc.c:1646  */
+#line 43886 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1644:
@@ -43888,7 +43890,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("as"),(yyvsp[0].str));
 }
-#line 43892 "preproc.c" /* yacc.c:1646  */
+#line 43894 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1645:
@@ -43896,7 +43898,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("tablesample"),(yyvsp[-4].str),mm_strdup("("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 43900 "preproc.c" /* yacc.c:1646  */
+#line 43902 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1646:
@@ -43904,14 +43906,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("repeatable ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43908 "preproc.c" /* yacc.c:1646  */
+#line 43910 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1647:
 #line 9993 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43915 "preproc.c" /* yacc.c:1646  */
+#line 43917 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1648:
@@ -43919,7 +43921,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43923 "preproc.c" /* yacc.c:1646  */
+#line 43925 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1649:
@@ -43927,7 +43929,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("rows from ("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 43931 "preproc.c" /* yacc.c:1646  */
+#line 43933 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1650:
@@ -43935,7 +43937,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 43939 "preproc.c" /* yacc.c:1646  */
+#line 43941 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1651:
@@ -43943,7 +43945,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 43947 "preproc.c" /* yacc.c:1646  */
+#line 43949 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1652:
@@ -43951,7 +43953,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 43955 "preproc.c" /* yacc.c:1646  */
+#line 43957 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1653:
@@ -43959,14 +43961,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("as ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 43963 "preproc.c" /* yacc.c:1646  */
+#line 43965 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1654:
 #line 10036 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43970 "preproc.c" /* yacc.c:1646  */
+#line 43972 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1655:
@@ -43974,14 +43976,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with ordinality");
 }
-#line 43978 "preproc.c" /* yacc.c:1646  */
+#line 43980 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1656:
 #line 10047 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 43985 "preproc.c" /* yacc.c:1646  */
+#line 43987 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1657:
@@ -43989,14 +43991,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("where"),(yyvsp[0].str));
 }
-#line 43993 "preproc.c" /* yacc.c:1646  */
+#line 43995 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1658:
 #line 10058 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 44000 "preproc.c" /* yacc.c:1646  */
+#line 44002 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1659:
@@ -44004,7 +44006,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("where"),(yyvsp[0].str));
 }
-#line 44008 "preproc.c" /* yacc.c:1646  */
+#line 44010 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1660:
@@ -44013,14 +44015,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		char *cursor_marker = (yyvsp[0].str)[0] == ':' ? mm_strdup("$0") : (yyvsp[0].str);
 		(yyval.str) = cat_str(2,mm_strdup("where current of"), cursor_marker);
 	}
-#line 44017 "preproc.c" /* yacc.c:1646  */
+#line 44019 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1661:
 #line 10074 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 44024 "preproc.c" /* yacc.c:1646  */
+#line 44026 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1662:
@@ -44028,14 +44030,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44032 "preproc.c" /* yacc.c:1646  */
+#line 44034 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1663:
 #line 10085 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 44039 "preproc.c" /* yacc.c:1646  */
+#line 44041 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1664:
@@ -44043,7 +44045,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44047 "preproc.c" /* yacc.c:1646  */
+#line 44049 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1665:
@@ -44051,7 +44053,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 44055 "preproc.c" /* yacc.c:1646  */
+#line 44057 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1666:
@@ -44059,19 +44061,19 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 44063 "preproc.c" /* yacc.c:1646  */
+#line 44065 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1667:
 #line 10112 "preproc.y" /* yacc.c:1646  */
     {	(yyval.str) = cat2_str((yyvsp[-1].str), (yyvsp[0].index).str); }
-#line 44069 "preproc.c" /* yacc.c:1646  */
+#line 44071 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1668:
 #line 10114 "preproc.y" /* yacc.c:1646  */
     {	(yyval.str) = cat_str(3, mm_strdup("setof"), (yyvsp[-1].str), (yyvsp[0].index).str); }
-#line 44075 "preproc.c" /* yacc.c:1646  */
+#line 44077 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1669:
@@ -44079,7 +44081,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-4].str),mm_strdup("array ["),(yyvsp[-1].str),mm_strdup("]"));
 }
-#line 44083 "preproc.c" /* yacc.c:1646  */
+#line 44085 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1670:
@@ -44087,7 +44089,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("setof"),(yyvsp[-4].str),mm_strdup("array ["),(yyvsp[-1].str),mm_strdup("]"));
 }
-#line 44091 "preproc.c" /* yacc.c:1646  */
+#line 44093 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1671:
@@ -44095,7 +44097,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),mm_strdup("array"));
 }
-#line 44099 "preproc.c" /* yacc.c:1646  */
+#line 44101 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1672:
@@ -44103,7 +44105,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("setof"),(yyvsp[-1].str),mm_strdup("array"));
 }
-#line 44107 "preproc.c" /* yacc.c:1646  */
+#line 44109 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1673:
@@ -44117,7 +44119,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.index).index2 = mm_strdup("0");
 		(yyval.index).str = cat_str(2, (yyvsp[-2].index).str, mm_strdup("[]"));
 	}
-#line 44121 "preproc.c" /* yacc.c:1646  */
+#line 44123 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1674:
@@ -44131,7 +44133,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.index).index2 = mm_strdup((yyvsp[-1].str));
 		(yyval.index).str = cat_str(4, (yyvsp[-3].index).str, mm_strdup("["), (yyvsp[-1].str), mm_strdup("]"));
 	}
-#line 44135 "preproc.c" /* yacc.c:1646  */
+#line 44137 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1675:
@@ -44141,7 +44143,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		(yyval.index).index2 = mm_strdup("-1");
 		(yyval.index).str= EMPTY;
 	}
-#line 44145 "preproc.c" /* yacc.c:1646  */
+#line 44147 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1676:
@@ -44149,7 +44151,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44153 "preproc.c" /* yacc.c:1646  */
+#line 44155 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1677:
@@ -44157,7 +44159,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44161 "preproc.c" /* yacc.c:1646  */
+#line 44163 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1678:
@@ -44165,7 +44167,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44169 "preproc.c" /* yacc.c:1646  */
+#line 44171 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1679:
@@ -44173,7 +44175,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44177 "preproc.c" /* yacc.c:1646  */
+#line 44179 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1680:
@@ -44181,7 +44183,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44185 "preproc.c" /* yacc.c:1646  */
+#line 44187 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1681:
@@ -44189,7 +44191,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 44193 "preproc.c" /* yacc.c:1646  */
+#line 44195 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1682:
@@ -44197,7 +44199,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 44201 "preproc.c" /* yacc.c:1646  */
+#line 44203 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1683:
@@ -44205,7 +44207,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44209 "preproc.c" /* yacc.c:1646  */
+#line 44211 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1684:
@@ -44213,7 +44215,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44217 "preproc.c" /* yacc.c:1646  */
+#line 44219 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1685:
@@ -44221,7 +44223,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44225 "preproc.c" /* yacc.c:1646  */
+#line 44227 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1686:
@@ -44229,7 +44231,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44233 "preproc.c" /* yacc.c:1646  */
+#line 44235 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1687:
@@ -44237,7 +44239,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 44241 "preproc.c" /* yacc.c:1646  */
+#line 44243 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1688:
@@ -44245,7 +44247,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 44249 "preproc.c" /* yacc.c:1646  */
+#line 44251 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1689:
@@ -44253,14 +44255,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 44257 "preproc.c" /* yacc.c:1646  */
+#line 44259 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1690:
 #line 10234 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 44264 "preproc.c" /* yacc.c:1646  */
+#line 44266 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1691:
@@ -44268,7 +44270,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("int");
 }
-#line 44272 "preproc.c" /* yacc.c:1646  */
+#line 44274 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1692:
@@ -44276,7 +44278,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("integer");
 }
-#line 44280 "preproc.c" /* yacc.c:1646  */
+#line 44282 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1693:
@@ -44284,7 +44286,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("smallint");
 }
-#line 44288 "preproc.c" /* yacc.c:1646  */
+#line 44290 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1694:
@@ -44292,7 +44294,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("bigint");
 }
-#line 44296 "preproc.c" /* yacc.c:1646  */
+#line 44298 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1695:
@@ -44300,7 +44302,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("real");
 }
-#line 44304 "preproc.c" /* yacc.c:1646  */
+#line 44306 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1696:
@@ -44308,7 +44310,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("float"),(yyvsp[0].str));
 }
-#line 44312 "preproc.c" /* yacc.c:1646  */
+#line 44314 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1697:
@@ -44316,7 +44318,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("double precision");
 }
-#line 44320 "preproc.c" /* yacc.c:1646  */
+#line 44322 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1698:
@@ -44324,7 +44326,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("decimal"),(yyvsp[0].str));
 }
-#line 44328 "preproc.c" /* yacc.c:1646  */
+#line 44330 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1699:
@@ -44332,7 +44334,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("dec"),(yyvsp[0].str));
 }
-#line 44336 "preproc.c" /* yacc.c:1646  */
+#line 44338 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1700:
@@ -44340,7 +44342,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("numeric"),(yyvsp[0].str));
 }
-#line 44344 "preproc.c" /* yacc.c:1646  */
+#line 44346 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1701:
@@ -44348,7 +44350,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("boolean");
 }
-#line 44352 "preproc.c" /* yacc.c:1646  */
+#line 44354 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1702:
@@ -44356,14 +44358,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 44360 "preproc.c" /* yacc.c:1646  */
+#line 44362 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1703:
 #line 10293 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 44367 "preproc.c" /* yacc.c:1646  */
+#line 44369 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1704:
@@ -44371,7 +44373,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44375 "preproc.c" /* yacc.c:1646  */
+#line 44377 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1705:
@@ -44379,7 +44381,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44383 "preproc.c" /* yacc.c:1646  */
+#line 44385 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1706:
@@ -44387,7 +44389,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44391 "preproc.c" /* yacc.c:1646  */
+#line 44393 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1707:
@@ -44395,7 +44397,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44399 "preproc.c" /* yacc.c:1646  */
+#line 44401 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1708:
@@ -44403,7 +44405,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("bit"),(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 44407 "preproc.c" /* yacc.c:1646  */
+#line 44409 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1709:
@@ -44411,7 +44413,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("bit"),(yyvsp[0].str));
 }
-#line 44415 "preproc.c" /* yacc.c:1646  */
+#line 44417 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1710:
@@ -44419,7 +44421,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44423 "preproc.c" /* yacc.c:1646  */
+#line 44425 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1711:
@@ -44427,7 +44429,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44431 "preproc.c" /* yacc.c:1646  */
+#line 44433 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1712:
@@ -44435,7 +44437,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44439 "preproc.c" /* yacc.c:1646  */
+#line 44441 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1713:
@@ -44443,7 +44445,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44447 "preproc.c" /* yacc.c:1646  */
+#line 44449 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1714:
@@ -44451,7 +44453,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),mm_strdup("("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 44455 "preproc.c" /* yacc.c:1646  */
+#line 44457 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1715:
@@ -44459,7 +44461,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 44463 "preproc.c" /* yacc.c:1646  */
+#line 44465 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1716:
@@ -44467,7 +44469,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("character"),(yyvsp[0].str));
 }
-#line 44471 "preproc.c" /* yacc.c:1646  */
+#line 44473 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1717:
@@ -44475,7 +44477,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("char"),(yyvsp[0].str));
 }
-#line 44479 "preproc.c" /* yacc.c:1646  */
+#line 44481 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1718:
@@ -44483,7 +44485,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("varchar");
 }
-#line 44487 "preproc.c" /* yacc.c:1646  */
+#line 44489 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1719:
@@ -44491,7 +44493,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("national character"),(yyvsp[0].str));
 }
-#line 44495 "preproc.c" /* yacc.c:1646  */
+#line 44497 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1720:
@@ -44499,7 +44501,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("national char"),(yyvsp[0].str));
 }
-#line 44503 "preproc.c" /* yacc.c:1646  */
+#line 44505 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1721:
@@ -44507,7 +44509,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("nchar"),(yyvsp[0].str));
 }
-#line 44511 "preproc.c" /* yacc.c:1646  */
+#line 44513 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1722:
@@ -44515,14 +44517,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("varying");
 }
-#line 44519 "preproc.c" /* yacc.c:1646  */
+#line 44521 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1723:
 #line 10412 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 44526 "preproc.c" /* yacc.c:1646  */
+#line 44528 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1724:
@@ -44530,14 +44532,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("character set"),(yyvsp[0].str));
 }
-#line 44534 "preproc.c" /* yacc.c:1646  */
+#line 44536 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1725:
 #line 10423 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 44541 "preproc.c" /* yacc.c:1646  */
+#line 44543 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1726:
@@ -44545,7 +44547,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("timestamp ("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 44549 "preproc.c" /* yacc.c:1646  */
+#line 44551 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1727:
@@ -44553,7 +44555,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("timestamp"),(yyvsp[0].str));
 }
-#line 44557 "preproc.c" /* yacc.c:1646  */
+#line 44559 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1728:
@@ -44561,7 +44563,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("time ("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 44565 "preproc.c" /* yacc.c:1646  */
+#line 44567 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1729:
@@ -44569,7 +44571,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("time"),(yyvsp[0].str));
 }
-#line 44573 "preproc.c" /* yacc.c:1646  */
+#line 44575 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1730:
@@ -44577,7 +44579,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("interval");
 }
-#line 44581 "preproc.c" /* yacc.c:1646  */
+#line 44583 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1731:
@@ -44585,7 +44587,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with time zone");
 }
-#line 44589 "preproc.c" /* yacc.c:1646  */
+#line 44591 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1732:
@@ -44593,14 +44595,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("without time zone");
 }
-#line 44597 "preproc.c" /* yacc.c:1646  */
+#line 44599 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1733:
 #line 10466 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 44604 "preproc.c" /* yacc.c:1646  */
+#line 44606 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1734:
@@ -44608,7 +44610,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("year");
 }
-#line 44612 "preproc.c" /* yacc.c:1646  */
+#line 44614 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1735:
@@ -44616,7 +44618,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("month");
 }
-#line 44620 "preproc.c" /* yacc.c:1646  */
+#line 44622 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1736:
@@ -44624,7 +44626,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("day");
 }
-#line 44628 "preproc.c" /* yacc.c:1646  */
+#line 44630 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1737:
@@ -44632,7 +44634,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("hour");
 }
-#line 44636 "preproc.c" /* yacc.c:1646  */
+#line 44638 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1738:
@@ -44640,7 +44642,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("minute");
 }
-#line 44644 "preproc.c" /* yacc.c:1646  */
+#line 44646 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1739:
@@ -44648,7 +44650,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44652 "preproc.c" /* yacc.c:1646  */
+#line 44654 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1740:
@@ -44656,7 +44658,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("year to month");
 }
-#line 44660 "preproc.c" /* yacc.c:1646  */
+#line 44662 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1741:
@@ -44664,7 +44666,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("day to hour");
 }
-#line 44668 "preproc.c" /* yacc.c:1646  */
+#line 44670 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1742:
@@ -44672,7 +44674,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("day to minute");
 }
-#line 44676 "preproc.c" /* yacc.c:1646  */
+#line 44678 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1743:
@@ -44680,7 +44682,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("day to"),(yyvsp[0].str));
 }
-#line 44684 "preproc.c" /* yacc.c:1646  */
+#line 44686 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1744:
@@ -44688,7 +44690,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("hour to minute");
 }
-#line 44692 "preproc.c" /* yacc.c:1646  */
+#line 44694 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1745:
@@ -44696,7 +44698,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("hour to"),(yyvsp[0].str));
 }
-#line 44700 "preproc.c" /* yacc.c:1646  */
+#line 44702 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1746:
@@ -44704,14 +44706,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("minute to"),(yyvsp[0].str));
 }
-#line 44708 "preproc.c" /* yacc.c:1646  */
+#line 44710 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1747:
 #line 10525 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 44715 "preproc.c" /* yacc.c:1646  */
+#line 44717 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1748:
@@ -44719,7 +44721,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("second");
 }
-#line 44723 "preproc.c" /* yacc.c:1646  */
+#line 44725 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1749:
@@ -44727,7 +44729,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("second ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 44731 "preproc.c" /* yacc.c:1646  */
+#line 44733 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1750:
@@ -44735,7 +44737,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 44739 "preproc.c" /* yacc.c:1646  */
+#line 44741 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1751:
@@ -44743,7 +44745,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("::"),(yyvsp[0].str));
 }
-#line 44747 "preproc.c" /* yacc.c:1646  */
+#line 44749 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1752:
@@ -44751,7 +44753,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("collate"),(yyvsp[0].str));
 }
-#line 44755 "preproc.c" /* yacc.c:1646  */
+#line 44757 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1753:
@@ -44759,7 +44761,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-4].str),mm_strdup("at time zone"),(yyvsp[0].str));
 }
-#line 44763 "preproc.c" /* yacc.c:1646  */
+#line 44765 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1754:
@@ -44767,7 +44769,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("+"),(yyvsp[0].str));
 }
-#line 44771 "preproc.c" /* yacc.c:1646  */
+#line 44773 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1755:
@@ -44775,7 +44777,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("-"),(yyvsp[0].str));
 }
-#line 44779 "preproc.c" /* yacc.c:1646  */
+#line 44781 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1756:
@@ -44783,7 +44785,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("+"),(yyvsp[0].str));
 }
-#line 44787 "preproc.c" /* yacc.c:1646  */
+#line 44789 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1757:
@@ -44791,7 +44793,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("-"),(yyvsp[0].str));
 }
-#line 44795 "preproc.c" /* yacc.c:1646  */
+#line 44797 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1758:
@@ -44799,7 +44801,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("*"),(yyvsp[0].str));
 }
-#line 44803 "preproc.c" /* yacc.c:1646  */
+#line 44805 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1759:
@@ -44807,7 +44809,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("/"),(yyvsp[0].str));
 }
-#line 44811 "preproc.c" /* yacc.c:1646  */
+#line 44813 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1760:
@@ -44815,7 +44817,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("%"),(yyvsp[0].str));
 }
-#line 44819 "preproc.c" /* yacc.c:1646  */
+#line 44821 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1761:
@@ -44823,7 +44825,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("^"),(yyvsp[0].str));
 }
-#line 44827 "preproc.c" /* yacc.c:1646  */
+#line 44829 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1762:
@@ -44831,7 +44833,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("<"),(yyvsp[0].str));
 }
-#line 44835 "preproc.c" /* yacc.c:1646  */
+#line 44837 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1763:
@@ -44839,7 +44841,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(">"),(yyvsp[0].str));
 }
-#line 44843 "preproc.c" /* yacc.c:1646  */
+#line 44845 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1764:
@@ -44847,7 +44849,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("="),(yyvsp[0].str));
 }
-#line 44851 "preproc.c" /* yacc.c:1646  */
+#line 44853 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1765:
@@ -44855,7 +44857,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("<="),(yyvsp[0].str));
 }
-#line 44859 "preproc.c" /* yacc.c:1646  */
+#line 44861 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1766:
@@ -44863,7 +44865,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(">="),(yyvsp[0].str));
 }
-#line 44867 "preproc.c" /* yacc.c:1646  */
+#line 44869 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1767:
@@ -44871,7 +44873,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("<>"),(yyvsp[0].str));
 }
-#line 44875 "preproc.c" /* yacc.c:1646  */
+#line 44877 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1768:
@@ -44879,7 +44881,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 44883 "preproc.c" /* yacc.c:1646  */
+#line 44885 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1769:
@@ -44887,7 +44889,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 44891 "preproc.c" /* yacc.c:1646  */
+#line 44893 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1770:
@@ -44895,7 +44897,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 44899 "preproc.c" /* yacc.c:1646  */
+#line 44901 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1771:
@@ -44903,7 +44905,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("and"),(yyvsp[0].str));
 }
-#line 44907 "preproc.c" /* yacc.c:1646  */
+#line 44909 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1772:
@@ -44911,7 +44913,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("or"),(yyvsp[0].str));
 }
-#line 44915 "preproc.c" /* yacc.c:1646  */
+#line 44917 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1773:
@@ -44919,7 +44921,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("not"),(yyvsp[0].str));
 }
-#line 44923 "preproc.c" /* yacc.c:1646  */
+#line 44925 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1774:
@@ -44927,7 +44929,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("not"),(yyvsp[0].str));
 }
-#line 44931 "preproc.c" /* yacc.c:1646  */
+#line 44933 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1775:
@@ -44935,7 +44937,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("like"),(yyvsp[0].str));
 }
-#line 44939 "preproc.c" /* yacc.c:1646  */
+#line 44941 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1776:
@@ -44943,7 +44945,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),mm_strdup("like"),(yyvsp[-2].str),mm_strdup("escape"),(yyvsp[0].str));
 }
-#line 44947 "preproc.c" /* yacc.c:1646  */
+#line 44949 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1777:
@@ -44951,7 +44953,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-3].str),mm_strdup("not like"),(yyvsp[0].str));
 }
-#line 44955 "preproc.c" /* yacc.c:1646  */
+#line 44957 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1778:
@@ -44959,7 +44961,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-5].str),mm_strdup("not like"),(yyvsp[-2].str),mm_strdup("escape"),(yyvsp[0].str));
 }
-#line 44963 "preproc.c" /* yacc.c:1646  */
+#line 44965 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1779:
@@ -44967,7 +44969,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("ilike"),(yyvsp[0].str));
 }
-#line 44971 "preproc.c" /* yacc.c:1646  */
+#line 44973 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1780:
@@ -44975,7 +44977,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),mm_strdup("ilike"),(yyvsp[-2].str),mm_strdup("escape"),(yyvsp[0].str));
 }
-#line 44979 "preproc.c" /* yacc.c:1646  */
+#line 44981 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1781:
@@ -44983,7 +44985,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-3].str),mm_strdup("not ilike"),(yyvsp[0].str));
 }
-#line 44987 "preproc.c" /* yacc.c:1646  */
+#line 44989 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1782:
@@ -44991,7 +44993,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-5].str),mm_strdup("not ilike"),(yyvsp[-2].str),mm_strdup("escape"),(yyvsp[0].str));
 }
-#line 44995 "preproc.c" /* yacc.c:1646  */
+#line 44997 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1783:
@@ -44999,7 +45001,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-3].str),mm_strdup("similar to"),(yyvsp[0].str));
 }
-#line 45003 "preproc.c" /* yacc.c:1646  */
+#line 45005 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1784:
@@ -45007,7 +45009,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-5].str),mm_strdup("similar to"),(yyvsp[-2].str),mm_strdup("escape"),(yyvsp[0].str));
 }
-#line 45011 "preproc.c" /* yacc.c:1646  */
+#line 45013 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1785:
@@ -45015,7 +45017,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-4].str),mm_strdup("not similar to"),(yyvsp[0].str));
 }
-#line 45019 "preproc.c" /* yacc.c:1646  */
+#line 45021 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1786:
@@ -45023,7 +45025,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-6].str),mm_strdup("not similar to"),(yyvsp[-2].str),mm_strdup("escape"),(yyvsp[0].str));
 }
-#line 45027 "preproc.c" /* yacc.c:1646  */
+#line 45029 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1787:
@@ -45031,7 +45033,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("is null"));
 }
-#line 45035 "preproc.c" /* yacc.c:1646  */
+#line 45037 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1788:
@@ -45039,7 +45041,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),mm_strdup("isnull"));
 }
-#line 45043 "preproc.c" /* yacc.c:1646  */
+#line 45045 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1789:
@@ -45047,7 +45049,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-3].str),mm_strdup("is not null"));
 }
-#line 45051 "preproc.c" /* yacc.c:1646  */
+#line 45053 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1790:
@@ -45055,7 +45057,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),mm_strdup("notnull"));
 }
-#line 45059 "preproc.c" /* yacc.c:1646  */
+#line 45061 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1791:
@@ -45063,7 +45065,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("overlaps"),(yyvsp[0].str));
 }
-#line 45067 "preproc.c" /* yacc.c:1646  */
+#line 45069 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1792:
@@ -45071,7 +45073,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("is true"));
 }
-#line 45075 "preproc.c" /* yacc.c:1646  */
+#line 45077 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1793:
@@ -45079,7 +45081,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-3].str),mm_strdup("is not true"));
 }
-#line 45083 "preproc.c" /* yacc.c:1646  */
+#line 45085 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1794:
@@ -45087,7 +45089,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("is false"));
 }
-#line 45091 "preproc.c" /* yacc.c:1646  */
+#line 45093 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1795:
@@ -45095,7 +45097,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-3].str),mm_strdup("is not false"));
 }
-#line 45099 "preproc.c" /* yacc.c:1646  */
+#line 45101 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1796:
@@ -45103,7 +45105,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("is unknown"));
 }
-#line 45107 "preproc.c" /* yacc.c:1646  */
+#line 45109 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1797:
@@ -45111,7 +45113,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-3].str),mm_strdup("is not unknown"));
 }
-#line 45115 "preproc.c" /* yacc.c:1646  */
+#line 45117 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1798:
@@ -45119,7 +45121,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-4].str),mm_strdup("is distinct from"),(yyvsp[0].str));
 }
-#line 45123 "preproc.c" /* yacc.c:1646  */
+#line 45125 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1799:
@@ -45127,7 +45129,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-5].str),mm_strdup("is not distinct from"),(yyvsp[0].str));
 }
-#line 45131 "preproc.c" /* yacc.c:1646  */
+#line 45133 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1800:
@@ -45135,7 +45137,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-5].str),mm_strdup("is of ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45139 "preproc.c" /* yacc.c:1646  */
+#line 45141 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1801:
@@ -45143,7 +45145,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-6].str),mm_strdup("is not of ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45147 "preproc.c" /* yacc.c:1646  */
+#line 45149 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1802:
@@ -45151,7 +45153,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,(yyvsp[-5].str),mm_strdup("between"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("and"),(yyvsp[0].str));
 }
-#line 45155 "preproc.c" /* yacc.c:1646  */
+#line 45157 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1803:
@@ -45159,7 +45161,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,(yyvsp[-6].str),mm_strdup("not between"),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup("and"),(yyvsp[0].str));
 }
-#line 45163 "preproc.c" /* yacc.c:1646  */
+#line 45165 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1804:
@@ -45167,7 +45169,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-5].str),mm_strdup("between symmetric"),(yyvsp[-2].str),mm_strdup("and"),(yyvsp[0].str));
 }
-#line 45171 "preproc.c" /* yacc.c:1646  */
+#line 45173 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1805:
@@ -45175,7 +45177,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-6].str),mm_strdup("not between symmetric"),(yyvsp[-2].str),mm_strdup("and"),(yyvsp[0].str));
 }
-#line 45179 "preproc.c" /* yacc.c:1646  */
+#line 45181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1806:
@@ -45183,7 +45185,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("in"),(yyvsp[0].str));
 }
-#line 45187 "preproc.c" /* yacc.c:1646  */
+#line 45189 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1807:
@@ -45191,7 +45193,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-3].str),mm_strdup("not in"),(yyvsp[0].str));
 }
-#line 45195 "preproc.c" /* yacc.c:1646  */
+#line 45197 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1808:
@@ -45199,7 +45201,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 45203 "preproc.c" /* yacc.c:1646  */
+#line 45205 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1809:
@@ -45207,7 +45209,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,(yyvsp[-5].str),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45211 "preproc.c" /* yacc.c:1646  */
+#line 45213 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1810:
@@ -45216,7 +45218,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = cat_str(2,mm_strdup("unique"),(yyvsp[0].str));
 }
-#line 45220 "preproc.c" /* yacc.c:1646  */
+#line 45222 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1811:
@@ -45224,7 +45226,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("is document"));
 }
-#line 45228 "preproc.c" /* yacc.c:1646  */
+#line 45230 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1812:
@@ -45232,7 +45234,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-3].str),mm_strdup("is not document"));
 }
-#line 45236 "preproc.c" /* yacc.c:1646  */
+#line 45238 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1813:
@@ -45240,7 +45242,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45244 "preproc.c" /* yacc.c:1646  */
+#line 45246 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1814:
@@ -45248,7 +45250,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("::"),(yyvsp[0].str));
 }
-#line 45252 "preproc.c" /* yacc.c:1646  */
+#line 45254 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1815:
@@ -45256,7 +45258,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("+"),(yyvsp[0].str));
 }
-#line 45260 "preproc.c" /* yacc.c:1646  */
+#line 45262 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1816:
@@ -45264,7 +45266,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("-"),(yyvsp[0].str));
 }
-#line 45268 "preproc.c" /* yacc.c:1646  */
+#line 45270 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1817:
@@ -45272,7 +45274,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("+"),(yyvsp[0].str));
 }
-#line 45276 "preproc.c" /* yacc.c:1646  */
+#line 45278 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1818:
@@ -45280,7 +45282,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("-"),(yyvsp[0].str));
 }
-#line 45284 "preproc.c" /* yacc.c:1646  */
+#line 45286 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1819:
@@ -45288,7 +45290,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("*"),(yyvsp[0].str));
 }
-#line 45292 "preproc.c" /* yacc.c:1646  */
+#line 45294 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1820:
@@ -45296,7 +45298,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("/"),(yyvsp[0].str));
 }
-#line 45300 "preproc.c" /* yacc.c:1646  */
+#line 45302 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1821:
@@ -45304,7 +45306,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("%"),(yyvsp[0].str));
 }
-#line 45308 "preproc.c" /* yacc.c:1646  */
+#line 45310 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1822:
@@ -45312,7 +45314,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("^"),(yyvsp[0].str));
 }
-#line 45316 "preproc.c" /* yacc.c:1646  */
+#line 45318 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1823:
@@ -45320,7 +45322,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("<"),(yyvsp[0].str));
 }
-#line 45324 "preproc.c" /* yacc.c:1646  */
+#line 45326 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1824:
@@ -45328,7 +45330,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(">"),(yyvsp[0].str));
 }
-#line 45332 "preproc.c" /* yacc.c:1646  */
+#line 45334 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1825:
@@ -45336,7 +45338,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("="),(yyvsp[0].str));
 }
-#line 45340 "preproc.c" /* yacc.c:1646  */
+#line 45342 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1826:
@@ -45344,7 +45346,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("<="),(yyvsp[0].str));
 }
-#line 45348 "preproc.c" /* yacc.c:1646  */
+#line 45350 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1827:
@@ -45352,7 +45354,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(">="),(yyvsp[0].str));
 }
-#line 45356 "preproc.c" /* yacc.c:1646  */
+#line 45358 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1828:
@@ -45360,7 +45362,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("<>"),(yyvsp[0].str));
 }
-#line 45364 "preproc.c" /* yacc.c:1646  */
+#line 45366 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1829:
@@ -45368,7 +45370,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 45372 "preproc.c" /* yacc.c:1646  */
+#line 45374 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1830:
@@ -45376,7 +45378,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 45380 "preproc.c" /* yacc.c:1646  */
+#line 45382 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1831:
@@ -45384,7 +45386,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 45388 "preproc.c" /* yacc.c:1646  */
+#line 45390 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1832:
@@ -45392,7 +45394,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-4].str),mm_strdup("is distinct from"),(yyvsp[0].str));
 }
-#line 45396 "preproc.c" /* yacc.c:1646  */
+#line 45398 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1833:
@@ -45400,7 +45402,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-5].str),mm_strdup("is not distinct from"),(yyvsp[0].str));
 }
-#line 45404 "preproc.c" /* yacc.c:1646  */
+#line 45406 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1834:
@@ -45408,7 +45410,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-5].str),mm_strdup("is of ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45412 "preproc.c" /* yacc.c:1646  */
+#line 45414 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1835:
@@ -45416,7 +45418,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-6].str),mm_strdup("is not of ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45420 "preproc.c" /* yacc.c:1646  */
+#line 45422 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1836:
@@ -45424,7 +45426,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("is document"));
 }
-#line 45428 "preproc.c" /* yacc.c:1646  */
+#line 45430 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1837:
@@ -45432,7 +45434,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-3].str),mm_strdup("is not document"));
 }
-#line 45436 "preproc.c" /* yacc.c:1646  */
+#line 45438 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1838:
@@ -45440,7 +45442,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45444 "preproc.c" /* yacc.c:1646  */
+#line 45446 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1839:
@@ -45448,7 +45450,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45452 "preproc.c" /* yacc.c:1646  */
+#line 45454 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1840:
@@ -45456,7 +45458,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 45460 "preproc.c" /* yacc.c:1646  */
+#line 45462 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1841:
@@ -45464,7 +45466,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 45468 "preproc.c" /* yacc.c:1646  */
+#line 45470 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1842:
@@ -45472,7 +45474,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45476 "preproc.c" /* yacc.c:1646  */
+#line 45478 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1843:
@@ -45480,7 +45482,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45484 "preproc.c" /* yacc.c:1646  */
+#line 45486 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1844:
@@ -45488,7 +45490,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45492 "preproc.c" /* yacc.c:1646  */
+#line 45494 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1845:
@@ -45496,7 +45498,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 45500 "preproc.c" /* yacc.c:1646  */
+#line 45502 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1846:
@@ -45504,7 +45506,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("exists"),(yyvsp[0].str));
 }
-#line 45508 "preproc.c" /* yacc.c:1646  */
+#line 45510 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1847:
@@ -45512,7 +45514,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("array"),(yyvsp[0].str));
 }
-#line 45516 "preproc.c" /* yacc.c:1646  */
+#line 45518 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1848:
@@ -45520,7 +45522,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("array"),(yyvsp[0].str));
 }
-#line 45524 "preproc.c" /* yacc.c:1646  */
+#line 45526 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1849:
@@ -45528,7 +45530,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45532 "preproc.c" /* yacc.c:1646  */
+#line 45534 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1850:
@@ -45536,7 +45538,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45540 "preproc.c" /* yacc.c:1646  */
+#line 45542 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1851:
@@ -45544,7 +45546,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("grouping ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45548 "preproc.c" /* yacc.c:1646  */
+#line 45550 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1852:
@@ -45552,7 +45554,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-2].str),mm_strdup("( )"));
 }
-#line 45556 "preproc.c" /* yacc.c:1646  */
+#line 45558 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1853:
@@ -45560,7 +45562,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),mm_strdup("("),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45564 "preproc.c" /* yacc.c:1646  */
+#line 45566 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1854:
@@ -45568,7 +45570,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-5].str),mm_strdup("( variadic"),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45572 "preproc.c" /* yacc.c:1646  */
+#line 45574 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1855:
@@ -45576,7 +45578,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,(yyvsp[-7].str),mm_strdup("("),(yyvsp[-5].str),mm_strdup(", variadic"),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45580 "preproc.c" /* yacc.c:1646  */
+#line 45582 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1856:
@@ -45584,7 +45586,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-5].str),mm_strdup("( all"),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45588 "preproc.c" /* yacc.c:1646  */
+#line 45590 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1857:
@@ -45592,7 +45594,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-5].str),mm_strdup("( distinct"),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45596 "preproc.c" /* yacc.c:1646  */
+#line 45598 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1858:
@@ -45600,7 +45602,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-3].str),mm_strdup("( * )"));
 }
-#line 45604 "preproc.c" /* yacc.c:1646  */
+#line 45606 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1859:
@@ -45608,7 +45610,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 45612 "preproc.c" /* yacc.c:1646  */
+#line 45614 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1860:
@@ -45616,7 +45618,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45620 "preproc.c" /* yacc.c:1646  */
+#line 45622 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1861:
@@ -45624,7 +45626,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45628 "preproc.c" /* yacc.c:1646  */
+#line 45630 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1862:
@@ -45632,7 +45634,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 45636 "preproc.c" /* yacc.c:1646  */
+#line 45638 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1863:
@@ -45640,7 +45642,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("collation for ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45644 "preproc.c" /* yacc.c:1646  */
+#line 45646 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1864:
@@ -45648,7 +45650,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_date");
 }
-#line 45652 "preproc.c" /* yacc.c:1646  */
+#line 45654 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1865:
@@ -45656,7 +45658,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_time");
 }
-#line 45660 "preproc.c" /* yacc.c:1646  */
+#line 45662 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1866:
@@ -45664,7 +45666,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("current_time ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45668 "preproc.c" /* yacc.c:1646  */
+#line 45670 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1867:
@@ -45672,7 +45674,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_timestamp");
 }
-#line 45676 "preproc.c" /* yacc.c:1646  */
+#line 45678 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1868:
@@ -45680,7 +45682,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("current_timestamp ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45684 "preproc.c" /* yacc.c:1646  */
+#line 45686 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1869:
@@ -45688,7 +45690,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("localtime");
 }
-#line 45692 "preproc.c" /* yacc.c:1646  */
+#line 45694 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1870:
@@ -45696,7 +45698,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("localtime ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45700 "preproc.c" /* yacc.c:1646  */
+#line 45702 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1871:
@@ -45704,7 +45706,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("localtimestamp");
 }
-#line 45708 "preproc.c" /* yacc.c:1646  */
+#line 45710 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1872:
@@ -45712,7 +45714,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("localtimestamp ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45716 "preproc.c" /* yacc.c:1646  */
+#line 45718 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1873:
@@ -45720,7 +45722,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_role");
 }
-#line 45724 "preproc.c" /* yacc.c:1646  */
+#line 45726 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1874:
@@ -45728,7 +45730,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_user");
 }
-#line 45732 "preproc.c" /* yacc.c:1646  */
+#line 45734 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1875:
@@ -45736,7 +45738,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("session_user");
 }
-#line 45740 "preproc.c" /* yacc.c:1646  */
+#line 45742 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1876:
@@ -45744,7 +45746,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("user");
 }
-#line 45748 "preproc.c" /* yacc.c:1646  */
+#line 45750 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1877:
@@ -45752,7 +45754,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_catalog");
 }
-#line 45756 "preproc.c" /* yacc.c:1646  */
+#line 45758 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1878:
@@ -45760,7 +45762,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_schema");
 }
-#line 45764 "preproc.c" /* yacc.c:1646  */
+#line 45766 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1879:
@@ -45768,7 +45770,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("cast ("),(yyvsp[-3].str),mm_strdup("as"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45772 "preproc.c" /* yacc.c:1646  */
+#line 45774 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1880:
@@ -45776,7 +45778,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("extract ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45780 "preproc.c" /* yacc.c:1646  */
+#line 45782 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1881:
@@ -45784,7 +45786,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("overlay ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45788 "preproc.c" /* yacc.c:1646  */
+#line 45790 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1882:
@@ -45792,7 +45794,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("position ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45796 "preproc.c" /* yacc.c:1646  */
+#line 45798 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1883:
@@ -45800,7 +45802,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("substring ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45804 "preproc.c" /* yacc.c:1646  */
+#line 45806 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1884:
@@ -45808,7 +45810,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("treat ("),(yyvsp[-3].str),mm_strdup("as"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45812 "preproc.c" /* yacc.c:1646  */
+#line 45814 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1885:
@@ -45816,7 +45818,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("trim ( both"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45820 "preproc.c" /* yacc.c:1646  */
+#line 45822 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1886:
@@ -45824,7 +45826,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("trim ( leading"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45828 "preproc.c" /* yacc.c:1646  */
+#line 45830 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1887:
@@ -45832,7 +45834,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("trim ( trailing"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45836 "preproc.c" /* yacc.c:1646  */
+#line 45838 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1888:
@@ -45840,7 +45842,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("trim ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45844 "preproc.c" /* yacc.c:1646  */
+#line 45846 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1889:
@@ -45848,7 +45850,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("nullif ("),(yyvsp[-3].str),mm_strdup(","),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45852 "preproc.c" /* yacc.c:1646  */
+#line 45854 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1890:
@@ -45856,7 +45858,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("coalesce ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45860 "preproc.c" /* yacc.c:1646  */
+#line 45862 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1891:
@@ -45864,7 +45866,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("greatest ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45868 "preproc.c" /* yacc.c:1646  */
+#line 45870 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1892:
@@ -45872,7 +45874,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("least ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45876 "preproc.c" /* yacc.c:1646  */
+#line 45878 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1893:
@@ -45880,7 +45882,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("xmlconcat ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45884 "preproc.c" /* yacc.c:1646  */
+#line 45886 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1894:
@@ -45888,7 +45890,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("xmlelement ( name"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45892 "preproc.c" /* yacc.c:1646  */
+#line 45894 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1895:
@@ -45896,7 +45898,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("xmlelement ( name"),(yyvsp[-3].str),mm_strdup(","),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45900 "preproc.c" /* yacc.c:1646  */
+#line 45902 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1896:
@@ -45904,7 +45906,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("xmlelement ( name"),(yyvsp[-3].str),mm_strdup(","),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45908 "preproc.c" /* yacc.c:1646  */
+#line 45910 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1897:
@@ -45912,7 +45914,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(7,mm_strdup("xmlelement ( name"),(yyvsp[-5].str),mm_strdup(","),(yyvsp[-3].str),mm_strdup(","),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45916 "preproc.c" /* yacc.c:1646  */
+#line 45918 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1898:
@@ -45920,7 +45922,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("xmlexists ("),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45924 "preproc.c" /* yacc.c:1646  */
+#line 45926 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1899:
@@ -45928,7 +45930,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("xmlforest ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45932 "preproc.c" /* yacc.c:1646  */
+#line 45934 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1900:
@@ -45936,7 +45938,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("xmlparse ("),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45940 "preproc.c" /* yacc.c:1646  */
+#line 45942 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1901:
@@ -45944,7 +45946,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("xmlpi ( name"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45948 "preproc.c" /* yacc.c:1646  */
+#line 45950 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1902:
@@ -45952,7 +45954,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("xmlpi ( name"),(yyvsp[-3].str),mm_strdup(","),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45956 "preproc.c" /* yacc.c:1646  */
+#line 45958 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1903:
@@ -45960,7 +45962,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("xmlroot ("),(yyvsp[-4].str),mm_strdup(","),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45964 "preproc.c" /* yacc.c:1646  */
+#line 45966 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1904:
@@ -45968,7 +45970,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("xmlserialize ("),(yyvsp[-4].str),(yyvsp[-3].str),mm_strdup("as"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 45972 "preproc.c" /* yacc.c:1646  */
+#line 45974 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1905:
@@ -45976,7 +45978,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("version"),(yyvsp[0].str));
 }
-#line 45980 "preproc.c" /* yacc.c:1646  */
+#line 45982 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1906:
@@ -45984,7 +45986,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("version no value");
 }
-#line 45988 "preproc.c" /* yacc.c:1646  */
+#line 45990 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1907:
@@ -45992,7 +45994,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup(", standalone yes");
 }
-#line 45996 "preproc.c" /* yacc.c:1646  */
+#line 45998 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1908:
@@ -46000,7 +46002,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup(", standalone no");
 }
-#line 46004 "preproc.c" /* yacc.c:1646  */
+#line 46006 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1909:
@@ -46008,14 +46010,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup(", standalone no value");
 }
-#line 46012 "preproc.c" /* yacc.c:1646  */
+#line 46014 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1910:
 #line 11217 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46019 "preproc.c" /* yacc.c:1646  */
+#line 46021 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1911:
@@ -46023,7 +46025,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("xmlattributes ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46027 "preproc.c" /* yacc.c:1646  */
+#line 46029 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1912:
@@ -46031,7 +46033,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46035 "preproc.c" /* yacc.c:1646  */
+#line 46037 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1913:
@@ -46039,7 +46041,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 46043 "preproc.c" /* yacc.c:1646  */
+#line 46045 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1914:
@@ -46047,7 +46049,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("as"),(yyvsp[0].str));
 }
-#line 46051 "preproc.c" /* yacc.c:1646  */
+#line 46053 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1915:
@@ -46055,7 +46057,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46059 "preproc.c" /* yacc.c:1646  */
+#line 46061 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1916:
@@ -46063,7 +46065,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("document");
 }
-#line 46067 "preproc.c" /* yacc.c:1646  */
+#line 46069 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1917:
@@ -46071,7 +46073,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("content");
 }
-#line 46075 "preproc.c" /* yacc.c:1646  */
+#line 46077 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1918:
@@ -46079,7 +46081,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("preserve whitespace");
 }
-#line 46083 "preproc.c" /* yacc.c:1646  */
+#line 46085 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1919:
@@ -46087,14 +46089,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("strip whitespace");
 }
-#line 46091 "preproc.c" /* yacc.c:1646  */
+#line 46093 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1920:
 #line 11276 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46098 "preproc.c" /* yacc.c:1646  */
+#line 46100 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1921:
@@ -46102,7 +46104,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("passing"),(yyvsp[0].str));
 }
-#line 46106 "preproc.c" /* yacc.c:1646  */
+#line 46108 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1922:
@@ -46110,7 +46112,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("passing"),(yyvsp[-2].str),mm_strdup("by ref"));
 }
-#line 46114 "preproc.c" /* yacc.c:1646  */
+#line 46116 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1923:
@@ -46118,7 +46120,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("passing by ref"),(yyvsp[0].str));
 }
-#line 46122 "preproc.c" /* yacc.c:1646  */
+#line 46124 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1924:
@@ -46126,7 +46128,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("passing by ref"),(yyvsp[-2].str),mm_strdup("by ref"));
 }
-#line 46130 "preproc.c" /* yacc.c:1646  */
+#line 46132 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1925:
@@ -46134,14 +46136,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("within group ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46138 "preproc.c" /* yacc.c:1646  */
+#line 46140 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1926:
 #line 11307 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46145 "preproc.c" /* yacc.c:1646  */
+#line 46147 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1927:
@@ -46149,14 +46151,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("filter ( where"),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46153 "preproc.c" /* yacc.c:1646  */
+#line 46155 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1928:
 #line 11318 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46160 "preproc.c" /* yacc.c:1646  */
+#line 46162 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1929:
@@ -46164,14 +46166,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("window"),(yyvsp[0].str));
 }
-#line 46168 "preproc.c" /* yacc.c:1646  */
+#line 46170 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1930:
 #line 11329 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46175 "preproc.c" /* yacc.c:1646  */
+#line 46177 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1931:
@@ -46179,7 +46181,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46183 "preproc.c" /* yacc.c:1646  */
+#line 46185 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1932:
@@ -46187,7 +46189,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 46191 "preproc.c" /* yacc.c:1646  */
+#line 46193 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1933:
@@ -46195,7 +46197,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("as"),(yyvsp[0].str));
 }
-#line 46199 "preproc.c" /* yacc.c:1646  */
+#line 46201 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1934:
@@ -46203,7 +46205,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("over"),(yyvsp[0].str));
 }
-#line 46207 "preproc.c" /* yacc.c:1646  */
+#line 46209 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1935:
@@ -46211,14 +46213,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("over"),(yyvsp[0].str));
 }
-#line 46215 "preproc.c" /* yacc.c:1646  */
+#line 46217 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1936:
 #line 11364 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46222 "preproc.c" /* yacc.c:1646  */
+#line 46224 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1937:
@@ -46226,7 +46228,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,mm_strdup("("),(yyvsp[-4].str),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46230 "preproc.c" /* yacc.c:1646  */
+#line 46232 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1938:
@@ -46234,14 +46236,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46238 "preproc.c" /* yacc.c:1646  */
+#line 46240 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1939:
 #line 11383 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46245 "preproc.c" /* yacc.c:1646  */
+#line 46247 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1940:
@@ -46249,14 +46251,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("partition by"),(yyvsp[0].str));
 }
-#line 46253 "preproc.c" /* yacc.c:1646  */
+#line 46255 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1941:
 #line 11394 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46260 "preproc.c" /* yacc.c:1646  */
+#line 46262 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1942:
@@ -46265,7 +46267,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server");
  (yyval.str) = cat_str(2,mm_strdup("range"),(yyvsp[0].str));
 }
-#line 46269 "preproc.c" /* yacc.c:1646  */
+#line 46271 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1943:
@@ -46273,14 +46275,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("rows"),(yyvsp[0].str));
 }
-#line 46277 "preproc.c" /* yacc.c:1646  */
+#line 46279 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1944:
 #line 11410 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46284 "preproc.c" /* yacc.c:1646  */
+#line 46286 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1945:
@@ -46288,7 +46290,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46292 "preproc.c" /* yacc.c:1646  */
+#line 46294 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1946:
@@ -46296,7 +46298,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("between"),(yyvsp[-2].str),mm_strdup("and"),(yyvsp[0].str));
 }
-#line 46300 "preproc.c" /* yacc.c:1646  */
+#line 46302 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1947:
@@ -46304,7 +46306,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unbounded preceding");
 }
-#line 46308 "preproc.c" /* yacc.c:1646  */
+#line 46310 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1948:
@@ -46312,7 +46314,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unbounded following");
 }
-#line 46316 "preproc.c" /* yacc.c:1646  */
+#line 46318 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1949:
@@ -46320,7 +46322,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current row");
 }
-#line 46324 "preproc.c" /* yacc.c:1646  */
+#line 46326 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1950:
@@ -46328,7 +46330,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),mm_strdup("preceding"));
 }
-#line 46332 "preproc.c" /* yacc.c:1646  */
+#line 46334 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1951:
@@ -46336,7 +46338,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),mm_strdup("following"));
 }
-#line 46340 "preproc.c" /* yacc.c:1646  */
+#line 46342 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1952:
@@ -46344,7 +46346,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("row ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46348 "preproc.c" /* yacc.c:1646  */
+#line 46350 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1953:
@@ -46352,7 +46354,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("row ( )");
 }
-#line 46356 "preproc.c" /* yacc.c:1646  */
+#line 46358 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1954:
@@ -46360,7 +46362,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("("),(yyvsp[-3].str),mm_strdup(","),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46364 "preproc.c" /* yacc.c:1646  */
+#line 46366 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1955:
@@ -46368,7 +46370,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("row ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46372 "preproc.c" /* yacc.c:1646  */
+#line 46374 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1956:
@@ -46376,7 +46378,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("row ( )");
 }
-#line 46380 "preproc.c" /* yacc.c:1646  */
+#line 46382 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1957:
@@ -46384,7 +46386,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("("),(yyvsp[-3].str),mm_strdup(","),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46388 "preproc.c" /* yacc.c:1646  */
+#line 46390 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1958:
@@ -46392,7 +46394,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("any");
 }
-#line 46396 "preproc.c" /* yacc.c:1646  */
+#line 46398 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1959:
@@ -46400,7 +46402,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("some");
 }
-#line 46404 "preproc.c" /* yacc.c:1646  */
+#line 46406 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1960:
@@ -46408,7 +46410,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all");
 }
-#line 46412 "preproc.c" /* yacc.c:1646  */
+#line 46414 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1961:
@@ -46416,7 +46418,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46420 "preproc.c" /* yacc.c:1646  */
+#line 46422 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1962:
@@ -46424,7 +46426,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46428 "preproc.c" /* yacc.c:1646  */
+#line 46430 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1963:
@@ -46432,7 +46434,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("+");
 }
-#line 46436 "preproc.c" /* yacc.c:1646  */
+#line 46438 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1964:
@@ -46440,7 +46442,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("-");
 }
-#line 46444 "preproc.c" /* yacc.c:1646  */
+#line 46446 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1965:
@@ -46448,7 +46450,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("*");
 }
-#line 46452 "preproc.c" /* yacc.c:1646  */
+#line 46454 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1966:
@@ -46456,7 +46458,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("/");
 }
-#line 46460 "preproc.c" /* yacc.c:1646  */
+#line 46462 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1967:
@@ -46464,7 +46466,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("%");
 }
-#line 46468 "preproc.c" /* yacc.c:1646  */
+#line 46470 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1968:
@@ -46472,7 +46474,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("^");
 }
-#line 46476 "preproc.c" /* yacc.c:1646  */
+#line 46478 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1969:
@@ -46480,7 +46482,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("<");
 }
-#line 46484 "preproc.c" /* yacc.c:1646  */
+#line 46486 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1970:
@@ -46488,7 +46490,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup(">");
 }
-#line 46492 "preproc.c" /* yacc.c:1646  */
+#line 46494 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1971:
@@ -46496,7 +46498,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("=");
 }
-#line 46500 "preproc.c" /* yacc.c:1646  */
+#line 46502 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1972:
@@ -46504,7 +46506,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("<=");
 }
-#line 46508 "preproc.c" /* yacc.c:1646  */
+#line 46510 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1973:
@@ -46512,7 +46514,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup(">=");
 }
-#line 46516 "preproc.c" /* yacc.c:1646  */
+#line 46518 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1974:
@@ -46520,7 +46522,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("<>");
 }
-#line 46524 "preproc.c" /* yacc.c:1646  */
+#line 46526 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1975:
@@ -46528,7 +46530,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46532 "preproc.c" /* yacc.c:1646  */
+#line 46534 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1976:
@@ -46536,7 +46538,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("operator ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46540 "preproc.c" /* yacc.c:1646  */
+#line 46542 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1977:
@@ -46544,7 +46546,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46548 "preproc.c" /* yacc.c:1646  */
+#line 46550 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1978:
@@ -46552,7 +46554,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("operator ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46556 "preproc.c" /* yacc.c:1646  */
+#line 46558 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1979:
@@ -46560,7 +46562,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46564 "preproc.c" /* yacc.c:1646  */
+#line 46566 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1980:
@@ -46568,7 +46570,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("operator ("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46572 "preproc.c" /* yacc.c:1646  */
+#line 46574 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1981:
@@ -46576,7 +46578,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("like");
 }
-#line 46580 "preproc.c" /* yacc.c:1646  */
+#line 46582 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1982:
@@ -46584,7 +46586,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("not like");
 }
-#line 46588 "preproc.c" /* yacc.c:1646  */
+#line 46590 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1983:
@@ -46592,7 +46594,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("ilike");
 }
-#line 46596 "preproc.c" /* yacc.c:1646  */
+#line 46598 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1984:
@@ -46600,7 +46602,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("not ilike");
 }
-#line 46604 "preproc.c" /* yacc.c:1646  */
+#line 46606 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1985:
@@ -46608,7 +46610,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46612 "preproc.c" /* yacc.c:1646  */
+#line 46614 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1986:
@@ -46616,7 +46618,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 46620 "preproc.c" /* yacc.c:1646  */
+#line 46622 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1987:
@@ -46624,7 +46626,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46628 "preproc.c" /* yacc.c:1646  */
+#line 46630 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1988:
@@ -46632,7 +46634,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 46636 "preproc.c" /* yacc.c:1646  */
+#line 46638 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1989:
@@ -46640,7 +46642,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46644 "preproc.c" /* yacc.c:1646  */
+#line 46646 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1990:
@@ -46648,7 +46650,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(":="),(yyvsp[0].str));
 }
-#line 46652 "preproc.c" /* yacc.c:1646  */
+#line 46654 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1991:
@@ -46656,7 +46658,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("=>"),(yyvsp[0].str));
 }
-#line 46660 "preproc.c" /* yacc.c:1646  */
+#line 46662 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1992:
@@ -46664,7 +46666,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46668 "preproc.c" /* yacc.c:1646  */
+#line 46670 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1993:
@@ -46672,7 +46674,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 46676 "preproc.c" /* yacc.c:1646  */
+#line 46678 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1994:
@@ -46680,7 +46682,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("["),(yyvsp[-1].str),mm_strdup("]"));
 }
-#line 46684 "preproc.c" /* yacc.c:1646  */
+#line 46686 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1995:
@@ -46688,7 +46690,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("["),(yyvsp[-1].str),mm_strdup("]"));
 }
-#line 46692 "preproc.c" /* yacc.c:1646  */
+#line 46694 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1996:
@@ -46696,7 +46698,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("[ ]");
 }
-#line 46700 "preproc.c" /* yacc.c:1646  */
+#line 46702 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1997:
@@ -46704,7 +46706,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46708 "preproc.c" /* yacc.c:1646  */
+#line 46710 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1998:
@@ -46712,7 +46714,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 46716 "preproc.c" /* yacc.c:1646  */
+#line 46718 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 1999:
@@ -46720,14 +46722,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("from"),(yyvsp[0].str));
 }
-#line 46724 "preproc.c" /* yacc.c:1646  */
+#line 46726 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2000:
 #line 11705 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46731 "preproc.c" /* yacc.c:1646  */
+#line 46733 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2001:
@@ -46735,7 +46737,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46739 "preproc.c" /* yacc.c:1646  */
+#line 46741 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2002:
@@ -46743,7 +46745,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("year");
 }
-#line 46747 "preproc.c" /* yacc.c:1646  */
+#line 46749 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2003:
@@ -46751,7 +46753,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("month");
 }
-#line 46755 "preproc.c" /* yacc.c:1646  */
+#line 46757 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2004:
@@ -46759,7 +46761,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("day");
 }
-#line 46763 "preproc.c" /* yacc.c:1646  */
+#line 46765 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2005:
@@ -46767,7 +46769,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("hour");
 }
-#line 46771 "preproc.c" /* yacc.c:1646  */
+#line 46773 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2006:
@@ -46775,7 +46777,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("minute");
 }
-#line 46779 "preproc.c" /* yacc.c:1646  */
+#line 46781 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2007:
@@ -46783,7 +46785,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("second");
 }
-#line 46787 "preproc.c" /* yacc.c:1646  */
+#line 46789 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2008:
@@ -46791,7 +46793,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46795 "preproc.c" /* yacc.c:1646  */
+#line 46797 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2009:
@@ -46799,7 +46801,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 46803 "preproc.c" /* yacc.c:1646  */
+#line 46805 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2010:
@@ -46807,7 +46809,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 46811 "preproc.c" /* yacc.c:1646  */
+#line 46813 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2011:
@@ -46815,7 +46817,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("placing"),(yyvsp[0].str));
 }
-#line 46819 "preproc.c" /* yacc.c:1646  */
+#line 46821 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2012:
@@ -46823,14 +46825,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("in"),(yyvsp[0].str));
 }
-#line 46827 "preproc.c" /* yacc.c:1646  */
+#line 46829 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2013:
 #line 11772 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46834 "preproc.c" /* yacc.c:1646  */
+#line 46836 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2014:
@@ -46838,7 +46840,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 46842 "preproc.c" /* yacc.c:1646  */
+#line 46844 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2015:
@@ -46846,7 +46848,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 46850 "preproc.c" /* yacc.c:1646  */
+#line 46852 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2016:
@@ -46854,7 +46856,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 46858 "preproc.c" /* yacc.c:1646  */
+#line 46860 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2017:
@@ -46862,7 +46864,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 46866 "preproc.c" /* yacc.c:1646  */
+#line 46868 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2018:
@@ -46870,14 +46872,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46874 "preproc.c" /* yacc.c:1646  */
+#line 46876 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2019:
 #line 11799 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46881 "preproc.c" /* yacc.c:1646  */
+#line 46883 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2020:
@@ -46885,7 +46887,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("from"),(yyvsp[0].str));
 }
-#line 46889 "preproc.c" /* yacc.c:1646  */
+#line 46891 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2021:
@@ -46893,7 +46895,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("for"),(yyvsp[0].str));
 }
-#line 46897 "preproc.c" /* yacc.c:1646  */
+#line 46899 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2022:
@@ -46901,7 +46903,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("from"),(yyvsp[0].str));
 }
-#line 46905 "preproc.c" /* yacc.c:1646  */
+#line 46907 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2023:
@@ -46909,7 +46911,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("from"),(yyvsp[0].str));
 }
-#line 46913 "preproc.c" /* yacc.c:1646  */
+#line 46915 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2024:
@@ -46917,7 +46919,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46921 "preproc.c" /* yacc.c:1646  */
+#line 46923 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2025:
@@ -46925,7 +46927,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46929 "preproc.c" /* yacc.c:1646  */
+#line 46931 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2026:
@@ -46933,7 +46935,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 46937 "preproc.c" /* yacc.c:1646  */
+#line 46939 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2027:
@@ -46941,7 +46943,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("case"),(yyvsp[-3].str),(yyvsp[-2].str),(yyvsp[-1].str),mm_strdup("end"));
 }
-#line 46945 "preproc.c" /* yacc.c:1646  */
+#line 46947 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2028:
@@ -46949,7 +46951,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46953 "preproc.c" /* yacc.c:1646  */
+#line 46955 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2029:
@@ -46957,7 +46959,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 46961 "preproc.c" /* yacc.c:1646  */
+#line 46963 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2030:
@@ -46965,7 +46967,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(4,mm_strdup("when"),(yyvsp[-2].str),mm_strdup("then"),(yyvsp[0].str));
 }
-#line 46969 "preproc.c" /* yacc.c:1646  */
+#line 46971 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2031:
@@ -46973,14 +46975,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("else"),(yyvsp[0].str));
 }
-#line 46977 "preproc.c" /* yacc.c:1646  */
+#line 46979 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2032:
 #line 11882 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46984 "preproc.c" /* yacc.c:1646  */
+#line 46986 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2033:
@@ -46988,14 +46990,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 46992 "preproc.c" /* yacc.c:1646  */
+#line 46994 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2034:
 #line 11893 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 46999 "preproc.c" /* yacc.c:1646  */
+#line 47001 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2035:
@@ -47003,7 +47005,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47007 "preproc.c" /* yacc.c:1646  */
+#line 47009 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2036:
@@ -47011,7 +47013,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 47015 "preproc.c" /* yacc.c:1646  */
+#line 47017 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2037:
@@ -47019,7 +47021,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("."),(yyvsp[0].str));
 }
-#line 47023 "preproc.c" /* yacc.c:1646  */
+#line 47025 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2038:
@@ -47027,7 +47029,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup(". *");
 }
-#line 47031 "preproc.c" /* yacc.c:1646  */
+#line 47033 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2039:
@@ -47035,7 +47037,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("["),(yyvsp[-1].str),mm_strdup("]"));
 }
-#line 47039 "preproc.c" /* yacc.c:1646  */
+#line 47041 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2040:
@@ -47043,7 +47045,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,mm_strdup("["),(yyvsp[-3].str),mm_strdup(":"),(yyvsp[-1].str),mm_strdup("]"));
 }
-#line 47047 "preproc.c" /* yacc.c:1646  */
+#line 47049 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2041:
@@ -47051,14 +47053,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47055 "preproc.c" /* yacc.c:1646  */
+#line 47057 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2042:
 #line 11936 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 47062 "preproc.c" /* yacc.c:1646  */
+#line 47064 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2043:
@@ -47066,7 +47068,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47070 "preproc.c" /* yacc.c:1646  */
+#line 47072 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2044:
@@ -47074,14 +47076,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 47078 "preproc.c" /* yacc.c:1646  */
+#line 47080 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2045:
 #line 11955 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 47085 "preproc.c" /* yacc.c:1646  */
+#line 47087 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2046:
@@ -47089,7 +47091,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 47093 "preproc.c" /* yacc.c:1646  */
+#line 47095 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2047:
@@ -47097,14 +47099,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("asymmetric");
 }
-#line 47101 "preproc.c" /* yacc.c:1646  */
+#line 47103 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2048:
 #line 11970 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 47108 "preproc.c" /* yacc.c:1646  */
+#line 47110 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2049:
@@ -47112,7 +47114,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47116 "preproc.c" /* yacc.c:1646  */
+#line 47118 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2050:
@@ -47120,7 +47122,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("default");
 }
-#line 47124 "preproc.c" /* yacc.c:1646  */
+#line 47126 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2051:
@@ -47128,7 +47130,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47132 "preproc.c" /* yacc.c:1646  */
+#line 47134 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2052:
@@ -47136,7 +47138,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 47140 "preproc.c" /* yacc.c:1646  */
+#line 47142 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2053:
@@ -47144,7 +47146,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,mm_strdup("("),(yyvsp[-1].str),mm_strdup(")"));
 }
-#line 47148 "preproc.c" /* yacc.c:1646  */
+#line 47150 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2054:
@@ -47152,14 +47154,14 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47156 "preproc.c" /* yacc.c:1646  */
+#line 47158 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2055:
 #line 12013 "preproc.y" /* yacc.c:1646  */
     { 
  (yyval.str)=EMPTY; }
-#line 47163 "preproc.c" /* yacc.c:1646  */
+#line 47165 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2056:
@@ -47167,7 +47169,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47171 "preproc.c" /* yacc.c:1646  */
+#line 47173 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2057:
@@ -47175,7 +47177,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 47179 "preproc.c" /* yacc.c:1646  */
+#line 47181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2058:
@@ -47183,7 +47185,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup("as"),(yyvsp[0].str));
 }
-#line 47187 "preproc.c" /* yacc.c:1646  */
+#line 47189 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2059:
@@ -47191,7 +47193,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 47195 "preproc.c" /* yacc.c:1646  */
+#line 47197 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2060:
@@ -47199,7 +47201,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47203 "preproc.c" /* yacc.c:1646  */
+#line 47205 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2061:
@@ -47207,7 +47209,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("*");
 }
-#line 47211 "preproc.c" /* yacc.c:1646  */
+#line 47213 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2062:
@@ -47215,7 +47217,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47219 "preproc.c" /* yacc.c:1646  */
+#line 47221 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2063:
@@ -47223,7 +47225,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 47227 "preproc.c" /* yacc.c:1646  */
+#line 47229 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2064:
@@ -47231,7 +47233,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47235 "preproc.c" /* yacc.c:1646  */
+#line 47237 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2065:
@@ -47239,7 +47241,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 47243 "preproc.c" /* yacc.c:1646  */
+#line 47245 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2066:
@@ -47247,7 +47249,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47251 "preproc.c" /* yacc.c:1646  */
+#line 47253 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2067:
@@ -47255,7 +47257,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 47259 "preproc.c" /* yacc.c:1646  */
+#line 47261 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2068:
@@ -47263,7 +47265,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47267 "preproc.c" /* yacc.c:1646  */
+#line 47269 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2069:
@@ -47271,7 +47273,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47275 "preproc.c" /* yacc.c:1646  */
+#line 47277 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2070:
@@ -47279,7 +47281,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47283 "preproc.c" /* yacc.c:1646  */
+#line 47285 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2071:
@@ -47287,7 +47289,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47291 "preproc.c" /* yacc.c:1646  */
+#line 47293 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2072:
@@ -47295,7 +47297,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47299 "preproc.c" /* yacc.c:1646  */
+#line 47301 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2073:
@@ -47303,7 +47305,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47307 "preproc.c" /* yacc.c:1646  */
+#line 47309 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2074:
@@ -47311,7 +47313,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47315 "preproc.c" /* yacc.c:1646  */
+#line 47317 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2075:
@@ -47319,7 +47321,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 47323 "preproc.c" /* yacc.c:1646  */
+#line 47325 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2076:
@@ -47327,7 +47329,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47331 "preproc.c" /* yacc.c:1646  */
+#line 47333 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2077:
@@ -47335,7 +47337,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47339 "preproc.c" /* yacc.c:1646  */
+#line 47341 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2078:
@@ -47343,7 +47345,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47347 "preproc.c" /* yacc.c:1646  */
+#line 47349 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2079:
@@ -47351,7 +47353,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47355 "preproc.c" /* yacc.c:1646  */
+#line 47357 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2080:
@@ -47359,7 +47361,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xconst");
 }
-#line 47363 "preproc.c" /* yacc.c:1646  */
+#line 47365 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2081:
@@ -47367,7 +47369,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 47371 "preproc.c" /* yacc.c:1646  */
+#line 47373 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2082:
@@ -47375,7 +47377,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(6,(yyvsp[-5].str),mm_strdup("("),(yyvsp[-3].str),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 47379 "preproc.c" /* yacc.c:1646  */
+#line 47381 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2083:
@@ -47383,7 +47385,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 47387 "preproc.c" /* yacc.c:1646  */
+#line 47389 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2084:
@@ -47391,7 +47393,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),(yyvsp[-1].str),(yyvsp[0].str));
 }
-#line 47395 "preproc.c" /* yacc.c:1646  */
+#line 47397 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2085:
@@ -47399,7 +47401,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(5,(yyvsp[-4].str),mm_strdup("("),(yyvsp[-2].str),mm_strdup(")"),(yyvsp[0].str));
 }
-#line 47403 "preproc.c" /* yacc.c:1646  */
+#line 47405 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2086:
@@ -47407,7 +47409,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("true");
 }
-#line 47411 "preproc.c" /* yacc.c:1646  */
+#line 47413 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2087:
@@ -47415,7 +47417,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("false");
 }
-#line 47419 "preproc.c" /* yacc.c:1646  */
+#line 47421 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2088:
@@ -47423,25 +47425,25 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("null");
 }
-#line 47427 "preproc.c" /* yacc.c:1646  */
+#line 47429 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2089:
 #line 12199 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 47433 "preproc.c" /* yacc.c:1646  */
+#line 47435 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2090:
 #line 12200 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 47439 "preproc.c" /* yacc.c:1646  */
+#line 47441 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2091:
 #line 12206 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make_name(); }
-#line 47445 "preproc.c" /* yacc.c:1646  */
+#line 47447 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2092:
@@ -47449,13 +47451,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47453 "preproc.c" /* yacc.c:1646  */
+#line 47455 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2093:
 #line 12215 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 47459 "preproc.c" /* yacc.c:1646  */
+#line 47461 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2094:
@@ -47463,7 +47465,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("+"),(yyvsp[0].str));
 }
-#line 47467 "preproc.c" /* yacc.c:1646  */
+#line 47469 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2095:
@@ -47471,7 +47473,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(2,mm_strdup("-"),(yyvsp[0].str));
 }
-#line 47475 "preproc.c" /* yacc.c:1646  */
+#line 47477 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2096:
@@ -47479,7 +47481,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47483 "preproc.c" /* yacc.c:1646  */
+#line 47485 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2097:
@@ -47487,7 +47489,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47491 "preproc.c" /* yacc.c:1646  */
+#line 47493 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2098:
@@ -47495,7 +47497,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_user");
 }
-#line 47499 "preproc.c" /* yacc.c:1646  */
+#line 47501 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2099:
@@ -47503,7 +47505,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("session_user");
 }
-#line 47507 "preproc.c" /* yacc.c:1646  */
+#line 47509 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2100:
@@ -47511,7 +47513,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47515 "preproc.c" /* yacc.c:1646  */
+#line 47517 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2101:
@@ -47519,7 +47521,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = cat_str(3,(yyvsp[-2].str),mm_strdup(","),(yyvsp[0].str));
 }
-#line 47523 "preproc.c" /* yacc.c:1646  */
+#line 47525 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2102:
@@ -47527,7 +47529,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47531 "preproc.c" /* yacc.c:1646  */
+#line 47533 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2103:
@@ -47535,7 +47537,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47539 "preproc.c" /* yacc.c:1646  */
+#line 47541 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2104:
@@ -47543,7 +47545,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47547 "preproc.c" /* yacc.c:1646  */
+#line 47549 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2105:
@@ -47551,7 +47553,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = (yyvsp[0].str);
 }
-#line 47555 "preproc.c" /* yacc.c:1646  */
+#line 47557 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2106:
@@ -47559,7 +47561,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("abort");
 }
-#line 47563 "preproc.c" /* yacc.c:1646  */
+#line 47565 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2107:
@@ -47567,7 +47569,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("absolute");
 }
-#line 47571 "preproc.c" /* yacc.c:1646  */
+#line 47573 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2108:
@@ -47575,7 +47577,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("access");
 }
-#line 47579 "preproc.c" /* yacc.c:1646  */
+#line 47581 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2109:
@@ -47583,7 +47585,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("action");
 }
-#line 47587 "preproc.c" /* yacc.c:1646  */
+#line 47589 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2110:
@@ -47591,7 +47593,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("add");
 }
-#line 47595 "preproc.c" /* yacc.c:1646  */
+#line 47597 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2111:
@@ -47599,7 +47601,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("admin");
 }
-#line 47603 "preproc.c" /* yacc.c:1646  */
+#line 47605 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2112:
@@ -47607,7 +47609,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("after");
 }
-#line 47611 "preproc.c" /* yacc.c:1646  */
+#line 47613 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2113:
@@ -47615,7 +47617,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("aggregate");
 }
-#line 47619 "preproc.c" /* yacc.c:1646  */
+#line 47621 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2114:
@@ -47623,7 +47625,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("also");
 }
-#line 47627 "preproc.c" /* yacc.c:1646  */
+#line 47629 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2115:
@@ -47631,7 +47633,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("alter");
 }
-#line 47635 "preproc.c" /* yacc.c:1646  */
+#line 47637 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2116:
@@ -47639,7 +47641,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("always");
 }
-#line 47643 "preproc.c" /* yacc.c:1646  */
+#line 47645 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2117:
@@ -47647,7 +47649,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("assertion");
 }
-#line 47651 "preproc.c" /* yacc.c:1646  */
+#line 47653 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2118:
@@ -47655,7 +47657,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("assignment");
 }
-#line 47659 "preproc.c" /* yacc.c:1646  */
+#line 47661 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2119:
@@ -47663,7 +47665,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("at");
 }
-#line 47667 "preproc.c" /* yacc.c:1646  */
+#line 47669 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2120:
@@ -47671,7 +47673,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("attribute");
 }
-#line 47675 "preproc.c" /* yacc.c:1646  */
+#line 47677 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2121:
@@ -47679,7 +47681,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("backward");
 }
-#line 47683 "preproc.c" /* yacc.c:1646  */
+#line 47685 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2122:
@@ -47687,7 +47689,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("before");
 }
-#line 47691 "preproc.c" /* yacc.c:1646  */
+#line 47693 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2123:
@@ -47695,7 +47697,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("begin");
 }
-#line 47699 "preproc.c" /* yacc.c:1646  */
+#line 47701 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2124:
@@ -47703,7 +47705,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("by");
 }
-#line 47707 "preproc.c" /* yacc.c:1646  */
+#line 47709 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2125:
@@ -47711,7 +47713,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cache");
 }
-#line 47715 "preproc.c" /* yacc.c:1646  */
+#line 47717 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2126:
@@ -47719,7 +47721,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("called");
 }
-#line 47723 "preproc.c" /* yacc.c:1646  */
+#line 47725 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2127:
@@ -47727,7 +47729,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cascade");
 }
-#line 47731 "preproc.c" /* yacc.c:1646  */
+#line 47733 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2128:
@@ -47735,7 +47737,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cascaded");
 }
-#line 47739 "preproc.c" /* yacc.c:1646  */
+#line 47741 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2129:
@@ -47743,7 +47745,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("catalog");
 }
-#line 47747 "preproc.c" /* yacc.c:1646  */
+#line 47749 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2130:
@@ -47751,7 +47753,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("chain");
 }
-#line 47755 "preproc.c" /* yacc.c:1646  */
+#line 47757 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2131:
@@ -47759,7 +47761,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("characteristics");
 }
-#line 47763 "preproc.c" /* yacc.c:1646  */
+#line 47765 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2132:
@@ -47767,7 +47769,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("checkpoint");
 }
-#line 47771 "preproc.c" /* yacc.c:1646  */
+#line 47773 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2133:
@@ -47775,7 +47777,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("class");
 }
-#line 47779 "preproc.c" /* yacc.c:1646  */
+#line 47781 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2134:
@@ -47783,7 +47785,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("close");
 }
-#line 47787 "preproc.c" /* yacc.c:1646  */
+#line 47789 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2135:
@@ -47791,7 +47793,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cluster");
 }
-#line 47795 "preproc.c" /* yacc.c:1646  */
+#line 47797 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2136:
@@ -47799,7 +47801,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("comment");
 }
-#line 47803 "preproc.c" /* yacc.c:1646  */
+#line 47805 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2137:
@@ -47807,7 +47809,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("comments");
 }
-#line 47811 "preproc.c" /* yacc.c:1646  */
+#line 47813 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2138:
@@ -47815,7 +47817,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("commit");
 }
-#line 47819 "preproc.c" /* yacc.c:1646  */
+#line 47821 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2139:
@@ -47823,7 +47825,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("committed");
 }
-#line 47827 "preproc.c" /* yacc.c:1646  */
+#line 47829 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2140:
@@ -47831,7 +47833,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("configuration");
 }
-#line 47835 "preproc.c" /* yacc.c:1646  */
+#line 47837 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2141:
@@ -47839,7 +47841,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("conflict");
 }
-#line 47843 "preproc.c" /* yacc.c:1646  */
+#line 47845 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2142:
@@ -47847,7 +47849,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("constraints");
 }
-#line 47851 "preproc.c" /* yacc.c:1646  */
+#line 47853 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2143:
@@ -47855,7 +47857,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("content");
 }
-#line 47859 "preproc.c" /* yacc.c:1646  */
+#line 47861 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2144:
@@ -47863,7 +47865,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("continue");
 }
-#line 47867 "preproc.c" /* yacc.c:1646  */
+#line 47869 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2145:
@@ -47871,7 +47873,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("conversion");
 }
-#line 47875 "preproc.c" /* yacc.c:1646  */
+#line 47877 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2146:
@@ -47879,7 +47881,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("copy");
 }
-#line 47883 "preproc.c" /* yacc.c:1646  */
+#line 47885 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2147:
@@ -47887,7 +47889,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cost");
 }
-#line 47891 "preproc.c" /* yacc.c:1646  */
+#line 47893 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2148:
@@ -47895,7 +47897,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("csv");
 }
-#line 47899 "preproc.c" /* yacc.c:1646  */
+#line 47901 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2149:
@@ -47903,7 +47905,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cube");
 }
-#line 47907 "preproc.c" /* yacc.c:1646  */
+#line 47909 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2150:
@@ -47911,7 +47913,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cursor");
 }
-#line 47915 "preproc.c" /* yacc.c:1646  */
+#line 47917 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2151:
@@ -47919,7 +47921,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cycle");
 }
-#line 47923 "preproc.c" /* yacc.c:1646  */
+#line 47925 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2152:
@@ -47927,7 +47929,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("data");
 }
-#line 47931 "preproc.c" /* yacc.c:1646  */
+#line 47933 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2153:
@@ -47935,7 +47937,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("database");
 }
-#line 47939 "preproc.c" /* yacc.c:1646  */
+#line 47941 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2154:
@@ -47943,7 +47945,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("deallocate");
 }
-#line 47947 "preproc.c" /* yacc.c:1646  */
+#line 47949 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2155:
@@ -47951,7 +47953,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("declare");
 }
-#line 47955 "preproc.c" /* yacc.c:1646  */
+#line 47957 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2156:
@@ -47959,7 +47961,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("defaults");
 }
-#line 47963 "preproc.c" /* yacc.c:1646  */
+#line 47965 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2157:
@@ -47967,7 +47969,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("deferred");
 }
-#line 47971 "preproc.c" /* yacc.c:1646  */
+#line 47973 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2158:
@@ -47975,7 +47977,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("definer");
 }
-#line 47979 "preproc.c" /* yacc.c:1646  */
+#line 47981 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2159:
@@ -47983,7 +47985,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("delete");
 }
-#line 47987 "preproc.c" /* yacc.c:1646  */
+#line 47989 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2160:
@@ -47991,7 +47993,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("delimiter");
 }
-#line 47995 "preproc.c" /* yacc.c:1646  */
+#line 47997 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2161:
@@ -47999,7 +48001,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("delimiters");
 }
-#line 48003 "preproc.c" /* yacc.c:1646  */
+#line 48005 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2162:
@@ -48007,7 +48009,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("depends");
 }
-#line 48011 "preproc.c" /* yacc.c:1646  */
+#line 48013 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2163:
@@ -48015,7 +48017,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("dictionary");
 }
-#line 48019 "preproc.c" /* yacc.c:1646  */
+#line 48021 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2164:
@@ -48023,7 +48025,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("disable");
 }
-#line 48027 "preproc.c" /* yacc.c:1646  */
+#line 48029 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2165:
@@ -48031,7 +48033,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("discard");
 }
-#line 48035 "preproc.c" /* yacc.c:1646  */
+#line 48037 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2166:
@@ -48039,7 +48041,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("document");
 }
-#line 48043 "preproc.c" /* yacc.c:1646  */
+#line 48045 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2167:
@@ -48047,7 +48049,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("domain");
 }
-#line 48051 "preproc.c" /* yacc.c:1646  */
+#line 48053 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2168:
@@ -48055,7 +48057,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("double");
 }
-#line 48059 "preproc.c" /* yacc.c:1646  */
+#line 48061 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2169:
@@ -48063,7 +48065,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("drop");
 }
-#line 48067 "preproc.c" /* yacc.c:1646  */
+#line 48069 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2170:
@@ -48071,7 +48073,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("each");
 }
-#line 48075 "preproc.c" /* yacc.c:1646  */
+#line 48077 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2171:
@@ -48079,7 +48081,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("enable");
 }
-#line 48083 "preproc.c" /* yacc.c:1646  */
+#line 48085 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2172:
@@ -48087,7 +48089,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("encoding");
 }
-#line 48091 "preproc.c" /* yacc.c:1646  */
+#line 48093 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2173:
@@ -48095,7 +48097,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("encrypted");
 }
-#line 48099 "preproc.c" /* yacc.c:1646  */
+#line 48101 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2174:
@@ -48103,7 +48105,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("enum");
 }
-#line 48107 "preproc.c" /* yacc.c:1646  */
+#line 48109 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2175:
@@ -48111,7 +48113,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("escape");
 }
-#line 48115 "preproc.c" /* yacc.c:1646  */
+#line 48117 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2176:
@@ -48119,7 +48121,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("event");
 }
-#line 48123 "preproc.c" /* yacc.c:1646  */
+#line 48125 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2177:
@@ -48127,7 +48129,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("exclude");
 }
-#line 48131 "preproc.c" /* yacc.c:1646  */
+#line 48133 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2178:
@@ -48135,7 +48137,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("excluding");
 }
-#line 48139 "preproc.c" /* yacc.c:1646  */
+#line 48141 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2179:
@@ -48143,7 +48145,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("exclusive");
 }
-#line 48147 "preproc.c" /* yacc.c:1646  */
+#line 48149 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2180:
@@ -48151,7 +48153,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("execute");
 }
-#line 48155 "preproc.c" /* yacc.c:1646  */
+#line 48157 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2181:
@@ -48159,7 +48161,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("explain");
 }
-#line 48163 "preproc.c" /* yacc.c:1646  */
+#line 48165 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2182:
@@ -48167,7 +48169,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("extension");
 }
-#line 48171 "preproc.c" /* yacc.c:1646  */
+#line 48173 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2183:
@@ -48175,7 +48177,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("external");
 }
-#line 48179 "preproc.c" /* yacc.c:1646  */
+#line 48181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2184:
@@ -48183,7 +48185,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("family");
 }
-#line 48187 "preproc.c" /* yacc.c:1646  */
+#line 48189 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2185:
@@ -48191,7 +48193,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("filter");
 }
-#line 48195 "preproc.c" /* yacc.c:1646  */
+#line 48197 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2186:
@@ -48199,7 +48201,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("first");
 }
-#line 48203 "preproc.c" /* yacc.c:1646  */
+#line 48205 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2187:
@@ -48207,7 +48209,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("following");
 }
-#line 48211 "preproc.c" /* yacc.c:1646  */
+#line 48213 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2188:
@@ -48215,7 +48217,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("force");
 }
-#line 48219 "preproc.c" /* yacc.c:1646  */
+#line 48221 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2189:
@@ -48223,7 +48225,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("forward");
 }
-#line 48227 "preproc.c" /* yacc.c:1646  */
+#line 48229 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2190:
@@ -48231,7 +48233,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("function");
 }
-#line 48235 "preproc.c" /* yacc.c:1646  */
+#line 48237 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2191:
@@ -48239,7 +48241,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("functions");
 }
-#line 48243 "preproc.c" /* yacc.c:1646  */
+#line 48245 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2192:
@@ -48247,7 +48249,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("global");
 }
-#line 48251 "preproc.c" /* yacc.c:1646  */
+#line 48253 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2193:
@@ -48255,7 +48257,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("granted");
 }
-#line 48259 "preproc.c" /* yacc.c:1646  */
+#line 48261 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2194:
@@ -48263,7 +48265,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("handler");
 }
-#line 48267 "preproc.c" /* yacc.c:1646  */
+#line 48269 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2195:
@@ -48271,7 +48273,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("header");
 }
-#line 48275 "preproc.c" /* yacc.c:1646  */
+#line 48277 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2196:
@@ -48279,7 +48281,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("hold");
 }
-#line 48283 "preproc.c" /* yacc.c:1646  */
+#line 48285 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2197:
@@ -48287,7 +48289,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("identity");
 }
-#line 48291 "preproc.c" /* yacc.c:1646  */
+#line 48293 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2198:
@@ -48295,7 +48297,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("if");
 }
-#line 48299 "preproc.c" /* yacc.c:1646  */
+#line 48301 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2199:
@@ -48303,7 +48305,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("immediate");
 }
-#line 48307 "preproc.c" /* yacc.c:1646  */
+#line 48309 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2200:
@@ -48311,7 +48313,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("immutable");
 }
-#line 48315 "preproc.c" /* yacc.c:1646  */
+#line 48317 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2201:
@@ -48319,7 +48321,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("implicit");
 }
-#line 48323 "preproc.c" /* yacc.c:1646  */
+#line 48325 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2202:
@@ -48327,7 +48329,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("import");
 }
-#line 48331 "preproc.c" /* yacc.c:1646  */
+#line 48333 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2203:
@@ -48335,7 +48337,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("including");
 }
-#line 48339 "preproc.c" /* yacc.c:1646  */
+#line 48341 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2204:
@@ -48343,7 +48345,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("increment");
 }
-#line 48347 "preproc.c" /* yacc.c:1646  */
+#line 48349 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2205:
@@ -48351,7 +48353,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("index");
 }
-#line 48355 "preproc.c" /* yacc.c:1646  */
+#line 48357 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2206:
@@ -48359,7 +48361,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("indexes");
 }
-#line 48363 "preproc.c" /* yacc.c:1646  */
+#line 48365 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2207:
@@ -48367,7 +48369,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("inherit");
 }
-#line 48371 "preproc.c" /* yacc.c:1646  */
+#line 48373 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2208:
@@ -48375,7 +48377,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("inherits");
 }
-#line 48379 "preproc.c" /* yacc.c:1646  */
+#line 48381 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2209:
@@ -48383,7 +48385,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("inline");
 }
-#line 48387 "preproc.c" /* yacc.c:1646  */
+#line 48389 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2210:
@@ -48391,7 +48393,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("insensitive");
 }
-#line 48395 "preproc.c" /* yacc.c:1646  */
+#line 48397 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2211:
@@ -48399,7 +48401,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("insert");
 }
-#line 48403 "preproc.c" /* yacc.c:1646  */
+#line 48405 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2212:
@@ -48407,7 +48409,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("instead");
 }
-#line 48411 "preproc.c" /* yacc.c:1646  */
+#line 48413 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2213:
@@ -48415,7 +48417,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("invoker");
 }
-#line 48419 "preproc.c" /* yacc.c:1646  */
+#line 48421 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2214:
@@ -48423,7 +48425,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("isolation");
 }
-#line 48427 "preproc.c" /* yacc.c:1646  */
+#line 48429 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2215:
@@ -48431,7 +48433,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("key");
 }
-#line 48435 "preproc.c" /* yacc.c:1646  */
+#line 48437 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2216:
@@ -48439,7 +48441,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("label");
 }
-#line 48443 "preproc.c" /* yacc.c:1646  */
+#line 48445 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2217:
@@ -48447,7 +48449,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("language");
 }
-#line 48451 "preproc.c" /* yacc.c:1646  */
+#line 48453 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2218:
@@ -48455,7 +48457,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("large");
 }
-#line 48459 "preproc.c" /* yacc.c:1646  */
+#line 48461 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2219:
@@ -48463,7 +48465,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("last");
 }
-#line 48467 "preproc.c" /* yacc.c:1646  */
+#line 48469 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2220:
@@ -48471,7 +48473,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("leakproof");
 }
-#line 48475 "preproc.c" /* yacc.c:1646  */
+#line 48477 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2221:
@@ -48479,7 +48481,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("level");
 }
-#line 48483 "preproc.c" /* yacc.c:1646  */
+#line 48485 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2222:
@@ -48487,7 +48489,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("listen");
 }
-#line 48491 "preproc.c" /* yacc.c:1646  */
+#line 48493 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2223:
@@ -48495,7 +48497,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("load");
 }
-#line 48499 "preproc.c" /* yacc.c:1646  */
+#line 48501 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2224:
@@ -48503,7 +48505,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("local");
 }
-#line 48507 "preproc.c" /* yacc.c:1646  */
+#line 48509 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2225:
@@ -48511,7 +48513,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("location");
 }
-#line 48515 "preproc.c" /* yacc.c:1646  */
+#line 48517 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2226:
@@ -48519,7 +48521,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("lock");
 }
-#line 48523 "preproc.c" /* yacc.c:1646  */
+#line 48525 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2227:
@@ -48527,7 +48529,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("locked");
 }
-#line 48531 "preproc.c" /* yacc.c:1646  */
+#line 48533 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2228:
@@ -48535,7 +48537,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("logged");
 }
-#line 48539 "preproc.c" /* yacc.c:1646  */
+#line 48541 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2229:
@@ -48543,7 +48545,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("mapping");
 }
-#line 48547 "preproc.c" /* yacc.c:1646  */
+#line 48549 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2230:
@@ -48551,7 +48553,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("match");
 }
-#line 48555 "preproc.c" /* yacc.c:1646  */
+#line 48557 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2231:
@@ -48559,7 +48561,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("materialized");
 }
-#line 48563 "preproc.c" /* yacc.c:1646  */
+#line 48565 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2232:
@@ -48567,7 +48569,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("maxvalue");
 }
-#line 48571 "preproc.c" /* yacc.c:1646  */
+#line 48573 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2233:
@@ -48575,7 +48577,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("method");
 }
-#line 48579 "preproc.c" /* yacc.c:1646  */
+#line 48581 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2234:
@@ -48583,7 +48585,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("minvalue");
 }
-#line 48587 "preproc.c" /* yacc.c:1646  */
+#line 48589 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2235:
@@ -48591,7 +48593,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("mode");
 }
-#line 48595 "preproc.c" /* yacc.c:1646  */
+#line 48597 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2236:
@@ -48599,7 +48601,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("move");
 }
-#line 48603 "preproc.c" /* yacc.c:1646  */
+#line 48605 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2237:
@@ -48607,7 +48609,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("name");
 }
-#line 48611 "preproc.c" /* yacc.c:1646  */
+#line 48613 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2238:
@@ -48615,7 +48617,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("names");
 }
-#line 48619 "preproc.c" /* yacc.c:1646  */
+#line 48621 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2239:
@@ -48623,7 +48625,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("next");
 }
-#line 48627 "preproc.c" /* yacc.c:1646  */
+#line 48629 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2240:
@@ -48631,7 +48633,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("no");
 }
-#line 48635 "preproc.c" /* yacc.c:1646  */
+#line 48637 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2241:
@@ -48639,7 +48641,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nothing");
 }
-#line 48643 "preproc.c" /* yacc.c:1646  */
+#line 48645 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2242:
@@ -48647,7 +48649,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("notify");
 }
-#line 48651 "preproc.c" /* yacc.c:1646  */
+#line 48653 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2243:
@@ -48655,7 +48657,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nowait");
 }
-#line 48659 "preproc.c" /* yacc.c:1646  */
+#line 48661 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2244:
@@ -48663,7 +48665,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nulls");
 }
-#line 48667 "preproc.c" /* yacc.c:1646  */
+#line 48669 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2245:
@@ -48671,7 +48673,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("object");
 }
-#line 48675 "preproc.c" /* yacc.c:1646  */
+#line 48677 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2246:
@@ -48679,7 +48681,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("of");
 }
-#line 48683 "preproc.c" /* yacc.c:1646  */
+#line 48685 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2247:
@@ -48687,7 +48689,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("off");
 }
-#line 48691 "preproc.c" /* yacc.c:1646  */
+#line 48693 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2248:
@@ -48695,7 +48697,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("oids");
 }
-#line 48699 "preproc.c" /* yacc.c:1646  */
+#line 48701 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2249:
@@ -48703,7 +48705,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("operator");
 }
-#line 48707 "preproc.c" /* yacc.c:1646  */
+#line 48709 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2250:
@@ -48711,7 +48713,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("option");
 }
-#line 48715 "preproc.c" /* yacc.c:1646  */
+#line 48717 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2251:
@@ -48719,7 +48721,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("options");
 }
-#line 48723 "preproc.c" /* yacc.c:1646  */
+#line 48725 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2252:
@@ -48727,7 +48729,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("ordinality");
 }
-#line 48731 "preproc.c" /* yacc.c:1646  */
+#line 48733 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2253:
@@ -48735,7 +48737,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("over");
 }
-#line 48739 "preproc.c" /* yacc.c:1646  */
+#line 48741 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2254:
@@ -48743,7 +48745,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("owned");
 }
-#line 48747 "preproc.c" /* yacc.c:1646  */
+#line 48749 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2255:
@@ -48751,7 +48753,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("owner");
 }
-#line 48755 "preproc.c" /* yacc.c:1646  */
+#line 48757 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2256:
@@ -48759,7 +48761,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("parallel");
 }
-#line 48763 "preproc.c" /* yacc.c:1646  */
+#line 48765 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2257:
@@ -48767,7 +48769,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("parser");
 }
-#line 48771 "preproc.c" /* yacc.c:1646  */
+#line 48773 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2258:
@@ -48775,7 +48777,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("partial");
 }
-#line 48779 "preproc.c" /* yacc.c:1646  */
+#line 48781 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2259:
@@ -48783,7 +48785,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("partition");
 }
-#line 48787 "preproc.c" /* yacc.c:1646  */
+#line 48789 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2260:
@@ -48791,7 +48793,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("passing");
 }
-#line 48795 "preproc.c" /* yacc.c:1646  */
+#line 48797 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2261:
@@ -48799,7 +48801,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("password");
 }
-#line 48803 "preproc.c" /* yacc.c:1646  */
+#line 48805 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2262:
@@ -48807,7 +48809,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("plans");
 }
-#line 48811 "preproc.c" /* yacc.c:1646  */
+#line 48813 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2263:
@@ -48815,7 +48817,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("policy");
 }
-#line 48819 "preproc.c" /* yacc.c:1646  */
+#line 48821 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2264:
@@ -48823,7 +48825,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("preceding");
 }
-#line 48827 "preproc.c" /* yacc.c:1646  */
+#line 48829 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2265:
@@ -48831,7 +48833,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("prepare");
 }
-#line 48835 "preproc.c" /* yacc.c:1646  */
+#line 48837 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2266:
@@ -48839,7 +48841,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("prepared");
 }
-#line 48843 "preproc.c" /* yacc.c:1646  */
+#line 48845 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2267:
@@ -48847,7 +48849,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("preserve");
 }
-#line 48851 "preproc.c" /* yacc.c:1646  */
+#line 48853 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2268:
@@ -48855,7 +48857,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("prior");
 }
-#line 48859 "preproc.c" /* yacc.c:1646  */
+#line 48861 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2269:
@@ -48863,7 +48865,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("privileges");
 }
-#line 48867 "preproc.c" /* yacc.c:1646  */
+#line 48869 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2270:
@@ -48871,7 +48873,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("procedural");
 }
-#line 48875 "preproc.c" /* yacc.c:1646  */
+#line 48877 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2271:
@@ -48879,7 +48881,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("procedure");
 }
-#line 48883 "preproc.c" /* yacc.c:1646  */
+#line 48885 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2272:
@@ -48887,7 +48889,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("program");
 }
-#line 48891 "preproc.c" /* yacc.c:1646  */
+#line 48893 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2273:
@@ -48895,7 +48897,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("quote");
 }
-#line 48899 "preproc.c" /* yacc.c:1646  */
+#line 48901 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2274:
@@ -48903,7 +48905,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("range");
 }
-#line 48907 "preproc.c" /* yacc.c:1646  */
+#line 48909 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2275:
@@ -48911,7 +48913,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("read");
 }
-#line 48915 "preproc.c" /* yacc.c:1646  */
+#line 48917 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2276:
@@ -48919,7 +48921,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("reassign");
 }
-#line 48923 "preproc.c" /* yacc.c:1646  */
+#line 48925 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2277:
@@ -48927,7 +48929,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("recheck");
 }
-#line 48931 "preproc.c" /* yacc.c:1646  */
+#line 48933 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2278:
@@ -48935,7 +48937,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("recursive");
 }
-#line 48939 "preproc.c" /* yacc.c:1646  */
+#line 48941 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2279:
@@ -48943,7 +48945,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("ref");
 }
-#line 48947 "preproc.c" /* yacc.c:1646  */
+#line 48949 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2280:
@@ -48951,7 +48953,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("refresh");
 }
-#line 48955 "preproc.c" /* yacc.c:1646  */
+#line 48957 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2281:
@@ -48959,7 +48961,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("reindex");
 }
-#line 48963 "preproc.c" /* yacc.c:1646  */
+#line 48965 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2282:
@@ -48967,7 +48969,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("relative");
 }
-#line 48971 "preproc.c" /* yacc.c:1646  */
+#line 48973 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2283:
@@ -48975,7 +48977,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("release");
 }
-#line 48979 "preproc.c" /* yacc.c:1646  */
+#line 48981 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2284:
@@ -48983,7 +48985,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("rename");
 }
-#line 48987 "preproc.c" /* yacc.c:1646  */
+#line 48989 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2285:
@@ -48991,7 +48993,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("repeatable");
 }
-#line 48995 "preproc.c" /* yacc.c:1646  */
+#line 48997 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2286:
@@ -48999,7 +49001,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("replace");
 }
-#line 49003 "preproc.c" /* yacc.c:1646  */
+#line 49005 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2287:
@@ -49007,7 +49009,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("replica");
 }
-#line 49011 "preproc.c" /* yacc.c:1646  */
+#line 49013 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2288:
@@ -49015,7 +49017,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("reset");
 }
-#line 49019 "preproc.c" /* yacc.c:1646  */
+#line 49021 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2289:
@@ -49023,7 +49025,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("restart");
 }
-#line 49027 "preproc.c" /* yacc.c:1646  */
+#line 49029 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2290:
@@ -49031,7 +49033,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("restrict");
 }
-#line 49035 "preproc.c" /* yacc.c:1646  */
+#line 49037 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2291:
@@ -49039,7 +49041,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("returns");
 }
-#line 49043 "preproc.c" /* yacc.c:1646  */
+#line 49045 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2292:
@@ -49047,7 +49049,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("revoke");
 }
-#line 49051 "preproc.c" /* yacc.c:1646  */
+#line 49053 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2293:
@@ -49055,7 +49057,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("role");
 }
-#line 49059 "preproc.c" /* yacc.c:1646  */
+#line 49061 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2294:
@@ -49063,7 +49065,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("rollback");
 }
-#line 49067 "preproc.c" /* yacc.c:1646  */
+#line 49069 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2295:
@@ -49071,7 +49073,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("rollup");
 }
-#line 49075 "preproc.c" /* yacc.c:1646  */
+#line 49077 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2296:
@@ -49079,7 +49081,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("rows");
 }
-#line 49083 "preproc.c" /* yacc.c:1646  */
+#line 49085 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2297:
@@ -49087,7 +49089,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("rule");
 }
-#line 49091 "preproc.c" /* yacc.c:1646  */
+#line 49093 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2298:
@@ -49095,7 +49097,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("savepoint");
 }
-#line 49099 "preproc.c" /* yacc.c:1646  */
+#line 49101 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2299:
@@ -49103,7 +49105,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("schema");
 }
-#line 49107 "preproc.c" /* yacc.c:1646  */
+#line 49109 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2300:
@@ -49111,7 +49113,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("scroll");
 }
-#line 49115 "preproc.c" /* yacc.c:1646  */
+#line 49117 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2301:
@@ -49119,7 +49121,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("search");
 }
-#line 49123 "preproc.c" /* yacc.c:1646  */
+#line 49125 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2302:
@@ -49127,7 +49129,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("security");
 }
-#line 49131 "preproc.c" /* yacc.c:1646  */
+#line 49133 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2303:
@@ -49135,7 +49137,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("sequence");
 }
-#line 49139 "preproc.c" /* yacc.c:1646  */
+#line 49141 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2304:
@@ -49143,7 +49145,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("sequences");
 }
-#line 49147 "preproc.c" /* yacc.c:1646  */
+#line 49149 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2305:
@@ -49151,7 +49153,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("serializable");
 }
-#line 49155 "preproc.c" /* yacc.c:1646  */
+#line 49157 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2306:
@@ -49159,7 +49161,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("server");
 }
-#line 49163 "preproc.c" /* yacc.c:1646  */
+#line 49165 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2307:
@@ -49167,7 +49169,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("session");
 }
-#line 49171 "preproc.c" /* yacc.c:1646  */
+#line 49173 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2308:
@@ -49175,7 +49177,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("set");
 }
-#line 49179 "preproc.c" /* yacc.c:1646  */
+#line 49181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2309:
@@ -49183,7 +49185,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("sets");
 }
-#line 49187 "preproc.c" /* yacc.c:1646  */
+#line 49189 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2310:
@@ -49191,7 +49193,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("share");
 }
-#line 49195 "preproc.c" /* yacc.c:1646  */
+#line 49197 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2311:
@@ -49199,7 +49201,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("show");
 }
-#line 49203 "preproc.c" /* yacc.c:1646  */
+#line 49205 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2312:
@@ -49207,7 +49209,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("simple");
 }
-#line 49211 "preproc.c" /* yacc.c:1646  */
+#line 49213 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2313:
@@ -49215,7 +49217,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("skip");
 }
-#line 49219 "preproc.c" /* yacc.c:1646  */
+#line 49221 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2314:
@@ -49223,7 +49225,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("snapshot");
 }
-#line 49227 "preproc.c" /* yacc.c:1646  */
+#line 49229 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2315:
@@ -49231,7 +49233,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("sql");
 }
-#line 49235 "preproc.c" /* yacc.c:1646  */
+#line 49237 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2316:
@@ -49239,7 +49241,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("stable");
 }
-#line 49243 "preproc.c" /* yacc.c:1646  */
+#line 49245 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2317:
@@ -49247,7 +49249,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("standalone");
 }
-#line 49251 "preproc.c" /* yacc.c:1646  */
+#line 49253 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2318:
@@ -49255,7 +49257,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("start");
 }
-#line 49259 "preproc.c" /* yacc.c:1646  */
+#line 49261 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2319:
@@ -49263,7 +49265,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("statement");
 }
-#line 49267 "preproc.c" /* yacc.c:1646  */
+#line 49269 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2320:
@@ -49271,7 +49273,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("statistics");
 }
-#line 49275 "preproc.c" /* yacc.c:1646  */
+#line 49277 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2321:
@@ -49279,7 +49281,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("stdin");
 }
-#line 49283 "preproc.c" /* yacc.c:1646  */
+#line 49285 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2322:
@@ -49287,7 +49289,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("stdout");
 }
-#line 49291 "preproc.c" /* yacc.c:1646  */
+#line 49293 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2323:
@@ -49295,7 +49297,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("storage");
 }
-#line 49299 "preproc.c" /* yacc.c:1646  */
+#line 49301 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2324:
@@ -49303,7 +49305,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("strict");
 }
-#line 49307 "preproc.c" /* yacc.c:1646  */
+#line 49309 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2325:
@@ -49311,7 +49313,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("strip");
 }
-#line 49315 "preproc.c" /* yacc.c:1646  */
+#line 49317 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2326:
@@ -49319,7 +49321,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("sysid");
 }
-#line 49323 "preproc.c" /* yacc.c:1646  */
+#line 49325 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2327:
@@ -49327,7 +49329,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("system");
 }
-#line 49331 "preproc.c" /* yacc.c:1646  */
+#line 49333 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2328:
@@ -49335,7 +49337,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("tables");
 }
-#line 49339 "preproc.c" /* yacc.c:1646  */
+#line 49341 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2329:
@@ -49343,7 +49345,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("tablespace");
 }
-#line 49347 "preproc.c" /* yacc.c:1646  */
+#line 49349 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2330:
@@ -49351,7 +49353,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("temp");
 }
-#line 49355 "preproc.c" /* yacc.c:1646  */
+#line 49357 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2331:
@@ -49359,7 +49361,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("template");
 }
-#line 49363 "preproc.c" /* yacc.c:1646  */
+#line 49365 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2332:
@@ -49367,7 +49369,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("temporary");
 }
-#line 49371 "preproc.c" /* yacc.c:1646  */
+#line 49373 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2333:
@@ -49375,7 +49377,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("text");
 }
-#line 49379 "preproc.c" /* yacc.c:1646  */
+#line 49381 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2334:
@@ -49383,7 +49385,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("transaction");
 }
-#line 49387 "preproc.c" /* yacc.c:1646  */
+#line 49389 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2335:
@@ -49391,7 +49393,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("transform");
 }
-#line 49395 "preproc.c" /* yacc.c:1646  */
+#line 49397 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2336:
@@ -49399,7 +49401,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("trigger");
 }
-#line 49403 "preproc.c" /* yacc.c:1646  */
+#line 49405 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2337:
@@ -49407,7 +49409,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("truncate");
 }
-#line 49411 "preproc.c" /* yacc.c:1646  */
+#line 49413 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2338:
@@ -49415,7 +49417,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("trusted");
 }
-#line 49419 "preproc.c" /* yacc.c:1646  */
+#line 49421 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2339:
@@ -49423,7 +49425,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("type");
 }
-#line 49427 "preproc.c" /* yacc.c:1646  */
+#line 49429 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2340:
@@ -49431,7 +49433,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("types");
 }
-#line 49435 "preproc.c" /* yacc.c:1646  */
+#line 49437 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2341:
@@ -49439,7 +49441,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unbounded");
 }
-#line 49443 "preproc.c" /* yacc.c:1646  */
+#line 49445 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2342:
@@ -49447,7 +49449,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("uncommitted");
 }
-#line 49451 "preproc.c" /* yacc.c:1646  */
+#line 49453 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2343:
@@ -49455,7 +49457,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unencrypted");
 }
-#line 49459 "preproc.c" /* yacc.c:1646  */
+#line 49461 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2344:
@@ -49463,7 +49465,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unknown");
 }
-#line 49467 "preproc.c" /* yacc.c:1646  */
+#line 49469 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2345:
@@ -49471,7 +49473,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unlisten");
 }
-#line 49475 "preproc.c" /* yacc.c:1646  */
+#line 49477 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2346:
@@ -49479,7 +49481,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unlogged");
 }
-#line 49483 "preproc.c" /* yacc.c:1646  */
+#line 49485 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2347:
@@ -49487,7 +49489,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("until");
 }
-#line 49491 "preproc.c" /* yacc.c:1646  */
+#line 49493 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2348:
@@ -49495,7 +49497,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("update");
 }
-#line 49499 "preproc.c" /* yacc.c:1646  */
+#line 49501 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2349:
@@ -49503,7 +49505,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("vacuum");
 }
-#line 49507 "preproc.c" /* yacc.c:1646  */
+#line 49509 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2350:
@@ -49511,7 +49513,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("valid");
 }
-#line 49515 "preproc.c" /* yacc.c:1646  */
+#line 49517 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2351:
@@ -49519,7 +49521,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("validate");
 }
-#line 49523 "preproc.c" /* yacc.c:1646  */
+#line 49525 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2352:
@@ -49527,7 +49529,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("validator");
 }
-#line 49531 "preproc.c" /* yacc.c:1646  */
+#line 49533 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2353:
@@ -49535,7 +49537,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("value");
 }
-#line 49539 "preproc.c" /* yacc.c:1646  */
+#line 49541 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2354:
@@ -49543,7 +49545,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("varying");
 }
-#line 49547 "preproc.c" /* yacc.c:1646  */
+#line 49549 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2355:
@@ -49551,7 +49553,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("version");
 }
-#line 49555 "preproc.c" /* yacc.c:1646  */
+#line 49557 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2356:
@@ -49559,7 +49561,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("view");
 }
-#line 49563 "preproc.c" /* yacc.c:1646  */
+#line 49565 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2357:
@@ -49567,7 +49569,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("views");
 }
-#line 49571 "preproc.c" /* yacc.c:1646  */
+#line 49573 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2358:
@@ -49575,7 +49577,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("volatile");
 }
-#line 49579 "preproc.c" /* yacc.c:1646  */
+#line 49581 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2359:
@@ -49583,7 +49585,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("whitespace");
 }
-#line 49587 "preproc.c" /* yacc.c:1646  */
+#line 49589 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2360:
@@ -49591,7 +49593,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("within");
 }
-#line 49595 "preproc.c" /* yacc.c:1646  */
+#line 49597 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2361:
@@ -49599,7 +49601,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("without");
 }
-#line 49603 "preproc.c" /* yacc.c:1646  */
+#line 49605 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2362:
@@ -49607,7 +49609,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("work");
 }
-#line 49611 "preproc.c" /* yacc.c:1646  */
+#line 49613 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2363:
@@ -49615,7 +49617,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("wrapper");
 }
-#line 49619 "preproc.c" /* yacc.c:1646  */
+#line 49621 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2364:
@@ -49623,7 +49625,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("write");
 }
-#line 49627 "preproc.c" /* yacc.c:1646  */
+#line 49629 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2365:
@@ -49631,7 +49633,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xml");
 }
-#line 49635 "preproc.c" /* yacc.c:1646  */
+#line 49637 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2366:
@@ -49639,7 +49641,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("yes");
 }
-#line 49643 "preproc.c" /* yacc.c:1646  */
+#line 49645 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2367:
@@ -49647,7 +49649,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("zone");
 }
-#line 49651 "preproc.c" /* yacc.c:1646  */
+#line 49653 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2368:
@@ -49655,7 +49657,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("between");
 }
-#line 49659 "preproc.c" /* yacc.c:1646  */
+#line 49661 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2369:
@@ -49663,7 +49665,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("bigint");
 }
-#line 49667 "preproc.c" /* yacc.c:1646  */
+#line 49669 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2370:
@@ -49671,7 +49673,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("bit");
 }
-#line 49675 "preproc.c" /* yacc.c:1646  */
+#line 49677 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2371:
@@ -49679,7 +49681,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("boolean");
 }
-#line 49683 "preproc.c" /* yacc.c:1646  */
+#line 49685 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2372:
@@ -49687,7 +49689,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("character");
 }
-#line 49691 "preproc.c" /* yacc.c:1646  */
+#line 49693 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2373:
@@ -49695,7 +49697,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("coalesce");
 }
-#line 49699 "preproc.c" /* yacc.c:1646  */
+#line 49701 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2374:
@@ -49703,7 +49705,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("dec");
 }
-#line 49707 "preproc.c" /* yacc.c:1646  */
+#line 49709 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2375:
@@ -49711,7 +49713,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("decimal");
 }
-#line 49715 "preproc.c" /* yacc.c:1646  */
+#line 49717 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2376:
@@ -49719,7 +49721,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("exists");
 }
-#line 49723 "preproc.c" /* yacc.c:1646  */
+#line 49725 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2377:
@@ -49727,7 +49729,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("extract");
 }
-#line 49731 "preproc.c" /* yacc.c:1646  */
+#line 49733 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2378:
@@ -49735,7 +49737,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("float");
 }
-#line 49739 "preproc.c" /* yacc.c:1646  */
+#line 49741 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2379:
@@ -49743,7 +49745,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("greatest");
 }
-#line 49747 "preproc.c" /* yacc.c:1646  */
+#line 49749 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2380:
@@ -49751,7 +49753,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("grouping");
 }
-#line 49755 "preproc.c" /* yacc.c:1646  */
+#line 49757 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2381:
@@ -49759,7 +49761,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("inout");
 }
-#line 49763 "preproc.c" /* yacc.c:1646  */
+#line 49765 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2382:
@@ -49767,7 +49769,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("integer");
 }
-#line 49771 "preproc.c" /* yacc.c:1646  */
+#line 49773 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2383:
@@ -49775,7 +49777,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("interval");
 }
-#line 49779 "preproc.c" /* yacc.c:1646  */
+#line 49781 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2384:
@@ -49783,7 +49785,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("least");
 }
-#line 49787 "preproc.c" /* yacc.c:1646  */
+#line 49789 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2385:
@@ -49791,7 +49793,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("national");
 }
-#line 49795 "preproc.c" /* yacc.c:1646  */
+#line 49797 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2386:
@@ -49799,7 +49801,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nchar");
 }
-#line 49803 "preproc.c" /* yacc.c:1646  */
+#line 49805 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2387:
@@ -49807,7 +49809,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("none");
 }
-#line 49811 "preproc.c" /* yacc.c:1646  */
+#line 49813 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2388:
@@ -49815,7 +49817,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("nullif");
 }
-#line 49819 "preproc.c" /* yacc.c:1646  */
+#line 49821 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2389:
@@ -49823,7 +49825,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("numeric");
 }
-#line 49827 "preproc.c" /* yacc.c:1646  */
+#line 49829 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2390:
@@ -49831,7 +49833,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("out");
 }
-#line 49835 "preproc.c" /* yacc.c:1646  */
+#line 49837 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2391:
@@ -49839,7 +49841,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("overlay");
 }
-#line 49843 "preproc.c" /* yacc.c:1646  */
+#line 49845 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2392:
@@ -49847,7 +49849,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("position");
 }
-#line 49851 "preproc.c" /* yacc.c:1646  */
+#line 49853 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2393:
@@ -49855,7 +49857,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("precision");
 }
-#line 49859 "preproc.c" /* yacc.c:1646  */
+#line 49861 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2394:
@@ -49863,7 +49865,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("real");
 }
-#line 49867 "preproc.c" /* yacc.c:1646  */
+#line 49869 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2395:
@@ -49871,7 +49873,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("row");
 }
-#line 49875 "preproc.c" /* yacc.c:1646  */
+#line 49877 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2396:
@@ -49879,7 +49881,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("setof");
 }
-#line 49883 "preproc.c" /* yacc.c:1646  */
+#line 49885 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2397:
@@ -49887,7 +49889,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("smallint");
 }
-#line 49891 "preproc.c" /* yacc.c:1646  */
+#line 49893 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2398:
@@ -49895,7 +49897,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("substring");
 }
-#line 49899 "preproc.c" /* yacc.c:1646  */
+#line 49901 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2399:
@@ -49903,7 +49905,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("time");
 }
-#line 49907 "preproc.c" /* yacc.c:1646  */
+#line 49909 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2400:
@@ -49911,7 +49913,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("timestamp");
 }
-#line 49915 "preproc.c" /* yacc.c:1646  */
+#line 49917 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2401:
@@ -49919,7 +49921,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("treat");
 }
-#line 49923 "preproc.c" /* yacc.c:1646  */
+#line 49925 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2402:
@@ -49927,7 +49929,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("trim");
 }
-#line 49931 "preproc.c" /* yacc.c:1646  */
+#line 49933 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2403:
@@ -49935,7 +49937,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("varchar");
 }
-#line 49939 "preproc.c" /* yacc.c:1646  */
+#line 49941 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2404:
@@ -49943,7 +49945,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xmlattributes");
 }
-#line 49947 "preproc.c" /* yacc.c:1646  */
+#line 49949 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2405:
@@ -49951,7 +49953,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xmlconcat");
 }
-#line 49955 "preproc.c" /* yacc.c:1646  */
+#line 49957 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2406:
@@ -49959,7 +49961,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xmlelement");
 }
-#line 49963 "preproc.c" /* yacc.c:1646  */
+#line 49965 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2407:
@@ -49967,7 +49969,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xmlexists");
 }
-#line 49971 "preproc.c" /* yacc.c:1646  */
+#line 49973 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2408:
@@ -49975,7 +49977,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xmlforest");
 }
-#line 49979 "preproc.c" /* yacc.c:1646  */
+#line 49981 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2409:
@@ -49983,7 +49985,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xmlparse");
 }
-#line 49987 "preproc.c" /* yacc.c:1646  */
+#line 49989 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2410:
@@ -49991,7 +49993,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xmlpi");
 }
-#line 49995 "preproc.c" /* yacc.c:1646  */
+#line 49997 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2411:
@@ -49999,7 +50001,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xmlroot");
 }
-#line 50003 "preproc.c" /* yacc.c:1646  */
+#line 50005 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2412:
@@ -50007,7 +50009,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("xmlserialize");
 }
-#line 50011 "preproc.c" /* yacc.c:1646  */
+#line 50013 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2413:
@@ -50015,7 +50017,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("authorization");
 }
-#line 50019 "preproc.c" /* yacc.c:1646  */
+#line 50021 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2414:
@@ -50023,7 +50025,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("binary");
 }
-#line 50027 "preproc.c" /* yacc.c:1646  */
+#line 50029 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2415:
@@ -50031,7 +50033,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("collation");
 }
-#line 50035 "preproc.c" /* yacc.c:1646  */
+#line 50037 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2416:
@@ -50039,7 +50041,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("concurrently");
 }
-#line 50043 "preproc.c" /* yacc.c:1646  */
+#line 50045 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2417:
@@ -50047,7 +50049,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cross");
 }
-#line 50051 "preproc.c" /* yacc.c:1646  */
+#line 50053 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2418:
@@ -50055,7 +50057,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_schema");
 }
-#line 50059 "preproc.c" /* yacc.c:1646  */
+#line 50061 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2419:
@@ -50063,7 +50065,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("freeze");
 }
-#line 50067 "preproc.c" /* yacc.c:1646  */
+#line 50069 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2420:
@@ -50071,7 +50073,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("full");
 }
-#line 50075 "preproc.c" /* yacc.c:1646  */
+#line 50077 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2421:
@@ -50079,7 +50081,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("ilike");
 }
-#line 50083 "preproc.c" /* yacc.c:1646  */
+#line 50085 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2422:
@@ -50087,7 +50089,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("inner");
 }
-#line 50091 "preproc.c" /* yacc.c:1646  */
+#line 50093 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2423:
@@ -50095,7 +50097,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("is");
 }
-#line 50099 "preproc.c" /* yacc.c:1646  */
+#line 50101 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2424:
@@ -50103,7 +50105,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("isnull");
 }
-#line 50107 "preproc.c" /* yacc.c:1646  */
+#line 50109 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2425:
@@ -50111,7 +50113,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("join");
 }
-#line 50115 "preproc.c" /* yacc.c:1646  */
+#line 50117 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2426:
@@ -50119,7 +50121,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("left");
 }
-#line 50123 "preproc.c" /* yacc.c:1646  */
+#line 50125 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2427:
@@ -50127,7 +50129,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("like");
 }
-#line 50131 "preproc.c" /* yacc.c:1646  */
+#line 50133 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2428:
@@ -50135,7 +50137,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("natural");
 }
-#line 50139 "preproc.c" /* yacc.c:1646  */
+#line 50141 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2429:
@@ -50143,7 +50145,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("notnull");
 }
-#line 50147 "preproc.c" /* yacc.c:1646  */
+#line 50149 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2430:
@@ -50151,7 +50153,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("outer");
 }
-#line 50155 "preproc.c" /* yacc.c:1646  */
+#line 50157 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2431:
@@ -50159,7 +50161,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("overlaps");
 }
-#line 50163 "preproc.c" /* yacc.c:1646  */
+#line 50165 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2432:
@@ -50167,7 +50169,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("right");
 }
-#line 50171 "preproc.c" /* yacc.c:1646  */
+#line 50173 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2433:
@@ -50175,7 +50177,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("similar");
 }
-#line 50179 "preproc.c" /* yacc.c:1646  */
+#line 50181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2434:
@@ -50183,7 +50185,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("tablesample");
 }
-#line 50187 "preproc.c" /* yacc.c:1646  */
+#line 50189 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2435:
@@ -50191,7 +50193,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("verbose");
 }
-#line 50195 "preproc.c" /* yacc.c:1646  */
+#line 50197 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2436:
@@ -50199,7 +50201,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("all");
 }
-#line 50203 "preproc.c" /* yacc.c:1646  */
+#line 50205 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2437:
@@ -50207,7 +50209,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("analyse");
 }
-#line 50211 "preproc.c" /* yacc.c:1646  */
+#line 50213 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2438:
@@ -50215,7 +50217,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("analyze");
 }
-#line 50219 "preproc.c" /* yacc.c:1646  */
+#line 50221 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2439:
@@ -50223,7 +50225,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("and");
 }
-#line 50227 "preproc.c" /* yacc.c:1646  */
+#line 50229 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2440:
@@ -50231,7 +50233,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("any");
 }
-#line 50235 "preproc.c" /* yacc.c:1646  */
+#line 50237 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2441:
@@ -50239,7 +50241,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("array");
 }
-#line 50243 "preproc.c" /* yacc.c:1646  */
+#line 50245 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2442:
@@ -50247,7 +50249,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("as");
 }
-#line 50251 "preproc.c" /* yacc.c:1646  */
+#line 50253 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2443:
@@ -50255,7 +50257,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("asc");
 }
-#line 50259 "preproc.c" /* yacc.c:1646  */
+#line 50261 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2444:
@@ -50263,7 +50265,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("asymmetric");
 }
-#line 50267 "preproc.c" /* yacc.c:1646  */
+#line 50269 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2445:
@@ -50271,7 +50273,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("both");
 }
-#line 50275 "preproc.c" /* yacc.c:1646  */
+#line 50277 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2446:
@@ -50279,7 +50281,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("case");
 }
-#line 50283 "preproc.c" /* yacc.c:1646  */
+#line 50285 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2447:
@@ -50287,7 +50289,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("cast");
 }
-#line 50291 "preproc.c" /* yacc.c:1646  */
+#line 50293 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2448:
@@ -50295,7 +50297,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("check");
 }
-#line 50299 "preproc.c" /* yacc.c:1646  */
+#line 50301 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2449:
@@ -50303,7 +50305,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("collate");
 }
-#line 50307 "preproc.c" /* yacc.c:1646  */
+#line 50309 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2450:
@@ -50311,7 +50313,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("column");
 }
-#line 50315 "preproc.c" /* yacc.c:1646  */
+#line 50317 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2451:
@@ -50319,7 +50321,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("constraint");
 }
-#line 50323 "preproc.c" /* yacc.c:1646  */
+#line 50325 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2452:
@@ -50327,7 +50329,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("create");
 }
-#line 50331 "preproc.c" /* yacc.c:1646  */
+#line 50333 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2453:
@@ -50335,7 +50337,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_catalog");
 }
-#line 50339 "preproc.c" /* yacc.c:1646  */
+#line 50341 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2454:
@@ -50343,7 +50345,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_date");
 }
-#line 50347 "preproc.c" /* yacc.c:1646  */
+#line 50349 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2455:
@@ -50351,7 +50353,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_role");
 }
-#line 50355 "preproc.c" /* yacc.c:1646  */
+#line 50357 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2456:
@@ -50359,7 +50361,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_time");
 }
-#line 50363 "preproc.c" /* yacc.c:1646  */
+#line 50365 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2457:
@@ -50367,7 +50369,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_timestamp");
 }
-#line 50371 "preproc.c" /* yacc.c:1646  */
+#line 50373 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2458:
@@ -50375,7 +50377,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("current_user");
 }
-#line 50379 "preproc.c" /* yacc.c:1646  */
+#line 50381 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2459:
@@ -50383,7 +50385,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("default");
 }
-#line 50387 "preproc.c" /* yacc.c:1646  */
+#line 50389 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2460:
@@ -50391,7 +50393,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("deferrable");
 }
-#line 50395 "preproc.c" /* yacc.c:1646  */
+#line 50397 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2461:
@@ -50399,7 +50401,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("desc");
 }
-#line 50403 "preproc.c" /* yacc.c:1646  */
+#line 50405 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2462:
@@ -50407,7 +50409,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("distinct");
 }
-#line 50411 "preproc.c" /* yacc.c:1646  */
+#line 50413 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2463:
@@ -50415,7 +50417,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("do");
 }
-#line 50419 "preproc.c" /* yacc.c:1646  */
+#line 50421 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2464:
@@ -50423,7 +50425,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("else");
 }
-#line 50427 "preproc.c" /* yacc.c:1646  */
+#line 50429 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2465:
@@ -50431,7 +50433,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("end");
 }
-#line 50435 "preproc.c" /* yacc.c:1646  */
+#line 50437 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2466:
@@ -50439,7 +50441,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("except");
 }
-#line 50443 "preproc.c" /* yacc.c:1646  */
+#line 50445 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2467:
@@ -50447,7 +50449,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("false");
 }
-#line 50451 "preproc.c" /* yacc.c:1646  */
+#line 50453 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2468:
@@ -50455,7 +50457,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("fetch");
 }
-#line 50459 "preproc.c" /* yacc.c:1646  */
+#line 50461 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2469:
@@ -50463,7 +50465,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("for");
 }
-#line 50467 "preproc.c" /* yacc.c:1646  */
+#line 50469 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2470:
@@ -50471,7 +50473,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("foreign");
 }
-#line 50475 "preproc.c" /* yacc.c:1646  */
+#line 50477 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2471:
@@ -50479,7 +50481,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("from");
 }
-#line 50483 "preproc.c" /* yacc.c:1646  */
+#line 50485 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2472:
@@ -50487,7 +50489,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("grant");
 }
-#line 50491 "preproc.c" /* yacc.c:1646  */
+#line 50493 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2473:
@@ -50495,7 +50497,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("group");
 }
-#line 50499 "preproc.c" /* yacc.c:1646  */
+#line 50501 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2474:
@@ -50503,7 +50505,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("having");
 }
-#line 50507 "preproc.c" /* yacc.c:1646  */
+#line 50509 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2475:
@@ -50511,7 +50513,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("in");
 }
-#line 50515 "preproc.c" /* yacc.c:1646  */
+#line 50517 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2476:
@@ -50519,7 +50521,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("initially");
 }
-#line 50523 "preproc.c" /* yacc.c:1646  */
+#line 50525 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2477:
@@ -50527,7 +50529,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("intersect");
 }
-#line 50531 "preproc.c" /* yacc.c:1646  */
+#line 50533 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2478:
@@ -50535,7 +50537,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("into");
 }
-#line 50539 "preproc.c" /* yacc.c:1646  */
+#line 50541 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2479:
@@ -50543,7 +50545,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("lateral");
 }
-#line 50547 "preproc.c" /* yacc.c:1646  */
+#line 50549 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2480:
@@ -50551,7 +50553,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("leading");
 }
-#line 50555 "preproc.c" /* yacc.c:1646  */
+#line 50557 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2481:
@@ -50559,7 +50561,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("limit");
 }
-#line 50563 "preproc.c" /* yacc.c:1646  */
+#line 50565 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2482:
@@ -50567,7 +50569,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("localtime");
 }
-#line 50571 "preproc.c" /* yacc.c:1646  */
+#line 50573 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2483:
@@ -50575,7 +50577,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("localtimestamp");
 }
-#line 50579 "preproc.c" /* yacc.c:1646  */
+#line 50581 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2484:
@@ -50583,7 +50585,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("not");
 }
-#line 50587 "preproc.c" /* yacc.c:1646  */
+#line 50589 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2485:
@@ -50591,7 +50593,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("null");
 }
-#line 50595 "preproc.c" /* yacc.c:1646  */
+#line 50597 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2486:
@@ -50599,7 +50601,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("offset");
 }
-#line 50603 "preproc.c" /* yacc.c:1646  */
+#line 50605 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2487:
@@ -50607,7 +50609,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("on");
 }
-#line 50611 "preproc.c" /* yacc.c:1646  */
+#line 50613 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2488:
@@ -50615,7 +50617,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("only");
 }
-#line 50619 "preproc.c" /* yacc.c:1646  */
+#line 50621 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2489:
@@ -50623,7 +50625,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("or");
 }
-#line 50627 "preproc.c" /* yacc.c:1646  */
+#line 50629 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2490:
@@ -50631,7 +50633,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("order");
 }
-#line 50635 "preproc.c" /* yacc.c:1646  */
+#line 50637 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2491:
@@ -50639,7 +50641,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("placing");
 }
-#line 50643 "preproc.c" /* yacc.c:1646  */
+#line 50645 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2492:
@@ -50647,7 +50649,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("primary");
 }
-#line 50651 "preproc.c" /* yacc.c:1646  */
+#line 50653 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2493:
@@ -50655,7 +50657,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("references");
 }
-#line 50659 "preproc.c" /* yacc.c:1646  */
+#line 50661 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2494:
@@ -50663,7 +50665,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("returning");
 }
-#line 50667 "preproc.c" /* yacc.c:1646  */
+#line 50669 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2495:
@@ -50671,7 +50673,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("select");
 }
-#line 50675 "preproc.c" /* yacc.c:1646  */
+#line 50677 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2496:
@@ -50679,7 +50681,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("session_user");
 }
-#line 50683 "preproc.c" /* yacc.c:1646  */
+#line 50685 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2497:
@@ -50687,7 +50689,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("some");
 }
-#line 50691 "preproc.c" /* yacc.c:1646  */
+#line 50693 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2498:
@@ -50695,7 +50697,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("symmetric");
 }
-#line 50699 "preproc.c" /* yacc.c:1646  */
+#line 50701 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2499:
@@ -50703,7 +50705,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("table");
 }
-#line 50707 "preproc.c" /* yacc.c:1646  */
+#line 50709 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2500:
@@ -50711,7 +50713,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("then");
 }
-#line 50715 "preproc.c" /* yacc.c:1646  */
+#line 50717 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2501:
@@ -50719,7 +50721,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("trailing");
 }
-#line 50723 "preproc.c" /* yacc.c:1646  */
+#line 50725 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2502:
@@ -50727,7 +50729,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("true");
 }
-#line 50731 "preproc.c" /* yacc.c:1646  */
+#line 50733 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2503:
@@ -50735,7 +50737,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("unique");
 }
-#line 50739 "preproc.c" /* yacc.c:1646  */
+#line 50741 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2504:
@@ -50743,7 +50745,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("user");
 }
-#line 50747 "preproc.c" /* yacc.c:1646  */
+#line 50749 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2505:
@@ -50751,7 +50753,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("using");
 }
-#line 50755 "preproc.c" /* yacc.c:1646  */
+#line 50757 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2506:
@@ -50759,7 +50761,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("variadic");
 }
-#line 50763 "preproc.c" /* yacc.c:1646  */
+#line 50765 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2507:
@@ -50767,7 +50769,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("when");
 }
-#line 50771 "preproc.c" /* yacc.c:1646  */
+#line 50773 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2508:
@@ -50775,7 +50777,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("where");
 }
-#line 50779 "preproc.c" /* yacc.c:1646  */
+#line 50781 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2509:
@@ -50783,7 +50785,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("window");
 }
-#line 50787 "preproc.c" /* yacc.c:1646  */
+#line 50789 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2510:
@@ -50791,13 +50793,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     { 
  (yyval.str) = mm_strdup("with");
 }
-#line 50795 "preproc.c" /* yacc.c:1646  */
+#line 50797 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2513:
 #line 13926 "preproc.y" /* yacc.c:1646  */
     { connection = NULL; }
-#line 50801 "preproc.c" /* yacc.c:1646  */
+#line 50803 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2515:
@@ -50807,25 +50809,25 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 					free((yyvsp[0].str));
 					output_line_number();
 				}
-#line 50811 "preproc.c" /* yacc.c:1646  */
+#line 50813 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2517:
 #line 13935 "preproc.y" /* yacc.c:1646  */
     { fprintf(base_yyout, "%s", (yyvsp[0].str)); free((yyvsp[0].str)); }
-#line 50817 "preproc.c" /* yacc.c:1646  */
+#line 50819 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2518:
 #line 13936 "preproc.y" /* yacc.c:1646  */
     { fprintf(base_yyout, "%s", (yyvsp[0].str)); free((yyvsp[0].str)); }
-#line 50823 "preproc.c" /* yacc.c:1646  */
+#line 50825 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2519:
 #line 13937 "preproc.y" /* yacc.c:1646  */
     { braces_open++; fputs("{", base_yyout); }
-#line 50829 "preproc.c" /* yacc.c:1646  */
+#line 50831 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2520:
@@ -50840,13 +50842,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			}
 			fputs("}", base_yyout);
 		}
-#line 50844 "preproc.c" /* yacc.c:1646  */
+#line 50846 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2521:
 #line 13951 "preproc.y" /* yacc.c:1646  */
     {FoundInto = 0;}
-#line 50850 "preproc.c" /* yacc.c:1646  */
+#line 50852 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2522:
@@ -50857,7 +50859,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 			(yyval.str) = cat_str(6, mm_strdup("create"), (yyvsp[-6].str), mm_strdup("table"), (yyvsp[-4].str), mm_strdup("as"), (yyvsp[-1].str));
 		}
-#line 50861 "preproc.c" /* yacc.c:1646  */
+#line 50863 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2523:
@@ -50871,31 +50873,31 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			if (argsinsert != NULL)
 				argsinsert = NULL;
 		}
-#line 50875 "preproc.c" /* yacc.c:1646  */
+#line 50877 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2524:
 #line 13976 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(5, (yyvsp[-2].str), mm_strdup(","), (yyvsp[0].str), mm_strdup(","), (yyvsp[-1].str)); }
-#line 50881 "preproc.c" /* yacc.c:1646  */
+#line 50883 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2525:
 #line 13978 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("NULL, NULL, NULL, \"DEFAULT\""); }
-#line 50887 "preproc.c" /* yacc.c:1646  */
+#line 50889 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2526:
 #line 13981 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, mm_strdup("NULL,"), (yyvsp[0].str), mm_strdup(", NULL")); }
-#line 50893 "preproc.c" /* yacc.c:1646  */
+#line 50895 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2527:
 #line 13983 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat2_str((yyvsp[0].str), mm_strdup(", NULL, NULL, NULL")); }
-#line 50899 "preproc.c" /* yacc.c:1646  */
+#line 50901 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2528:
@@ -50911,7 +50913,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			else
 				(yyval.str) = make3_str(mm_strdup("\""), make3_str((yyvsp[-2].str), (yyvsp[-1].str), (yyvsp[0].str)), mm_strdup("\""));
 		}
-#line 50915 "preproc.c" /* yacc.c:1646  */
+#line 50917 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2529:
@@ -50931,7 +50933,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 			(yyval.str) = make3_str(make3_str(mm_strdup("\""), (yyvsp[-6].str), mm_strdup(":")), (yyvsp[-4].str), make3_str(make3_str((yyvsp[-3].str), mm_strdup("/"), (yyvsp[-1].str)), (yyvsp[0].str), mm_strdup("\"")));
 		}
-#line 50935 "preproc.c" /* yacc.c:1646  */
+#line 50937 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2530:
@@ -50939,7 +50941,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 50943 "preproc.c" /* yacc.c:1646  */
+#line 50945 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2531:
@@ -50952,19 +50954,19 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyvsp[0].str)[strlen((yyvsp[0].str))-1] = '\"';
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 50956 "preproc.c" /* yacc.c:1646  */
+#line 50958 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2532:
 #line 14029 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 50962 "preproc.c" /* yacc.c:1646  */
+#line 50964 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2533:
 #line 14030 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 50968 "preproc.c" /* yacc.c:1646  */
+#line 50970 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2534:
@@ -50978,7 +50980,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 			(yyval.str) = make3_str((yyvsp[-1].str), mm_strdup(":"), (yyvsp[0].str));
 		}
-#line 50982 "preproc.c" /* yacc.c:1646  */
+#line 50984 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2535:
@@ -50989,97 +50991,97 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 			(yyval.str) = make2_str((yyvsp[-1].str), (yyvsp[0].str));
 		}
-#line 50993 "preproc.c" /* yacc.c:1646  */
+#line 50995 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2536:
 #line 14054 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 50999 "preproc.c" /* yacc.c:1646  */
+#line 51001 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2537:
 #line 14055 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 51005 "preproc.c" /* yacc.c:1646  */
+#line 51007 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2538:
 #line 14058 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51011 "preproc.c" /* yacc.c:1646  */
+#line 51013 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2539:
 #line 14059 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make3_str((yyvsp[-2].str), mm_strdup("."), (yyvsp[0].str)); }
-#line 51017 "preproc.c" /* yacc.c:1646  */
+#line 51019 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2540:
 #line 14060 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make_name(); }
-#line 51023 "preproc.c" /* yacc.c:1646  */
+#line 51025 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2541:
 #line 14063 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make2_str(mm_strdup(":"), (yyvsp[0].str)); }
-#line 51029 "preproc.c" /* yacc.c:1646  */
+#line 51031 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2542:
 #line 14064 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 51035 "preproc.c" /* yacc.c:1646  */
+#line 51037 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2543:
 #line 14067 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51041 "preproc.c" /* yacc.c:1646  */
+#line 51043 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2544:
 #line 14068 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("NULL"); }
-#line 51047 "preproc.c" /* yacc.c:1646  */
+#line 51049 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2545:
 #line 14071 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51053 "preproc.c" /* yacc.c:1646  */
+#line 51055 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2546:
 #line 14072 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("NULL, NULL"); }
-#line 51059 "preproc.c" /* yacc.c:1646  */
+#line 51061 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2547:
 #line 14076 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat2_str((yyvsp[0].str), mm_strdup(", NULL")); }
-#line 51065 "preproc.c" /* yacc.c:1646  */
+#line 51067 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2548:
 #line 14078 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, (yyvsp[-2].str), mm_strdup(","), (yyvsp[0].str)); }
-#line 51071 "preproc.c" /* yacc.c:1646  */
+#line 51073 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2549:
 #line 14080 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, (yyvsp[-3].str), mm_strdup(","), (yyvsp[0].str)); }
-#line 51077 "preproc.c" /* yacc.c:1646  */
+#line 51079 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2550:
 #line 14082 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, (yyvsp[-2].str), mm_strdup(","), (yyvsp[0].str)); }
-#line 51083 "preproc.c" /* yacc.c:1646  */
+#line 51085 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2551:
@@ -51090,7 +51092,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			else
 				(yyval.str) = make3_str(mm_strdup("\""), (yyvsp[0].str), mm_strdup("\""));
 		}
-#line 51094 "preproc.c" /* yacc.c:1646  */
+#line 51096 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2552:
@@ -51101,7 +51103,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			else
 				(yyval.str) = make3_str(mm_strdup("\""), (yyvsp[0].str), mm_strdup("\""));
 		}
-#line 51105 "preproc.c" /* yacc.c:1646  */
+#line 51107 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2553:
@@ -51119,7 +51121,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			else
 				(yyval.str) = mm_strdup(argsinsert->variable->name);
 		}
-#line 51123 "preproc.c" /* yacc.c:1646  */
+#line 51125 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2554:
@@ -51155,7 +51157,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 				}
 			}
 		}
-#line 51159 "preproc.c" /* yacc.c:1646  */
+#line 51161 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2555:
@@ -51169,13 +51171,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 			(yyval.str) = make2_str(mm_strdup("?"), (yyvsp[0].str));
 		}
-#line 51173 "preproc.c" /* yacc.c:1646  */
+#line 51175 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2556:
 #line 14159 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 51179 "preproc.c" /* yacc.c:1646  */
+#line 51181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2557:
@@ -51183,7 +51185,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 				(yyval.str) = make2_str((yyvsp[-1].str), (yyvsp[0].str));
 			}
-#line 51187 "preproc.c" /* yacc.c:1646  */
+#line 51189 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2558:
@@ -51197,31 +51199,31 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 				(yyval.str) = cat_str(3, make2_str((yyvsp[-3].str), (yyvsp[-2].str)), (yyvsp[-1].str), (yyvsp[0].str));
 			}
-#line 51201 "preproc.c" /* yacc.c:1646  */
+#line 51203 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2559:
 #line 14179 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 51207 "preproc.c" /* yacc.c:1646  */
+#line 51209 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2560:
 #line 14181 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make2_str(mm_strdup("="), (yyvsp[0].str)); }
-#line 51213 "preproc.c" /* yacc.c:1646  */
+#line 51215 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2561:
 #line 14183 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make2_str(mm_strdup("="), (yyvsp[0].str)); }
-#line 51219 "preproc.c" /* yacc.c:1646  */
+#line 51221 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2562:
 #line 14185 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make2_str(mm_strdup("="), (yyvsp[0].str)); }
-#line 51225 "preproc.c" /* yacc.c:1646  */
+#line 51227 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2563:
@@ -51239,13 +51241,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 				(yyval.str) = make3_str(mm_strdup("\""), (yyvsp[0].str), mm_strdup("\""));
 			}
 		}
-#line 51243 "preproc.c" /* yacc.c:1646  */
+#line 51245 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2564:
 #line 14202 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51249 "preproc.c" /* yacc.c:1646  */
+#line 51251 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2565:
@@ -51308,7 +51310,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			else
 				(yyval.str) = cat2_str(adjust_outofscope_cursor_vars(this), comment);
 		}
-#line 51312 "preproc.c" /* yacc.c:1646  */
+#line 51314 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2566:
@@ -51318,73 +51320,73 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			   * immediately execute it */
 			  (yyval.str) = (yyvsp[0].str);
 			}
-#line 51322 "preproc.c" /* yacc.c:1646  */
+#line 51324 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2568:
 #line 14281 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51328 "preproc.c" /* yacc.c:1646  */
+#line 51330 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2569:
 #line 14282 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51334 "preproc.c" /* yacc.c:1646  */
+#line 51336 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2570:
 #line 14285 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51340 "preproc.c" /* yacc.c:1646  */
+#line 51342 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2571:
 #line 14287 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51346 "preproc.c" /* yacc.c:1646  */
+#line 51348 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2572:
 #line 14288 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 51352 "preproc.c" /* yacc.c:1646  */
+#line 51354 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2573:
 #line 14291 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51358 "preproc.c" /* yacc.c:1646  */
+#line 51360 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2574:
 #line 14292 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("year to minute"); }
-#line 51364 "preproc.c" /* yacc.c:1646  */
+#line 51366 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2575:
 #line 14293 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("year to second"); }
-#line 51370 "preproc.c" /* yacc.c:1646  */
+#line 51372 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2576:
 #line 14294 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("day to day"); }
-#line 51376 "preproc.c" /* yacc.c:1646  */
+#line 51378 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2577:
 #line 14295 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("month to month"); }
-#line 51382 "preproc.c" /* yacc.c:1646  */
+#line 51384 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2578:
 #line 14302 "preproc.y" /* yacc.c:1646  */
     { fputs("/* exec sql begin declare section */", base_yyout); }
-#line 51388 "preproc.c" /* yacc.c:1646  */
+#line 51390 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2579:
@@ -51394,67 +51396,67 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			free((yyvsp[-1].str));
 			output_line_number();
 		}
-#line 51398 "preproc.c" /* yacc.c:1646  */
+#line 51400 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2580:
 #line 14311 "preproc.y" /* yacc.c:1646  */
     {}
-#line 51404 "preproc.c" /* yacc.c:1646  */
+#line 51406 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2581:
 #line 14313 "preproc.y" /* yacc.c:1646  */
     {}
-#line 51410 "preproc.c" /* yacc.c:1646  */
+#line 51412 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2582:
 #line 14315 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 51416 "preproc.c" /* yacc.c:1646  */
+#line 51418 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2583:
 #line 14316 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51422 "preproc.c" /* yacc.c:1646  */
+#line 51424 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2584:
 #line 14319 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51428 "preproc.c" /* yacc.c:1646  */
+#line 51430 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2585:
 #line 14320 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51434 "preproc.c" /* yacc.c:1646  */
+#line 51436 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2586:
 #line 14321 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat2_str((yyvsp[-1].str), (yyvsp[0].str)); }
-#line 51440 "preproc.c" /* yacc.c:1646  */
+#line 51442 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2587:
 #line 14322 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat2_str((yyvsp[-1].str), (yyvsp[0].str)); }
-#line 51446 "preproc.c" /* yacc.c:1646  */
+#line 51448 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2588:
 #line 14325 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51452 "preproc.c" /* yacc.c:1646  */
+#line 51454 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2589:
 #line 14326 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat2_str((yyvsp[-1].str), (yyvsp[0].str)); }
-#line 51458 "preproc.c" /* yacc.c:1646  */
+#line 51460 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2590:
@@ -51464,7 +51466,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		/* an initializer specified */
 		initializer = 0;
 	}
-#line 51468 "preproc.c" /* yacc.c:1646  */
+#line 51470 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2591:
@@ -51476,7 +51478,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		output_line_number();
 		(yyval.str) = mm_strdup("");
 	}
-#line 51480 "preproc.c" /* yacc.c:1646  */
+#line 51482 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2592:
@@ -51490,7 +51492,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 			actual_startline[struct_level] = hashline_number();
 		}
-#line 51494 "preproc.c" /* yacc.c:1646  */
+#line 51496 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2593:
@@ -51498,7 +51500,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 			(yyval.str) = cat_str(5, actual_startline[struct_level], (yyvsp[-4].str), (yyvsp[-3].type).type_str, (yyvsp[-1].str), mm_strdup(";\n"));
 		}
-#line 51502 "preproc.c" /* yacc.c:1646  */
+#line 51504 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2594:
@@ -51512,7 +51514,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 			actual_startline[struct_level] = hashline_number();
 		}
-#line 51516 "preproc.c" /* yacc.c:1646  */
+#line 51518 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2595:
@@ -51520,7 +51522,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 			(yyval.str) = cat_str(4, actual_startline[struct_level], (yyvsp[-3].type).type_str, (yyvsp[-1].str), mm_strdup(";\n"));
 		}
-#line 51524 "preproc.c" /* yacc.c:1646  */
+#line 51526 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2596:
@@ -51528,73 +51530,73 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 			(yyval.str) = cat2_str((yyvsp[-1].str), mm_strdup(";"));
 		}
-#line 51532 "preproc.c" /* yacc.c:1646  */
+#line 51534 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2597:
 #line 14379 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) =cat2_str(mm_strdup(":"), (yyvsp[0].str)); }
-#line 51538 "preproc.c" /* yacc.c:1646  */
+#line 51540 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2598:
 #line 14380 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 51544 "preproc.c" /* yacc.c:1646  */
+#line 51546 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2599:
 #line 14384 "preproc.y" /* yacc.c:1646  */
     {(yyval.str) = cat2_str ((yyvsp[-1].str), (yyvsp[0].str)); }
-#line 51550 "preproc.c" /* yacc.c:1646  */
+#line 51552 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2600:
 #line 14385 "preproc.y" /* yacc.c:1646  */
     {(yyval.str) = (yyvsp[0].str); }
-#line 51556 "preproc.c" /* yacc.c:1646  */
+#line 51558 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2601:
 #line 14386 "preproc.y" /* yacc.c:1646  */
     {(yyval.str) = (yyvsp[0].str); }
-#line 51562 "preproc.c" /* yacc.c:1646  */
+#line 51564 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2602:
 #line 14389 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("extern"); }
-#line 51568 "preproc.c" /* yacc.c:1646  */
+#line 51570 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2603:
 #line 14390 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("static"); }
-#line 51574 "preproc.c" /* yacc.c:1646  */
+#line 51576 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2604:
 #line 14391 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("register"); }
-#line 51580 "preproc.c" /* yacc.c:1646  */
+#line 51582 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2605:
 #line 14392 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("auto"); }
-#line 51586 "preproc.c" /* yacc.c:1646  */
+#line 51588 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2606:
 #line 14395 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("const"); }
-#line 51592 "preproc.c" /* yacc.c:1646  */
+#line 51594 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2607:
 #line 14396 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("volatile"); }
-#line 51598 "preproc.c" /* yacc.c:1646  */
+#line 51600 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2608:
@@ -51606,7 +51608,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.type).type_index = mm_strdup("-1");
 			(yyval.type).type_sizeof = NULL;
 		}
-#line 51610 "preproc.c" /* yacc.c:1646  */
+#line 51612 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2609:
@@ -51627,7 +51629,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 				(yyval.type).type_sizeof = NULL;
 			}
 		}
-#line 51631 "preproc.c" /* yacc.c:1646  */
+#line 51633 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2610:
@@ -51639,7 +51641,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.type).type_index = mm_strdup("-1");
 			(yyval.type).type_sizeof = NULL;
 		}
-#line 51643 "preproc.c" /* yacc.c:1646  */
+#line 51645 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2611:
@@ -51666,7 +51668,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.type).type_index = mm_strdup("-1");
 			(yyval.type).type_sizeof = NULL;
 		}
-#line 51670 "preproc.c" /* yacc.c:1646  */
+#line 51672 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2612:
@@ -51776,7 +51778,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 				struct_member_list[struct_level] = ECPGstruct_member_dup(this->struct_member_list);
 			}
 		}
-#line 51780 "preproc.c" /* yacc.c:1646  */
+#line 51782 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2613:
@@ -51812,31 +51814,31 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 				struct_member_list[struct_level] = NULL;
 			}
 		}
-#line 51816 "preproc.c" /* yacc.c:1646  */
+#line 51818 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2614:
 #line 14596 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, mm_strdup("enum"), (yyvsp[-1].str), (yyvsp[0].str)); }
-#line 51822 "preproc.c" /* yacc.c:1646  */
+#line 51824 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2615:
 #line 14598 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat2_str(mm_strdup("enum"), (yyvsp[0].str)); }
-#line 51828 "preproc.c" /* yacc.c:1646  */
+#line 51830 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2616:
 #line 14600 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat2_str(mm_strdup("enum"), (yyvsp[0].str)); }
-#line 51834 "preproc.c" /* yacc.c:1646  */
+#line 51836 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2617:
 #line 14604 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, mm_strdup("{"), (yyvsp[-1].str), mm_strdup("}")); }
-#line 51840 "preproc.c" /* yacc.c:1646  */
+#line 51842 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2618:
@@ -51847,7 +51849,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 				 mmerror(PARSE_ERROR, ET_ERROR, "too many levels in nested structure/union definition");
 			forward_name = mm_strdup((yyvsp[0].struct_union).symbol);
 		}
-#line 51851 "preproc.c" /* yacc.c:1646  */
+#line 51853 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2619:
@@ -51893,13 +51895,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			types = this;
 			(yyval.str) = cat_str(4, su_type.type_str, mm_strdup("{"), (yyvsp[-1].str), mm_strdup("}"));
 		}
-#line 51897 "preproc.c" /* yacc.c:1646  */
+#line 51899 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2620:
 #line 14657 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 51903 "preproc.c" /* yacc.c:1646  */
+#line 51905 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2621:
@@ -51909,7 +51911,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			if (struct_level >= STRUCT_DEPTH)
 				 mmerror(PARSE_ERROR, ET_ERROR, "too many levels in nested structure/union definition");
 		}
-#line 51913 "preproc.c" /* yacc.c:1646  */
+#line 51915 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2622:
@@ -51920,7 +51922,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			struct_level--;
 			(yyval.str) = cat_str(4, (yyvsp[-4].str), mm_strdup("{"), (yyvsp[-1].str), mm_strdup("}"));
 		}
-#line 51924 "preproc.c" /* yacc.c:1646  */
+#line 51926 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2623:
@@ -51930,7 +51932,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.struct_union).symbol = (yyvsp[0].str);
 			ECPGstruct_sizeof = cat_str(3, mm_strdup("sizeof("), cat2_str(mm_strdup((yyval.struct_union).su), mm_strdup((yyval.struct_union).symbol)), mm_strdup(")"));
 		}
-#line 51934 "preproc.c" /* yacc.c:1646  */
+#line 51936 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2624:
@@ -51939,7 +51941,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.struct_union).su = mm_strdup("union");
 			(yyval.struct_union).symbol = (yyvsp[0].str);
 		}
-#line 51943 "preproc.c" /* yacc.c:1646  */
+#line 51945 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2625:
@@ -51948,7 +51950,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			ECPGstruct_sizeof = mm_strdup(""); /* This must not be NULL to distinguish from simple types. */
 			(yyval.str) = mm_strdup("struct");
 		}
-#line 51952 "preproc.c" /* yacc.c:1646  */
+#line 51954 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2626:
@@ -51956,55 +51958,55 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 			(yyval.str) = mm_strdup("union");
 		}
-#line 51960 "preproc.c" /* yacc.c:1646  */
+#line 51962 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2627:
 #line 14697 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum)=(yyvsp[0].type_enum); }
-#line 51966 "preproc.c" /* yacc.c:1646  */
+#line 51968 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2628:
 #line 14698 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum)=(yyvsp[0].type_enum); }
-#line 51972 "preproc.c" /* yacc.c:1646  */
+#line 51974 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2629:
 #line 14701 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_unsigned_short; }
-#line 51978 "preproc.c" /* yacc.c:1646  */
+#line 51980 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2630:
 #line 14702 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_unsigned_short; }
-#line 51984 "preproc.c" /* yacc.c:1646  */
+#line 51986 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2631:
 #line 14703 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_unsigned_int; }
-#line 51990 "preproc.c" /* yacc.c:1646  */
+#line 51992 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2632:
 #line 14704 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_unsigned_int; }
-#line 51996 "preproc.c" /* yacc.c:1646  */
+#line 51998 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2633:
 #line 14705 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_unsigned_long; }
-#line 52002 "preproc.c" /* yacc.c:1646  */
+#line 52004 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2634:
 #line 14706 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_unsigned_long; }
-#line 52008 "preproc.c" /* yacc.c:1646  */
+#line 52010 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2635:
@@ -52016,7 +52018,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.type_enum) = ECPGt_unsigned_long;
 #endif
 		}
-#line 52020 "preproc.c" /* yacc.c:1646  */
+#line 52022 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2636:
@@ -52028,43 +52030,43 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.type_enum) = ECPGt_unsigned_long;
 #endif
 		}
-#line 52032 "preproc.c" /* yacc.c:1646  */
+#line 52034 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2637:
 #line 14723 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_unsigned_char; }
-#line 52038 "preproc.c" /* yacc.c:1646  */
+#line 52040 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2638:
 #line 14726 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_short; }
-#line 52044 "preproc.c" /* yacc.c:1646  */
+#line 52046 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2639:
 #line 14727 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_short; }
-#line 52050 "preproc.c" /* yacc.c:1646  */
+#line 52052 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2640:
 #line 14728 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_int; }
-#line 52056 "preproc.c" /* yacc.c:1646  */
+#line 52058 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2641:
 #line 14729 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_long; }
-#line 52062 "preproc.c" /* yacc.c:1646  */
+#line 52064 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2642:
 #line 14730 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_long; }
-#line 52068 "preproc.c" /* yacc.c:1646  */
+#line 52070 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2643:
@@ -52076,7 +52078,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.type_enum) = ECPGt_long;
 #endif
 		}
-#line 52080 "preproc.c" /* yacc.c:1646  */
+#line 52082 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2644:
@@ -52088,31 +52090,31 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.type_enum) = ECPGt_long;
 #endif
 		}
-#line 52092 "preproc.c" /* yacc.c:1646  */
+#line 52094 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2645:
 #line 14747 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_bool; }
-#line 52098 "preproc.c" /* yacc.c:1646  */
+#line 52100 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2646:
 #line 14748 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_char; }
-#line 52104 "preproc.c" /* yacc.c:1646  */
+#line 52106 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2647:
 #line 14749 "preproc.y" /* yacc.c:1646  */
     { (yyval.type_enum) = ECPGt_double; }
-#line 52110 "preproc.c" /* yacc.c:1646  */
+#line 52112 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2650:
 #line 14757 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52116 "preproc.c" /* yacc.c:1646  */
+#line 52118 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2651:
@@ -52123,7 +52125,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			else
 				(yyval.str) = cat_str(3, (yyvsp[-2].str), mm_strdup(","), (yyvsp[0].str));
 		}
-#line 52127 "preproc.c" /* yacc.c:1646  */
+#line 52129 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2652:
@@ -52212,13 +52214,13 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 			free((yyvsp[-3].str));
 		}
-#line 52216 "preproc.c" /* yacc.c:1646  */
+#line 52218 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2653:
 #line 14855 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 52222 "preproc.c" /* yacc.c:1646  */
+#line 52224 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2654:
@@ -52227,25 +52229,25 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			initializer = 1;
 			(yyval.str) = cat2_str(mm_strdup("="), (yyvsp[0].str));
 		}
-#line 52231 "preproc.c" /* yacc.c:1646  */
+#line 52233 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2655:
 #line 14863 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 52237 "preproc.c" /* yacc.c:1646  */
+#line 52239 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2656:
 #line 14864 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("*"); }
-#line 52243 "preproc.c" /* yacc.c:1646  */
+#line 52245 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2657:
 #line 14865 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("**"); }
-#line 52249 "preproc.c" /* yacc.c:1646  */
+#line 52251 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2658:
@@ -52254,79 +52256,79 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			/* this is only supported for compatibility */
 			(yyval.str) = cat_str(3, mm_strdup("/* declare statement"), (yyvsp[0].str), mm_strdup("*/"));
 		}
-#line 52258 "preproc.c" /* yacc.c:1646  */
+#line 52260 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2659:
 #line 14880 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52264 "preproc.c" /* yacc.c:1646  */
+#line 52266 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2660:
 #line 14883 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52270 "preproc.c" /* yacc.c:1646  */
+#line 52272 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2661:
 #line 14884 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("\"CURRENT\""); }
-#line 52276 "preproc.c" /* yacc.c:1646  */
+#line 52278 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2662:
 #line 14885 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("\"ALL\""); }
-#line 52282 "preproc.c" /* yacc.c:1646  */
+#line 52284 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2663:
 #line 14886 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("\"CURRENT\""); }
-#line 52288 "preproc.c" /* yacc.c:1646  */
+#line 52290 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2664:
 #line 14889 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make3_str(mm_strdup("\""), (yyvsp[0].str), mm_strdup("\"")); }
-#line 52294 "preproc.c" /* yacc.c:1646  */
+#line 52296 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2665:
 #line 14890 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("\"DEFAULT\""); }
-#line 52300 "preproc.c" /* yacc.c:1646  */
+#line 52302 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2666:
 #line 14891 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52306 "preproc.c" /* yacc.c:1646  */
+#line 52308 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2667:
 #line 14895 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52312 "preproc.c" /* yacc.c:1646  */
+#line 52314 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2668:
 #line 14897 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make3_str(mm_strdup("\""), (yyvsp[0].str), mm_strdup("\"")); }
-#line 52318 "preproc.c" /* yacc.c:1646  */
+#line 52320 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2669:
 #line 14904 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52324 "preproc.c" /* yacc.c:1646  */
+#line 52326 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2670:
 #line 14905 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("all"); }
-#line 52330 "preproc.c" /* yacc.c:1646  */
+#line 52332 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2671:
@@ -52336,31 +52338,31 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 				remove_variable_from_list(&argsinsert, find_variable((yyvsp[-1].str) + 1));
 			(yyval.str) = (yyvsp[-1].str);
 		}
-#line 52340 "preproc.c" /* yacc.c:1646  */
+#line 52342 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2672:
 #line 14919 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 52346 "preproc.c" /* yacc.c:1646  */
+#line 52348 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2673:
 #line 14920 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52352 "preproc.c" /* yacc.c:1646  */
+#line 52354 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2674:
 #line 14923 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 52358 "preproc.c" /* yacc.c:1646  */
+#line 52360 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2675:
 #line 14924 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52364 "preproc.c" /* yacc.c:1646  */
+#line 52366 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2676:
@@ -52369,7 +52371,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			add_variable_to_head(&argsinsert, descriptor_variable((yyvsp[0].str),0), &no_indicator);
 			(yyval.str) = EMPTY;
 		}
-#line 52373 "preproc.c" /* yacc.c:1646  */
+#line 52375 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2677:
@@ -52378,7 +52380,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			add_variable_to_head(&argsinsert, sqlda_variable((yyvsp[0].str)), &no_indicator);
 			(yyval.str) = EMPTY;
 		}
-#line 52382 "preproc.c" /* yacc.c:1646  */
+#line 52384 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2678:
@@ -52387,7 +52389,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			add_variable_to_head(&argsresult, descriptor_variable((yyvsp[0].str),1), &no_indicator);
 			(yyval.str) = EMPTY;
 		}
-#line 52391 "preproc.c" /* yacc.c:1646  */
+#line 52393 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2679:
@@ -52396,7 +52398,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			add_variable_to_head(&argsresult, sqlda_variable((yyvsp[0].str)), &no_indicator);
 			(yyval.str) = EMPTY;
 		}
-#line 52400 "preproc.c" /* yacc.c:1646  */
+#line 52402 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2680:
@@ -52405,7 +52407,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			add_variable_to_head(&argsresult, sqlda_variable((yyvsp[0].str)), &no_indicator);
 			(yyval.str) = EMPTY;
 		}
-#line 52409 "preproc.c" /* yacc.c:1646  */
+#line 52411 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2683:
@@ -52416,73 +52418,73 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			sprintf(length, "%d", (int) strlen((yyvsp[0].str)));
 			add_variable_to_head(&argsinsert, new_variable((yyvsp[0].str), ECPGmake_simple_type(ECPGt_const, length, 0), 0), &no_indicator);
 		}
-#line 52420 "preproc.c" /* yacc.c:1646  */
+#line 52422 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2684:
 #line 14967 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 52426 "preproc.c" /* yacc.c:1646  */
+#line 52428 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2685:
 #line 14968 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 52432 "preproc.c" /* yacc.c:1646  */
+#line 52434 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2686:
 #line 14971 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52438 "preproc.c" /* yacc.c:1646  */
+#line 52440 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2687:
 #line 14972 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(2, mm_strdup("+"), (yyvsp[0].str)); }
-#line 52444 "preproc.c" /* yacc.c:1646  */
+#line 52446 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2688:
 #line 14973 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(2, mm_strdup("-"), (yyvsp[0].str)); }
-#line 52450 "preproc.c" /* yacc.c:1646  */
+#line 52452 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2689:
 #line 14974 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52456 "preproc.c" /* yacc.c:1646  */
+#line 52458 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2690:
 #line 14975 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(2, mm_strdup("+"), (yyvsp[0].str)); }
-#line 52462 "preproc.c" /* yacc.c:1646  */
+#line 52464 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2691:
 #line 14976 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(2, mm_strdup("-"), (yyvsp[0].str)); }
-#line 52468 "preproc.c" /* yacc.c:1646  */
+#line 52470 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2692:
 #line 14977 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52474 "preproc.c" /* yacc.c:1646  */
+#line 52476 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2693:
 #line 14978 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52480 "preproc.c" /* yacc.c:1646  */
+#line 52482 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2694:
 #line 14979 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52486 "preproc.c" /* yacc.c:1646  */
+#line 52488 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2695:
@@ -52493,7 +52495,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		(yyval.str) = (char *) mm_alloc(sizeof("1, , ") + strlen(con) + strlen((yyvsp[-1].str)));
 		sprintf((yyval.str), "1, %s, %s", con, (yyvsp[-1].str));
 	}
-#line 52497 "preproc.c" /* yacc.c:1646  */
+#line 52499 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2696:
@@ -52509,7 +52511,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		(yyval.str) = (char *) mm_alloc(sizeof("0, , ") + strlen(con) + strlen((yyvsp[-1].str)));
 		sprintf((yyval.str), "0, %s, %s", con, (yyvsp[-1].str));
 	}
-#line 52513 "preproc.c" /* yacc.c:1646  */
+#line 52515 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2697:
@@ -52519,7 +52521,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		(yyval.str) = (char *) mm_alloc(sizeof("0, , ") + strlen(con) + strlen((yyvsp[-1].str)));
 		sprintf((yyval.str), "0, %s, %s", con, (yyvsp[-1].str));
 	}
-#line 52523 "preproc.c" /* yacc.c:1646  */
+#line 52525 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2698:
@@ -52530,7 +52532,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		(yyval.str) = (char *) mm_alloc(sizeof("1, , ") + strlen(con) + strlen((yyvsp[-1].str)));
 		sprintf((yyval.str), "1, %s, %s", con, (yyvsp[-1].str));
 	}
-#line 52534 "preproc.c" /* yacc.c:1646  */
+#line 52536 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2699:
@@ -52540,19 +52542,19 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		(yyval.str) = (char *) mm_alloc(sizeof("0, , ") + strlen(con) + strlen((yyvsp[-1].str)));
 		sprintf((yyval.str), "0, %s, %s", con, (yyvsp[-1].str));
 	}
-#line 52544 "preproc.c" /* yacc.c:1646  */
+#line 52546 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2700:
 #line 15025 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("output"); }
-#line 52550 "preproc.c" /* yacc.c:1646  */
+#line 52552 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2701:
 #line 15026 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 52556 "preproc.c" /* yacc.c:1646  */
+#line 52558 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2702:
@@ -52561,7 +52563,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			add_descriptor((yyvsp[0].str),connection);
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 52565 "preproc.c" /* yacc.c:1646  */
+#line 52567 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2703:
@@ -52570,25 +52572,25 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			drop_descriptor((yyvsp[0].str),connection);
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 52574 "preproc.c" /* yacc.c:1646  */
+#line 52576 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2704:
 #line 15061 "preproc.y" /* yacc.c:1646  */
     {  (yyval.str) = (yyvsp[-1].str); }
-#line 52580 "preproc.c" /* yacc.c:1646  */
+#line 52582 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2707:
 #line 15069 "preproc.y" /* yacc.c:1646  */
     { push_assignment((yyvsp[-2].str), (yyvsp[0].dtype_enum)); }
-#line 52586 "preproc.c" /* yacc.c:1646  */
+#line 52588 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2708:
 #line 15074 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[-1].str); }
-#line 52592 "preproc.c" /* yacc.c:1646  */
+#line 52594 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2711:
@@ -52596,7 +52598,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 			push_assignment((yyvsp[0].str), (yyvsp[-2].dtype_enum));
 		}
-#line 52600 "preproc.c" /* yacc.c:1646  */
+#line 52602 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2712:
@@ -52608,7 +52610,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			new_variable((yyvsp[0].str), ECPGmake_simple_type(ECPGt_const, length, 0), 0);
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 52612 "preproc.c" /* yacc.c:1646  */
+#line 52614 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2713:
@@ -52616,31 +52618,31 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 52620 "preproc.c" /* yacc.c:1646  */
+#line 52622 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2714:
 #line 15101 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_count; }
-#line 52626 "preproc.c" /* yacc.c:1646  */
+#line 52628 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2715:
 #line 15109 "preproc.y" /* yacc.c:1646  */
     {  (yyval.descriptor).str = (yyvsp[-1].str); (yyval.descriptor).name = (yyvsp[-3].str); }
-#line 52632 "preproc.c" /* yacc.c:1646  */
+#line 52634 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2718:
 #line 15116 "preproc.y" /* yacc.c:1646  */
     { push_assignment((yyvsp[-2].str), (yyvsp[0].dtype_enum)); }
-#line 52638 "preproc.c" /* yacc.c:1646  */
+#line 52640 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2719:
 #line 15120 "preproc.y" /* yacc.c:1646  */
     {  (yyval.descriptor).str = (yyvsp[-1].str); (yyval.descriptor).name = (yyvsp[-3].str); }
-#line 52644 "preproc.c" /* yacc.c:1646  */
+#line 52646 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2722:
@@ -52648,7 +52650,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 			push_assignment((yyvsp[0].str), (yyvsp[-2].dtype_enum));
 		}
-#line 52652 "preproc.c" /* yacc.c:1646  */
+#line 52654 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2723:
@@ -52660,7 +52662,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			new_variable((yyvsp[0].str), ECPGmake_simple_type(ECPGt_const, length, 0), 0);
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 52664 "preproc.c" /* yacc.c:1646  */
+#line 52666 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2724:
@@ -52668,7 +52670,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
     {
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 52672 "preproc.c" /* yacc.c:1646  */
+#line 52674 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2725:
@@ -52681,7 +52683,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			new_variable(var, ECPGmake_simple_type(ECPGt_const, length, 0), 0);
 			(yyval.str) = var;
 		}
-#line 52685 "preproc.c" /* yacc.c:1646  */
+#line 52687 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2726:
@@ -52694,7 +52696,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			new_variable(var, ECPGmake_simple_type(ECPGt_const, length, 0), 0);
 			(yyval.str) = var;
 		}
-#line 52698 "preproc.c" /* yacc.c:1646  */
+#line 52700 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2727:
@@ -52708,139 +52710,139 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			new_variable(var, ECPGmake_simple_type(ECPGt_const, length, 0), 0);
 			(yyval.str) = var;
 		}
-#line 52712 "preproc.c" /* yacc.c:1646  */
+#line 52714 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2728:
 #line 15179 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_cardinality; }
-#line 52718 "preproc.c" /* yacc.c:1646  */
+#line 52720 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2729:
 #line 15180 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_data; }
-#line 52724 "preproc.c" /* yacc.c:1646  */
+#line 52726 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2730:
 #line 15181 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_di_code; }
-#line 52730 "preproc.c" /* yacc.c:1646  */
+#line 52732 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2731:
 #line 15182 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_di_precision; }
-#line 52736 "preproc.c" /* yacc.c:1646  */
+#line 52738 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2732:
 #line 15183 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_indicator; }
-#line 52742 "preproc.c" /* yacc.c:1646  */
+#line 52744 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2733:
 #line 15184 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_key_member; }
-#line 52748 "preproc.c" /* yacc.c:1646  */
+#line 52750 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2734:
 #line 15185 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_length; }
-#line 52754 "preproc.c" /* yacc.c:1646  */
+#line 52756 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2735:
 #line 15186 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_name; }
-#line 52760 "preproc.c" /* yacc.c:1646  */
+#line 52762 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2736:
 #line 15187 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_nullable; }
-#line 52766 "preproc.c" /* yacc.c:1646  */
+#line 52768 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2737:
 #line 15188 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_octet; }
-#line 52772 "preproc.c" /* yacc.c:1646  */
+#line 52774 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2738:
 #line 15189 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_precision; }
-#line 52778 "preproc.c" /* yacc.c:1646  */
+#line 52780 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2739:
 #line 15190 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_length; }
-#line 52784 "preproc.c" /* yacc.c:1646  */
+#line 52786 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2740:
 #line 15191 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_ret_octet; }
-#line 52790 "preproc.c" /* yacc.c:1646  */
+#line 52792 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2741:
 #line 15192 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_scale; }
-#line 52796 "preproc.c" /* yacc.c:1646  */
+#line 52798 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2742:
 #line 15193 "preproc.y" /* yacc.c:1646  */
     { (yyval.dtype_enum) = ECPGd_type; }
-#line 52802 "preproc.c" /* yacc.c:1646  */
+#line 52804 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2743:
 #line 15200 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52808 "preproc.c" /* yacc.c:1646  */
+#line 52810 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2744:
 #line 15201 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52814 "preproc.c" /* yacc.c:1646  */
+#line 52816 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2745:
 #line 15204 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("on"); }
-#line 52820 "preproc.c" /* yacc.c:1646  */
+#line 52822 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2746:
 #line 15205 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("off"); }
-#line 52826 "preproc.c" /* yacc.c:1646  */
+#line 52828 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2747:
 #line 15212 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52832 "preproc.c" /* yacc.c:1646  */
+#line 52834 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2748:
 #line 15213 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52838 "preproc.c" /* yacc.c:1646  */
+#line 52840 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2749:
 #line 15214 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 52844 "preproc.c" /* yacc.c:1646  */
+#line 52846 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2750:
@@ -52850,7 +52852,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			/* an initializer specified */
 			initializer = 0;
 		}
-#line 52854 "preproc.c" /* yacc.c:1646  */
+#line 52856 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2751:
@@ -52863,19 +52865,19 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			else
 				(yyval.str) = cat_str(6, mm_strdup("typedef "), mm_strdup((yyvsp[-2].type).type_str), *(yyvsp[0].str)?mm_strdup("*"):mm_strdup(""), mm_strdup((yyvsp[-4].str)), mm_strdup((yyvsp[-1].index).str), mm_strdup(";"));
 		}
-#line 52867 "preproc.c" /* yacc.c:1646  */
+#line 52869 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2752:
 #line 15237 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("reference"); }
-#line 52873 "preproc.c" /* yacc.c:1646  */
+#line 52875 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2753:
 #line 15238 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 52879 "preproc.c" /* yacc.c:1646  */
+#line 52881 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2754:
@@ -52885,7 +52887,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			/* an initializer specified */
 			initializer = 0;
 		}
-#line 52889 "preproc.c" /* yacc.c:1646  */
+#line 52891 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2755:
@@ -52947,7 +52949,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 
 			(yyval.str) = cat_str(7, mm_strdup("/* exec sql var"), mm_strdup((yyvsp[-4].str)), mm_strdup("is"), mm_strdup((yyvsp[-2].type).type_str), mm_strdup((yyvsp[-1].index).str), (yyvsp[0].str), mm_strdup("*/"));
 		}
-#line 52951 "preproc.c" /* yacc.c:1646  */
+#line 52953 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2756:
@@ -52957,7 +52959,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			when_error.command = (yyvsp[0].action).command;
 			(yyval.str) = cat_str(3, mm_strdup("/* exec sql whenever sqlerror "), (yyvsp[0].action).str, mm_strdup("; */"));
 		}
-#line 52961 "preproc.c" /* yacc.c:1646  */
+#line 52963 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2757:
@@ -52967,7 +52969,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			when_nf.command = (yyvsp[0].action).command;
 			(yyval.str) = cat_str(3, mm_strdup("/* exec sql whenever not found "), (yyvsp[0].action).str, mm_strdup("; */"));
 		}
-#line 52971 "preproc.c" /* yacc.c:1646  */
+#line 52973 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2758:
@@ -52977,7 +52979,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			when_warn.command = (yyvsp[0].action).command;
 			(yyval.str) = cat_str(3, mm_strdup("/* exec sql whenever sql_warning "), (yyvsp[0].action).str, mm_strdup("; */"));
 		}
-#line 52981 "preproc.c" /* yacc.c:1646  */
+#line 52983 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2759:
@@ -52987,7 +52989,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.action).command = NULL;
 			(yyval.action).str = mm_strdup("continue");
 		}
-#line 52991 "preproc.c" /* yacc.c:1646  */
+#line 52993 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2760:
@@ -52997,7 +52999,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.action).command = NULL;
 			(yyval.action).str = mm_strdup("sqlprint");
 		}
-#line 53001 "preproc.c" /* yacc.c:1646  */
+#line 53003 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2761:
@@ -53007,7 +53009,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.action).command = NULL;
 			(yyval.action).str = mm_strdup("stop");
 		}
-#line 53011 "preproc.c" /* yacc.c:1646  */
+#line 53013 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2762:
@@ -53017,7 +53019,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.action).command = mm_strdup((yyvsp[0].str));
 			(yyval.action).str = cat2_str(mm_strdup("goto "), (yyvsp[0].str));
 		}
-#line 53021 "preproc.c" /* yacc.c:1646  */
+#line 53023 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2763:
@@ -53027,7 +53029,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.action).command = mm_strdup((yyvsp[0].str));
 			(yyval.action).str = cat2_str(mm_strdup("goto "), (yyvsp[0].str));
 		}
-#line 53031 "preproc.c" /* yacc.c:1646  */
+#line 53033 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2764:
@@ -53037,7 +53039,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.action).command = cat_str(4, (yyvsp[-3].str), mm_strdup("("), (yyvsp[-1].str), mm_strdup(")"));
 			(yyval.action).str = cat2_str(mm_strdup("do"), mm_strdup((yyval.action).command));
 		}
-#line 53041 "preproc.c" /* yacc.c:1646  */
+#line 53043 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2765:
@@ -53047,7 +53049,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.action).command = NULL;
 			(yyval.action).str = mm_strdup("break");
 		}
-#line 53051 "preproc.c" /* yacc.c:1646  */
+#line 53053 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2766:
@@ -53057,7 +53059,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.action).command = cat_str(4, (yyvsp[-3].str), mm_strdup("("), (yyvsp[-1].str), mm_strdup(")"));
 			(yyval.action).str = cat2_str(mm_strdup("call"), mm_strdup((yyval.action).command));
 		}
-#line 53061 "preproc.c" /* yacc.c:1646  */
+#line 53063 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2767:
@@ -53067,583 +53069,583 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.action).command = cat2_str((yyvsp[0].str), mm_strdup("()"));
 			(yyval.action).str = cat2_str(mm_strdup("call"), mm_strdup((yyval.action).command));
 		}
-#line 53071 "preproc.c" /* yacc.c:1646  */
+#line 53073 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2768:
 #line 15393 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53077 "preproc.c" /* yacc.c:1646  */
+#line 53079 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2769:
 #line 15394 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53083 "preproc.c" /* yacc.c:1646  */
+#line 53085 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2770:
 #line 15397 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("break"); }
-#line 53089 "preproc.c" /* yacc.c:1646  */
+#line 53091 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2771:
 #line 15398 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("call"); }
-#line 53095 "preproc.c" /* yacc.c:1646  */
+#line 53097 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2772:
 #line 15399 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("cardinality"); }
-#line 53101 "preproc.c" /* yacc.c:1646  */
+#line 53103 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2773:
 #line 15400 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("count"); }
-#line 53107 "preproc.c" /* yacc.c:1646  */
+#line 53109 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2774:
 #line 15401 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("datetime_interval_code"); }
-#line 53113 "preproc.c" /* yacc.c:1646  */
+#line 53115 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2775:
 #line 15402 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("datetime_interval_precision"); }
-#line 53119 "preproc.c" /* yacc.c:1646  */
+#line 53121 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2776:
 #line 15403 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("found"); }
-#line 53125 "preproc.c" /* yacc.c:1646  */
+#line 53127 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2777:
 #line 15404 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("go"); }
-#line 53131 "preproc.c" /* yacc.c:1646  */
+#line 53133 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2778:
 #line 15405 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("goto"); }
-#line 53137 "preproc.c" /* yacc.c:1646  */
+#line 53139 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2779:
 #line 15406 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("identified"); }
-#line 53143 "preproc.c" /* yacc.c:1646  */
+#line 53145 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2780:
 #line 15407 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("indicator"); }
-#line 53149 "preproc.c" /* yacc.c:1646  */
+#line 53151 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2781:
 #line 15408 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("key_member"); }
-#line 53155 "preproc.c" /* yacc.c:1646  */
+#line 53157 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2782:
 #line 15409 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("length"); }
-#line 53161 "preproc.c" /* yacc.c:1646  */
+#line 53163 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2783:
 #line 15410 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("nullable"); }
-#line 53167 "preproc.c" /* yacc.c:1646  */
+#line 53169 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2784:
 #line 15411 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("octet_length"); }
-#line 53173 "preproc.c" /* yacc.c:1646  */
+#line 53175 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2785:
 #line 15412 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("returned_length"); }
-#line 53179 "preproc.c" /* yacc.c:1646  */
+#line 53181 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2786:
 #line 15413 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("returned_octet_length"); }
-#line 53185 "preproc.c" /* yacc.c:1646  */
+#line 53187 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2787:
 #line 15414 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("scale"); }
-#line 53191 "preproc.c" /* yacc.c:1646  */
+#line 53193 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2788:
 #line 15415 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("section"); }
-#line 53197 "preproc.c" /* yacc.c:1646  */
+#line 53199 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2789:
 #line 15416 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("sqlerror"); }
-#line 53203 "preproc.c" /* yacc.c:1646  */
+#line 53205 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2790:
 #line 15417 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("sqlprint"); }
-#line 53209 "preproc.c" /* yacc.c:1646  */
+#line 53211 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2791:
 #line 15418 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("sqlwarning"); }
-#line 53215 "preproc.c" /* yacc.c:1646  */
+#line 53217 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2792:
 #line 15419 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("stop"); }
-#line 53221 "preproc.c" /* yacc.c:1646  */
+#line 53223 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2793:
 #line 15422 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("connect"); }
-#line 53227 "preproc.c" /* yacc.c:1646  */
+#line 53229 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2794:
 #line 15423 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("describe"); }
-#line 53233 "preproc.c" /* yacc.c:1646  */
+#line 53235 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2795:
 #line 15424 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("disconnect"); }
-#line 53239 "preproc.c" /* yacc.c:1646  */
+#line 53241 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2796:
 #line 15425 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("open"); }
-#line 53245 "preproc.c" /* yacc.c:1646  */
+#line 53247 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2797:
 #line 15426 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("var"); }
-#line 53251 "preproc.c" /* yacc.c:1646  */
+#line 53253 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2798:
 #line 15427 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("whenever"); }
-#line 53257 "preproc.c" /* yacc.c:1646  */
+#line 53259 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2799:
 #line 15431 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("bool"); }
-#line 53263 "preproc.c" /* yacc.c:1646  */
+#line 53265 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2800:
 #line 15432 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("long"); }
-#line 53269 "preproc.c" /* yacc.c:1646  */
+#line 53271 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2801:
 #line 15433 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("output"); }
-#line 53275 "preproc.c" /* yacc.c:1646  */
+#line 53277 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2802:
 #line 15434 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("short"); }
-#line 53281 "preproc.c" /* yacc.c:1646  */
+#line 53283 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2803:
 #line 15435 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("struct"); }
-#line 53287 "preproc.c" /* yacc.c:1646  */
+#line 53289 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2804:
 #line 15436 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("signed"); }
-#line 53293 "preproc.c" /* yacc.c:1646  */
+#line 53295 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2805:
 #line 15437 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("unsigned"); }
-#line 53299 "preproc.c" /* yacc.c:1646  */
+#line 53301 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2806:
 #line 15440 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53305 "preproc.c" /* yacc.c:1646  */
+#line 53307 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2807:
 #line 15443 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53311 "preproc.c" /* yacc.c:1646  */
+#line 53313 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2808:
 #line 15444 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53317 "preproc.c" /* yacc.c:1646  */
+#line 53319 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2809:
 #line 15445 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53323 "preproc.c" /* yacc.c:1646  */
+#line 53325 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2810:
 #line 15446 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53329 "preproc.c" /* yacc.c:1646  */
+#line 53331 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2811:
 #line 15447 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53335 "preproc.c" /* yacc.c:1646  */
+#line 53337 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2812:
 #line 15448 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53341 "preproc.c" /* yacc.c:1646  */
+#line 53343 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2813:
 #line 15449 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("char"); }
-#line 53347 "preproc.c" /* yacc.c:1646  */
+#line 53349 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2814:
 #line 15450 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("values"); }
-#line 53353 "preproc.c" /* yacc.c:1646  */
+#line 53355 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2815:
 #line 15463 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53359 "preproc.c" /* yacc.c:1646  */
+#line 53361 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2816:
 #line 15464 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53365 "preproc.c" /* yacc.c:1646  */
+#line 53367 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2817:
 #line 15465 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53371 "preproc.c" /* yacc.c:1646  */
+#line 53373 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2818:
 #line 15466 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53377 "preproc.c" /* yacc.c:1646  */
+#line 53379 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2819:
 #line 15467 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53383 "preproc.c" /* yacc.c:1646  */
+#line 53385 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2820:
 #line 15468 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("char"); }
-#line 53389 "preproc.c" /* yacc.c:1646  */
+#line 53391 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2821:
 #line 15469 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("values"); }
-#line 53395 "preproc.c" /* yacc.c:1646  */
+#line 53397 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2822:
 #line 15474 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53401 "preproc.c" /* yacc.c:1646  */
+#line 53403 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2823:
 #line 15475 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53407 "preproc.c" /* yacc.c:1646  */
+#line 53409 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2824:
 #line 15476 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53413 "preproc.c" /* yacc.c:1646  */
+#line 53415 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2825:
 #line 15477 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53419 "preproc.c" /* yacc.c:1646  */
+#line 53421 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2826:
 #line 15478 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53425 "preproc.c" /* yacc.c:1646  */
+#line 53427 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2827:
 #line 15479 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53431 "preproc.c" /* yacc.c:1646  */
+#line 53433 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2828:
 #line 15485 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53437 "preproc.c" /* yacc.c:1646  */
+#line 53439 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2829:
 #line 15486 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53443 "preproc.c" /* yacc.c:1646  */
+#line 53445 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2830:
 #line 15487 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("char"); }
-#line 53449 "preproc.c" /* yacc.c:1646  */
+#line 53451 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2831:
 #line 15488 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("current"); }
-#line 53455 "preproc.c" /* yacc.c:1646  */
+#line 53457 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2832:
 #line 15489 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("input"); }
-#line 53461 "preproc.c" /* yacc.c:1646  */
+#line 53463 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2833:
 #line 15490 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("int"); }
-#line 53467 "preproc.c" /* yacc.c:1646  */
+#line 53469 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2834:
 #line 15491 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("to"); }
-#line 53473 "preproc.c" /* yacc.c:1646  */
+#line 53475 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2835:
 #line 15492 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("union"); }
-#line 53479 "preproc.c" /* yacc.c:1646  */
+#line 53481 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2836:
 #line 15493 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("values"); }
-#line 53485 "preproc.c" /* yacc.c:1646  */
+#line 53487 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2837:
 #line 15494 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53491 "preproc.c" /* yacc.c:1646  */
+#line 53493 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2838:
 #line 15495 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53497 "preproc.c" /* yacc.c:1646  */
+#line 53499 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2839:
 #line 15498 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53503 "preproc.c" /* yacc.c:1646  */
+#line 53505 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2840:
 #line 15499 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53509 "preproc.c" /* yacc.c:1646  */
+#line 53511 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2841:
 #line 15500 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53515 "preproc.c" /* yacc.c:1646  */
+#line 53517 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2842:
 #line 15501 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53521 "preproc.c" /* yacc.c:1646  */
+#line 53523 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2843:
 #line 15502 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("connection"); }
-#line 53527 "preproc.c" /* yacc.c:1646  */
+#line 53529 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2844:
 #line 15505 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53533 "preproc.c" /* yacc.c:1646  */
+#line 53535 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2845:
 #line 15506 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53539 "preproc.c" /* yacc.c:1646  */
+#line 53541 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2846:
 #line 15507 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53545 "preproc.c" /* yacc.c:1646  */
+#line 53547 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2847:
 #line 15508 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53551 "preproc.c" /* yacc.c:1646  */
+#line 53553 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2848:
 #line 15511 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("auto"); }
-#line 53557 "preproc.c" /* yacc.c:1646  */
+#line 53559 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2849:
 #line 15512 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("const"); }
-#line 53563 "preproc.c" /* yacc.c:1646  */
+#line 53565 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2850:
 #line 15513 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("extern"); }
-#line 53569 "preproc.c" /* yacc.c:1646  */
+#line 53571 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2851:
 #line 15514 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("register"); }
-#line 53575 "preproc.c" /* yacc.c:1646  */
+#line 53577 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2852:
 #line 15515 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("static"); }
-#line 53581 "preproc.c" /* yacc.c:1646  */
+#line 53583 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2853:
 #line 15516 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("typedef"); }
-#line 53587 "preproc.c" /* yacc.c:1646  */
+#line 53589 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2854:
 #line 15517 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("volatile"); }
-#line 53593 "preproc.c" /* yacc.c:1646  */
+#line 53595 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2855:
 #line 15534 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53599 "preproc.c" /* yacc.c:1646  */
+#line 53601 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2856:
 #line 15535 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53605 "preproc.c" /* yacc.c:1646  */
+#line 53607 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2857:
 #line 15536 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("connection"); }
-#line 53611 "preproc.c" /* yacc.c:1646  */
+#line 53613 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2858:
 #line 15539 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("day"); }
-#line 53617 "preproc.c" /* yacc.c:1646  */
+#line 53619 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2859:
 #line 15540 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("hour"); }
-#line 53623 "preproc.c" /* yacc.c:1646  */
+#line 53625 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2860:
 #line 15541 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("minute"); }
-#line 53629 "preproc.c" /* yacc.c:1646  */
+#line 53631 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2861:
 #line 15542 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("month"); }
-#line 53635 "preproc.c" /* yacc.c:1646  */
+#line 53637 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2862:
 #line 15543 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("second"); }
-#line 53641 "preproc.c" /* yacc.c:1646  */
+#line 53643 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2863:
 #line 15544 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("year"); }
-#line 53647 "preproc.c" /* yacc.c:1646  */
+#line 53649 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2866:
@@ -53652,31 +53654,31 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 				reset_variables();
 				pacounter = 1;
 			}
-#line 53656 "preproc.c" /* yacc.c:1646  */
+#line 53658 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2867:
 #line 15557 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 53662 "preproc.c" /* yacc.c:1646  */
+#line 53664 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2868:
 #line 15558 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53668 "preproc.c" /* yacc.c:1646  */
+#line 53670 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2869:
 #line 15562 "preproc.y" /* yacc.c:1646  */
     { add_variable_to_head(&argsresult, find_variable((yyvsp[-1].str)), find_variable((yyvsp[0].str))); }
-#line 53674 "preproc.c" /* yacc.c:1646  */
+#line 53676 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2870:
 #line 15564 "preproc.y" /* yacc.c:1646  */
     { add_variable_to_head(&argsresult, find_variable((yyvsp[0].str)), &no_indicator); }
-#line 53680 "preproc.c" /* yacc.c:1646  */
+#line 53682 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2871:
@@ -53688,7 +53690,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			add_variable_to_head(&argsinsert, find_variable((yyvsp[-1].str)), find_variable((yyvsp[0].str)));
 			(yyval.str) = create_questionmarks((yyvsp[-1].str), false);
 		}
-#line 53692 "preproc.c" /* yacc.c:1646  */
+#line 53694 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2872:
@@ -53701,7 +53703,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			add_variable_to_head(&argsinsert, find_variable((yyvsp[0].str)), &no_indicator);
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 53705 "preproc.c" /* yacc.c:1646  */
+#line 53707 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2873:
@@ -53710,25 +53712,25 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			add_variable_to_head(&argsinsert, find_variable((yyvsp[0].str)), &no_indicator);
 			(yyval.str) = create_questionmarks((yyvsp[0].str), false);
 		}
-#line 53714 "preproc.c" /* yacc.c:1646  */
+#line 53716 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2874:
 #line 15596 "preproc.y" /* yacc.c:1646  */
     { check_indicator((find_variable((yyvsp[0].str)))->type); (yyval.str) = (yyvsp[0].str); }
-#line 53720 "preproc.c" /* yacc.c:1646  */
+#line 53722 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2875:
 #line 15597 "preproc.y" /* yacc.c:1646  */
     { check_indicator((find_variable((yyvsp[0].str)))->type); (yyval.str) = (yyvsp[0].str); }
-#line 53726 "preproc.c" /* yacc.c:1646  */
+#line 53728 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2876:
 #line 15598 "preproc.y" /* yacc.c:1646  */
     { check_indicator((find_variable((yyvsp[0].str)))->type); (yyval.str) = (yyvsp[0].str); }
-#line 53732 "preproc.c" /* yacc.c:1646  */
+#line 53734 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2877:
@@ -53763,25 +53765,25 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			}
 			(yyval.str) = (yyvsp[0].str);
 		}
-#line 53767 "preproc.c" /* yacc.c:1646  */
+#line 53769 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2878:
 #line 15634 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make_name(); }
-#line 53773 "preproc.c" /* yacc.c:1646  */
+#line 53775 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2879:
 #line 15636 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make_name(); }
-#line 53779 "preproc.c" /* yacc.c:1646  */
+#line 53781 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2880:
 #line 15638 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make_name(); }
-#line 53785 "preproc.c" /* yacc.c:1646  */
+#line 53787 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2881:
@@ -53795,7 +53797,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.str)[strlen((yyvsp[0].str))+2]='\0';
 			free((yyvsp[0].str));
 		}
-#line 53799 "preproc.c" /* yacc.c:1646  */
+#line 53801 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2882:
@@ -53809,7 +53811,7 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.str)[strlen((yyvsp[0].str))+3]='\0';
 			free((yyvsp[0].str));
 		}
-#line 53813 "preproc.c" /* yacc.c:1646  */
+#line 53815 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2883:
@@ -53823,553 +53825,553 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 			(yyval.str)[strlen((yyvsp[0].str))+3]='\0';
 			free((yyvsp[0].str));
 		}
-#line 53827 "preproc.c" /* yacc.c:1646  */
+#line 53829 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2884:
 #line 15671 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53833 "preproc.c" /* yacc.c:1646  */
+#line 53835 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2885:
 #line 15672 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53839 "preproc.c" /* yacc.c:1646  */
+#line 53841 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2886:
 #line 15675 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make_name(); }
-#line 53845 "preproc.c" /* yacc.c:1646  */
+#line 53847 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2887:
 #line 15677 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make_name(); }
-#line 53851 "preproc.c" /* yacc.c:1646  */
+#line 53853 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2888:
 #line 15678 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make3_str(mm_strdup("\""), (yyvsp[0].str), mm_strdup("\"")); }
-#line 53857 "preproc.c" /* yacc.c:1646  */
+#line 53859 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2889:
 #line 15679 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53863 "preproc.c" /* yacc.c:1646  */
+#line 53865 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2890:
 #line 15683 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make3_str(mm_strdup("\""), (yyvsp[0].str), mm_strdup("\"")); }
-#line 53869 "preproc.c" /* yacc.c:1646  */
+#line 53871 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2891:
 #line 15685 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make3_str(mm_strdup("("), (yyvsp[0].str), mm_strdup(")")); }
-#line 53875 "preproc.c" /* yacc.c:1646  */
+#line 53877 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2892:
 #line 15692 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53881 "preproc.c" /* yacc.c:1646  */
+#line 53883 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2893:
 #line 15693 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("()"); }
-#line 53887 "preproc.c" /* yacc.c:1646  */
+#line 53889 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2894:
 #line 15695 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, mm_strdup("("), (yyvsp[-1].str), mm_strdup(")")); }
-#line 53893 "preproc.c" /* yacc.c:1646  */
+#line 53895 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2895:
 #line 15698 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53899 "preproc.c" /* yacc.c:1646  */
+#line 53901 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2896:
 #line 15700 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat2_str((yyvsp[-1].str), (yyvsp[0].str)); }
-#line 53905 "preproc.c" /* yacc.c:1646  */
+#line 53907 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2897:
 #line 15703 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53911 "preproc.c" /* yacc.c:1646  */
+#line 53913 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2898:
 #line 15704 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, (yyvsp[-2].str), mm_strdup(","), (yyvsp[0].str)); }
-#line 53917 "preproc.c" /* yacc.c:1646  */
+#line 53919 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2899:
 #line 15707 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53923 "preproc.c" /* yacc.c:1646  */
+#line 53925 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2900:
 #line 15708 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, mm_strdup("{"), (yyvsp[-1].str), mm_strdup("}")); }
-#line 53929 "preproc.c" /* yacc.c:1646  */
+#line 53931 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2901:
 #line 15711 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53935 "preproc.c" /* yacc.c:1646  */
+#line 53937 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2902:
 #line 15712 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("("); }
-#line 53941 "preproc.c" /* yacc.c:1646  */
+#line 53943 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2903:
 #line 15713 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup(")"); }
-#line 53947 "preproc.c" /* yacc.c:1646  */
+#line 53949 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2904:
 #line 15714 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup(","); }
-#line 53953 "preproc.c" /* yacc.c:1646  */
+#line 53955 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2905:
 #line 15715 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup(";"); }
-#line 53959 "preproc.c" /* yacc.c:1646  */
+#line 53961 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2906:
 #line 15718 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53965 "preproc.c" /* yacc.c:1646  */
+#line 53967 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2907:
 #line 15719 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53971 "preproc.c" /* yacc.c:1646  */
+#line 53973 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2908:
 #line 15720 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53977 "preproc.c" /* yacc.c:1646  */
+#line 53979 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2909:
 #line 15721 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 53983 "preproc.c" /* yacc.c:1646  */
+#line 53985 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2910:
 #line 15722 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("*"); }
-#line 53989 "preproc.c" /* yacc.c:1646  */
+#line 53991 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2911:
 #line 15723 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("+"); }
-#line 53995 "preproc.c" /* yacc.c:1646  */
+#line 53997 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2912:
 #line 15724 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("-"); }
-#line 54001 "preproc.c" /* yacc.c:1646  */
+#line 54003 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2913:
 #line 15725 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("/"); }
-#line 54007 "preproc.c" /* yacc.c:1646  */
+#line 54009 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2914:
 #line 15726 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("%"); }
-#line 54013 "preproc.c" /* yacc.c:1646  */
+#line 54015 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2915:
 #line 15727 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("NULL"); }
-#line 54019 "preproc.c" /* yacc.c:1646  */
+#line 54021 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2916:
 #line 15728 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("+="); }
-#line 54025 "preproc.c" /* yacc.c:1646  */
+#line 54027 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2917:
 #line 15729 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("&&"); }
-#line 54031 "preproc.c" /* yacc.c:1646  */
+#line 54033 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2918:
 #line 15730 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = make_name(); }
-#line 54037 "preproc.c" /* yacc.c:1646  */
+#line 54039 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2919:
 #line 15731 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("auto"); }
-#line 54043 "preproc.c" /* yacc.c:1646  */
+#line 54045 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2920:
 #line 15732 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("const"); }
-#line 54049 "preproc.c" /* yacc.c:1646  */
+#line 54051 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2921:
 #line 15733 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("--"); }
-#line 54055 "preproc.c" /* yacc.c:1646  */
+#line 54057 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2922:
 #line 15734 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("/="); }
-#line 54061 "preproc.c" /* yacc.c:1646  */
+#line 54063 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2923:
 #line 15735 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup(".*"); }
-#line 54067 "preproc.c" /* yacc.c:1646  */
+#line 54069 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2924:
 #line 15736 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("=="); }
-#line 54073 "preproc.c" /* yacc.c:1646  */
+#line 54075 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2925:
 #line 15737 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("extern"); }
-#line 54079 "preproc.c" /* yacc.c:1646  */
+#line 54081 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2926:
 #line 15738 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("++"); }
-#line 54085 "preproc.c" /* yacc.c:1646  */
+#line 54087 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2927:
 #line 15739 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("<<"); }
-#line 54091 "preproc.c" /* yacc.c:1646  */
+#line 54093 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2928:
 #line 15740 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("->"); }
-#line 54097 "preproc.c" /* yacc.c:1646  */
+#line 54099 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2929:
 #line 15741 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("->*"); }
-#line 54103 "preproc.c" /* yacc.c:1646  */
+#line 54105 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2930:
 #line 15742 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("%="); }
-#line 54109 "preproc.c" /* yacc.c:1646  */
+#line 54111 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2931:
 #line 15743 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("*="); }
-#line 54115 "preproc.c" /* yacc.c:1646  */
+#line 54117 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2932:
 #line 15744 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("!="); }
-#line 54121 "preproc.c" /* yacc.c:1646  */
+#line 54123 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2933:
 #line 15745 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("||"); }
-#line 54127 "preproc.c" /* yacc.c:1646  */
+#line 54129 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2934:
 #line 15746 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("register"); }
-#line 54133 "preproc.c" /* yacc.c:1646  */
+#line 54135 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2935:
 #line 15747 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup(">>"); }
-#line 54139 "preproc.c" /* yacc.c:1646  */
+#line 54141 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2936:
 #line 15748 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("static"); }
-#line 54145 "preproc.c" /* yacc.c:1646  */
+#line 54147 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2937:
 #line 15749 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("-="); }
-#line 54151 "preproc.c" /* yacc.c:1646  */
+#line 54153 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2938:
 #line 15750 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("typedef"); }
-#line 54157 "preproc.c" /* yacc.c:1646  */
+#line 54159 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2939:
 #line 15751 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("volatile"); }
-#line 54163 "preproc.c" /* yacc.c:1646  */
+#line 54165 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2940:
 #line 15752 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("bool"); }
-#line 54169 "preproc.c" /* yacc.c:1646  */
+#line 54171 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2941:
 #line 15753 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("enum"); }
-#line 54175 "preproc.c" /* yacc.c:1646  */
+#line 54177 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2942:
 #line 15754 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("hour"); }
-#line 54181 "preproc.c" /* yacc.c:1646  */
+#line 54183 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2943:
 #line 15755 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("int"); }
-#line 54187 "preproc.c" /* yacc.c:1646  */
+#line 54189 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2944:
 #line 15756 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("long"); }
-#line 54193 "preproc.c" /* yacc.c:1646  */
+#line 54195 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2945:
 #line 15757 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("minute"); }
-#line 54199 "preproc.c" /* yacc.c:1646  */
+#line 54201 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2946:
 #line 15758 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("month"); }
-#line 54205 "preproc.c" /* yacc.c:1646  */
+#line 54207 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2947:
 #line 15759 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("second"); }
-#line 54211 "preproc.c" /* yacc.c:1646  */
+#line 54213 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2948:
 #line 15760 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("short"); }
-#line 54217 "preproc.c" /* yacc.c:1646  */
+#line 54219 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2949:
 #line 15761 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("signed"); }
-#line 54223 "preproc.c" /* yacc.c:1646  */
+#line 54225 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2950:
 #line 15762 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("struct"); }
-#line 54229 "preproc.c" /* yacc.c:1646  */
+#line 54231 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2951:
 #line 15763 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("unsigned"); }
-#line 54235 "preproc.c" /* yacc.c:1646  */
+#line 54237 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2952:
 #line 15764 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("year"); }
-#line 54241 "preproc.c" /* yacc.c:1646  */
+#line 54243 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2953:
 #line 15765 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("char"); }
-#line 54247 "preproc.c" /* yacc.c:1646  */
+#line 54249 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2954:
 #line 15766 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("float"); }
-#line 54253 "preproc.c" /* yacc.c:1646  */
+#line 54255 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2955:
 #line 15767 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("to"); }
-#line 54259 "preproc.c" /* yacc.c:1646  */
+#line 54261 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2956:
 #line 15768 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("union"); }
-#line 54265 "preproc.c" /* yacc.c:1646  */
+#line 54267 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2957:
 #line 15769 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("varchar"); }
-#line 54271 "preproc.c" /* yacc.c:1646  */
+#line 54273 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2958:
 #line 15770 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("["); }
-#line 54277 "preproc.c" /* yacc.c:1646  */
+#line 54279 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2959:
 #line 15771 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("]"); }
-#line 54283 "preproc.c" /* yacc.c:1646  */
+#line 54285 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2960:
 #line 15772 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("="); }
-#line 54289 "preproc.c" /* yacc.c:1646  */
+#line 54291 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2961:
 #line 15773 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup(":"); }
-#line 54295 "preproc.c" /* yacc.c:1646  */
+#line 54297 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2962:
 #line 15776 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 54301 "preproc.c" /* yacc.c:1646  */
+#line 54303 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2963:
 #line 15777 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 54307 "preproc.c" /* yacc.c:1646  */
+#line 54309 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2964:
 #line 15778 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("all"); }
-#line 54313 "preproc.c" /* yacc.c:1646  */
+#line 54315 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2965:
 #line 15779 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = mm_strdup("all"); }
-#line 54319 "preproc.c" /* yacc.c:1646  */
+#line 54321 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2966:
 #line 15782 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 54325 "preproc.c" /* yacc.c:1646  */
+#line 54327 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2967:
 #line 15783 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, mm_strdup("("), (yyvsp[-1].str), mm_strdup(")")); }
-#line 54331 "preproc.c" /* yacc.c:1646  */
+#line 54333 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2968:
 #line 15784 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, (yyvsp[-2].str), mm_strdup("+"), (yyvsp[0].str)); }
-#line 54337 "preproc.c" /* yacc.c:1646  */
+#line 54339 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2969:
 #line 15785 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, (yyvsp[-2].str), mm_strdup("-"), (yyvsp[0].str)); }
-#line 54343 "preproc.c" /* yacc.c:1646  */
+#line 54345 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2970:
 #line 15786 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, (yyvsp[-2].str), mm_strdup("*"), (yyvsp[0].str)); }
-#line 54349 "preproc.c" /* yacc.c:1646  */
+#line 54351 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2971:
 #line 15787 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, (yyvsp[-2].str), mm_strdup("/"), (yyvsp[0].str)); }
-#line 54355 "preproc.c" /* yacc.c:1646  */
+#line 54357 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2972:
 #line 15788 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = cat_str(3, (yyvsp[-2].str), mm_strdup("%"), (yyvsp[0].str)); }
-#line 54361 "preproc.c" /* yacc.c:1646  */
+#line 54363 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2973:
 #line 15789 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 54367 "preproc.c" /* yacc.c:1646  */
+#line 54369 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2974:
 #line 15790 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 54373 "preproc.c" /* yacc.c:1646  */
+#line 54375 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2975:
@@ -54379,61 +54381,61 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 						  else
 							(yyval.str) = cat_str(4, (yyvsp[-3].str), mm_strdup("("), (yyvsp[-1].type).type_str, mm_strdup(")"));
 						}
-#line 54383 "preproc.c" /* yacc.c:1646  */
+#line 54385 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2976:
 #line 15798 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 54389 "preproc.c" /* yacc.c:1646  */
+#line 54391 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2977:
 #line 15799 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 54395 "preproc.c" /* yacc.c:1646  */
+#line 54397 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2978:
 #line 15800 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 54401 "preproc.c" /* yacc.c:1646  */
+#line 54403 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2979:
 #line 15801 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 54407 "preproc.c" /* yacc.c:1646  */
+#line 54409 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2980:
 #line 15804 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 54413 "preproc.c" /* yacc.c:1646  */
+#line 54415 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2981:
 #line 15805 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 54419 "preproc.c" /* yacc.c:1646  */
+#line 54421 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2982:
 #line 15808 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 54425 "preproc.c" /* yacc.c:1646  */
+#line 54427 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2983:
 #line 15809 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 54431 "preproc.c" /* yacc.c:1646  */
+#line 54433 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2984:
 #line 15812 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 54437 "preproc.c" /* yacc.c:1646  */
+#line 54439 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2985:
@@ -54446,23 +54448,23 @@ mmerror(PARSE_ERROR, ET_WARNING, "unsupported feature will be passed to server")
 		add_variable_to_head(&argsresult, var, &no_indicator);
 		(yyval.str) = (yyvsp[0].str);
 	}
-#line 54450 "preproc.c" /* yacc.c:1646  */
+#line 54452 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2986:
 #line 15824 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = EMPTY; }
-#line 54456 "preproc.c" /* yacc.c:1646  */
+#line 54458 "preproc.c" /* yacc.c:1646  */
     break;
 
   case 2987:
 #line 15825 "preproc.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 54462 "preproc.c" /* yacc.c:1646  */
+#line 54464 "preproc.c" /* yacc.c:1646  */
     break;
 
 
-#line 54466 "preproc.c" /* yacc.c:1646  */
+#line 54468 "preproc.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires

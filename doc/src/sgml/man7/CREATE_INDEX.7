@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE INDEX
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "CREATE INDEX" "7" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "CREATE INDEX" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -299,7 +299,8 @@ If a problem arises while scanning the table, such as a deadlock or a uniqueness
 command will fail but leave behind an
 \(lqinvalid\(rq
 index\&. This index will be ignored for querying purposes because it might be incomplete; however it will still consume update overhead\&. The
-psql\fB\ed\fR
+psql
+\fB\ed\fR
 command will report such an index as
 INVALID:
 .sp

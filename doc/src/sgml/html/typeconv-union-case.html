@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Type Conversion"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -168,8 +168,8 @@ CLASS="STEP"
 >If any input is of a domain type, treat it as being of the
 domain's base type for all subsequent steps.
   <A
-NAME="AEN25528"
-HREF="#FTN.AEN25528"
+NAME="AEN25582"
+HREF="#FTN.AEN25582"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN
@@ -224,7 +224,7 @@ conversion from a given input to the selected type.</P
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN25545"
+NAME="AEN25599"
 ></A
 ><P
 ><B
@@ -252,7 +252,7 @@ CLASS="TYPE"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN25551"
+NAME="AEN25605"
 ></A
 ><P
 ><B
@@ -291,7 +291,7 @@ CLASS="TYPE"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN25560"
+NAME="AEN25614"
 ></A
 ><P
 ><B
@@ -327,6 +327,70 @@ CLASS="TYPE"
 >real</TT
 >.</P
 ></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN25623"
+></A
+><P
+><B
+>Example 10-12. Type Resolution in a Nested Union</B
+></P
+><P
+></P><PRE
+CLASS="SCREEN"
+>SELECT NULL UNION SELECT NULL UNION SELECT 1;
+
+ERROR:  UNION types text and integer cannot be matched</PRE
+><P>
+This failure occurs because <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> treats
+multiple <TT
+CLASS="LITERAL"
+>UNION</TT
+>s as a nest of pairwise operations;
+that is, this input is the same as
+</P><PRE
+CLASS="SCREEN"
+>(SELECT NULL UNION SELECT NULL) UNION SELECT 1;</PRE
+><P>
+The inner <TT
+CLASS="LITERAL"
+>UNION</TT
+> is resolved as emitting
+type <TT
+CLASS="TYPE"
+>text</TT
+>, according to the rules given above.  Then the
+outer <TT
+CLASS="LITERAL"
+>UNION</TT
+> has inputs of types <TT
+CLASS="TYPE"
+>text</TT
+>
+and <TT
+CLASS="TYPE"
+>integer</TT
+>, leading to the observed error.  The problem
+can be fixed by ensuring that the leftmost <TT
+CLASS="LITERAL"
+>UNION</TT
+>
+has at least one input of the desired result type.</P
+><P
+><TT
+CLASS="LITERAL"
+>INTERSECT</TT
+> and <TT
+CLASS="LITERAL"
+>EXCEPT</TT
+> operations are
+likewise resolved pairwise.  However, the other constructs described in this
+section consider all of their inputs in one resolution step.</P
+></DIV
 ></DIV
 ><H3
 CLASS="FOOTNOTES"
@@ -341,8 +405,8 @@ ALIGN="LEFT"
 VALIGN="TOP"
 WIDTH="5%"
 ><A
-NAME="FTN.AEN25528"
-HREF="typeconv-union-case.html#AEN25528"
+NAME="FTN.AEN25582"
+HREF="typeconv-union-case.html#AEN25582"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -110,7 +110,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN184971"
+NAME="AEN187352"
 >F.31.1. Trigram (or Trigraph) Concepts</A
 ></H2
 ><P
@@ -244,7 +244,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN185005"
+NAME="AEN187386"
 >F.31.2. Functions and Operators</A
 ></H2
 ><P
@@ -335,12 +335,10 @@ CLASS="TYPE"
 >real</TT
 ></TD
 ><TD
->       Returns a number that indicates how similar the first string
-       to the most similar word of the second string. The function searches in
-       the second string a most similar word not a most similar substring.  The
-       range of the result is zero (indicating that the two strings are
-       completely dissimilar) to one (indicating that the first string is
-       identical to one of the words of the second string).
+>       Returns a number that indicates the greatest similarity between
+       the set of trigrams in the first string and any continuous extent
+       of an ordered set of trigrams in the second string.  For details, see
+       the explanation below.
       </TD
 ></TR
 ><TR
@@ -400,6 +398,45 @@ CLASS="EMPHASIS"
 ></TBODY
 ></TABLE
 ></DIV
+><P
+>   Consider the following example:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+># SELECT word_similarity('word', 'two words');
+ word_similarity
+-----------------
+             0.8
+(1 row)</PRE
+><P>
+
+   In the first string, the set of trigrams is
+   <TT
+CLASS="LITERAL"
+>{"  w"," wo","ord","wor","rd "}</TT
+>.
+   In the second string, the ordered set of trigrams is
+   <TT
+CLASS="LITERAL"
+>{"  t"," tw",two,"wo ","  w"," wo","wor","ord","rds", ds "}</TT
+>.
+   The most similar extent of an ordered set of trigrams in the second string
+   is <TT
+CLASS="LITERAL"
+>{"  w"," wo","wor","ord"}</TT
+>, and the similarity is
+   <TT
+CLASS="LITERAL"
+>0.8</TT
+>.
+  </P
+><P
+>   This function returns a value that can be approximately understood as the
+   greatest similarity between the first string and any substring of the second
+   string.  However, this function does not add padding to the boundaries of
+   the extent.  Thus, a whole word match gets a higher score than a match with
+   a part of the word.
+  </P
 ><DIV
 CLASS="TABLE"
 ><A
@@ -476,13 +513,14 @@ CLASS="TYPE"
 >       Returns <TT
 CLASS="LITERAL"
 >true</TT
-> if its first argument has the similar word in
-       the second argument and they have a similarity that is greater than the
-       current word similarity threshold set by
-       <TT
+> if the similarity between the trigram
+       set in the first argument and a continuous extent of an ordered trigram
+       set in the second argument is greater than the current word similarity
+       threshold set by <TT
 CLASS="VARNAME"
 >pg_trgm.word_similarity_threshold</TT
-> parameter.
+>
+       parameter.
       </TD
 ></TR
 ><TR
@@ -600,7 +638,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN185133"
+NAME="AEN187521"
 >F.31.3. GUC Parameters</A
 ></H2
 ><P
@@ -662,7 +700,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN185157"
+NAME="AEN187545"
 >F.31.4. Index Support</A
 ></H2
 ><P
@@ -777,15 +815,16 @@ CLASS="REPLACEABLE"
 >' &lt;% t
   ORDER BY sml DESC, t;</PRE
 ><P>
-   This will return all values in the text column that have a word
-   which sufficiently similar to <TT
+   This will return all values in the text column for which there is a
+   continuous extent in the corresponding ordered trigram set that is
+   sufficiently similar to the trigram set of <TT
 CLASS="REPLACEABLE"
 ><I
 >word</I
 ></TT
->, sorted from best
-   match to worst.  The index will be used to make this a fast operation
-   even over very large data sets.
+>,
+   sorted from best match to worst.  The index will be used to make this
+   a fast operation even over very large data sets.
   </P
 ><P
 >   A variant of the above query is
@@ -865,7 +904,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN185199"
+NAME="AEN187587"
 >F.31.5. Text Search Integration</A
 ></H2
 ><P
@@ -941,7 +980,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN185214"
+NAME="AEN187602"
 >F.31.6. References</A
 ></H2
 ><P
@@ -966,7 +1005,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN185220"
+NAME="AEN187608"
 >F.31.7. Authors</A
 ></H2
 ><P

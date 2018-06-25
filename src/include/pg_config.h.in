@@ -27,6 +27,9 @@
 /* The normal alignment of `long long int', in bytes. */
 #undef ALIGNOF_LONG_LONG_INT
 
+/* The normal alignment of `PG_INT128_TYPE', in bytes. */
+#undef ALIGNOF_PG_INT128_TYPE
+
 /* The normal alignment of `short', in bytes. */
 #undef ALIGNOF_SHORT
 
@@ -333,10 +336,6 @@
 /* Define to 1 if you have the `z' library (-lz). */
 #undef HAVE_LIBZ
 
-/* Define to 1 if constants of type 'long long int' should have the suffix LL.
-   */
-#undef HAVE_LL_CONSTANTS
-
 /* Define to 1 if the system has the type `locale_t'. */
 #undef HAVE_LOCALE_T
 
@@ -393,6 +392,9 @@
 
 /* Define to 1 if you have the `posix_fadvise' function. */
 #undef HAVE_POSIX_FADVISE
+
+/* Define to 1 if you have the `posix_fallocate' function. */
+#undef HAVE_POSIX_FALLOCATE
 
 /* Define to 1 if the assembler supports PPC's LWARX mutex hint bit. */
 #undef HAVE_PPC_LWARX_MUTEX_HINT
@@ -848,13 +850,13 @@
 /* Use replacement snprintf() functions. */
 #undef USE_REPL_SNPRINTF
 
-/* Define to 1 to use Intel SSE 4.2 CRC instructions with a runtime check. */
+/* Define to 1 to use software CRC-32C implementation (slicing-by-8). */
 #undef USE_SLICING_BY_8_CRC32C
 
 /* Define to 1 use Intel SSE 4.2 CRC instructions. */
 #undef USE_SSE42_CRC32C
 
-/* Define to 1 to use Intel SSSE 4.2 CRC instructions with a runtime check. */
+/* Define to 1 to use Intel SSE 4.2 CRC instructions with a runtime check. */
 #undef USE_SSE42_CRC32C_WITH_RUNTIME_CHECK
 
 /* Define to build with systemd support. (--with-systemd) */

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Internals"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="CHAPTER"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -134,12 +134,12 @@ HREF="protocol-flow.html"
 ><DL
 ><DT
 >51.2.1. <A
-HREF="protocol-flow.html#AEN112837"
+HREF="protocol-flow.html#AEN113120"
 >Start-up</A
 ></DT
 ><DT
 >51.2.2. <A
-HREF="protocol-flow.html#AEN112912"
+HREF="protocol-flow.html#AEN113200"
 >Simple Query</A
 ></DT
 ><DT
@@ -149,7 +149,7 @@ HREF="protocol-flow.html#PROTOCOL-FLOW-EXT-QUERY"
 ></DT
 ><DT
 >51.2.4. <A
-HREF="protocol-flow.html#AEN113023"
+HREF="protocol-flow.html#AEN113311"
 >Function Call</A
 ></DT
 ><DT
@@ -164,17 +164,17 @@ HREF="protocol-flow.html#PROTOCOL-ASYNC"
 ></DT
 ><DT
 >51.2.7. <A
-HREF="protocol-flow.html#AEN113109"
+HREF="protocol-flow.html#AEN113397"
 >Canceling Requests in Progress</A
 ></DT
 ><DT
 >51.2.8. <A
-HREF="protocol-flow.html#AEN113117"
+HREF="protocol-flow.html#AEN113405"
 >Termination</A
 ></DT
 ><DT
 >51.2.9. <A
-HREF="protocol-flow.html#AEN113126"
+HREF="protocol-flow.html#AEN113414"
 ><ACRONYM
 CLASS="ACRONYM"
 >SSL</ACRONYM
@@ -234,10 +234,18 @@ CLASS="PRODUCTNAME"
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > documentation.  A single server
-  can support multiple protocol versions.  The initial
-  startup-request message tells the server which protocol version the
-  client is attempting to use, and then the server follows that protocol
-  if it is able.
+  can support multiple protocol versions.  The initial startup-request
+  message tells the server which protocol version the client is attempting to
+  use.  If the major version requested by the client is not supported by
+  the server, the connection will be rejected (for example, this would occur
+  if the client requested protocol version 4.0, which does not exist as of
+  this writing).  If the minor version requested by the client is not
+  supported by the server (e.g. the client requests version 3.1, but the
+  server supports only 3.0), the server may either reject the connection or
+  may respond with a NegotiateProtocolVersion message containing the highest
+  minor protocol version which it supports.  The client may then choose either
+  to continue with the connection using the specified protocol version or
+  to abort the connection.
  </P
 ><P
 >   In order to serve multiple clients efficiently, the server launches

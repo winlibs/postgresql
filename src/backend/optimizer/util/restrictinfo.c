@@ -410,7 +410,7 @@ extract_actual_clauses(List *restrictinfo_list,
  * extract_actual_join_clauses
  *
  * Extract bare clauses from 'restrictinfo_list', separating those that
- * syntactically match the join level from those that were pushed down.
+ * semantically match the join level from those that were pushed down.
  * Pseudoconstant clauses are excluded from the results.
  *
  * This is only used at outer joins, since for plain joins we don't care
@@ -418,6 +418,7 @@ extract_actual_clauses(List *restrictinfo_list,
  */
 void
 extract_actual_join_clauses(List *restrictinfo_list,
+							Relids joinrelids,
 							List **joinquals,
 							List **otherquals)
 {
@@ -432,7 +433,7 @@ extract_actual_join_clauses(List *restrictinfo_list,
 
 		Assert(IsA(rinfo, RestrictInfo));
 
-		if (rinfo->is_pushed_down)
+		if (RINFO_IS_PUSHED_DOWN(rinfo, joinrelids))
 		{
 			if (!rinfo->pseudoconstant)
 				*otherquals = lappend(*otherquals, rinfo->clause);

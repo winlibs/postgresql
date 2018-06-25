@@ -1103,7 +1103,7 @@ hosts=local,bind
 hosts=local4,bind4
        to deactivate searching for IPv6 addresses.
 
-                                   Warning
+   Warning
 
    This is really a workaround for problems relating to immaturity of IPv6
    support, which improved visibly during the course of AIX 5.3 releases.

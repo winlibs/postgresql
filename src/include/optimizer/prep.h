@@ -34,6 +34,7 @@ extern Relids get_relids_for_join(PlannerInfo *root, int joinrelid);
  */
 extern Node *negate_clause(Node *node);
 extern Expr *canonicalize_qual(Expr *qual);
+extern Expr *canonicalize_qual_ext(Expr *qual, bool is_check);
 
 /*
  * prototypes for prepsecurity.c
@@ -43,10 +44,7 @@ extern void expand_security_quals(PlannerInfo *root, List *tlist);
 /*
  * prototypes for preptlist.c
  */
-extern List *preprocess_targetlist(PlannerInfo *root, List *tlist);
-
-extern List *preprocess_onconflict_targetlist(List *tlist,
-								 int result_relation, List *range_table);
+extern List *preprocess_targetlist(PlannerInfo *root);
 
 extern PlanRowMark *get_plan_rowmark(List *rowmarks, Index rtindex);
 

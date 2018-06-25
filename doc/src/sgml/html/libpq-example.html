@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="libpq - C Library"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -121,13 +121,16 @@ CLASS="APPLICATION"
 ><PRE
 CLASS="PROGRAMLISTING"
 >/*
+ * src/test/examples/testlibpq.c
+ *
+ *
  * testlibpq.c
  *
  *      Test the C version of libpq, the PostgreSQL frontend library.
  */
 #include &#60;stdio.h&#62;
 #include &#60;stdlib.h&#62;
-#include &#60;libpq-fe.h&#62;
+#include "libpq-fe.h"
 
 static void
 exit_nicely(PGconn *conn)
@@ -167,6 +170,22 @@ main(int argc, char **argv)
         exit_nicely(conn);
     }
 
+    /* Set always-secure search path, so malicous users can't take control. */
+    res = PQexec(conn,
+                 "SELECT pg_catalog.set_config('search_path', '', false)");
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+        fprintf(stderr, "SET failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        exit_nicely(conn);
+    }
+
+    /*
+     * Should PQclear PGresult whenever it is no longer needed to avoid memory
+     * leaks
+     */
+    PQclear(res);
+
     /*
      * Our test case here involves using a cursor, for which we must be inside
      * a transaction block.  We could do the whole thing with a single
@@ -182,11 +201,6 @@ main(int argc, char **argv)
         PQclear(res);
         exit_nicely(conn);
     }
-
-    /*
-     * Should PQclear PGresult whenever it is no longer needed to avoid memory
-     * leaks
-     */
     PQclear(res);
 
     /*
@@ -254,6 +268,9 @@ CLASS="APPLICATION"
 ><PRE
 CLASS="PROGRAMLISTING"
 >/*
+ * src/test/examples/testlibpq2.c
+ *
+ *
  * testlibpq2.c
  *      Test of the asynchronous notification interface
  *
@@ -265,16 +282,16 @@ CLASS="PROGRAMLISTING"
  * populate a database with the following commands
  * (provided in src/test/examples/testlibpq2.sql):
  *
+ *   CREATE SCHEMA TESTLIBPQ2;
+ *   SET search_path = TESTLIBPQ2;
  *   CREATE TABLE TBL1 (i int4);
- *
  *   CREATE TABLE TBL2 (i int4);
- *
  *   CREATE RULE r1 AS ON INSERT TO TBL1 DO
  *     (INSERT INTO TBL2 VALUES (new.i); NOTIFY TBL2);
  *
- * and do this four times:
+ * Start this program, then from psql do this four times:
  *
- *   INSERT INTO TBL1 VALUES (10);
+ *   INSERT INTO TESTLIBPQ2.TBL1 VALUES (10);
  */
 
 #ifdef WIN32
@@ -286,6 +303,10 @@ CLASS="PROGRAMLISTING"
 #include &#60;errno.h&#62;
 #include &#60;sys/time.h&#62;
 #include &#60;sys/types.h&#62;
+#ifdef HAVE_SYS_SELECT_H
+#include &#60;sys/select.h&#62;
+#endif
+
 #include "libpq-fe.h"
 
 static void
@@ -325,6 +346,22 @@ main(int argc, char **argv)
         exit_nicely(conn);
     }
 
+    /* Set always-secure search path, so malicous users can't take control. */
+    res = PQexec(conn,
+                 "SELECT pg_catalog.set_config('search_path', '', false)");
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+        fprintf(stderr, "SET failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        exit_nicely(conn);
+    }
+
+    /*
+     * Should PQclear PGresult whenever it is no longer needed to avoid memory
+     * leaks
+     */
+    PQclear(res);
+
     /*
      * Issue LISTEN command to enable notifications from the rule's NOTIFY.
      */
@@ -335,11 +372,6 @@ main(int argc, char **argv)
         PQclear(res);
         exit_nicely(conn);
     }
-
-    /*
-     * should PQclear PGresult whenever it is no longer needed to avoid memory
-     * leaks
-     */
     PQclear(res);
 
     /* Quit after four notifies are received. */
@@ -403,14 +435,18 @@ CLASS="APPLICATION"
 ><PRE
 CLASS="PROGRAMLISTING"
 >/*
+ * src/test/examples/testlibpq3.c
+ *
+ *
  * testlibpq3.c
  *      Test out-of-line parameters and binary I/O.
  *
  * Before running this, populate a database with the following commands
  * (provided in src/test/examples/testlibpq3.sql):
  *
+ * CREATE SCHEMA testlibpq3;
+ * SET search_path = testlibpq3;
  * CREATE TABLE test1 (i int4, t text, b bytea);
- *
  * INSERT INTO test1 values (1, 'joe''s place', '\\000\\001\\002\\003\\004');
  * INSERT INTO test1 values (2, 'ho there', '\\004\\003\\002\\001\\000');
  *
@@ -541,6 +577,16 @@ main(int argc, char **argv)
                 PQerrorMessage(conn));
         exit_nicely(conn);
     }
+
+    /* Set always-secure search path, so malicous users can't take control. */
+    res = PQexec(conn, "SET search_path = testlibpq3");
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+        fprintf(stderr, "SET failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        exit_nicely(conn);
+    }
+    PQclear(res);
 
     /*
      * The point of this program is to illustrate use of PQexecParams() with

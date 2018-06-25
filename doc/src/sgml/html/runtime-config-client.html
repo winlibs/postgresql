@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -230,6 +230,15 @@ CLASS="LITERAL"
         setting, either globally or per-user.
        </P
 ><P
+>        For more information on schema handling, see
+        <A
+HREF="ddl-schemas.html"
+>Section 5.8</A
+>.  In particular, the default
+        configuration is suitable only when the database has a single user or
+        a few mutually-trusting users.
+       </P
+><P
 >        The current effective value of the search path can be examined
         via the <ACRONYM
 CLASS="ACRONYM"
@@ -256,12 +265,6 @@ CLASS="FUNCTION"
 CLASS="VARNAME"
 >search_path</TT
 > were resolved.
-       </P
-><P
->        For more information on schema handling, see <A
-HREF="ddl-schemas.html"
->Section 5.8</A
->.
        </P
 ></DD
 ><DT

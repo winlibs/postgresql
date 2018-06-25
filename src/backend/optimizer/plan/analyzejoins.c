@@ -248,8 +248,7 @@ join_is_removable(PlannerInfo *root, SpecialJoinInfo *sjinfo)
 		 * above the outer join, even if it references no other rels (it might
 		 * be from WHERE, for example).
 		 */
-		if (restrictinfo->is_pushed_down ||
-			!bms_equal(restrictinfo->required_relids, joinrelids))
+		if (RINFO_IS_PUSHED_DOWN(restrictinfo, joinrelids))
 		{
 			/*
 			 * If such a clause actually references the inner rel then join
@@ -417,8 +416,7 @@ remove_rel_from_query(PlannerInfo *root, int relid, Relids joinrelids)
 
 		remove_join_clause_from_rels(root, rinfo, rinfo->required_relids);
 
-		if (rinfo->is_pushed_down ||
-			!bms_equal(rinfo->required_relids, joinrelids))
+		if (RINFO_IS_PUSHED_DOWN(rinfo, joinrelids))
 		{
 			/* Recheck that qual doesn't actually reference the target rel */
 			Assert(!bms_is_member(relid, rinfo->clause_relids));
@@ -616,6 +614,14 @@ rel_is_distinct_for(PlannerInfo *root, RelOptInfo *rel, List *clause_list)
 				var = (Var *) get_rightop(rinfo->clause);
 			else
 				var = (Var *) get_leftop(rinfo->clause);
+
+			/*
+			 * We may ignore any RelabelType node above the operand.  (There
+			 * won't be more than one, since eval_const_expressions() has been
+			 * applied already.)
+			 */
+			if (var && IsA(var, RelabelType))
+				var = (Var *) ((RelabelType *) var)->arg;
 
 			/*
 			 * If inner side isn't a Var referencing a subquery output column,

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Frontend/Backend Protocol"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1667,6 +1667,61 @@ CLASS="REPLACEABLE"
 ><P>&#13;</P
 ></DD
 ><DT
+>NegotiateProtocolVersion (B)</DT
+><DD
+><P
+>&#13;<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>Byte1('v')</DT
+><DD
+><P
+>                Identifies the message as a protocol version negotiation
+                message.</P
+></DD
+><DT
+>Int32</DT
+><DD
+><P
+>                Length of message contents in bytes, including self.</P
+></DD
+><DT
+>Int32</DT
+><DD
+><P
+>                Newest minor protocol version supported by the server
+                for the major protocol version requested by the client.</P
+></DD
+><DT
+>Int32</DT
+><DD
+><P
+>                Number of protocol options not recognized by the server.</P
+></DD
+></DL
+></DIV
+><P>
+        Then, for protocol option not recognized by the server, there
+        is the following:
+<P
+></P
+></P><DIV
+CLASS="VARIABLELIST"
+><DL
+><DT
+>String</DT
+><DD
+><P
+>                The option name.</P
+></DD
+></DL
+></DIV
+><P></P
+></DD
+><DT
 >NoData (B)</DT
 ><DD
 ><P
@@ -2333,11 +2388,16 @@ CLASS="LITERAL"
 ></DIV
 ><P>
 
-                In addition to the above, any run-time parameter that can be
-                set at backend start time might be listed.  Such settings
-                will be applied during backend start (after parsing the
-                command-line arguments if any).  The values will act as
-                session defaults.</P
+                In addition to the above, other parameters may be listed.
+                Parameter names beginning with <TT
+CLASS="LITERAL"
+>_pq_.</TT
+> are
+                reserved for use as protocol extensions, while others are
+                treated as run-time parameters to be set at backend start
+                time.  Such settings will be applied during backend start
+                (after parsing the command-line arguments if any) and will
+                act as session defaults.</P
 ></DD
 ><DT
 >String</DT

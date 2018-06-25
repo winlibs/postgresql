@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_upgrade
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "PG_UPGRADE" "1" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "PG_UPGRADE" "1" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -356,20 +356,18 @@ Streaming replication and log\-shipping standby servers can remain running until
 .sp -1
 .IP "  8." 4.2
 .\}
-Prepare for standby server upgrades: If you are upgrading standby servers (as outlined in section
-Step 10), verify that the old standby servers are caught up by running
+Prepare for standby server upgrades: If you are upgrading standby servers using methods outlined in section
+Step 10, verify that the old standby servers are caught up by running
 pg_controldata
 against the old primary and standby clusters\&. Verify that the
 \(lqLatest checkpoint location\(rq
-values match in all clusters\&. (There will be a mismatch if old standby servers were shut down before the old primary\&.)
-.sp
-Also, if upgrading standby servers, change
+values match in all clusters\&. (There will be a mismatch if old standby servers were shut down before the old primary\&.) Also, change
 \fIwal_level\fR
 to
 replica
 in the
 postgresql\&.conf
-file on the new master cluster\&.
+file on the new primary cluster\&.
 .RE
 .sp
 .RS 4
@@ -468,58 +466,99 @@ module from the old cluster and install it in the new cluster after the upgrade,
 .sp -1
 .IP "  10." 4.2
 .\}
-Upgrade Streaming Replication and Log\-Shipping standby servers: If you have Streaming Replication (see
+Upgrade Streaming Replication and Log\-Shipping standby servers: If you used link mode and have Streaming Replication (see
 Section 26.2.5, \(lqStreaming Replication\(rq, in the documentation) or Log\-Shipping (see
-Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation) standby servers, follow these steps to upgrade them\&. You will not be running
+Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation) standby servers, you can follow these steps to quickly upgrade them\&. You will not be running
 pg_upgrade
 on the standby servers, but rather
-rsync\&. Do not start any servers yet\&.
+rsync
+on the primary\&. Do not start any servers yet\&.
+.sp
+If you did
+\fInot\fR
+use link mode, do not have or do not want to use
+rsync, or want an easier solution, skip the instructions in this section and simply recreate the standby servers once
+pg_upgrade
+completes and the new primary is running\&.
 Install the new PostgreSQL binaries on standby servers: Make sure the new binaries and support files are installed on all standby servers\&.
 Make sure the new standby data directories do \fInot\fR exist: Make sure the new standby data directories do
 \fInot\fR
 exist or are empty\&. If
 initdb
-was run, delete the standby server data directories\&.
-Install custom shared object files: Install the same custom shared object files on the new standbys that you installed in the new master cluster\&.
+was run, delete the standby servers\*(Aq new data directories\&.
+Install custom shared object files: Install the same custom shared object files on the new standbys that you installed in the new primary cluster\&.
 Stop standby servers: If the standby servers are still running, stop them now using the above instructions\&.
-Save configuration files: Save any configuration files from the standbys you need to keep, e\&.g\&.
+Save configuration files: Save any configuration files from the old standbys\*(Aq data directories you need to keep, e\&.g\&.
 postgresql\&.conf,
-recovery\&.conf, as these will be overwritten or removed in the next step\&.
-Run rsync: From a directory that is above the old and new database cluster directories, run this for each slave:
+recovery\&.conf, because these will be overwritten or removed in the next step\&.
+Run rsync: When using link mode, standby servers can be quickly upgraded using
+rsync\&. To accomplish this, from a directory on the primary server that is above the old and new database cluster directories, run this on the
+\fIprimary\fR
+for each standby server:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-rsync \-\-archive \-\-delete \-\-hard\-links \-\-size\-only old_pgdata new_pgdata remote_dir
+rsync \-\-archive \-\-delete \-\-hard\-links \-\-size\-only \-\-no\-inc\-recursive old_cluster new_cluster remote_dir
 .fi
 .if n \{\
 .RE
 .\}
 .sp
 where
-\fBold_pgdata\fR
+\fBold_cluster\fR
 and
-\fBnew_pgdata\fR
-are relative to the current directory, and
+\fBnew_cluster\fR
+are relative to the current directory on the primary, and
 \fBremote_dir\fR
 is
 \fIabove\fR
-the old and new cluster directories on the standby server\&. The old and new relative cluster paths must match on the master and standby server\&. Consult the
+the old and new cluster directories on the standby\&. The directory structure under the specified directories on the primary and standbys must match\&. Consult the
 rsync
 manual page for details on specifying the remote directory, e\&.g\&.
-standbyhost:/opt/PostgreSQL/\&.
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+rsync \-\-archive \-\-delete \-\-hard\-links \-\-size\-only \-\-no\-inc\-recursive /opt/PostgreSQL/9\&.5 \e
+      /opt/PostgreSQL/9\&.6 standby\&.example\&.com:/opt/PostgreSQL
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+You can verify what the command will do using
+rsync\*(Aqs
+\fB\-\-dry\-run\fR
+option\&. While
 rsync
-will be fast when
-pg_upgrade\*(Aqs
-\fB\-\-link\fR
-mode is used because it will create hard links on the remote server rather than transferring user data\&. Unfortunately,
+must be run on the primary for at least one standby, it is possible to run
 rsync
-needlessly copies the files associated with temporary and unlogged tables\&.
+on an upgraded standby to upgrade other standbys, as long as the upgraded standby has not been started\&.
+.sp
+What this does is to record the links created by
+pg_upgrade\*(Aqs link mode that connect files in the old and new clusters on the primary server\&. It then finds matching files in the standby\*(Aqs old cluster and creates links for them in the standby\*(Aqs new cluster\&. Files that were not linked on the primary are copied from the primary to the standby\&. (They are usually small\&.) This provides rapid standby upgrades\&. Unfortunately,
+rsync
+needlessly copies files associated with temporary and unlogged tables because these files don\*(Aqt normally exist on standby servers\&.
 .sp
 If you have tablespaces, you will need to run a similar
 rsync
-command for each tablespace directory\&. If you have relocated
+command for each tablespace directory, e\&.g\&.:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+rsync \-\-archive \-\-delete \-\-hard\-links \-\-size\-only \-\-no\-inc\-recursive /vol1/pg_tblsp/PG_9\&.5_201510051 \e
+      /vol1/pg_tblsp/PG_9\&.6_201608131 standby\&.example\&.com:/vol1/pg_tblsp
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+If you have relocated
 pg_xlog
 outside the data directories,
 rsync
@@ -528,7 +567,7 @@ Configure streaming replication and log\-shipping standby servers: Configure the
 \fBpg_start_backup()\fR
 and
 \fBpg_stop_backup()\fR
-or take a file system backup as the slaves are still synchronized with the master\&.)
+or take a file system backup as the standbys are still synchronized with the primary\&.)
 .RE
 .sp
 .RS 4
@@ -669,7 +708,9 @@ with
 .IP \(bu 2.3
 .\}
 If you ran
-\fBpg_upgrade\fR\fIwithout\fR\fB\-\-link\fR
+\fBpg_upgrade\fR
+\fIwithout\fR
+\fB\-\-link\fR
 or did not start the new server, the old cluster was not modified except that, if linking started, a
 \&.old
 suffix was appended to

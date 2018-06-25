@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Backup and Restore"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -121,7 +121,7 @@ CLASS="REPLACEABLE"
 > &gt; <TT
 CLASS="REPLACEABLE"
 ><I
->outfile</I
+>dumpfile</I
 ></TT
 ></PRE
 ><P>
@@ -308,14 +308,14 @@ CLASS="REPLACEABLE"
 > &lt; <TT
 CLASS="REPLACEABLE"
 ><I
->infile</I
+>dumpfile</I
 ></TT
 ></PRE
 ><P>
     where <TT
 CLASS="REPLACEABLE"
 ><I
->infile</I
+>dumpfile</I
 ></TT
 > is the
     file output by the <SPAN
@@ -392,7 +392,7 @@ CLASS="APPLICATION"
     exit status of 3 if an SQL error occurs:
 </P><PRE
 CLASS="PROGRAMLISTING"
->psql --set ON_ERROR_STOP=on dbname &lt; infile</PRE
+>psql --set ON_ERROR_STOP=on dbname &lt; dumpfile</PRE
 ><P>
     Either way, you will only have a partially restored database.
     Alternatively, you can specify that the whole dump should be
@@ -545,7 +545,7 @@ CLASS="SYNOPSIS"
 >pg_dumpall &gt; <TT
 CLASS="REPLACEABLE"
 ><I
->outfile</I
+>dumpfile</I
 ></TT
 ></PRE
 ><P>
@@ -558,7 +558,7 @@ CLASS="SYNOPSIS"
 >psql -f <TT
 CLASS="REPLACEABLE"
 ><I
->infile</I
+>dumpfile</I
 ></TT
 > postgres</PRE
 ><P>

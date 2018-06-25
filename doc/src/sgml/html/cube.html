@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -107,7 +107,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN179611"
+NAME="AEN181987"
 >F.9.1. Syntax</A
 ></H2
 ><P
@@ -403,7 +403,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN179692"
+NAME="AEN182068"
 >F.9.2. Precision</A
 ></H2
 ><P
@@ -416,7 +416,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN179695"
+NAME="AEN182071"
 >F.9.3. Usage</A
 ></H2
 ><P
@@ -614,16 +614,21 @@ CLASS="REPLACEABLE"
 ><I
 >n</I
 ></TT
->-th coordinate in <SPAN
-CLASS="QUOTE"
->"normalized"</SPAN
-> cube
-        representation, in which the coordinates have been rearranged into
-        the form <SPAN
-CLASS="QUOTE"
->"lower left &mdash; upper right"</SPAN
->; that is, the
-        smaller endpoint along each dimension appears first.
+>-th coordinate of cube in following way:
+        n = 2 * k - 1 means lower bound of <TT
+CLASS="REPLACEABLE"
+><I
+>k</I
+></TT
+>-th
+        dimension, n = 2 * k means upper bound of
+        <TT
+CLASS="REPLACEABLE"
+><I
+>k</I
+></TT
+>-th dimension.  This operator is designed
+        for KNN-GiST support.
       </TD
 ></TR
 ><TR
@@ -1215,7 +1220,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN179967"
+NAME="AEN182343"
 >F.9.4. Defaults</A
 ></H2
 ><P
@@ -1267,7 +1272,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN179977"
+NAME="AEN182353"
 >F.9.5. Notes</A
 ></H2
 ><P
@@ -1290,7 +1295,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN179983"
+NAME="AEN182359"
 >F.9.6. Credits</A
 ></H2
 ><P

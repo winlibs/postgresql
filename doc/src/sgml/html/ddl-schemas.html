@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Definition"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -376,6 +376,28 @@ CLASS="FIRSTTERM"
     in other schemas in the database.
    </P
 ><P
+>    The ability to create like-named objects in different schemas complicates
+    writing a query that references precisely the same objects every time.  It
+    also opens up the potential for users to change the behavior of other
+    users' queries, maliciously or accidentally.  Due to the prevalence of
+    unqualified names in queries and their use
+    in <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> internals, adding a schema
+    to <TT
+CLASS="VARNAME"
+>search_path</TT
+> effectively trusts all users having
+    <TT
+CLASS="LITERAL"
+>CREATE</TT
+> privilege on that schema.  When you run an
+    ordinary query, a malicious user able to create objects in a schema of
+    your search path can take control and execute arbitrary SQL functions as
+    though you executed them.
+   </P
+><P
 >    The first schema named in the search path is called the current schema.
     Aside from being the first schema searched, it is also the schema in
     which new tables will be created if the <TT
@@ -530,8 +552,12 @@ CLASS="LITERAL"
     <TT
 CLASS="LITERAL"
 >public</TT
-> schema.  If you do
-    not want to allow that, you can revoke that privilege:
+> schema.
+    Some <A
+HREF="ddl-schemas.html#DDL-SCHEMAS-PATTERNS"
+>usage patterns</A
+> call for
+    revoking that privilege:
 </P><PRE
 CLASS="PROGRAMLISTING"
 >REVOKE CREATE ON SCHEMA public FROM PUBLIC;</PRE
@@ -623,52 +649,112 @@ NAME="DDL-SCHEMAS-PATTERNS"
 >5.8.6. Usage Patterns</A
 ></H2
 ><P
->    Schemas can be used to organize your data in many ways.  There are
-    a few usage patterns that are recommended and are easily supported by
-    the default configuration:
+>    Schemas can be used to organize your data in many ways.  There are a few
+    usage patterns easily supported by the default configuration, only one of
+    which suffices when database users mistrust other database users:
     <P
 ></P
 ></P><UL
 ><LI
 ><P
->       If you do not create any schemas then all users access the
-       public schema implicitly.  This simulates the situation where
-       schemas are not available at all.  This setup is mainly
-       recommended when there is only a single user or a few cooperating
-       users in a database.  This setup also allows smooth transition
-       from the non-schema-aware world.
-      </P
-></LI
-><LI
-><P
->       You can create a schema for each user with the same name as
-       that user.  Recall that the default search path starts with
-       <TT
+>       Constrain ordinary users to user-private schemas.  To implement this,
+       issue <TT
+CLASS="LITERAL"
+>REVOKE CREATE ON SCHEMA public FROM PUBLIC</TT
+>,
+       and create a schema for each user with the same name as that user.  If
+       affected users had logged in before this, consider auditing the public
+       schema for objects named like objects in
+       schema <TT
+CLASS="LITERAL"
+>pg_catalog</TT
+>.  Recall that the default search
+       path starts with <TT
 CLASS="LITERAL"
 >$user</TT
->, which resolves to the user name.
-       Therefore, if each user has a separate schema, they access their
+>, which resolves to the user
+       name.  Therefore, if each user has a separate schema, they access their
        own schemas by default.
-      </P
-><P
->       If you use this setup then you might also want to revoke access
-       to the public schema (or drop it altogether), so users are
-       truly constrained to their own schemas.
       </P
 ></LI
 ><LI
 ><P
->       To install shared applications (tables to be used by everyone,
-       additional functions provided by third parties, etc.), put them
-       into separate schemas.  Remember to grant appropriate
-       privileges to allow the other users to access them.  Users can
-       then refer to these additional objects by qualifying the names
-       with a schema name, or they can put the additional schemas into
-       their search path, as they choose.
+>       Remove the public schema from each user's default search path
+       using <TT
+CLASS="LITERAL"
+>ALTER ROLE <TT
+CLASS="REPLACEABLE"
+><I
+>user</I
+></TT
+> SET
+       search_path = "$user"</TT
+>.  Everyone retains the ability to
+       create objects in the public schema, but only qualified names will
+       choose those objects.  A user holding the <TT
+CLASS="LITERAL"
+>CREATEROLE</TT
+>
+       privilege can undo this setting and issue arbitrary queries under the
+       identity of users relying on the setting.  If you
+       grant <TT
+CLASS="LITERAL"
+>CREATEROLE</TT
+> to users not warranting this
+       almost-superuser ability, use the first pattern instead.
+      </P
+></LI
+><LI
+><P
+>       Remove the public schema from <TT
+CLASS="VARNAME"
+>search_path</TT
+> in
+       <A
+HREF="config-setting.html#CONFIG-SETTING-CONFIGURATION-FILE"
+><TT
+CLASS="FILENAME"
+>postgresql.conf</TT
+></A
+>.
+       The ensuing user experience matches the previous pattern.  In addition
+       to that pattern's implications for <TT
+CLASS="LITERAL"
+>CREATEROLE</TT
+>, this
+       trusts database owners the same way.  If you assign
+       the <TT
+CLASS="LITERAL"
+>CREATEROLE</TT
+>
+       privilege, <TT
+CLASS="LITERAL"
+>CREATEDB</TT
+> privilege or individual database
+       ownership to users not warranting almost-superuser access, use the
+       first pattern instead.
+      </P
+></LI
+><LI
+><P
+>       Keep the default.  All users access the public schema implicitly.  This
+       simulates the situation where schemas are not available at all, giving
+       a smooth transition from the non-schema-aware world.  However, any user
+       can issue arbitrary queries under the identity of any user not electing
+       to protect itself individually.  This pattern is acceptable only when
+       the database has a single user or a few mutually-trusting users.
       </P
 ></LI
 ></UL
 ><P>
+   </P
+><P
+>    For any pattern, to install shared applications (tables to be used by
+    everyone, additional functions provided by third parties, etc.), put them
+    into separate schemas.  Remember to grant appropriate privileges to allow
+    the other users to access them.  Users can then refer to these additional
+    objects by qualifying the names with a schema name, or they can put the
+    additional schemas into their search path, as they choose.
    </P
 ></DIV
 ><DIV
@@ -714,7 +800,7 @@ CLASS="LITERAL"
 >public</TT
 > schema in the
     SQL standard.  For maximum conformance to the standard, you should
-    not use (perhaps even remove) the <TT
+    not use the <TT
 CLASS="LITERAL"
 >public</TT
 > schema.

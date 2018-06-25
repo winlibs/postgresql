@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="ECPG - Embedded SQL in C"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -590,8 +590,8 @@ CLASS="REPLACEABLE"
 ></TT
 >+1]</TT
 ><A
-NAME="AEN49909"
-HREF="#FTN.AEN49909"
+NAME="AEN50052"
+HREF="#FTN.AEN50052"
 ><SPAN
 CLASS="footnote"
 >[b]</SPAN
@@ -675,8 +675,8 @@ CLASS="TYPE"
 CLASS="TYPE"
 >bool</TT
 ><A
-NAME="AEN49940"
-HREF="#FTN.AEN49940"
+NAME="AEN50083"
+HREF="#FTN.AEN50083"
 ><SPAN
 CLASS="footnote"
 >[c]</SPAN
@@ -694,13 +694,13 @@ NAME="FTN.ECPG-DATATYPE-TABLE-FN"
 HREF="ecpg-variables.html#ECPG-SPECIAL-TYPES"
 >Section 34.4.4.2</A
 >.<BR><A
-NAME="FTN.AEN49909"
+NAME="FTN.AEN50052"
 >b. </A
 >declared in <TT
 CLASS="FILENAME"
 >ecpglib.h</TT
 ><BR><A
-NAME="FTN.AEN49940"
+NAME="FTN.AEN50083"
 >c. </A
 >declared in <TT
 CLASS="FILENAME"
@@ -885,7 +885,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN49983"
+NAME="AEN50126"
 >34.4.4.2.1. timestamp, date</A
 ></H4
 ><P
@@ -1004,6 +1004,7 @@ EXEC SQL BEGIN DECLARE SECTION;
 EXEC SQL END DECLARE SECTION;
 
     EXEC SQL CONNECT TO testdb;
+    EXEC SQL SELECT pg_catalog.set_config('search_path', '', false); EXEC SQL COMMIT;
 
     in = PGTYPESinterval_new();
     EXEC SQL SELECT '1 min'::interval INTO :in;
@@ -1085,6 +1086,7 @@ EXEC SQL BEGIN DECLARE SECTION;
 EXEC SQL END DECLARE SECTION;
 
     EXEC SQL CONNECT TO testdb;
+    EXEC SQL SELECT pg_catalog.set_config('search_path', '', false); EXEC SQL COMMIT;
 
     num = PGTYPESnumeric_new();
     dec = PGTYPESdecimal_new();
@@ -1182,6 +1184,7 @@ EXEC SQL END DECLARE SECTION;
     memset(dbid, 0, sizeof(int) * 8);
 
     EXEC SQL CONNECT TO testdb;
+    EXEC SQL SELECT pg_catalog.set_config('search_path', '', false); EXEC SQL COMMIT;
 
     /* Retrieve multiple rows into arrays at once. */
     EXEC SQL SELECT oid,datname INTO :dbid, :dbname FROM pg_database;
@@ -1343,7 +1346,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN50055"
+NAME="AEN50198"
 >34.4.4.3.3. Typedefs</A
 ></H4
 ><P
@@ -1372,7 +1375,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN50061"
+NAME="AEN50204"
 >34.4.4.3.4. Pointers</A
 ></H4
 ><P
@@ -1415,7 +1418,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN50070"
+NAME="AEN50213"
 >34.4.5.1. Arrays</A
 ></H3
 ><P
@@ -1578,7 +1581,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN50094"
+NAME="AEN50237"
 >34.4.5.2. Composite Types</A
 ></H3
 ><P
@@ -1739,7 +1742,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN50116"
+NAME="AEN50259"
 >34.4.5.3. User-defined Base Types</A
 ></H3
 ><P

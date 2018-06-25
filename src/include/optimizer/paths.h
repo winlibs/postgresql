@@ -20,9 +20,9 @@
 /*
  * allpaths.c
  */
-extern bool enable_geqo;
-extern int	geqo_threshold;
-extern int	min_parallel_relation_size;
+extern PGDLLIMPORT bool enable_geqo;
+extern PGDLLIMPORT int	geqo_threshold;
+extern PGDLLIMPORT int	min_parallel_relation_size;
 
 /* Hook for plugins to get control in set_rel_pathlist() */
 typedef void (*set_rel_pathlist_hook_type) (PlannerInfo *root,
@@ -201,16 +201,18 @@ extern void initialize_mergeclause_eclasses(PlannerInfo *root,
 								RestrictInfo *restrictinfo);
 extern void update_mergeclause_eclasses(PlannerInfo *root,
 							RestrictInfo *restrictinfo);
-extern List *find_mergeclauses_for_pathkeys(PlannerInfo *root,
-							   List *pathkeys,
-							   bool outer_keys,
-							   List *restrictinfos);
+extern List *find_mergeclauses_for_outer_pathkeys(PlannerInfo *root,
+									 List *pathkeys,
+									 List *restrictinfos);
 extern List *select_outer_pathkeys_for_merge(PlannerInfo *root,
 								List *mergeclauses,
 								RelOptInfo *joinrel);
 extern List *make_inner_pathkeys_for_merge(PlannerInfo *root,
 							  List *mergeclauses,
 							  List *outer_pathkeys);
+extern List *trim_mergeclauses_for_inner_pathkeys(PlannerInfo *root,
+									 List *mergeclauses,
+									 List *pathkeys);
 extern List *truncate_useless_pathkeys(PlannerInfo *root,
 						  RelOptInfo *rel,
 						  List *pathkeys);

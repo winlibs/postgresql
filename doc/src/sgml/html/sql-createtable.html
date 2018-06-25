@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETABLE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN82109"
+NAME="AEN82366"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN82109"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN82112"
+NAME="AEN82369"
 ></A
 ><H2
 >Synopsis</H2
@@ -555,7 +555,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82192"
+NAME="AEN82449"
 ></A
 ><H2
 >Parameters</H2
@@ -2505,7 +2505,7 @@ CLASS="PROGRAMLISTING"
 CLASS="PROGRAMLISTING"
 >CREATE TABLE distributors (
     did     integer,
-    name    varchar(40)
+    name    varchar(40),
     CONSTRAINT con1 CHECK (did &gt; 100 AND name &lt;&gt; '')
 );</PRE
 ><P>
@@ -2702,7 +2702,7 @@ CLASS="ACRONYM"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82795"
+NAME="AEN83052"
 ></A
 ><H3
 >Temporary Tables</H3
@@ -2801,7 +2801,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82818"
+NAME="AEN83075"
 ></A
 ><H3
 >Non-deferred Uniqueness Constraints</H3
@@ -2836,7 +2836,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82826"
+NAME="AEN83083"
 ></A
 ><H3
 >Column Check Constraints</H3
@@ -2860,7 +2860,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82832"
+NAME="AEN83089"
 ></A
 ><H3
 ><TT
@@ -2881,7 +2881,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82838"
+NAME="AEN83095"
 ></A
 ><H3
 ><TT
@@ -2915,7 +2915,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82847"
+NAME="AEN83104"
 ></A
 ><H3
 >Inheritance</H3
@@ -2940,7 +2940,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82853"
+NAME="AEN83110"
 ></A
 ><H3
 >Zero-column Tables</H3
@@ -2965,7 +2965,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82859"
+NAME="AEN83116"
 ></A
 ><H3
 ><TT
@@ -2991,7 +2991,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82866"
+NAME="AEN83123"
 ></A
 ><H3
 ><TT
@@ -3012,7 +3012,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82872"
+NAME="AEN83129"
 ></A
 ><H3
 >Tablespaces</H3
@@ -3034,7 +3034,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN82878"
+NAME="AEN83135"
 ></A
 ><H3
 >Typed Tables</H3
@@ -3054,7 +3054,7 @@ CLASS="QUOTE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN82882"
+NAME="AEN83139"
 ></A
 ><H2
 >See Also</H2

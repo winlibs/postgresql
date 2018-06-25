@@ -67,6 +67,22 @@
 
    <warning>
     <para>
+     If untrusted users have access to a database that has not adopted a
+     <link linkend="ddl-schemas-patterns">secure schema usage pattern</link>,
+     begin each session by removing publicly-writable schemas from
+     <varname>search_path</varname>.  One can set parameter key
+     word <literal>options</literal> to
+     value <literal>-csearch_path=</literal>.  Alternately, one can
+     issue <literal>PQexec(<replaceable>conn</replaceable>, "SELECT
+     pg_catalog.set_config('search_path', '', false)")</literal> after
+     connecting.  This consideration is not specific
+     to <application>libpq</application>; it applies to every interface for
+     executing arbitrary SQL commands.
+    </para>
+   </warning>
+
+   <warning>
+    <para>
      On Unix, forking a process with open libpq connections can lead to
      unpredictable results because the parent and child processes share
      the same sockets and operating system resources.  For this reason,
@@ -3061,9 +3077,10 @@ void PQclear(PGresult *res);
 
      <listitem>
       <para>
-       Returns the number of rows (tuples) in the query result.  Because
-       it returns an integer result, large result sets might overflow the
-       return value on 32-bit operating systems.
+       Returns the number of rows (tuples) in the query result.
+       (Note that <structname>PGresult</> objects are limited to no more
+       than <literal>INT_MAX</> rows, so an <type>int</> result is
+       sufficient.)
 
 <synopsis>
 int PQntuples(const PGresult *res);
@@ -6648,7 +6665,8 @@ main(void)
 {
     mydata *data;
     PGresult *res;
-    PGconn *conn = PQconnectdb("dbname = postgres");
+    PGconn *conn =
+        PQconnectdb("dbname=postgres options=-csearch_path=");
 
     if (PQstatus(conn) != CONNECTION_OK)
     {
@@ -7332,17 +7350,36 @@ ldap://ldap.acme.com/cn=dbserver,cn=hosts?pgconnectinfo?base?(objectclass=*)
    the server certificate. This means that it is possible to spoof the server
    identity (for example by modifying a DNS record or by taking over the server
    IP address) without the client knowing. In order to prevent spoofing,
-   <acronym>SSL</> certificate verification must be used.
+   the client must be able to verify the server's identity via a chain of
+   trust.  A chain of trust is established by placing a root (self-signed)
+   certificate authority (<acronym>CA</>) certificate on one
+   computer and a leaf certificate <emphasis>signed</> by the
+   root certificate on another computer.  It is also possible to use an
+   <quote>intermediate</> certificate which is signed by the root
+   certificate and signs leaf certificates.
   </para>
 
   <para>
+   To allow the client to verify the identity of the server, place a root
+   certificate on the client and a leaf certificate signed by the root
+   certificate on the server.  To allow the server to verify the identity
+   of the client, place a root certificate on the server and a leaf
+   certificate signed by the root certificate on the client.  One or more
+   intermediate certificates (usually stored with the leaf certificate)
+   can also be used to link the leaf certificate to the root certificate.
+  </para>
+
+  <para>
+   Once a chain of trust has been established, there are two ways for
+   the client to validate the leaf certificate sent by the server.
    If the parameter <literal>sslmode</> is set to <literal>verify-ca</>,
    libpq will verify that the server is trustworthy by checking the
-   certificate chain up to a trusted certificate authority
-   (<acronym>CA</>). If <literal>sslmode</> is set to <literal>verify-full</>,
-   libpq will <emphasis>also</> verify that the server host name matches its
-   certificate. The SSL connection will fail if the server certificate cannot
-   be verified. <literal>verify-full</> is recommended in most
+   certificate chain up to the root certificate stored on the client.
+   If <literal>sslmode</> is set to <literal>verify-full</>,
+   libpq will <emphasis>also</> verify that the server host
+   name matches the name stored in the server certificate. The
+   SSL connection will fail if the server certificate cannot be
+   verified. <literal>verify-full</> is recommended in most
    security-sensitive environments.
   </para>
 
@@ -7359,13 +7396,13 @@ ldap://ldap.acme.com/cn=dbserver,cn=hosts?pgconnectinfo?base?(objectclass=*)
   </para>
 
   <para>
-   To allow server certificate verification, the certificate(s) of one or more
-   trusted <acronym>CA</>s must be
-   placed in the file <filename>~/.postgresql/root.crt</> in the user's home
-   directory. If intermediate <acronym>CA</>s appear in
-   <filename>root.crt</filename>, the file must also contain certificate
-   chains to their root <acronym>CA</>s. (On Microsoft Windows the file is named
-   <filename>%APPDATA%\postgresql\root.crt</filename>.)
+   To allow server certificate verification, one or more root certificates
+   must be placed in the file <filename>~/.postgresql/root.crt</>
+   in the user's home directory.  (On Microsoft Windows the file is named
+   <filename>%APPDATA%\postgresql\root.crt</>.)  Intermediate
+   certificates should also be added to the file if they are needed to link
+   the certificate chain sent by the server to the root certificates
+   stored on the client.
   </para>
 
   <para>
@@ -7399,11 +7436,12 @@ ldap://ldap.acme.com/cn=dbserver,cn=hosts?pgconnectinfo?base?(objectclass=*)
   <title>Client Certificates</title>
 
   <para>
-   If the server requests a trusted client certificate,
-   <application>libpq</application> will send the certificate stored in
+   If the server attempts to verify the identity of the
+   client by requesting the client's leaf certificate,
+   <application>libpq</> will send the certificates stored in
    file <filename>~/.postgresql/postgresql.crt</> in the user's home
-   directory.  The certificate must be signed by one of the certificate
-   authorities (<acronym>CA</acronym>) trusted by the server.  A matching
+   directory.  The certificates must chain to the root certificate trusted
+   by the server.  A matching
    private key file <filename>~/.postgresql/postgresql.key</> must also
    be present. The private
    key file must not allow any access to world or group; achieve this by the
@@ -7418,23 +7456,17 @@ ldap://ldap.acme.com/cn=dbserver,cn=hosts?pgconnectinfo?base?(objectclass=*)
   </para>
 
   <para>
-   In some cases, the client certificate might be signed by an
-   <quote>intermediate</> certificate authority, rather than one that is
-   directly trusted by the server.  To use such a certificate, append the
-   certificate of the signing authority to the <filename>postgresql.crt</>
-   file, then its parent authority's certificate, and so on up to a certificate
-   authority, <quote>root</> or <quote>intermediate</>, that is trusted by
-   the server, i.e. signed by a certificate in the server's
-   <filename>root.crt</filename> file.
+   The first certificate in <filename>postgresql.crt</> must be the
+   client's certificate because it must match the client's private key.
+   <quote>Intermediate</> certificates can be optionally appended
+   to the file &mdash; doing so avoids requiring storage of intermediate
+   certificates on the server's <filename>root.crt</filename> file.
   </para>
 
   <para>
-   Note that the client's <filename>~/.postgresql/root.crt</> lists the top-level CAs
-   that are considered trusted for signing server certificates.  In principle it need
-   not list the CA that signed the client's certificate, though in most cases
-   that CA would also be trusted for server certificates.
+   For instructions on creating certificates, see <xref
+   linkend="ssl-certificate-creation">.
   </para>
-
  </sect2>
 
  <sect2 id="libpq-ssl-protection">
@@ -8000,13 +8032,16 @@ testlibpq.o(.text+0xa4): undefined reference to `PQerrorMessage'
 <programlisting>
 <![CDATA[
 /*
+ * src/test/examples/testlibpq.c
+ *
+ *
  * testlibpq.c
  *
  *      Test the C version of libpq, the PostgreSQL frontend library.
  */
 #include <stdio.h>
 #include <stdlib.h>
-#include <libpq-fe.h>
+#include "libpq-fe.h"
 
 static void
 exit_nicely(PGconn *conn)
@@ -8046,6 +8081,22 @@ main(int argc, char **argv)
         exit_nicely(conn);
     }
 
+    /* Set always-secure search path, so malicous users can't take control. */
+    res = PQexec(conn,
+                 "SELECT pg_catalog.set_config('search_path', '', false)");
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+        fprintf(stderr, "SET failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        exit_nicely(conn);
+    }
+
+    /*
+     * Should PQclear PGresult whenever it is no longer needed to avoid memory
+     * leaks
+     */
+    PQclear(res);
+
     /*
      * Our test case here involves using a cursor, for which we must be inside
      * a transaction block.  We could do the whole thing with a single
@@ -8061,11 +8112,6 @@ main(int argc, char **argv)
         PQclear(res);
         exit_nicely(conn);
     }
-
-    /*
-     * Should PQclear PGresult whenever it is no longer needed to avoid memory
-     * leaks
-     */
     PQclear(res);
 
     /*
@@ -8127,6 +8173,9 @@ main(int argc, char **argv)
 <programlisting>
 <![CDATA[
 /*
+ * src/test/examples/testlibpq2.c
+ *
+ *
  * testlibpq2.c
  *      Test of the asynchronous notification interface
  *
@@ -8138,16 +8187,16 @@ main(int argc, char **argv)
  * populate a database with the following commands
  * (provided in src/test/examples/testlibpq2.sql):
  *
+ *   CREATE SCHEMA TESTLIBPQ2;
+ *   SET search_path = TESTLIBPQ2;
  *   CREATE TABLE TBL1 (i int4);
- *
  *   CREATE TABLE TBL2 (i int4);
- *
  *   CREATE RULE r1 AS ON INSERT TO TBL1 DO
  *     (INSERT INTO TBL2 VALUES (new.i); NOTIFY TBL2);
  *
- * and do this four times:
+ * Start this program, then from psql do this four times:
  *
- *   INSERT INTO TBL1 VALUES (10);
+ *   INSERT INTO TESTLIBPQ2.TBL1 VALUES (10);
  */
 
 #ifdef WIN32
@@ -8159,6 +8208,10 @@ main(int argc, char **argv)
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
+#endif
+
 #include "libpq-fe.h"
 
 static void
@@ -8198,6 +8251,22 @@ main(int argc, char **argv)
         exit_nicely(conn);
     }
 
+    /* Set always-secure search path, so malicous users can't take control. */
+    res = PQexec(conn,
+                 "SELECT pg_catalog.set_config('search_path', '', false)");
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+        fprintf(stderr, "SET failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        exit_nicely(conn);
+    }
+
+    /*
+     * Should PQclear PGresult whenever it is no longer needed to avoid memory
+     * leaks
+     */
+    PQclear(res);
+
     /*
      * Issue LISTEN command to enable notifications from the rule's NOTIFY.
      */
@@ -8208,11 +8277,6 @@ main(int argc, char **argv)
         PQclear(res);
         exit_nicely(conn);
     }
-
-    /*
-     * should PQclear PGresult whenever it is no longer needed to avoid memory
-     * leaks
-     */
     PQclear(res);
 
     /* Quit after four notifies are received. */
@@ -8270,14 +8334,18 @@ main(int argc, char **argv)
 <programlisting>
 <![CDATA[
 /*
+ * src/test/examples/testlibpq3.c
+ *
+ *
  * testlibpq3.c
  *      Test out-of-line parameters and binary I/O.
  *
  * Before running this, populate a database with the following commands
  * (provided in src/test/examples/testlibpq3.sql):
  *
+ * CREATE SCHEMA testlibpq3;
+ * SET search_path = testlibpq3;
  * CREATE TABLE test1 (i int4, t text, b bytea);
- *
  * INSERT INTO test1 values (1, 'joe''s place', '\\000\\001\\002\\003\\004');
  * INSERT INTO test1 values (2, 'ho there', '\\004\\003\\002\\001\\000');
  *
@@ -8408,6 +8476,16 @@ main(int argc, char **argv)
                 PQerrorMessage(conn));
         exit_nicely(conn);
     }
+
+    /* Set always-secure search path, so malicous users can't take control. */
+    res = PQexec(conn, "SET search_path = testlibpq3");
+    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    {
+        fprintf(stderr, "SET failed: %s", PQerrorMessage(conn));
+        PQclear(res);
+        exit_nicely(conn);
+    }
+    PQclear(res);
 
     /*
      * The point of this program is to illustrate use of PQexecParams() with

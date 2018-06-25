@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: pg_dumpall
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "PG_DUMPALL" "1" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "PG_DUMPALL" "1" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -371,7 +371,8 @@ file than to rely on manual password entry\&.
 Specifies a role name to be used to create the dump\&. This option causes
 pg_dumpall
 to issue a
-\fBSET ROLE\fR\fIrolename\fR
+\fBSET ROLE\fR
+\fIrolename\fR
 command after connecting to the database\&. It is useful when the authenticated user (specified by
 \fB\-U\fR) lacks privileges needed by
 pg_dumpall, but can switch to a role with the required rights\&. Some installations have a policy against logging in directly as a superuser, and use of this option allows dumps to be made without violating the policy\&.

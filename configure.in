@@ -17,7 +17,7 @@ dnl Read the Autoconf manual for details.
 dnl
 m4_pattern_forbid(^PGAC_)dnl to catch undefined macros
 
-AC_INIT([PostgreSQL], [9.6.5], [pgsql-bugs@postgresql.org])
+AC_INIT([PostgreSQL], [9.6.9], [pgsql-bugs@postgresql.org])
 
 m4_if(m4_defn([m4_PACKAGE_VERSION]), [2.69], [], [m4_fatal([Autoconf version 2.69 is required.
 Untested combinations of 'autoconf' and PostgreSQL versions are not
@@ -1115,8 +1115,8 @@ if test "$with_openssl" = yes ; then
      AC_CHECK_LIB(crypto, CRYPTO_new_ex_data, [], [AC_MSG_ERROR([library 'crypto' is required for OpenSSL])])
      AC_CHECK_LIB(ssl,    SSL_new, [], [AC_MSG_ERROR([library 'ssl' is required for OpenSSL])])
   else
-     AC_SEARCH_LIBS(CRYPTO_new_ex_data, eay32 crypto, [], [AC_MSG_ERROR([library 'eay32' or 'crypto' is required for OpenSSL])])
-     AC_SEARCH_LIBS(SSL_new, ssleay32 ssl, [], [AC_MSG_ERROR([library 'ssleay32' or 'ssl' is required for OpenSSL])])
+     AC_SEARCH_LIBS(CRYPTO_new_ex_data, [eay32 crypto], [], [AC_MSG_ERROR([library 'eay32' or 'crypto' is required for OpenSSL])])
+     AC_SEARCH_LIBS(SSL_new, [ssleay32 ssl], [], [AC_MSG_ERROR([library 'ssleay32' or 'ssl' is required for OpenSSL])])
   fi
   AC_CHECK_FUNCS([SSL_get_current_compression])
   # Functions introduced in OpenSSL 1.1.0. We used to check for
@@ -1322,6 +1322,12 @@ fi
 
 if test "$with_bonjour" = yes ; then
   AC_CHECK_HEADER(dns_sd.h, [], [AC_MSG_ERROR([header file <dns_sd.h> is required for Bonjour])])
+dnl At some point we might add something like
+dnl AC_SEARCH_LIBS(DNSServiceRegister, dns_sd)
+dnl but right now, what that would mainly accomplish is to encourage
+dnl people to try to use the avahi implementation, which does not work.
+dnl If you want to use Apple's own Bonjour code on another platform,
+dnl just add -ldns_sd to LIBS manually.
 fi
 
 # for contrib/uuid-ossp
@@ -1457,7 +1463,7 @@ PGAC_FUNC_WCSTOMBS_L
 LIBS_including_readline="$LIBS"
 LIBS=`echo "$LIBS" | sed -e 's/-ledit//g' -e 's/-lreadline//g'`
 
-AC_CHECK_FUNCS([cbrt dlopen fdatasync getifaddrs getpeerucred getrlimit mbstowcs_l memmove poll pstat pthread_is_threaded_np readlink setproctitle setsid shm_open symlink sync_file_range towlower utime utimes wcstombs wcstombs_l])
+AC_CHECK_FUNCS([cbrt dlopen fdatasync getifaddrs getpeerucred getrlimit mbstowcs_l memmove poll posix_fallocate pstat pthread_is_threaded_np readlink setproctitle setsid shm_open symlink sync_file_range towlower utime utimes wcstombs wcstombs_l])
 
 AC_REPLACE_FUNCS(fseeko)
 case $host_os in
@@ -1751,18 +1757,6 @@ fi
 AC_DEFINE_UNQUOTED(PG_INT64_TYPE, $pg_int64_type,
   [Define to the name of a signed 64-bit integer type.])
 
-dnl If we need to use "long long int", figure out whether nnnLL notation works.
-
-if test x"$HAVE_LONG_LONG_INT_64" = xyes ; then
-  AC_COMPILE_IFELSE([AC_LANG_SOURCE([
-#define INT64CONST(x)  x##LL
-long long int foo = INT64CONST(0x1234567890123456);
-])],
-	[AC_DEFINE(HAVE_LL_CONSTANTS, 1, [Define to 1 if constants of type 'long long int' should have the suffix LL.])],
-	[])
-fi
-
-
 # If we found "long int" is 64 bits, assume snprintf handles it.  If
 # we found we need to use "long long int", better check.  We cope with
 # snprintfs that use %lld, %qd, or %I64d as the format.  If none of these
@@ -1854,7 +1848,10 @@ AC_CHECK_ALIGNOF(double)
 
 # Compute maximum alignment of any basic type.
 # We assume long's alignment is at least as strong as char, short, or int;
-# but we must check long long (if it exists) and double.
+# but we must check long long (if it is being used for int64) and double.
+# Note that we intentionally do not consider any types wider than 64 bits,
+# as allowing MAXIMUM_ALIGNOF to exceed 8 would be too much of a penalty
+# for disk and memory space.
 
 MAX_ALIGNOF=$ac_cv_alignof_long
 if test $MAX_ALIGNOF -lt $ac_cv_alignof_double ; then
@@ -1871,7 +1868,7 @@ AC_DEFINE_UNQUOTED(MAXIMUM_ALIGNOF, $MAX_ALIGNOF, [Define as the maximum alignme
 AC_CHECK_TYPES([int8, uint8, int64, uint64], [], [],
 [#include <stdio.h>])
 
-# Check for extensions offering the integer scalar type __int128.
+# Some compilers offer a 128-bit integer scalar type.
 PGAC_TYPE_128BIT_INT
 
 # Check for various atomic operations now that we have checked how to declare
@@ -1960,11 +1957,11 @@ if test x"$USE_SSE42_CRC32C" = x"1"; then
   AC_MSG_RESULT(SSE 4.2)
 else
   if test x"$USE_SSE42_CRC32C_WITH_RUNTIME_CHECK" = x"1"; then
-    AC_DEFINE(USE_SSE42_CRC32C_WITH_RUNTIME_CHECK, 1, [Define to 1 to use Intel SSSE 4.2 CRC instructions with a runtime check.])
+    AC_DEFINE(USE_SSE42_CRC32C_WITH_RUNTIME_CHECK, 1, [Define to 1 to use Intel SSE 4.2 CRC instructions with a runtime check.])
     PG_CRC32C_OBJS="pg_crc32c_sse42.o pg_crc32c_sb8.o pg_crc32c_choose.o"
     AC_MSG_RESULT(SSE 4.2 with runtime check)
   else
-    AC_DEFINE(USE_SLICING_BY_8_CRC32C, 1, [Define to 1 to use Intel SSE 4.2 CRC instructions with a runtime check.])
+    AC_DEFINE(USE_SLICING_BY_8_CRC32C, 1, [Define to 1 to use software CRC-32C implementation (slicing-by-8).])
     PG_CRC32C_OBJS="pg_crc32c_sb8.o"
     AC_MSG_RESULT(slicing-by-8)
   fi

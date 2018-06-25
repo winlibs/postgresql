@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.5 Documentation"
+TITLE="PostgreSQL 9.6.9 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Backup and Restore"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2017-08-28T21:37:55"></HEAD
+CONTENT="2018-05-07T21:07:37"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.5 Documentation</A
+>PostgreSQL 9.6.9 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -812,8 +812,14 @@ HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP-DATA"
 CLASS="PROGRAMLISTING"
 >SELECT * FROM pg_stop_backup(false);</PRE
 ><P>
-     This terminates the backup mode and performs an automatic switch to
-     the next WAL segment.  The reason for the switch is to arrange for
+     This terminates backup mode. On a primary, it also performs an automatic
+     switch to the next WAL segment.  On a standby, it is not possible to
+     automatically switch WAL segments, so you may wish to run
+     <CODE
+CLASS="FUNCTION"
+>pg_switch_xlog</CODE
+> on the primary to perform a manual
+     switch. The reason for the switch is to arrange for
      the last WAL segment file written during the backup interval to be
      ready to archive.
     </P
@@ -843,7 +849,7 @@ CLASS="FUNCTION"
 >pg_stop_backup</CODE
 >'s first return
      value is the last segment that is required to form a complete set of
-     backup files.  If <TT
+     backup files.  On a primary, if <TT
 CLASS="VARNAME"
 >archive_mode</TT
 > is enabled,
@@ -877,6 +883,14 @@ CLASS="FUNCTION"
 > terminates because of this your backup
      may not be valid.
     </P
+><P
+>     Note that on a standby <CODE
+CLASS="FUNCTION"
+>pg_stop_backup</CODE
+> does not wait for
+     WAL segments to be archived so the backup process must ensure that all WAL
+     segments required for the backup are successfully archived.
+    </P
 ></LI
 ></OL
 ><P>
@@ -892,9 +906,12 @@ NAME="BACKUP-LOWLEVEL-BASE-BACKUP-EXCLUSIVE"
 ></H3
 ><P
 >     The process for an exclusive backup is mostly the same as for a
-     non-exclusive one, but it differs in a few key steps. It does not allow
-     more than one concurrent backup to run, and there can be some issues on
-     the server if it crashes during the backup. Prior to PostgreSQL 9.6, this
+     non-exclusive one, but it differs in a few key steps. This type of backup
+     can only be taken on a primary and does not allow concurrent backups.
+     Prior to <SPAN
+CLASS="PRODUCTNAME"
+>PostgreSQL</SPAN
+> 9.6, this
      was the only low-level method available, but it is now recommended that
      all users upgrade their scripts to use non-exclusive backups if possible.
     </P
@@ -997,6 +1014,17 @@ HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP-DATA"
 >Section 25.3.3.3</A
 > for things to
      consider during this backup.
+    </P
+><P
+>      Note that if the server crashes during the backup it may not be
+      possible to restart until the <TT
+CLASS="LITERAL"
+>backup_label</TT
+> file has been
+      manually deleted from the <TT
+CLASS="ENVAR"
+>PGDATA</TT
+> directory.
     </P
 ></LI
 ><LI

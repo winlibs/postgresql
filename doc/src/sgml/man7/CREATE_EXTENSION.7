@@ -1,13 +1,13 @@
 '\" t
 .\"     Title: CREATE EXTENSION
 .\"    Author: The PostgreSQL Global Development Group
-.\" Generator: DocBook XSL Stylesheets v1.78.1 <http://docbook.sf.net/>
-.\"      Date: 2017
-.\"    Manual: PostgreSQL 9.6.5 Documentation
-.\"    Source: PostgreSQL 9.6.5
+.\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
+.\"      Date: 2018
+.\"    Manual: PostgreSQL 9.6.9 Documentation
+.\"    Source: PostgreSQL 9.6.9
 .\"  Language: English
 .\"
-.TH "CREATE EXTENSION" "7" "2017" "PostgreSQL 9.6.5" "PostgreSQL 9.6.5 Documentation"
+.TH "CREATE EXTENSION" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -101,7 +101,8 @@ The version of the extension to install\&. This can be written as either an iden
 .PP
 \fIold_version\fR
 .RS 4
-FROM\fIold_version\fR
+FROM
+\fIold_version\fR
 must be specified when, and only when, you are attempting to install an extension that replaces an
 \(lqold style\(rq
 module that is just a collection of objects not packaged into an extension\&. This option causes

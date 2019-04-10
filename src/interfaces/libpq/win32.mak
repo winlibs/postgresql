@@ -191,7 +191,7 @@ pg_config_paths.h: win32.mak
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /W3 /EHsc $(OPT) /I "..\..\include" /I "..\..\include\port\win32" /I "..\..\include\port\win32_msvc" /I "..\..\port" /I. /I "$(SSL_INC)" \
+CPP_PROJ=/nologo /W3 /EHsc $(OPT) $(SSL_CFLAGS) /I "..\..\include" /I "..\..\include\port\win32" /I "..\..\include\port\win32_msvc" /I "..\..\port" /I. /I "$(SSL_INC)" \
  /D "FRONTEND" $(DEBUGDEF) \
  /D "WIN32" /D "_WINDOWS" \
  /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\$(OUTFILENAME).pdb" /FD /c  \
@@ -200,8 +200,10 @@ CPP_PROJ=/nologo /W3 /EHsc $(OPT) /I "..\..\include" /I "..\..\include\port\win3
 !IFDEF USE_OPENSSL
 CPP_PROJ=$(CPP_PROJ) /D USE_OPENSSL
 !IF EXISTS("$(SSL_LIB_PATH)\libssl.lib")
+SSL_CFLAGS   = /DHAVE_BIO_GET_DATA /DHAVE_BIO_METH_NEW
 SSL_LIBS     = libssl.lib libcrypto.lib
 !ELSE
+SSL_CFLAGS=
 SSL_LIBS=ssleay32.lib libeay32.lib gdi32.lib
 !ENDIF
 !ENDIF

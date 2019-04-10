@@ -233,9 +233,13 @@ LINK32_OBJS= \
 	"$(OUTDIR)\$(OUTFILENAME).lib" \
 	"$(OUTDIR)\libpq.res"
 
+libpq_debugdll.def:
+	echo LIBRARY $(OUTFILENAME).dll> $@
+	for /f "tokens=* skip=2" %%1 in (libpqdll.def) do @echo %%1>> $@
+
 # @<< is a Response file, http://www.opussoftware.com/tutorial/TutMakefile.htm
 
-"$(OUTDIR)\$(OUTFILENAME).lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
+"$(OUTDIR)\$(OUTFILENAME).lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS) libpq_debugdll.def
 	$(LIB32) @<<
 	$(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
 <<

@@ -26,13 +26,19 @@ ADD_SECLIB=bufferoverflowU.lib
 !ERROR Make aborted.
 !ENDIF
 
+!IFDEF NOCFG
+GUARDOPT=
+!ELSE
+GUARDOPT=/guard:cf 
+!ENDIF
+
 !IFDEF DEBUG
 OPT=/Od /Zi /MDd
 LOPT=/DEBUG
 DEBUGDEF=/D _DEBUG
 OUTFILENAME=libpq_debug
 !ELSE
-OPT=/guard:cf /Zc:inline /fp:precise /Gw /Ox /Zi /MD /D _MBCS
+OPT=$(GUARDOPT) /Zc:inline /fp:precise /Gw /Ox /Zi /MD /D _MBCS
 LOPT=
 DEBUGDEF=/D NDEBUG
 OUTFILENAME=libpq

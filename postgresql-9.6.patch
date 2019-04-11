@@ -1,8 +1,4 @@
- src/interfaces/libpq/win32.mak | 42 +++++++++++++++++++++++++++++++++---------
- 1 file changed, 33 insertions(+), 9 deletions(-)
-
-diff --git a/src/interfaces/libpq/win32.mak b/src/interfaces/libpq/win32.mak
-index 268991e7..625eb868 100644
+unchanged:
 --- a/src/interfaces/libpq/win32.mak
 +++ b/src/interfaces/libpq/win32.mak
 @@ -16,7 +16,7 @@ CPU=i386
@@ -120,3 +116,16 @@ index 268991e7..625eb868 100644
  .c{$(CPP_OBJS)}.obj:
  	$(CPP) $(CPP_PROJ) $<
  
+only in patch2:
+unchanged:
+--- a/src/interfaces/libpq/fe-secure-openssl.c
++++ b/src/interfaces/libpq/fe-secure-openssl.c
+@@ -1570,6 +1570,8 @@ PQsslAttribute(PGconn *conn, const char *attribute_name)
+ #ifndef HAVE_BIO_GET_DATA
+ #define BIO_get_data(bio) (bio->ptr)
+ #define BIO_set_data(bio, data) (bio->ptr = data)
++#else
++# include <openssl/bio.h>
+ #endif
+ 
+ static BIO_METHOD *my_bio_methods;

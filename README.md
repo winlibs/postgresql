@@ -16,9 +16,10 @@ All prebuilt libraries are available in the php-libs
 
 ## Compilation
 
-	cd src
+    cd src\interfaces\libpq
     nmake /f win32.mak USE_OPENSSL=1 SSL_INC=<ssl include> SSL_LIB_PATH=<ssl lib>
   
-- for debug add DEBUG=1
-- for x64 add CPU=AMD64
+- for debug add `DEBUG=1`
+- for x64 add `CPU=AMD64`
+- for vc11 (PHP 5.6) builds **only**, add `NOCFG=1`
 - openssl is optional at the time

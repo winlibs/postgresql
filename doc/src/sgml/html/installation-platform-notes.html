@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="  Installation from Source Code"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -205,7 +205,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30500"
+NAME="AEN30543"
 >16.7.1.1. GCC Issues</A
 ></H3
 ><P
@@ -226,7 +226,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30504"
+NAME="AEN30547"
 >16.7.1.2. Unix-Domain Sockets Broken</A
 ></H3
 ><P
@@ -270,7 +270,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30513"
+NAME="AEN30556"
 >16.7.1.3. Internet Address Issues</A
 ></H3
 ><P
@@ -385,7 +385,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30536"
+NAME="AEN30579"
 >16.7.1.4. Memory Management</A
 ></H3
 ><P
@@ -546,13 +546,13 @@ CLASS="COMMAND"
     </P
 ><H3
 ><A
-NAME="AEN30569"
+NAME="AEN30612"
 >References and Resources</A
 ></H3
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN30571"
+NAME="AEN30614"
 ></A
 ><P
 >"<A
@@ -570,7 +570,7 @@ STYLE="margin-left: 0.5in"
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN30577"
+NAME="AEN30620"
 ></A
 ><P
 >"<A
@@ -588,7 +588,7 @@ STYLE="margin-left: 0.5in"
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN30583"
+NAME="AEN30626"
 ></A
 ><P
 >"<A
@@ -606,7 +606,7 @@ STYLE="margin-left: 0.5in"
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN30589"
+NAME="AEN30632"
 ></A
 ><P
 >"<A
@@ -624,7 +624,7 @@ STYLE="margin-left: 0.5in"
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN30595"
+NAME="AEN30638"
 ></A
 ><P
 >"<A
@@ -642,7 +642,7 @@ STYLE="margin-left: 0.5in"
 ><DIV
 CLASS="BIBLIOENTRY"
 ><A
-NAME="AEN30601"
+NAME="AEN30644"
 ></A
 ><P
 ><I
@@ -937,8 +937,108 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
+NAME="INSTALLATION-NOTES-MACOS"
+>16.7.4. macOS</A
+></H2
+><P
+>    On recent <SPAN
+CLASS="PRODUCTNAME"
+>macOS</SPAN
+> releases, it's necessary to
+    embed the <SPAN
+CLASS="QUOTE"
+>"sysroot"</SPAN
+> path in the include switches used to
+    find some system header files.  This results in the outputs of
+    the <SPAN
+CLASS="APPLICATION"
+>configure</SPAN
+> script varying depending on
+    which SDK version was used during <SPAN
+CLASS="APPLICATION"
+>configure</SPAN
+>.
+    That shouldn't pose any problem in simple scenarios, but if you are
+    trying to do something like building an extension on a different machine
+    than the server code was built on, you may need to force use of a
+    different sysroot path.  To do that, set <TT
+CLASS="VARNAME"
+>PG_SYSROOT</TT
+>,
+    for example
+</P><PRE
+CLASS="PROGRAMLISTING"
+>make PG_SYSROOT=<TT
+CLASS="REPLACEABLE"
+><I
+>/desired/path</I
+></TT
+> all</PRE
+><P>
+    To find out the appropriate path on your machine, run
+</P><PRE
+CLASS="PROGRAMLISTING"
+>xcodebuild -version -sdk macosx Path</PRE
+><P>
+    Note that building an extension using a different sysroot version than
+    was used to build the core server is not really recommended; in the
+    worst case it could result in hard-to-debug ABI inconsistencies.
+   </P
+><P
+>    You can also select a non-default sysroot path when configuring, by
+    specifying <TT
+CLASS="VARNAME"
+>PG_SYSROOT</TT
+>
+    to <SPAN
+CLASS="APPLICATION"
+>configure</SPAN
+>:
+</P><PRE
+CLASS="PROGRAMLISTING"
+>./configure ... PG_SYSROOT=<TT
+CLASS="REPLACEABLE"
+><I
+>/desired/path</I
+></TT
+></PRE
+><P>
+   </P
+><P
+>    <SPAN
+CLASS="PRODUCTNAME"
+>macOS</SPAN
+>'s <SPAN
+CLASS="QUOTE"
+>"System Integrity
+    Protection"</SPAN
+> (SIP) feature breaks <TT
+CLASS="LITERAL"
+>make check</TT
+>,
+    because it prevents passing the needed setting
+    of <TT
+CLASS="LITERAL"
+>DYLD_LIBRARY_PATH</TT
+> down to the executables being
+    tested.  You can work around that by doing <TT
+CLASS="LITERAL"
+>make
+    install</TT
+> before <TT
+CLASS="LITERAL"
+>make check</TT
+>.
+    Most Postgres developers just turn off SIP, though.
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
 NAME="INSTALLATION-NOTES-MINGW"
->16.7.4. MinGW/Native Windows</A
+>16.7.5. MinGW/Native Windows</A
 ></H2
 ><P
 >    PostgreSQL for Windows can be built using MinGW, a Unix-like build
@@ -1013,7 +1113,7 @@ CLASS="SECT3"
 CLASS="SECT3"
 ><A
 NAME="WINDOWS-CRASH-DUMPS"
->16.7.4.1. Collecting Crash Dumps on Windows</A
+>16.7.5.1. Collecting Crash Dumps on Windows</A
 ></H3
 ><P
 >     If PostgreSQL on Windows crashes, it has the ability to generate
@@ -1046,7 +1146,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="INSTALLATION-NOTES-SCO"
->16.7.5. SCO OpenServer and SCO UnixWare</A
+>16.7.6. SCO OpenServer and SCO UnixWare</A
 ></H2
 ><P
 >    PostgreSQL can be built on SCO UnixWare 7 and SCO OpenServer 5.
@@ -1059,8 +1159,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30710"
->16.7.5.1. Skunkware</A
+NAME="AEN30779"
+>16.7.6.1. Skunkware</A
 ></H3
 ><P
 >     You should locate your copy of the SCO Skunkware CD.  The
@@ -1092,8 +1192,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30716"
->16.7.5.2. GNU Make</A
+NAME="AEN30785"
+>16.7.6.2. GNU Make</A
 ></H3
 ><P
 >     You need to use the GNU Make program, which is on the Skunkware
@@ -1117,8 +1217,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30722"
->16.7.5.3. Readline</A
+NAME="AEN30791"
+>16.7.6.3. Readline</A
 ></H3
 ><P
 >     The Readline library is on the Skunkware CD.  But it is not
@@ -1160,8 +1260,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30732"
->16.7.5.4. Using the UDK on OpenServer</A
+NAME="AEN30801"
+>16.7.6.4. Using the UDK on OpenServer</A
 ></H3
 ><P
 >     If you are using the new Universal Development Kit (UDK) compiler
@@ -1183,8 +1283,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30737"
->16.7.5.5. Reading the PostgreSQL Man Pages</A
+NAME="AEN30806"
+>16.7.6.5. Reading the PostgreSQL Man Pages</A
 ></H3
 ><P
 >     By default, the PostgreSQL man pages are installed into
@@ -1219,8 +1319,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30745"
->16.7.5.6. C99 Issues with the 7.1.1b Feature Supplement</A
+NAME="AEN30814"
+>16.7.6.6. C99 Issues with the 7.1.1b Feature Supplement</A
 ></H3
 ><P
 >     For compilers earlier than the one released with OpenUNIX 8.0.0
@@ -1250,8 +1350,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30752"
->16.7.5.7. Threading on UnixWare</A
+NAME="AEN30821"
+>16.7.6.7. Threading on UnixWare</A
 ></H3
 ><P
 >     For threading, you<SPAN
@@ -1292,7 +1392,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="INSTALLATION-NOTES-SOLARIS"
->16.7.6. Solaris</A
+>16.7.7. Solaris</A
 ></H2
 ><P
 >    PostgreSQL is well-supported on Solaris.  The more up to date your
@@ -1304,8 +1404,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30767"
->16.7.6.1. Required Tools</A
+NAME="AEN30836"
+>16.7.7.1. Required Tools</A
 ></H3
 ><P
 >     You can build with either GCC or Sun's compiler suite.  For
@@ -1351,8 +1451,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30776"
->16.7.6.2. Problems with OpenSSL</A
+NAME="AEN30845"
+>16.7.7.2. Problems with OpenSSL</A
 ></H3
 ><P
 >     When you build PostgreSQL with OpenSSL support you might get
@@ -1408,8 +1508,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30794"
->16.7.6.3. configure Complains About a Failed Test Program</A
+NAME="AEN30863"
+>16.7.7.3. configure Complains About a Failed Test Program</A
 ></H3
 ><P
 >     If <TT
@@ -1447,8 +1547,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30804"
->16.7.6.4. 64-bit Build Sometimes Crashes</A
+NAME="AEN30873"
+>16.7.7.4. 64-bit Build Sometimes Crashes</A
 ></H3
 ><P
 >     On Solaris 7 and older, the 64-bit version of libc has a buggy
@@ -1492,8 +1592,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30814"
->16.7.6.5. Compiling for Optimal Performance</A
+NAME="AEN30883"
+>16.7.7.5. Compiling for Optimal Performance</A
 ></H3
 ><P
 >     On the SPARC architecture, Sun Studio is strongly recommended for
@@ -1528,8 +1628,8 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN30821"
->16.7.6.6. Using DTrace for Tracing PostgreSQL</A
+NAME="AEN30890"
+>16.7.7.6. Using DTrace for Tracing PostgreSQL</A
 ></H3
 ><P
 >     Yes, using DTrace is possible.  See 

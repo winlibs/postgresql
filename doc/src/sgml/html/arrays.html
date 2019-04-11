@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1223,9 +1223,9 @@ CLASS="EMPHASIS"
    word <TT
 CLASS="LITERAL"
 >NULL</TT
-> must be quoted, too.  To put a double quote or
-   backslash in a quoted array element value, use escape string syntax
-   and precede it with a backslash. Alternatively, you can avoid quotes and use
+> must be quoted, too.  To put a double
+   quote or backslash in a quoted array element value, precede it
+   with a backslash. Alternatively, you can avoid quotes and use
    backslash-escaping to protect all data characters that would otherwise
    be taken as array syntax.
   </P
@@ -1236,54 +1236,6 @@ CLASS="LITERAL"
    whitespace within double-quoted elements, or surrounded on both sides by
    non-whitespace characters of an element, is not ignored.
   </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->   Remember that what you write in an SQL command will first be interpreted
-   as a string literal, and then as an array.  This doubles the number of
-   backslashes you need.  For example, to insert a <TT
-CLASS="TYPE"
->text</TT
-> array
-   value containing a backslash and a double quote, you'd need to write:
-</P><PRE
-CLASS="PROGRAMLISTING"
->INSERT ... VALUES (E'{"\\\\","\\""}');</PRE
-><P>
-   The escape string processor removes one level of backslashes, so that
-   what arrives at the array-value parser looks like <TT
-CLASS="LITERAL"
->{"\\","\""}</TT
->.
-   In turn, the strings fed to the <TT
-CLASS="TYPE"
->text</TT
-> data type's input routine
-   become <TT
-CLASS="LITERAL"
->\</TT
-> and <TT
-CLASS="LITERAL"
->"</TT
-> respectively.  (If we were working
-   with a data type whose input routine also treated backslashes specially,
-   <TT
-CLASS="TYPE"
->bytea</TT
-> for example, we might need as many as eight backslashes
-   in the command to get one backslash into the stored array element.)
-   Dollar quoting (see <A
-HREF="sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING"
->Section 4.1.2.4</A
->) can be
-   used to avoid the need to double backslashes.
-  </P
-></BLOCKQUOTE
-></DIV
 ><DIV
 CLASS="TIP"
 ><BLOCKQUOTE

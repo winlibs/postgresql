@@ -2,12 +2,12 @@
 .\"     Title: SELECT
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2018
-.\"    Manual: PostgreSQL 9.6.9 Documentation
-.\"    Source: PostgreSQL 9.6.9
+.\"      Date: 2019
+.\"    Manual: PostgreSQL 9.6.12 Documentation
+.\"    Source: PostgreSQL 9.6.12
 .\"  Language: English
 .\"
-.TH "SELECT" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
+.TH "SELECT" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -1582,10 +1582,13 @@ FETCH { FIRST | NEXT } [ \fIcount\fR ] { ROW | ROWS } ONLY
 .RE
 .\}
 .sp
-In this syntax, to write anything except a simple integer constant for
+In this syntax, the
 \fIstart\fR
 or
-\fIcount\fR, you must write parentheses around it\&. If
+\fIcount\fR
+value is required by the standard to be a literal constant, a parameter, or a variable name; as a
+PostgreSQL
+extension, other expressions are allowed, but will generally need to be enclosed in parentheses to avoid ambiguity\&. If
 \fIcount\fR
 is omitted in a
 FETCH

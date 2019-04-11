@@ -96,6 +96,14 @@
    don't. */
 #define HAVE_DECL_SNPRINTF 1
 
+/* Define to 1 if you have the declaration of `strtoll', and to 0 if you
+   don't. */
+#define HAVE_DECL_STRTOLL 1
+
+/* Define to 1 if you have the declaration of `strtoull', and to 0 if you
+   don't. */
+#define HAVE_DECL_STRTOULL 1
+
 /* Define to 1 if you have the declaration of `vsnprintf', and to 0 if you
    don't. */
 #define HAVE_DECL_VSNPRINTF 1
@@ -354,16 +362,22 @@
 #define HAVE_STRING_H 1
 
 /* Define to 1 if you have the `strtoll' function. */
-//#define HAVE_STRTOLL 1
-
-/* Define to 1 if you have the `strtoq' function. */
-/* #undef HAVE_STRTOQ */
+#ifdef HAVE_LONG_LONG_INT_64
+#define HAVE_STRTOLL 1
+/* Before VS2013, use Microsoft's nonstandard equivalent function */
+#if (_MSC_VER < 1800)
+#define strtoll _strtoi64
+#endif
+#endif
 
 /* Define to 1 if you have the `strtoull' function. */
-//#define HAVE_STRTOULL 1
-
-/* Define to 1 if you have the `strtouq' function. */
-/* #undef HAVE_STRTOUQ */
+#ifdef HAVE_LONG_LONG_INT_64
+#define HAVE_STRTOULL 1
+/* Before VS2013, use Microsoft's nonstandard equivalent function */
+#if (_MSC_VER < 1800)
+#define strtoull _strtoui64
+#endif
+#endif
 
 /* Define to 1 if the system has the type `struct addrinfo'. */
 #if (_MSC_VER > 1200)
@@ -483,6 +497,9 @@
 /* Define to 1 if you have the `unsetenv' function. */
 /* #undef HAVE_UNSETENV */
 
+/* Define to 1 if you have the `uselocale' function. */
+/* #undef HAVE_USELOCALE */
+
 /* Define to 1 if you have the `utime' function. */
 #define HAVE_UTIME 1
 
@@ -525,6 +542,9 @@
 /* Define to 1 if your compiler understands __builtin_unreachable. */
 /* #undef HAVE__BUILTIN_UNREACHABLE */
 
+/* Define to 1 if you have the `_configthreadlocale' function. */
+#define HAVE__CONFIGTHREADLOCALE 1
+
 /* Define to 1 if you have __cpuid. */
 #define HAVE__CPUID 1
 
@@ -559,10 +579,10 @@
 #define PACKAGE_NAME "PostgreSQL"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PostgreSQL 9.6.9"
+#define PACKAGE_STRING "PostgreSQL 9.6.12"
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "9.6.9"
+#define PACKAGE_VERSION "9.6.12"
 
 /* Define to the name of a signed 128-bit integer type. */
 #undef PG_INT128_TYPE
@@ -571,10 +591,10 @@
 #define PG_INT64_TYPE long long int
 
 /* PostgreSQL version as a string */
-#define PG_VERSION "9.6.9"
+#define PG_VERSION "9.6.12"
 
 /* PostgreSQL version as a number */
-#define PG_VERSION_NUM 90609
+#define PG_VERSION_NUM 90612
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "postgresql"
@@ -606,7 +626,7 @@
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
-/* Define to 1 if strerror_r() returns a int. */
+/* Define to 1 if strerror_r() returns int. */
 /* #undef STRERROR_R_INT */
 
 /* Define to 1 if your <sys/time.h> declares `struct tm'. */

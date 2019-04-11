@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="PostgreSQL Server Applications"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -98,7 +98,7 @@ CLASS="APPLICATION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN103246"
+NAME="AEN103386"
 ></A
 ><H2
 >Name</H2
@@ -109,7 +109,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN103250"
+NAME="AEN103390"
 ></A
 ><H2
 >Synopsis</H2
@@ -159,7 +159,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103271"
+NAME="AEN103411"
 ></A
 ><H2
 >Description</H2
@@ -228,7 +228,7 @@ CLASS="PRODUCTNAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103287"
+NAME="AEN103427"
 ></A
 ><H2
 >Options</H2
@@ -574,7 +574,7 @@ CLASS="OPTION"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103431"
+NAME="AEN103571"
 ></A
 ><H2
 >Usage</H2
@@ -799,7 +799,8 @@ CLASS="QUOTE"
 >"Latest checkpoint location"</SPAN
 > values match in all clusters.
      (There will be a mismatch if old standby servers were shut down
-     before the old primary.)  Also, change <TT
+     before the old primary or if the old standby servers are still running.)
+     Also, change <TT
 CLASS="VARNAME"
 >wal_level</TT
 > to
@@ -1446,7 +1447,7 @@ CLASS="FILENAME"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103634"
+NAME="AEN103774"
 ></A
 ><H2
 >Notes</H2
@@ -1564,7 +1565,7 @@ HREF="continuous-archiving.html#BACKUP-LOWLEVEL-BASE-BACKUP"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN103662"
+NAME="AEN103802"
 ></A
 ><H2
 >See Also</H2

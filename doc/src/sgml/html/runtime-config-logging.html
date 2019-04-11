@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Configuration"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -952,74 +952,6 @@ CLASS="VARIABLELIST"
 ><DL
 ><DT
 ><A
-NAME="GUC-CLIENT-MIN-MESSAGES"
-></A
-><TT
-CLASS="VARNAME"
->client_min_messages</TT
-> (<TT
-CLASS="TYPE"
->enum</TT
->)
-      </DT
-><DD
-><P
->        Controls which message levels are sent to the client.
-        Valid values are <TT
-CLASS="LITERAL"
->DEBUG5</TT
->,
-        <TT
-CLASS="LITERAL"
->DEBUG4</TT
->, <TT
-CLASS="LITERAL"
->DEBUG3</TT
->, <TT
-CLASS="LITERAL"
->DEBUG2</TT
->,
-        <TT
-CLASS="LITERAL"
->DEBUG1</TT
->, <TT
-CLASS="LITERAL"
->LOG</TT
->, <TT
-CLASS="LITERAL"
->NOTICE</TT
->,
-        <TT
-CLASS="LITERAL"
->WARNING</TT
->, <TT
-CLASS="LITERAL"
->ERROR</TT
->, <TT
-CLASS="LITERAL"
->FATAL</TT
->,
-        and <TT
-CLASS="LITERAL"
->PANIC</TT
->.  Each level
-        includes all the levels that follow it.  The later the level,
-        the fewer messages are sent.  The default is
-        <TT
-CLASS="LITERAL"
->NOTICE</TT
->.  Note that <TT
-CLASS="LITERAL"
->LOG</TT
-> has a different
-        rank here than in <TT
-CLASS="VARNAME"
->log_min_messages</TT
->.
-       </P
-></DD
-><DT
-><A
 NAME="GUC-LOG-MIN-MESSAGES"
 ></A
 ><TT
@@ -1032,7 +964,11 @@ CLASS="TYPE"
       </DT
 ><DD
 ><P
->        Controls which message levels are written to the server log.
+>        Controls which <A
+HREF="runtime-config-logging.html#RUNTIME-CONFIG-SEVERITY-LEVELS"
+>message
+        levels</A
+> are written to the server log.
         Valid values are <TT
 CLASS="LITERAL"
 >DEBUG5</TT
@@ -1083,9 +1019,9 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >LOG</TT
 > has a different rank here than in
-        <TT
-CLASS="VARNAME"
->client_min_messages</TT
+        <A
+HREF="runtime-config-client.html#GUC-CLIENT-MIN-MESSAGES"
+>client_min_messages</A
 >.
         Only superusers can change this setting.
        </P
@@ -1107,7 +1043,12 @@ CLASS="TYPE"
 >        Controls which SQL statements that cause an error
         condition are recorded in the server log.  The current
         SQL statement is included in the log entry for any message of
-        the specified severity or higher.
+        the specified
+        <A
+HREF="runtime-config-logging.html#RUNTIME-CONFIG-SEVERITY-LEVELS"
+>severity</A
+>
+        or higher.
         Valid values are <TT
 CLASS="LITERAL"
 >DEBUG5</TT
@@ -1540,7 +1481,7 @@ CLASS="LITERAL"
         default they will appear in the server log but will not be sent to the
         client.  You can change that by adjusting
         <A
-HREF="runtime-config-logging.html#GUC-CLIENT-MIN-MESSAGES"
+HREF="runtime-config-client.html#GUC-CLIENT-MIN-MESSAGES"
 >client_min_messages</A
 > and/or
         <A
@@ -1872,7 +1813,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN35211"
+NAME="AEN35269"
 ></A
 ><TABLE
 BORDER="1"
@@ -2580,7 +2521,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN35432"
+NAME="AEN35490"
 >19.8.5. Process Title</A
 ></H2
 ><P

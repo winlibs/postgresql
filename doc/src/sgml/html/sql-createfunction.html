@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATEFUNCTION"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN79765"
+NAME="AEN79885"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN79765"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN79768"
+NAME="AEN79888"
 ></A
 ><H2
 >Synopsis</H2
@@ -319,7 +319,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN79810"
+NAME="AEN79930"
 ></A
 ><H2
 >Parameters</H2
@@ -1086,8 +1086,11 @@ CLASS="REPLACEABLE"
 ></TT
 > is the
        function's link symbol, that is, the name of the function in the C
-       language source code.  If the link symbol is omitted, it is assumed
-       to be the same as the name of the SQL function being defined.
+       language source code.  If the link symbol is omitted, it is assumed to
+       be the same as the name of the SQL function being defined.  The C names
+       of all functions must be different, so you must give overloaded C
+       functions different C names (for example, use the argument types as
+       part of the C names).
       </P
 ><P
 >       When repeated <TT
@@ -1184,10 +1187,12 @@ CLASS="FIRSTTERM"
 >overloading</I
 >; that is, the same name can be
     used for several different functions so long as they have distinct
-    input argument types.  However, the C names of all functions must be
-    different, so you must give overloaded C functions different C
-    names (for example, use the argument types as part of the C
-    names).
+    input argument types.  Whether or not you use it, this capability entails
+    security precautions when calling functions in databases where some users
+    mistrust other users; see <A
+HREF="typeconv-func.html"
+>Section 10.3</A
+>.
    </P
 ><P
 >    Two functions are considered the same if they have the same names and
@@ -1547,7 +1552,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN80141"
+NAME="AEN80262"
 ></A
 ><H2
 >See Also</H2

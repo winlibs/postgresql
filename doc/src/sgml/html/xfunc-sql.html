@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Extending SQL"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1038,8 +1038,14 @@ CLASS="LITERAL"
 ><P
 >     Sometimes it is useful to be able to pass an already-constructed array
      to a variadic function; this is particularly handy when one variadic
-     function wants to pass on its array parameter to another one.  You can
-     do that by specifying <TT
+     function wants to pass on its array parameter to another one.  Also,
+     this is the only secure way to call a variadic function found in a schema
+     that permits untrusted users to create objects; see
+     <A
+HREF="typeconv-func.html"
+>Section 10.3</A
+>.  You can do this by
+     specifying <TT
 CLASS="LITERAL"
 >VARIADIC</TT
 > in the call:
@@ -1125,7 +1131,13 @@ CLASS="ACRONYM"
      parameters after a parameter with a default value have to have
      default values as well.  (Although the use of named argument notation
      could allow this restriction to be relaxed, it's still enforced so that
-     positional argument notation works sensibly.)
+     positional argument notation works sensibly.)  Whether or not you use it,
+     this capability creates a need for precautions when calling functions in
+     databases where some users mistrust other users; see
+     <A
+HREF="typeconv-func.html"
+>Section 10.3</A
+>.
     </P
 ><P
 >     For example:
@@ -1561,7 +1573,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN60012"
+NAME="AEN60133"
 >36.4.10. Polymorphic <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM
@@ -1715,7 +1727,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN60038"
+NAME="AEN60159"
 >36.4.11. <ACRONYM
 CLASS="ACRONYM"
 >SQL</ACRONYM

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="SQL Commands"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="REFENTRY"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -95,7 +95,7 @@ NAME="SQL-CREATETYPE"
 ><DIV
 CLASS="REFNAMEDIV"
 ><A
-NAME="AEN84143"
+NAME="AEN84264"
 ></A
 ><H2
 >Name</H2
@@ -103,7 +103,7 @@ NAME="AEN84143"
 ><DIV
 CLASS="REFSYNOPSISDIV"
 ><A
-NAME="AEN84146"
+NAME="AEN84267"
 ></A
 ><H2
 >Synopsis</H2
@@ -304,7 +304,7 @@ CLASS="REPLACEABLE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84179"
+NAME="AEN84300"
 ></A
 ><H2
 >Description</H2
@@ -359,7 +359,7 @@ CLASS="COMMAND"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84192"
+NAME="AEN84313"
 ></A
 ><H3
 >Composite Types</H3
@@ -404,7 +404,7 @@ CLASS="COMMAND"
 HREF="datatype-enum.html"
 >Section 8.7</A
 >.
-    Enum types take a list of one or more quoted labels, each of which
+    Enum types take a list of quoted labels, each of which
     must be less than <TT
 CLASS="SYMBOL"
 >NAMEDATALEN</TT
@@ -412,7 +412,12 @@ CLASS="SYMBOL"
     standard <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
-> build).
+> build).  (It is possible to
+    create an enumerated type with zero labels, but such a type cannot be used
+    to hold values before at least one label is added using <A
+HREF="sql-altertype.html"
+>ALTER TYPE</A
+>.)
    </P
 ></DIV
 ><DIV
@@ -522,7 +527,7 @@ HREF="rangetypes.html#RANGETYPES-DEFINING"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84226"
+NAME="AEN84348"
 ></A
 ><H3
 >Base Types</H3
@@ -1151,7 +1156,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT2"
 ><A
-NAME="AEN84344"
+NAME="AEN84466"
 ></A
 ><H3
 >Array Types</H3
@@ -1225,7 +1230,7 @@ CLASS="LITERAL"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84359"
+NAME="AEN84481"
 ></A
 ><H2
 >Parameters</H2
@@ -1761,7 +1766,7 @@ CLASS="TYPE"
 ><DIV
 CLASS="REFSECT1"
 ><A
-NAME="AEN84532"
+NAME="AEN84654"
 ></A
 ><H2
 >Examples</H2

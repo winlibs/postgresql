@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -203,7 +203,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="LITERAL"
->E'\\\\Post'::bytea || E'\\047gres\\000'::bytea</TT
+>'\\Post'::bytea || '\047gres\000'::bytea</TT
 ></TD
 ><TD
 ><TT
@@ -235,7 +235,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="LITERAL"
->octet_length(E'jo\\000se'::bytea)</TT
+>octet_length('jo\000se'::bytea)</TT
 ></TD
 ><TD
 ><TT
@@ -280,7 +280,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="LITERAL"
->overlay(E'Th\\000omas'::bytea placing E'\\002\\003'::bytea from 2 for 3)</TT
+>overlay('Th\000omas'::bytea placing '\002\003'::bytea from 2 for 3)</TT
 ></TD
 ><TD
 ><TT
@@ -315,7 +315,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="LITERAL"
->position(E'\\000om'::bytea in E'Th\\000omas'::bytea)</TT
+>position('\000om'::bytea in 'Th\000omas'::bytea)</TT
 ></TD
 ><TD
 ><TT
@@ -360,7 +360,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="LITERAL"
->substring(E'Th\\000omas'::bytea from 2 for 3)</TT
+>substring('Th\000omas'::bytea from 2 for 3)</TT
 ></TD
 ><TD
 ><TT
@@ -409,7 +409,7 @@ CLASS="PARAMETER"
 ><TD
 ><TT
 CLASS="LITERAL"
->trim(E'\\000\\001'::bytea from E'\\000Tom\\001'::bytea)</TT
+>trim('\000\001'::bytea from '\000Tom\001'::bytea)</TT
 ></TD
 ><TD
 ><TT
@@ -505,7 +505,7 @@ CLASS="PARAMETER"
 ><TD
 ><TT
 CLASS="LITERAL"
->btrim(E'\\000trim\\001'::bytea, E'\\000\\001'::bytea)</TT
+>btrim('\000trim\001'::bytea, '\000\001'::bytea)</TT
 ></TD
 ><TD
 ><TT
@@ -558,7 +558,7 @@ CLASS="FUNCTION"
 ><TD
 ><TT
 CLASS="LITERAL"
->decode(E'123\\000456', 'escape')</TT
+>decode('123\000456', 'escape')</TT
 ></TD
 ><TD
 ><TT
@@ -625,7 +625,7 @@ CLASS="REPLACEABLE"
 ><TD
 ><TT
 CLASS="LITERAL"
->encode(E'123\\000456'::bytea, 'escape')</TT
+>encode('123\000456'::bytea, 'escape')</TT
 ></TD
 ><TD
 ><TT
@@ -661,7 +661,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="LITERAL"
->get_bit(E'Th\\000omas'::bytea, 45)</TT
+>get_bit('Th\000omas'::bytea, 45)</TT
 ></TD
 ><TD
 ><TT
@@ -697,7 +697,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="LITERAL"
->get_byte(E'Th\\000omas'::bytea, 4)</TT
+>get_byte('Th\000omas'::bytea, 4)</TT
 ></TD
 ><TD
 ><TT
@@ -732,7 +732,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="LITERAL"
->length(E'jo\\000se'::bytea)</TT
+>length('jo\000se'::bytea)</TT
 ></TD
 ><TD
 ><TT
@@ -769,7 +769,7 @@ CLASS="PARAMETER"
 ><TD
 ><TT
 CLASS="LITERAL"
->md5(E'Th\\000omas'::bytea)</TT
+>md5('Th\000omas'::bytea)</TT
 ></TD
 ><TD
 ><TT
@@ -809,7 +809,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="LITERAL"
->set_bit(E'Th\\000omas'::bytea, 45, 0)</TT
+>set_bit('Th\000omas'::bytea, 45, 0)</TT
 ></TD
 ><TD
 ><TT
@@ -849,7 +849,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="LITERAL"
->set_byte(E'Th\\000omas'::bytea, 4, 64)</TT
+>set_byte('Th\000omas'::bytea, 4, 64)</TT
 ></TD
 ><TD
 ><TT

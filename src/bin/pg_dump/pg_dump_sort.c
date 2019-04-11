@@ -19,6 +19,8 @@
 #include "pg_backup_utils.h"
 #include "pg_dump.h"
 
+#include "catalog/pg_class.h"
+
 /* translator: this is a module name */
 static const char *modulename = gettext_noop("sorter");
 
@@ -265,7 +267,7 @@ DOTypeNameCompare(const void *p1, const void *p2)
 	DumpableObject *obj2 = *(DumpableObject *const *) p2;
 	int			cmpval;
 
-	/* Sort by type */
+	/* Sort by type's priority */
 	cmpval = newObjectTypePriority[obj1->objType] -
 		newObjectTypePriority[obj2->objType];
 
@@ -273,17 +275,24 @@ DOTypeNameCompare(const void *p1, const void *p2)
 		return cmpval;
 
 	/*
-	 * Sort by namespace.  Note that all objects of the same type should
-	 * either have or not have a namespace link, so we needn't be fancy about
-	 * cases where one link is null and the other not.
+	 * Sort by namespace.  Typically, all objects of the same priority would
+	 * either have or not have a namespace link, but there are exceptions.
+	 * Sort NULL namespace after non-NULL in such cases.
 	 */
-	if (obj1->namespace && obj2->namespace)
+	if (obj1->namespace)
 	{
-		cmpval = strcmp(obj1->namespace->dobj.name,
-						obj2->namespace->dobj.name);
-		if (cmpval != 0)
-			return cmpval;
+		if (obj2->namespace)
+		{
+			cmpval = strcmp(obj1->namespace->dobj.name,
+							obj2->namespace->dobj.name);
+			if (cmpval != 0)
+				return cmpval;
+		}
+		else
+			return -1;
 	}
+	else if (obj2->namespace)
+		return 1;
 
 	/* Sort by name */
 	cmpval = strcmp(obj1->name, obj2->name);
@@ -924,19 +933,26 @@ repairViewRuleMultiLoop(DumpableObject *viewobj,
  *
  * Note that the "next object" is not necessarily the matview itself;
  * it could be the matview's rowtype, for example.  We may come through here
- * several times while removing all the pre-data linkages.
+ * several times while removing all the pre-data linkages.  In particular,
+ * if there are other matviews that depend on the one with the circularity
+ * problem, we'll come through here for each such matview and mark them all
+ * as postponed.  (This works because all MVs have pre-data dependencies
+ * to begin with, so each of them will get visited.)
  */
 static void
-repairMatViewBoundaryMultiLoop(DumpableObject *matviewobj,
-							   DumpableObject *boundaryobj,
+repairMatViewBoundaryMultiLoop(DumpableObject *boundaryobj,
 							   DumpableObject *nextobj)
 {
-	TableInfo  *matviewinfo = (TableInfo *) matviewobj;
-
 	/* remove boundary's dependency on object after it in loop */
 	removeObjectDependency(boundaryobj, nextobj->dumpId);
-	/* mark matview as postponed into post-data section */
-	matviewinfo->postponed_def = true;
+	/* if that object is a matview, mark it as postponed into post-data */
+	if (nextobj->objType == DO_TABLE)
+	{
+		TableInfo  *nextinfo = (TableInfo *) nextobj;
+
+		if (nextinfo->relkind == RELKIND_MATVIEW)
+			nextinfo->postponed_def = true;
+	}
 }
 
 /*
@@ -1118,8 +1134,7 @@ repairDependencyLoop(DumpableObject **loop,
 						DumpableObject *nextobj;
 
 						nextobj = (j < nLoop - 1) ? loop[j + 1] : loop[0];
-						repairMatViewBoundaryMultiLoop(loop[i], loop[j],
-													   nextobj);
+						repairMatViewBoundaryMultiLoop(loop[j], nextobj);
 						return;
 					}
 				}

@@ -226,6 +226,7 @@ PTHREAD_LIBS		= @PTHREAD_LIBS@
 
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+PG_SYSROOT = @PG_SYSROOT@
 
 ifdef PGXS
 override CPPFLAGS := -I$(includedir_server) -I$(includedir_internal) $(CPPFLAGS)
@@ -267,17 +268,26 @@ LD = @LD@
 with_gnu_ld = @with_gnu_ld@
 ld_R_works = @ld_R_works@
 
-# We want -L for libpgport.a and libpgcommon.a to be first in LDFLAGS.  We
-# also need LDFLAGS to be a "recursively expanded" variable, else adjustments
-# to rpathdir don't work right.  So we must NOT do LDFLAGS := something,
-# meaning this has to be done first and elsewhere we must only do LDFLAGS +=
-# something.
+# It's critical that within LDFLAGS, all -L switches pointing to build-tree
+# directories come before any -L switches pointing to external directories.
+# Otherwise it's possible for, e.g., a platform-provided copy of libpq.so
+# to get linked in place of the one we've built.  Therefore we adopt the
+# convention that the first component of LDFLAGS is an extra variable
+# LDFLAGS_INTERNAL, and -L and -l switches for PG's own libraries must be
+# put into LDFLAGS_INTERNAL, so they will appear ahead of those for external
+# libraries.
+#
+# We need LDFLAGS and LDFLAGS_INTERNAL to be "recursively expanded" variables,
+# else adjustments to, e.g., rpathdir don't work right.  So we must NOT do
+# "LDFLAGS := something" anywhere, ditto for LDFLAGS_INTERNAL.
+# These initial assignments must be "=" type, and elsewhere we must only do
+# "LDFLAGS += something" or "LDFLAGS_INTERNAL += something".
 ifdef PGXS
-  LDFLAGS = -L$(libdir)
+  LDFLAGS_INTERNAL = -L$(libdir)
 else
-  LDFLAGS = -L$(top_builddir)/src/port -L$(top_builddir)/src/common
+  LDFLAGS_INTERNAL = -L$(top_builddir)/src/port -L$(top_builddir)/src/common
 endif
-LDFLAGS += @LDFLAGS@
+LDFLAGS = $(LDFLAGS_INTERNAL) @LDFLAGS@
 
 LDFLAGS_EX = @LDFLAGS_EX@
 # LDFLAGS_SL might have already been assigned by calling makefile
@@ -298,6 +308,7 @@ else
 endif
 perl_archlibexp		= @perl_archlibexp@
 perl_privlibexp		= @perl_privlibexp@
+perl_includespec	= @perl_includespec@
 perl_embed_ccflags	= @perl_embed_ccflags@
 perl_embed_ldflags	= @perl_embed_ldflags@
 
@@ -345,13 +356,16 @@ $(1)="$(if $($(1)),$(2):$$$(1),$(2))"
 endef
 
 # platform-specific environment variable to set shared library path
-define ld_library_path_var
-$(if $(filter $(PORTNAME),darwin),DYLD_LIBRARY_PATH,$(if $(filter $(PORTNAME),aix),LIBPATH,LD_LIBRARY_PATH))
-endef
+# individual ports can override this later, this is the default name
+ld_library_path_var = LD_LIBRARY_PATH
 
-define with_temp_install
-PATH="$(abs_top_builddir)/tmp_install$(bindir):$$PATH" $(call add_to_path,$(ld_library_path_var),$(abs_top_builddir)/tmp_install$(libdir))
-endef
+# with_temp_install_extra is for individual ports to define if they
+# need something more here. If not defined then the expansion does
+# nothing.
+with_temp_install = \
+	PATH="$(abs_top_builddir)/tmp_install$(bindir):$$PATH" \
+	$(call add_to_path,$(strip $(ld_library_path_var)),$(abs_top_builddir)/tmp_install$(libdir)) \
+	$(with_temp_install_extra)
 
 ifeq ($(enable_tap_tests),yes)
 
@@ -460,6 +474,11 @@ rpathdir = $(libdir)
 ifeq ($(enable_rpath), yes)
 LDFLAGS += $(rpath)
 endif
+
+# Show the DLSUFFIX to build scripts (e.g. buildfarm)
+.PHONY: show_dl_suffix
+show_dl_suffix:
+	@echo $(DLSUFFIX)
 
 
 ##########################################################################

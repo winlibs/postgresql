@@ -83,8 +83,34 @@ drop role regress_parallel_worker;
 select count(*) from tenk1;
 reset role;
 
+-- Window function calculation can't be pushed to workers.
+explain (costs off, verbose)
+  select count(*) from tenk1 a where (unique1, two) in
+    (select unique1, row_number() over() from tenk1 b);
+
+-- LIMIT/OFFSET within sub-selects can't be pushed to workers.
+explain (costs off)
+  select * from tenk1 a where two in
+    (select two from tenk1 b where stringu1 like '%AAAA' limit 3);
+
 explain (costs off)
   select stringu1::int2 from tenk1 where unique1 = 1;
+
+-- test passing expanded-value representations to workers
+CREATE FUNCTION make_some_array(int,int) returns int[] as
+$$declare x int[];
+  begin
+    x[1] := $1;
+    x[2] := $2;
+    return x;
+  end$$ language plpgsql parallel safe;
+CREATE TABLE fooarr(f1 text, f2 int[], f3 text);
+INSERT INTO fooarr VALUES('1', ARRAY[1,2], 'one');
+
+PREPARE pstmt(text, int[]) AS SELECT * FROM fooarr WHERE f1 = $1 AND f2 = $2;
+EXPLAIN (COSTS OFF) EXECUTE pstmt('1', make_some_array(1,2));
+EXECUTE pstmt('1', make_some_array(1,2));
+DEALLOCATE pstmt;
 
 do $$begin
   -- Provoke error, possibly in worker.  If this error happens to occur in

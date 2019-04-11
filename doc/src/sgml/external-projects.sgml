@@ -65,7 +65,7 @@
       <entry>DBD::Pg</entry>
       <entry>Perl</entry>
       <entry>Perl DBI driver</entry>
-      <entry><ulink url="http://search.cpan.org/dist/DBD-Pg/"></ulink></entry>
+      <entry><ulink url="https://metacpan.org/release/DBD-Pg/"></ulink></entry>
      </row>
 
      <row>
@@ -78,7 +78,7 @@
      <row>
       <entry>libpqxx</entry>
       <entry>C++</entry>
-      <entry>New-style C++ interface</entry>
+      <entry>C++ interface</entry>
       <entry><ulink url="http://pqxx.org/"></ulink></entry>
      </row>
 

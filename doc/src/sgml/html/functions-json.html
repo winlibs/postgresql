@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1979,29 +1979,54 @@ CLASS="NOTE"
 ><P
 ><B
 >Note: </B
->      In <CODE
+>      While the examples for the functions
+      <CODE
 CLASS="FUNCTION"
 >json_populate_record</CODE
->, <CODE
+>,
+      <CODE
 CLASS="FUNCTION"
 >json_populate_recordset</CODE
 >,
       <CODE
 CLASS="FUNCTION"
 >json_to_record</CODE
-> and <CODE
+> and
+      <CODE
 CLASS="FUNCTION"
 >json_to_recordset</CODE
->,
-      type coercion from the JSON is <SPAN
-CLASS="QUOTE"
->"best effort"</SPAN
-> and may not result
-      in desired values for some types.  JSON keys are matched to
-      identical column names in the target row type.  JSON fields that do not
-      appear in the target row type will be omitted from the output, and
-      target columns that do not match any JSON field will simply be NULL.
+> use constants, the typical use
+      would be to reference a table in the <TT
+CLASS="LITERAL"
+>FROM</TT
+> clause
+      and use one of its <TT
+CLASS="TYPE"
+>json</TT
+> or <TT
+CLASS="TYPE"
+>jsonb</TT
+> columns
+      as an argument to the function.  Extracted key values can then be
+      referenced in other parts of the query, like <TT
+CLASS="LITERAL"
+>WHERE</TT
+>
+      clauses and target lists.  Extracting multiple values in this
+      way can improve performance over extracting them separately with
+      per-key operators.
     </P
+><P
+>      JSON keys are matched to identical column names in the target
+      row type.  JSON type coercion for these functions is <SPAN
+CLASS="QUOTE"
+>"best
+      effort"</SPAN
+> and may not result in desired values for some types.
+      JSON fields that do not appear in the target row type will be
+      omitted from the output, and target columns that do not match any
+      JSON field will simply be NULL.
+  </P
 ></BLOCKQUOTE
 ></DIV
 ><DIV

@@ -63,7 +63,7 @@ $$ LANGUAGE SQL STRICT IMMUTABLE;
 
 <synopsis>
 hmac(data text, key text, type text) returns bytea
-hmac(data bytea, key text, type text) returns bytea
+hmac(data bytea, key bytea, type text) returns bytea
 </synopsis>
 
    <para>
@@ -1329,15 +1329,15 @@ gen_random_uuid() returns uuid
 
    <itemizedlist>
     <listitem>
-     <para><ulink url="http://www.ietf.org/rfc/rfc4880.txt"></ulink></para>
+     <para><ulink url="https://tools.ietf.org/html/rfc4880"></ulink></para>
      <para>OpenPGP message format.</para>
     </listitem>
     <listitem>
-     <para><ulink url="http://www.ietf.org/rfc/rfc1321.txt"></ulink></para>
+     <para><ulink url="https://tools.ietf.org/html/rfc1321"></ulink></para>
      <para>The MD5 Message-Digest Algorithm.</para>
     </listitem>
     <listitem>
-     <para><ulink url="http://www.ietf.org/rfc/rfc2104.txt"></ulink></para>
+     <para><ulink url="https://tools.ietf.org/html/rfc2104"></ulink></para>
      <para>HMAC: Keyed-Hashing for Message Authentication.</para>
     </listitem>
     <listitem>
@@ -1355,10 +1355,6 @@ gen_random_uuid() returns uuid
     <listitem>
      <para><ulink url="http://jlcooke.ca/random/"></ulink></para>
      <para>Jean-Luc Cooke Fortuna-based <filename>/dev/random</> driver for Linux.</para>
-    </listitem>
-    <listitem>
-     <para><ulink url="http://kodu.ut.ee/~lipmaa/crypto/"></ulink></para>
-     <para>Collection of cryptology pointers.</para>
     </listitem>
    </itemizedlist>
   </sect3>

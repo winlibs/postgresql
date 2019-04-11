@@ -2,12 +2,12 @@
 .\"     Title: DECLARE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2018
-.\"    Manual: PostgreSQL 9.6.9 Documentation
-.\"    Source: PostgreSQL 9.6.9
+.\"      Date: 2019
+.\"    Manual: PostgreSQL 9.6.12 Documentation
+.\"    Source: PostgreSQL 9.6.12
 .\"  Language: English
 .\"
-.TH "DECLARE" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
+.TH "DECLARE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -267,7 +267,9 @@ WHERE CURRENT OF
 might fail if the cursor query does not meet the SQL standard\*(Aqs rules for being
 \(lqsimply updatable\(rq
 (in particular, the cursor must reference just one table and not use grouping or
-ORDER BY)\&. Cursors that are not simply updatable might work, or might not, depending on plan choice details; so in the worst case, an application might work in testing and then fail in production\&.
+ORDER BY)\&. Cursors that are not simply updatable might work, or might not, depending on plan choice details; so in the worst case, an application might work in testing and then fail in production\&. If
+FOR UPDATE
+is specified, the cursor is guaranteed to be updatable\&.
 .PP
 The main reason not to use
 FOR UPDATE

@@ -450,22 +450,27 @@ set_rel_pathlist(PlannerInfo *root, RelOptInfo *rel,
 	}
 
 	/*
-	 * If this is a baserel, consider gathering any partial paths we may have
-	 * created for it.  (If we tried to gather inheritance children, we could
-	 * end up with a very large number of gather nodes, each trying to grab
-	 * its own pool of workers, so don't do this for otherrels.  Instead,
-	 * we'll consider gathering partial paths for the parent appendrel.)
-	 */
-	if (rel->reloptkind == RELOPT_BASEREL)
-		generate_gather_paths(root, rel);
-
-	/*
 	 * Allow a plugin to editorialize on the set of Paths for this base
 	 * relation.  It could add new paths (such as CustomPaths) by calling
-	 * add_path(), or delete or modify paths added by the core code.
+	 * add_path(), or add_partial_path() if parallel aware.  It could also
+	 * delete or modify paths added by the core code.
 	 */
 	if (set_rel_pathlist_hook)
 		(*set_rel_pathlist_hook) (root, rel, rti, rte);
+
+	/*
+	 * If this is a baserel, we should normally consider gathering any partial
+	 * paths we may have created for it.  We have to do this after calling the
+	 * set_rel_pathlist_hook, else it cannot add partial paths to be included
+	 * here.
+	 *
+	 * However, if this is an inheritance child, skip it.  Otherwise, we could
+	 * end up with a very large number of gather nodes, each trying to grab
+	 * its own pool of workers.  Instead, we'll consider gathering partial
+	 * paths for the parent appendrel.
+	 */
+	if (rel->reloptkind == RELOPT_BASEREL)
+		generate_gather_paths(root, rel);
 
 	/* Now find the cheapest of the paths for this rel */
 	set_cheapest(rel);
@@ -585,7 +590,20 @@ set_rel_consider_parallel(PlannerInfo *root, RelOptInfo *rel,
 			 * the SubqueryScanPath as not parallel-safe.  (Note that
 			 * set_subquery_pathlist() might push some of these quals down
 			 * into the subquery itself, but that doesn't change anything.)
+			 *
+			 * We can't push sub-select containing LIMIT/OFFSET to workers as
+			 * there is no guarantee that the row order will be fully
+			 * deterministic, and applying LIMIT/OFFSET will lead to
+			 * inconsistent results at the top-level.  (In some cases, where
+			 * the result is ordered, we could relax this restriction.  But it
+			 * doesn't currently seem worth expending extra effort to do so.)
 			 */
+			{
+				Query	   *subquery = castNode(Query, rte->subquery);
+
+				if (limit_needed(subquery))
+					return;
+			}
 			break;
 
 		case RTE_JOIN:
@@ -2958,6 +2976,21 @@ print_path(PlannerInfo *root, Path *path, int indent)
 		case T_ForeignPath:
 			ptype = "ForeignScan";
 			break;
+		case T_CustomPath:
+			ptype = "CustomScan";
+			break;
+		case T_NestPath:
+			ptype = "NestLoop";
+			join = true;
+			break;
+		case T_MergePath:
+			ptype = "MergeJoin";
+			join = true;
+			break;
+		case T_HashPath:
+			ptype = "HashJoin";
+			join = true;
+			break;
 		case T_AppendPath:
 			ptype = "Append";
 			break;
@@ -3027,18 +3060,6 @@ print_path(PlannerInfo *root, Path *path, int indent)
 		case T_LimitPath:
 			ptype = "Limit";
 			subpath = ((LimitPath *) path)->subpath;
-			break;
-		case T_NestPath:
-			ptype = "NestLoop";
-			join = true;
-			break;
-		case T_MergePath:
-			ptype = "MergeJoin";
-			join = true;
-			break;
-		case T_HashPath:
-			ptype = "HashJoin";
-			join = true;
 			break;
 		default:
 			ptype = "???Path";

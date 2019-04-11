@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -596,8 +596,8 @@ CLASS="QUOTE"
 > if the comparison returns false for every
    subquery row (including the case where the subquery returns no
    rows).
-   The result is NULL if the comparison does not return true for any row,
-   and it returns NULL for at least one row.
+   The result is NULL if no comparison with a subquery row returns true,
+   and at least one comparison returns NULL.
   </P
 ><P
 >   See <A
@@ -659,8 +659,8 @@ CLASS="QUOTE"
 CLASS="QUOTE"
 >"false"</SPAN
 > if any false result is found.
-   The result is NULL if the comparison does not return false for any row,
-   and it returns NULL for at least one row.
+   The result is NULL if no comparison with a subquery row returns false,
+   and at least one comparison returns NULL.
   </P
 ><P
 >   <TT
@@ -729,8 +729,8 @@ CLASS="QUOTE"
 >"false"</SPAN
 > if the comparison returns false for any
    subquery row.
-   The result is NULL if the comparison does not return false for any
-   subquery row, and it returns NULL for at least one row.
+   The result is NULL if no comparison with a subquery row returns false,
+   and at least one comparison returns NULL.
   </P
 ><P
 >   See <A
@@ -745,7 +745,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN21077"
+NAME="AEN21096"
 >9.22.6. Single-row Comparison</A
 ></H2
 ><PRE

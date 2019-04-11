@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Type Conversion"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -154,7 +154,18 @@ NAME="OP-RESOL-EXACT-MATCH"
 ><P
 >Check for an operator accepting exactly the input argument types.
 If one exists (there can be only one exact match in the set of
-operators considered), use it.</P
+operators considered), use it.  Lack of an exact match creates a security
+hazard when calling, via qualified name
+  <A
+NAME="OP-QUALIFIED-SECURITY"
+HREF="#FTN.OP-QUALIFIED-SECURITY"
+><SPAN
+CLASS="footnote"
+>[1]</SPAN
+></A
+>
+(not typical), any operator found in a schema that permits untrusted users to
+create objects.  In such situations, cast arguments to force an exact match.</P
 ><OL
 CLASS="SUBSTEPS"
 TYPE="a"
@@ -293,7 +304,7 @@ Otherwise, fail.</P
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN25336"
+NAME="AEN25362"
 ></A
 ><P
 ><B
@@ -335,7 +346,7 @@ CLASS="SCREEN"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN25344"
+NAME="AEN25370"
 ></A
 ><P
 ><B
@@ -392,7 +403,7 @@ type to resolve the unknown-type literals as.</P
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN25356"
+NAME="AEN25382"
 ></A
 ><P
 ><B
@@ -483,7 +494,7 @@ CLASS="SCREEN"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN25375"
+NAME="AEN25401"
 ></A
 ><P
 ><B
@@ -548,7 +559,7 @@ a range literal.)</P
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN25389"
+NAME="AEN25415"
 ></A
 ><P
 ><B
@@ -642,6 +653,42 @@ to or from its base type, and so the domain operator would be considered
 usable in all the same cases as a similarly-named operator on the base type.</P
 ></DIV
 ></DIV
+><H3
+CLASS="FOOTNOTES"
+>Notes</H3
+><TABLE
+BORDER="0"
+CLASS="FOOTNOTES"
+WIDTH="100%"
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="5%"
+><A
+NAME="FTN.OP-QUALIFIED-SECURITY"
+HREF="typeconv-oper.html#OP-QUALIFIED-SECURITY"
+><SPAN
+CLASS="footnote"
+>[1]</SPAN
+></A
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="95%"
+><P
+>    The hazard does not arise with a non-schema-qualified name, because a
+    search path containing schemas that permit untrusted users to create
+    objects is not a <A
+HREF="ddl-schemas.html#DDL-SCHEMAS-PATTERNS"
+>secure schema usage
+    pattern</A
+>.
+   </P
+></TD
+></TR
+></TABLE
 ><DIV
 CLASS="NAVFOOTER"
 ><HR

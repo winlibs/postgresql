@@ -98,7 +98,7 @@ open_walfile(StreamCtl *stream, XLogRecPtr startpoint)
 	int			f;
 	char		fn[MAXPGPATH];
 	struct stat statbuf;
-	char	   *zerobuf;
+	PGAlignedXLogBlock zerobuf;
 	int			bytes;
 	XLogSegNo	segno;
 
@@ -144,21 +144,23 @@ open_walfile(StreamCtl *stream, XLogRecPtr startpoint)
 	}
 
 	/* New, empty, file. So pad it to 16Mb with zeroes */
-	zerobuf = pg_malloc0(XLOG_BLCKSZ);
+	memset(zerobuf.data, 0, XLOG_BLCKSZ);
 	for (bytes = 0; bytes < XLogSegSize; bytes += XLOG_BLCKSZ)
 	{
-		if (write(f, zerobuf, XLOG_BLCKSZ) != XLOG_BLCKSZ)
+		errno = 0;
+		if (write(f, zerobuf.data, XLOG_BLCKSZ) != XLOG_BLCKSZ)
 		{
+			/* if write didn't set errno, assume problem is no disk space */
+			if (errno == 0)
+				errno = ENOSPC;
 			fprintf(stderr,
 					_("%s: could not pad transaction log file \"%s\": %s\n"),
 					progname, fn, strerror(errno));
-			free(zerobuf);
 			close(f);
 			unlink(fn);
 			return false;
 		}
 	}
-	free(zerobuf);
 
 	if (lseek(f, SEEK_SET, 0) != 0)
 	{
@@ -334,7 +336,9 @@ writeTimeLineHistoryFile(StreamCtl *stream, char *filename, char *content)
 		 */
 		close(fd);
 		unlink(tmppath);
-		errno = save_errno;
+
+		/* if write didn't set errno, assume problem is no disk space */
+		errno = save_errno ? save_errno : ENOSPC;
 
 		fprintf(stderr, _("%s: could not write timeline history file \"%s\": %s\n"),
 				progname, tmppath, strerror(errno));
@@ -343,7 +347,10 @@ writeTimeLineHistoryFile(StreamCtl *stream, char *filename, char *content)
 
 	if (fsync(fd) != 0)
 	{
+		int			save_errno = errno;
+
 		close(fd);
+		errno = save_errno;
 		fprintf(stderr, _("%s: could not fsync file \"%s\": %s\n"),
 				progname, tmppath, strerror(errno));
 		return false;
@@ -1181,10 +1188,14 @@ ProcessXLogDataMsg(PGconn *conn, StreamCtl *stream, char *copybuf, int len,
 			}
 		}
 
+		errno = 0;
 		if (write(walfile,
 				  copybuf + hdr_len + bytes_written,
 				  bytes_to_write) != bytes_to_write)
 		{
+			/* if write didn't set errno, assume problem is no disk space */
+			if (errno == 0)
+				errno = ENOSPC;
 			fprintf(stderr,
 				  _("%s: could not write %u bytes to WAL file \"%s\": %s\n"),
 					progname, bytes_to_write, current_walfile_name,

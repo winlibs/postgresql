@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Server Setup and Operation"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -470,7 +470,8 @@ CLASS="VARNAME"
     <TT
 CLASS="VARNAME"
 >SEMMNS</TT
->. This parameter defines the size of the semaphore
+>.  If the system has this parameter
+    (many do not), it defines the size of the semaphore
     resource map, in which each contiguous block of available semaphores
     needs an entry. When a semaphore set is freed it is either added to
     an existing entry that is adjacent to the freed block or it is
@@ -560,7 +561,7 @@ CLASS="SYSTEMITEM"
       </DT
 ><DD
 ><P
->        The default settings can be changed using
+>        The default IPC settings can be changed using
         the <TT
 CLASS="COMMAND"
 >sysctl</TT
@@ -609,20 +610,10 @@ CLASS="FILENAME"
 </P><PRE
 CLASS="PROGRAMLISTING"
 >kern.ipc.semmni=256
-kern.ipc.semmns=512
-kern.ipc.semmnu=256</PRE
+kern.ipc.semmns=512</PRE
 ><P>
-        After modifying these values a reboot is required for the new
+        After modifying that file, a reboot is required for the new
         settings to take effect.
-        (Note: FreeBSD does not use <TT
-CLASS="VARNAME"
->SEMMAP</TT
->.  Older versions
-        would accept but ignore a setting for <TT
-CLASS="LITERAL"
->kern.ipc.semmap</TT
->;
-        newer versions reject it altogether.)
        </P
 ><P
 >        You might also want to configure your kernel to lock shared
@@ -661,7 +652,7 @@ CLASS="APPLICATION"
 CLASS="SYSTEMITEM"
 >FreeBSD</SPAN
 > versions before 4.0 work like
-        <SPAN
+        old <SPAN
 CLASS="SYSTEMITEM"
 >OpenBSD</SPAN
 > (see below).
@@ -688,17 +679,32 @@ CLASS="COMMAND"
 CLASS="SCREEN"
 ><SAMP
 CLASS="PROMPT"
->$</SAMP
+>#</SAMP
 > <KBD
 CLASS="USERINPUT"
->sysctl -w kern.ipc.shmmax=16777216</KBD
+>sysctl -w kern.ipc.semmni=100</KBD
 ></PRE
 ><P>
-        To have these settings persist over reboots, modify
+        To make these settings persist over reboots, modify
         <TT
 CLASS="FILENAME"
 >/etc/sysctl.conf</TT
 >.
+       </P
+><P
+>        You will usually want to increase <TT
+CLASS="LITERAL"
+>kern.ipc.semmni</TT
+>
+        and <TT
+CLASS="LITERAL"
+>kern.ipc.semmns</TT
+>,
+        as <SPAN
+CLASS="SYSTEMITEM"
+>NetBSD</SPAN
+>'s default settings
+        for these are uncomfortably small.
        </P
 ><P
 >        You might also want to configure your kernel to lock shared
@@ -716,16 +722,16 @@ CLASS="LITERAL"
 >        <SPAN
 CLASS="SYSTEMITEM"
 >NetBSD</SPAN
-> versions before 5.0 work like
-        <SPAN
+> versions before 5.0
+        work like old <SPAN
 CLASS="SYSTEMITEM"
 >OpenBSD</SPAN
-> (see below), except that
-        parameters should be set with the keyword <TT
+>
+        (see below), except that kernel parameters should be set with the
+        keyword <TT
 CLASS="LITERAL"
 >options</TT
-> not
-        <TT
+> not <TT
 CLASS="LITERAL"
 >option</TT
 >.
@@ -739,20 +745,63 @@ CLASS="SYSTEMITEM"
       </DT
 ><DD
 ><P
->        The options <TT
+>        In <SPAN
+CLASS="SYSTEMITEM"
+>OpenBSD</SPAN
+> 3.3 and later,
+        IPC parameters can be adjusted using <TT
+CLASS="COMMAND"
+>sysctl</TT
+>,
+        for example:
+</P><PRE
+CLASS="SCREEN"
+><SAMP
+CLASS="PROMPT"
+>#</SAMP
+> <KBD
+CLASS="USERINPUT"
+>sysctl kern.seminfo.semmni=100</KBD
+></PRE
+><P>
+        To make these settings persist over reboots, modify
+        <TT
+CLASS="FILENAME"
+>/etc/sysctl.conf</TT
+>.
+       </P
+><P
+>        You will usually want to
+        increase <TT
+CLASS="LITERAL"
+>kern.seminfo.semmni</TT
+>
+        and <TT
+CLASS="LITERAL"
+>kern.seminfo.semmns</TT
+>,
+        as <SPAN
+CLASS="SYSTEMITEM"
+>OpenBSD</SPAN
+>'s default settings
+        for these are uncomfortably small.
+       </P
+><P
+>        In older <SPAN
+CLASS="SYSTEMITEM"
+>OpenBSD</SPAN
+> versions,
+        you will need to build a custom kernel to change the IPC parameters.
+        Make sure that the options <TT
 CLASS="VARNAME"
 >SYSVSHM</TT
-> and <TT
+>
+        and <TT
 CLASS="VARNAME"
 >SYSVSEM</TT
-> need
-        to be enabled when the kernel is compiled. (They are by
-        default.) The maximum size of shared memory is determined by
-        the option <TT
-CLASS="VARNAME"
->SHMMAXPGS</TT
-> (in pages). The following
-        shows an example of how to set the various parameters:
+> are enabled, too.  (They are by
+        default.)  The following shows an example of how to set the various
+        parameters in the kernel configuration file:
 </P><PRE
 CLASS="PROGRAMLISTING"
 >option        SYSVSHM
@@ -762,21 +811,8 @@ option        SHMSEG=256
 option        SYSVSEM
 option        SEMMNI=256
 option        SEMMNS=512
-option        SEMMNU=256
-option        SEMMAP=256</PRE
+option        SEMMNU=256</PRE
 ><P>
-       </P
-><P
->        You might also want to configure your kernel to lock shared
-        memory into RAM and prevent it from being paged out to swap.
-        This can be accomplished using the <TT
-CLASS="COMMAND"
->sysctl</TT
->
-        setting <TT
-CLASS="LITERAL"
->kern.ipc.shm_use_phys</TT
->.
        </P
 ></DD
 ><DT
@@ -1391,7 +1427,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN31887"
+NAME="AEN31966"
 >18.4.3. Resource Limits</A
 ></H2
 ><P

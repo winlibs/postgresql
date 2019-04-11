@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1343,7 +1343,7 @@ CLASS="REPLACEABLE"
 ><TD
 ><TT
 CLASS="LITERAL"
->encode(E'123\\000\\001', 'base64')</TT
+>encode('123\000\001', 'base64')</TT
 ></TD
 ><TD
 ><TT
@@ -2226,7 +2226,7 @@ HREF="functions-matching.html#FUNCTIONS-POSIX-REGEXP"
 ><TD
 ><TT
 CLASS="LITERAL"
->regexp_split_to_array('hello world', E'\\s+')</TT
+>regexp_split_to_array('hello world', '\s+')</TT
 ></TD
 ><TD
 ><TT
@@ -2282,7 +2282,7 @@ HREF="functions-matching.html#FUNCTIONS-POSIX-REGEXP"
 ><TD
 ><TT
 CLASS="LITERAL"
->regexp_split_to_table('hello world', E'\\s+')</TT
+>regexp_split_to_table('hello world', '\s+')</TT
 ></TD
 ><TD
 ><TT
@@ -3028,8 +3028,8 @@ CLASS="CALSTABLE"
 ><TH
 >Conversion Name
         <A
-NAME="AEN11114"
-HREF="#FTN.AEN11114"
+NAME="AEN11120"
+HREF="#FTN.AEN11120"
 ><SPAN
 CLASS="footnote"
 >[a]</SPAN
@@ -5224,7 +5224,7 @@ CLASS="LITERAL"
 ><TD
 COLSPAN="3"
 >Notes:<BR><A
-NAME="FTN.AEN11114"
+NAME="FTN.AEN11120"
 >a. </A
 >          The conversion names follow a standard naming scheme: The
           official name of the source encoding with all
@@ -5569,13 +5569,13 @@ CLASS="COMPUTEROUTPUT"
 >INSERT INTO "Foo bar" VALUES('O''Reilly')</SAMP
 >
 
-SELECT format('INSERT INTO %I VALUES(%L)', 'locations', E'C:\\Program Files');
+SELECT format('INSERT INTO %I VALUES(%L)', 'locations', 'C:\Program Files');
 <I
 CLASS="LINEANNOTATION"
 >Result: </I
 ><SAMP
 CLASS="COMPUTEROUTPUT"
->INSERT INTO locations VALUES(E'C:\\Program Files')</SAMP
+>INSERT INTO locations VALUES('C:\Program Files')</SAMP
 ></PRE
 ><P>
     </P

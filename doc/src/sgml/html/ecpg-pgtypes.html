@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="ECPG - Embedded SQL in C"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -127,7 +127,7 @@ EXEC SQL SELECT started, duration INTO :ts1, :iv1 FROM datetbl WHERE d=:date1;
 PGTYPEStimestamp_add_interval(&#38;ts1, &#38;iv1, &#38;tsout);
 out = PGTYPEStimestamp_to_asc(&#38;tsout);
 printf("Started + duration: %s\n", out);
-free(out);</PRE
+PGTYPESchar_free(out);</PRE
 ><P>
   </P
 ><DIV
@@ -135,8 +135,34 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
+NAME="ECPG-PGTYPES-CSTRINGS"
+>34.6.1. Character Strings</A
+></H2
+><P
+>   Some functions such as <CODE
+CLASS="FUNCTION"
+>PGTYPESnumeric_to_asc</CODE
+> return
+   a pointer to a freshly allocated character string. These results should be
+   freed with <CODE
+CLASS="FUNCTION"
+>PGTYPESchar_free</CODE
+> instead of
+   <CODE
+CLASS="FUNCTION"
+>free</CODE
+>. (This is important only on Windows, where
+   memory allocation and release sometimes need to be done by the same
+   library.)
+   </P
+></DIV
+><DIV
+CLASS="SECT2"
+><H2
+CLASS="SECT2"
+><A
 NAME="ECPG-PGTYPES-NUMERIC"
->34.6.1. The numeric Type</A
+>34.6.2. The numeric Type</A
 ></H2
 ><P
 >    The numeric type offers to do calculations with arbitrary precision. See
@@ -265,6 +291,10 @@ CLASS="LITERAL"
 >dscale</TT
 > decimal
        digits, with rounding applied if necessary.
+       The result must be freed with <CODE
+CLASS="FUNCTION"
+>PGTYPESchar_free()</CODE
+>.
       </P
 ></DD
 ><DT
@@ -678,7 +708,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="ECPG-PGTYPES-DATE"
->34.6.2. The date Type</A
+>34.6.3. The date Type</A
 ></H2
 ><P
 >    The date type in C enables your programs to deal with data of the SQL type
@@ -1019,6 +1049,10 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >YYYY-MM-DD</TT
 > format.
+        The result must be freed with <CODE
+CLASS="FUNCTION"
+>PGTYPESchar_free()</CODE
+>.
        </P
 ></DD
 ><DT
@@ -1760,7 +1794,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="ECPG-PGTYPES-TIMESTAMP"
->34.6.3. The timestamp Type</A
+>34.6.4. The timestamp Type</A
 ></H2
 ><P
 >    The timestamp type in C enables your programs to deal with data of the SQL
@@ -1952,6 +1986,10 @@ CLASS="LITERAL"
 > as
         its only argument and returns an allocated string that contains the
         textual representation of the timestamp.
+        The result must be freed with <CODE
+CLASS="FUNCTION"
+>PGTYPESchar_free()</CODE
+>.
        </P
 ></DD
 ><DT
@@ -2741,7 +2779,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="ECPG-PGTYPES-INTERVAL"
->34.6.4. The interval Type</A
+>34.6.5. The interval Type</A
 ></H2
 ><P
 >    The interval type in C enables your programs to deal with data of the SQL
@@ -2851,6 +2889,10 @@ CLASS="LITERAL"
 CLASS="LITERAL"
 >@ 1 day 12 hours 59 mins 10 secs</TT
 >.
+        The result must be freed with <CODE
+CLASS="FUNCTION"
+>PGTYPESchar_free()</CODE
+>.
        </P
 ></DD
 ><DT
@@ -2891,7 +2933,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="ECPG-PGTYPES-DECIMAL"
->34.6.5. The decimal Type</A
+>34.6.6. The decimal Type</A
 ></H2
 ><P
 >     The decimal type is similar to the numeric type. However it is limited to
@@ -2965,7 +3007,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="ECPG-PGTYPES-ERRNO"
->34.6.6. errno Values of pgtypeslib</A
+>34.6.7. errno Values of pgtypeslib</A
 ></H2
 ><P
 >    <P
@@ -3162,7 +3204,7 @@ CLASS="SECT2"
 CLASS="SECT2"
 ><A
 NAME="ECPG-PGTYPES-CONSTANTS"
->34.6.7. Special Constants of pgtypeslib</A
+>34.6.8. Special Constants of pgtypeslib</A
 ></H2
 ><P
 >    <P

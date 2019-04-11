@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -3698,7 +3698,12 @@ CLASS="LITERAL"
 >backward_scan</TT
 ></TD
 ><TD
->Can the index be scanned backwards?
+>Can the scan direction be changed in mid-scan (to
+             support <TT
+CLASS="LITERAL"
+>FETCH BACKWARD</TT
+> on a cursor without
+             needing materialization)?
       </TD
 ></TR
 ></TBODY
@@ -3996,13 +4001,22 @@ CLASS="LITERAL"
 CLASS="FUNCTION"
 >pg_describe_object(<TT
 CLASS="PARAMETER"
->catalog_id</TT
+>classid</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
 >, <TT
 CLASS="PARAMETER"
->object_id</TT
+>objid</TT
+> <TT
+CLASS="TYPE"
+>oid</TT
 >, <TT
 CLASS="PARAMETER"
->object_sub_id</TT
+>objsubid</TT
+> <TT
+CLASS="TYPE"
+>integer</TT
 >)</CODE
 ></TT
 ></TD
@@ -4022,19 +4036,19 @@ CLASS="LITERAL"
 CLASS="FUNCTION"
 >pg_identify_object(<TT
 CLASS="PARAMETER"
->catalog_id</TT
+>classid</TT
 > <TT
 CLASS="TYPE"
 >oid</TT
 >, <TT
 CLASS="PARAMETER"
->object_id</TT
+>objid</TT
 > <TT
 CLASS="TYPE"
 >oid</TT
 >, <TT
 CLASS="PARAMETER"
->object_sub_id</TT
+>objsubid</TT
 > <TT
 CLASS="TYPE"
 >integer</TT
@@ -4078,19 +4092,19 @@ CLASS="LITERAL"
 CLASS="FUNCTION"
 >pg_identify_object_as_address(<TT
 CLASS="PARAMETER"
->catalog_id</TT
+>classid</TT
 > <TT
 CLASS="TYPE"
 >oid</TT
 >, <TT
 CLASS="PARAMETER"
->object_id</TT
+>objid</TT
 > <TT
 CLASS="TYPE"
 >oid</TT
 >, <TT
 CLASS="PARAMETER"
->object_sub_id</TT
+>objsubid</TT
 > <TT
 CLASS="TYPE"
 >integer</TT
@@ -4106,13 +4120,13 @@ CLASS="TYPE"
 >text</TT
 >, <TT
 CLASS="PARAMETER"
->name</TT
+>object_names</TT
 > <TT
 CLASS="TYPE"
 >text[]</TT
 >, <TT
 CLASS="PARAMETER"
->args</TT
+>object_args</TT
 > <TT
 CLASS="TYPE"
 >text[]</TT
@@ -4150,25 +4164,25 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="PARAMETER"
->catalog_id</TT
+>classid</TT
 > <TT
 CLASS="TYPE"
 >oid</TT
 >, <TT
 CLASS="PARAMETER"
->object_id</TT
+>objid</TT
 > <TT
 CLASS="TYPE"
 >oid</TT
 >, <TT
 CLASS="PARAMETER"
->object_sub_id</TT
+>objsubid</TT
 > <TT
 CLASS="TYPE"
->int32</TT
+>integer</TT
 ></TD
 ><TD
->get address of a database object, from its external representation</TD
+>get address of a database object from its external representation</TD
 ></TR
 ></TBODY
 ></TABLE
@@ -4178,7 +4192,9 @@ CLASS="TYPE"
 CLASS="FUNCTION"
 >pg_describe_object</CODE
 > returns a textual description of a database
-   object specified by catalog OID, object OID and a (possibly zero) sub-object ID.
+   object specified by catalog OID, object OID, and sub-object ID (such as
+   a column number within a table; the sub-object ID is zero when referring
+   to a whole object).
    This description is intended to be human-readable, and might be translated,
    depending on server configuration.
    This is useful to determine the identity of an object as stored in the
@@ -4192,8 +4208,8 @@ CLASS="STRUCTNAME"
 CLASS="FUNCTION"
 >pg_identify_object</CODE
 > returns a row containing enough information
-   to uniquely identify the database object specified by catalog OID, object OID and a
-   (possibly zero) sub-object ID.  This information is intended to be machine-readable,
+   to uniquely identify the database object specified by catalog OID, object OID and
+   sub-object ID.  This information is intended to be machine-readable,
    and is never translated.
    <TT
 CLASS="PARAMETER"
@@ -4210,18 +4226,18 @@ CLASS="LITERAL"
    <TT
 CLASS="PARAMETER"
 >name</TT
-> is the name of the object, quoted if necessary, only
-   present if it can be used (alongside schema name, if pertinent) as a unique
-   identifier of the object, otherwise <TT
+> is the name of the object, quoted if necessary,
+   if the name (along with schema name, if pertinent) is sufficient to
+   uniquely identify the object, otherwise <TT
 CLASS="LITERAL"
 >NULL</TT
 >;
    <TT
 CLASS="PARAMETER"
 >identity</TT
-> is the complete object identity, with the precise format
-   depending on object type, and each part within the format being
-   schema-qualified and quoted as necessary.
+> is the complete object identity, with the
+   precise format depending on object type, and each name within the format
+   being schema-qualified and quoted as necessary.
   </P
 ><P
 >   <CODE
@@ -4229,7 +4245,7 @@ CLASS="FUNCTION"
 >pg_identify_object_as_address</CODE
 > returns a row containing
    enough information to uniquely identify the database object specified by
-   catalog OID, object OID and a (possibly zero) sub-object ID.  The returned
+   catalog OID, object OID and sub-object ID.  The returned
    information is independent of the current server, that is, it could be used
    to identify an identically named object in another server.
    <TT
@@ -4238,12 +4254,13 @@ CLASS="PARAMETER"
 > identifies the type of database object;
    <TT
 CLASS="PARAMETER"
->name</TT
+>object_names</TT
 > and <TT
 CLASS="PARAMETER"
->args</TT
-> are text arrays that together
-   form a reference to the object.  These three columns can be passed to
+>object_args</TT
+>
+   are text arrays that together form a reference to the object.
+   These three values can be passed to
    <CODE
 CLASS="FUNCTION"
 >pg_get_object_address</CODE
@@ -4275,17 +4292,17 @@ CLASS="FUNCTION"
 >.
    <TT
 CLASS="PARAMETER"
->catalog_id</TT
+>classid</TT
 > is the OID of the system catalog containing the
    object;
    <TT
 CLASS="PARAMETER"
->object_id</TT
+>objid</TT
 > is the OID of the object itself, and
    <TT
 CLASS="PARAMETER"
->object_sub_id</TT
-> is the object sub-ID, or zero if none.
+>objsubid</TT
+> is the sub-object ID, or zero if none.
    This function is the inverse of <CODE
 CLASS="FUNCTION"
 >pg_identify_object_as_address</CODE

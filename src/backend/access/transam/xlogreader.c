@@ -25,6 +25,10 @@
 #include "common/pg_lzcompress.h"
 #include "replication/origin.h"
 
+#ifndef FRONTEND
+#include "utils/memutils.h"
+#endif
+
 static bool allocate_recordbuf(XLogReaderState *state, uint32 reclength);
 
 static bool ValidXLogRecordHeader(XLogReaderState *state, XLogRecPtr RecPtr,
@@ -157,6 +161,25 @@ allocate_recordbuf(XLogReaderState *state, uint32 reclength)
 
 	newSize += XLOG_BLCKSZ - (newSize % XLOG_BLCKSZ);
 	newSize = Max(newSize, 5 * Max(BLCKSZ, XLOG_BLCKSZ));
+
+#ifndef FRONTEND
+
+	/*
+	 * Note that in much unlucky circumstances, the random data read from a
+	 * recycled segment can cause this routine to be called with a size
+	 * causing a hard failure at allocation.  For a standby, this would cause
+	 * the instance to stop suddenly with a hard failure, preventing it to
+	 * retry fetching WAL from one of its sources which could allow it to move
+	 * on with replay without a manual restart. If the data comes from a past
+	 * recycled segment and is still valid, then the allocation may succeed
+	 * but record checks are going to fail so this would be short-lived.  If
+	 * the allocation fails because of a memory shortage, then this is not a
+	 * hard failure either per the guarantee given by MCXT_ALLOC_NO_OOM.
+	 */
+	if (!AllocSizeIsValid(newSize))
+		return false;
+
+#endif
 
 	if (state->readRecordBuf)
 		pfree(state->readRecordBuf);
@@ -1372,7 +1395,7 @@ RestoreBlockImage(XLogReaderState *record, uint8 block_id, char *page)
 {
 	DecodedBkpBlock *bkpb;
 	char	   *ptr;
-	char		tmp[BLCKSZ];
+	PGAlignedBlock tmp;
 
 	if (!record->blocks[block_id].in_use)
 		return false;
@@ -1385,7 +1408,7 @@ RestoreBlockImage(XLogReaderState *record, uint8 block_id, char *page)
 	if (bkpb->bimg_info & BKPIMAGE_IS_COMPRESSED)
 	{
 		/* If a backup block image is compressed, decompress it */
-		if (pglz_decompress(ptr, bkpb->bimg_len, tmp,
+		if (pglz_decompress(ptr, bkpb->bimg_len, tmp.data,
 							BLCKSZ - bkpb->hole_length) < 0)
 		{
 			report_invalid_record(record, "invalid compressed image at %X/%X, block %d",
@@ -1394,7 +1417,7 @@ RestoreBlockImage(XLogReaderState *record, uint8 block_id, char *page)
 								  block_id);
 			return false;
 		}
-		ptr = tmp;
+		ptr = tmp.data;
 	}
 
 	/* generate page, taking into account hole if necessary */

@@ -2,12 +2,12 @@
 .\"     Title: psql
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2018
-.\"    Manual: PostgreSQL 9.6.9 Documentation
-.\"    Source: PostgreSQL 9.6.9
+.\"      Date: 2019
+.\"    Manual: PostgreSQL 9.6.12 Documentation
+.\"    Source: PostgreSQL 9.6.12
 .\"  Language: English
 .\"
-.TH "PSQL" "1" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
+.TH "PSQL" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -641,7 +641,7 @@ is currently connected, followed by the string
 .\}
 .nf
 $ \fBpsql testdb\fR
-psql (9\&.6\&.9)
+psql (9\&.6\&.12)
 Type "help" for help\&.
 
 testdb=>
@@ -880,10 +880,34 @@ psql\*(Aqs variable substitution rules and backslash escapes do not apply\&.
 \fBTip\fR
 .ps -1
 .br
-This operation is not as efficient as the
+Another way to obtain the same result as
+\ecopy \&.\&.\&. to
+is to use the
+SQL
+COPY \&.\&.\&. TO STDOUT
+command and terminate it with
+\eg \fIfilename\fR
+or
+\eg |\fIprogram\fR\&. Unlike
+\ecopy, this method allows the command to span multiple lines; also, variable interpolation and backquote expansion can be used\&.
+.sp .5v
+.RE
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBTip\fR
+.ps -1
+.br
+These operations are not as efficient as the
 SQL
 \fBCOPY\fR
-command because all data must pass through the client/server connection\&. For large amounts of data the
+command with a file or program data source or destination, because all data must pass through the client/server connection\&. For large amounts of data the
 SQL
 command might be preferable\&.
 .sp .5v
@@ -2009,7 +2033,7 @@ latex
 (uses
 tabular),
 latex\-longtable, or
-troff\-ms\&. Unique abbreviations are allowed\&. (That would mean one letter is enough\&.)
+troff\-ms\&. Unique abbreviations are allowed\&.
 .sp
 unaligned
 format writes all columns of a row on one line, separated by the currently active field separator\&. This is useful for creating output that might be intended to be read in by other programs (for example, tab\-separated or comma\-separated format)\&.

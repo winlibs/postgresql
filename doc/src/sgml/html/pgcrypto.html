@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -110,7 +110,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN185782"
+NAME="AEN139059"
 >F.25.1. General Hashing Functions</A
 ></H2
 ><DIV
@@ -118,7 +118,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN185784"
+NAME="AEN139061"
 >F.25.1.1. <CODE
 CLASS="FUNCTION"
 >digest()</CODE
@@ -187,7 +187,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN185804"
+NAME="AEN139081"
 >F.25.1.2. <CODE
 CLASS="FUNCTION"
 >hmac()</CODE
@@ -196,7 +196,7 @@ CLASS="FUNCTION"
 ><PRE
 CLASS="SYNOPSIS"
 >hmac(data text, key text, type text) returns bytea
-hmac(data bytea, key text, type text) returns bytea</PRE
+hmac(data bytea, key bytea, type text) returns bytea</PRE
 ><P
 >    Calculates hashed MAC for <TT
 CLASS="PARAMETER"
@@ -232,7 +232,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN185818"
+NAME="AEN139095"
 >F.25.2. Password Hashing Functions</A
 ></H2
 ><P
@@ -412,7 +412,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN185885"
+NAME="AEN139162"
 >F.25.2.1. <CODE
 CLASS="FUNCTION"
 >crypt()</CODE
@@ -464,7 +464,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN185901"
+NAME="AEN139178"
 >F.25.2.2. <CODE
 CLASS="FUNCTION"
 >gen_salt()</CODE
@@ -867,7 +867,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN186046"
+NAME="AEN139323"
 >F.25.3. PGP Encryption Functions</A
 ></H2
 ><P
@@ -981,7 +981,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186081"
+NAME="AEN139358"
 >F.25.3.1. <CODE
 CLASS="FUNCTION"
 >pgp_sym_encrypt()</CODE
@@ -1011,7 +1011,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186093"
+NAME="AEN139370"
 >F.25.3.2. <CODE
 CLASS="FUNCTION"
 >pgp_sym_decrypt()</CODE
@@ -1051,7 +1051,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186108"
+NAME="AEN139385"
 >F.25.3.3. <CODE
 CLASS="FUNCTION"
 >pgp_pub_encrypt()</CODE
@@ -1084,7 +1084,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186121"
+NAME="AEN139398"
 >F.25.3.4. <CODE
 CLASS="FUNCTION"
 >pgp_pub_decrypt()</CODE
@@ -1134,7 +1134,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186138"
+NAME="AEN139415"
 >F.25.3.5. <CODE
 CLASS="FUNCTION"
 >pgp_key_id()</CODE
@@ -1200,7 +1200,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186159"
+NAME="AEN139436"
 >F.25.3.6. <CODE
 CLASS="FUNCTION"
 >armor()</CODE
@@ -1239,7 +1239,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186173"
+NAME="AEN139450"
 >F.25.3.7. <CODE
 CLASS="FUNCTION"
 >pgp_armor_headers</CODE
@@ -1266,7 +1266,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186182"
+NAME="AEN139459"
 >F.25.3.8. Options for PGP Functions</A
 ></H3
 ><P
@@ -1302,7 +1302,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186191"
+NAME="AEN139468"
 >F.25.3.8.1. cipher-algo</A
 ></H4
 ><P
@@ -1325,7 +1325,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186197"
+NAME="AEN139474"
 >F.25.3.8.2. compress-algo</A
 ></H4
 ><P
@@ -1349,7 +1349,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186202"
+NAME="AEN139479"
 >F.25.3.8.3. compress-level</A
 ></H4
 ><P
@@ -1367,7 +1367,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186206"
+NAME="AEN139483"
 >F.25.3.8.4. convert-crlf</A
 ></H4
 ><P
@@ -1403,7 +1403,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186215"
+NAME="AEN139492"
 >F.25.3.8.5. disable-mdc</A
 ></H4
 ><P
@@ -1423,7 +1423,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186219"
+NAME="AEN139496"
 >F.25.3.8.6. sess-key</A
 ></H4
 ><P
@@ -1442,7 +1442,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186223"
+NAME="AEN139500"
 >F.25.3.8.7. s2k-mode</A
 ></H4
 ><P
@@ -1462,7 +1462,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186227"
+NAME="AEN139504"
 >F.25.3.8.8. s2k-count</A
 ></H4
 ><P
@@ -1479,7 +1479,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186231"
+NAME="AEN139508"
 >F.25.3.8.9. s2k-digest-algo</A
 ></H4
 ><P
@@ -1496,7 +1496,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186235"
+NAME="AEN139512"
 >F.25.3.8.10. s2k-cipher-algo</A
 ></H4
 ><P
@@ -1513,7 +1513,7 @@ CLASS="SECT4"
 ><H4
 CLASS="SECT4"
 ><A
-NAME="AEN186239"
+NAME="AEN139516"
 >F.25.3.8.11. unicode-mode</A
 ></H4
 ><P
@@ -1534,7 +1534,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186243"
+NAME="AEN139520"
 >F.25.3.9. Generating PGP Keys with GnuPG</A
 ></H3
 ><P
@@ -1613,7 +1613,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186264"
+NAME="AEN139541"
 >F.25.3.10. Limitations of PGP Code</A
 ></H3
 ><P
@@ -1650,7 +1650,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN186274"
+NAME="AEN139551"
 >F.25.4. Raw Encryption Functions</A
 ></H2
 ><P
@@ -1849,7 +1849,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN186337"
+NAME="AEN139614"
 >F.25.5. Random-Data Functions</A
 ></H2
 ><PRE
@@ -1875,7 +1875,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN186348"
+NAME="AEN139625"
 >F.25.6. Notes</A
 ></H2
 ><DIV
@@ -1883,7 +1883,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186350"
+NAME="AEN139627"
 >F.25.6.1. Configuration</A
 ></H3
 ><P
@@ -2058,7 +2058,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186418"
+NAME="AEN139695"
 >F.25.6.2. NULL Handling</A
 ></H3
 ><P
@@ -2071,7 +2071,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186421"
+NAME="AEN139698"
 >F.25.6.3. Security Limitations</A
 ></H3
 ><P
@@ -2122,7 +2122,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186435"
+NAME="AEN139712"
 >F.25.6.4. Useful Reading</A
 ></H3
 ><P
@@ -2187,7 +2187,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN186458"
+NAME="AEN139735"
 >F.25.6.5. Technical References</A
 ></H3
 ><P
@@ -2196,9 +2196,9 @@ NAME="AEN186458"
 ><LI
 ><P
 ><A
-HREF="http://www.ietf.org/rfc/rfc4880.txt"
+HREF="https://tools.ietf.org/html/rfc4880"
 TARGET="_top"
->http://www.ietf.org/rfc/rfc4880.txt</A
+>https://tools.ietf.org/html/rfc4880</A
 ></P
 ><P
 >OpenPGP message format.</P
@@ -2206,9 +2206,9 @@ TARGET="_top"
 ><LI
 ><P
 ><A
-HREF="http://www.ietf.org/rfc/rfc1321.txt"
+HREF="https://tools.ietf.org/html/rfc1321"
 TARGET="_top"
->http://www.ietf.org/rfc/rfc1321.txt</A
+>https://tools.ietf.org/html/rfc1321</A
 ></P
 ><P
 >The MD5 Message-Digest Algorithm.</P
@@ -2216,9 +2216,9 @@ TARGET="_top"
 ><LI
 ><P
 ><A
-HREF="http://www.ietf.org/rfc/rfc2104.txt"
+HREF="https://tools.ietf.org/html/rfc2104"
 TARGET="_top"
->http://www.ietf.org/rfc/rfc2104.txt</A
+>https://tools.ietf.org/html/rfc2104</A
 ></P
 ><P
 >HMAC: Keyed-Hashing for Message Authentication.</P
@@ -2258,16 +2258,6 @@ CLASS="FILENAME"
 >/dev/random</TT
 > driver for Linux.</P
 ></LI
-><LI
-><P
-><A
-HREF="http://kodu.ut.ee/~lipmaa/crypto/"
-TARGET="_top"
->http://kodu.ut.ee/~lipmaa/crypto/</A
-></P
-><P
->Collection of cryptology pointers.</P
-></LI
 ></UL
 ></DIV
 ></DIV
@@ -2276,7 +2266,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN186490"
+NAME="AEN139763"
 >F.25.7. Author</A
 ></H2
 ><P
@@ -2299,7 +2289,7 @@ CLASS="INFORMALTABLE"
 ><P
 ></P
 ><A
-NAME="AEN186496"
+NAME="AEN139769"
 ></A
 ><TABLE
 BORDER="1"

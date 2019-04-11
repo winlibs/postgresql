@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Functions and Operators"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -1158,7 +1158,7 @@ regexp_replace('foobarbaz', 'b..', 'X', 'g')
 CLASS="LINEANNOTATION"
 >fooXX</I
 >
-regexp_replace('foobarbaz', 'b(..)', E'X\\1Y', 'g')
+regexp_replace('foobarbaz', 'b(..)', 'X\1Y', 'g')
                                    <I
 CLASS="LINEANNOTATION"
 >fooXarYXazY</I
@@ -1397,7 +1397,7 @@ CLASS="FUNCTION"
 >    Some examples:
 </P><PRE
 CLASS="PROGRAMLISTING"
->&#13;SELECT foo FROM regexp_split_to_table('the quick brown fox jumps over the lazy dog', E'\\s+') AS foo;
+>&#13;SELECT foo FROM regexp_split_to_table('the quick brown fox jumps over the lazy dog', '\s+') AS foo;
   foo   
 -------
  the    
@@ -1411,13 +1411,13 @@ CLASS="PROGRAMLISTING"
  dog    
 (9 rows)
 
-SELECT regexp_split_to_array('the quick brown fox jumps over the lazy dog', E'\\s+');
+SELECT regexp_split_to_array('the quick brown fox jumps over the lazy dog', '\s+');
               regexp_split_to_array             
 -----------------------------------------------
  {the,quick,brown,fox,jumps,over,the,lazy,dog}
 (1 row)
 
-SELECT foo FROM regexp_split_to_table('the quick brown fox', E'\\s*') AS foo;
+SELECT foo FROM regexp_split_to_table('the quick brown fox', '\s*') AS foo;
  foo 
 -----
  t         

@@ -78,6 +78,8 @@ typedef struct FixedParallelState
 	PGPROC	   *parallel_master_pgproc;
 	pid_t		parallel_master_pid;
 	BackendId	parallel_master_backend_id;
+	TimestampTz xact_ts;
+	TimestampTz stmt_ts;
 
 	/* Entrypoint for parallel workers (deprecated)! */
 	parallel_worker_main_type entrypoint;
@@ -324,6 +326,8 @@ InitializeParallelDSM(ParallelContext *pcxt)
 	fps->parallel_master_pgproc = MyProc;
 	fps->parallel_master_pid = MyProcPid;
 	fps->parallel_master_backend_id = MyBackendId;
+	fps->xact_ts = GetCurrentTransactionStartTimestamp();
+	fps->stmt_ts = GetCurrentStatementStartTimestamp();
 	fps->entrypoint = pcxt->entrypoint;
 	SpinLockInit(&fps->mutex);
 	fps->last_xlog_end = 0;
@@ -1149,13 +1153,11 @@ ParallelWorkerMain(Datum main_arg)
 		return;
 
 	/*
-	 * Load libraries that were loaded by original backend.  We want to do
-	 * this before restoring GUCs, because the libraries might define custom
-	 * variables.
+	 * Restore transaction and statement start-time timestamps.  This must
+	 * happen before anything that would start a transaction, else asserts in
+	 * xact.c will fire.
 	 */
-	libraryspace = shm_toc_lookup(toc, PARALLEL_KEY_LIBRARY);
-	Assert(libraryspace != NULL);
-	RestoreLibraryState(libraryspace);
+	SetParallelStartTimestamps(fps->xact_ts, fps->stmt_ts);
 
 	/*
 	 * Identify the entry point to be called.  In theory this could result in
@@ -1186,10 +1188,19 @@ ParallelWorkerMain(Datum main_arg)
 	 */
 	SetClientEncoding(GetDatabaseEncoding());
 
+	/*
+	 * Load libraries that were loaded by original backend.  We want to do
+	 * this before restoring GUCs, because the libraries might define custom
+	 * variables.
+	 */
+	libraryspace = shm_toc_lookup(toc, PARALLEL_KEY_LIBRARY);
+	Assert(libraryspace != NULL);
+	StartTransactionCommand();
+	RestoreLibraryState(libraryspace);
+
 	/* Restore GUC values from launching backend. */
 	gucspace = shm_toc_lookup(toc, PARALLEL_KEY_GUC);
 	Assert(gucspace != NULL);
-	StartTransactionCommand();
 	RestoreGUCState(gucspace);
 	CommitTransactionCommand();
 

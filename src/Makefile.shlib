@@ -20,11 +20,15 @@
 #
 # NAME                  Name of library to build (no suffix nor "lib" prefix)
 # OBJS                  List of object files to include in library
-# SHLIB_LINK            If shared library relies on other libraries,
-#                       additional stuff to put in its link command
+# SHLIB_LINK            Stuff to append to library's link command
+#                       (typically, -L and -l switches for external libraries)
+# SHLIB_LINK_INTERNAL   -L and -l switches for Postgres-supplied libraries
 # SHLIB_PREREQS         Order-only prerequisites for library build target
 # SHLIB_EXPORTS         (optional) Name of file containing list of symbols to
 #                       export, in the format "function_name  number"
+#
+# Don't use SHLIB_LINK for references to files in the build tree, or the
+# wrong things will happen --- use SHLIB_LINK_INTERNAL for those!
 #
 # When building a shared library, the following version information
 # must also be set.  It should be omitted when building a dynamically
@@ -69,6 +73,8 @@
 
 COMPILER = $(CC) $(CFLAGS)
 LINK.static = $(AR) $(AROPT)
+
+LDFLAGS_INTERNAL += $(SHLIB_LINK_INTERNAL)
 
 
 
@@ -294,11 +300,17 @@ all-static-lib: $(stlib)
 
 all-shared-lib: $(shlib)
 
+# In this rule, "touch $@" works around a problem on some platforms wherein
+# ranlib updates the library file's mod time with a value calculated to
+# seconds precision.  If the filesystem has sub-second timestamps, this can
+# cause the library file to appear older than its input files, triggering
+# parallel-make problems.
 ifndef haslibarule
 $(stlib): $(OBJS) | $(SHLIB_PREREQS)
 	rm -f $@
 	$(LINK.static) $@ $^
 	$(RANLIB) $@
+	touch $@
 endif #haslibarule
 
 
@@ -466,7 +478,7 @@ install-lib-static: $(stlib) installdirs-lib
 	$(INSTALL_STLIB) $< '$(DESTDIR)$(libdir)/$(stlib)'
 ifeq ($(PORTNAME), darwin)
 	cd '$(DESTDIR)$(libdir)' && \
-	ranlib $(stlib)
+	$(RANLIB) $(stlib)
 endif
 
 install-lib-shared: $(shlib) installdirs-lib

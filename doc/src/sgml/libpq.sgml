@@ -772,7 +772,7 @@ PGPing PQping(const char *conninfo);
     Several <application>libpq</> functions parse a user-specified string to obtain
     connection parameters.  There are two accepted formats for these strings:
     plain <literal>keyword = value</literal> strings
-    and <ulink url="http://www.ietf.org/rfc/rfc3986.txt">RFC
+    and <ulink url="https://tools.ietf.org/html/rfc3986">RFC
     3986</ulink> URIs.
    </para>
 
@@ -5000,7 +5000,7 @@ typedef struct pgNotify
   <para>
    <function>PQnotifies</function> does not actually read data from the
    server; it just returns messages previously absorbed by another
-   <application>libpq</application> function.  In prior releases of
+   <application>libpq</application> function.  In ancient releases of
    <application>libpq</application>, the only way to ensure timely receipt
    of <command>NOTIFY</> messages was to constantly submit commands, even
    empty ones, and then check <function>PQnotifies</function> after each
@@ -7701,9 +7701,8 @@ ldap://ldap.acme.com/cn=dbserver,cn=hosts?pgconnectinfo?base?(objectclass=*)
    that the <literal>libssl</> and/or <literal>libcrypto</> libraries
    have been initialized by your application, so that
    <application>libpq</application> will not also initialize those libraries.
-   <!-- If this URL changes replace it with a URL to www.archive.org. -->
    See <ulink
-   url="http://h71000.www7.hp.com/doc/83final/ba554_90007/ch04.html"></ulink>
+   url="http://h41379.www4.hpe.com/doc/83final/ba554_90007/ch04.html"></ulink>
    for details on the SSL API.
   </para>
 
@@ -8081,10 +8080,10 @@ main(int argc, char **argv)
         exit_nicely(conn);
     }
 
-    /* Set always-secure search path, so malicous users can't take control. */
+    /* Set always-secure search path, so malicious users can't take control. */
     res = PQexec(conn,
                  "SELECT pg_catalog.set_config('search_path', '', false)");
-    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    if (PQresultStatus(res) != PGRES_TUPLES_OK)
     {
         fprintf(stderr, "SET failed: %s", PQerrorMessage(conn));
         PQclear(res);
@@ -8251,10 +8250,10 @@ main(int argc, char **argv)
         exit_nicely(conn);
     }
 
-    /* Set always-secure search path, so malicous users can't take control. */
+    /* Set always-secure search path, so malicious users can't take control. */
     res = PQexec(conn,
                  "SELECT pg_catalog.set_config('search_path', '', false)");
-    if (PQresultStatus(res) != PGRES_COMMAND_OK)
+    if (PQresultStatus(res) != PGRES_TUPLES_OK)
     {
         fprintf(stderr, "SET failed: %s", PQerrorMessage(conn));
         PQclear(res);
@@ -8314,6 +8313,7 @@ main(int argc, char **argv)
                     notify->relname, notify->be_pid);
             PQfreemem(notify);
             nnotifies++;
+            PQconsumeInput(conn);
         }
     }
 
@@ -8477,7 +8477,7 @@ main(int argc, char **argv)
         exit_nicely(conn);
     }
 
-    /* Set always-secure search path, so malicous users can't take control. */
+    /* Set always-secure search path, so malicious users can't take control. */
     res = PQexec(conn, "SET search_path = testlibpq3");
     if (PQresultStatus(res) != PGRES_COMMAND_OK)
     {

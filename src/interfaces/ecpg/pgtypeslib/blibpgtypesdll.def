@@ -46,6 +46,7 @@ EXPORTS
     _PGTYPEStimestamp_sub            @ 43
     _PGTYPEStimestamp_sub_interval   @ 44
     _PGTYPEStimestamp_to_asc         @ 45
+    _PGTYPESchar_free                @ 46
 
 ; Aliases for MS compatible names
     PGTYPESdate_dayofweek           = _PGTYPESdate_dayofweek
@@ -93,3 +94,4 @@ EXPORTS
     PGTYPEStimestamp_sub            = _PGTYPEStimestamp_sub
     PGTYPEStimestamp_sub_interval   = _PGTYPEStimestamp_sub_interval
     PGTYPEStimestamp_to_asc         = _PGTYPEStimestamp_to_asc
+    PGTYPESchar_free                = _PGTYPESchar_free

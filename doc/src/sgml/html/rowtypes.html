@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -210,7 +210,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN8134"
+NAME="AEN8140"
 >8.16.2. Constructing Composite Values</A
 ></H2
 ><P
@@ -383,7 +383,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN8172"
+NAME="AEN8178"
 >8.16.4. Modifying Composite Types</A
 ></H2
 ><P
@@ -928,7 +928,7 @@ CLASS="TYPE"
    value, you'd need to write:
 </P><PRE
 CLASS="PROGRAMLISTING"
->INSERT ... VALUES (E'("\\"\\\\")');</PRE
+>INSERT ... VALUES ('("\"\\")');</PRE
 ><P>
    The string-literal processor removes one level of backslashes, so that
    what arrives at the composite-value parser looks like

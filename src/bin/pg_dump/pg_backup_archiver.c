@@ -983,10 +983,12 @@ _disableTriggersIfNecessary(ArchiveHandle *AH, TocEntry *te)
 	_becomeUser(AH, ropt->superuser);
 
 	/*
-	 * Disable them.
+	 * Disable them.  Assume that the table name should be schema-qualified
+	 * (we can't look at PQserverVersion, since we might not have any
+	 * connection; and anyway we don't promise our output will load pre-7.3).
 	 */
 	ahprintf(AH, "ALTER TABLE %s DISABLE TRIGGER ALL;\n\n",
-			 fmtQualifiedId(PQserverVersion(AH->connection),
+			 fmtQualifiedId(70300,
 							te->namespace,
 							te->tag));
 }
@@ -1011,10 +1013,10 @@ _enableTriggersIfNecessary(ArchiveHandle *AH, TocEntry *te)
 	_becomeUser(AH, ropt->superuser);
 
 	/*
-	 * Enable them.
+	 * Enable them.  As above, force schema qualification.
 	 */
 	ahprintf(AH, "ALTER TABLE %s ENABLE TRIGGER ALL;\n\n",
-			 fmtQualifiedId(PQserverVersion(AH->connection),
+			 fmtQualifiedId(70300,
 							te->namespace,
 							te->tag));
 }
@@ -1784,8 +1786,11 @@ warn_or_exit_horribly(ArchiveHandle *AH,
 	{
 		write_msg(modulename, "Error from TOC entry %d; %u %u %s %s %s\n",
 				  AH->currentTE->dumpId,
-			 AH->currentTE->catalogId.tableoid, AH->currentTE->catalogId.oid,
-			  AH->currentTE->desc, AH->currentTE->tag, AH->currentTE->owner);
+				  AH->currentTE->catalogId.tableoid,
+				  AH->currentTE->catalogId.oid,
+				  AH->currentTE->desc ? AH->currentTE->desc : "(no desc)",
+				  AH->currentTE->tag ? AH->currentTE->tag : "(no tag)",
+				  AH->currentTE->owner ? AH->currentTE->owner : "(no owner)");
 	}
 	AH->lastErrorStage = AH->stage;
 	AH->lastErrorTE = AH->currentTE;
@@ -4512,16 +4517,24 @@ identify_locking_dependencies(ArchiveHandle *AH, TocEntry *te)
 	int			nlockids;
 	int			i;
 
+	/*
+	 * We only care about this for POST_DATA items.  PRE_DATA items are not
+	 * run in parallel, and DATA items are all independent by assumption.
+	 */
+	if (te->section != SECTION_POST_DATA)
+		return;
+
 	/* Quick exit if no dependencies at all */
 	if (te->nDeps == 0)
 		return;
 
-	/* Exit if this entry doesn't need exclusive lock on other objects */
-	if (!(strcmp(te->desc, "CONSTRAINT") == 0 ||
-		  strcmp(te->desc, "CHECK CONSTRAINT") == 0 ||
-		  strcmp(te->desc, "FK CONSTRAINT") == 0 ||
-		  strcmp(te->desc, "RULE") == 0 ||
-		  strcmp(te->desc, "TRIGGER") == 0))
+	/*
+	 * Most POST_DATA items are ALTER TABLEs or some moral equivalent of that,
+	 * and hence require exclusive lock.  However, we know that CREATE INDEX
+	 * does not.  (Maybe someday index-creating CONSTRAINTs will fall in that
+	 * category too ... but today is not that day.)
+	 */
+	if (strcmp(te->desc, "INDEX") == 0)
 		return;
 
 	/*

@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -150,7 +150,7 @@ CLASS="TYPE"
 CLASS="QUOTE"
 >"non-printable"</SPAN
 >
-    octets (usually, octets outside the range 32 to 126).
+    octets (usually, octets outside the decimal range 32 to 126).
     Character strings disallow zero octets, and also disallow any
     other octet values and sequences of octet values that are invalid
     according to the database's selected character set encoding.
@@ -167,17 +167,18 @@ CLASS="QUOTE"
 >    The <TT
 CLASS="TYPE"
 >bytea</TT
-> type supports two external formats for
-    input and output: <SPAN
+> type supports two
+    formats for input and output: <SPAN
+CLASS="QUOTE"
+>"hex"</SPAN
+> format
+    and <SPAN
 CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 >'s historical
     <SPAN
 CLASS="QUOTE"
 >"escape"</SPAN
-> format, and <SPAN
-CLASS="QUOTE"
->"hex"</SPAN
 > format.  Both
     of these are always accepted on input.  The output format depends
     on the configuration parameter <A
@@ -215,7 +216,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN5777"
+NAME="AEN5791"
 >8.4.1. <TT
 CLASS="TYPE"
 >bytea</TT
@@ -232,9 +233,12 @@ CLASS="LITERAL"
 >\x</TT
 > (to distinguish it
     from the escape format).  In some contexts, the initial backslash may
-    need to be escaped by doubling it, in the same cases in which backslashes
-    have to be doubled in escape format; details appear below.
-    The hexadecimal digits can
+    need to be escaped by doubling it
+    (see <A
+HREF="sql-syntax-lexical.html#SQL-SYNTAX-STRINGS"
+>Section 4.1.2.1</A
+>).
+    For input, the hexadecimal digits can
     be either upper or lower case, and whitespace is permitted between
     digit pairs (but not within a digit pair nor in the starting
     <TT
@@ -249,7 +253,7 @@ CLASS="LITERAL"
 >    Example:
 </P><PRE
 CLASS="PROGRAMLISTING"
->SELECT E'\\xDEADBEEF';</PRE
+>SELECT '\xDEADBEEF';</PRE
 ><P>
    </P
 ></DIV
@@ -258,7 +262,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN5786"
+NAME="AEN5801"
 >8.4.2. <TT
 CLASS="TYPE"
 >bytea</TT
@@ -285,7 +289,7 @@ CLASS="TYPE"
     convenient.  But in practice it is usually confusing because it
     fuzzes up the distinction between binary strings and character
     strings, and also the particular escape mechanism that was chosen is
-    somewhat unwieldy.  So this format should probably be avoided
+    somewhat unwieldy.  Therefore, this format should probably be avoided
     for most new applications.
    </P
 ><P
@@ -309,10 +313,8 @@ CLASS="EMPHASIS"
 ></SPAN
 > be escaped.  In
     general, to escape an octet, convert it into its three-digit
-    octal value and precede it
-    by a backslash (or two backslashes, if writing the value as a
-    literal using escape string syntax).
-    Backslash itself (octet value 92) can alternatively be represented by
+    octal value and precede it by a backslash.
+    Backslash itself (octet decimal value 92) can alternatively be represented by
     double backslashes.
     <A
 HREF="datatype-binary.html#DATATYPE-BINARY-SQLESC"
@@ -347,7 +349,7 @@ CLASS="CALSTABLE"
 ><TH
 >Example</TH
 ><TH
->Output Representation</TH
+>Hex Representation</TH
 ></TR
 ></THEAD
 ><TBODY
@@ -359,17 +361,17 @@ CLASS="CALSTABLE"
 ><TD
 ><TT
 CLASS="LITERAL"
->E'\\000'</TT
+>'\000'</TT
 ></TD
 ><TD
 ><TT
 CLASS="LITERAL"
->SELECT E'\\000'::bytea;</TT
+>SELECT '\000'::bytea;</TT
 ></TD
 ><TD
 ><TT
 CLASS="LITERAL"
->\000</TT
+>\x00</TT
 ></TD
 ></TR
 ><TR
@@ -383,17 +385,17 @@ CLASS="LITERAL"
 >''''</TT
 > or <TT
 CLASS="LITERAL"
->E'\\047'</TT
+>'\047'</TT
 ></TD
 ><TD
 ><TT
 CLASS="LITERAL"
->SELECT E'\''::bytea;</TT
+>SELECT ''''::bytea;</TT
 ></TD
 ><TD
 ><TT
 CLASS="LITERAL"
->'</TT
+>\x27</TT
 ></TD
 ></TR
 ><TR
@@ -404,20 +406,20 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->E'\\\\'</TT
+>'\\'</TT
 > or <TT
 CLASS="LITERAL"
->E'\\134'</TT
+>'\134'</TT
 ></TD
 ><TD
 ><TT
 CLASS="LITERAL"
->SELECT E'\\\\'::bytea;</TT
+>SELECT '\\'::bytea;</TT
 ></TD
 ><TD
 ><TT
 CLASS="LITERAL"
->\\</TT
+>\x5c</TT
 ></TD
 ></TR
 ><TR
@@ -431,7 +433,7 @@ CLASS="QUOTE"
 ><TD
 ><TT
 CLASS="LITERAL"
->E'\\<TT
+>'\<TT
 CLASS="REPLACEABLE"
 ><I
 >xxx'</I
@@ -441,12 +443,12 @@ CLASS="REPLACEABLE"
 ><TD
 ><TT
 CLASS="LITERAL"
->SELECT E'\\001'::bytea;</TT
+>SELECT '\001'::bytea;</TT
 ></TD
 ><TD
 ><TT
 CLASS="LITERAL"
->\001</TT
+>\x01</TT
 ></TD
 ></TR
 ></TBODY
@@ -461,78 +463,80 @@ CLASS="EMPHASIS"
 ></SPAN
 > octets
     varies depending on locale settings. In some instances you can get away
-    with leaving them unescaped. Note that the result in each of the examples
-    in <A
-HREF="datatype-binary.html#DATATYPE-BINARY-SQLESC"
->Table 8-7</A
-> was exactly one octet in
-    length, even though the output representation is sometimes
-    more than one character.
+    with leaving them unescaped.
    </P
 ><P
->    The reason multiple backslashes are required, as shown
+>    The reason that single quotes must be doubled, as shown
     in <A
 HREF="datatype-binary.html#DATATYPE-BINARY-SQLESC"
 >Table 8-7</A
->, is that an input
-    string written as a string literal must pass through two parse
-    phases in the <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> server.
-    The first backslash of each pair is interpreted as an escape
-    character by the string-literal parser (assuming escape string
-    syntax is used) and is therefore consumed, leaving the second backslash of the
-    pair.  (Dollar-quoted strings can be used to avoid this level
-    of escaping.)  The remaining backslash is then recognized by the
-    <TT
+>, is that this
+    is true for any string literal in a SQL command.  The generic
+    string-literal parser consumes the outermost single quotes
+    and reduces any pair of single quotes to one data character.
+    What the <TT
 CLASS="TYPE"
 >bytea</TT
-> input function as starting either a three
-    digit octal value or escaping another backslash.  For example,
-    a string literal passed to the server as <TT
-CLASS="LITERAL"
->E'\\001'</TT
->
-    becomes <TT
-CLASS="LITERAL"
->\001</TT
-> after passing through the
-    escape string parser. The <TT
-CLASS="LITERAL"
->\001</TT
-> is then sent
-    to the <TT
+> input function sees is just one
+    single quote, which it treats as a plain data character.
+    However, the <TT
 CLASS="TYPE"
 >bytea</TT
-> input function, where it is converted
-    to a single octet with a decimal value of 1.  Note that the
-    single-quote character is not treated specially by <TT
-CLASS="TYPE"
->bytea</TT
->,
-    so it follows the normal rules for string literals.  (See also
+> input function treats
+    backslashes as special, and the other behaviors shown in
     <A
+HREF="datatype-binary.html#DATATYPE-BINARY-SQLESC"
+>Table 8-7</A
+> are implemented by
+    that function.
+   </P
+><P
+>    In some contexts, backslashes must be doubled compared to what is
+    shown above, because the generic string-literal parser will also
+    reduce pairs of backslashes to one data character;
+    see <A
 HREF="sql-syntax-lexical.html#SQL-SYNTAX-STRINGS"
 >Section 4.1.2.1</A
->.)
+>.
    </P
 ><P
 >    <TT
 CLASS="TYPE"
 >Bytea</TT
-> octets are sometimes escaped when output. In general, each
+> octets are output in <TT
+CLASS="LITERAL"
+>hex</TT
+>
+    format by default.  If you change <A
+HREF="runtime-config-client.html#GUC-BYTEA-OUTPUT"
+>bytea_output</A
+>
+    to <TT
+CLASS="LITERAL"
+>escape</TT
+>,
     <SPAN
 CLASS="QUOTE"
 >"non-printable"</SPAN
-> octet is converted into
-    its equivalent three-digit octal value and preceded by one backslash.
+> octets are converted to their
+    equivalent three-digit octal value and preceded by one backslash.
     Most <SPAN
 CLASS="QUOTE"
 >"printable"</SPAN
-> octets are represented by their standard
-    representation in the client character set. The octet with decimal
-    value 92 (backslash) is doubled in the output.
+> octets are output by their standard
+    representation in the client character set, e.g.:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SET bytea_output = 'escape';
+
+SELECT 'abc \153\154\155 \052\251\124'::bytea;
+     bytea
+----------------
+ abc klm *\251T</PRE
+><P>
+
+    The octet with decimal value 92 (backslash) is doubled in the output.
     Details are in <A
 HREF="datatype-binary.html#DATATYPE-BINARY-RESESC"
 >Table 8-8</A
@@ -581,7 +585,7 @@ CLASS="LITERAL"
 ><TD
 ><TT
 CLASS="LITERAL"
->SELECT E'\\134'::bytea;</TT
+>SELECT '\134'::bytea;</TT
 ></TD
 ><TD
 ><TT
@@ -610,7 +614,7 @@ CLASS="REPLACEABLE"
 ><TD
 ><TT
 CLASS="LITERAL"
->SELECT E'\\001'::bytea;</TT
+>SELECT '\001'::bytea;</TT
 ></TD
 ><TD
 ><TT
@@ -631,7 +635,7 @@ CLASS="QUOTE"
 ><TD
 ><TT
 CLASS="LITERAL"
->SELECT E'\\176'::bytea;</TT
+>SELECT '\176'::bytea;</TT
 ></TD
 ><TD
 ><TT

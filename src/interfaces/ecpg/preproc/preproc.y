@@ -1072,8 +1072,8 @@ add_typedef(char *name, char *dimension, char *length, enum ECPGttype type_enum,
 %type <str> offset_clause
 %type <str> select_limit_value
 %type <str> select_offset_value
-%type <str> opt_select_fetch_first_value
-%type <str> select_offset_value2
+%type <str> select_fetch_first_value
+%type <str> I_or_F_const
 %type <str> row_or_rows
 %type <str> first_or_next
 %type <str> group_clause
@@ -9476,9 +9476,13 @@ RETURNING target_list opt_ecpg_into
 		mmerror(PARSE_ERROR, ET_WARNING, "no longer supported LIMIT #,# syntax passed to server");
 		$$ = cat_str(4, mm_strdup("limit"), $2, mm_strdup(","), $4);
 	}
-|  FETCH first_or_next opt_select_fetch_first_value row_or_rows ONLY
+|  FETCH first_or_next select_fetch_first_value row_or_rows ONLY
  { 
  $$ = cat_str(5,mm_strdup("fetch"),$2,$3,$4,mm_strdup("only"));
+}
+|  FETCH first_or_next row_or_rows ONLY
+ { 
+ $$ = cat_str(4,mm_strdup("fetch"),$2,$3,mm_strdup("only"));
 }
 ;
 
@@ -9488,7 +9492,7 @@ RETURNING target_list opt_ecpg_into
  { 
  $$ = cat_str(2,mm_strdup("offset"),$2);
 }
-|  OFFSET select_offset_value2 row_or_rows
+|  OFFSET select_fetch_first_value row_or_rows
  { 
  $$ = cat_str(3,mm_strdup("offset"),$2,$3);
 }
@@ -9515,23 +9519,28 @@ RETURNING target_list opt_ecpg_into
 ;
 
 
- opt_select_fetch_first_value:
- SignedIconst
+ select_fetch_first_value:
+ c_expr
  { 
  $$ = $1;
 }
-|  '(' a_expr ')'
+|  '+' I_or_F_const
  { 
- $$ = cat_str(3,mm_strdup("("),$2,mm_strdup(")"));
+ $$ = cat_str(2,mm_strdup("+"),$2);
 }
-| 
+|  '-' I_or_F_const
  { 
- $$=EMPTY; }
+ $$ = cat_str(2,mm_strdup("-"),$2);
+}
 ;
 
 
- select_offset_value2:
- c_expr
+ I_or_F_const:
+ Iconst
+ { 
+ $$ = $1;
+}
+|  ecpg_fconst
  { 
  $$ = $1;
 }

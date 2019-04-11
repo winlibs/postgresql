@@ -2,12 +2,12 @@
 .\"     Title: CREATE TYPE
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2018
-.\"    Manual: PostgreSQL 9.6.9 Documentation
-.\"    Source: PostgreSQL 9.6.9
+.\"      Date: 2019
+.\"    Manual: PostgreSQL 9.6.12 Documentation
+.\"    Source: PostgreSQL 9.6.12
 .\"  Language: English
 .\"
-.TH "CREATE TYPE" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
+.TH "CREATE TYPE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -101,11 +101,12 @@ privilege on all attribute types\&.
 The second form of
 \fBCREATE TYPE\fR
 creates an enumerated (enum) type, as described in
-Section 8.7, \(lqEnumerated Types\(rq, in the documentation\&. Enum types take a list of one or more quoted labels, each of which must be less than
+Section 8.7, \(lqEnumerated Types\(rq, in the documentation\&. Enum types take a list of quoted labels, each of which must be less than
 NAMEDATALEN
 bytes long (64 bytes in a standard
 PostgreSQL
-build)\&.
+build)\&. (It is possible to create an enumerated type with zero labels, but such a type cannot be used to hold values before at least one label is added using
+ALTER TYPE (\fBALTER_TYPE\fR(7))\&.)
 .SS "Range Types"
 .PP
 The third form of

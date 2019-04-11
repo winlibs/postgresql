@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Additional Supplied Modules"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -107,7 +107,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN186609"
+NAME="AEN139882"
 >F.28.1. Overview</A
 ></H2
 ><PRE
@@ -207,7 +207,7 @@ CLASS="TYPE"
 ><TD
 ><TT
 CLASS="STRUCTFIELD"
->lock_type</TT
+>modes</TT
 ></TD
 ><TD
 ><TT
@@ -312,18 +312,18 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN186681"
+NAME="AEN139954"
 >F.28.2. Sample Output</A
 ></H2
 ><PRE
 CLASS="SCREEN"
->test=# SELECT * FROM pgrowlocks('t1');
- locked_row | lock_type | locker | multi |   xids    |     pids
-------------+-----------+--------+-------+-----------+---------------
-      (0,1) | Shared    |     19 | t     | {804,805} | {29066,29068}
-      (0,2) | Shared    |     19 | t     | {804,805} | {29066,29068}
-      (0,3) | Exclusive |    804 | f     | {804}     | {29066}
-      (0,4) | Exclusive |    804 | f     | {804}     | {29066}
+>=# SELECT * FROM pgrowlocks('t1');
+ locked_row | locker | multi | xids  |     modes      |  pids
+------------+--------+-------+-------+----------------+--------
+ (0,1)      |    609 | f     | {609} | {"For Share"}  | {3161}
+ (0,2)      |    609 | f     | {609} | {"For Share"}  | {3161}
+ (0,3)      |    607 | f     | {607} | {"For Update"} | {3107}
+ (0,4)      |    607 | f     | {607} | {"For Update"} | {3107}
 (4 rows)</PRE
 ></DIV
 ><DIV
@@ -331,7 +331,7 @@ CLASS="SECT2"
 ><H2
 CLASS="SECT2"
 ><A
-NAME="AEN186684"
+NAME="AEN139957"
 >F.28.3. Author</A
 ></H2
 ><P

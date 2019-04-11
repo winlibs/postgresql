@@ -2,12 +2,12 @@
 .\"     Title: ALTER LARGE OBJECT
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
-.\"      Date: 2018
-.\"    Manual: PostgreSQL 9.6.9 Documentation
-.\"    Source: PostgreSQL 9.6.9
+.\"      Date: 2019
+.\"    Manual: PostgreSQL 9.6.12 Documentation
+.\"    Source: PostgreSQL 9.6.12
 .\"  Language: English
 .\"
-.TH "ALTER LARGE OBJECT" "7" "2018" "PostgreSQL 9.6.9" "PostgreSQL 9.6.9 Documentation"
+.TH "ALTER LARGE OBJECT" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,8 +37,10 @@ ALTER LARGE OBJECT \fIlarge_object_oid\fR OWNER TO { \fInew_owner\fR | CURRENT_U
 .SH "DESCRIPTION"
 .PP
 \fBALTER LARGE OBJECT\fR
-changes the definition of a large object\&. The only functionality is to assign a new owner\&. You must be superuser or owner of the large object to use
-\fBALTER LARGE OBJECT\fR\&.
+changes the definition of a large object\&.
+.PP
+You must own the large object to use
+\fBALTER LARGE OBJECT\fR\&. To alter the owner, you must also be a direct or indirect member of the new owning role\&. (However, a superuser can alter any large object anyway\&.) Currently, the only functionality is to assign a new owner, so both restrictions always apply\&.
 .SH "PARAMETERS"
 .PP
 \fIlarge_object_oid\fR

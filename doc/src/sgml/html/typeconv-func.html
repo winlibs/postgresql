@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Type Conversion"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -151,6 +151,33 @@ function might have effective argument types identical to some non-variadic
 function.  In that case the function appearing earlier in the search path is
 used, or if the two functions are in the same schema, the non-variadic one is
 preferred.</P
+><P
+>This creates a security hazard when calling, via qualified name
+  <A
+NAME="FUNC-QUALIFIED-SECURITY"
+HREF="#FTN.FUNC-QUALIFIED-SECURITY"
+><SPAN
+CLASS="footnote"
+>[1]</SPAN
+></A
+>,
+a variadic function found in a schema that permits untrusted users to create
+objects.  A malicious user can take control and execute arbitrary SQL
+functions as though you executed them.  Substitute a call bearing
+the <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> keyword, which bypasses this hazard.  Calls
+populating <TT
+CLASS="LITERAL"
+>VARIADIC "any"</TT
+> parameters often have no
+equivalent formulation containing the <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> keyword.  To
+issue those calls safely, the function's schema must permit only trusted users
+to create objects.</P
 ></LI
 ><LI
 CLASS="STEP"
@@ -167,6 +194,20 @@ CLASS="QUOTE"
 function call"</SPAN
 > error will result if no better match to the call can be
 found.</P
+><P
+>This creates an availability hazard when calling, via qualified
+name<A
+HREF="typeconv-func.html#FTN.FUNC-QUALIFIED-SECURITY"
+><SPAN
+CLASS="footnote"
+>[1]</SPAN
+></A
+>, any function found in a
+schema that permits untrusted users to create objects.  A malicious user can
+create a function with the name of an existing function, replicating that
+function's parameters and appending novel parameters having default values.
+This precludes new calls to the original function.  To forestall this hazard,
+place functions in schemas that permit only trusted users to create objects.</P
 ></LI
 ></OL
 ></LI
@@ -175,12 +216,21 @@ CLASS="STEP"
 ><P
 >Check for a function accepting exactly the input argument types.
 If one exists (there can be only one exact match in the set of
-functions considered), use it.
-(Cases involving <TT
+functions considered), use it.  Lack of an exact match creates a security
+hazard when calling, via qualified
+name<A
+HREF="typeconv-func.html#FTN.FUNC-QUALIFIED-SECURITY"
+><SPAN
+CLASS="footnote"
+>[1]</SPAN
+></A
+>, a function found in a
+schema that permits untrusted users to create objects.  In such situations,
+cast arguments to force an exact match.  (Cases involving <TT
 CLASS="TYPE"
 >unknown</TT
-> will never find a match at
-this step.)</P
+>
+will never find a match at this step.)</P
 ></LI
 ><LI
 CLASS="STEP"
@@ -198,11 +248,11 @@ CLASS="LITERAL"
 >CAST</TT
 > specification.
   <A
-NAME="AEN25439"
-HREF="#FTN.AEN25439"
+NAME="AEN25475"
+HREF="#FTN.AEN25475"
 ><SPAN
 CLASS="footnote"
->[1]</SPAN
+>[2]</SPAN
 ></A
 ></P
 ></LI
@@ -305,7 +355,7 @@ Some examples follow.</P
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN25465"
+NAME="AEN25501"
 ></A
 ><P
 ><B
@@ -364,11 +414,72 @@ CLASS="SCREEN"
 ><DIV
 CLASS="EXAMPLE"
 ><A
-NAME="AEN25478"
+NAME="AEN25514"
 ></A
 ><P
 ><B
->Example 10-7. Substring Function Type Resolution</B
+>Example 10-7. Variadic Function Resolution</B
+></P
+><P
+></P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION public.variadic_example(VARIADIC numeric[]) RETURNS int
+  LANGUAGE sql AS 'SELECT 1';
+CREATE FUNCTION</PRE
+><P>
+
+This function accepts, but does not require, the VARIADIC keyword.  It
+tolerates both integer and numeric arguments:
+
+</P><PRE
+CLASS="SCREEN"
+>SELECT public.variadic_example(0),
+       public.variadic_example(0.0),
+       public.variadic_example(VARIADIC array[0.0]);
+ variadic_example | variadic_example | variadic_example
+------------------+------------------+------------------
+                1 |                1 |                1
+(1 row)</PRE
+><P>
+
+However, the first and second calls will prefer more-specific functions, if
+available:
+
+</P><PRE
+CLASS="SCREEN"
+>CREATE FUNCTION public.variadic_example(numeric) RETURNS int
+  LANGUAGE sql AS 'SELECT 2';
+CREATE FUNCTION
+
+CREATE FUNCTION public.variadic_example(int) RETURNS int
+  LANGUAGE sql AS 'SELECT 3';
+CREATE FUNCTION
+
+SELECT public.variadic_example(0),
+       public.variadic_example(0.0),
+       public.variadic_example(VARIADIC array[0.0]);
+ variadic_example | variadic_example | variadic_example
+------------------+------------------+------------------
+                3 |                2 |                1
+(1 row)</PRE
+><P>
+
+Given the default configuration and only the first function existing, the
+first and second calls are insecure.  Any user could intercept them by
+creating the second or third function.  By matching the argument type exactly
+and using the <TT
+CLASS="LITERAL"
+>VARIADIC</TT
+> keyword, the third call is secure.</P
+></DIV
+><DIV
+CLASS="EXAMPLE"
+><A
+NAME="AEN25521"
+></A
+><P
+><B
+>Example 10-8. Substring Function Type Resolution</B
 ></P
 ><P
 >There are several <CODE
@@ -499,11 +610,39 @@ ALIGN="LEFT"
 VALIGN="TOP"
 WIDTH="5%"
 ><A
-NAME="FTN.AEN25439"
-HREF="typeconv-func.html#AEN25439"
+NAME="FTN.FUNC-QUALIFIED-SECURITY"
+HREF="typeconv-func.html#FUNC-QUALIFIED-SECURITY"
 ><SPAN
 CLASS="footnote"
 >[1]</SPAN
+></A
+></TD
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="95%"
+><P
+>    The hazard does not arise with a non-schema-qualified name, because a
+    search path containing schemas that permit untrusted users to create
+    objects is not a <A
+HREF="ddl-schemas.html#DDL-SCHEMAS-PATTERNS"
+>secure schema usage
+    pattern</A
+>.
+   </P
+></TD
+></TR
+><TR
+><TD
+ALIGN="LEFT"
+VALIGN="TOP"
+WIDTH="5%"
+><A
+NAME="FTN.AEN25475"
+HREF="typeconv-func.html#AEN25475"
+><SPAN
+CLASS="footnote"
+>[2]</SPAN
 ></A
 ></TD
 ><TD

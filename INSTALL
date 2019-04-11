@@ -993,9 +993,9 @@ psql testdb
 
    If you have installation problems on a platform that is known to be
    supported according to recent build farm results, please report it to
-   <pgsql-bugs@postgresql.org>. If you are interested in porting
-   PostgreSQL to a new platform, <pgsql-hackers@postgresql.org> is the
-   appropriate place to discuss that.
+   <pgsql-bugs@lists.postgresql.org>. If you are interested in porting
+   PostgreSQL to a new platform, <pgsql-hackers@lists.postgresql.org> is
+   the appropriate place to discuss that.
      __________________________________________________________________
 
                            Platform-specific Notes
@@ -1299,6 +1299,36 @@ HP-UX
    differences in the geometry tests, which vary depending on which
    compiler and math library versions you use. Any other error is cause
    for suspicion.
+     __________________________________________________________________
+
+macOS
+
+   On recent macOS releases, it's necessary to embed the "sysroot" path in
+   the include switches used to find some system header files. This
+   results in the outputs of the configure script varying depending on
+   which SDK version was used during configure. That shouldn't pose any
+   problem in simple scenarios, but if you are trying to do something like
+   building an extension on a different machine than the server code was
+   built on, you may need to force use of a different sysroot path. To do
+   that, set PG_SYSROOT, for example
+make PG_SYSROOT=/desired/path all
+
+   To find out the appropriate path on your machine, run
+xcodebuild -version -sdk macosx Path
+
+   Note that building an extension using a different sysroot version than
+   was used to build the core server is not really recommended; in the
+   worst case it could result in hard-to-debug ABI inconsistencies.
+
+   You can also select a non-default sysroot path when configuring, by
+   specifying PG_SYSROOT to configure:
+./configure ... PG_SYSROOT=/desired/path
+
+   macOS's "System Integrity Protection" (SIP) feature breaks make check,
+   because it prevents passing the needed setting of DYLD_LIBRARY_PATH
+   down to the executables being tested. You can work around that by doing
+   make install before make check. Most Postgres developers just turn off
+   SIP, though.
      __________________________________________________________________
 
 MinGW/Native Windows

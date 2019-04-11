@@ -10,6 +10,8 @@ use Cwd;
 use File::Basename;
 use File::Copy;
 use File::Find ();
+use File::Spec;
+BEGIN  { use lib File::Spec->rel2abs(dirname(__FILE__)); }
 
 use Install qw(Install);
 
@@ -20,8 +22,8 @@ chdir "../../.." if (-d "../../../src/tools/msvc");
 my $topdir         = getcwd();
 my $tmp_installdir = "$topdir/tmp_install";
 
-require 'src/tools/msvc/config_default.pl';
-require 'src/tools/msvc/config.pl' if (-f 'src/tools/msvc/config.pl');
+do './src/tools/msvc/config_default.pl';
+do './src/tools/msvc/config.pl' if (-f 'src/tools/msvc/config.pl');
 
 # buildenv.pl is for specifying the build environment settings
 # it should contain lines like:
@@ -29,7 +31,7 @@ require 'src/tools/msvc/config.pl' if (-f 'src/tools/msvc/config.pl');
 
 if (-e "src/tools/msvc/buildenv.pl")
 {
-	require "src/tools/msvc/buildenv.pl";
+	do "./src/tools/msvc/buildenv.pl";
 }
 
 my $what = shift || "";

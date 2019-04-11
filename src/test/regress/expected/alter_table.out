@@ -342,6 +342,28 @@ ALTER TABLE IF EXISTS constraint_not_exist RENAME CONSTRAINT con3 TO con3foo; --
 NOTICE:  relation "constraint_not_exist" does not exist, skipping
 ALTER TABLE IF EXISTS constraint_rename_test ADD CONSTRAINT con4 UNIQUE (a);
 NOTICE:  relation "constraint_rename_test" does not exist, skipping
+-- renaming constraints with cache reset of target relation
+CREATE TABLE constraint_rename_cache (a int,
+  CONSTRAINT chk_a CHECK (a > 0),
+  PRIMARY KEY (a));
+ALTER TABLE constraint_rename_cache
+  RENAME CONSTRAINT chk_a TO chk_a_new;
+ALTER TABLE constraint_rename_cache
+  RENAME CONSTRAINT constraint_rename_cache_pkey TO constraint_rename_pkey_new;
+CREATE TABLE like_constraint_rename_cache
+  (LIKE constraint_rename_cache INCLUDING ALL);
+\d like_constraint_rename_cache
+Table "public.like_constraint_rename_cache"
+ Column |  Type   | Modifiers 
+--------+---------+-----------
+ a      | integer | not null
+Indexes:
+    "like_constraint_rename_cache_pkey" PRIMARY KEY, btree (a)
+Check constraints:
+    "chk_a_new" CHECK (a > 0)
+
+DROP TABLE constraint_rename_cache;
+DROP TABLE like_constraint_rename_cache;
 -- FOREIGN KEY CONSTRAINT adding TEST
 CREATE TABLE tmp2 (a int primary key);
 CREATE TABLE tmp3 (a int, b int);
@@ -2580,11 +2602,11 @@ drop cascades to operator family alter2.ctype_hash_ops for access method hash
 drop cascades to type alter2.ctype
 drop cascades to function alter2.same(alter2.ctype,alter2.ctype)
 drop cascades to operator alter2.=(alter2.ctype,alter2.ctype)
-drop cascades to conversion ascii_to_utf8
-drop cascades to text search parser prs
-drop cascades to text search configuration cfg
-drop cascades to text search template tmpl
-drop cascades to text search dictionary dict
+drop cascades to conversion alter2.ascii_to_utf8
+drop cascades to text search parser alter2.prs
+drop cascades to text search configuration alter2.cfg
+drop cascades to text search template alter2.tmpl
+drop cascades to text search dictionary alter2.dict
 --
 -- composite types
 --
@@ -3131,6 +3153,9 @@ Table "public.test_add_column"
 ALTER TABLE test_add_column
 	ADD COLUMN c2 integer; -- fail because c2 already exists
 ERROR:  column "c2" of relation "test_add_column" already exists
+ALTER TABLE ONLY test_add_column
+	ADD COLUMN c2 integer; -- fail because c2 already exists
+ERROR:  column "c2" of relation "test_add_column" already exists
 \d test_add_column
 Table "public.test_add_column"
  Column |  Type   | Modifiers 
@@ -3139,6 +3164,9 @@ Table "public.test_add_column"
  c2     | integer | 
 
 ALTER TABLE test_add_column
+	ADD COLUMN IF NOT EXISTS c2 integer; -- skipping because c2 already exists
+NOTICE:  column "c2" of relation "test_add_column" already exists, skipping
+ALTER TABLE ONLY test_add_column
 	ADD COLUMN IF NOT EXISTS c2 integer; -- skipping because c2 already exists
 NOTICE:  column "c2" of relation "test_add_column" already exists, skipping
 \d test_add_column

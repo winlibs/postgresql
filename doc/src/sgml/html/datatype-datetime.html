@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Types"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -115,7 +115,7 @@ HREF="functions-datetime.html"
     Dates are counted according to the Gregorian calendar, even in
     years before that calendar was introduced (see <A
 HREF="datetime-units-history.html"
->Section B.4</A
+>Section B.5</A
 > for more information).
    </P
 ><DIV
@@ -612,7 +612,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN6076"
+NAME="AEN6091"
 >8.5.1.1. Dates</A
 ></H3
 ><P
@@ -787,7 +787,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN6149"
+NAME="AEN6164"
 >8.5.1.2. Times</A
 ></H3
 ><P
@@ -1091,7 +1091,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN6269"
+NAME="AEN6284"
 >8.5.1.3. Time Stamps</A
 ></H3
 ><P
@@ -1282,7 +1282,7 @@ CLASS="SECT3"
 ><H3
 CLASS="SECT3"
 ><A
-NAME="AEN6319"
+NAME="AEN6334"
 >8.5.1.4. Special Values</A
 ></H3
 ><P
@@ -1983,7 +1983,7 @@ CLASS="PRODUCTNAME"
 >PostgreSQL</SPAN
 > uses the widely-used IANA
         time zone data for this purpose, so the same time zone
-        names are also recognized by much other software.
+        names are also recognized by other software.
        </P
 ></LI
 ><LI
@@ -2200,7 +2200,7 @@ CLASS="FILENAME"
      of the installation directory
      (see <A
 HREF="datetime-config-files.html"
->Section B.3</A
+>Section B.4</A
 >).
     </P
 ><P
@@ -2700,30 +2700,6 @@ CLASS="PRODUCTNAME"
      to each field if any field is negative.
     </P
 ><P
->     Internally <TT
-CLASS="TYPE"
->interval</TT
-> values are stored as months, days,
-     and seconds. This is done because the number of days in a month
-     varies, and a day can have 23 or 25 hours if a daylight savings
-     time adjustment is involved.  The months and days fields are integers
-     while the seconds field can store fractions.  Because intervals are
-     usually created from constant strings or <TT
-CLASS="TYPE"
->timestamp</TT
-> subtraction,
-     this storage method works well in most cases. Functions
-     <CODE
-CLASS="FUNCTION"
->justify_days</CODE
-> and <CODE
-CLASS="FUNCTION"
->justify_hours</CODE
-> are
-     available for adjusting days and hours that overflow their normal
-     ranges.
-    </P
-><P
 >     In the verbose input format, and in some fields of the more compact
      input formats, field values can have fractional parts; for example
      <TT
@@ -2813,6 +2789,45 @@ CLASS="QUOTE"
 ></TBODY
 ></TABLE
 ></DIV
+><P
+>     Internally <TT
+CLASS="TYPE"
+>interval</TT
+> values are stored as months, days,
+     and seconds. This is done because the number of days in a month
+     varies, and a day can have 23 or 25 hours if a daylight savings
+     time adjustment is involved.  The months and days fields are integers
+     while the seconds field can store fractions.  Because intervals are
+     usually created from constant strings or <TT
+CLASS="TYPE"
+>timestamp</TT
+> subtraction,
+     this storage method works well in most cases, but can cause unexpected
+     results:
+
+</P><PRE
+CLASS="PROGRAMLISTING"
+>SELECT EXTRACT(hours from '80 minutes'::interval);
+ date_part
+-----------
+         1
+
+SELECT EXTRACT(days from '80 hours'::interval);
+ date_part
+-----------
+         0</PRE
+><P>
+
+     Functions <CODE
+CLASS="FUNCTION"
+>justify_days</CODE
+> and
+     <CODE
+CLASS="FUNCTION"
+>justify_hours</CODE
+> are available for adjusting days
+     and hours that overflow their normal ranges.
+    </P
 ></DIV
 ><DIV
 CLASS="SECT2"

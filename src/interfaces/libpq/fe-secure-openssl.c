@@ -1570,8 +1570,6 @@ PQsslAttribute(PGconn *conn, const char *attribute_name)
 #ifndef HAVE_BIO_GET_DATA
 #define BIO_get_data(bio) (bio->ptr)
 #define BIO_set_data(bio, data) (bio->ptr = data)
-#else
-# include <openssl/bio.h>
 #endif
 
 static BIO_METHOD *my_bio_methods;

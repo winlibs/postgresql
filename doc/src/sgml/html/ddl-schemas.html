@@ -9,7 +9,7 @@ CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
 REV="MADE"
 HREF="mailto:pgsql-docs@postgresql.org"><LINK
 REL="HOME"
-TITLE="PostgreSQL 9.6.9 Documentation"
+TITLE="PostgreSQL 9.6.12 Documentation"
 HREF="index.html"><LINK
 REL="UP"
 TITLE="Data Definition"
@@ -26,7 +26,7 @@ HREF="stylesheet.css"><META
 HTTP-EQUIV="Content-Type"
 CONTENT="text/html; charset=ISO-8859-1"><META
 NAME="creation"
-CONTENT="2018-05-07T21:07:37"></HEAD
+CONTENT="2019-02-11T21:31:11"></HEAD
 ><BODY
 CLASS="SECT1"
 ><DIV
@@ -44,7 +44,7 @@ ALIGN="center"
 VALIGN="bottom"
 ><A
 HREF="index.html"
->PostgreSQL 9.6.9 Documentation</A
+>PostgreSQL 9.6.12 Documentation</A
 ></TH
 ></TR
 ><TR
@@ -691,12 +691,18 @@ CLASS="REPLACEABLE"
        search_path = "$user"</TT
 >.  Everyone retains the ability to
        create objects in the public schema, but only qualified names will
-       choose those objects.  A user holding the <TT
+       choose those objects.  While qualified table references are fine, calls
+       to functions in the public schema <A
+HREF="typeconv-func.html"
+>will be
+       unsafe or unreliable</A
+>.  Also, a user holding
+       the <TT
 CLASS="LITERAL"
 >CREATEROLE</TT
->
-       privilege can undo this setting and issue arbitrary queries under the
-       identity of users relying on the setting.  If you
+> privilege can undo this setting and
+       issue arbitrary queries under the identity of users relying on the
+       setting.  If you create functions or extensions in the public schema or
        grant <TT
 CLASS="LITERAL"
 >CREATEROLE</TT
@@ -718,11 +724,16 @@ CLASS="FILENAME"
 ></A
 >.
        The ensuing user experience matches the previous pattern.  In addition
-       to that pattern's implications for <TT
+       to that pattern's implications for functions
+       and <TT
 CLASS="LITERAL"
 >CREATEROLE</TT
->, this
-       trusts database owners the same way.  If you assign
+>, this trusts database owners
+       like <TT
+CLASS="LITERAL"
+>CREATEROLE</TT
+>.  If you create functions or
+       extensions in the public schema or assign
        the <TT
 CLASS="LITERAL"
 >CREATEROLE</TT

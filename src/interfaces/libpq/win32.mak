@@ -16,7 +16,7 @@ CPU=i386
 !MESSAGE Building the Win32 static library...
 !MESSAGE
 !ELSEIF ("$(CPU)" == "IA64")||("$(CPU)" == "AMD64")
-ADD_DEFINES=/Wp64 /GS
+ADD_DEFINES=/GS
 ADD_SECLIB=bufferoverflowU.lib
 !MESSAGE Building the Win64 static library...
 !MESSAGE
@@ -26,13 +26,19 @@ ADD_SECLIB=bufferoverflowU.lib
 !ERROR Make aborted.
 !ENDIF
 
+!IFDEF NOCFG
+GUARDOPT=
+!ELSE
+GUARDOPT=/guard:cf 
+!ENDIF
+
 !IFDEF DEBUG
 OPT=/Od /Zi /MDd
 LOPT=/DEBUG
 DEBUGDEF=/D _DEBUG
-OUTFILENAME=libpqd
+OUTFILENAME=libpq_debug
 !ELSE
-OPT=/O2 /MD
+OPT=$(GUARDOPT) /Zc:inline /fp:precise /Gw /Ox /Zi /MD /D _MBCS
 LOPT=
 DEBUGDEF=/D NDEBUG
 OUTFILENAME=libpq
@@ -116,6 +122,7 @@ CLEAN :
 	-@erase "$(INTDIR)\system.obj"
 	-@erase "$(INTDIR)\win32error.obj"
 	-@erase "$(INTDIR)\win32setlocale.obj"
+	-@erase "$(INTDIR)\fe_memutils.obj"
 	-@erase "$(OUTDIR)\$(OUTFILENAME).lib"
 	-@erase "$(OUTDIR)\$(OUTFILENAME)dll.lib"
 	-@erase "$(OUTDIR)\libpq.res"
@@ -190,15 +197,21 @@ pg_config_paths.h: win32.mak
 "$(OUTDIR)" :
     if not exist "$(OUTDIR)/$(NULL)" mkdir "$(OUTDIR)"
 
-CPP_PROJ=/nologo /W3 /EHsc $(OPT) /I "..\..\include" /I "..\..\include\port\win32" /I "..\..\include\port\win32_msvc" /I "..\..\port" /I. /I "$(SSL_INC)" \
+CPP_PROJ=/nologo /W3 /EHsc $(OPT) $(SSL_CFLAGS) /I "..\..\include" /I "..\..\include\port\win32" /I "..\..\include\port\win32_msvc" /I "..\..\port" /I. /I "$(SSL_INC)" \
  /D "FRONTEND" $(DEBUGDEF) \
- /D "WIN32" /D "_WINDOWS" /Fp"$(INTDIR)\libpq.pch" \
- /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\\" /FD /c  \
+ /D "WIN32" /D "_WINDOWS" \
+ /Fo"$(INTDIR)\\" /Fd"$(INTDIR)\$(OUTFILENAME).pdb" /FD /c  \
  /D "_CRT_SECURE_NO_DEPRECATE" $(ADD_DEFINES)
 
 !IFDEF USE_OPENSSL
 CPP_PROJ=$(CPP_PROJ) /D USE_OPENSSL
+!IF EXISTS("$(SSL_LIB_PATH)\libssl.lib")
+SSL_CFLAGS   = /DHAVE_BIO_GET_DATA /DHAVE_BIO_METH_NEW
+SSL_LIBS     = libssl.lib libcrypto.lib
+!ELSE
+SSL_CFLAGS=
 SSL_LIBS=ssleay32.lib libeay32.lib gdi32.lib
+!ENDIF
 !ENDIF
 
 !IFDEF USE_KFW
@@ -216,8 +229,8 @@ RSC_PROJ=/l 0x409 /fo"$(INTDIR)\libpq.res"
 
 LINK32=link.exe
 LINK32_FLAGS=kernel32.lib user32.lib advapi32.lib shell32.lib ws2_32.lib secur32.lib $(SSL_LIBS)  $(KFW_LIB) $(ADD_SECLIB) \
- /nologo /subsystem:windows /dll $(LOPT) /incremental:no \
- /pdb:"$(OUTDIR)\libpqdll.pdb" /machine:$(CPU) \
+ /nologo /subsystem:console /dll $(LOPT) /incremental:no \
+ /machine:$(CPU) /GUARD:CF  /NXCOMPAT /debug \
  /out:"$(OUTDIR)\$(OUTFILENAME).dll"\
  /implib:"$(OUTDIR)\$(OUTFILENAME)dll.lib"  \
  /libpath:"$(SSL_LIB_PATH)" /libpath:"$(KFW_LIB_PATH)" \
@@ -226,9 +239,13 @@ LINK32_OBJS= \
 	"$(OUTDIR)\$(OUTFILENAME).lib" \
 	"$(OUTDIR)\libpq.res"
 
+libpq_debugdll.def:
+	echo LIBRARY $(OUTFILENAME).dll> $@
+	for /f "tokens=* skip=2" %%1 in (libpqdll.def) do @echo %%1>> $@
+
 # @<< is a Response file, http://www.opussoftware.com/tutorial/TutMakefile.htm
 
-"$(OUTDIR)\$(OUTFILENAME).lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS)
+"$(OUTDIR)\$(OUTFILENAME).lib" : "$(OUTDIR)" $(DEF_FILE) $(LIB32_OBJS) libpq_debugdll.def
 	$(LIB32) @<<
 	$(LIB32_FLAGS) $(DEF_FLAGS) $(LIB32_OBJS)
 <<
@@ -244,7 +261,9 @@ LINK32_OBJS= \
 # Inclusion of manifest
 !IF "$(_NMAKE_VER)" != "6.00.8168.0" && "$(_NMAKE_VER)" != "7.00.9466"
 !IF "$(_NMAKE_VER)" != "6.00.9782.0" && "$(_NMAKE_VER)" != "7.10.3077"
+!IF EXIST ($(OUTDIR)\$(OUTFILENAME).dll.manifest)
         mt -manifest $(OUTDIR)\$(OUTFILENAME).dll.manifest -outputresource:$(OUTDIR)\$(OUTFILENAME).dll;2
+!ENDIF
 !ENDIF
 !ENDIF
 
@@ -357,6 +376,11 @@ LINK32_OBJS= \
 "$(INTDIR)\win32setlocale.obj" : ..\..\port\win32setlocale.c
 	$(CPP) @<<
 	$(CPP_PROJ) /I"." ..\..\port\win32setlocale.c
+<<
+
+"$(INTDIR)\fe_memutils.obj" : ..\..\common\fe_memutils.c
+	$(CPP) @<<
+	$(CPP_PROJ) /I"." ..\..\common\fe_memutils.c
 <<
 
 .c{$(CPP_OBJS)}.obj:

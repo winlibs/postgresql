@@ -11,7 +11,7 @@ All prebuilt libraries are available in the php-libs
 
   * postgres sources, fetch our patched [version](https://github.com/winlibs/) or the original [sources](http://www.postgresql.org)
   * Common tools used to compile PHP
-  * openssl libs (optional)
+  * openssl libs
 
 
 ## Compilation
@@ -22,4 +22,4 @@ All prebuilt libraries are available in the php-libs
 - for debug add `DEBUG=1`
 - for x64 add `CPU=AMD64`
 - for vc11 (PHP 5.6) builds **only**, add `NOCFG=1`
-- openssl is optional at the time
+

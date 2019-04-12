@@ -604,7 +604,7 @@
 #define PG_KRB_SRVNAM "postgres"
 
 /* A string containing the version number, platform, and C compiler */
-#define PG_VERSION_STR "Uninitialized version string (win32)"
+#define PG_VERSION_STR "PostgreSQL 9.6.12 (win32)"
 
 /* The size of `long', as computed by sizeof. */
 #define SIZEOF_LONG 4
@@ -652,7 +652,7 @@
 /* #undef USE_NAMED_POSIX_SEMAPHORES */
 
 /* Define to build with OpenSSL support. (--with-openssl) */
-/* #undef USE_OPENSSL */
+#define USE_OPENSSL
 
 /* Define to 1 to build with PAM support. (--with-pam) */
 /* #undef USE_PAM */

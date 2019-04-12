@@ -23,3 +23,9 @@ All prebuilt libraries are available in the php-libs
 - for x64 add `CPU=AMD64`
 - for vc11 (PHP 5.6) builds **only**, add `NOCFG=1`
 
+# Updating postgresql
+
+- Download the respective source package from https://www.postgresql.org/ftp/source/
+- Replace all files in the repo except README.md and postgresql-9.6.patch with the downloaded sources
+- `cd src\tools\msvc`
+- run `build libpq` in x86 and x64 environment (requires Perl), and compare src\include\pg_config.h.win32 with the generated src\include\pg_config.h, and update the former accordingly.

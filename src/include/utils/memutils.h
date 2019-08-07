@@ -7,7 +7,7 @@
  *	  of the API of the memory management subsystem.
  *
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/utils/memutils.h
@@ -37,34 +37,13 @@
  * MemoryContextAllocHuge().  Both limits permit code to assume that it may
  * compute twice an allocation's size without overflow.
  */
-#define MaxAllocSize	((Size) 0x3fffffff)		/* 1 gigabyte - 1 */
+#define MaxAllocSize	((Size) 0x3fffffff) /* 1 gigabyte - 1 */
 
 #define AllocSizeIsValid(size)	((Size) (size) <= MaxAllocSize)
 
 #define MaxAllocHugeSize	(SIZE_MAX / 2)
 
 #define AllocHugeSizeIsValid(size)	((Size) (size) <= MaxAllocHugeSize)
-
-/*
- * All chunks allocated by any memory context manager are required to be
- * preceded by a StandardChunkHeader at a spacing of STANDARDCHUNKHEADERSIZE.
- * A currently-allocated chunk must contain a backpointer to its owning
- * context as well as the allocated size of the chunk.  The backpointer is
- * used by pfree() and repalloc() to find the context to call.  The allocated
- * size is not absolutely essential, but it's expected to be needed by any
- * reasonable implementation.
- */
-typedef struct StandardChunkHeader
-{
-	MemoryContext context;		/* owning context */
-	Size		size;			/* size of data space allocated in chunk */
-#ifdef MEMORY_CONTEXT_CHECKING
-	/* when debugging memory usage, also store actual requested size */
-	Size		requested_size;
-#endif
-} StandardChunkHeader;
-
-#define STANDARDCHUNKHEADERSIZE  MAXALIGN(sizeof(StandardChunkHeader))
 
 
 /*
@@ -97,10 +76,10 @@ extern void MemoryContextDelete(MemoryContext context);
 extern void MemoryContextResetOnly(MemoryContext context);
 extern void MemoryContextResetChildren(MemoryContext context);
 extern void MemoryContextDeleteChildren(MemoryContext context);
+extern void MemoryContextSetIdentifier(MemoryContext context, const char *id);
 extern void MemoryContextSetParent(MemoryContext context,
 					   MemoryContext new_parent);
 extern Size GetMemoryChunkSpace(void *pointer);
-extern MemoryContext GetMemoryChunkContext(void *pointer);
 extern MemoryContext MemoryContextGetParent(MemoryContext context);
 extern bool MemoryContextIsEmpty(MemoryContext context);
 extern void MemoryContextStats(MemoryContext context);
@@ -113,13 +92,54 @@ extern void MemoryContextCheck(MemoryContext context);
 #endif
 extern bool MemoryContextContains(MemoryContext context, void *pointer);
 
+/* Handy macro for copying and assigning context ID ... but note double eval */
+#define MemoryContextCopyAndSetIdentifier(cxt, id) \
+	MemoryContextSetIdentifier(cxt, MemoryContextStrdup(cxt, id))
+
+/*
+ * GetMemoryChunkContext
+ *		Given a currently-allocated chunk, determine the context
+ *		it belongs to.
+ *
+ * All chunks allocated by any memory context manager are required to be
+ * preceded by the corresponding MemoryContext stored, without padding, in the
+ * preceding sizeof(void*) bytes.  A currently-allocated chunk must contain a
+ * backpointer to its owning context.  The backpointer is used by pfree() and
+ * repalloc() to find the context to call.
+ */
+#ifndef FRONTEND
+static inline MemoryContext
+GetMemoryChunkContext(void *pointer)
+{
+	MemoryContext context;
+
+	/*
+	 * Try to detect bogus pointers handed to us, poorly though we can.
+	 * Presumably, a pointer that isn't MAXALIGNED isn't pointing at an
+	 * allocated chunk.
+	 */
+	Assert(pointer != NULL);
+	Assert(pointer == (void *) MAXALIGN(pointer));
+
+	/*
+	 * OK, it's probably safe to look at the context.
+	 */
+	context = *(MemoryContext *) (((char *) pointer) - sizeof(void *));
+
+	AssertArg(MemoryContextIsValid(context));
+
+	return context;
+}
+#endif
+
 /*
  * This routine handles the context-type-independent part of memory
  * context creation.  It's intended to be called from context-type-
  * specific creation routines, and noplace else.
  */
-extern MemoryContext MemoryContextCreate(NodeTag tag, Size size,
-					MemoryContextMethods *methods,
+extern void MemoryContextCreate(MemoryContext node,
+					NodeTag tag,
+					const MemoryContextMethods *methods,
 					MemoryContext parent,
 					const char *name);
 
@@ -129,11 +149,37 @@ extern MemoryContext MemoryContextCreate(NodeTag tag, Size size,
  */
 
 /* aset.c */
-extern MemoryContext AllocSetContextCreate(MemoryContext parent,
-					  const char *name,
-					  Size minContextSize,
-					  Size initBlockSize,
-					  Size maxBlockSize);
+extern MemoryContext AllocSetContextCreateExtended(MemoryContext parent,
+							  const char *name,
+							  Size minContextSize,
+							  Size initBlockSize,
+							  Size maxBlockSize);
+
+/*
+ * This wrapper macro exists to check for non-constant strings used as context
+ * names; that's no longer supported.  (Use MemoryContextSetIdentifier if you
+ * want to provide a variable identifier.)
+ */
+#if defined(HAVE__BUILTIN_CONSTANT_P) && defined(HAVE__VA_ARGS)
+#define AllocSetContextCreate(parent, name, ...) \
+	(StaticAssertExpr(__builtin_constant_p(name), \
+					  "memory context names must be constant strings"), \
+	 AllocSetContextCreateExtended(parent, name, __VA_ARGS__))
+#else
+#define AllocSetContextCreate \
+	AllocSetContextCreateExtended
+#endif
+
+/* slab.c */
+extern MemoryContext SlabContextCreate(MemoryContext parent,
+				  const char *name,
+				  Size blockSize,
+				  Size chunkSize);
+
+/* generation.c */
+extern MemoryContext GenerationContextCreate(MemoryContext parent,
+						const char *name,
+						Size blockSize);
 
 /*
  * Recommended default alloc parameters, suitable for "ordinary" contexts
@@ -171,4 +217,7 @@ extern MemoryContext AllocSetContextCreate(MemoryContext parent,
  */
 #define ALLOCSET_SEPARATE_THRESHOLD  8192
 
-#endif   /* MEMUTILS_H */
+#define SLAB_DEFAULT_BLOCK_SIZE		(8 * 1024)
+#define SLAB_LARGE_BLOCK_SIZE		(8 * 1024 * 1024)
+
+#endif							/* MEMUTILS_H */

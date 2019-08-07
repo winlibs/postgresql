@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "DROP OWNED" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "DROP OWNED" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,7 +37,7 @@ DROP OWNED BY { \fIname\fR | CURRENT_USER | SESSION_USER } [, \&.\&.\&.] [ CASCA
 .SH "DESCRIPTION"
 .PP
 \fBDROP OWNED\fR
-drops all the objects within the current database that are owned by one of the specified roles\&. Any privileges granted to the given roles on objects in the current database and on shared objects (databases, tablespaces) will also be revoked\&.
+drops all the objects within the current database that are owned by one of the specified roles\&. Any privileges granted to the given roles on objects in the current database or on shared objects (databases, tablespaces) will also be revoked\&.
 .SH "PARAMETERS"
 .PP
 \fIname\fR
@@ -48,7 +48,7 @@ The name of a role whose objects will be dropped, and whose privileges will be r
 CASCADE
 .RS 4
 Automatically drop objects that depend on the affected objects, and in turn all objects that depend on those objects (see
-Section 5.13, \(lqDependency Tracking\(rq, in the documentation)\&.
+Section\ \&5.13)\&.
 .RE
 .PP
 RESTRICT
@@ -75,7 +75,7 @@ does not deal with privileges for other objects\&.
 Databases and tablespaces owned by the role(s) will not be removed\&.
 .PP
 See
-Section 21.4, \(lqDropping Roles\(rq, in the documentation
+Section\ \&21.4
 for more discussion\&.
 .SH "COMPATIBILITY"
 .PP

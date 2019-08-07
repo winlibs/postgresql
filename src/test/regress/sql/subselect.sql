@@ -92,6 +92,16 @@ SELECT '' AS eight, ss.f1 AS "Correlated Field", ss.f3 AS "Second Field"
 select q1, float8(count(*)) / (select count(*) from int8_tbl)
 from int8_tbl group by q1 order by q1;
 
+-- Unspecified-type literals in output columns should resolve as text
+
+SELECT *, pg_typeof(f1) FROM
+  (SELECT 'foo' AS f1 FROM generate_series(1,3)) ss ORDER BY 1;
+
+-- ... unless there's context to suggest differently
+
+explain (verbose, costs off) select '42' union all select '43';
+explain (verbose, costs off) select '42' union all select 43;
+
 -- check materialization of an initplan reference (bug #14524)
 explain (verbose, costs off)
 select 1 = all (select (select 1));
@@ -367,6 +377,24 @@ with q as (select max(f1) from int4_tbl group by f1 order by f1)
   select q from q;
 
 --
+-- Test case for sublinks pulled up into joinaliasvars lists in an
+-- inherited update/delete query
+--
+
+begin;  --  this shouldn't delete anything, but be safe
+
+delete from road
+where exists (
+  select 1
+  from
+    int4_tbl cross join
+    ( select f1, array(select q1 from int8_tbl) as arr
+      from text_tbl ) ss
+  where road.name = ss.f1 );
+
+rollback;
+
+--
 -- Test case for sublinks pushed down into subselects via join alias expansion
 --
 
@@ -496,6 +524,91 @@ select * from
   order by 1;
 
 select nextval('ts1');
+
+--
+-- Check that volatile quals aren't pushed down past a set-returning function;
+-- while a nonvolatile qual can be, if it doesn't reference the SRF.
+--
+create function tattle(x int, y int) returns bool
+volatile language plpgsql as $$
+begin
+  raise notice 'x = %, y = %', x, y;
+  return x > y;
+end$$;
+
+explain (verbose, costs off)
+select * from
+  (select 9 as x, unnest(array[1,2,3,11,12,13]) as u) ss
+  where tattle(x, 8);
+
+select * from
+  (select 9 as x, unnest(array[1,2,3,11,12,13]) as u) ss
+  where tattle(x, 8);
+
+-- if we pretend it's stable, we get different results:
+alter function tattle(x int, y int) stable;
+
+explain (verbose, costs off)
+select * from
+  (select 9 as x, unnest(array[1,2,3,11,12,13]) as u) ss
+  where tattle(x, 8);
+
+select * from
+  (select 9 as x, unnest(array[1,2,3,11,12,13]) as u) ss
+  where tattle(x, 8);
+
+-- although even a stable qual should not be pushed down if it references SRF
+explain (verbose, costs off)
+select * from
+  (select 9 as x, unnest(array[1,2,3,11,12,13]) as u) ss
+  where tattle(x, u);
+
+select * from
+  (select 9 as x, unnest(array[1,2,3,11,12,13]) as u) ss
+  where tattle(x, u);
+
+drop function tattle(x int, y int);
+
+--
+-- Test that LIMIT can be pushed to SORT through a subquery that just projects
+-- columns.  We check for that having happened by looking to see if EXPLAIN
+-- ANALYZE shows that a top-N sort was used.  We must suppress or filter away
+-- all the non-invariant parts of the EXPLAIN ANALYZE output.
+--
+create table sq_limit (pk int primary key, c1 int, c2 int);
+insert into sq_limit values
+    (1, 1, 1),
+    (2, 2, 2),
+    (3, 3, 3),
+    (4, 4, 4),
+    (5, 1, 1),
+    (6, 2, 2),
+    (7, 3, 3),
+    (8, 4, 4);
+
+create function explain_sq_limit() returns setof text language plpgsql as
+$$
+declare ln text;
+begin
+    for ln in
+        explain (analyze, summary off, timing off, costs off)
+        select * from (select pk,c2 from sq_limit order by c1,pk) as x limit 3
+    loop
+        ln := regexp_replace(ln, 'Memory: \S*',  'Memory: xxx');
+        -- this case might occur if force_parallel_mode is on:
+        ln := regexp_replace(ln, 'Worker 0:  Sort Method',  'Sort Method');
+        return next ln;
+    end loop;
+end;
+$$;
+
+select * from explain_sq_limit();
+
+select * from (select pk,c2 from sq_limit order by c1,pk) as x limit 3;
+
+drop function explain_sq_limit();
+
+drop table sq_limit;
 
 --
 -- Ensure that backward scan direction isn't propagated into

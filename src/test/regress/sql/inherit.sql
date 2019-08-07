@@ -97,6 +97,21 @@ SELECT relname, d.* FROM ONLY d, pg_class where d.tableoid = pg_class.oid;
 CREATE TEMP TABLE z (b TEXT, PRIMARY KEY(aa, b)) inherits (a);
 INSERT INTO z VALUES (NULL, 'text'); -- should fail
 
+-- Check inherited UPDATE with all children excluded
+create table some_tab (a int, b int);
+create table some_tab_child () inherits (some_tab);
+insert into some_tab_child values(1,2);
+
+explain (verbose, costs off)
+update some_tab set a = a + 1 where false;
+update some_tab set a = a + 1 where false;
+explain (verbose, costs off)
+update some_tab set a = a + 1 where false returning b, a;
+update some_tab set a = a + 1 where false returning b, a;
+table some_tab;
+
+drop table some_tab cascade;
+
 -- Check UPDATE with inherited target and an inherited source table
 create temp table foo(f1 int, f2 int);
 create temp table foo2(f3 int) inherits (foo);
@@ -127,6 +142,54 @@ from
 where bar.f1 = ss.f1;
 
 select tableoid::regclass::text as relname, bar.* from bar order by 1,2;
+
+-- Check UPDATE with *partitioned* inherited target and an appendrel subquery
+create table some_tab (a int);
+insert into some_tab values (0);
+create table some_tab_child () inherits (some_tab);
+insert into some_tab_child values (1);
+create table parted_tab (a int, b char) partition by list (a);
+create table parted_tab_part1 partition of parted_tab for values in (1);
+create table parted_tab_part2 partition of parted_tab for values in (2);
+create table parted_tab_part3 partition of parted_tab for values in (3);
+insert into parted_tab values (1, 'a'), (2, 'a'), (3, 'a');
+
+update parted_tab set b = 'b'
+from
+  (select a from some_tab union all select a+1 from some_tab) ss (a)
+where parted_tab.a = ss.a;
+select tableoid::regclass::text as relname, parted_tab.* from parted_tab order by 1,2;
+
+truncate parted_tab;
+insert into parted_tab values (1, 'a'), (2, 'a'), (3, 'a');
+update parted_tab set b = 'b'
+from
+  (select 0 from parted_tab union all select 1 from parted_tab) ss (a)
+where parted_tab.a = ss.a;
+select tableoid::regclass::text as relname, parted_tab.* from parted_tab order by 1,2;
+
+-- modifies partition key, but no rows will actually be updated
+explain update parted_tab set a = 2 where false;
+
+drop table parted_tab;
+
+-- Check UPDATE with multi-level partitioned inherited target
+create table mlparted_tab (a int, b char, c text) partition by list (a);
+create table mlparted_tab_part1 partition of mlparted_tab for values in (1);
+create table mlparted_tab_part2 partition of mlparted_tab for values in (2) partition by list (b);
+create table mlparted_tab_part3 partition of mlparted_tab for values in (3);
+create table mlparted_tab_part2a partition of mlparted_tab_part2 for values in ('a');
+create table mlparted_tab_part2b partition of mlparted_tab_part2 for values in ('b');
+insert into mlparted_tab values (1, 'a'), (2, 'a'), (2, 'b'), (3, 'a');
+
+update mlparted_tab mlp set c = 'xxx'
+from
+  (select a from some_tab union all select a+1 from some_tab) ss (a)
+where (mlp.a = ss.a and mlp.b = 'b') or mlp.a = 3;
+select tableoid::regclass::text as relname, mlparted_tab.* from mlparted_tab order by 1,2;
+
+drop table mlparted_tab;
+drop table some_tab cascade;
 
 /* Test multiple inheritance of column defaults */
 
@@ -194,6 +257,7 @@ create table base (i integer);
 create table derived () inherits (base);
 insert into derived (i) values (0);
 select derived::base from derived;
+select NULL::derived::base;
 drop table derived;
 drop table base;
 
@@ -363,6 +427,18 @@ DROP TABLE test_foreign_constraints_inh;
 DROP TABLE test_foreign_constraints;
 DROP TABLE test_primary_constraints;
 
+-- Test foreign key behavior
+create table inh_fk_1 (a int primary key);
+insert into inh_fk_1 values (1), (2), (3);
+create table inh_fk_2 (x int primary key, y int references inh_fk_1 on delete cascade);
+insert into inh_fk_2 values (11, 1), (22, 2), (33, 3);
+create table inh_fk_2_child () inherits (inh_fk_2);
+insert into inh_fk_2_child values (111, 1), (222, 2);
+delete from inh_fk_1 where a = 1;
+select * from inh_fk_1 order by 1;
+select * from inh_fk_2 order by 1, 2;
+drop table inh_fk_1, inh_fk_2, inh_fk_2_child;
+
 -- Test that parent and child CHECK constraints can be created in either order
 create table p1(f1 int);
 create table p1_c1() inherits(p1);
@@ -462,11 +538,13 @@ select min(1-id) from matest0;
 reset enable_indexscan;
 
 set enable_seqscan = off;  -- plan with fewest seqscans should be merge
+set enable_parallel_append = off; -- Don't let parallel-append interfere
 explain (verbose, costs off) select * from matest0 order by 1-id;
 select * from matest0 order by 1-id;
 explain (verbose, costs off) select min(1-id) from matest0;
 select min(1-id) from matest0;
 reset enable_seqscan;
+reset enable_parallel_append;
 
 drop table matest0 cascade;
 
@@ -574,3 +652,84 @@ insert into cnullchild values(null);
 select * from cnullparent;
 select * from cnullparent where f1 = 2;
 drop table cnullparent cascade;
+
+--
+-- Check that constraint exclusion works correctly with partitions using
+-- implicit constraints generated from the partition bound information.
+--
+create table list_parted (
+	a	varchar
+) partition by list (a);
+create table part_ab_cd partition of list_parted for values in ('ab', 'cd');
+create table part_ef_gh partition of list_parted for values in ('ef', 'gh');
+create table part_null_xy partition of list_parted for values in (null, 'xy');
+
+explain (costs off) select * from list_parted;
+explain (costs off) select * from list_parted where a is null;
+explain (costs off) select * from list_parted where a is not null;
+explain (costs off) select * from list_parted where a in ('ab', 'cd', 'ef');
+explain (costs off) select * from list_parted where a = 'ab' or a in (null, 'cd');
+explain (costs off) select * from list_parted where a = 'ab';
+
+create table range_list_parted (
+	a	int,
+	b	char(2)
+) partition by range (a);
+create table part_1_10 partition of range_list_parted for values from (1) to (10) partition by list (b);
+create table part_1_10_ab partition of part_1_10 for values in ('ab');
+create table part_1_10_cd partition of part_1_10 for values in ('cd');
+create table part_10_20 partition of range_list_parted for values from (10) to (20) partition by list (b);
+create table part_10_20_ab partition of part_10_20 for values in ('ab');
+create table part_10_20_cd partition of part_10_20 for values in ('cd');
+create table part_21_30 partition of range_list_parted for values from (21) to (30) partition by list (b);
+create table part_21_30_ab partition of part_21_30 for values in ('ab');
+create table part_21_30_cd partition of part_21_30 for values in ('cd');
+create table part_40_inf partition of range_list_parted for values from (40) to (maxvalue) partition by list (b);
+create table part_40_inf_ab partition of part_40_inf for values in ('ab');
+create table part_40_inf_cd partition of part_40_inf for values in ('cd');
+create table part_40_inf_null partition of part_40_inf for values in (null);
+
+explain (costs off) select * from range_list_parted;
+explain (costs off) select * from range_list_parted where a = 5;
+explain (costs off) select * from range_list_parted where b = 'ab';
+explain (costs off) select * from range_list_parted where a between 3 and 23 and b in ('ab');
+
+/* Should select no rows because range partition key cannot be null */
+explain (costs off) select * from range_list_parted where a is null;
+
+/* Should only select rows from the null-accepting partition */
+explain (costs off) select * from range_list_parted where b is null;
+explain (costs off) select * from range_list_parted where a is not null and a < 67;
+explain (costs off) select * from range_list_parted where a >= 30;
+
+drop table list_parted;
+drop table range_list_parted;
+
+-- check that constraint exclusion is able to cope with the partition
+-- constraint emitted for multi-column range partitioned tables
+create table mcrparted (a int, b int, c int) partition by range (a, abs(b), c);
+create table mcrparted_def partition of mcrparted default;
+create table mcrparted0 partition of mcrparted for values from (minvalue, minvalue, minvalue) to (1, 1, 1);
+create table mcrparted1 partition of mcrparted for values from (1, 1, 1) to (10, 5, 10);
+create table mcrparted2 partition of mcrparted for values from (10, 5, 10) to (10, 10, 10);
+create table mcrparted3 partition of mcrparted for values from (11, 1, 1) to (20, 10, 10);
+create table mcrparted4 partition of mcrparted for values from (20, 10, 10) to (20, 20, 20);
+create table mcrparted5 partition of mcrparted for values from (20, 20, 20) to (maxvalue, maxvalue, maxvalue);
+explain (costs off) select * from mcrparted where a = 0;	-- scans mcrparted0, mcrparted_def
+explain (costs off) select * from mcrparted where a = 10 and abs(b) < 5;	-- scans mcrparted1, mcrparted_def
+explain (costs off) select * from mcrparted where a = 10 and abs(b) = 5;	-- scans mcrparted1, mcrparted2, mcrparted_def
+explain (costs off) select * from mcrparted where abs(b) = 5;	-- scans all partitions
+explain (costs off) select * from mcrparted where a > -1;	-- scans all partitions
+explain (costs off) select * from mcrparted where a = 20 and abs(b) = 10 and c > 10;	-- scans mcrparted4
+explain (costs off) select * from mcrparted where a = 20 and c > 20; -- scans mcrparted3, mcrparte4, mcrparte5, mcrparted_def
+drop table mcrparted;
+
+-- check that partitioned table Appends cope with being referenced in
+-- subplans
+create table parted_minmax (a int, b varchar(16)) partition by range (a);
+create table parted_minmax1 partition of parted_minmax for values from (1) to (10);
+create index parted_minmax1i on parted_minmax1 (a, b);
+insert into parted_minmax values (1,'12345');
+explain (costs off) select min(a), max(a) from parted_minmax where b = '12345';
+select min(a), max(a) from parted_minmax where b = '12345';
+drop table parted_minmax;

@@ -1,155 +1,42 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Failover</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="High Availability, Load Balancing, and Replication"
-HREF="high-availability.html"><LINK
-REL="PREVIOUS"
-TITLE="Log-Shipping Standby Servers"
-HREF="warm-standby.html"><LINK
-REL="NEXT"
-TITLE="Alternative Method for Log Shipping"
-HREF="log-shipping-alternative.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Log-Shipping Standby Servers"
-HREF="warm-standby.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="high-availability.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 26. High Availability, Load Balancing, and Replication</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Alternative Method for Log Shipping"
-HREF="log-shipping-alternative.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="WARM-STANDBY-FAILOVER"
->26.3. Failover</A
-></H1
-><P
->    If the primary server fails then the standby server should begin
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>26.3. Failover</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="warm-standby.html" title="26.2. Log-Shipping Standby Servers" /><link rel="next" href="log-shipping-alternative.html" title="26.4. Alternative Method for Log Shipping" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">26.3. Failover</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="warm-standby.html" title="26.2. Log-Shipping Standby Servers">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="high-availability.html" title="Chapter 26. High Availability, Load Balancing, and Replication">Up</a></td><th width="60%" align="center">Chapter 26. High Availability, Load Balancing, and Replication</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="log-shipping-alternative.html" title="26.4. Alternative Method for Log Shipping">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="WARM-STANDBY-FAILOVER"><div class="titlepage"><div><div><h2 class="title" style="clear: both">26.3. Failover</h2></div></div></div><p>
+    If the primary server fails then the standby server should begin
     failover procedures.
-   </P
-><P
->    If the standby server fails then no failover need take place. If the
+   </p><p>
+    If the standby server fails then no failover need take place. If the
     standby server can be restarted, even some time later, then the recovery
     process can also be restarted immediately, taking advantage of
     restartable recovery. If the standby server cannot be restarted, then a
     full new standby server instance should be created.
-   </P
-><P
->    If the primary server fails and the standby server becomes the
+   </p><p>
+    If the primary server fails and the standby server becomes the
     new primary, and then the old primary restarts, you must have
     a mechanism for informing the old primary that it is no longer the primary. This is
-    sometimes known as <ACRONYM
-CLASS="ACRONYM"
->STONITH</ACRONYM
-> (Shoot The Other Node In The Head), which is
+    sometimes known as <acronym class="acronym">STONITH</acronym> (Shoot The Other Node In The Head), which is
     necessary to avoid situations where both systems think they are the
     primary, which will lead to confusion and ultimately data loss.
-   </P
-><P
->    Many failover systems use just two systems, the primary and the standby,
+   </p><p>
+    Many failover systems use just two systems, the primary and the standby,
     connected by some kind of heartbeat mechanism to continually verify the
     connectivity between the two and the viability of the primary. It is
     also possible to use a third system (called a witness server) to prevent
     some cases of inappropriate failover, but the additional complexity
     might not be worthwhile unless it is set up with sufficient care and
     rigorous testing.
-   </P
-><P
->    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> does not provide the system
+   </p><p>
+    <span class="productname">PostgreSQL</span> does not provide the system
     software required to identify a failure on the primary and notify
     the standby database server.  Many such tools exist and are well
     integrated with the operating system facilities required for
     successful failover, such as IP address migration.
-   </P
-><P
->    Once failover to the standby occurs, there is only a
+   </p><p>
+    Once failover to the standby occurs, there is only a
     single server in operation. This is known as a degenerate state.
     The former standby is now the primary, but the former primary is down
     and might stay down.  To return to normal operation, a standby server
     must be recreated,
     either on the former primary system when it comes up, or on a third,
-    possibly new, system. The <A
-HREF="app-pgrewind.html"
-><SPAN
-CLASS="APPLICATION"
->pg_rewind</SPAN
-></A
-> utility can be
+    possibly new, system. The <a class="xref" href="app-pgrewind.html" title="pg_rewind"><span class="refentrytitle"><span class="application">pg_rewind</span></span></a> utility can be
     used to speed up this process on large clusters.
     Once complete, the primary and standby can be
     considered to have switched roles. Some people choose to use a third
@@ -157,103 +44,20 @@ CLASS="APPLICATION"
     server is recreated,
     though clearly this complicates the system configuration and
     operational processes.
-   </P
-><P
->    So, switching from primary to standby server can be fast but requires
+   </p><p>
+    So, switching from primary to standby server can be fast but requires
     some time to re-prepare the failover cluster. Regular switching from
     primary to standby is useful, since it allows regular downtime on
     each system for maintenance. This also serves as a test of the
     failover mechanism to ensure that it will really work when you need it.
     Written administration procedures are advised.
-   </P
-><P
->    To trigger failover of a log-shipping standby server,
-    run <TT
-CLASS="COMMAND"
->pg_ctl promote</TT
-> or create a trigger
-    file with the file name and path specified by the <TT
-CLASS="VARNAME"
->trigger_file</TT
->
-    setting in <TT
-CLASS="FILENAME"
->recovery.conf</TT
->. If you're planning to use
-    <TT
-CLASS="COMMAND"
->pg_ctl promote</TT
-> to fail over, <TT
-CLASS="VARNAME"
->trigger_file</TT
-> is
+   </p><p>
+    To trigger failover of a log-shipping standby server,
+    run <code class="command">pg_ctl promote</code> or create a trigger
+    file with the file name and path specified by the <code class="varname">trigger_file</code>
+    setting in <code class="filename">recovery.conf</code>. If you're planning to use
+    <code class="command">pg_ctl promote</code> to fail over, <code class="varname">trigger_file</code> is
     not required. If you're setting up the reporting servers that are
     only used to offload read-only queries from the primary, not for high
     availability purposes, you don't need to promote it.
-   </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="warm-standby.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="log-shipping-alternative.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Log-Shipping Standby Servers</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="high-availability.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Alternative Method for Log Shipping</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="warm-standby.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="high-availability.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="log-shipping-alternative.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">26.2. Log-Shipping Standby Servers </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 26.4. Alternative Method for Log Shipping</td></tr></table></div></body></html>

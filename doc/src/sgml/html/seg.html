@@ -1,148 +1,34 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->seg</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Additional Supplied Modules"
-HREF="contrib.html"><LINK
-REL="PREVIOUS"
-TITLE="postgres_fdw"
-HREF="postgres-fdw.html"><LINK
-REL="NEXT"
-TITLE="sepgsql"
-HREF="sepgsql.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="postgres_fdw"
-HREF="postgres-fdw.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="contrib.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Appendix F. Additional Supplied Modules</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="sepgsql"
-HREF="sepgsql.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="SEG"
->F.34. seg</A
-></H1
-><P
->  This module implements a data type <TT
-CLASS="TYPE"
->seg</TT
-> for
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.34. seg</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="postgres-fdw.html" title="F.33. postgres_fdw" /><link rel="next" href="sepgsql.html" title="F.35. sepgsql" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.34. seg</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="postgres-fdw.html" title="F.33. postgres_fdw">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sepgsql.html" title="F.35. sepgsql">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="SEG"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.34. seg</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="seg.html#id-1.11.7.43.4">F.34.1. Rationale</a></span></dt><dt><span class="sect2"><a href="seg.html#id-1.11.7.43.5">F.34.2. Syntax</a></span></dt><dt><span class="sect2"><a href="seg.html#id-1.11.7.43.6">F.34.3. Precision</a></span></dt><dt><span class="sect2"><a href="seg.html#id-1.11.7.43.7">F.34.4. Usage</a></span></dt><dt><span class="sect2"><a href="seg.html#id-1.11.7.43.8">F.34.5. Notes</a></span></dt><dt><span class="sect2"><a href="seg.html#id-1.11.7.43.9">F.34.6. Credits</a></span></dt></dl></div><a id="id-1.11.7.43.2" class="indexterm"></a><p>
+  This module implements a data type <code class="type">seg</code> for
   representing line segments, or floating point intervals.
-  <TT
-CLASS="TYPE"
->seg</TT
-> can represent uncertainty in the interval endpoints,
+  <code class="type">seg</code> can represent uncertainty in the interval endpoints,
   making it especially useful for representing laboratory measurements.
- </P
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN141261"
->F.34.1. Rationale</A
-></H2
-><P
->   The geometry of measurements is usually more complex than that of a
+ </p><div class="sect2" id="id-1.11.7.43.4"><div class="titlepage"><div><div><h3 class="title">F.34.1. Rationale</h3></div></div></div><p>
+   The geometry of measurements is usually more complex than that of a
    point in a numeric continuum. A measurement is usually a segment of
    that continuum with somewhat fuzzy limits. The measurements come out
    as intervals because of uncertainty and randomness, as well as because
    the value being measured may naturally be an interval indicating some
    condition, such as the temperature range of stability of a protein.
-  </P
-><P
->   Using just common sense, it appears more convenient to store such data
+  </p><p>
+   Using just common sense, it appears more convenient to store such data
    as intervals, rather than pairs of numbers. In practice, it even turns
    out more efficient in most applications.
-  </P
-><P
->   Further along the line of common sense, the fuzziness of the limits
+  </p><p>
+   Further along the line of common sense, the fuzziness of the limits
    suggests that the use of traditional numeric data types leads to a
    certain loss of information. Consider this: your instrument reads
    6.50, and you input this reading into the database. What do you get
    when you fetch it? Watch:
 
-</P><PRE
-CLASS="SCREEN"
->test=&gt; select 6.50 :: float8 as "pH";
+</p><pre class="screen">
+test=&gt; select 6.50 :: float8 as "pH";
  pH
 ---
 6.5
-(1 row)</PRE
-><P>
+(1 row)
+</pre><p>
 
    In the world of measurements, 6.50 is not the same as 6.5. It may
    sometimes be critically different. The experimenters usually write
@@ -151,808 +37,140 @@ CLASS="SCREEN"
    with their center points being (probably) the only common feature they
    share. We definitely do not want such different data items to appear the
    same.
-  </P
-><P
->   Conclusion? It is nice to have a special data type that can record the
+  </p><p>
+   Conclusion? It is nice to have a special data type that can record the
    limits of an interval with arbitrarily variable precision. Variable in
    the sense that each data element records its own precision.
-  </P
-><P
->   Check this out:
+  </p><p>
+   Check this out:
 
-</P><PRE
-CLASS="SCREEN"
->test=&gt; select '6.25 .. 6.50'::seg as "pH";
+</p><pre class="screen">
+test=&gt; select '6.25 .. 6.50'::seg as "pH";
           pH
 ------------
 6.25 .. 6.50
-(1 row)</PRE
-><P>
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN141270"
->F.34.2. Syntax</A
-></H2
-><P
->   The external representation of an interval is formed using one or two
-   floating-point numbers joined by the range operator (<TT
-CLASS="LITERAL"
->..</TT
->
-   or <TT
-CLASS="LITERAL"
->...</TT
->).  Alternatively, it can be specified as a
+(1 row)
+</pre><p>
+  </p></div><div class="sect2" id="id-1.11.7.43.5"><div class="titlepage"><div><div><h3 class="title">F.34.2. Syntax</h3></div></div></div><p>
+   The external representation of an interval is formed using one or two
+   floating-point numbers joined by the range operator (<code class="literal">..</code>
+   or <code class="literal">...</code>).  Alternatively, it can be specified as a
    center point plus or minus a deviation.
-   Optional certainty indicators (<TT
-CLASS="LITERAL"
->&lt;</TT
->,
-   <TT
-CLASS="LITERAL"
->&gt;</TT
-> or <TT
-CLASS="LITERAL"
->~</TT
->) can be stored as well.
+   Optional certainty indicators (<code class="literal">&lt;</code>,
+   <code class="literal">&gt;</code> or <code class="literal">~</code>) can be stored as well.
    (Certainty indicators are ignored by all the built-in operators, however.)
-   <A
-HREF="seg.html#SEG-REPR-TABLE"
->Table F-27</A
-> gives an overview of allowed
-   representations; <A
-HREF="seg.html#SEG-INPUT-EXAMPLES"
->Table F-28</A
-> shows some
+   <a class="xref" href="seg.html#SEG-REPR-TABLE" title="Table F.26. seg External Representations">Table F.26</a> gives an overview of allowed
+   representations; <a class="xref" href="seg.html#SEG-INPUT-EXAMPLES" title="Table F.27. Examples of Valid seg Input">Table F.27</a> shows some
    examples.
-  </P
-><P
->   In <A
-HREF="seg.html#SEG-REPR-TABLE"
->Table F-27</A
->, <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->y</I
-></TT
->, and
-   <TT
-CLASS="REPLACEABLE"
-><I
->delta</I
-></TT
-> denote
-   floating-point numbers.  <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-> and <TT
-CLASS="REPLACEABLE"
-><I
->y</I
-></TT
->, but
-   not <TT
-CLASS="REPLACEABLE"
-><I
->delta</I
-></TT
->, can be preceded by a certainty indicator.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="SEG-REPR-TABLE"
-></A
-><P
-><B
->Table F-27. <TT
-CLASS="TYPE"
->seg</TT
-> External Representations</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><TBODY
-><TR
-><TD
-><TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-></TT
-></TD
-><TD
->Single value (zero-length interval)
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-> .. <TT
-CLASS="REPLACEABLE"
-><I
->y</I
-></TT
-></TT
-></TD
-><TD
->Interval from <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-> to <TT
-CLASS="REPLACEABLE"
-><I
->y</I
-></TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-> (+-) <TT
-CLASS="REPLACEABLE"
-><I
->delta</I
-></TT
-></TT
-></TD
-><TD
->Interval from <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-> - <TT
-CLASS="REPLACEABLE"
-><I
->delta</I
-></TT
-> to
-      <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-> + <TT
-CLASS="REPLACEABLE"
-><I
->delta</I
-></TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-> ..</TT
-></TD
-><TD
->Open interval with lower bound <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->.. <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-></TT
-></TD
-><TD
->Open interval with upper bound <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
->
-      </TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><DIV
-CLASS="TABLE"
-><A
-NAME="SEG-INPUT-EXAMPLES"
-></A
-><P
-><B
->Table F-28. Examples of Valid <TT
-CLASS="TYPE"
->seg</TT
-> Input</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><TBODY
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->5.0</TT
-></TD
-><TD
->       Creates a zero-length segment (a point, if you will)
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->~5.0</TT
-></TD
-><TD
->       Creates a zero-length segment and records
-       <TT
-CLASS="LITERAL"
->~</TT
-> in the data.  <TT
-CLASS="LITERAL"
->~</TT
-> is ignored
-       by <TT
-CLASS="TYPE"
->seg</TT
-> operations, but
+  </p><p>
+   In <a class="xref" href="seg.html#SEG-REPR-TABLE" title="Table F.26. seg External Representations">Table F.26</a>, <em class="replaceable"><code>x</code></em>, <em class="replaceable"><code>y</code></em>, and
+   <em class="replaceable"><code>delta</code></em> denote
+   floating-point numbers.  <em class="replaceable"><code>x</code></em> and <em class="replaceable"><code>y</code></em>, but
+   not <em class="replaceable"><code>delta</code></em>, can be preceded by a certainty indicator.
+  </p><div class="table" id="SEG-REPR-TABLE"><p class="title"><strong>Table F.26. <code class="type">seg</code> External Representations</strong></p><div class="table-contents"><table class="table" summary="seg External Representations" border="1"><colgroup><col /><col /></colgroup><tbody><tr><td><code class="literal"><em class="replaceable"><code>x</code></em></code></td><td>Single value (zero-length interval)
+      </td></tr><tr><td><code class="literal"><em class="replaceable"><code>x</code></em> .. <em class="replaceable"><code>y</code></em></code></td><td>Interval from <em class="replaceable"><code>x</code></em> to <em class="replaceable"><code>y</code></em>
+      </td></tr><tr><td><code class="literal"><em class="replaceable"><code>x</code></em> (+-) <em class="replaceable"><code>delta</code></em></code></td><td>Interval from <em class="replaceable"><code>x</code></em> - <em class="replaceable"><code>delta</code></em> to
+      <em class="replaceable"><code>x</code></em> + <em class="replaceable"><code>delta</code></em>
+      </td></tr><tr><td><code class="literal"><em class="replaceable"><code>x</code></em> ..</code></td><td>Open interval with lower bound <em class="replaceable"><code>x</code></em>
+      </td></tr><tr><td><code class="literal">.. <em class="replaceable"><code>x</code></em></code></td><td>Open interval with upper bound <em class="replaceable"><code>x</code></em>
+      </td></tr></tbody></table></div></div><br class="table-break" /><div class="table" id="SEG-INPUT-EXAMPLES"><p class="title"><strong>Table F.27. Examples of Valid <code class="type">seg</code> Input</strong></p><div class="table-contents"><table class="table" summary="Examples of Valid seg Input" border="1"><colgroup><col /><col /></colgroup><tbody><tr><td><code class="literal">5.0</code></td><td>
+       Creates a zero-length segment (a point, if you will)
+      </td></tr><tr><td><code class="literal">~5.0</code></td><td>
+       Creates a zero-length segment and records
+       <code class="literal">~</code> in the data.  <code class="literal">~</code> is ignored
+       by <code class="type">seg</code> operations, but
        is preserved as a comment.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->&lt;5.0</TT
-></TD
-><TD
->       Creates a point at 5.0.  <TT
-CLASS="LITERAL"
->&lt;</TT
-> is ignored but
+      </td></tr><tr><td><code class="literal">&lt;5.0</code></td><td>
+       Creates a point at 5.0.  <code class="literal">&lt;</code> is ignored but
        is preserved as a comment.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->&gt;5.0</TT
-></TD
-><TD
->       Creates a point at 5.0.  <TT
-CLASS="LITERAL"
->&gt;</TT
-> is ignored but
+      </td></tr><tr><td><code class="literal">&gt;5.0</code></td><td>
+       Creates a point at 5.0.  <code class="literal">&gt;</code> is ignored but
        is preserved as a comment.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->5(+-)0.3</TT
-></TD
-><TD
->        Creates an interval <TT
-CLASS="LITERAL"
->4.7 .. 5.3</TT
->.
-        Note that the <TT
-CLASS="LITERAL"
->(+-)</TT
-> notation isn't preserved.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->50 .. </TT
-></TD
-><TD
->Everything that is greater than or equal to 50</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->.. 0</TT
-></TD
-><TD
->Everything that is less than or equal to 0</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->1.5e-2 .. 2E-2 </TT
-></TD
-><TD
->Creates an interval <TT
-CLASS="LITERAL"
->0.015 .. 0.02</TT
-></TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->1 ... 2</TT
-></TD
-><TD
->       The same as <TT
-CLASS="LITERAL"
->1...2</TT
->, or <TT
-CLASS="LITERAL"
->1 .. 2</TT
->,
-       or <TT
-CLASS="LITERAL"
->1..2</TT
->
+      </td></tr><tr><td><code class="literal">5(+-)0.3</code></td><td>
+        Creates an interval <code class="literal">4.7 .. 5.3</code>.
+        Note that the <code class="literal">(+-)</code> notation isn't preserved.
+      </td></tr><tr><td><code class="literal">50 .. </code></td><td>Everything that is greater than or equal to 50</td></tr><tr><td><code class="literal">.. 0</code></td><td>Everything that is less than or equal to 0</td></tr><tr><td><code class="literal">1.5e-2 .. 2E-2 </code></td><td>Creates an interval <code class="literal">0.015 .. 0.02</code></td></tr><tr><td><code class="literal">1 ... 2</code></td><td>
+       The same as <code class="literal">1...2</code>, or <code class="literal">1 .. 2</code>,
+       or <code class="literal">1..2</code>
        (spaces around the range operator are ignored)
-      </TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   Because <TT
-CLASS="LITERAL"
->...</TT
-> is widely used in data sources, it is allowed
-   as an alternative spelling of <TT
-CLASS="LITERAL"
->..</TT
->.  Unfortunately, this
+      </td></tr></tbody></table></div></div><br class="table-break" /><p>
+   Because <code class="literal">...</code> is widely used in data sources, it is allowed
+   as an alternative spelling of <code class="literal">..</code>.  Unfortunately, this
    creates a parsing ambiguity: it is not clear whether the upper bound
-   in <TT
-CLASS="LITERAL"
->0...23</TT
-> is meant to be <TT
-CLASS="LITERAL"
->23</TT
-> or <TT
-CLASS="LITERAL"
->0.23</TT
->.
+   in <code class="literal">0...23</code> is meant to be <code class="literal">23</code> or <code class="literal">0.23</code>.
    This is resolved by requiring at least one digit before the decimal
-   point in all numbers in <TT
-CLASS="TYPE"
->seg</TT
-> input.
-  </P
-><P
->   As a sanity check, <TT
-CLASS="TYPE"
->seg</TT
-> rejects intervals with the lower bound
-   greater than the upper, for example <TT
-CLASS="LITERAL"
->5 .. 2</TT
->.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN141390"
->F.34.3. Precision</A
-></H2
-><P
->   <TT
-CLASS="TYPE"
->seg</TT
-> values are stored internally as pairs of 32-bit floating point
+   point in all numbers in <code class="type">seg</code> input.
+  </p><p>
+   As a sanity check, <code class="type">seg</code> rejects intervals with the lower bound
+   greater than the upper, for example <code class="literal">5 .. 2</code>.
+  </p></div><div class="sect2" id="id-1.11.7.43.6"><div class="titlepage"><div><div><h3 class="title">F.34.3. Precision</h3></div></div></div><p>
+   <code class="type">seg</code> values are stored internally as pairs of 32-bit floating point
    numbers. This means that numbers with more than 7 significant digits
    will be truncated.
-  </P
-><P
->   Numbers with 7 or fewer significant digits retain their
+  </p><p>
+   Numbers with 7 or fewer significant digits retain their
    original precision. That is, if your query returns 0.00, you will be
    sure that the trailing zeroes are not the artifacts of formatting: they
    reflect the precision of the original data. The number of leading
    zeroes does not affect precision: the value 0.0067 is considered to
    have just 2 significant digits.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN141395"
->F.34.4. Usage</A
-></H2
-><P
->   The <TT
-CLASS="FILENAME"
->seg</TT
-> module includes a GiST index operator class for
-   <TT
-CLASS="TYPE"
->seg</TT
-> values.
-   The operators supported by the GiST operator class are shown in <A
-HREF="seg.html#SEG-GIST-OPERATORS"
->Table F-29</A
->.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="SEG-GIST-OPERATORS"
-></A
-><P
-><B
->Table F-29. Seg GiST Operators</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><THEAD
-><TR
-><TH
->Operator</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[a, b] &lt;&lt; [c, d]</TT
-></TD
-><TD
->[a, b] is entirely to the left of [c, d].  That is, [a,
-       b] &lt;&lt; [c, d] is true if b &lt; c and false otherwise.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[a, b] &gt;&gt; [c, d]</TT
-></TD
-><TD
->[a, b] is entirely to the right of [c, d].  That is, [a,
-       b] &gt;&gt; [c, d] is true if a &gt; d and false otherwise.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[a, b] &amp;&lt; [c, d]</TT
-></TD
-><TD
->Overlaps or is left of &mdash; This might be better read
-       as <SPAN
-CLASS="QUOTE"
->"does not extend to right of"</SPAN
->.  It is true when
-       b &lt;= d.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[a, b] &amp;&gt; [c, d]</TT
-></TD
-><TD
->Overlaps or is right of &mdash; This might be better read
-       as <SPAN
-CLASS="QUOTE"
->"does not extend to left of"</SPAN
->.  It is true when
-       a &gt;= c.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[a, b] = [c, d]</TT
-></TD
-><TD
->Same as &mdash; The segments [a, b] and [c, d] are
-       identical, that is, a = c and b = d.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[a, b] &amp;&amp; [c, d]</TT
-></TD
-><TD
->The segments [a, b] and [c, d] overlap.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[a, b] @&gt; [c, d]</TT
-></TD
-><TD
->The segment [a, b] contains the segment [c, d], that is,
-       a &lt;= c and b &gt;= d.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[a, b] &lt;@ [c, d]</TT
-></TD
-><TD
->The segment [a, b] is contained in [c, d], that is, a
-       &gt;= c and b &lt;= d.</TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   (Before PostgreSQL 8.2, the containment operators <TT
-CLASS="LITERAL"
->@&gt;</TT
-> and <TT
-CLASS="LITERAL"
->&lt;@</TT
-> were
-   respectively called <TT
-CLASS="LITERAL"
->@</TT
-> and <TT
-CLASS="LITERAL"
->~</TT
->.  These names are still available, but are
+  </p></div><div class="sect2" id="id-1.11.7.43.7"><div class="titlepage"><div><div><h3 class="title">F.34.4. Usage</h3></div></div></div><p>
+   The <code class="filename">seg</code> module includes a GiST index operator class for
+   <code class="type">seg</code> values.
+   The operators supported by the GiST operator class are shown in <a class="xref" href="seg.html#SEG-GIST-OPERATORS" title="Table F.28. Seg GiST Operators">Table F.28</a>.
+  </p><div class="table" id="SEG-GIST-OPERATORS"><p class="title"><strong>Table F.28. Seg GiST Operators</strong></p><div class="table-contents"><table class="table" summary="Seg GiST Operators" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Operator</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">[a, b] &lt;&lt; [c, d]</code></td><td>[a, b] is entirely to the left of [c, d].  That is, [a,
+       b] &lt;&lt; [c, d] is true if b &lt; c and false otherwise.</td></tr><tr><td><code class="literal">[a, b] &gt;&gt; [c, d]</code></td><td>[a, b] is entirely to the right of [c, d].  That is, [a,
+       b] &gt;&gt; [c, d] is true if a &gt; d and false otherwise.</td></tr><tr><td><code class="literal">[a, b] &amp;&lt; [c, d]</code></td><td>Overlaps or is left of — This might be better read
+       as <span class="quote">“<span class="quote">does not extend to right of</span>”</span>.  It is true when
+       b &lt;= d.</td></tr><tr><td><code class="literal">[a, b] &amp;&gt; [c, d]</code></td><td>Overlaps or is right of — This might be better read
+       as <span class="quote">“<span class="quote">does not extend to left of</span>”</span>.  It is true when
+       a &gt;= c.</td></tr><tr><td><code class="literal">[a, b] = [c, d]</code></td><td>Same as — The segments [a, b] and [c, d] are
+       identical, that is, a = c and b = d.</td></tr><tr><td><code class="literal">[a, b] &amp;&amp; [c, d]</code></td><td>The segments [a, b] and [c, d] overlap.</td></tr><tr><td><code class="literal">[a, b] @&gt; [c, d]</code></td><td>The segment [a, b] contains the segment [c, d], that is,
+       a &lt;= c and b &gt;= d.</td></tr><tr><td><code class="literal">[a, b] &lt;@ [c, d]</code></td><td>The segment [a, b] is contained in [c, d], that is, a
+       &gt;= c and b &lt;= d.</td></tr></tbody></table></div></div><br class="table-break" /><p>
+   (Before PostgreSQL 8.2, the containment operators <code class="literal">@&gt;</code> and <code class="literal">&lt;@</code> were
+   respectively called <code class="literal">@</code> and <code class="literal">~</code>.  These names are still available, but are
    deprecated and will eventually be retired.  Notice that the old names
    are reversed from the convention formerly followed by the core geometric
    data types!)
-  </P
-><P
->   The standard B-tree operators are also provided, for example
+  </p><p>
+   The standard B-tree operators are also provided, for example
 
-  <DIV
-CLASS="INFORMALTABLE"
-><P
-></P
-><A
-NAME="AEN141449"
-></A
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><THEAD
-><TR
-><TH
->Operator</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[a, b] &lt; [c, d]</TT
-></TD
-><TD
->Less than</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[a, b] &gt; [c, d]</TT
-></TD
-><TD
->Greater than</TD
-></TR
-></TBODY
-></TABLE
-><P
-></P
-></DIV
->
+  </p><div class="informaltable"><table class="informaltable" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>Operator</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">[a, b] &lt; [c, d]</code></td><td>Less than</td></tr><tr><td><code class="literal">[a, b] &gt; [c, d]</code></td><td>Greater than</td></tr></tbody></table></div><p>
 
    These operators do not make a lot of sense for any practical
    purpose but sorting. These operators first compare (a) to (c),
    and if these are equal, compare (b) to (d). That results in
    reasonably good sorting in most cases, which is useful if
    you want to use ORDER BY with this type.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN141464"
->F.34.5. Notes</A
-></H2
-><P
->   For examples of usage, see the regression test <TT
-CLASS="FILENAME"
->sql/seg.sql</TT
->.
-  </P
-><P
->   The mechanism that converts <TT
-CLASS="LITERAL"
->(+-)</TT
-> to regular ranges
+  </p></div><div class="sect2" id="id-1.11.7.43.8"><div class="titlepage"><div><div><h3 class="title">F.34.5. Notes</h3></div></div></div><p>
+   For examples of usage, see the regression test <code class="filename">sql/seg.sql</code>.
+  </p><p>
+   The mechanism that converts <code class="literal">(+-)</code> to regular ranges
    isn't completely accurate in determining the number of significant digits
    for the boundaries.  For example, it adds an extra digit to the lower
    boundary if the resulting interval includes a power of ten:
 
-</P><PRE
-CLASS="SCREEN"
->postgres=&gt; select '10(+-)1'::seg as seg;
+</p><pre class="screen">
+postgres=&gt; select '10(+-)1'::seg as seg;
       seg
 ---------
-9.0 .. 11             -- should be: 9 .. 11</PRE
-><P>
-  </P
-><P
->   The performance of an R-tree index can largely depend on the initial
+9.0 .. 11             -- should be: 9 .. 11
+</pre><p>
+  </p><p>
+   The performance of an R-tree index can largely depend on the initial
    order of input values. It may be very helpful to sort the input table
-   on the <TT
-CLASS="TYPE"
->seg</TT
-> column; see the script <TT
-CLASS="FILENAME"
->sort-segments.pl</TT
->
+   on the <code class="type">seg</code> column; see the script <code class="filename">sort-segments.pl</code>
    for an example.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN141474"
->F.34.6. Credits</A
-></H2
-><P
->   Original author: Gene Selkov, Jr. <CODE
-CLASS="EMAIL"
->&#60;<A
-HREF="mailto:selkovjr@mcs.anl.gov"
->selkovjr@mcs.anl.gov</A
->&#62;</CODE
->,
+  </p></div><div class="sect2" id="id-1.11.7.43.9"><div class="titlepage"><div><div><h3 class="title">F.34.6. Credits</h3></div></div></div><p>
+   Original author: Gene Selkov, Jr. <code class="email">&lt;<a class="email" href="mailto:selkovjr@mcs.anl.gov">selkovjr@mcs.anl.gov</a>&gt;</code>,
    Mathematics and Computer Science Division, Argonne National Laboratory.
-  </P
-><P
->   My thanks are primarily to Prof. Joe Hellerstein
-   (<A
-HREF="http://db.cs.berkeley.edu/jmh/"
-TARGET="_top"
->http://db.cs.berkeley.edu/jmh/</A
->) for elucidating the
-   gist of the GiST (<A
-HREF="http://gist.cs.berkeley.edu/"
-TARGET="_top"
->http://gist.cs.berkeley.edu/</A
->). I am
+  </p><p>
+   My thanks are primarily to Prof. Joe Hellerstein
+   (<a class="ulink" href="http://db.cs.berkeley.edu/jmh/" target="_top">http://db.cs.berkeley.edu/jmh/</a>) for elucidating the
+   gist of the GiST (<a class="ulink" href="http://gist.cs.berkeley.edu/" target="_top">http://gist.cs.berkeley.edu/</a>). I am
    also grateful to all Postgres developers, present and past, for enabling
    myself to create my own world and live undisturbed in it. And I would like
    to acknowledge my gratitude to Argonne Lab and to the U.S. Department of
    Energy for the years of faithful support of my database research.
-  </P
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="postgres-fdw.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sepgsql.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->postgres_fdw</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="contrib.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->sepgsql</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="postgres-fdw.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sepgsql.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.33. postgres_fdw </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> F.35. sepgsql</td></tr></table></div></body></html>

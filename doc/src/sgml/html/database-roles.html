@@ -1,323 +1,70 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Database Roles</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Database Roles"
-HREF="user-manag.html"><LINK
-REL="PREVIOUS"
-TITLE="Database Roles"
-HREF="user-manag.html"><LINK
-REL="NEXT"
-TITLE="Role Attributes"
-HREF="role-attributes.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Database Roles"
-HREF="user-manag.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="user-manag.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 21. Database Roles</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Role Attributes"
-HREF="role-attributes.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="DATABASE-ROLES"
->21.1. Database Roles</A
-></H1
-><P
->   Database roles are conceptually completely separate from
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>21.1. Database Roles</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="user-manag.html" title="Chapter 21. Database Roles" /><link rel="next" href="role-attributes.html" title="21.2. Role Attributes" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">21.1. Database Roles</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="user-manag.html" title="Chapter 21. Database Roles">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="user-manag.html" title="Chapter 21. Database Roles">Up</a></td><th width="60%" align="center">Chapter 21. Database Roles</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="role-attributes.html" title="21.2. Role Attributes">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="DATABASE-ROLES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">21.1. Database Roles</h2></div></div></div><a id="id-1.6.8.5.2" class="indexterm"></a><a id="id-1.6.8.5.3" class="indexterm"></a><a id="id-1.6.8.5.4" class="indexterm"></a><a id="id-1.6.8.5.5" class="indexterm"></a><p>
+   Database roles are conceptually completely separate from
    operating system users. In practice it might be convenient to
    maintain a correspondence, but this is not required. Database roles
    are global across a database cluster installation (and not
-   per individual database). To create a role use the <A
-HREF="sql-createrole.html"
->CREATE ROLE</A
-> SQL command:
-</P><PRE
-CLASS="SYNOPSIS"
->CREATE ROLE <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
->;</PRE
-><P>
-   <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> follows the rules for SQL
+   per individual database). To create a role use the <a class="xref" href="sql-createrole.html" title="CREATE ROLE"><span class="refentrytitle">CREATE ROLE</span></a> SQL command:
+</p><pre class="synopsis">
+CREATE ROLE <em class="replaceable"><code>name</code></em>;
+</pre><p>
+   <em class="replaceable"><code>name</code></em> follows the rules for SQL
    identifiers: either unadorned without special characters, or
    double-quoted.  (In practice, you will usually want to add additional
-   options, such as <TT
-CLASS="LITERAL"
->LOGIN</TT
->, to the command.  More details appear
+   options, such as <code class="literal">LOGIN</code>, to the command.  More details appear
    below.)  To remove an existing role, use the analogous
-   <A
-HREF="sql-droprole.html"
->DROP ROLE</A
-> command:
-</P><PRE
-CLASS="SYNOPSIS"
->DROP ROLE <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
->;</PRE
-><P>
-  </P
-><P
->   For convenience, the programs <A
-HREF="app-createuser.html"
-><SPAN
-CLASS="APPLICATION"
->createuser</SPAN
-></A
->
-   and <A
-HREF="app-dropuser.html"
-><SPAN
-CLASS="APPLICATION"
->dropuser</SPAN
-></A
-> are provided as wrappers
+   <a class="xref" href="sql-droprole.html" title="DROP ROLE"><span class="refentrytitle">DROP ROLE</span></a> command:
+</p><pre class="synopsis">
+DROP ROLE <em class="replaceable"><code>name</code></em>;
+</pre><p>
+  </p><a id="id-1.6.8.5.7" class="indexterm"></a><a id="id-1.6.8.5.8" class="indexterm"></a><p>
+   For convenience, the programs <a class="xref" href="app-createuser.html" title="createuser"><span class="refentrytitle"><span class="application">createuser</span></span></a>
+   and <a class="xref" href="app-dropuser.html" title="dropuser"><span class="refentrytitle"><span class="application">dropuser</span></span></a> are provided as wrappers
    around these SQL commands that can be called from the shell command
    line:
-</P><PRE
-CLASS="SYNOPSIS"
->createuser <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
->
-dropuser <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-></PRE
-><P>
-  </P
-><P
->   To determine the set of existing roles, examine the <TT
-CLASS="STRUCTNAME"
->pg_roles</TT
->
+</p><pre class="synopsis">
+createuser <em class="replaceable"><code>name</code></em>
+dropuser <em class="replaceable"><code>name</code></em>
+</pre><p>
+  </p><p>
+   To determine the set of existing roles, examine the <code class="structname">pg_roles</code>
    system catalog, for example
-</P><PRE
-CLASS="SYNOPSIS"
->SELECT rolname FROM pg_roles;</PRE
-><P>
-   The <A
-HREF="app-psql.html"
-><SPAN
-CLASS="APPLICATION"
->psql</SPAN
-></A
-> program's <TT
-CLASS="LITERAL"
->\du</TT
-> meta-command
+</p><pre class="synopsis">
+SELECT rolname FROM pg_roles;
+</pre><p>
+   The <a class="xref" href="app-psql.html" title="psql"><span class="refentrytitle"><span class="application">psql</span></span></a> program's <code class="literal">\du</code> meta-command
    is also useful for listing the existing roles.
-  </P
-><P
->   In order to bootstrap the database system, a freshly initialized
+  </p><p>
+   In order to bootstrap the database system, a freshly initialized
    system always contains one predefined role. This role is always
-   a <SPAN
-CLASS="QUOTE"
->"superuser"</SPAN
->, and by default (unless altered when running
-   <TT
-CLASS="COMMAND"
->initdb</TT
->) it will have the same name as the
+   a <span class="quote">“<span class="quote">superuser</span>”</span>, and by default (unless altered when running
+   <code class="command">initdb</code>) it will have the same name as the
    operating system user that initialized the database
    cluster. Customarily, this role will be named
-   <TT
-CLASS="LITERAL"
->postgres</TT
->. In order to create more roles you
+   <code class="literal">postgres</code>. In order to create more roles you
    first have to connect as this initial role.
-  </P
-><P
->   Every connection to the database server is made using the name of some
+  </p><p>
+   Every connection to the database server is made using the name of some
    particular role, and this role determines the initial access privileges for
    commands issued in that connection.
    The role name to use for a particular database
    connection is indicated by the client that is initiating the
    connection request in an application-specific fashion. For example,
-   the <TT
-CLASS="COMMAND"
->psql</TT
-> program uses the
-   <TT
-CLASS="OPTION"
->-U</TT
-> command line option to indicate the role to
+   the <code class="command">psql</code> program uses the
+   <code class="option">-U</code> command line option to indicate the role to
    connect as.  Many applications assume the name of the current
    operating system user by default (including
-   <TT
-CLASS="COMMAND"
->createuser</TT
-> and <TT
-CLASS="COMMAND"
->psql</TT
->).  Therefore it
+   <code class="command">createuser</code> and <code class="command">psql</code>).  Therefore it
    is often convenient to maintain a naming correspondence between
    roles and operating system users.
-  </P
-><P
->   The set of database roles a given client connection can connect as
+  </p><p>
+   The set of database roles a given client connection can connect as
    is determined by the client authentication setup, as explained in
-   <A
-HREF="client-authentication.html"
->Chapter 20</A
->. (Thus, a client is not
+   <a class="xref" href="client-authentication.html" title="Chapter 20. Client Authentication">Chapter 20</a>. (Thus, a client is not
    limited to connect as the role matching
    its operating system user, just as a person's login name
    need not match his or her real name.)  Since the role
    identity determines the set of privileges available to a connected
    client, it is important to carefully configure privileges when setting up
    a multiuser environment.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="user-manag.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="role-attributes.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Database Roles</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="user-manag.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Role Attributes</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="user-manag.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="user-manag.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="role-attributes.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 21. Database Roles </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 21.2. Role Attributes</td></tr></table></div></body></html>

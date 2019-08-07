@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "DROP FUNCTION" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "DROP FUNCTION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ DROP_FUNCTION \- remove a function
 .SH "SYNOPSIS"
 .sp
 .nf
-DROP FUNCTION [ IF EXISTS ] \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] )
+DROP FUNCTION [ IF EXISTS ] \fIname\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ] [, \&.\&.\&.]
     [ CASCADE | RESTRICT ]
 .fi
 .SH "DESCRIPTION"
@@ -48,7 +48,7 @@ Do not throw an error if the function does not exist\&. A notice is issued in th
 .PP
 \fIname\fR
 .RS 4
-The name (optionally schema\-qualified) of an existing function\&.
+The name (optionally schema\-qualified) of an existing function\&. If no argument list is specified, the name must be unique in its schema\&.
 .RE
 .PP
 \fIargmode\fR
@@ -84,7 +84,7 @@ The data type(s) of the function\*(Aqs arguments (optionally schema\-qualified),
 CASCADE
 .RS 4
 Automatically drop objects that depend on the function (such as operators or triggers), and in turn all objects that depend on those objects (see
-Section 5.13, \(lqDependency Tracking\(rq, in the documentation)\&.
+Section\ \&5.13)\&.
 .RE
 .PP
 RESTRICT
@@ -104,10 +104,84 @@ DROP FUNCTION sqrt(integer);
 .if n \{\
 .RE
 .\}
+.PP
+Drop multiple functions in one command:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+DROP FUNCTION sqrt(integer), sqrt(bigint);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+If the function name is unique in its schema, it can be referred to without an argument list:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+DROP FUNCTION update_employee_salaries;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Note that this is different from
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+DROP FUNCTION update_employee_salaries();
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+which refers to a function with zero arguments, whereas the first variant can refer to a function with any number of arguments, including zero, as long as the name is unique\&.
 .SH "COMPATIBILITY"
 .PP
-A
-\fBDROP FUNCTION\fR
-statement is defined in the SQL standard, but it is not compatible with this command\&.
+This command conforms to the SQL standard, with these
+PostgreSQL
+extensions:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The standard only allows one function to be dropped per command\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The
+IF EXISTS
+option
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+The ability to specify argument modes and names
+.RE
+.sp
 .SH "SEE ALSO"
-CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7)), ALTER FUNCTION (\fBALTER_FUNCTION\fR(7))
+CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7)), ALTER FUNCTION (\fBALTER_FUNCTION\fR(7)), DROP PROCEDURE (\fBDROP_PROCEDURE\fR(7)), DROP ROUTINE (\fBDROP_ROUTINE\fR(7))

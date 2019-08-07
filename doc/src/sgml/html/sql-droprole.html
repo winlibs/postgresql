@@ -1,340 +1,39 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->DROP ROLE</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="DROP POLICY"
-HREF="sql-droppolicy.html"><LINK
-REL="NEXT"
-TITLE="DROP RULE"
-HREF="sql-droprule.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="DROP POLICY"
-HREF="sql-droppolicy.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="DROP RULE"
-HREF="sql-droprule.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-DROPROLE"
-></A
->DROP ROLE</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN86917"
-></A
-><H2
->Name</H2
->DROP ROLE&nbsp;--&nbsp;remove a database role</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN86920"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->DROP ROLE [ IF EXISTS ] <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> [, ...]</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN86923"
-></A
-><H2
->Description</H2
-><P
->   <TT
-CLASS="COMMAND"
->DROP ROLE</TT
-> removes the specified role(s).
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>DROP ROLE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-droppublication.html" title="DROP PUBLICATION" /><link rel="next" href="sql-droproutine.html" title="DROP ROUTINE" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">DROP ROLE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-droppublication.html" title="DROP PUBLICATION">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-droproutine.html" title="DROP ROUTINE">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-DROPROLE"><div class="titlepage"></div><a id="id-1.9.3.126.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">DROP ROLE</span></h2><p>DROP ROLE — remove a database role</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+DROP ROLE [ IF EXISTS ] <em class="replaceable"><code>name</code></em> [, ...]
+</pre></div><div class="refsect1" id="id-1.9.3.126.5"><h2>Description</h2><p>
+   <code class="command">DROP ROLE</code> removes the specified role(s).
    To drop a superuser role, you must be a superuser yourself;
-   to drop non-superuser roles, you must have <TT
-CLASS="LITERAL"
->CREATEROLE</TT
->
+   to drop non-superuser roles, you must have <code class="literal">CREATEROLE</code>
    privilege.
-  </P
-><P
->   A role cannot be removed if it is still referenced in any database
+  </p><p>
+   A role cannot be removed if it is still referenced in any database
    of the cluster; an error will be raised if so.  Before dropping the role,
    you must drop all the objects it owns (or reassign their ownership)
    and revoke any privileges the role has been granted on other objects.
-   The <A
-HREF="sql-reassign-owned.html"
->REASSIGN OWNED</A
-> and <A
-HREF="sql-drop-owned.html"
->DROP OWNED</A
->
-   commands can be useful for this purpose; see <A
-HREF="role-removal.html"
->Section 21.4</A
->
+   The <a class="xref" href="sql-reassign-owned.html" title="REASSIGN OWNED"><span class="refentrytitle">REASSIGN OWNED</span></a> and <a class="xref" href="sql-drop-owned.html" title="DROP OWNED"><span class="refentrytitle">DROP OWNED</span></a>
+   commands can be useful for this purpose; see <a class="xref" href="role-removal.html" title="21.4. Dropping Roles">Section 21.4</a>
    for more discussion.
-  </P
-><P
->   However, it is not necessary to remove role memberships involving
-   the role; <TT
-CLASS="COMMAND"
->DROP ROLE</TT
-> automatically revokes any memberships
+  </p><p>
+   However, it is not necessary to remove role memberships involving
+   the role; <code class="command">DROP ROLE</code> automatically revokes any memberships
    of the target role in other roles, and of other roles in the target role.
    The other roles are not dropped nor otherwise affected.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN86934"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="LITERAL"
->IF EXISTS</TT
-></DT
-><DD
-><P
->      Do not throw an error if the role does not exist. A notice is issued
+  </p></div><div class="refsect1" id="id-1.9.3.126.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">IF EXISTS</code></span></dt><dd><p>
+      Do not throw an error if the role does not exist. A notice is issued
       in this case.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-></DT
-><DD
-><P
->      The name of the role to remove.
-     </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN86947"
-></A
-><H2
->Notes</H2
-><P
->   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> includes a program <A
-HREF="app-dropuser.html"
-><SPAN
-CLASS="APPLICATION"
->dropuser</SPAN
-></A
-> that has the
+     </p></dd><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
+      The name of the role to remove.
+     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.126.7"><h2>Notes</h2><p>
+   <span class="productname">PostgreSQL</span> includes a program <a class="xref" href="app-dropuser.html" title="dropuser"><span class="refentrytitle"><span class="application">dropuser</span></span></a> that has the
    same functionality as this command (in fact, it calls this command)
    but can be run from the command shell.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN86952"
-></A
-><H2
->Examples</H2
-><P
->   To drop a role:
-</P><PRE
-CLASS="PROGRAMLISTING"
->DROP ROLE jonathan;</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN86956"
-></A
-><H2
->Compatibility</H2
-><P
->   The SQL standard defines <TT
-CLASS="COMMAND"
->DROP ROLE</TT
->, but it allows
+  </p></div><div class="refsect1" id="id-1.9.3.126.8"><h2>Examples</h2><p>
+   To drop a role:
+</p><pre class="programlisting">
+DROP ROLE jonathan;
+</pre></div><div class="refsect1" id="id-1.9.3.126.9"><h2>Compatibility</h2><p>
+   The SQL standard defines <code class="command">DROP ROLE</code>, but it allows
    only one role to be dropped at a time, and it specifies different
-   privilege requirements than <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> uses.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN86961"
-></A
-><H2
->See Also</H2
-><A
-HREF="sql-createrole.html"
->CREATE ROLE</A
->, <A
-HREF="sql-alterrole.html"
->ALTER ROLE</A
->, <A
-HREF="sql-set-role.html"
->SET ROLE</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-droppolicy.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-droprule.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->DROP POLICY</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->DROP RULE</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   privilege requirements than <span class="productname">PostgreSQL</span> uses.
+  </p></div><div class="refsect1" id="id-1.9.3.126.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-createrole.html" title="CREATE ROLE"><span class="refentrytitle">CREATE ROLE</span></a>, <a class="xref" href="sql-alterrole.html" title="ALTER ROLE"><span class="refentrytitle">ALTER ROLE</span></a>, <a class="xref" href="sql-set-role.html" title="SET ROLE"><span class="refentrytitle">SET ROLE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-droppublication.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-droproutine.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">DROP PUBLICATION </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> DROP ROUTINE</td></tr></table></div></body></html>

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ALTER FUNCTION" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ALTER FUNCTION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,15 +32,15 @@ ALTER_FUNCTION \- change the definition of a function
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER FUNCTION \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] )
+ALTER FUNCTION \fIname\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ]
     \fIaction\fR [ \&.\&.\&. ] [ RESTRICT ]
-ALTER FUNCTION \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] )
+ALTER FUNCTION \fIname\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ]
     RENAME TO \fInew_name\fR
-ALTER FUNCTION \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] )
+ALTER FUNCTION \fIname\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ]
     OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
-ALTER FUNCTION \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] )
+ALTER FUNCTION \fIname\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ]
     SET SCHEMA \fInew_schema\fR
-ALTER FUNCTION \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] )
+ALTER FUNCTION \fIname\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ]
     DEPENDS ON EXTENSION \fIextension_name\fR
 
 where \fIaction\fR is one of:
@@ -71,7 +71,7 @@ privilege on the function\*(Aqs schema\&. (These restrictions enforce that alter
 .PP
 \fIname\fR
 .RS 4
-The name (optionally schema\-qualified) of an existing function\&.
+The name (optionally schema\-qualified) of an existing function\&. If no argument list is specified, the name must be unique in its schema\&.
 .RE
 .PP
 \fIargmode\fR
@@ -212,7 +212,7 @@ is executed as the value to be applied when the function is entered\&.
 See
 \fBSET\fR(7)
 and
-Chapter 19, Server Configuration, in the documentation
+Chapter\ \&19
 for more information about allowed parameter names and values\&.
 .RE
 .PP
@@ -326,4 +326,4 @@ RESTRICT
 key word, which is optional in
 PostgreSQL\&.
 .SH "SEE ALSO"
-CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7)), DROP FUNCTION (\fBDROP_FUNCTION\fR(7))
+CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7)), DROP FUNCTION (\fBDROP_FUNCTION\fR(7)), ALTER PROCEDURE (\fBALTER_PROCEDURE\fR(7)), ALTER ROUTINE (\fBALTER_ROUTINE\fR(7))

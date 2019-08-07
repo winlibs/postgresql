@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "PG_UPGRADE" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "PG_UPGRADE" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,7 +31,7 @@
 pg_upgrade \- upgrade a PostgreSQL server instance
 .SH "SYNOPSIS"
 .HP \w'\fBpg_upgrade\fR\ 'u
-\fBpg_upgrade\fR \fB\-b\fR \fIoldbindir\fR \fB\-B\fR \fInewbindir\fR \fB\-d\fR \fIolddatadir\fR \fB\-D\fR \fInewdatadir\fR [\fIoption\fR...]
+\fBpg_upgrade\fR \fB\-b\fR \fIoldbindir\fR \fB\-B\fR \fInewbindir\fR \fB\-d\fR \fIoldconfigdir\fR \fB\-D\fR \fInewconfigdir\fR [\fIoption\fR...]
 .SH "DESCRIPTION"
 .PP
 pg_upgrade
@@ -40,8 +40,7 @@ pg_migrator) allows data stored in
 PostgreSQL
 data files to be upgraded to a later
 PostgreSQL
-major version without the data dump/reload typically required for major version upgrades, e\&.g\&. from 8\&.4\&.7 to the current major release of
-PostgreSQL\&. It is not required for minor version upgrades, e\&.g\&. from 9\&.0\&.1 to 9\&.0\&.4\&.
+major version without the data dump/reload typically required for major version upgrades, e\&.g\&. from 9\&.5\&.8 to 9\&.6\&.4 or from 10\&.7 to 11\&.2\&. It is not required for minor version upgrades, e\&.g\&. from 9\&.6\&.2 to 9\&.6\&.3 or from 10\&.1 to 10\&.2\&.
 .PP
 Major PostgreSQL releases regularly add new features that often change the layout of the system tables, but the internal data storage format rarely changes\&.
 pg_upgrade
@@ -54,7 +53,7 @@ does its best to make sure the old and new clusters are binary\-compatible, e\&.
 pg_upgrade\&.
 .PP
 pg_upgrade supports upgrades from 8\&.4\&.X and later to the current major release of
-PostgreSQL, including snapshot and alpha releases\&.
+PostgreSQL, including snapshot and beta releases\&.
 .SH "OPTIONS"
 .PP
 pg_upgrade
@@ -83,19 +82,19 @@ the new PostgreSQL executable directory; environment variable
 check clusters only, don\*(Aqt change any data
 .RE
 .PP
-\fB\-d\fR \fIdatadir\fR
+\fB\-d\fR \fIconfigdir\fR
 .br
-\fB\-\-old\-datadir=\fR\fIdatadir\fR
+\fB\-\-old\-datadir=\fR\fIconfigdir\fR
 .RS 4
-the old cluster data directory; environment variable
+the old database cluster configuration directory; environment variable
 \fBPGDATAOLD\fR
 .RE
 .PP
-\fB\-D\fR \fIdatadir\fR
+\fB\-D\fR \fIconfigdir\fR
 .br
-\fB\-\-new\-datadir=\fR\fIdatadir\fR
+\fB\-\-new\-datadir=\fR\fIconfigdir\fR
 .RS 4
-the new cluster data directory; environment variable
+the new database cluster configuration directory; environment variable
 \fBPGDATANEW\fR
 .RE
 .PP
@@ -196,7 +195,7 @@ pg_upgrade:
 .IP "  1." 4.2
 .\}
 Optionally move the old cluster: If you are using a version\-specific installation directory, e\&.g\&.
-/opt/PostgreSQL/9\&.1, you do not need to move the old cluster\&. The graphical installers all use version\-specific installation directories\&.
+/opt/PostgreSQL/11, you do not need to move the old cluster\&. The graphical installers all use version\-specific installation directories\&.
 .sp
 If your installation directory is not version\-specific, e\&.g\&.
 /usr/local/pgsql, it is necessary to move the current PostgreSQL install directory so it does not interfere with the new
@@ -308,7 +307,7 @@ pg_hba\&.conf
 or use a
 ~/\&.pgpass
 file (see
-Section 32.15, \(lqThe Password File\(rq, in the documentation)\&.
+Section\ \&34.15)\&.
 .RE
 .sp
 .RS 4
@@ -325,8 +324,8 @@ Stop both servers: Make sure both database servers are stopped using, on Unix, e
 .RS 4
 .\}
 .nf
-pg_ctl \-D /opt/PostgreSQL/8\&.4 stop
-pg_ctl \-D /opt/PostgreSQL/9\&.0 stop
+pg_ctl \-D /opt/PostgreSQL/9\&.6 stop
+pg_ctl \-D /opt/PostgreSQL/11 stop
 .fi
 .if n \{\
 .RE
@@ -338,8 +337,8 @@ or on Windows, using the proper service names:
 .RS 4
 .\}
 .nf
-NET STOP postgresql\-8\&.4
-NET STOP postgresql\-9\&.0
+NET STOP postgresql\-9\&.6
+NET STOP postgresql\-11
 .fi
 .if n \{\
 .RE
@@ -382,10 +381,10 @@ Run pg_upgrade: Always run the
 pg_upgrade
 binary of the new server, not the old one\&.
 pg_upgrade
-requires the specification of the old and new cluster\*(Aqs data and executable (bin) directories\&. You can also specify user and port values, and whether you want the data linked instead of copied (the default)\&.
+requires the specification of the old and new cluster\*(Aqs data and executable (bin) directories\&. You can also specify user and port values, and whether you want the data files linked instead of the default copy behavior\&.
 .sp
 If you use link mode, the upgrade will be much faster (no file copying) and use less disk space, but you will not be able to access your old cluster once you start the new cluster after the upgrade\&. Link mode also requires that the old and new cluster data directories be in the same file system\&. (Tablespaces and
-pg_xlog
+pg_wal
 can be on different file systems\&.) See
 pg_upgrade \-\-help
 for a full list of options\&.
@@ -403,7 +402,7 @@ user and set the proper path:
 .\}
 .nf
 RUNAS /USER:postgres "CMD\&.EXE"
-SET PATH=%PATH%;C:\eProgram Files\ePostgreSQL\e9\&.0\ebin;
+SET PATH=%PATH%;C:\eProgram Files\ePostgreSQL\e11\ebin;
 .fi
 .if n \{\
 .RE
@@ -418,10 +417,10 @@ with quoted directories, e\&.g\&.:
 .\}
 .nf
 pg_upgrade\&.exe
-        \-\-old\-datadir "C:/Program Files/PostgreSQL/8\&.4/data"
-        \-\-new\-datadir "C:/Program Files/PostgreSQL/9\&.0/data"
-        \-\-old\-bindir "C:/Program Files/PostgreSQL/8\&.4/bin"
-        \-\-new\-bindir "C:/Program Files/PostgreSQL/9\&.0/bin"
+        \-\-old\-datadir "C:/Program Files/PostgreSQL/9\&.6/data"
+        \-\-new\-datadir "C:/Program Files/PostgreSQL/11/data"
+        \-\-old\-bindir "C:/Program Files/PostgreSQL/9\&.6/bin"
+        \-\-new\-bindir "C:/Program Files/PostgreSQL/11/bin"
 .fi
 .if n \{\
 .RE
@@ -467,8 +466,8 @@ module from the old cluster and install it in the new cluster after the upgrade,
 .IP "  10." 4.2
 .\}
 Upgrade Streaming Replication and Log\-Shipping standby servers: If you used link mode and have Streaming Replication (see
-Section 26.2.5, \(lqStreaming Replication\(rq, in the documentation) or Log\-Shipping (see
-Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation) standby servers, you can follow these steps to quickly upgrade them\&. You will not be running
+Section\ \&26.2.5) or Log\-Shipping (see
+Section\ \&26.2) standby servers, you can follow these steps to quickly upgrade them\&. You will not be running
 pg_upgrade
 on the standby servers, but rather
 rsync
@@ -488,7 +487,7 @@ initdb
 was run, delete the standby servers\*(Aq new data directories\&.
 Install custom shared object files: Install the same custom shared object files on the new standbys that you installed in the new primary cluster\&.
 Stop standby servers: If the standby servers are still running, stop them now using the above instructions\&.
-Save configuration files: Save any configuration files from the old standbys\*(Aq data directories you need to keep, e\&.g\&.
+Save configuration files: Save any configuration files from the old standbys\*(Aq configuration directories you need to keep, e\&.g\&.
 postgresql\&.conf,
 recovery\&.conf, because these will be overwritten or removed in the next step\&.
 Run rsync: When using link mode, standby servers can be quickly upgraded using
@@ -559,7 +558,7 @@ rsync \-\-archive \-\-delete \-\-hard\-links \-\-size\-only \-\-no\-inc\-recursi
 .\}
 .sp
 If you have relocated
-pg_xlog
+pg_wal
 outside the data directories,
 rsync
 must be run on those directories too\&.
@@ -609,7 +608,7 @@ Post\-Upgrade processing: If any post\-upgrade processing is required, pg_upgrad
 .RS 4
 .\}
 .nf
-psql \-\-username postgres \-\-file script\&.sql postgres
+psql \-\-username=postgres \-\-file=script\&.sql postgres
 .fi
 .if n \{\
 .RE
@@ -679,10 +678,9 @@ Reverting to old cluster: If, after running
 .sp -1
 .IP \(bu 2.3
 .\}
-If you ran
-\fBpg_upgrade\fR
-with
-\fB\-\-check\fR, no modifications were made to the old cluster and you can re\-use it anytime\&.
+If the
+\fB\-\-check\fR
+option was used, the old cluster was unmodified; it can be restarted\&.
 .RE
 .sp
 .RS 4
@@ -693,38 +691,75 @@ with
 .sp -1
 .IP \(bu 2.3
 .\}
-If you ran
-\fBpg_upgrade\fR
-with
-\fB\-\-link\fR, the data files are shared between the old and new cluster\&. If you started the new cluster, the new server has written to those shared files and it is unsafe to use the old cluster\&.
-.RE
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-If you ran
-\fBpg_upgrade\fR
-\fIwithout\fR
+If the
 \fB\-\-link\fR
-or did not start the new server, the old cluster was not modified except that, if linking started, a
+option was
+\fInot\fR
+used, the old cluster was unmodified; it can be restarted\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If the
+\fB\-\-link\fR
+option was used, the data files might be shared between the old and new cluster:
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If
+\fBpg_upgrade\fR
+aborted before linking started, the old cluster was unmodified; it can be restarted\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If you did
+\fInot\fR
+start the new cluster, the old cluster was unmodified except that, when linking started, a
 \&.old
 suffix was appended to
-$PGDATA/global/pg_control\&. To reuse the old cluster, possibly remove the
+$PGDATA/global/pg_control\&. To reuse the old cluster, remove the
 \&.old
 suffix from
 $PGDATA/global/pg_control; you can then restart the old cluster\&.
+.RE
+.sp
+.RS 4
+.ie n \{\
+\h'-04'\(bu\h'+03'\c
+.\}
+.el \{\
+.sp -1
+.IP \(bu 2.3
+.\}
+If you did start the new cluster, it has written to shared files and it is unsafe to use the old cluster\&. The old cluster will need to be restored from backup in this case\&.
+.RE
+.sp
 .RE
 .sp
 .RE
 .SH "NOTES"
 .PP
 pg_upgrade
-does not support upgrading of databases containing these
+does not support upgrading of databases containing table columns using these
 reg*
 OID\-referencing system data types:
 regproc,
@@ -759,6 +794,6 @@ is necessary because
 \fBrsync\fR
 only has file modification\-time granularity of one second\&.) You might want to exclude some files, e\&.g\&.
 postmaster\&.pid, as documented in
-Section 25.3.3, \(lqMaking a Base Backup Using the Low Level API\(rq, in the documentation\&. If your file system supports file system snapshots or copy\-on\-write file copies, you can use that to make a backup of the old cluster and tablespaces, though the snapshot and copies must be created simultaneously or while the database server is down\&.
+Section\ \&25.3.3\&. If your file system supports file system snapshots or copy\-on\-write file copies, you can use that to make a backup of the old cluster and tablespaces, though the snapshot and copies must be created simultaneously or while the database server is down\&.
 .SH "SEE ALSO"
 \fBinitdb\fR(1), \fBpg_ctl\fR(1), \fBpg_dump\fR(1), \fBpostgres\fR(1)

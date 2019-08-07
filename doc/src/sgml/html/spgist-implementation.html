@@ -1,382 +1,80 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Implementation</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SP-GiST Indexes"
-HREF="spgist.html"><LINK
-REL="PREVIOUS"
-TITLE="Extensibility"
-HREF="spgist-extensibility.html"><LINK
-REL="NEXT"
-TITLE="Examples"
-HREF="spgist-examples.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Extensibility"
-HREF="spgist-extensibility.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="spgist.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 62. SP-GiST Indexes</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Examples"
-HREF="spgist-examples.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="SPGIST-IMPLEMENTATION"
->62.4. Implementation</A
-></H1
-><P
->   This section covers implementation details and other tricks that are
-   useful for implementers of <ACRONYM
-CLASS="ACRONYM"
->SP-GiST</ACRONYM
-> operator classes to
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>65.4. Implementation</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="spgist-extensibility.html" title="65.3. Extensibility" /><link rel="next" href="spgist-examples.html" title="65.5. Examples" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">65.4. Implementation</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="spgist-extensibility.html" title="65.3. Extensibility">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="spgist.html" title="Chapter 65. SP-GiST Indexes">Up</a></td><th width="60%" align="center">Chapter 65. SP-GiST Indexes</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="spgist-examples.html" title="65.5. Examples">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="SPGIST-IMPLEMENTATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">65.4. Implementation</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="spgist-implementation.html#SPGIST-LIMITS">65.4.1. SP-GiST Limits</a></span></dt><dt><span class="sect2"><a href="spgist-implementation.html#SPGIST-NULL-LABELS">65.4.2. SP-GiST Without Node Labels</a></span></dt><dt><span class="sect2"><a href="spgist-implementation.html#SPGIST-ALL-THE-SAME">65.4.3. <span class="quote">“<span class="quote">All-the-same</span>”</span> Inner Tuples</a></span></dt></dl></div><p>
+   This section covers implementation details and other tricks that are
+   useful for implementers of <acronym class="acronym">SP-GiST</acronym> operator classes to
    know.
-  </P
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="SPGIST-LIMITS"
->62.4.1. SP-GiST Limits</A
-></H2
-><P
->   Individual leaf tuples and inner tuples must fit on a single index page
+  </p><div class="sect2" id="SPGIST-LIMITS"><div class="titlepage"><div><div><h3 class="title">65.4.1. SP-GiST Limits</h3></div></div></div><p>
+   Individual leaf tuples and inner tuples must fit on a single index page
    (8kB by default).  Therefore, when indexing values of variable-length
    data types, long values can only be supported by methods such as radix
    trees, in which each level of the tree includes a prefix that is short
    enough to fit on a page, and the final leaf level includes a suffix also
    short enough to fit on a page.  The operator class should set
-   <TT
-CLASS="STRUCTFIELD"
->longValuesOK</TT
-> to TRUE only if it is prepared to arrange for
-   this to happen.  Otherwise, the <ACRONYM
-CLASS="ACRONYM"
->SP-GiST</ACRONYM
-> core will
+   <code class="structfield">longValuesOK</code> to true only if it is prepared to arrange for
+   this to happen.  Otherwise, the <acronym class="acronym">SP-GiST</acronym> core will
    reject any request to index a value that is too large to fit
    on an index page.
-  </P
-><P
->   Likewise, it is the operator class's responsibility that inner tuples
+  </p><p>
+   Likewise, it is the operator class's responsibility that inner tuples
    do not grow too large to fit on an index page; this limits the number
    of child nodes that can be used in one inner tuple, as well as the
    maximum size of a prefix value.
-  </P
-><P
->   Another limitation is that when an inner tuple's node points to a set
+  </p><p>
+   Another limitation is that when an inner tuple's node points to a set
    of leaf tuples, those tuples must all be in the same index page.
    (This is a design decision to reduce seeking and save space in the
    links that chain such tuples together.)  If the set of leaf tuples
    grows too large for a page, a split is performed and an intermediate
    inner tuple is inserted.  For this to fix the problem, the new inner
-   tuple <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->must</I
-></SPAN
-> divide the set of leaf values into more than one
-   node group.  If the operator class's <CODE
-CLASS="FUNCTION"
->picksplit</CODE
-> function
-   fails to do that, the <ACRONYM
-CLASS="ACRONYM"
->SP-GiST</ACRONYM
-> core resorts to
-   extraordinary measures described in <A
-HREF="spgist-implementation.html#SPGIST-ALL-THE-SAME"
->Section 62.4.3</A
->.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="SPGIST-NULL-LABELS"
->62.4.2. SP-GiST Without Node Labels</A
-></H2
-><P
->   Some tree algorithms use a fixed set of nodes for each inner tuple;
+   tuple <span class="emphasis"><em>must</em></span> divide the set of leaf values into more than one
+   node group.  If the operator class's <code class="function">picksplit</code> function
+   fails to do that, the <acronym class="acronym">SP-GiST</acronym> core resorts to
+   extraordinary measures described in <a class="xref" href="spgist-implementation.html#SPGIST-ALL-THE-SAME" title="65.4.3. “All-the-same” Inner Tuples">Section 65.4.3</a>.
+  </p></div><div class="sect2" id="SPGIST-NULL-LABELS"><div class="titlepage"><div><div><h3 class="title">65.4.2. SP-GiST Without Node Labels</h3></div></div></div><p>
+   Some tree algorithms use a fixed set of nodes for each inner tuple;
    for example, in a quad-tree there are always exactly four nodes
    corresponding to the four quadrants around the inner tuple's centroid
    point.  In such a case the code typically works with the nodes by
    number, and there is no need for explicit node labels.  To suppress
-   node labels (and thereby save some space), the <CODE
-CLASS="FUNCTION"
->picksplit</CODE
->
-   function can return NULL for the <TT
-CLASS="STRUCTFIELD"
->nodeLabels</TT
-> array.
-   This will in turn result in <TT
-CLASS="STRUCTFIELD"
->nodeLabels</TT
-> being NULL during
-   subsequent calls to <CODE
-CLASS="FUNCTION"
->choose</CODE
-> and <CODE
-CLASS="FUNCTION"
->inner_consistent</CODE
->.
+   node labels (and thereby save some space), the <code class="function">picksplit</code>
+   function can return NULL for the <code class="structfield">nodeLabels</code> array,
+   and likewise the <code class="function">choose</code> function can return NULL for
+   the <code class="structfield">prefixNodeLabels</code> array during
+   a <code class="literal">spgSplitTuple</code> action.
+   This will in turn result in <code class="structfield">nodeLabels</code> being NULL during
+   subsequent calls to <code class="function">choose</code> and <code class="function">inner_consistent</code>.
    In principle, node labels could be used for some inner tuples and omitted
    for others in the same index.
-  </P
-><P
->   When working with an inner tuple having unlabeled nodes, it is an error
-   for <CODE
-CLASS="FUNCTION"
->choose</CODE
-> to return <TT
-CLASS="LITERAL"
->spgAddNode</TT
->, since the set
-   of nodes is supposed to be fixed in such cases.  Also, there is no
-   provision for generating an unlabeled node in <TT
-CLASS="LITERAL"
->spgSplitTuple</TT
->
-   actions, since it is expected that an <TT
-CLASS="LITERAL"
->spgAddNode</TT
-> action will
-   be needed as well.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="SPGIST-ALL-THE-SAME"
->62.4.3. <SPAN
-CLASS="QUOTE"
->"All-the-same"</SPAN
-> Inner Tuples</A
-></H2
-><P
->   The <ACRONYM
-CLASS="ACRONYM"
->SP-GiST</ACRONYM
-> core can override the results of the
-   operator class's <CODE
-CLASS="FUNCTION"
->picksplit</CODE
-> function when
-   <CODE
-CLASS="FUNCTION"
->picksplit</CODE
-> fails to divide the supplied leaf values into
+  </p><p>
+   When working with an inner tuple having unlabeled nodes, it is an error
+   for <code class="function">choose</code> to return <code class="literal">spgAddNode</code>, since the set
+   of nodes is supposed to be fixed in such cases.
+  </p></div><div class="sect2" id="SPGIST-ALL-THE-SAME"><div class="titlepage"><div><div><h3 class="title">65.4.3. <span class="quote">“<span class="quote">All-the-same</span>”</span> Inner Tuples</h3></div></div></div><p>
+   The <acronym class="acronym">SP-GiST</acronym> core can override the results of the
+   operator class's <code class="function">picksplit</code> function when
+   <code class="function">picksplit</code> fails to divide the supplied leaf values into
    at least two node categories.  When this happens, the new inner tuple
    is created with multiple nodes that each have the same label (if any)
-   that <CODE
-CLASS="FUNCTION"
->picksplit</CODE
-> gave to the one node it did use, and the
+   that <code class="function">picksplit</code> gave to the one node it did use, and the
    leaf values are divided at random among these equivalent nodes.
-   The <TT
-CLASS="LITERAL"
->allTheSame</TT
-> flag is set on the inner tuple to warn the
-   <CODE
-CLASS="FUNCTION"
->choose</CODE
-> and <CODE
-CLASS="FUNCTION"
->inner_consistent</CODE
-> functions that the
+   The <code class="literal">allTheSame</code> flag is set on the inner tuple to warn the
+   <code class="function">choose</code> and <code class="function">inner_consistent</code> functions that the
    tuple does not have the node set that they might otherwise expect.
-  </P
-><P
->   When dealing with an <TT
-CLASS="LITERAL"
->allTheSame</TT
-> tuple, a <CODE
-CLASS="FUNCTION"
->choose</CODE
->
-   result of <TT
-CLASS="LITERAL"
->spgMatchNode</TT
-> is interpreted to mean that the new
+  </p><p>
+   When dealing with an <code class="literal">allTheSame</code> tuple, a <code class="function">choose</code>
+   result of <code class="literal">spgMatchNode</code> is interpreted to mean that the new
    value can be assigned to any of the equivalent nodes; the core code will
-   ignore the supplied  <TT
-CLASS="STRUCTFIELD"
->nodeN</TT
-> value and descend into one
+   ignore the supplied  <code class="structfield">nodeN</code> value and descend into one
    of the nodes at random (so as to keep the tree balanced).  It is an
-   error for <CODE
-CLASS="FUNCTION"
->choose</CODE
-> to return <TT
-CLASS="LITERAL"
->spgAddNode</TT
->, since
+   error for <code class="function">choose</code> to return <code class="literal">spgAddNode</code>, since
    that would make the nodes not all equivalent; the
-   <TT
-CLASS="LITERAL"
->spgSplitTuple</TT
-> action must be used if the value to be inserted
+   <code class="literal">spgSplitTuple</code> action must be used if the value to be inserted
    doesn't match the existing nodes.
-  </P
-><P
->   When dealing with an <TT
-CLASS="LITERAL"
->allTheSame</TT
-> tuple, the
-   <CODE
-CLASS="FUNCTION"
->inner_consistent</CODE
-> function should return either all or none
+  </p><p>
+   When dealing with an <code class="literal">allTheSame</code> tuple, the
+   <code class="function">inner_consistent</code> function should return either all or none
    of the nodes as targets for continuing the index search, since they are
    all equivalent.  This may or may not require any special-case code,
-   depending on how much the <CODE
-CLASS="FUNCTION"
->inner_consistent</CODE
-> function normally
+   depending on how much the <code class="function">inner_consistent</code> function normally
    assumes about the meaning of the nodes.
-  </P
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="spgist-extensibility.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="spgist-examples.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Extensibility</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="spgist.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Examples</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="spgist-extensibility.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="spgist.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="spgist-examples.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">65.3. Extensibility </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 65.5. Examples</td></tr></table></div></body></html>

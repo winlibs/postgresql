@@ -38,7 +38,7 @@ $output =~ s/gram\.c$/pl_gram.c/ if $input =~ /src.pl.plpgsql.src.gram\.y$/;
 
 my $makefile = dirname($input) . "/Makefile";
 my ($mf, $make);
-open($mf, $makefile);
+open($mf, '<', $makefile);
 local $/ = undef;
 $make = <$mf>;
 close($mf);

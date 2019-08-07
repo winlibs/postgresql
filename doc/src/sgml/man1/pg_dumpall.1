@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "PG_DUMPALL" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "PG_DUMPALL" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -43,14 +43,14 @@ commands that can be used as input to
 \fBpsql\fR(1)
 to restore the databases\&. It does this by calling
 \fBpg_dump\fR(1)
-for each database in a cluster\&.
+for each database in the cluster\&.
 pg_dumpall
-also dumps global objects that are common to all databases\&. (pg_dump
-does not save these objects\&.) This currently includes information about database users and groups, tablespaces, and properties such as access permissions that apply to databases as a whole\&.
+also dumps global objects that are common to all databases, that is, database roles and tablespaces\&. (pg_dump
+does not save these objects\&.)
 .PP
 Since
 pg_dumpall
-reads tables from all databases you will most likely have to connect as a database superuser in order to produce a complete dump\&. Also you will need superuser privileges to execute the saved script in order to be allowed to add users and groups, and to create databases\&.
+reads tables from all databases you will most likely have to connect as a database superuser in order to produce a complete dump\&. Also you will need superuser privileges to execute the saved script in order to be allowed to add roles and create databases\&.
 .PP
 The SQL script will be written to the standard output\&. Use the [\-f|file] option or shell operators to redirect it into a file\&.
 .PP
@@ -60,7 +60,7 @@ PostgreSQL
 server (once per database)\&. If you use password authentication it will ask for a password each time\&. It is convenient to have a
 ~/\&.pgpass
 file in such cases\&. See
-Section 32.15, \(lqThe Password File\(rq, in the documentation
+Section\ \&34.15
 for more information\&.
 .SH "OPTIONS"
 .PP
@@ -80,6 +80,15 @@ Dump only the data, not the schema (data definitions)\&.
 Include SQL commands to clean (drop) databases before recreating them\&.
 \fBDROP\fR
 commands for roles and tablespaces are added as well\&.
+.RE
+.PP
+\fB\-E \fR\fB\fIencoding\fR\fR
+.br
+\fB\-\-encoding=\fR\fB\fIencoding\fR\fR
+.RS 4
+Create the dump in the specified character set encoding\&. By default, the dump is created in the database encoding\&. (Another way to get the same result is to set the
+\fBPGCLIENTENCODING\fR
+environment variable to the desired dump encoding\&.)
 .RE
 .PP
 \fB\-f \fR\fB\fIfilename\fR\fR
@@ -213,7 +222,7 @@ must be done as superuser\&. So, you should also specify a superuser name with
 .RS 4
 Use conditional commands (i\&.e\&. add an
 IF EXISTS
-clause) to clean databases and other objects\&. This option is not valid unless
+clause) to drop databases and other objects\&. This option is not valid unless
 \fB\-\-clean\fR
 is also specified\&.
 .RE
@@ -229,6 +238,15 @@ databases\&. Note that the restore might fail altogether if you have rearranged 
 option is safer, though even slower\&.
 .RE
 .PP
+\fB\-\-load\-via\-partition\-root\fR
+.RS 4
+When dumping data for a table partition, make the
+\fBCOPY\fR
+or
+\fBINSERT\fR
+statements target the root of the partitioning hierarchy that contains it, rather than the partition itself\&. This causes the appropriate partition to be re\-determined for each row when the data is loaded\&. This may be useful when reloading data on a server where rows do not always fall into the same partitions as they did on the original server\&. That could happen, for example, if the partitioning column is of type text and the two systems have different definitions of the collation used to sort the partitioning column\&.
+.RE
+.PP
 \fB\-\-lock\-wait\-timeout=\fR\fB\fItimeout\fR\fR
 .RS 4
 Do not wait forever to acquire shared table locks at the beginning of the dump\&. Instead, fail if unable to lock a table within the specified
@@ -236,9 +254,43 @@ Do not wait forever to acquire shared table locks at the beginning of the dump\&
 \fBSET statement_timeout\fR\&. Allowed values vary depending on the server version you are dumping from, but an integer number of milliseconds is accepted by all versions since 7\&.3\&. This option is ignored when dumping from a pre\-7\&.3 server\&.
 .RE
 .PP
+\fB\-\-no\-comments\fR
+.RS 4
+Do not dump comments\&.
+.RE
+.PP
+\fB\-\-no\-publications\fR
+.RS 4
+Do not dump publications\&.
+.RE
+.PP
+\fB\-\-no\-role\-passwords\fR
+.RS 4
+Do not dump passwords for roles\&. When restored, roles will have a null password, and password authentication will always fail until the password is set\&. Since password values aren\*(Aqt needed when this option is specified, the role information is read from the catalog view
+pg_roles
+instead of
+pg_authid\&. Therefore, this option also helps if access to
+pg_authid
+is restricted by some security policy\&.
+.RE
+.PP
 \fB\-\-no\-security\-labels\fR
 .RS 4
 Do not dump security labels\&.
+.RE
+.PP
+\fB\-\-no\-subscriptions\fR
+.RS 4
+Do not dump subscriptions\&.
+.RE
+.PP
+\fB\-\-no\-sync\fR
+.RS 4
+By default,
+\fBpg_dumpall\fR
+will wait for all files to be written safely to disk\&. This option causes
+\fBpg_dumpall\fR
+to return without waiting, which is faster, but means that a subsequent operating system crash can leave the dump corrupt\&. Generally, this option is useful for testing but should not be used when dumping data from production installation\&.
 .RE
 .PP
 \fB\-\-no\-tablespaces\fR
@@ -288,16 +340,16 @@ The following command\-line options control the database connection parameters\&
 \fB\-\-dbname=\fR\fB\fIconnstr\fR\fR
 .RS 4
 Specifies parameters used to connect to the server, as a connection string\&. See
-Section 32.1.1, \(lqConnection Strings\(rq, in the documentation
+Section\ \&34.1.1
 for more information\&.
 .sp
 The option is called
 \-\-dbname
 for consistency with other client applications, but because
 pg_dumpall
-needs to connect to many databases, database name in the connection string will be ignored\&. Use
+needs to connect to many databases, the database name in the connection string will be ignored\&. Use the
 \-l
-option to specify the name of the database used to dump global objects and to discover what other databases should be dumped\&.
+option to specify the name of the database used for the initial connection, which will dump global objects and discover what other databases should be dumped\&.
 .RE
 .PP
 \fB\-h \fR\fB\fIhost\fR\fR
@@ -395,7 +447,7 @@ PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section\ \&34.14)\&.
 .SH "NOTES"
 .PP
 Since
@@ -405,11 +457,30 @@ pg_dump
 internally, some diagnostic messages will refer to
 pg_dump\&.
 .PP
+The
+\fB\-\-clean\fR
+option can be useful even when your intention is to restore the dump script into a fresh cluster\&. Use of
+\fB\-\-clean\fR
+authorizes the script to drop and re\-create the built\-in
+postgres
+and
+template1
+databases, ensuring that those databases will retain the same properties (for instance, locale and encoding) that they had in the source cluster\&. Without the option, those databases will retain their existing database\-level properties, as well as any pre\-existing contents\&.
+.PP
 Once restored, it is wise to run
 \fBANALYZE\fR
 on each database so the optimizer has useful statistics\&. You can also run
 \fBvacuumdb \-a \-z\fR
 to analyze all databases\&.
+.PP
+The dump script should not be expected to run completely without errors\&. In particular, because the script will issue
+\fBCREATE ROLE\fR
+for every role existing in the source cluster, it is certain to get a
+\(lqrole already exists\(rq
+error for the bootstrap superuser, unless the destination cluster was initialized with a different bootstrap superuser name\&. This error is harmless and should be ignored\&. Use of the
+\fB\-\-clean\fR
+option is likely to produce additional harmless error messages about non\-existent objects, although you can minimize those by adding
+\fB\-\-if\-exists\fR\&.
 .PP
 pg_dumpall
 requires all needed tablespace directories to exist before the restore; otherwise, database creation will fail for databases in non\-default locations\&.
@@ -439,9 +510,12 @@ $ \fBpsql \-f db\&.out postgres\fR
 .RE
 .\}
 .sp
-(It is not important to which database you connect here since the script file created by
+It is not important to which database you connect here since the script file created by
 pg_dumpall
-will contain the appropriate commands to create and connect to the saved databases\&.)
+will contain the appropriate commands to create and connect to the saved databases\&. An exception is that if you specified
+\fB\-\-clean\fR, you must connect to the
+postgres
+database initially; the script will attempt to drop other databases immediately, and that will fail for the database you are connected to\&.
 .SH "SEE ALSO"
 .PP
 Check

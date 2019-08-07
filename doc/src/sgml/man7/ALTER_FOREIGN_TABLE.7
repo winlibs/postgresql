@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ALTER FOREIGN TABLE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ALTER FOREIGN TABLE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -171,7 +171,7 @@ SET WITH OIDS
 This form adds an
 oid
 system column to the table (see
-Section 5.4, \(lqSystem Columns\(rq, in the documentation)\&. It does nothing if the table already has OIDs\&. Unless the table\*(Aqs foreign\-data wrapper supports OIDs, this column will simply read as zeroes\&.
+Section\ \&5.4)\&. It does nothing if the table already has OIDs\&. Unless the table\*(Aqs foreign\-data wrapper supports OIDs, this column will simply read as zeroes\&.
 .sp
 Note that this is not equivalent to
 ADD COLUMN oid oid; that would add a normal column that happened to be named
@@ -292,7 +292,7 @@ Name of an existing constraint to drop\&.
 CASCADE
 .RS 4
 Automatically drop objects that depend on the dropped column or constraint (for example, views referencing the column), and in turn all objects that depend on those objects (see
-Section 5.13, \(lqDependency Tracking\(rq, in the documentation)\&.
+Section\ \&5.13)\&.
 .RE
 .PP
 RESTRICT

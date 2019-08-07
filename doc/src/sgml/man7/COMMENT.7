@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "COMMENT" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "COMMENT" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -48,7 +48,7 @@ COMMENT ON
   EVENT TRIGGER \fIobject_name\fR |
   FOREIGN DATA WRAPPER \fIobject_name\fR |
   FOREIGN TABLE \fIobject_name\fR |
-  FUNCTION \fIfunction_name\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) |
+  FUNCTION \fIfunction_name\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ] |
   INDEX \fIobject_name\fR |
   LARGE OBJECT \fIlarge_object_oid\fR |
   MATERIALIZED VIEW \fIobject_name\fR |
@@ -57,11 +57,16 @@ COMMENT ON
   OPERATOR FAMILY \fIobject_name\fR USING \fIindex_method\fR |
   POLICY \fIpolicy_name\fR ON \fItable_name\fR |
   [ PROCEDURAL ] LANGUAGE \fIobject_name\fR |
+  PROCEDURE \fIprocedure_name\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ] |
+  PUBLICATION \fIobject_name\fR |
   ROLE \fIobject_name\fR |
+  ROUTINE \fIroutine_name\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ] |
   RULE \fIrule_name\fR ON \fItable_name\fR |
   SCHEMA \fIobject_name\fR |
   SEQUENCE \fIobject_name\fR |
   SERVER \fIobject_name\fR |
+  STATISTICS \fIobject_name\fR |
+  SUBSCRIPTION \fIobject_name\fR |
   TABLE \fIobject_name\fR |
   TABLESPACE \fIobject_name\fR |
   TEXT SEARCH CONFIGURATION \fIobject_name\fR |
@@ -107,7 +112,7 @@ uses, namely
 \fBcol_description\fR, and
 \fBshobj_description\fR
 (see
-Table\ \&9.67, \(lqComment Information Functions\(rq)\&.
+Table\ \&9.68)\&.
 .SH "PARAMETERS"
 .PP
 \fIobject_name\fR
@@ -124,11 +129,15 @@ Table\ \&9.67, \(lqComment Information Functions\(rq)\&.
 .br
 \fIpolicy_name\fR
 .br
+\fIprocedure_name\fR
+.br
+\fIroutine_name\fR
+.br
 \fIrule_name\fR
 .br
 \fItrigger_name\fR
 .RS 4
-The name of the object to be commented\&. Names of tables, aggregates, collations, conversions, domains, foreign tables, functions, indexes, operators, operator classes, operator families, sequences, text search objects, types, and views can be schema\-qualified\&. When commenting on a column,
+The name of the object to be commented\&. Names of tables, aggregates, collations, conversions, domains, foreign tables, functions, indexes, operators, operator classes, operator families, procedures, routines, sequences, statistics, text search objects, types, and views can be schema\-qualified\&. When commenting on a column,
 \fIrelation_name\fR
 must refer to a table, view, composite type, or foreign table\&.
 .RE
@@ -152,7 +161,7 @@ The name of the target data type of the cast\&.
 .PP
 \fIargmode\fR
 .RS 4
-The mode of a function or aggregate argument:
+The mode of a function, procedure, or aggregate argument:
 IN,
 OUT,
 INOUT, or
@@ -170,14 +179,14 @@ arguments\&.
 .PP
 \fIargname\fR
 .RS 4
-The name of a function or aggregate argument\&. Note that
+The name of a function, procedure, or aggregate argument\&. Note that
 \fBCOMMENT\fR
 does not actually pay any attention to argument names, since only the argument data types are needed to determine the function\*(Aqs identity\&.
 .RE
 .PP
 \fIargtype\fR
 .RS 4
-The data type of a function or aggregate argument\&.
+The data type of a function, procedure, or aggregate argument\&.
 .RE
 .PP
 \fIlarge_object_oid\fR
@@ -274,11 +283,13 @@ COMMENT ON OPERATOR \- (NONE, integer) IS \*(AqUnary minus\*(Aq;
 COMMENT ON OPERATOR CLASS int4ops USING btree IS \*(Aq4 byte integer operators for btrees\*(Aq;
 COMMENT ON OPERATOR FAMILY integer_ops USING btree IS \*(Aqall integer operators for btrees\*(Aq;
 COMMENT ON POLICY my_policy ON mytable IS \*(AqFilter rows by users\*(Aq;
+COMMENT ON PROCEDURE my_proc (integer, integer) IS \*(AqRuns a report\*(Aq;
 COMMENT ON ROLE my_role IS \*(AqAdministration group for finance tables\*(Aq;
 COMMENT ON RULE my_rule ON my_table IS \*(AqLogs updates of employee records\*(Aq;
 COMMENT ON SCHEMA my_schema IS \*(AqDepartmental data\*(Aq;
 COMMENT ON SEQUENCE my_sequence IS \*(AqUsed to generate primary keys\*(Aq;
 COMMENT ON SERVER myserver IS \*(Aqmy foreign server\*(Aq;
+COMMENT ON STATISTICS my_statistics IS \*(AqImproves planner row estimations\*(Aq;
 COMMENT ON TABLE my_schema\&.my_table IS \*(AqEmployee Information\*(Aq;
 COMMENT ON TABLESPACE my_tablespace IS \*(AqTablespace for indexes\*(Aq;
 COMMENT ON TEXT SEARCH CONFIGURATION my_config IS \*(AqSpecial word filtering\*(Aq;

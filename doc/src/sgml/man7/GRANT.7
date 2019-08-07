@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "GRANT" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "GRANT" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -66,8 +66,8 @@ GRANT { USAGE | ALL [ PRIVILEGES ] }
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { EXECUTE | ALL [ PRIVILEGES ] }
-    ON { FUNCTION \fIfunction_name\fR ( [ [ \fIargmode\fR ] [ \fIarg_name\fR ] \fIarg_type\fR [, \&.\&.\&.] ] ) [, \&.\&.\&.]
-         | ALL FUNCTIONS IN SCHEMA \fIschema_name\fR [, \&.\&.\&.] }
+    ON { { FUNCTION | PROCEDURE | ROUTINE } \fIroutine_name\fR [ ( [ [ \fIargmode\fR ] [ \fIarg_name\fR ] \fIarg_type\fR [, \&.\&.\&.] ] ) ] [, \&.\&.\&.]
+         | ALL { FUNCTIONS | PROCEDURES | ROUTINES } IN SCHEMA \fIschema_name\fR [, \&.\&.\&.] }
     TO \fIrole_specification\fR [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
@@ -103,16 +103,22 @@ GRANT \fIrole_name\fR [, \&.\&.\&.] TO \fIrole_name\fR [, \&.\&.\&.] [ WITH ADMI
 .PP
 The
 \fBGRANT\fR
-command has two basic variants: one that grants privileges on a database object (table, column, view, foreign table, sequence, database, foreign\-data wrapper, foreign server, function, procedural language, schema, or tablespace), and one that grants membership in a role\&. These variants are similar in many ways, but they are different enough to be described separately\&.
+command has two basic variants: one that grants privileges on a database object (table, column, view, foreign table, sequence, database, foreign\-data wrapper, foreign server, function, procedure, procedural language, schema, or tablespace), and one that grants membership in a role\&. These variants are similar in many ways, but they are different enough to be described separately\&.
 .SS "GRANT on Database Objects"
 .PP
 This variant of the
 \fBGRANT\fR
 command gives specific privileges on a database object to one or more roles\&. These privileges are added to those already granted, if any\&.
 .PP
-There is also an option to grant privileges on all objects of the same type within one or more schemas\&. This functionality is currently supported only for tables, sequences, and functions (but note that
+There is also an option to grant privileges on all objects of the same type within one or more schemas\&. This functionality is currently supported only for tables, sequences, functions, and procedures\&.
 ALL TABLES
-is considered to include views and foreign tables)\&.
+also affects views and foreign tables, just like the specific\-object
+\fBGRANT\fR
+command\&.
+ALL FUNCTIONS
+also affects aggregate functions, but not procedures, again just like the specific\-object
+\fBGRANT\fR
+command\&.
 .PP
 The key word
 PUBLIC
@@ -141,7 +147,7 @@ and
 TEMPORARY
 (create temporary tables) privileges for databases;
 EXECUTE
-privilege for functions; and
+privilege for functions and procedures; and
 USAGE
 privilege for languages and data types (including domains)\&. The object owner can, of course,
 \fBREVOKE\fR
@@ -219,7 +225,9 @@ on the specified table\&.
 .PP
 REFERENCES
 .RS 4
-To create a foreign key constraint, it is necessary to have this privilege on both the referencing and referenced columns\&. The privilege may be granted for all columns of a table, or just specific columns\&.
+Allows creation of a foreign key constraint referencing the specified table, or specified column(s) of the table\&. (See the
+CREATE TABLE (\fBCREATE_TABLE\fR(7))
+statement\&.)
 .RE
 .PP
 TRIGGER
@@ -231,7 +239,7 @@ statement\&.)
 .PP
 CREATE
 .RS 4
-For databases, allows new schemas to be created within the database\&.
+For databases, allows new schemas and publications to be created within the database\&.
 .sp
 For schemas, allows new objects to be created within the schema\&. To rename an existing object, you must own the object
 \fIand\fR
@@ -255,7 +263,11 @@ Allows temporary tables to be created while using the specified database\&.
 .PP
 EXECUTE
 .RS 4
-Allows the use of the specified function and the use of any operators that are implemented on top of the function\&. This is the only type of privilege that is applicable to functions\&. (This syntax works for aggregate functions, as well\&.)
+Allows the use of the specified function or procedure and the use of any operators that are implemented on top of the function\&. This is the only type of privilege that is applicable to functions and procedures\&. The
+FUNCTION
+syntax also works for aggregate functions\&. Alternatively, use
+ROUTINE
+to refer to a function, aggregate function, or procedure regardless of what it is\&.
 .RE
 .PP
 USAGE
@@ -272,13 +284,13 @@ and
 \fBnextval\fR
 functions\&.
 .sp
-For types and domains, this privilege allow the use of the type or domain in the creation of tables, functions, and other schema objects\&. (Note that it does not control general
+For types and domains, this privilege allows the use of the type or domain in the creation of tables, functions, and other schema objects\&. (Note that it does not control general
 \(lqusage\(rq
 of the type, such as values of the type appearing in queries\&. It only prevents objects from being created that depend on the type\&. The main purpose of the privilege is controlling which users create dependencies on a type, which could prevent the owner from changing the type later\&.)
 .sp
-For foreign\-data wrappers, this privilege enables the grantee to create new servers using that foreign\-data wrapper\&.
+For foreign\-data wrappers, this privilege allows creation of new servers using the foreign\-data wrapper\&.
 .sp
-For servers, this privilege enables the grantee to create foreign tables using the server, and also to create, alter, or drop their own user\*(Aqs user mappings associated with that server\&.
+For servers, this privilege allows creation of foreign tables using the server\&. Grantees may also create, alter, or drop their own user mappings associated with that server\&.
 .RE
 .PP
 ALL PRIVILEGES

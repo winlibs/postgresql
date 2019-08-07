@@ -13,7 +13,7 @@
  *
  * Author: Andreas Pflug <pgadmin@pse-consulting.de>
  *
- * Copyright (c) 2004-2016, PostgreSQL Global Development Group
+ * Copyright (c) 2004-2018, PostgreSQL Global Development Group
  *
  *
  * IDENTIFICATION
@@ -31,15 +31,18 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
+#include "common/file_perm.h"
 #include "lib/stringinfo.h"
 #include "libpq/pqsignal.h"
 #include "miscadmin.h"
 #include "nodes/pg_list.h"
+#include "pgstat.h"
 #include "pgtime.h"
 #include "postmaster/fork_process.h"
 #include "postmaster/postmaster.h"
 #include "postmaster/syslogger.h"
 #include "storage/dsm.h"
+#include "storage/fd.h"
 #include "storage/ipc.h"
 #include "storage/latch.h"
 #include "storage/pg_shmem.h"
@@ -145,6 +148,7 @@ static char *logfile_getname(pg_time_t timestamp, const char *suffix);
 static void set_next_rotation_time(void);
 static void sigHupHandler(SIGNAL_ARGS);
 static void sigUsr1Handler(SIGNAL_ARGS);
+static void update_metainfo_datafile(void);
 
 
 /*
@@ -167,11 +171,11 @@ SysLoggerMain(int argc, char *argv[])
 
 #ifdef EXEC_BACKEND
 	syslogger_parseArgs(argc, argv);
-#endif   /* EXEC_BACKEND */
+#endif							/* EXEC_BACKEND */
 
 	am_syslogger = true;
 
-	init_ps_display("logger process", "", "", "");
+	init_ps_display("logger", "", "", "");
 
 	/*
 	 * If we restarted, our stderr is already redirected into our own input
@@ -266,7 +270,7 @@ SysLoggerMain(int argc, char *argv[])
 	threadHandle = (HANDLE) _beginthreadex(NULL, 0, pipeThread, NULL, 0, NULL);
 	if (threadHandle == 0)
 		elog(FATAL, "could not create syslogger data transfer thread: %m");
-#endif   /* WIN32 */
+#endif							/* WIN32 */
 
 	/*
 	 * Remember active logfiles' name(s).  We recompute 'em from the reference
@@ -283,6 +287,7 @@ SysLoggerMain(int argc, char *argv[])
 	currentLogRotationAge = Log_RotationAge;
 	/* set next planned rotation time */
 	set_next_rotation_time();
+	update_metainfo_datafile();
 
 	/*
 	 * Reset whereToSendOutput, as the postmaster will do (but hasn't yet, at
@@ -328,7 +333,7 @@ SysLoggerMain(int argc, char *argv[])
 				/*
 				 * Also, create new directory if not present; ignore errors
 				 */
-				mkdir(Log_directory, S_IRWXU);
+				(void) MakePGDirectory(Log_directory);
 			}
 			if (strcmp(Log_filename, currentLogFilename) != 0)
 			{
@@ -364,6 +369,13 @@ SysLoggerMain(int argc, char *argv[])
 				rotation_disabled = false;
 				rotation_requested = true;
 			}
+
+			/*
+			 * Force rewriting last log filename when reloading configuration.
+			 * Even if rotation_requested is false, log_destination may have
+			 * been changed and we don't want to wait the next file rotation.
+			 */
+			update_metainfo_datafile();
 		}
 
 		if (Log_RotationAge > 0 && !rotation_disabled)
@@ -441,7 +453,8 @@ SysLoggerMain(int argc, char *argv[])
 		rc = WaitLatchOrSocket(MyLatch,
 							   WL_LATCH_SET | WL_SOCKET_READABLE | cur_flags,
 							   syslogPipe[0],
-							   cur_timeout);
+							   cur_timeout,
+							   WAIT_EVENT_SYSLOGGER_MAIN);
 
 		if (rc & WL_SOCKET_READABLE)
 		{
@@ -492,10 +505,11 @@ SysLoggerMain(int argc, char *argv[])
 
 		(void) WaitLatch(MyLatch,
 						 WL_LATCH_SET | cur_flags,
-						 cur_timeout);
+						 cur_timeout,
+						 WAIT_EVENT_SYSLOGGER_MAIN);
 
 		EnterCriticalSection(&sysloggerSection);
-#endif   /* WIN32 */
+#endif							/* WIN32 */
 
 		if (pipe_eof_seen)
 		{
@@ -569,7 +583,7 @@ SysLogger_Start(void)
 	/*
 	 * Create log directory if not present; ignore errors
 	 */
-	mkdir(Log_directory, S_IRWXU);
+	(void) MakePGDirectory(Log_directory);
 
 	/*
 	 * The initial logfile is created right in the postmaster, to verify that
@@ -650,8 +664,8 @@ SysLogger_Start(void)
 				 */
 				ereport(LOG,
 						(errmsg("redirecting log output to logging collector process"),
-				errhint("Future log output will appear in directory \"%s\".",
-						Log_directory)));
+						 errhint("Future log output will appear in directory \"%s\".",
+								 Log_directory)));
 
 #ifndef WIN32
 				fflush(stdout);
@@ -742,7 +756,7 @@ syslogger_forkexec(void)
 				 (long) _get_osfhandle(_fileno(syslogFile)));
 	else
 		strcpy(filenobuf, "0");
-#endif   /* WIN32 */
+#endif							/* WIN32 */
 	av[ac++] = filenobuf;
 
 #ifndef WIN32
@@ -820,9 +834,9 @@ syslogger_parseArgs(int argc, char *argv[])
 			setvbuf(csvlogFile, NULL, PG_IOLBF, 0);
 		}
 	}
-#endif   /* WIN32 */
+#endif							/* WIN32 */
 }
-#endif   /* EXEC_BACKEND */
+#endif							/* EXEC_BACKEND */
 
 
 /* --------------------------------
@@ -861,7 +875,7 @@ process_pipe_input(char *logbuffer, int *bytes_in_logbuffer)
 	int			dest = LOG_DESTINATION_STDERR;
 
 	/* While we have enough for a header, process data... */
-	while (count >= (int) (offsetof(PipeProtoHeader, data) +1))
+	while (count >= (int) (offsetof(PipeProtoHeader, data) + 1))
 	{
 		PipeProtoHeader p;
 		int			chunklen;
@@ -1164,7 +1178,7 @@ pipeThread(void *arg)
 	_endthread();
 	return 0;
 }
-#endif   /* WIN32 */
+#endif							/* WIN32 */
 
 /*
  * Open a new logfile with proper permissions and buffering options.
@@ -1351,6 +1365,8 @@ logfile_rotate(bool time_based_rotation, int size_rotation_for)
 	if (csvfilename)
 		pfree(csvfilename);
 
+	update_metainfo_datafile();
+
 	set_next_rotation_time();
 }
 
@@ -1418,6 +1434,88 @@ set_next_rotation_time(void)
 	now += rotinterval;
 	now -= tm->tm_gmtoff;
 	next_rotation_time = now;
+}
+
+/*
+ * Store the name of the file(s) where the log collector, when enabled, writes
+ * log messages.  Useful for finding the name(s) of the current log file(s)
+ * when there is time-based logfile rotation.  Filenames are stored in a
+ * temporary file and which is renamed into the final destination for
+ * atomicity.  The file is opened with the same permissions as what gets
+ * created in the data directory and has proper buffering options.
+ */
+static void
+update_metainfo_datafile(void)
+{
+	FILE	   *fh;
+	mode_t		oumask;
+
+	if (!(Log_destination & LOG_DESTINATION_STDERR) &&
+		!(Log_destination & LOG_DESTINATION_CSVLOG))
+	{
+		if (unlink(LOG_METAINFO_DATAFILE) < 0 && errno != ENOENT)
+			ereport(LOG,
+					(errcode_for_file_access(),
+					 errmsg("could not remove file \"%s\": %m",
+							LOG_METAINFO_DATAFILE)));
+		return;
+	}
+
+	/* use the same permissions as the data directory for the new file */
+	oumask = umask(pg_mode_mask);
+	fh = fopen(LOG_METAINFO_DATAFILE_TMP, "w");
+	umask(oumask);
+
+	if (fh)
+	{
+		setvbuf(fh, NULL, PG_IOLBF, 0);
+
+#ifdef WIN32
+		/* use CRLF line endings on Windows */
+		_setmode(_fileno(fh), _O_TEXT);
+#endif
+	}
+	else
+	{
+		ereport(LOG,
+				(errcode_for_file_access(),
+				 errmsg("could not open file \"%s\": %m",
+						LOG_METAINFO_DATAFILE_TMP)));
+		return;
+	}
+
+	if (last_file_name && (Log_destination & LOG_DESTINATION_STDERR))
+	{
+		if (fprintf(fh, "stderr %s\n", last_file_name) < 0)
+		{
+			ereport(LOG,
+					(errcode_for_file_access(),
+					 errmsg("could not write file \"%s\": %m",
+							LOG_METAINFO_DATAFILE_TMP)));
+			fclose(fh);
+			return;
+		}
+	}
+
+	if (last_csv_file_name && (Log_destination & LOG_DESTINATION_CSVLOG))
+	{
+		if (fprintf(fh, "csvlog %s\n", last_csv_file_name) < 0)
+		{
+			ereport(LOG,
+					(errcode_for_file_access(),
+					 errmsg("could not write file \"%s\": %m",
+							LOG_METAINFO_DATAFILE_TMP)));
+			fclose(fh);
+			return;
+		}
+	}
+	fclose(fh);
+
+	if (rename(LOG_METAINFO_DATAFILE_TMP, LOG_METAINFO_DATAFILE) != 0)
+		ereport(LOG,
+				(errcode_for_file_access(),
+				 errmsg("could not rename file \"%s\" to \"%s\": %m",
+						LOG_METAINFO_DATAFILE_TMP, LOG_METAINFO_DATAFILE)));
 }
 
 /* --------------------------------

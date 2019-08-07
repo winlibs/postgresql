@@ -1,231 +1,36 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Query Handling as a Complex Optimization Problem</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Genetic Query Optimizer"
-HREF="geqo.html"><LINK
-REL="PREVIOUS"
-TITLE="Genetic Query Optimizer"
-HREF="geqo.html"><LINK
-REL="NEXT"
-TITLE="Genetic Algorithms"
-HREF="geqo-intro2.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Genetic Query Optimizer"
-HREF="geqo.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="geqo.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 58. Genetic Query Optimizer</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Genetic Algorithms"
-HREF="geqo-intro2.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="GEQO-INTRO"
->58.1. Query Handling as a Complex Optimization Problem</A
-></H1
-><P
->    Among all relational operators the most difficult one to process
-    and optimize is the <I
-CLASS="FIRSTTERM"
->join</I
->. The number of
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>60.1. Query Handling as a Complex Optimization Problem</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="geqo.html" title="Chapter 60. Genetic Query Optimizer" /><link rel="next" href="geqo-intro2.html" title="60.2. Genetic Algorithms" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">60.1. Query Handling as a Complex Optimization Problem</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="geqo.html" title="Chapter 60. Genetic Query Optimizer">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="geqo.html" title="Chapter 60. Genetic Query Optimizer">Up</a></td><th width="60%" align="center">Chapter 60. Genetic Query Optimizer</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="geqo-intro2.html" title="60.2. Genetic Algorithms">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="GEQO-INTRO"><div class="titlepage"><div><div><h2 class="title" style="clear: both">60.1. Query Handling as a Complex Optimization Problem</h2></div></div></div><p>
+    Among all relational operators the most difficult one to process
+    and optimize is the <em class="firstterm">join</em>. The number of
     possible query plans grows exponentially with the
     number of joins in the query. Further optimization effort is
-    caused by the support of a variety of <I
-CLASS="FIRSTTERM"
->join
-    methods</I
-> (e.g., nested loop, hash join, merge join in
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->) to process individual joins
-    and a diversity of <I
-CLASS="FIRSTTERM"
->indexes</I
-> (e.g.,
-    B-tree, hash, GiST and GIN in <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->) as
+    caused by the support of a variety of <em class="firstterm">join
+    methods</em> (e.g., nested loop, hash join, merge join in
+    <span class="productname">PostgreSQL</span>) to process individual joins
+    and a diversity of <em class="firstterm">indexes</em> (e.g.,
+    B-tree, hash, GiST and GIN in <span class="productname">PostgreSQL</span>) as
     access paths for relations.
-   </P
-><P
->    The normal <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> query optimizer
-    performs a <I
-CLASS="FIRSTTERM"
->near-exhaustive search</I
-> over the
+   </p><p>
+    The normal <span class="productname">PostgreSQL</span> query optimizer
+    performs a <em class="firstterm">near-exhaustive search</em> over the
     space of alternative strategies. This algorithm, first introduced
     in IBM's System R database, produces a near-optimal join order,
     but can take an enormous amount of time and memory space when the
     number of joins in the query grows large. This makes the ordinary
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> query optimizer
+    <span class="productname">PostgreSQL</span> query optimizer
     inappropriate for queries that join a large number of tables.
-   </P
-><P
->    The Institute of Automatic Control at the University of Mining and
+   </p><p>
+    The Institute of Automatic Control at the University of Mining and
     Technology, in Freiberg, Germany, encountered some problems when
-    it wanted to use <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> as the
+    it wanted to use <span class="productname">PostgreSQL</span> as the
     backend for a decision support knowledge based system for the
     maintenance of an electrical power grid. The DBMS needed to handle
     large join queries for the inference machine of the knowledge
     based system. The number of joins in these queries made using the
     normal query optimizer infeasible.
-   </P
-><P
->    In the following we describe the implementation of a
-    <I
-CLASS="FIRSTTERM"
->genetic algorithm</I
-> to solve the join
+   </p><p>
+    In the following we describe the implementation of a
+    <em class="firstterm">genetic algorithm</em> to solve the join
     ordering problem in a manner that is efficient for queries
     involving large numbers of joins.
-   </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="geqo.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="geqo-intro2.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Genetic Query Optimizer</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="geqo.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Genetic Algorithms</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="geqo.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="geqo.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="geqo-intro2.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 60. Genetic Query Optimizer </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 60.2. Genetic Algorithms</td></tr></table></div></body></html>

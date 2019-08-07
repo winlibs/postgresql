@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "TRUNCATE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "TRUNCATE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -111,7 +111,7 @@ triggers are fired after the last truncation is performed and any sequences are 
 .PP
 \fBTRUNCATE\fR
 is not MVCC\-safe\&. After truncation, the table will appear empty to concurrent transactions, if they are using a snapshot taken before the truncation occurred\&. See
-Section 13.5, \(lqCaveats\(rq, in the documentation
+Section\ \&13.5
 for more details\&.
 .PP
 \fBTRUNCATE\fR
@@ -182,3 +182,5 @@ command with the syntax
 TRUNCATE TABLE \fItablename\fR\&. The clauses
 CONTINUE IDENTITY/RESTART IDENTITY
 also appear in that standard, but have slightly different though related meanings\&. Some of the concurrency behavior of this command is left implementation\-defined by the standard, so the above notes should be considered and compared with other implementations if necessary\&.
+.SH "SEE ALSO"
+\fBDELETE\fR(7)

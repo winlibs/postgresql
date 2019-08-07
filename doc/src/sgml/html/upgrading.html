@@ -1,349 +1,102 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Upgrading a PostgreSQL Cluster</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Server Setup and Operation"
-HREF="runtime.html"><LINK
-REL="PREVIOUS"
-TITLE="Shutting Down the Server"
-HREF="server-shutdown.html"><LINK
-REL="NEXT"
-TITLE="Preventing Server Spoofing"
-HREF="preventing-server-spoofing.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Shutting Down the Server"
-HREF="server-shutdown.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="runtime.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 18. Server Setup and Operation</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Preventing Server Spoofing"
-HREF="preventing-server-spoofing.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="UPGRADING"
->18.6. Upgrading a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> Cluster</A
-></H1
-><P
->   This section discusses how to upgrade your database data from one
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> release to a newer one.
-  </P
-><P
->   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> major versions are represented by the
-   first two digit groups of the version number, e.g., 8.4.
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> minor versions are represented by the
-   third group of version digits, e.g., 8.4.2 is the second minor
-   release of 8.4.  Minor releases never change the internal storage
-   format and are always compatible with earlier and later minor
-   releases of the same major version number, e.g., 8.4.2 is compatible
-   with 8.4, 8.4.1 and 8.4.6.  To update between compatible versions,
-   you simply replace the executables while the server is down and
-   restart the server.  The data directory remains unchanged &mdash;
-   minor upgrades are that simple.
-  </P
-><P
->   For <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->major</I
-></SPAN
-> releases of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, the
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>18.6. Upgrading a PostgreSQL Cluster</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="server-shutdown.html" title="18.5. Shutting Down the Server" /><link rel="next" href="preventing-server-spoofing.html" title="18.7. Preventing Server Spoofing" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">18.6. Upgrading a <span xmlns="http://www.w3.org/1999/xhtml" class="productname">PostgreSQL</span> Cluster</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="server-shutdown.html" title="18.5. Shutting Down the Server">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime.html" title="Chapter 18. Server Setup and Operation">Up</a></td><th width="60%" align="center">Chapter 18. Server Setup and Operation</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="preventing-server-spoofing.html" title="18.7. Preventing Server Spoofing">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="UPGRADING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">18.6. Upgrading a <span class="productname">PostgreSQL</span> Cluster</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="upgrading.html#UPGRADING-VIA-PGDUMPALL">18.6.1. Upgrading Data via <span class="application">pg_dumpall</span></a></span></dt><dt><span class="sect2"><a href="upgrading.html#UPGRADING-VIA-PG-UPGRADE">18.6.2. Upgrading Data via <span class="application">pg_upgrade</span></a></span></dt><dt><span class="sect2"><a href="upgrading.html#UPGRADING-VIA-REPLICATION">18.6.3. Upgrading Data via Replication</a></span></dt></dl></div><a id="id-1.6.5.8.2" class="indexterm"></a><a id="id-1.6.5.8.3" class="indexterm"></a><p>
+   This section discusses how to upgrade your database data from one
+   <span class="productname">PostgreSQL</span> release to a newer one.
+  </p><p>
+   Current <span class="productname">PostgreSQL</span> version numbers consist of a
+   major and a minor version number.  For example, in the version number 10.1,
+   the 10 is the major version number and the 1 is the minor version number,
+   meaning this would be the first minor release of the major release 10.  For
+   releases before <span class="productname">PostgreSQL</span> version 10.0, version
+   numbers consist of three numbers, for example, 9.5.3.  In those cases, the
+   major version consists of the first two digit groups of the version number,
+   e.g., 9.5, and the minor version is the third number, e.g., 3, meaning this
+   would be the third minor release of the major release 9.5.
+  </p><p>
+   Minor releases never change the internal storage format and are always
+   compatible with earlier and later minor releases of the same major version
+   number.  For example, version 10.1 is compatible with version 10.0 and
+   version 10.6.  Similarly, for example, 9.5.3 is compatible with 9.5.0,
+   9.5.1, and 9.5.6.  To update between compatible versions, you simply
+   replace the executables while the server is down and restart the server.
+   The data directory remains unchanged — minor upgrades are that
+   simple.
+  </p><p>
+   For <span class="emphasis"><em>major</em></span> releases of <span class="productname">PostgreSQL</span>, the
    internal data storage format is subject to change, thus complicating
    upgrades.  The traditional method for moving data to a new major version
    is to dump and reload the database, though this can be slow.  A
-   faster method is <A
-HREF="pgupgrade.html"
-><SPAN
-CLASS="APPLICATION"
->pg_upgrade</SPAN
-></A
->.  Replication methods are
+   faster method is <a class="xref" href="pgupgrade.html" title="pg_upgrade"><span class="refentrytitle"><span class="application">pg_upgrade</span></span></a>.  Replication methods are
    also available, as discussed below.
-  </P
-><P
->   New major versions also typically introduce some user-visible
+  </p><p>
+   New major versions also typically introduce some user-visible
    incompatibilities, so application programming changes might be required.
-   All user-visible changes are listed in the release notes (<A
-HREF="release.html"
->Appendix E</A
->);  pay particular attention to the section
+   All user-visible changes are listed in the release notes (<a class="xref" href="release.html" title="Appendix E. Release Notes">Appendix E</a>);  pay particular attention to the section
    labeled "Migration".  If you are upgrading across several major
    versions, be sure to read the release notes for each intervening
    version.
-  </P
-><P
->   Cautious users will want to test their client applications on the new
+  </p><p>
+   Cautious users will want to test their client applications on the new
    version before switching over fully; therefore, it's often a good idea to
    set up concurrent installations of old and new versions.  When
-   testing a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> major upgrade, consider the
+   testing a <span class="productname">PostgreSQL</span> major upgrade, consider the
    following categories of possible changes:
-  </P
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
->Administration</DT
-><DD
-><P
->      The capabilities available for administrators to monitor and control
+  </p><div class="variablelist"><dl class="variablelist"><dt><span class="term">Administration</span></dt><dd><p>
+      The capabilities available for administrators to monitor and control
       the server often change and improve in each major release.
-     </P
-></DD
-><DT
->SQL</DT
-><DD
-><P
->      Typically this includes new SQL command capabilities and not changes
+     </p></dd><dt><span class="term">SQL</span></dt><dd><p>
+      Typically this includes new SQL command capabilities and not changes
       in behavior, unless specifically mentioned in the release notes.
-     </P
-></DD
-><DT
->Library API</DT
-><DD
-><P
->      Typically libraries like <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> only add new
+     </p></dd><dt><span class="term">Library API</span></dt><dd><p>
+      Typically libraries like <span class="application">libpq</span> only add new
       functionality, again unless mentioned in the release notes.
-     </P
-></DD
-><DT
->System Catalogs</DT
-><DD
-><P
->      System catalog changes usually only affect database management tools.
-     </P
-></DD
-><DT
->Server C-language API</DT
-><DD
-><P
->      This involves changes in the backend function API, which is written
+     </p></dd><dt><span class="term">System Catalogs</span></dt><dd><p>
+      System catalog changes usually only affect database management tools.
+     </p></dd><dt><span class="term">Server C-language API</span></dt><dd><p>
+      This involves changes in the backend function API, which is written
       in the C programming language.  Such changes affect code that
       references backend functions deep inside the server.
-     </P
-></DD
-></DL
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="UPGRADING-VIA-PGDUMPALL"
->18.6.1. Upgrading Data via <SPAN
-CLASS="APPLICATION"
->pg_dumpall</SPAN
-></A
-></H2
-><P
->    One upgrade method is to dump data from one major version of
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> and reload it in another &mdash;  to do
-    this, you must use a <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->logical</I
-></SPAN
-> backup tool like
-    <SPAN
-CLASS="APPLICATION"
->pg_dumpall</SPAN
->; file system
+     </p></dd></dl></div><div class="sect2" id="UPGRADING-VIA-PGDUMPALL"><div class="titlepage"><div><div><h3 class="title">18.6.1. Upgrading Data via <span class="application">pg_dumpall</span></h3></div></div></div><p>
+    One upgrade method is to dump data from one major version of
+    <span class="productname">PostgreSQL</span> and reload it in another —  to do
+    this, you must use a <span class="emphasis"><em>logical</em></span> backup tool like
+    <span class="application">pg_dumpall</span>; file system
     level backup methods will not work. (There are checks in place that prevent
     you from using a data directory with an incompatible version of
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, so no great harm can be done by
+    <span class="productname">PostgreSQL</span>, so no great harm can be done by
     trying to start the wrong server version on a data directory.)
-   </P
-><P
->    It is recommended that you use the <SPAN
-CLASS="APPLICATION"
->pg_dump</SPAN
-> and
-    <SPAN
-CLASS="APPLICATION"
->pg_dumpall</SPAN
-> programs from the <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->newer</I
-></SPAN
->
+   </p><p>
+    It is recommended that you use the <span class="application">pg_dump</span> and
+    <span class="application">pg_dumpall</span> programs from the <span class="emphasis"><em>newer</em></span>
     version of
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, to take advantage of enhancements
+    <span class="productname">PostgreSQL</span>, to take advantage of enhancements
     that might have been made in these programs.  Current releases of the
     dump programs can read data from any server version back to 7.0.
-   </P
-><P
->    These instructions assume that your existing installation is under the
-    <TT
-CLASS="FILENAME"
->/usr/local/pgsql</TT
-> directory, and that the data area is in
-    <TT
-CLASS="FILENAME"
->/usr/local/pgsql/data</TT
->.  Substitute your paths
+   </p><p>
+    These instructions assume that your existing installation is under the
+    <code class="filename">/usr/local/pgsql</code> directory, and that the data area is in
+    <code class="filename">/usr/local/pgsql/data</code>.  Substitute your paths
     appropriately.
-   </P
-><DIV
-CLASS="PROCEDURE"
-><OL
-TYPE="1"
-><LI
-CLASS="STEP"
-><P
->      If making a backup, make sure that your database is not being updated.
+   </p><div class="procedure"><ol class="procedure" type="1"><li class="step"><p>
+      If making a backup, make sure that your database is not being updated.
       This does not affect the integrity of the backup, but the changed
       data would of course not be included. If necessary, edit the
-      permissions in the file <TT
-CLASS="FILENAME"
->/usr/local/pgsql/data/pg_hba.conf</TT
->
+      permissions in the file <code class="filename">/usr/local/pgsql/data/pg_hba.conf</code>
       (or equivalent) to disallow access from everyone except you.
-      See <A
-HREF="client-authentication.html"
->Chapter 20</A
-> for additional information on
+      See <a class="xref" href="client-authentication.html" title="Chapter 20. Client Authentication">Chapter 20</a> for additional information on
       access control.
-     </P
-><P
->      
+     </p><p>
+      <a id="id-1.6.5.8.11.5.1.2.1" class="indexterm"></a>
 
       To back up your database installation, type:
-</P><PRE
-CLASS="SCREEN"
-><KBD
-CLASS="USERINPUT"
->pg_dumpall &gt; <TT
-CLASS="REPLACEABLE"
-><I
->outputfile</I
-></TT
-></KBD
-></PRE
-><P>
-     </P
-><P
->      To make the backup, you can use the <SPAN
-CLASS="APPLICATION"
->pg_dumpall</SPAN
->
-      command from the version you are currently running;  see <A
-HREF="backup-dump.html#BACKUP-DUMP-ALL"
->Section 25.1.2</A
-> for more details.  For best
-      results, however, try to use the <SPAN
-CLASS="APPLICATION"
->pg_dumpall</SPAN
->
-      command from <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 9.6.12,
+</p><pre class="screen">
+<strong class="userinput"><code>pg_dumpall &gt; <em class="replaceable"><code>outputfile</code></em></code></strong>
+</pre><p>
+     </p><p>
+      To make the backup, you can use the <span class="application">pg_dumpall</span>
+      command from the version you are currently running;  see <a class="xref" href="backup-dump.html#BACKUP-DUMP-ALL" title="25.1.2. Using pg_dumpall">Section 25.1.2</a> for more details.  For best
+      results, however, try to use the <span class="application">pg_dumpall</span>
+      command from <span class="productname">PostgreSQL</span> 11.4,
       since this version contains bug fixes and improvements over older
       versions.  While this advice might seem idiosyncratic since you
       haven't installed the new version yet, it is advisable to follow
@@ -351,301 +104,88 @@ CLASS="PRODUCTNAME"
       old version.  In that case you can complete the installation
       normally and transfer the data later.  This will also decrease
       the downtime.
-     </P
-></LI
-><LI
-CLASS="STEP"
-><P
->      Shut down the old server:
-</P><PRE
-CLASS="SCREEN"
-><KBD
-CLASS="USERINPUT"
->pg_ctl stop</KBD
-></PRE
-><P>
-      On systems that have <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> started at boot time,
+     </p></li><li class="step"><p>
+      Shut down the old server:
+</p><pre class="screen">
+<strong class="userinput"><code>pg_ctl stop</code></strong>
+</pre><p>
+      On systems that have <span class="productname">PostgreSQL</span> started at boot time,
       there is probably a start-up file that will accomplish the same thing. For
-      example, on a <SPAN
-CLASS="SYSTEMITEM"
->Red Hat Linux</SPAN
-> system one
+      example, on a <span class="systemitem">Red Hat Linux</span> system one
       might find that this works:
-</P><PRE
-CLASS="SCREEN"
-><KBD
-CLASS="USERINPUT"
->/etc/rc.d/init.d/postgresql stop</KBD
-></PRE
-><P>
-      See <A
-HREF="runtime.html"
->Chapter 18</A
-> for details about starting and
+</p><pre class="screen">
+<strong class="userinput"><code>/etc/rc.d/init.d/postgresql stop</code></strong>
+</pre><p>
+      See <a class="xref" href="runtime.html" title="Chapter 18. Server Setup and Operation">Chapter 18</a> for details about starting and
       stopping the server.
-     </P
-></LI
-><LI
-CLASS="STEP"
-><P
->      If restoring from backup, rename or delete the old installation
+     </p></li><li class="step"><p>
+      If restoring from backup, rename or delete the old installation
       directory if it is not version-specific.  It is a good idea to
       rename the directory, rather than
       delete it, in case you have trouble and need to revert to it.  Keep
       in mind the directory might consume significant disk space.  To rename
       the directory, use a command like this:
-</P><PRE
-CLASS="SCREEN"
-><KBD
-CLASS="USERINPUT"
->mv /usr/local/pgsql /usr/local/pgsql.old</KBD
-></PRE
-><P>
+</p><pre class="screen">
+<strong class="userinput"><code>mv /usr/local/pgsql /usr/local/pgsql.old</code></strong>
+</pre><p>
      (Be sure to move the directory as a single unit so relative paths
      remain unchanged.)
-     </P
-></LI
-><LI
-CLASS="STEP"
-><P
->      Install the new version of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> as
-      outlined in 
-      <A
-HREF="install-procedure.html"
->Section 16.4</A
->.
-     </P
-></LI
-><LI
-CLASS="STEP"
-><P
->      Create a new database cluster if needed.  Remember that you must
+     </p></li><li class="step"><p>
+      Install the new version of <span class="productname">PostgreSQL</span> as
+      outlined in <a class="xref" href="install-procedure.html" title="16.4. Installation Procedure">Section 16.4</a>.
+     </p></li><li class="step"><p>
+      Create a new database cluster if needed.  Remember that you must
       execute these commands while logged in to the special database user
       account (which you already have if you are upgrading).
-</P><PRE
-CLASS="PROGRAMLISTING"
-><KBD
-CLASS="USERINPUT"
->/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data</KBD
-></PRE
-><P>
-     </P
-></LI
-><LI
-CLASS="STEP"
-><P
->      Restore your previous <TT
-CLASS="FILENAME"
->pg_hba.conf</TT
-> and any
-      <TT
-CLASS="FILENAME"
->postgresql.conf</TT
-> modifications.
-     </P
-></LI
-><LI
-CLASS="STEP"
-><P
->      Start the database server, again using the special database user
+</p><pre class="programlisting">
+<strong class="userinput"><code>/usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data</code></strong>
+</pre><p>
+     </p></li><li class="step"><p>
+      Restore your previous <code class="filename">pg_hba.conf</code> and any
+      <code class="filename">postgresql.conf</code> modifications.
+     </p></li><li class="step"><p>
+      Start the database server, again using the special database user
       account:
-</P><PRE
-CLASS="PROGRAMLISTING"
-><KBD
-CLASS="USERINPUT"
->/usr/local/pgsql/bin/postgres -D /usr/local/pgsql/data</KBD
-></PRE
-><P>
-     </P
-></LI
-><LI
-CLASS="STEP"
-><P
->      Finally, restore your data from backup with:
-</P><PRE
-CLASS="SCREEN"
-><KBD
-CLASS="USERINPUT"
->/usr/local/pgsql/bin/psql -d postgres -f <TT
-CLASS="REPLACEABLE"
-><I
->outputfile</I
-></TT
-></KBD
-></PRE
-><P>
-      using the <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->new</I
-></SPAN
-> <SPAN
-CLASS="APPLICATION"
->psql</SPAN
->.
-     </P
-></LI
-></OL
-></DIV
-><P
->    The least downtime can be achieved by installing the new server in
+</p><pre class="programlisting">
+<strong class="userinput"><code>/usr/local/pgsql/bin/postgres -D /usr/local/pgsql/data</code></strong>
+</pre><p>
+     </p></li><li class="step"><p>
+      Finally, restore your data from backup with:
+</p><pre class="screen">
+<strong class="userinput"><code>/usr/local/pgsql/bin/psql -d postgres -f <em class="replaceable"><code>outputfile</code></em></code></strong>
+</pre><p>
+      using the <span class="emphasis"><em>new</em></span> <span class="application">psql</span>.
+     </p></li></ol></div><p>
+    The least downtime can be achieved by installing the new server in
     a different directory and running both the old and the new servers
     in parallel, on different ports. Then you can use something like:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->pg_dumpall -p 5432 | psql -d postgres -p 5433</PRE
-><P>
+</p><pre class="programlisting">
+pg_dumpall -p 5432 | psql -d postgres -p 5433
+</pre><p>
     to transfer your data.
-   </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="UPGRADING-VIA-PG-UPGRADE"
->18.6.2. Upgrading Data via <SPAN
-CLASS="APPLICATION"
->pg_upgrade</SPAN
-></A
-></H2
-><P
->    The <A
-HREF="pgupgrade.html"
-><SPAN
-CLASS="APPLICATION"
->pg_upgrade</SPAN
-></A
-> module allows an installation to
-    be migrated in-place from one major <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
+   </p></div><div class="sect2" id="UPGRADING-VIA-PG-UPGRADE"><div class="titlepage"><div><div><h3 class="title">18.6.2. Upgrading Data via <span class="application">pg_upgrade</span></h3></div></div></div><p>
+    The <a class="xref" href="pgupgrade.html" title="pg_upgrade"><span class="refentrytitle"><span class="application">pg_upgrade</span></span></a> module allows an installation to
+    be migrated in-place from one major <span class="productname">PostgreSQL</span>
     version to another.  Upgrades can be performed in minutes,
-    particularly with <TT
-CLASS="OPTION"
->--link</TT
-> mode.  It requires steps similar to
-    <SPAN
-CLASS="APPLICATION"
->pg_dumpall</SPAN
-> above, e.g.  starting/stopping the server,
-    running <SPAN
-CLASS="APPLICATION"
->initdb</SPAN
->.  The <SPAN
-CLASS="APPLICATION"
->pg_upgrade</SPAN
-> <A
-HREF="pgupgrade.html"
->documentation</A
-> outlines the necessary steps.
-   </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="UPGRADING-VIA-REPLICATION"
->18.6.3. Upgrading Data via Replication</A
-></H2
-><P
->    It is also possible to use certain replication methods, such as
-    <SPAN
-CLASS="PRODUCTNAME"
->Slony</SPAN
->, to create a standby server with the updated version of
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.  This is possible because Slony supports
+    particularly with <code class="option">--link</code> mode.  It requires steps similar to
+    <span class="application">pg_dumpall</span> above, e.g.  starting/stopping the server,
+    running <span class="application">initdb</span>.  The <span class="application">pg_upgrade</span> <a class="link" href="pgupgrade.html" title="pg_upgrade">documentation</a> outlines the necessary steps.
+   </p></div><div class="sect2" id="UPGRADING-VIA-REPLICATION"><div class="titlepage"><div><div><h3 class="title">18.6.3. Upgrading Data via Replication</h3></div></div></div><p>
+    It is also possible to use logical replication methods to create a standby
+    server with the updated version of <span class="productname">PostgreSQL</span>.
+    This is possible because logical replication supports
     replication between different major versions of
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.  The standby can be on the same computer or
+    <span class="productname">PostgreSQL</span>.  The standby can be on the same computer or
     a different computer.  Once it has synced up with the master server
-    (running the older version of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->), you can
+    (running the older version of <span class="productname">PostgreSQL</span>), you can
     switch masters and make the standby the master and shut down the older
     database instance.  Such a switch-over results in only several seconds
     of downtime for an upgrade.
-   </P
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="server-shutdown.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="preventing-server-spoofing.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Shutting Down the Server</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="runtime.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Preventing Server Spoofing</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   </p><p>
+    This method of upgrading can be performed using the built-in logical
+    replication facilities as well as using external logical replication
+    systems such as <span class="productname">pglogical</span>,
+    <span class="productname">Slony</span>, <span class="productname">Londiste</span>, and
+    <span class="productname">Bucardo</span>.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="server-shutdown.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="preventing-server-spoofing.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">18.5. Shutting Down the Server </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 18.7. Preventing Server Spoofing</td></tr></table></div></body></html>

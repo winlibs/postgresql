@@ -5,7 +5,7 @@
  *	  Functions for the built-in type "RelativeTime".
  *	  Functions for the built-in type "TimeInterval".
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -19,6 +19,7 @@
 #include <ctype.h>
 #include <float.h>
 #include <limits.h>
+#include <math.h>
 #include <time.h>
 #include <sys/time.h>
 
@@ -70,8 +71,8 @@
  * Function prototypes -- internal to this file only
  */
 
-static AbsoluteTime tm2abstime(struct pg_tm * tm, int tz);
-static void reltime2tm(RelativeTime time, struct pg_tm * tm);
+static AbsoluteTime tm2abstime(struct pg_tm *tm, int tz);
+static void reltime2tm(RelativeTime time, struct pg_tm *tm);
 static void parsetinterval(char *i_string,
 			   AbsoluteTime *i_start,
 			   AbsoluteTime *i_end);
@@ -95,7 +96,7 @@ GetCurrentAbsoluteTime(void)
 
 
 void
-abstime2tm(AbsoluteTime _time, int *tzp, struct pg_tm * tm, char **tzn)
+abstime2tm(AbsoluteTime _time, int *tzp, struct pg_tm *tm, char **tzn)
 {
 	pg_time_t	time = (pg_time_t) _time;
 	struct pg_tm *tx;
@@ -150,7 +151,7 @@ abstime2tm(AbsoluteTime _time, int *tzp, struct pg_tm * tm, char **tzn)
  * Note that tm has full year (not 1900-based) and 1-based month.
  */
 static AbsoluteTime
-tm2abstime(struct pg_tm * tm, int tz)
+tm2abstime(struct pg_tm *tm, int tz)
 {
 	int			day;
 	AbsoluteTime sec;
@@ -161,7 +162,7 @@ tm2abstime(struct pg_tm * tm, int tz)
 		tm->tm_mday < 1 || tm->tm_mday > 31 ||
 		tm->tm_hour < 0 ||
 		tm->tm_hour > HOURS_PER_DAY ||	/* test for > 24:00:00 */
-	  (tm->tm_hour == HOURS_PER_DAY && (tm->tm_min > 0 || tm->tm_sec > 0)) ||
+		(tm->tm_hour == HOURS_PER_DAY && (tm->tm_min > 0 || tm->tm_sec > 0)) ||
 		tm->tm_min < 0 || tm->tm_min > MINS_PER_HOUR - 1 ||
 		tm->tm_sec < 0 || tm->tm_sec > SECS_PER_MINUTE)
 		return INVALID_ABSTIME;
@@ -317,7 +318,7 @@ abstimesend(PG_FUNCTION_ARGS)
 	StringInfoData buf;
 
 	pq_begintypsend(&buf);
-	pq_sendint(&buf, time, sizeof(time));
+	pq_sendint32(&buf, time);
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
@@ -481,7 +482,7 @@ abstime_timestamp(PG_FUNCTION_ARGS)
 		case INVALID_ABSTIME:
 			ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("cannot convert abstime \"invalid\" to timestamp")));
+					 errmsg("cannot convert abstime \"invalid\" to timestamp")));
 			TIMESTAMP_NOBEGIN(result);
 			break;
 
@@ -554,7 +555,7 @@ abstime_timestamptz(PG_FUNCTION_ARGS)
 		case INVALID_ABSTIME:
 			ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				 errmsg("cannot convert abstime \"invalid\" to timestamp")));
+					 errmsg("cannot convert abstime \"invalid\" to timestamp")));
 			TIMESTAMP_NOBEGIN(result);
 			break;
 
@@ -676,13 +677,13 @@ reltimesend(PG_FUNCTION_ARGS)
 	StringInfoData buf;
 
 	pq_begintypsend(&buf);
-	pq_sendint(&buf, time, sizeof(time));
+	pq_sendint32(&buf, time);
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
 
 static void
-reltime2tm(RelativeTime time, struct pg_tm * tm)
+reltime2tm(RelativeTime time, struct pg_tm *tm)
 {
 	double		dtime = time;
 
@@ -696,7 +697,7 @@ reltime2tm(RelativeTime time, struct pg_tm * tm)
 
 
 /*
- *		tintervalin		- converts an tinterval string to internal format
+ *		tintervalin		- converts a tinterval string to internal format
  */
 Datum
 tintervalin(PG_FUNCTION_ARGS)
@@ -743,12 +744,12 @@ tintervalout(PG_FUNCTION_ARGS)
 	else
 	{
 		p = DatumGetCString(DirectFunctionCall1(abstimeout,
-								  AbsoluteTimeGetDatum(tinterval->data[0])));
+												AbsoluteTimeGetDatum(tinterval->data[0])));
 		strcat(i_str, p);
 		pfree(p);
 		strcat(i_str, "\" \"");
 		p = DatumGetCString(DirectFunctionCall1(abstimeout,
-								  AbsoluteTimeGetDatum(tinterval->data[1])));
+												AbsoluteTimeGetDatum(tinterval->data[1])));
 		strcat(i_str, p);
 		pfree(p);
 	}
@@ -774,7 +775,7 @@ tintervalrecv(PG_FUNCTION_ARGS)
 
 	if (tinterval->data[0] == INVALID_ABSTIME ||
 		tinterval->data[1] == INVALID_ABSTIME)
-		status = T_INTERVAL_INVAL;		/* undefined  */
+		status = T_INTERVAL_INVAL;	/* undefined  */
 	else
 		status = T_INTERVAL_VALID;
 
@@ -796,9 +797,9 @@ tintervalsend(PG_FUNCTION_ARGS)
 	StringInfoData buf;
 
 	pq_begintypsend(&buf);
-	pq_sendint(&buf, tinterval->status, sizeof(tinterval->status));
-	pq_sendint(&buf, tinterval->data[0], sizeof(tinterval->data[0]));
-	pq_sendint(&buf, tinterval->data[1], sizeof(tinterval->data[1]));
+	pq_sendint32(&buf, tinterval->status);
+	pq_sendint32(&buf, tinterval->data[0]);
+	pq_sendint32(&buf, tinterval->data[1]);
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
@@ -821,14 +822,10 @@ interval_reltime(PG_FUNCTION_ARGS)
 	month = interval->month % MONTHS_PER_YEAR;
 	day = interval->day;
 
-#ifdef HAVE_INT64_TIMESTAMP
 	span = ((INT64CONST(365250000) * year + INT64CONST(30000000) * month +
 			 INT64CONST(1000000) * day) * INT64CONST(86400)) +
 		interval->time;
 	span /= USECS_PER_SEC;
-#else
-	span = (DAYS_PER_YEAR * year + (double) DAYS_PER_MONTH * month + day) * SECS_PER_DAY + interval->time;
-#endif
 
 	if (span < INT_MIN || span > INT_MAX)
 		time = INVALID_RELTIME;
@@ -855,14 +852,13 @@ reltime_interval(PG_FUNCTION_ARGS)
 		case INVALID_RELTIME:
 			ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				  errmsg("cannot convert reltime \"invalid\" to interval")));
+					 errmsg("cannot convert reltime \"invalid\" to interval")));
 			result->time = 0;
 			result->day = 0;
 			result->month = 0;
 			break;
 
 		default:
-#ifdef HAVE_INT64_TIMESTAMP
 			year = reltime / SECS_PER_YEAR;
 			reltime -= year * SECS_PER_YEAR;
 			month = reltime / (DAYS_PER_MONTH * SECS_PER_DAY);
@@ -871,13 +867,6 @@ reltime_interval(PG_FUNCTION_ARGS)
 			reltime -= day * SECS_PER_DAY;
 
 			result->time = (reltime * USECS_PER_SEC);
-#else
-			TMODULO(reltime, year, SECS_PER_YEAR);
-			TMODULO(reltime, month, DAYS_PER_MONTH * SECS_PER_DAY);
-			TMODULO(reltime, day, SECS_PER_DAY);
-
-			result->time = reltime;
-#endif
 			result->month = MONTHS_PER_YEAR * year + month;
 			result->day = day;
 			break;
@@ -933,7 +922,7 @@ timepl(PG_FUNCTION_ARGS)
 	if (AbsoluteTimeIsReal(t1) &&
 		RelativeTimeIsValid(t2) &&
 		((t2 > 0 && t1 < NOEND_ABSTIME - t2) ||
-		 (t2 <= 0 && t1 > NOSTART_ABSTIME - t2)))		/* prevent overflow */
+		 (t2 <= 0 && t1 > NOSTART_ABSTIME - t2)))	/* prevent overflow */
 		PG_RETURN_ABSOLUTETIME(t1 + t2);
 
 	PG_RETURN_ABSOLUTETIME(INVALID_ABSTIME);
@@ -972,10 +961,10 @@ intinterval(PG_FUNCTION_ARGS)
 	{
 		if (DatumGetBool(DirectFunctionCall2(abstimege,
 											 AbsoluteTimeGetDatum(t),
-								AbsoluteTimeGetDatum(tinterval->data[0]))) &&
+											 AbsoluteTimeGetDatum(tinterval->data[0]))) &&
 			DatumGetBool(DirectFunctionCall2(abstimele,
 											 AbsoluteTimeGetDatum(t),
-								  AbsoluteTimeGetDatum(tinterval->data[1]))))
+											 AbsoluteTimeGetDatum(tinterval->data[1]))))
 			PG_RETURN_BOOL(true);
 	}
 	PG_RETURN_BOOL(false);
@@ -1122,7 +1111,7 @@ tintervalsame(PG_FUNCTION_ARGS)
 
 	if (DatumGetBool(DirectFunctionCall2(abstimeeq,
 										 AbsoluteTimeGetDatum(i1->data[0]),
-									   AbsoluteTimeGetDatum(i2->data[0]))) &&
+										 AbsoluteTimeGetDatum(i2->data[0]))) &&
 		DatumGetBool(DirectFunctionCall2(abstimeeq,
 										 AbsoluteTimeGetDatum(i1->data[1]),
 										 AbsoluteTimeGetDatum(i2->data[1]))))
@@ -1367,7 +1356,7 @@ tintervalct(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 	if (DatumGetBool(DirectFunctionCall2(abstimele,
 										 AbsoluteTimeGetDatum(i1->data[0]),
-									   AbsoluteTimeGetDatum(i2->data[0]))) &&
+										 AbsoluteTimeGetDatum(i2->data[0]))) &&
 		DatumGetBool(DirectFunctionCall2(abstimege,
 										 AbsoluteTimeGetDatum(i1->data[1]),
 										 AbsoluteTimeGetDatum(i2->data[1]))))
@@ -1388,7 +1377,7 @@ tintervalov(PG_FUNCTION_ARGS)
 		PG_RETURN_BOOL(false);
 	if (DatumGetBool(DirectFunctionCall2(abstimelt,
 										 AbsoluteTimeGetDatum(i1->data[1]),
-									   AbsoluteTimeGetDatum(i2->data[0]))) ||
+										 AbsoluteTimeGetDatum(i2->data[0]))) ||
 		DatumGetBool(DirectFunctionCall2(abstimegt,
 										 AbsoluteTimeGetDatum(i1->data[0]),
 										 AbsoluteTimeGetDatum(i2->data[1]))))
@@ -1550,9 +1539,9 @@ parsetinterval(char *i_string,
 bogus:
 	ereport(ERROR,
 			(errcode(ERRCODE_INVALID_DATETIME_FORMAT),
-			 errmsg("invalid input syntax for type tinterval: \"%s\"",
-					i_string)));
-	*i_start = *i_end = INVALID_ABSTIME;		/* keep compiler quiet */
+			 errmsg("invalid input syntax for type %s: \"%s\"",
+					"tinterval", i_string)));
+	*i_start = *i_end = INVALID_ABSTIME;	/* keep compiler quiet */
 }
 
 

@@ -1,236 +1,42 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Locking and Indexes</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Concurrency Control"
-HREF="mvcc.html"><LINK
-REL="PREVIOUS"
-TITLE="Caveats"
-HREF="mvcc-caveats.html"><LINK
-REL="NEXT"
-TITLE="Performance Tips"
-HREF="performance-tips.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Caveats"
-HREF="mvcc-caveats.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="mvcc.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 13. Concurrency Control</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Performance Tips"
-HREF="performance-tips.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="LOCKING-INDEXES"
->13.6. Locking and Indexes</A
-></H1
-><P
->    Though <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>13.6. Locking and Indexes</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="mvcc-caveats.html" title="13.5. Caveats" /><link rel="next" href="performance-tips.html" title="Chapter 14. Performance Tips" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">13.6. Locking and Indexes</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="mvcc-caveats.html" title="13.5. Caveats">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="mvcc.html" title="Chapter 13. Concurrency Control">Up</a></td><th width="60%" align="center">Chapter 13. Concurrency Control</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="performance-tips.html" title="Chapter 14. Performance Tips">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="LOCKING-INDEXES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">13.6. Locking and Indexes</h2></div></div></div><a id="id-1.5.12.9.2" class="indexterm"></a><p>
+    Though <span class="productname">PostgreSQL</span>
     provides nonblocking read/write access to table
     data, nonblocking read/write access is not currently offered for every
     index access method implemented
-    in <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.
+    in <span class="productname">PostgreSQL</span>.
     The various index types are handled as follows:
 
-    <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
->B-tree, <ACRONYM
-CLASS="ACRONYM"
->GiST</ACRONYM
-> and <ACRONYM
-CLASS="ACRONYM"
->SP-GiST</ACRONYM
-> indexes</DT
-><DD
-><P
->        Short-term share/exclusive page-level locks are used for
+    </p><div class="variablelist"><dl class="variablelist"><dt><span class="term">
+       B-tree, <acronym class="acronym">GiST</acronym> and <acronym class="acronym">SP-GiST</acronym> indexes
+      </span></dt><dd><p>
+        Short-term share/exclusive page-level locks are used for
         read/write access. Locks are released immediately after each
         index row is fetched or inserted.  These index types provide
         the highest concurrency without deadlock conditions.
-       </P
-></DD
-><DT
->Hash indexes</DT
-><DD
-><P
->        Share/exclusive hash-bucket-level locks are used for read/write
+       </p></dd><dt><span class="term">
+       Hash indexes
+      </span></dt><dd><p>
+        Share/exclusive hash-bucket-level locks are used for read/write
         access.  Locks are released after the whole bucket is processed.
         Bucket-level locks provide better concurrency than index-level
         ones, but deadlock is possible since the locks are held longer
         than one index operation.
-       </P
-></DD
-><DT
-><ACRONYM
-CLASS="ACRONYM"
->GIN</ACRONYM
-> indexes</DT
-><DD
-><P
->        Short-term share/exclusive page-level locks are used for
+       </p></dd><dt><span class="term">
+       <acronym class="acronym">GIN</acronym> indexes
+      </span></dt><dd><p>
+        Short-term share/exclusive page-level locks are used for
         read/write access. Locks are released immediately after each
         index row is fetched or inserted. But note that insertion of a
         GIN-indexed value usually produces several index key insertions
         per row, so GIN might do substantial work for a single value's
         insertion.
-       </P
-></DD
-></DL
-></DIV
-><P>
-   </P
-><P
->    Currently, B-tree indexes offer the best performance for concurrent
+       </p></dd></dl></div><p>
+   </p><p>
+    Currently, B-tree indexes offer the best performance for concurrent
     applications; since they also have more features than hash
     indexes, they are the recommended index type for concurrent
     applications that need to index scalar data. When dealing with
     non-scalar data, B-trees are not useful, and GiST, SP-GiST or GIN
     indexes should be used instead.
-   </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="mvcc-caveats.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="performance-tips.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Caveats</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="mvcc.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Performance Tips</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="mvcc-caveats.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="mvcc.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="performance-tips.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">13.5. Caveats </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 14. Performance Tips</td></tr></table></div></body></html>

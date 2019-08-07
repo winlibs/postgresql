@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ALTER ROLE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ALTER ROLE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -44,7 +44,7 @@ where \fIoption\fR can be:
     | REPLICATION | NOREPLICATION
     | BYPASSRLS | NOBYPASSRLS
     | CONNECTION LIMIT \fIconnlimit\fR
-    | [ ENCRYPTED | UNENCRYPTED ] PASSWORD \*(Aq\fIpassword\fR\*(Aq
+    | [ ENCRYPTED ] PASSWORD \*(Aq\fIpassword\fR\*(Aq | PASSWORD NULL
     | VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq
 
 ALTER ROLE \fIname\fR RENAME TO \fInew_name\fR
@@ -153,11 +153,9 @@ NOBYPASSRLS
 .br
 CONNECTION LIMIT \fIconnlimit\fR
 .br
-PASSWORD \fIpassword\fR
+[ ENCRYPTED ] PASSWORD \*(Aq\fIpassword\fR\*(Aq
 .br
-ENCRYPTED
-.br
-UNENCRYPTED
+PASSWORD NULL
 .br
 VALID UNTIL \*(Aq\fItimestamp\fR\*(Aq
 .RS 4
@@ -204,7 +202,7 @@ do not process role\-specific variable settings\&.
 See
 \fBSET\fR(7)
 and
-Chapter 19, Server Configuration, in the documentation
+Chapter\ \&19
 for more information about allowed parameter names and values\&.
 .RE
 .SH "NOTES"

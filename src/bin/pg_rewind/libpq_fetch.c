@@ -3,21 +3,16 @@
  * libpq_fetch.c
  *	  Functions for fetching files from a remote server.
  *
- * Copyright (c) 2013-2016, PostgreSQL Global Development Group
+ * Copyright (c) 2013-2018, PostgreSQL Global Development Group
  *
  *-------------------------------------------------------------------------
  */
 #include "postgres_fe.h"
 
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
-
-/* for ntohl/htonl */
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #include "pg_rewind.h"
 #include "datapagemap.h"
@@ -27,9 +22,9 @@
 #include "logging.h"
 
 #include "libpq-fe.h"
-#include "catalog/catalog.h"
-#include "catalog/pg_type.h"
+#include "catalog/pg_type_d.h"
 #include "fe_utils/connect.h"
+#include "port/pg_bswap.h"
 
 static PGconn *conn = NULL;
 
@@ -128,7 +123,7 @@ run_simple_query(const char *sql)
 }
 
 /*
- * Calls pg_current_xlog_insert_location() function
+ * Calls pg_current_wal_insert_lsn() function
  */
 XLogRecPtr
 libpqGetCurrentXlogInsertLocation(void)
@@ -138,7 +133,7 @@ libpqGetCurrentXlogInsertLocation(void)
 	uint32		lo;
 	char	   *val;
 
-	val = run_simple_query("SELECT pg_current_xlog_insert_location()");
+	val = run_simple_query("SELECT pg_current_wal_insert_lsn()");
 
 	if (sscanf(val, "%X/%X", &hi, &lo) != 2)
 		pg_fatal("unrecognized result \"%s\" for current WAL insert location\n", val);
@@ -228,28 +223,6 @@ libpqProcessFileList(void)
 	PQclear(res);
 }
 
-/*
- * Converts an int64 from network byte order to native format.
- */
-static int64
-pg_recvint64(int64 value)
-{
-	union
-	{
-		int64	i64;
-		uint32	i32[2];
-	} swap;
-	int64	result;
-
-	swap.i64 = value;
-
-	result = (uint32) ntohl(swap.i32[0]);
-	result <<= 32;
-	result |= (uint32) ntohl(swap.i32[1]);
-
-	return result;
-}
-
 /*----
  * Runs a query, which returns pieces of files from the remote source data
  * directory, and overwrites the corresponding parts of target files with
@@ -326,7 +299,7 @@ receiveFileChunks(const char *sql)
 
 		/* Read result set to local variables */
 		memcpy(&chunkoff, PQgetvalue(res, 0, 1), sizeof(int64));
-		chunkoff = pg_recvint64(chunkoff);
+		chunkoff = pg_ntoh64(chunkoff);
 		chunksize = PQgetlength(res, 0, 2);
 
 		filenamelen = PQgetlength(res, 0, 0);
@@ -530,7 +503,7 @@ libpq_executeFileMap(filemap_t *map)
 	 * temporary table. Now, actually fetch all of those ranges.
 	 */
 	sql =
-		"SELECT path, begin, \n"
+		"SELECT path, begin,\n"
 		"  pg_read_binary_file(path, begin, len, true) AS chunk\n"
 		"FROM fetchchunks\n";
 

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATEDB" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATEDB" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -88,7 +88,7 @@ generates and sends to the server\&.
 Specifies the character encoding scheme to be used in this database\&. The character sets supported by the
 PostgreSQL
 server are described in
-Section 23.3.1, \(lqSupported Character Sets\(rq, in the documentation\&.
+Section\ \&23.3.1\&.
 .RE
 .PP
 \fB\-l \fR\fB\fIlocale\fR\fR
@@ -234,7 +234,7 @@ PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section\ \&34.14)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see
@@ -264,15 +264,15 @@ To create the database
 demo
 using the server on host
 eden, port 5000, using the
-LATIN1
-encoding scheme with a look at the underlying command:
+template0
+template database, here is the command\-line command and the underlying SQL command:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-$ \fBcreatedb \-p 5000 \-h eden \-E LATIN1 \-e demo\fR
-CREATE DATABASE demo ENCODING \*(AqLATIN1\*(Aq;
+$ \fBcreatedb \-p 5000 \-h eden \-T template0 \-e demo\fR
+CREATE DATABASE demo TEMPLATE template0;
 .fi
 .if n \{\
 .RE

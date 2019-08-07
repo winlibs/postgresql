@@ -1,284 +1,52 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->dict_int</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Additional Supplied Modules"
-HREF="contrib.html"><LINK
-REL="PREVIOUS"
-TITLE="dblink_build_sql_update"
-HREF="contrib-dblink-build-sql-update.html"><LINK
-REL="NEXT"
-TITLE="dict_xsyn"
-HREF="dict-xsyn.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="dblink_build_sql_update"
-HREF="contrib-dblink-build-sql-update.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="contrib.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Appendix F. Additional Supplied Modules</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="dict_xsyn"
-HREF="dict-xsyn.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="DICT-INT"
->F.11. dict_int</A
-></H1
-><P
->  <TT
-CLASS="FILENAME"
->dict_int</TT
-> is an example of an add-on dictionary template
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.11. dict_int</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="contrib-dblink-build-sql-update.html" title="dblink_build_sql_update" /><link rel="next" href="dict-xsyn.html" title="F.12. dict_xsyn" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.11. dict_int</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="contrib-dblink-build-sql-update.html" title="dblink_build_sql_update">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="dict-xsyn.html" title="F.12. dict_xsyn">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="DICT-INT"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.11. dict_int</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="dict-int.html#id-1.11.7.20.4">F.11.1. Configuration</a></span></dt><dt><span class="sect2"><a href="dict-int.html#id-1.11.7.20.5">F.11.2. Usage</a></span></dt></dl></div><a id="id-1.11.7.20.2" class="indexterm"></a><p>
+  <code class="filename">dict_int</code> is an example of an add-on dictionary template
   for full-text search.  The motivation for this example dictionary is to
   control the indexing of integers (signed and unsigned), allowing such
   numbers to be indexed while preventing excessive growth in the number of
   unique words, which greatly affects the performance of searching.
- </P
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN136511"
->F.11.1. Configuration</A
-></H2
-><P
->   The dictionary accepts two options:
-  </P
-><P
-></P
-><UL
-><LI
-><P
->     The <TT
-CLASS="LITERAL"
->maxlen</TT
-> parameter specifies the maximum number of
+ </p><div class="sect2" id="id-1.11.7.20.4"><div class="titlepage"><div><div><h3 class="title">F.11.1. Configuration</h3></div></div></div><p>
+   The dictionary accepts two options:
+  </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+     The <code class="literal">maxlen</code> parameter specifies the maximum number of
      digits allowed in an integer word.  The default value is 6.
-    </P
-></LI
-><LI
-><P
->     The <TT
-CLASS="LITERAL"
->rejectlong</TT
-> parameter specifies whether an overlength
-     integer should be truncated or ignored.  If <TT
-CLASS="LITERAL"
->rejectlong</TT
-> is
-     <TT
-CLASS="LITERAL"
->false</TT
-> (the default), the dictionary returns the first
-     <TT
-CLASS="LITERAL"
->maxlen</TT
-> digits of the integer. If <TT
-CLASS="LITERAL"
->rejectlong</TT
-> is
-     <TT
-CLASS="LITERAL"
->true</TT
->, the dictionary treats an overlength integer as a stop
+    </p></li><li class="listitem"><p>
+     The <code class="literal">rejectlong</code> parameter specifies whether an overlength
+     integer should be truncated or ignored.  If <code class="literal">rejectlong</code> is
+     <code class="literal">false</code> (the default), the dictionary returns the first
+     <code class="literal">maxlen</code> digits of the integer. If <code class="literal">rejectlong</code> is
+     <code class="literal">true</code>, the dictionary treats an overlength integer as a stop
      word, so that it will not be indexed.  Note that this also means that
      such an integer cannot be searched for.
-    </P
-></LI
-></UL
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN136526"
->F.11.2. Usage</A
-></H2
-><P
->   Installing the <TT
-CLASS="LITERAL"
->dict_int</TT
-> extension creates a text search
-   template <TT
-CLASS="LITERAL"
->intdict_template</TT
-> and a dictionary <TT
-CLASS="LITERAL"
->intdict</TT
->
+    </p></li></ul></div></div><div class="sect2" id="id-1.11.7.20.5"><div class="titlepage"><div><div><h3 class="title">F.11.2. Usage</h3></div></div></div><p>
+   Installing the <code class="literal">dict_int</code> extension creates a text search
+   template <code class="literal">intdict_template</code> and a dictionary <code class="literal">intdict</code>
    based on it, with the default parameters.  You can alter the
    parameters, for example
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->mydb# ALTER TEXT SEARCH DICTIONARY intdict (MAXLEN = 4, REJECTLONG = true);
-ALTER TEXT SEARCH DICTIONARY</PRE
-><P>
+</p><pre class="programlisting">
+mydb# ALTER TEXT SEARCH DICTIONARY intdict (MAXLEN = 4, REJECTLONG = true);
+ALTER TEXT SEARCH DICTIONARY
+</pre><p>
 
    or create new dictionaries based on the template.
-  </P
-><P
->   To test the dictionary, you can try
+  </p><p>
+   To test the dictionary, you can try
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->mydb# select ts_lexize('intdict', '12345678');
+</p><pre class="programlisting">
+mydb# select ts_lexize('intdict', '12345678');
  ts_lexize
 -----------
- {123456}</PRE
-><P>
+ {123456}
+</pre><p>
 
    but real-world usage will involve including it in a text search
-   configuration as described in <A
-HREF="textsearch.html"
->Chapter 12</A
->.
+   configuration as described in <a class="xref" href="textsearch.html" title="Chapter 12. Full Text Search">Chapter 12</a>.
    That might look like this:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->ALTER TEXT SEARCH CONFIGURATION english
-    ALTER MAPPING FOR int, uint WITH intdict;</PRE
-><P>
+</p><pre class="programlisting">
+ALTER TEXT SEARCH CONFIGURATION english
+    ALTER MAPPING FOR int, uint WITH intdict;
+</pre><p>
 
-  </P
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="contrib-dblink-build-sql-update.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="dict-xsyn.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->dblink_build_sql_update</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="contrib.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->dict_xsyn</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="contrib-dblink-build-sql-update.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="dict-xsyn.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">dblink_build_sql_update </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> F.12. dict_xsyn</td></tr></table></div></body></html>

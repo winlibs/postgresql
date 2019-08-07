@@ -94,7 +94,7 @@ extern struct variable *descriptor_variable(const char *name, int input);
 extern struct variable *sqlda_variable(const char *name);
 extern void add_variable_to_head(struct arguments **, struct variable *, struct variable *);
 extern void add_variable_to_tail(struct arguments **, struct variable *, struct variable *);
-extern void remove_variable_from_list(struct arguments ** list, struct variable * var);
+extern void remove_variable_from_list(struct arguments **list, struct variable *var);
 extern void dump_variables(struct arguments *, int);
 extern struct typedefs *get_typedef(char *);
 extern void adjust_array(enum ECPGttype, char **, char **, char *, char *, int, bool);
@@ -122,10 +122,12 @@ extern int	filtered_base_yylex(void);
 
 enum COMPAT_MODE
 {
-	ECPG_COMPAT_PGSQL = 0, ECPG_COMPAT_INFORMIX, ECPG_COMPAT_INFORMIX_SE
+	ECPG_COMPAT_PGSQL = 0, ECPG_COMPAT_INFORMIX, ECPG_COMPAT_INFORMIX_SE, ECPG_COMPAT_ORACLE
 };
 extern enum COMPAT_MODE compat;
 
 #define INFORMIX_MODE	(compat == ECPG_COMPAT_INFORMIX || compat == ECPG_COMPAT_INFORMIX_SE)
+#define ORACLE_MODE (compat == ECPG_COMPAT_ORACLE)
 
-#endif   /* _ECPG_PREPROC_EXTERN_H */
+
+#endif							/* _ECPG_PREPROC_EXTERN_H */

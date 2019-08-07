@@ -1,13 +1,13 @@
 # Swedish message translation file for pg_config.
-# Dennis Björklund <db@zigo.dhs.org>, 2004, 2005, 2006, 2017, 2018.
+# Dennis Björklund <db@zigo.dhs.org>, 2004, 2005, 2006, 2017.
 # Mats Erik Andersson <bsd@gisladisker.se>, 2014.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: PostgreSQL 9.6\n"
+"Project-Id-Version: PostgreSQL 10\n"
 "Report-Msgid-Bugs-To: pgsql-bugs@postgresql.org\n"
-"POT-Creation-Date: 2018-06-18 02:32+0000\n"
-"PO-Revision-Date: 2018-06-18 21:52+0200\n"
+"POT-Creation-Date: 2017-07-13 23:45+0000\n"
+"PO-Revision-Date: 2017-07-20 21:37+0200\n"
 "Last-Translator: Dennis Björklund <db@zigo.dhs.org>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "Language: sv\n"
@@ -15,11 +15,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../../common/config_info.c:131 ../../common/config_info.c:139
-#: ../../common/config_info.c:147 ../../common/config_info.c:155
-#: ../../common/config_info.c:163 ../../common/config_info.c:171
-#: ../../common/config_info.c:179 ../../common/config_info.c:187
-#: ../../common/config_info.c:195
+#: ../../common/config_info.c:130 ../../common/config_info.c:138
+#: ../../common/config_info.c:146 ../../common/config_info.c:154
+#: ../../common/config_info.c:162 ../../common/config_info.c:170
+#: ../../common/config_info.c:178 ../../common/config_info.c:186
+#: ../../common/config_info.c:194
 msgid "not recorded"
 msgstr "ej sparad"
 

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE DATABASE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE DATABASE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -53,7 +53,7 @@ database\&.
 To create a database, you must be a superuser or have the special
 CREATEDB
 privilege\&. See
-CREATE USER (\fBCREATE_USER\fR(7))\&.
+CREATE ROLE (\fBCREATE_ROLE\fR(7))\&.
 .PP
 By default, the new database will be created by cloning the standard system database
 template1\&. A different template can be specified by writing
@@ -90,7 +90,7 @@ DEFAULT
 to use the default encoding (namely, the encoding of the template database)\&. The character sets supported by the
 PostgreSQL
 server are described in
-Section 23.3.1, \(lqSupported Character Sets\(rq, in the documentation\&. See below for additional restrictions\&.
+Section\ \&23.3.1\&. See below for additional restrictions\&.
 .RE
 .PP
 \fIlc_collate\fR
@@ -160,7 +160,7 @@ facility\&. The principal limitation is that no other sessions can be connected 
 will fail if any other connection exists when it starts; otherwise, new connections to the template database are locked out until
 \fBCREATE DATABASE\fR
 completes\&. See
-Section 22.3, \(lqTemplate Databases\(rq, in the documentation
+Section\ \&22.3
 for more information\&.
 .PP
 The character set encoding specified for the new database must be compatible with the chosen locale settings (LC_COLLATE
@@ -220,13 +220,15 @@ CREATE DATABASE sales OWNER salesapp TABLESPACE salesspace;
 .PP
 To create a database
 music
-which supports the ISO\-8859\-1 character set:
+with a different locale:
 .sp
 .if n \{\
 .RS 4
 .\}
 .nf
-CREATE DATABASE music ENCODING \*(AqLATIN1\*(Aq TEMPLATE template0;
+CREATE DATABASE music
+    LC_COLLATE \*(Aqsv_SE\&.utf8\*(Aq LC_CTYPE \*(Aqsv_SE\&.utf8\*(Aq
+    TEMPLATE template0;
 .fi
 .if n \{\
 .RE
@@ -234,12 +236,29 @@ CREATE DATABASE music ENCODING \*(AqLATIN1\*(Aq TEMPLATE template0;
 .sp
 In this example, the
 TEMPLATE template0
-clause would only be required if
-template1\*(Aqs encoding is not ISO\-8859\-1\&. Note that changing encoding might require selecting new
-LC_COLLATE
-and
-LC_CTYPE
-settings as well\&.
+clause is required if the specified locale is different from the one in
+template1\&. (If it is not, then specifying the locale explicitly is redundant\&.)
+.PP
+To create a database
+music2
+with a different locale and a different character set encoding:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE DATABASE music2
+    LC_COLLATE \*(Aqsv_SE\&.iso885915\*(Aq LC_CTYPE \*(Aqsv_SE\&.iso885915\*(Aq
+    ENCODING LATIN9
+    TEMPLATE template0;
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+The specified locale and encoding settings must match, or an error will be reported\&.
+.PP
+Note that locale names are specific to the operating system, so that the above commands might not work in the same way everywhere\&.
 .SH "COMPATIBILITY"
 .PP
 There is no

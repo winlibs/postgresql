@@ -3,7 +3,7 @@
  * tupdesc.c
  *	  POSTGRES tuple descriptor support code
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -19,12 +19,17 @@
 
 #include "postgres.h"
 
+#include "access/hash.h"
 #include "access/htup_details.h"
+#include "access/tupdesc_details.h"
+#include "catalog/pg_collation.h"
 #include "catalog/pg_type.h"
 #include "miscadmin.h"
 #include "parser/parse_type.h"
 #include "utils/acl.h"
 #include "utils/builtins.h"
+#include "utils/datum.h"
+#include "utils/hashutils.h"
 #include "utils/resowner_private.h"
 #include "utils/syscache.h"
 
@@ -40,8 +45,6 @@ TupleDesc
 CreateTemplateTupleDesc(int natts, bool hasoid)
 {
 	TupleDesc	desc;
-	char	   *stg;
-	int			attroffset;
 
 	/*
 	 * sanity checks
@@ -50,38 +53,18 @@ CreateTemplateTupleDesc(int natts, bool hasoid)
 
 	/*
 	 * Allocate enough memory for the tuple descriptor, including the
-	 * attribute rows, and set up the attribute row pointers.
+	 * attribute rows.
 	 *
-	 * Note: we assume that sizeof(struct tupleDesc) is a multiple of the
-	 * struct pointer alignment requirement, and hence we don't need to insert
-	 * alignment padding between the struct and the array of attribute row
-	 * pointers.
-	 *
-	 * Note: Only the fixed part of pg_attribute rows is included in tuple
-	 * descriptors, so we only need ATTRIBUTE_FIXED_PART_SIZE space per attr.
-	 * That might need alignment padding, however.
+	 * Note: the attribute array stride is sizeof(FormData_pg_attribute),
+	 * since we declare the array elements as FormData_pg_attribute for
+	 * notational convenience.  However, we only guarantee that the first
+	 * ATTRIBUTE_FIXED_PART_SIZE bytes of each entry are valid; most code that
+	 * copies tupdesc entries around copies just that much.  In principle that
+	 * could be less due to trailing padding, although with the current
+	 * definition of pg_attribute there probably isn't any padding.
 	 */
-	attroffset = sizeof(struct tupleDesc) + natts * sizeof(Form_pg_attribute);
-	attroffset = MAXALIGN(attroffset);
-	stg = palloc(attroffset + natts * MAXALIGN(ATTRIBUTE_FIXED_PART_SIZE));
-	desc = (TupleDesc) stg;
-
-	if (natts > 0)
-	{
-		Form_pg_attribute *attrs;
-		int			i;
-
-		attrs = (Form_pg_attribute *) (stg + sizeof(struct tupleDesc));
-		desc->attrs = attrs;
-		stg += attroffset;
-		for (i = 0; i < natts; i++)
-		{
-			attrs[i] = (Form_pg_attribute) stg;
-			stg += MAXALIGN(ATTRIBUTE_FIXED_PART_SIZE);
-		}
-	}
-	else
-		desc->attrs = NULL;
+	desc = (TupleDesc) palloc(offsetof(struct tupleDesc, attrs) +
+							  natts * sizeof(FormData_pg_attribute));
 
 	/*
 	 * Initialize other fields of the tupdesc.
@@ -98,11 +81,8 @@ CreateTemplateTupleDesc(int natts, bool hasoid)
 
 /*
  * CreateTupleDesc
- *		This function allocates a new TupleDesc pointing to a given
+ *		This function allocates a new TupleDesc by copying a given
  *		Form_pg_attribute array.
- *
- * Note: if the TupleDesc is ever freed, the Form_pg_attribute array
- * will not be freed thereby.
  *
  * Tuple type ID information is initially set for an anonymous record type;
  * caller can overwrite this if needed.
@@ -111,20 +91,12 @@ TupleDesc
 CreateTupleDesc(int natts, bool hasoid, Form_pg_attribute *attrs)
 {
 	TupleDesc	desc;
+	int			i;
 
-	/*
-	 * sanity checks
-	 */
-	AssertArg(natts >= 0);
+	desc = CreateTemplateTupleDesc(natts, hasoid);
 
-	desc = (TupleDesc) palloc(sizeof(struct tupleDesc));
-	desc->attrs = attrs;
-	desc->natts = natts;
-	desc->constr = NULL;
-	desc->tdtypeid = RECORDOID;
-	desc->tdtypmod = -1;
-	desc->tdhasoid = hasoid;
-	desc->tdrefcount = -1;		/* assume not reference-counted */
+	for (i = 0; i < natts; ++i)
+		memcpy(TupleDescAttr(desc, i), attrs[i], ATTRIBUTE_FIXED_PART_SIZE);
 
 	return desc;
 }
@@ -144,13 +116,26 @@ CreateTupleDescCopy(TupleDesc tupdesc)
 
 	desc = CreateTemplateTupleDesc(tupdesc->natts, tupdesc->tdhasoid);
 
+	/* Flat-copy the attribute array */
+	memcpy(TupleDescAttr(desc, 0),
+		   TupleDescAttr(tupdesc, 0),
+		   desc->natts * sizeof(FormData_pg_attribute));
+
+	/*
+	 * Since we're not copying constraints and defaults, clear fields
+	 * associated with them.
+	 */
 	for (i = 0; i < desc->natts; i++)
 	{
-		memcpy(desc->attrs[i], tupdesc->attrs[i], ATTRIBUTE_FIXED_PART_SIZE);
-		desc->attrs[i]->attnotnull = false;
-		desc->attrs[i]->atthasdef = false;
+		Form_pg_attribute att = TupleDescAttr(desc, i);
+
+		att->attnotnull = false;
+		att->atthasdef = false;
+		att->atthasmissing = false;
+		att->attidentity = '\0';
 	}
 
+	/* We can copy the tuple type identification, too */
 	desc->tdtypeid = tupdesc->tdtypeid;
 	desc->tdtypmod = tupdesc->tdtypmod;
 
@@ -171,11 +156,12 @@ CreateTupleDescCopyConstr(TupleDesc tupdesc)
 
 	desc = CreateTemplateTupleDesc(tupdesc->natts, tupdesc->tdhasoid);
 
-	for (i = 0; i < desc->natts; i++)
-	{
-		memcpy(desc->attrs[i], tupdesc->attrs[i], ATTRIBUTE_FIXED_PART_SIZE);
-	}
+	/* Flat-copy the attribute array */
+	memcpy(TupleDescAttr(desc, 0),
+		   TupleDescAttr(tupdesc, 0),
+		   desc->natts * sizeof(FormData_pg_attribute));
 
+	/* Copy the TupleConstr data structure, if any */
 	if (constr)
 	{
 		TupleConstr *cpy = (TupleConstr *) palloc0(sizeof(TupleConstr));
@@ -190,6 +176,23 @@ CreateTupleDescCopyConstr(TupleDesc tupdesc)
 			{
 				if (constr->defval[i].adbin)
 					cpy->defval[i].adbin = pstrdup(constr->defval[i].adbin);
+			}
+		}
+
+		if (constr->missing)
+		{
+			cpy->missing = (AttrMissing *) palloc(tupdesc->natts * sizeof(AttrMissing));
+			memcpy(cpy->missing, constr->missing, tupdesc->natts * sizeof(AttrMissing));
+			for (i = tupdesc->natts - 1; i >= 0; i--)
+			{
+				if (constr->missing[i].am_present)
+				{
+					Form_pg_attribute attr = TupleDescAttr(tupdesc, i);
+
+					cpy->missing[i].am_value = datumCopy(constr->missing[i].am_value,
+														 attr->attbyval,
+														 attr->attlen);
+				}
 			}
 		}
 
@@ -211,10 +214,49 @@ CreateTupleDescCopyConstr(TupleDesc tupdesc)
 		desc->constr = cpy;
 	}
 
+	/* We can copy the tuple type identification, too */
 	desc->tdtypeid = tupdesc->tdtypeid;
 	desc->tdtypmod = tupdesc->tdtypmod;
 
 	return desc;
+}
+
+/*
+ * TupleDescCopy
+ *		Copy a tuple descriptor into caller-supplied memory.
+ *		The memory may be shared memory mapped at any address, and must
+ *		be sufficient to hold TupleDescSize(src) bytes.
+ *
+ * !!! Constraints and defaults are not copied !!!
+ */
+void
+TupleDescCopy(TupleDesc dst, TupleDesc src)
+{
+	int			i;
+
+	/* Flat-copy the header and attribute array */
+	memcpy(dst, src, TupleDescSize(src));
+
+	/*
+	 * Since we're not copying constraints and defaults, clear fields
+	 * associated with them.
+	 */
+	for (i = 0; i < dst->natts; i++)
+	{
+		Form_pg_attribute att = TupleDescAttr(dst, i);
+
+		att->attnotnull = false;
+		att->atthasdef = false;
+		att->atthasmissing = false;
+		att->attidentity = '\0';
+	}
+	dst->constr = NULL;
+
+	/*
+	 * Also, assume the destination is not to be ref-counted.  (Copying the
+	 * source's refcount would be wrong in any case.)
+	 */
+	dst->tdrefcount = -1;
 }
 
 /*
@@ -228,6 +270,9 @@ void
 TupleDescCopyEntry(TupleDesc dst, AttrNumber dstAttno,
 				   TupleDesc src, AttrNumber srcAttno)
 {
+	Form_pg_attribute dstAtt = TupleDescAttr(dst, dstAttno - 1);
+	Form_pg_attribute srcAtt = TupleDescAttr(src, srcAttno - 1);
+
 	/*
 	 * sanity checks
 	 */
@@ -238,8 +283,7 @@ TupleDescCopyEntry(TupleDesc dst, AttrNumber dstAttno,
 	AssertArg(dstAttno >= 1);
 	AssertArg(dstAttno <= dst->natts);
 
-	memcpy(dst->attrs[dstAttno - 1], src->attrs[srcAttno - 1],
-		   ATTRIBUTE_FIXED_PART_SIZE);
+	memcpy(dstAtt, srcAtt, ATTRIBUTE_FIXED_PART_SIZE);
 
 	/*
 	 * Aside from updating the attno, we'd better reset attcacheoff.
@@ -250,12 +294,14 @@ TupleDescCopyEntry(TupleDesc dst, AttrNumber dstAttno,
 	 * by other uses of this function or TupleDescInitEntry.  So we cheat a
 	 * bit to avoid a useless O(N^2) penalty.
 	 */
-	dst->attrs[dstAttno - 1]->attnum = dstAttno;
-	dst->attrs[dstAttno - 1]->attcacheoff = -1;
+	dstAtt->attnum = dstAttno;
+	dstAtt->attcacheoff = -1;
 
 	/* since we're not copying constraints or defaults, clear these */
-	dst->attrs[dstAttno - 1]->attnotnull = false;
-	dst->attrs[dstAttno - 1]->atthasdef = false;
+	dstAtt->attnotnull = false;
+	dstAtt->atthasdef = false;
+	dstAtt->atthasmissing = false;
+	dstAtt->attidentity = '\0';
 }
 
 /*
@@ -284,6 +330,18 @@ FreeTupleDesc(TupleDesc tupdesc)
 					pfree(attrdef[i].adbin);
 			}
 			pfree(attrdef);
+		}
+		if (tupdesc->constr->missing)
+		{
+			AttrMissing *attrmiss = tupdesc->constr->missing;
+
+			for (i = tupdesc->natts - 1; i >= 0; i--)
+			{
+				if (attrmiss[i].am_present
+					&& !TupleDescAttr(tupdesc, i)->attbyval)
+					pfree(DatumGetPointer(attrmiss[i].am_value));
+			}
+			pfree(attrmiss);
 		}
 		if (tupdesc->constr->num_check > 0)
 		{
@@ -363,8 +421,8 @@ equalTupleDescs(TupleDesc tupdesc1, TupleDesc tupdesc2)
 
 	for (i = 0; i < tupdesc1->natts; i++)
 	{
-		Form_pg_attribute attr1 = tupdesc1->attrs[i];
-		Form_pg_attribute attr2 = tupdesc2->attrs[i];
+		Form_pg_attribute attr1 = TupleDescAttr(tupdesc1, i);
+		Form_pg_attribute attr2 = TupleDescAttr(tupdesc2, i);
 
 		/*
 		 * We do not need to check every single field here: we can disregard
@@ -399,6 +457,8 @@ equalTupleDescs(TupleDesc tupdesc1, TupleDesc tupdesc2)
 		if (attr1->attnotnull != attr2->attnotnull)
 			return false;
 		if (attr1->atthasdef != attr2->atthasdef)
+			return false;
+		if (attr1->attidentity != attr2->attidentity)
 			return false;
 		if (attr1->attisdropped != attr2->attisdropped)
 			return false;
@@ -443,6 +503,29 @@ equalTupleDescs(TupleDesc tupdesc1, TupleDesc tupdesc2)
 			if (strcmp(defval1->adbin, defval2->adbin) != 0)
 				return false;
 		}
+		if (constr1->missing)
+		{
+			if (!constr2->missing)
+				return false;
+			for (i = 0; i < tupdesc1->natts; i++)
+			{
+				AttrMissing *missval1 = constr1->missing + i;
+				AttrMissing *missval2 = constr2->missing + i;
+
+				if (missval1->am_present != missval2->am_present)
+					return false;
+				if (missval1->am_present)
+				{
+					Form_pg_attribute missatt1 = TupleDescAttr(tupdesc1, i);
+
+					if (!datumIsEqual(missval1->am_value, missval2->am_value,
+									  missatt1->attbyval, missatt1->attlen))
+						return false;
+				}
+			}
+		}
+		else if (constr2->missing)
+			return false;
 		n = constr1->num_check;
 		if (n != (int) constr2->num_check)
 			return false;
@@ -471,6 +554,31 @@ equalTupleDescs(TupleDesc tupdesc1, TupleDesc tupdesc2)
 	else if (tupdesc2->constr != NULL)
 		return false;
 	return true;
+}
+
+/*
+ * hashTupleDesc
+ *		Compute a hash value for a tuple descriptor.
+ *
+ * If two tuple descriptors would be considered equal by equalTupleDescs()
+ * then their hash value will be equal according to this function.
+ *
+ * Note that currently contents of constraint are not hashed - it'd be a bit
+ * painful to do so, and conflicts just due to constraints are unlikely.
+ */
+uint32
+hashTupleDesc(TupleDesc desc)
+{
+	uint32		s;
+	int			i;
+
+	s = hash_combine(0, hash_uint32(desc->natts));
+	s = hash_combine(s, hash_uint32(desc->tdtypeid));
+	s = hash_combine(s, hash_uint32(desc->tdhasoid));
+	for (i = 0; i < desc->natts; ++i)
+		s = hash_combine(s, hash_uint32(TupleDescAttr(desc, i)->atttypid));
+
+	return s;
 }
 
 /*
@@ -510,7 +618,7 @@ TupleDescInitEntry(TupleDesc desc,
 	/*
 	 * initialize the attribute fields
 	 */
-	att = desc->attrs[attributeNumber - 1];
+	att = TupleDescAttr(desc, attributeNumber - 1);
 
 	att->attrelid = 0;			/* dummy value */
 
@@ -533,6 +641,8 @@ TupleDescInitEntry(TupleDesc desc,
 
 	att->attnotnull = false;
 	att->atthasdef = false;
+	att->atthasmissing = false;
+	att->attidentity = '\0';
 	att->attisdropped = false;
 	att->attislocal = true;
 	att->attinhcount = 0;
@@ -554,6 +664,97 @@ TupleDescInitEntry(TupleDesc desc,
 }
 
 /*
+ * TupleDescInitBuiltinEntry
+ *		Initialize a tuple descriptor without catalog access.  Only
+ *		a limited range of builtin types are supported.
+ */
+void
+TupleDescInitBuiltinEntry(TupleDesc desc,
+						  AttrNumber attributeNumber,
+						  const char *attributeName,
+						  Oid oidtypeid,
+						  int32 typmod,
+						  int attdim)
+{
+	Form_pg_attribute att;
+
+	/* sanity checks */
+	AssertArg(PointerIsValid(desc));
+	AssertArg(attributeNumber >= 1);
+	AssertArg(attributeNumber <= desc->natts);
+
+	/* initialize the attribute fields */
+	att = TupleDescAttr(desc, attributeNumber - 1);
+	att->attrelid = 0;			/* dummy value */
+
+	/* unlike TupleDescInitEntry, we require an attribute name */
+	Assert(attributeName != NULL);
+	namestrcpy(&(att->attname), attributeName);
+
+	att->attstattarget = -1;
+	att->attcacheoff = -1;
+	att->atttypmod = typmod;
+
+	att->attnum = attributeNumber;
+	att->attndims = attdim;
+
+	att->attnotnull = false;
+	att->atthasdef = false;
+	att->atthasmissing = false;
+	att->attidentity = '\0';
+	att->attisdropped = false;
+	att->attislocal = true;
+	att->attinhcount = 0;
+	/* attacl, attoptions and attfdwoptions are not present in tupledescs */
+
+	att->atttypid = oidtypeid;
+
+	/*
+	 * Our goal here is to support just enough types to let basic builtin
+	 * commands work without catalog access - e.g. so that we can do certain
+	 * things even in processes that are not connected to a database.
+	 */
+	switch (oidtypeid)
+	{
+		case TEXTOID:
+		case TEXTARRAYOID:
+			att->attlen = -1;
+			att->attbyval = false;
+			att->attalign = 'i';
+			att->attstorage = 'x';
+			att->attcollation = DEFAULT_COLLATION_OID;
+			break;
+
+		case BOOLOID:
+			att->attlen = 1;
+			att->attbyval = true;
+			att->attalign = 'c';
+			att->attstorage = 'p';
+			att->attcollation = InvalidOid;
+			break;
+
+		case INT4OID:
+			att->attlen = 4;
+			att->attbyval = true;
+			att->attalign = 'i';
+			att->attstorage = 'p';
+			att->attcollation = InvalidOid;
+			break;
+
+		case INT8OID:
+			att->attlen = 8;
+			att->attbyval = FLOAT8PASSBYVAL;
+			att->attalign = 'd';
+			att->attstorage = 'p';
+			att->attcollation = InvalidOid;
+			break;
+
+		default:
+			elog(ERROR, "unsupported type %u", oidtypeid);
+	}
+}
+
+/*
  * TupleDescInitEntryCollation
  *
  * Assign a nondefault collation to a previously initialized tuple descriptor
@@ -571,7 +772,7 @@ TupleDescInitEntryCollation(TupleDesc desc,
 	AssertArg(attributeNumber >= 1);
 	AssertArg(attributeNumber <= desc->natts);
 
-	desc->attrs[attributeNumber - 1]->attcollation = collationid;
+	TupleDescAttr(desc, attributeNumber - 1)->attcollation = collationid;
 }
 
 
@@ -611,6 +812,7 @@ BuildDescForRelation(List *schema)
 	{
 		ColumnDef  *entry = lfirst(l);
 		AclResult	aclresult;
+		Form_pg_attribute att;
 
 		/*
 		 * for each entry in the list, get the name and type information from
@@ -637,17 +839,18 @@ BuildDescForRelation(List *schema)
 
 		TupleDescInitEntry(desc, attnum, attname,
 						   atttypid, atttypmod, attdim);
+		att = TupleDescAttr(desc, attnum - 1);
 
 		/* Override TupleDescInitEntry's settings as requested */
 		TupleDescInitEntryCollation(desc, attnum, attcollation);
 		if (entry->storage)
-			desc->attrs[attnum - 1]->attstorage = entry->storage;
+			att->attstorage = entry->storage;
 
 		/* Fill in additional stuff not handled by TupleDescInitEntry */
-		desc->attrs[attnum - 1]->attnotnull = entry->is_not_null;
+		att->attnotnull = entry->is_not_null;
 		has_not_null |= entry->is_not_null;
-		desc->attrs[attnum - 1]->attislocal = entry->is_local;
-		desc->attrs[attnum - 1]->attinhcount = entry->inhcount;
+		att->attislocal = entry->is_local;
+		att->attinhcount = entry->inhcount;
 	}
 
 	if (has_not_null)
@@ -656,6 +859,7 @@ BuildDescForRelation(List *schema)
 
 		constr->has_not_null = true;
 		constr->defval = NULL;
+		constr->missing = NULL;
 		constr->num_defval = 0;
 		constr->check = NULL;
 		constr->num_check = 0;

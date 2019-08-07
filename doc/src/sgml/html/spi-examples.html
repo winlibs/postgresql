@@ -1,150 +1,41 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Examples</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Server Programming Interface"
-HREF="spi.html"><LINK
-REL="PREVIOUS"
-TITLE="Visibility of Data Changes"
-HREF="spi-visibility.html"><LINK
-REL="NEXT"
-TITLE="Background Worker Processes"
-HREF="bgworker.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Visibility of Data Changes"
-HREF="spi-visibility.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="spi.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 45. Server Programming Interface</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Background Worker Processes"
-HREF="bgworker.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="SPI-EXAMPLES"
->45.5. Examples</A
-></H1
-><P
->   This section contains a very simple example of SPI usage. The
-   procedure <CODE
-CLASS="FUNCTION"
->execq</CODE
-> takes an SQL command as its
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>47.6. Examples</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="spi-visibility.html" title="47.5. Visibility of Data Changes" /><link rel="next" href="bgworker.html" title="Chapter 48. Background Worker Processes" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">47.6. Examples</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="spi-visibility.html" title="47.5. Visibility of Data Changes">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="spi.html" title="Chapter 47. Server Programming Interface">Up</a></td><th width="60%" align="center">Chapter 47. Server Programming Interface</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="bgworker.html" title="Chapter 48. Background Worker Processes">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="SPI-EXAMPLES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">47.6. Examples</h2></div></div></div><p>
+   This section contains a very simple example of SPI usage. The
+   C function <code class="function">execq</code> takes an SQL command as its
    first argument and a row count as its second, executes the command
-   using <CODE
-CLASS="FUNCTION"
->SPI_exec</CODE
-> and returns the number of rows
+   using <code class="function">SPI_exec</code> and returns the number of rows
    that were processed by the command.  You can find more complex
    examples for SPI in the source tree in
-   <TT
-CLASS="FILENAME"
->src/test/regress/regress.c</TT
-> and in the
-   <A
-HREF="contrib-spi.html"
->spi</A
-> module.
-  </P
-><PRE
-CLASS="PROGRAMLISTING"
->#include "postgres.h"
+   <code class="filename">src/test/regress/regress.c</code> and in the
+   <a class="xref" href="contrib-spi.html" title="F.36. spi">spi</a> module.
+  </p><pre class="programlisting">
+#include "postgres.h"
 
 #include "executor/spi.h"
 #include "utils/builtins.h"
 
-#ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
-#endif
 
-int64 execq(text *sql, int cnt);
+PG_FUNCTION_INFO_V1(execq);
 
-int64
-execq(text *sql, int cnt)
+Datum
+execq(PG_FUNCTION_ARGS)
 {
     char *command;
+    int cnt;
     int ret;
     uint64 proc;
 
     /* Convert given text object to a C string */
-    command = text_to_cstring(sql);
+    command = text_to_cstring(PG_GETARG_TEXT_PP(0));
+    cnt = PG_GETARG_INT32(1);
 
     SPI_connect();
 
     ret = SPI_exec(command, cnt);
 
     proc = SPI_processed;
+
     /*
      * If some rows were fetched, print them via elog(INFO).
      */
@@ -161,7 +52,7 @@ execq(text *sql, int cnt)
             int i;
 
             for (i = 1, buf[0] = 0; i &lt;= tupdesc-&gt;natts; i++)
-                snprintf(buf + strlen (buf), sizeof(buf) - strlen(buf), " %s%s",
+                snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), " %s%s",
                         SPI_getvalue(tuple, tupdesc, i),
                         (i == tupdesc-&gt;natts) ? " " : " |");
             elog(INFO, "EXECQ: %s", buf);
@@ -171,38 +62,22 @@ execq(text *sql, int cnt)
     SPI_finish();
     pfree(command);
 
-    return (proc);
-}</PRE
-><P
->   (This function uses call convention version 0, to make the example
-   easier to understand.  In real applications you should use the new
-   version 1 interface.)
-  </P
-><P
->   This is how you declare the function after having compiled it into
-   a shared library (details are in <A
-HREF="xfunc-c.html#DFUNC"
->Section 36.9.6</A
->.):
+    PG_RETURN_INT64(proc);
+}
+</pre><p>
+   This is how you declare the function after having compiled it into
+   a shared library (details are in <a class="xref" href="xfunc-c.html#DFUNC" title="38.10.5. Compiling and Linking Dynamically-loaded Functions">Section 38.10.5</a>.):
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION execq(text, integer) RETURNS int8
-    AS '<TT
-CLASS="REPLACEABLE"
-><I
->filename</I
-></TT
->'
-    LANGUAGE C STRICT;</PRE
-><P>
-  </P
-><P
->   Here is a sample session:
+</p><pre class="programlisting">
+CREATE FUNCTION execq(text, integer) RETURNS int8
+    AS '<em class="replaceable"><code>filename</code></em>'
+    LANGUAGE C STRICT;
+</pre><p>
+  </p><p>
+   Here is a sample session:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->=&gt; SELECT execq('CREATE TABLE a (x integer)', 0);
+</p><pre class="programlisting">
+=&gt; SELECT execq('CREATE TABLE a (x integer)', 0);
  execq
 -------
      0
@@ -272,72 +147,6 @@ INSERT 0 2
  2                  -- 2 rows * 1 (x in first row)
  6                  -- 3 rows (2 + 1 just inserted) * 2 (x in second row)
 (4 rows)               ^^^^^^
-                       rows visible to execq() in different invocations</PRE
-><P>
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="spi-visibility.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="bgworker.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Visibility of Data Changes</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="spi.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Background Worker Processes</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+                       rows visible to execq() in different invocations
+</pre><p>
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="spi-visibility.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="spi.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="bgworker.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">47.5. Visibility of Data Changes </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 48. Background Worker Processes</td></tr></table></div></body></html>

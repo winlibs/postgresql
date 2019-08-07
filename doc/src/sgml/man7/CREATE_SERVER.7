@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE SERVER" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE SERVER" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ CREATE_SERVER \- define a new foreign server
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE SERVER \fIserver_name\fR [ TYPE \*(Aq\fIserver_type\fR\*(Aq ] [ VERSION \*(Aq\fIserver_version\fR\*(Aq ]
+CREATE SERVER [ IF NOT EXISTS ] \fIserver_name\fR [ TYPE \*(Aq\fIserver_type\fR\*(Aq ] [ VERSION \*(Aq\fIserver_version\fR\*(Aq ]
     FOREIGN DATA WRAPPER \fIfdw_name\fR
     [ OPTIONS ( \fIoption\fR \*(Aq\fIvalue\fR\*(Aq [, \&.\&.\&. ] ) ]
 .fi
@@ -49,6 +49,11 @@ Creating a server requires
 USAGE
 privilege on the foreign\-data wrapper being used\&.
 .SH "PARAMETERS"
+.PP
+IF NOT EXISTS
+.RS 4
+Do not throw an error if a server with the same name already exists\&. A notice is issued in this case\&. Note that there is no guarantee that the existing server is anything like the one that would have been created\&.
+.RE
 .PP
 \fIserver_name\fR
 .RS 4

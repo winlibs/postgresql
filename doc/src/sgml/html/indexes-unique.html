@@ -1,219 +1,24 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Unique Indexes</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Indexes"
-HREF="indexes.html"><LINK
-REL="PREVIOUS"
-TITLE="Combining Multiple Indexes"
-HREF="indexes-bitmap-scans.html"><LINK
-REL="NEXT"
-TITLE="Indexes on Expressions"
-HREF="indexes-expressional.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Combining Multiple Indexes"
-HREF="indexes-bitmap-scans.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="indexes.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 11. Indexes</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Indexes on Expressions"
-HREF="indexes-expressional.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="INDEXES-UNIQUE"
->11.6. Unique Indexes</A
-></H1
-><P
->   Indexes can also be used to enforce uniqueness of a column's value,
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>11.6. Unique Indexes</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="indexes-bitmap-scans.html" title="11.5. Combining Multiple Indexes" /><link rel="next" href="indexes-expressional.html" title="11.7. Indexes on Expressions" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">11.6. Unique Indexes</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="indexes-bitmap-scans.html" title="11.5. Combining Multiple Indexes">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="indexes.html" title="Chapter 11. Indexes">Up</a></td><th width="60%" align="center">Chapter 11. Indexes</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="indexes-expressional.html" title="11.7. Indexes on Expressions">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="INDEXES-UNIQUE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">11.6. Unique Indexes</h2></div></div></div><a id="id-1.5.10.9.2" class="indexterm"></a><p>
+   Indexes can also be used to enforce uniqueness of a column's value,
    or the uniqueness of the combined values of more than one column.
-</P><PRE
-CLASS="SYNOPSIS"
->CREATE UNIQUE INDEX <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> ON <TT
-CLASS="REPLACEABLE"
-><I
->table</I
-></TT
-> (<TT
-CLASS="REPLACEABLE"
-><I
->column</I
-></TT
-> [<SPAN
-CLASS="OPTIONAL"
->, ...</SPAN
->]);</PRE
-><P>
+</p><pre class="synopsis">
+CREATE UNIQUE INDEX <em class="replaceable"><code>name</code></em> ON <em class="replaceable"><code>table</code></em> (<em class="replaceable"><code>column</code></em> [<span class="optional">, ...</span>]);
+</pre><p>
    Currently, only B-tree indexes can be declared unique.
-  </P
-><P
->   When an index is declared unique, multiple table rows with equal
+  </p><p>
+   When an index is declared unique, multiple table rows with equal
    indexed values are not allowed.  Null values are not considered
    equal.  A multicolumn unique index will only reject cases where all
    indexed columns are equal in multiple rows.
-  </P
-><P
->   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> automatically creates a unique
+  </p><p>
+   <span class="productname">PostgreSQL</span> automatically creates a unique
    index when a unique constraint or primary key is defined for a table.
    The index covers the columns that make up the primary key or unique
    constraint (a multicolumn index, if appropriate), and is the mechanism
    that enforces the constraint.
-  </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->    There's no need to manually
+  </p><div class="note"><h3 class="title">Note</h3><p>
+    There's no need to manually
     create indexes on unique columns; doing so would just duplicate
     the automatically-created index.
-   </P
-></BLOCKQUOTE
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="indexes-bitmap-scans.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="indexes-expressional.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Combining Multiple Indexes</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="indexes.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Indexes on Expressions</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="indexes-bitmap-scans.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="indexes.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="indexes-expressional.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">11.5. Combining Multiple Indexes </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 11.7. Indexes on Expressions</td></tr></table></div></body></html>

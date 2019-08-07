@@ -5,7 +5,7 @@
  *	  Routines for CREATE and DROP FUNCTION commands and CREATE and DROP
  *	  CAST commands.
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -44,27 +44,32 @@
 #include "catalog/pg_language.h"
 #include "catalog/pg_namespace.h"
 #include "catalog/pg_proc.h"
-#include "catalog/pg_proc_fn.h"
 #include "catalog/pg_transform.h"
 #include "catalog/pg_type.h"
-#include "catalog/pg_type_fn.h"
 #include "commands/alter.h"
 #include "commands/defrem.h"
 #include "commands/proclang.h"
+#include "executor/execdesc.h"
+#include "executor/executor.h"
+#include "funcapi.h"
 #include "miscadmin.h"
+#include "optimizer/clauses.h"
 #include "optimizer/var.h"
 #include "parser/parse_coerce.h"
 #include "parser/parse_collate.h"
 #include "parser/parse_expr.h"
 #include "parser/parse_func.h"
 #include "parser/parse_type.h"
+#include "pgstat.h"
 #include "utils/acl.h"
 #include "utils/builtins.h"
 #include "utils/fmgroids.h"
 #include "utils/guc.h"
 #include "utils/lsyscache.h"
+#include "utils/memutils.h"
 #include "utils/rel.h"
 #include "utils/syscache.h"
+#include "utils/typcache.h"
 #include "utils/tqual.h"
 
 /*
@@ -131,8 +136,8 @@ compute_return_type(TypeName *returnType, Oid languageOid,
 		if (returnType->typmods != NIL)
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
-			errmsg("type modifier cannot be specified for shell type \"%s\"",
-				   typnam)));
+					 errmsg("type modifier cannot be specified for shell type \"%s\"",
+							typnam)));
 
 		/* Otherwise, go ahead and make a shell type */
 		ereport(NOTICE,
@@ -144,7 +149,7 @@ compute_return_type(TypeName *returnType, Oid languageOid,
 		aclresult = pg_namespace_aclcheck(namespaceId, GetUserId(),
 										  ACL_CREATE);
 		if (aclresult != ACLCHECK_OK)
-			aclcheck_error(aclresult, ACL_KIND_NAMESPACE,
+			aclcheck_error(aclresult, OBJECT_SCHEMA,
 						   get_namespace_name(namespaceId));
 		address = TypeShellMake(typname, namespaceId, GetUserId());
 		rettype = address.objectId;
@@ -167,7 +172,6 @@ compute_return_type(TypeName *returnType, Oid languageOid,
  * parameters: list of FunctionParameter structs
  * languageOid: OID of function language (InvalidOid if it's CREATE AGGREGATE)
  * is_aggregate: needed only to determine error handling
- * queryString: likewise, needed only for error handling
  *
  * Results are stored into output parameters.  parameterTypes must always
  * be created, but the other arrays are set to NULL if not needed.
@@ -177,10 +181,10 @@ compute_return_type(TypeName *returnType, Oid languageOid,
  * else it is set to the OID of the implied result type.
  */
 void
-interpret_function_parameter_list(List *parameters,
+interpret_function_parameter_list(ParseState *pstate,
+								  List *parameters,
 								  Oid languageOid,
-								  bool is_aggregate,
-								  const char *queryString,
+								  ObjectType objtype,
 								  oidvector **parameterTypes,
 								  ArrayType **allParameterTypes,
 								  ArrayType **parameterModes,
@@ -201,9 +205,8 @@ interpret_function_parameter_list(List *parameters,
 	bool		have_defaults = false;
 	ListCell   *x;
 	int			i;
-	ParseState *pstate;
 
-	*variadicArgType = InvalidOid;		/* default result */
+	*variadicArgType = InvalidOid;	/* default result */
 	*requiredResultType = InvalidOid;	/* default result */
 
 	inTypes = (Oid *) palloc(parameterCount * sizeof(Oid));
@@ -211,10 +214,6 @@ interpret_function_parameter_list(List *parameters,
 	paramModes = (Datum *) palloc(parameterCount * sizeof(Datum));
 	paramNames = (Datum *) palloc0(parameterCount * sizeof(Datum));
 	*parameterDefaults = NIL;
-
-	/* may need a pstate for parse analysis of default exprs */
-	pstate = make_parsestate(NULL);
-	pstate->p_sourcetext = queryString;
 
 	/* Scan the list and extract data into work arrays */
 	i = 0;
@@ -236,10 +235,10 @@ interpret_function_parameter_list(List *parameters,
 				if (languageOid == SQLlanguageId)
 					ereport(ERROR,
 							(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
-						   errmsg("SQL function cannot accept shell type %s",
-								  TypeNameToString(t))));
+							 errmsg("SQL function cannot accept shell type %s",
+									TypeNameToString(t))));
 				/* We don't allow creating aggregates on shell types either */
-				else if (is_aggregate)
+				else if (objtype == OBJECT_AGGREGATE)
 					ereport(ERROR,
 							(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
 							 errmsg("aggregate cannot accept shell type %s",
@@ -268,14 +267,27 @@ interpret_function_parameter_list(List *parameters,
 
 		if (t->setof)
 		{
-			if (is_aggregate)
+			if (objtype == OBJECT_AGGREGATE)
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
 						 errmsg("aggregates cannot accept set arguments")));
+			else if (objtype == OBJECT_PROCEDURE)
+				ereport(ERROR,
+						(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
+						 errmsg("procedures cannot accept set arguments")));
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
 						 errmsg("functions cannot accept set arguments")));
+		}
+
+		if (objtype == OBJECT_PROCEDURE)
+		{
+			if (fp->mode == FUNC_PARAM_OUT)
+				ereport(ERROR,
+						(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+						 (errmsg("procedures cannot have OUT arguments"),
+						  errhint("INOUT arguments are permitted."))));
 		}
 
 		/* handle input parameters */
@@ -293,7 +305,9 @@ interpret_function_parameter_list(List *parameters,
 		/* handle output parameters */
 		if (fp->mode != FUNC_PARAM_IN && fp->mode != FUNC_PARAM_VARIADIC)
 		{
-			if (outCount == 0)	/* save first output param's type */
+			if (objtype == OBJECT_PROCEDURE)
+				*requiredResultType = RECORDOID;
+			else if (outCount == 0) /* save first output param's type */
 				*requiredResultType = toid;
 			outCount++;
 		}
@@ -313,7 +327,7 @@ interpret_function_parameter_list(List *parameters,
 					if (!OidIsValid(get_element_type(toid)))
 						ereport(ERROR,
 								(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
-							 errmsg("VARIADIC parameter must be an array")));
+								 errmsg("VARIADIC parameter must be an array")));
 					break;
 			}
 		}
@@ -353,8 +367,8 @@ interpret_function_parameter_list(List *parameters,
 					strcmp(prevfp->name, fp->name) == 0)
 					ereport(ERROR,
 							(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
-						  errmsg("parameter name \"%s\" used more than once",
-								 fp->name)));
+							 errmsg("parameter name \"%s\" used more than once",
+									fp->name)));
 			}
 
 			paramNames[i] = CStringGetTextDatum(fp->name);
@@ -368,7 +382,7 @@ interpret_function_parameter_list(List *parameters,
 			if (!isinput)
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
-				   errmsg("only input parameters can have default values")));
+						 errmsg("only input parameters can have default values")));
 
 			def = transformExpr(pstate, fp->defexpr,
 								EXPR_KIND_FUNCTION_DEFAULT);
@@ -413,8 +427,6 @@ interpret_function_parameter_list(List *parameters,
 		i++;
 	}
 
-	free_parsestate(pstate);
-
 	/* Now construct the proper outputs as needed */
 	*parameterTypes = buildoidvector(inTypes, inCount);
 
@@ -458,7 +470,9 @@ interpret_function_parameter_list(List *parameters,
  * SET parameters though --- if you're redundant, the last one wins.)
  */
 static bool
-compute_common_attribute(DefElem *defel,
+compute_common_attribute(ParseState *pstate,
+						 bool is_procedure,
+						 DefElem *defel,
 						 DefElem **volatility_item,
 						 DefElem **strict_item,
 						 DefElem **security_item,
@@ -470,6 +484,8 @@ compute_common_attribute(DefElem *defel,
 {
 	if (strcmp(defel->defname, "volatility") == 0)
 	{
+		if (is_procedure)
+			goto procedure_error;
 		if (*volatility_item)
 			goto duplicate_error;
 
@@ -477,6 +493,8 @@ compute_common_attribute(DefElem *defel,
 	}
 	else if (strcmp(defel->defname, "strict") == 0)
 	{
+		if (is_procedure)
+			goto procedure_error;
 		if (*strict_item)
 			goto duplicate_error;
 
@@ -491,6 +509,8 @@ compute_common_attribute(DefElem *defel,
 	}
 	else if (strcmp(defel->defname, "leakproof") == 0)
 	{
+		if (is_procedure)
+			goto procedure_error;
 		if (*leakproof_item)
 			goto duplicate_error;
 
@@ -502,6 +522,8 @@ compute_common_attribute(DefElem *defel,
 	}
 	else if (strcmp(defel->defname, "cost") == 0)
 	{
+		if (is_procedure)
+			goto procedure_error;
 		if (*cost_item)
 			goto duplicate_error;
 
@@ -509,6 +531,8 @@ compute_common_attribute(DefElem *defel,
 	}
 	else if (strcmp(defel->defname, "rows") == 0)
 	{
+		if (is_procedure)
+			goto procedure_error;
 		if (*rows_item)
 			goto duplicate_error;
 
@@ -516,6 +540,8 @@ compute_common_attribute(DefElem *defel,
 	}
 	else if (strcmp(defel->defname, "parallel") == 0)
 	{
+		if (is_procedure)
+			goto procedure_error;
 		if (*parallel_item)
 			goto duplicate_error;
 
@@ -530,8 +556,16 @@ compute_common_attribute(DefElem *defel,
 duplicate_error:
 	ereport(ERROR,
 			(errcode(ERRCODE_SYNTAX_ERROR),
-			 errmsg("conflicting or redundant options")));
+			 errmsg("conflicting or redundant options"),
+			 parser_errposition(pstate, defel->location)));
 	return false;				/* keep compiler quiet */
+
+procedure_error:
+	ereport(ERROR,
+			(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
+			 errmsg("invalid attribute in procedure definition"),
+			 parser_errposition(pstate, defel->location)));
+	return false;
 }
 
 static char
@@ -568,7 +602,7 @@ interpret_func_parallel(DefElem *defel)
 		ereport(ERROR,
 				(errcode(ERRCODE_SYNTAX_ERROR),
 				 errmsg("parameter \"parallel\" must be SAFE, RESTRICTED, or UNSAFE")));
-		return PROPARALLEL_UNSAFE;		/* keep compiler quiet */
+		return PROPARALLEL_UNSAFE;	/* keep compiler quiet */
 	}
 }
 
@@ -584,9 +618,8 @@ update_proconfig_value(ArrayType *a, List *set_items)
 
 	foreach(l, set_items)
 	{
-		VariableSetStmt *sstmt = (VariableSetStmt *) lfirst(l);
+		VariableSetStmt *sstmt = lfirst_node(VariableSetStmt, l);
 
-		Assert(IsA(sstmt, VariableSetStmt));
 		if (sstmt->kind == VAR_RESET_ALL)
 			a = NULL;
 		else
@@ -595,7 +628,7 @@ update_proconfig_value(ArrayType *a, List *set_items)
 
 			if (valuestr)
 				a = GUCArrayAdd(a, sstmt->name, valuestr);
-			else	/* RESET */
+			else				/* RESET */
 				a = GUCArrayDelete(a, sstmt->name);
 		}
 	}
@@ -609,19 +642,21 @@ update_proconfig_value(ArrayType *a, List *set_items)
  * attributes.
  */
 static void
-compute_attributes_sql_style(List *options,
-							 List **as,
-							 char **language,
-							 Node **transform,
-							 bool *windowfunc_p,
-							 char *volatility_p,
-							 bool *strict_p,
-							 bool *security_definer,
-							 bool *leakproof_p,
-							 ArrayType **proconfig,
-							 float4 *procost,
-							 float4 *prorows,
-							 char *parallel_p)
+compute_function_attributes(ParseState *pstate,
+							bool is_procedure,
+							List *options,
+							List **as,
+							char **language,
+							Node **transform,
+							bool *windowfunc_p,
+							char *volatility_p,
+							bool *strict_p,
+							bool *security_definer,
+							bool *leakproof_p,
+							ArrayType **proconfig,
+							float4 *procost,
+							float4 *prorows,
+							char *parallel_p)
 {
 	ListCell   *option;
 	DefElem    *as_item = NULL;
@@ -646,7 +681,8 @@ compute_attributes_sql_style(List *options,
 			if (as_item)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			as_item = defel;
 		}
 		else if (strcmp(defel->defname, "language") == 0)
@@ -654,7 +690,8 @@ compute_attributes_sql_style(List *options,
 			if (language_item)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			language_item = defel;
 		}
 		else if (strcmp(defel->defname, "transform") == 0)
@@ -662,7 +699,8 @@ compute_attributes_sql_style(List *options,
 			if (transform_item)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			transform_item = defel;
 		}
 		else if (strcmp(defel->defname, "window") == 0)
@@ -670,10 +708,18 @@ compute_attributes_sql_style(List *options,
 			if (windowfunc_item)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
+			if (is_procedure)
+				ereport(ERROR,
+						(errcode(ERRCODE_INVALID_FUNCTION_DEFINITION),
+						 errmsg("invalid attribute in procedure definition"),
+						 parser_errposition(pstate, defel->location)));
 			windowfunc_item = defel;
 		}
-		else if (compute_common_attribute(defel,
+		else if (compute_common_attribute(pstate,
+										  is_procedure,
+										  defel,
 										  &volatility_item,
 										  &strict_item,
 										  &security_item,
@@ -748,46 +794,6 @@ compute_attributes_sql_style(List *options,
 }
 
 
-/*-------------
- *	 Interpret the parameters *parameters and return their contents via
- *	 *isStrict_p and *volatility_p.
- *
- *	These parameters supply optional information about a function.
- *	All have defaults if not specified. Parameters:
- *
- *	 * isStrict means the function should not be called when any NULL
- *	   inputs are present; instead a NULL result value should be assumed.
- *
- *	 * volatility tells the optimizer whether the function's result can
- *	   be assumed to be repeatable over multiple evaluations.
- *------------
- */
-static void
-compute_attributes_with_style(List *parameters, bool *isStrict_p, char *volatility_p)
-{
-	ListCell   *pl;
-
-	foreach(pl, parameters)
-	{
-		DefElem    *param = (DefElem *) lfirst(pl);
-
-		if (pg_strcasecmp(param->defname, "isstrict") == 0)
-			*isStrict_p = defGetBoolean(param);
-		else if (pg_strcasecmp(param->defname, "iscachable") == 0)
-		{
-			/* obsolete spelling of isImmutable */
-			if (defGetBoolean(param))
-				*volatility_p = PROVOLATILE_IMMUTABLE;
-		}
-		else
-			ereport(WARNING,
-					(errcode(ERRCODE_SYNTAX_ERROR),
-					 errmsg("unrecognized function attribute \"%s\" ignored",
-							param->defname)));
-	}
-}
-
-
 /*
  * For a dynamically linked C language object, the form of the clause is
  *
@@ -855,10 +861,10 @@ interpret_AS_clause(Oid languageOid, const char *languageName,
 
 /*
  * CreateFunction
- *	 Execute a CREATE FUNCTION utility statement.
+ *	 Execute a CREATE FUNCTION (or CREATE PROCEDURE) utility statement.
  */
 ObjectAddress
-CreateFunction(CreateFunctionStmt *stmt, const char *queryString)
+CreateFunction(ParseState *pstate, CreateFunctionStmt *stmt)
 {
 	char	   *probin_str;
 	char	   *prosrc_str;
@@ -900,10 +906,10 @@ CreateFunction(CreateFunctionStmt *stmt, const char *queryString)
 	/* Check we have creation rights in target namespace */
 	aclresult = pg_namespace_aclcheck(namespaceId, GetUserId(), ACL_CREATE);
 	if (aclresult != ACLCHECK_OK)
-		aclcheck_error(aclresult, ACL_KIND_NAMESPACE,
+		aclcheck_error(aclresult, OBJECT_SCHEMA,
 					   get_namespace_name(namespaceId));
 
-	/* default attributes */
+	/* Set default attributes */
 	isWindowFunc = false;
 	isStrict = false;
 	security = false;
@@ -914,12 +920,14 @@ CreateFunction(CreateFunctionStmt *stmt, const char *queryString)
 	prorows = -1;				/* indicates not set */
 	parallel = PROPARALLEL_UNSAFE;
 
-	/* override attributes from explicit list */
-	compute_attributes_sql_style(stmt->options,
-								 &as_clause, &language, &transformDefElem,
-								 &isWindowFunc, &volatility,
-								 &isStrict, &security, &isLeakProof,
-								 &proconfig, &procost, &prorows, &parallel);
+	/* Extract non-default attributes from stmt->options list */
+	compute_function_attributes(pstate,
+								stmt->is_procedure,
+								stmt->options,
+								&as_clause, &language, &transformDefElem,
+								&isWindowFunc, &volatility,
+								&isStrict, &security, &isLeakProof,
+								&proconfig, &procost, &prorows, &parallel);
 
 	/* Look up the language and validate permissions */
 	languageTuple = SearchSysCache1(LANGNAME, PointerGetDatum(language));
@@ -928,7 +936,7 @@ CreateFunction(CreateFunctionStmt *stmt, const char *queryString)
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("language \"%s\" does not exist", language),
 				 (PLTemplateExists(language) ?
-				  errhint("Use CREATE LANGUAGE to load the language into the database.") : 0)));
+				  errhint("Use CREATE EXTENSION to load the language into the database.") : 0)));
 
 	languageOid = HeapTupleGetOid(languageTuple);
 	languageStruct = (Form_pg_language) GETSTRUCT(languageTuple);
@@ -940,14 +948,14 @@ CreateFunction(CreateFunctionStmt *stmt, const char *queryString)
 
 		aclresult = pg_language_aclcheck(languageOid, GetUserId(), ACL_USAGE);
 		if (aclresult != ACLCHECK_OK)
-			aclcheck_error(aclresult, ACL_KIND_LANGUAGE,
+			aclcheck_error(aclresult, OBJECT_LANGUAGE,
 						   NameStr(languageStruct->lanname));
 	}
 	else
 	{
 		/* if untrusted language, must be superuser */
 		if (!superuser())
-			aclcheck_error(ACLCHECK_NO_PRIV, ACL_KIND_LANGUAGE,
+			aclcheck_error(ACLCHECK_NO_PRIV, OBJECT_LANGUAGE,
 						   NameStr(languageStruct->lanname));
 	}
 
@@ -969,11 +977,10 @@ CreateFunction(CreateFunctionStmt *stmt, const char *queryString)
 	{
 		ListCell   *lc;
 
-		Assert(IsA(transformDefElem, List));
-
-		foreach(lc, (List *) transformDefElem)
+		foreach(lc, castNode(List, transformDefElem))
 		{
-			Oid			typeid = typenameTypeId(NULL, lfirst(lc));
+			Oid			typeid = typenameTypeId(NULL,
+												lfirst_node(TypeName, lc));
 			Oid			elt = get_base_element_type(typeid);
 
 			typeid = elt ? elt : typeid;
@@ -987,10 +994,10 @@ CreateFunction(CreateFunctionStmt *stmt, const char *queryString)
 	 * Convert remaining parameters of CREATE to form wanted by
 	 * ProcedureCreate.
 	 */
-	interpret_function_parameter_list(stmt->parameters,
+	interpret_function_parameter_list(pstate,
+									  stmt->parameters,
 									  languageOid,
-									  false,	/* not an aggregate */
-									  queryString,
+									  stmt->is_procedure ? OBJECT_PROCEDURE : OBJECT_FUNCTION,
 									  &parameterTypes,
 									  &allParameterTypes,
 									  &parameterModes,
@@ -999,7 +1006,13 @@ CreateFunction(CreateFunctionStmt *stmt, const char *queryString)
 									  &variadicArgType,
 									  &requiredResultType);
 
-	if (stmt->returnType)
+	if (stmt->is_procedure)
+	{
+		Assert(!stmt->returnType);
+		prorettype = requiredResultType ? requiredResultType : VOIDOID;
+		returnsSet = false;
+	}
+	else if (stmt->returnType)
 	{
 		/* explicit RETURNS clause */
 		compute_return_type(stmt->returnType, languageOid,
@@ -1045,8 +1058,6 @@ CreateFunction(CreateFunctionStmt *stmt, const char *queryString)
 		trftypes = NULL;
 	}
 
-	compute_attributes_with_style(stmt->withClause, &isStrict, &volatility);
-
 	interpret_AS_clause(languageOid, language, funcname, as_clause,
 						&prosrc_str, &probin_str);
 
@@ -1090,8 +1101,7 @@ CreateFunction(CreateFunctionStmt *stmt, const char *queryString)
 						   languageValidator,
 						   prosrc_str,	/* converted to text later */
 						   probin_str,	/* converted to text later */
-						   false,		/* not an aggregate */
-						   isWindowFunc,
+						   stmt->is_procedure ? PROKIND_PROCEDURE : (isWindowFunc ? PROKIND_WINDOW : PROKIND_FUNCTION),
 						   security,
 						   isLeakProof,
 						   isStrict,
@@ -1119,7 +1129,7 @@ RemoveFunctionById(Oid funcOid)
 {
 	Relation	relation;
 	HeapTuple	tup;
-	bool		isagg;
+	char		prokind;
 
 	/*
 	 * Delete the pg_proc tuple.
@@ -1130,9 +1140,9 @@ RemoveFunctionById(Oid funcOid)
 	if (!HeapTupleIsValid(tup)) /* should not happen */
 		elog(ERROR, "cache lookup failed for function %u", funcOid);
 
-	isagg = ((Form_pg_proc) GETSTRUCT(tup))->proisagg;
+	prokind = ((Form_pg_proc) GETSTRUCT(tup))->prokind;
 
-	simple_heap_delete(relation, &tup->t_self);
+	CatalogTupleDelete(relation, &tup->t_self);
 
 	ReleaseSysCache(tup);
 
@@ -1141,15 +1151,15 @@ RemoveFunctionById(Oid funcOid)
 	/*
 	 * If there's a pg_aggregate tuple, delete that too.
 	 */
-	if (isagg)
+	if (prokind == PROKIND_AGGREGATE)
 	{
 		relation = heap_open(AggregateRelationId, RowExclusiveLock);
 
 		tup = SearchSysCache1(AGGFNOID, ObjectIdGetDatum(funcOid));
-		if (!HeapTupleIsValid(tup))		/* should not happen */
+		if (!HeapTupleIsValid(tup)) /* should not happen */
 			elog(ERROR, "cache lookup failed for pg_aggregate tuple for function %u", funcOid);
 
-		simple_heap_delete(relation, &tup->t_self);
+		CatalogTupleDelete(relation, &tup->t_self);
 
 		ReleaseSysCache(tup);
 
@@ -1163,11 +1173,12 @@ RemoveFunctionById(Oid funcOid)
  * ALTER framework).
  */
 ObjectAddress
-AlterFunction(AlterFunctionStmt *stmt)
+AlterFunction(ParseState *pstate, AlterFunctionStmt *stmt)
 {
 	HeapTuple	tup;
 	Oid			funcOid;
 	Form_pg_proc procForm;
+	bool		is_procedure;
 	Relation	rel;
 	ListCell   *l;
 	DefElem    *volatility_item = NULL;
@@ -1182,9 +1193,7 @@ AlterFunction(AlterFunctionStmt *stmt)
 
 	rel = heap_open(ProcedureRelationId, RowExclusiveLock);
 
-	funcOid = LookupFuncNameTypeNames(stmt->func->funcname,
-									  stmt->func->funcargs,
-									  false);
+	funcOid = LookupFuncWithArgs(stmt->objtype, stmt->func, false);
 
 	tup = SearchSysCacheCopy1(PROCOID, ObjectIdGetDatum(funcOid));
 	if (!HeapTupleIsValid(tup)) /* should not happen */
@@ -1194,21 +1203,25 @@ AlterFunction(AlterFunctionStmt *stmt)
 
 	/* Permission check: must own function */
 	if (!pg_proc_ownercheck(funcOid, GetUserId()))
-		aclcheck_error(ACLCHECK_NOT_OWNER, ACL_KIND_PROC,
-					   NameListToString(stmt->func->funcname));
+		aclcheck_error(ACLCHECK_NOT_OWNER, stmt->objtype,
+					   NameListToString(stmt->func->objname));
 
-	if (procForm->proisagg)
+	if (procForm->prokind == PROKIND_AGGREGATE)
 		ereport(ERROR,
 				(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 				 errmsg("\"%s\" is an aggregate function",
-						NameListToString(stmt->func->funcname))));
+						NameListToString(stmt->func->objname))));
+
+	is_procedure = (procForm->prokind == PROKIND_PROCEDURE);
 
 	/* Examine requested actions. */
 	foreach(l, stmt->actions)
 	{
 		DefElem    *defel = (DefElem *) lfirst(l);
 
-		if (compute_common_attribute(defel,
+		if (compute_common_attribute(pstate,
+									 is_procedure,
+									 defel,
 									 &volatility_item,
 									 &strict_item,
 									 &security_def_item,
@@ -1232,7 +1245,7 @@ AlterFunction(AlterFunctionStmt *stmt)
 		if (procForm->proleakproof && !superuser())
 			ereport(ERROR,
 					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-				  errmsg("only superuser can define a leakproof function")));
+					 errmsg("only superuser can define a leakproof function")));
 	}
 	if (cost_item)
 	{
@@ -1292,8 +1305,7 @@ AlterFunction(AlterFunctionStmt *stmt)
 		procForm->proparallel = interpret_func_parallel(parallel_item);
 
 	/* Do the update */
-	simple_heap_update(rel, &tup->t_self, tup);
-	CatalogUpdateIndexes(rel, tup);
+	CatalogTupleUpdate(rel, &tup->t_self, tup);
 
 	InvokeObjectPostAlterHook(ProcedureRelationId, funcOid, 0);
 
@@ -1328,16 +1340,14 @@ SetFunctionReturnType(Oid funcOid, Oid newRetType)
 		elog(ERROR, "cache lookup failed for function %u", funcOid);
 	procForm = (Form_pg_proc) GETSTRUCT(tup);
 
-	if (procForm->prorettype != OPAQUEOID)		/* caller messed up */
+	if (procForm->prorettype != OPAQUEOID)	/* caller messed up */
 		elog(ERROR, "function %u doesn't return OPAQUE", funcOid);
 
 	/* okay to overwrite copied tuple */
 	procForm->prorettype = newRetType;
 
 	/* update the catalog and its indexes */
-	simple_heap_update(pg_proc_rel, &tup->t_self, tup);
-
-	CatalogUpdateIndexes(pg_proc_rel, tup);
+	CatalogTupleUpdate(pg_proc_rel, &tup->t_self, tup);
 
 	heap_close(pg_proc_rel, RowExclusiveLock);
 
@@ -1380,9 +1390,7 @@ SetFunctionArgType(Oid funcOid, int argIndex, Oid newArgType)
 	procForm->proargtypes.values[argIndex] = newArgType;
 
 	/* update the catalog and its indexes */
-	simple_heap_update(pg_proc_rel, &tup->t_self, tup);
-
-	CatalogUpdateIndexes(pg_proc_rel, tup);
+	CatalogTupleUpdate(pg_proc_rel, &tup->t_self, tup);
 
 	heap_close(pg_proc_rel, RowExclusiveLock);
 
@@ -1478,9 +1486,7 @@ CreateCast(CreateCastStmt *stmt)
 	{
 		Form_pg_proc procstruct;
 
-		funcid = LookupFuncNameTypeNames(stmt->func->funcname,
-										 stmt->func->funcargs,
-										 false);
+		funcid = LookupFuncWithArgs(OBJECT_FUNCTION, stmt->func, false);
 
 		tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(funcid));
 		if (!HeapTupleIsValid(tuple))
@@ -1491,7 +1497,7 @@ CreateCast(CreateCastStmt *stmt)
 		if (nargs < 1 || nargs > 3)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-				  errmsg("cast function must take one to three arguments")));
+					 errmsg("cast function must take one to three arguments")));
 		if (!IsBinaryCoercible(sourcetypeid, procstruct->proargtypes.values[0]))
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
@@ -1499,11 +1505,13 @@ CreateCast(CreateCastStmt *stmt)
 		if (nargs > 1 && procstruct->proargtypes.values[1] != INT4OID)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-			errmsg("second argument of cast function must be type integer")));
+					 errmsg("second argument of cast function must be type %s",
+							"integer")));
 		if (nargs > 2 && procstruct->proargtypes.values[2] != BOOLOID)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-			errmsg("third argument of cast function must be type boolean")));
+					 errmsg("third argument of cast function must be type %s",
+							"boolean")));
 		if (!IsBinaryCoercible(procstruct->prorettype, targettypeid))
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
@@ -1520,14 +1528,10 @@ CreateCast(CreateCastStmt *stmt)
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
 					 errmsg("cast function must not be volatile")));
 #endif
-		if (procstruct->proisagg)
+		if (procstruct->prokind != PROKIND_FUNCTION)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-				 errmsg("cast function must not be an aggregate function")));
-		if (procstruct->proiswindow)
-			ereport(ERROR,
-					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-					 errmsg("cast function must not be a window function")));
+					 errmsg("cast function must be a normal function")));
 		if (procstruct->proretset)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
@@ -1557,7 +1561,7 @@ CreateCast(CreateCastStmt *stmt)
 		if (!superuser())
 			ereport(ERROR,
 					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-			 errmsg("must be superuser to create a cast WITHOUT FUNCTION")));
+					 errmsg("must be superuser to create a cast WITHOUT FUNCTION")));
 
 		/*
 		 * Also, insist that the types match as to size, alignment, and
@@ -1587,7 +1591,7 @@ CreateCast(CreateCastStmt *stmt)
 			targettyptype == TYPTYPE_COMPOSITE)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-				  errmsg("composite data types are not binary-compatible")));
+					 errmsg("composite data types are not binary-compatible")));
 
 		if (sourcetyptype == TYPTYPE_ENUM ||
 			targettyptype == TYPTYPE_ENUM)
@@ -1626,7 +1630,7 @@ CreateCast(CreateCastStmt *stmt)
 	if (sourcetypeid == targettypeid && nargs < 2)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-			  errmsg("source data type and target data type are the same")));
+				 errmsg("source data type and target data type are the same")));
 
 	/* convert CoercionContext enum to char value for castcontext */
 	switch (stmt->context)
@@ -1674,9 +1678,7 @@ CreateCast(CreateCastStmt *stmt)
 
 	tuple = heap_form_tuple(RelationGetDescr(relation), values, nulls);
 
-	castid = simple_heap_insert(relation, tuple);
-
-	CatalogUpdateIndexes(relation, tuple);
+	castid = CatalogTupleInsert(relation, tuple);
 
 	/* make dependency entries */
 	myself.classId = CastRelationId;
@@ -1760,7 +1762,7 @@ DropCastById(Oid castOid)
 	tuple = systable_getnext(scan);
 	if (!HeapTupleIsValid(tuple))
 		elog(ERROR, "could not find tuple for cast %u", castOid);
-	simple_heap_delete(relation, &tuple->t_self);
+	CatalogTupleDelete(relation, &tuple->t_self);
 
 	systable_endscan(scan);
 	heap_close(relation, RowExclusiveLock);
@@ -1774,14 +1776,10 @@ check_transform_function(Form_pg_proc procstruct)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
 				 errmsg("transform function must not be volatile")));
-	if (procstruct->proisagg)
+	if (procstruct->prokind != PROKIND_FUNCTION)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-			errmsg("transform function must not be an aggregate function")));
-	if (procstruct->proiswindow)
-		ereport(ERROR,
-				(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-				 errmsg("transform function must not be a window function")));
+				 errmsg("transform function must be a normal function")));
 	if (procstruct->proretset)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
@@ -1793,7 +1791,8 @@ check_transform_function(Form_pg_proc procstruct)
 	if (procstruct->proargtypes.values[0] != INTERNALOID)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-				 errmsg("first argument of transform function must be type \"internal\"")));
+				 errmsg("first argument of transform function must be type %s",
+						"internal")));
 }
 
 
@@ -1853,21 +1852,21 @@ CreateTransform(CreateTransformStmt *stmt)
 
 	aclresult = pg_language_aclcheck(langid, GetUserId(), ACL_USAGE);
 	if (aclresult != ACLCHECK_OK)
-		aclcheck_error(aclresult, ACL_KIND_LANGUAGE, stmt->lang);
+		aclcheck_error(aclresult, OBJECT_LANGUAGE, stmt->lang);
 
 	/*
 	 * Get the functions
 	 */
 	if (stmt->fromsql)
 	{
-		fromsqlfuncid = LookupFuncNameTypeNames(stmt->fromsql->funcname, stmt->fromsql->funcargs, false);
+		fromsqlfuncid = LookupFuncWithArgs(OBJECT_FUNCTION, stmt->fromsql, false);
 
 		if (!pg_proc_ownercheck(fromsqlfuncid, GetUserId()))
-			aclcheck_error(ACLCHECK_NOT_OWNER, ACL_KIND_PROC, NameListToString(stmt->fromsql->funcname));
+			aclcheck_error(ACLCHECK_NOT_OWNER, OBJECT_FUNCTION, NameListToString(stmt->fromsql->objname));
 
 		aclresult = pg_proc_aclcheck(fromsqlfuncid, GetUserId(), ACL_EXECUTE);
 		if (aclresult != ACLCHECK_OK)
-			aclcheck_error(aclresult, ACL_KIND_PROC, NameListToString(stmt->fromsql->funcname));
+			aclcheck_error(aclresult, OBJECT_FUNCTION, NameListToString(stmt->fromsql->objname));
 
 		tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(fromsqlfuncid));
 		if (!HeapTupleIsValid(tuple))
@@ -1876,7 +1875,8 @@ CreateTransform(CreateTransformStmt *stmt)
 		if (procstruct->prorettype != INTERNALOID)
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-					 errmsg("return data type of FROM SQL function must be \"internal\"")));
+					 errmsg("return data type of FROM SQL function must be %s",
+							"internal")));
 		check_transform_function(procstruct);
 		ReleaseSysCache(tuple);
 	}
@@ -1885,14 +1885,14 @@ CreateTransform(CreateTransformStmt *stmt)
 
 	if (stmt->tosql)
 	{
-		tosqlfuncid = LookupFuncNameTypeNames(stmt->tosql->funcname, stmt->tosql->funcargs, false);
+		tosqlfuncid = LookupFuncWithArgs(OBJECT_FUNCTION, stmt->tosql, false);
 
 		if (!pg_proc_ownercheck(tosqlfuncid, GetUserId()))
-			aclcheck_error(ACLCHECK_NOT_OWNER, ACL_KIND_PROC, NameListToString(stmt->tosql->funcname));
+			aclcheck_error(ACLCHECK_NOT_OWNER, OBJECT_FUNCTION, NameListToString(stmt->tosql->objname));
 
 		aclresult = pg_proc_aclcheck(tosqlfuncid, GetUserId(), ACL_EXECUTE);
 		if (aclresult != ACLCHECK_OK)
-			aclcheck_error(aclresult, ACL_KIND_PROC, NameListToString(stmt->tosql->funcname));
+			aclcheck_error(aclresult, OBJECT_FUNCTION, NameListToString(stmt->tosql->objname));
 
 		tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(tosqlfuncid));
 		if (!HeapTupleIsValid(tuple))
@@ -1928,16 +1928,16 @@ CreateTransform(CreateTransformStmt *stmt)
 		if (!stmt->replace)
 			ereport(ERROR,
 					(errcode(ERRCODE_DUPLICATE_OBJECT),
-			   errmsg("transform for type %s language \"%s\" already exists",
-					  format_type_be(typeid),
-					  stmt->lang)));
+					 errmsg("transform for type %s language \"%s\" already exists",
+							format_type_be(typeid),
+							stmt->lang)));
 
 		MemSet(replaces, false, sizeof(replaces));
 		replaces[Anum_pg_transform_trffromsql - 1] = true;
 		replaces[Anum_pg_transform_trftosql - 1] = true;
 
 		newtuple = heap_modify_tuple(tuple, RelationGetDescr(relation), values, nulls, replaces);
-		simple_heap_update(relation, &newtuple->t_self, newtuple);
+		CatalogTupleUpdate(relation, &newtuple->t_self, newtuple);
 
 		transformid = HeapTupleGetOid(tuple);
 		ReleaseSysCache(tuple);
@@ -1946,11 +1946,9 @@ CreateTransform(CreateTransformStmt *stmt)
 	else
 	{
 		newtuple = heap_form_tuple(RelationGetDescr(relation), values, nulls);
-		transformid = simple_heap_insert(relation, newtuple);
+		transformid = CatalogTupleInsert(relation, newtuple);
 		is_replace = false;
 	}
-
-	CatalogUpdateIndexes(relation, newtuple);
 
 	if (is_replace)
 		deleteDependencyRecordsFor(TransformRelationId, transformid, true);
@@ -2019,9 +2017,9 @@ get_transform_oid(Oid type_id, Oid lang_id, bool missing_ok)
 	if (!OidIsValid(oid) && !missing_ok)
 		ereport(ERROR,
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
-			   errmsg("transform for type %s language \"%s\" does not exist",
-					  format_type_be(type_id),
-					  get_language_name(lang_id, false))));
+				 errmsg("transform for type %s language \"%s\" does not exist",
+						format_type_be(type_id),
+						get_language_name(lang_id, false))));
 	return oid;
 }
 
@@ -2046,7 +2044,7 @@ DropTransformById(Oid transformOid)
 	tuple = systable_getnext(scan);
 	if (!HeapTupleIsValid(tuple))
 		elog(ERROR, "could not find tuple for transform %u", transformOid);
-	simple_heap_delete(relation, &tuple->t_self);
+	CatalogTupleDelete(relation, &tuple->t_self);
 
 	systable_endscan(scan);
 	heap_close(relation, RowExclusiveLock);
@@ -2079,9 +2077,11 @@ IsThereFunctionInNamespace(const char *proname, int pronargs,
 /*
  * ExecuteDoStmt
  *		Execute inline procedural-language code
+ *
+ * See at ExecuteCallStmt() about the atomic argument.
  */
 void
-ExecuteDoStmt(DoStmt *stmt)
+ExecuteDoStmt(DoStmt *stmt, bool atomic)
 {
 	InlineCodeBlock *codeblock = makeNode(InlineCodeBlock);
 	ListCell   *arg;
@@ -2138,11 +2138,12 @@ ExecuteDoStmt(DoStmt *stmt)
 				(errcode(ERRCODE_UNDEFINED_OBJECT),
 				 errmsg("language \"%s\" does not exist", language),
 				 (PLTemplateExists(language) ?
-				  errhint("Use CREATE LANGUAGE to load the language into the database.") : 0)));
+				  errhint("Use CREATE EXTENSION to load the language into the database.") : 0)));
 
 	codeblock->langOid = HeapTupleGetOid(languageTuple);
 	languageStruct = (Form_pg_language) GETSTRUCT(languageTuple);
 	codeblock->langIsTrusted = languageStruct->lanpltrusted;
+	codeblock->atomic = atomic;
 
 	if (languageStruct->lanpltrusted)
 	{
@@ -2152,14 +2153,14 @@ ExecuteDoStmt(DoStmt *stmt)
 		aclresult = pg_language_aclcheck(codeblock->langOid, GetUserId(),
 										 ACL_USAGE);
 		if (aclresult != ACLCHECK_OK)
-			aclcheck_error(aclresult, ACL_KIND_LANGUAGE,
+			aclcheck_error(aclresult, OBJECT_LANGUAGE,
 						   NameStr(languageStruct->lanname));
 	}
 	else
 	{
 		/* if untrusted language, must be superuser */
 		if (!superuser())
-			aclcheck_error(ACLCHECK_NO_PRIV, ACL_KIND_LANGUAGE,
+			aclcheck_error(ACLCHECK_NO_PRIV, OBJECT_LANGUAGE,
 						   NameStr(languageStruct->lanname));
 	}
 
@@ -2168,11 +2169,224 @@ ExecuteDoStmt(DoStmt *stmt)
 	if (!OidIsValid(laninline))
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			 errmsg("language \"%s\" does not support inline code execution",
-					NameStr(languageStruct->lanname))));
+				 errmsg("language \"%s\" does not support inline code execution",
+						NameStr(languageStruct->lanname))));
 
 	ReleaseSysCache(languageTuple);
 
 	/* execute the inline handler */
 	OidFunctionCall1(laninline, PointerGetDatum(codeblock));
+}
+
+/*
+ * Execute CALL statement
+ *
+ * Inside a top-level CALL statement, transaction-terminating commands such as
+ * COMMIT or a PL-specific equivalent are allowed.  The terminology in the SQL
+ * standard is that CALL establishes a non-atomic execution context.  Most
+ * other commands establish an atomic execution context, in which transaction
+ * control actions are not allowed.  If there are nested executions of CALL,
+ * we want to track the execution context recursively, so that the nested
+ * CALLs can also do transaction control.  Note, however, that for example in
+ * CALL -> SELECT -> CALL, the second call cannot do transaction control,
+ * because the SELECT in between establishes an atomic execution context.
+ *
+ * So when ExecuteCallStmt() is called from the top level, we pass in atomic =
+ * false (recall that that means transactions = yes).  We then create a
+ * CallContext node with content atomic = false, which is passed in the
+ * fcinfo->context field to the procedure invocation.  The language
+ * implementation should then take appropriate measures to allow or prevent
+ * transaction commands based on that information, e.g., call
+ * SPI_connect_ext(SPI_OPT_NONATOMIC).  The language should also pass on the
+ * atomic flag to any nested invocations to CALL.
+ *
+ * The expression data structures and execution context that we create
+ * within this function are children of the portalContext of the Portal
+ * that the CALL utility statement runs in.  Therefore, any pass-by-ref
+ * values that we're passing to the procedure will survive transaction
+ * commits that might occur inside the procedure.
+ */
+void
+ExecuteCallStmt(CallStmt *stmt, ParamListInfo params, bool atomic, DestReceiver *dest)
+{
+	ListCell   *lc;
+	FuncExpr   *fexpr;
+	int			nargs;
+	int			i;
+	AclResult	aclresult;
+	FmgrInfo	flinfo;
+	FunctionCallInfoData fcinfo;
+	CallContext *callcontext;
+	EState	   *estate;
+	ExprContext *econtext;
+	HeapTuple	tp;
+	PgStat_FunctionCallUsage fcusage;
+	Datum		retval;
+
+	fexpr = stmt->funcexpr;
+	Assert(fexpr);
+	Assert(IsA(fexpr, FuncExpr));
+
+	aclresult = pg_proc_aclcheck(fexpr->funcid, GetUserId(), ACL_EXECUTE);
+	if (aclresult != ACLCHECK_OK)
+		aclcheck_error(aclresult, OBJECT_PROCEDURE, get_func_name(fexpr->funcid));
+
+	/* Prep the context object we'll pass to the procedure */
+	callcontext = makeNode(CallContext);
+	callcontext->atomic = atomic;
+
+	tp = SearchSysCache1(PROCOID, ObjectIdGetDatum(fexpr->funcid));
+	if (!HeapTupleIsValid(tp))
+		elog(ERROR, "cache lookup failed for function %u", fexpr->funcid);
+
+	/*
+	 * If proconfig is set we can't allow transaction commands because of the
+	 * way the GUC stacking works: The transaction boundary would have to pop
+	 * the proconfig setting off the stack.  That restriction could be lifted
+	 * by redesigning the GUC nesting mechanism a bit.
+	 */
+	if (!heap_attisnull(tp, Anum_pg_proc_proconfig, NULL))
+		callcontext->atomic = true;
+
+	/*
+	 * In security definer procedures, we can't allow transaction commands.
+	 * StartTransaction() insists that the security context stack is empty,
+	 * and AbortTransaction() resets the security context.  This could be
+	 * reorganized, but right now it doesn't work.
+	 */
+	if (((Form_pg_proc) GETSTRUCT(tp))->prosecdef)
+		callcontext->atomic = true;
+
+	/*
+	 * Expand named arguments, defaults, etc.  We do not want to scribble on
+	 * the passed-in CallStmt parse tree, so first flat-copy fexpr, allowing
+	 * us to replace its args field.  (Note that expand_function_arguments
+	 * will not modify any of the passed-in data structure.)
+	 */
+	{
+		FuncExpr   *nexpr = makeNode(FuncExpr);
+
+		memcpy(nexpr, fexpr, sizeof(FuncExpr));
+		fexpr = nexpr;
+	}
+
+	fexpr->args = expand_function_arguments(fexpr->args,
+											fexpr->funcresulttype,
+											tp);
+	nargs = list_length(fexpr->args);
+
+	ReleaseSysCache(tp);
+
+	/* safety check; see ExecInitFunc() */
+	if (nargs > FUNC_MAX_ARGS)
+		ereport(ERROR,
+				(errcode(ERRCODE_TOO_MANY_ARGUMENTS),
+				 errmsg_plural("cannot pass more than %d argument to a procedure",
+							   "cannot pass more than %d arguments to a procedure",
+							   FUNC_MAX_ARGS,
+							   FUNC_MAX_ARGS)));
+
+	/* Initialize function call structure */
+	InvokeFunctionExecuteHook(fexpr->funcid);
+	fmgr_info(fexpr->funcid, &flinfo);
+	fmgr_info_set_expr((Node *) fexpr, &flinfo);
+	InitFunctionCallInfoData(fcinfo, &flinfo, nargs, fexpr->inputcollid, (Node *) callcontext, NULL);
+
+	/*
+	 * Evaluate procedure arguments inside a suitable execution context.  Note
+	 * we can't free this context till the procedure returns.
+	 */
+	estate = CreateExecutorState();
+	estate->es_param_list_info = params;
+	econtext = CreateExprContext(estate);
+
+	i = 0;
+	foreach(lc, fexpr->args)
+	{
+		ExprState  *exprstate;
+		Datum		val;
+		bool		isnull;
+
+		exprstate = ExecPrepareExpr(lfirst(lc), estate);
+
+		val = ExecEvalExprSwitchContext(exprstate, econtext, &isnull);
+
+		fcinfo.arg[i] = val;
+		fcinfo.argnull[i] = isnull;
+
+		i++;
+	}
+
+	pgstat_init_function_usage(&fcinfo, &fcusage);
+	retval = FunctionCallInvoke(&fcinfo);
+	pgstat_end_function_usage(&fcusage, true);
+
+	if (fexpr->funcresulttype == VOIDOID)
+	{
+		/* do nothing */
+	}
+	else if (fexpr->funcresulttype == RECORDOID)
+	{
+		/*
+		 * send tuple to client
+		 */
+
+		HeapTupleHeader td;
+		Oid			tupType;
+		int32		tupTypmod;
+		TupleDesc	retdesc;
+		HeapTupleData rettupdata;
+		TupOutputState *tstate;
+		TupleTableSlot *slot;
+
+		if (fcinfo.isnull)
+			elog(ERROR, "procedure returned null record");
+
+		td = DatumGetHeapTupleHeader(retval);
+		tupType = HeapTupleHeaderGetTypeId(td);
+		tupTypmod = HeapTupleHeaderGetTypMod(td);
+		retdesc = lookup_rowtype_tupdesc(tupType, tupTypmod);
+
+		tstate = begin_tup_output_tupdesc(dest, retdesc);
+
+		rettupdata.t_len = HeapTupleHeaderGetDatumLength(td);
+		ItemPointerSetInvalid(&(rettupdata.t_self));
+		rettupdata.t_tableOid = InvalidOid;
+		rettupdata.t_data = td;
+
+		slot = ExecStoreTuple(&rettupdata, tstate->slot, InvalidBuffer, false);
+		tstate->dest->receiveSlot(slot, tstate->dest);
+
+		end_tup_output(tstate);
+
+		ReleaseTupleDesc(retdesc);
+	}
+	else
+		elog(ERROR, "unexpected result type for procedure: %u",
+			 fexpr->funcresulttype);
+
+	FreeExecutorState(estate);
+}
+
+/*
+ * Construct the tuple descriptor for a CALL statement return
+ */
+TupleDesc
+CallStmtResultDesc(CallStmt *stmt)
+{
+	FuncExpr   *fexpr;
+	HeapTuple	tuple;
+	TupleDesc	tupdesc;
+
+	fexpr = stmt->funcexpr;
+
+	tuple = SearchSysCache1(PROCOID, ObjectIdGetDatum(fexpr->funcid));
+	if (!HeapTupleIsValid(tuple))
+		elog(ERROR, "cache lookup failed for procedure %u", fexpr->funcid);
+
+	tupdesc = build_function_result_tupdesc_t(tuple);
+
+	ReleaseSysCache(tuple);
+
+	return tupdesc;
 }

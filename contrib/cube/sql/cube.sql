@@ -4,6 +4,11 @@
 
 CREATE EXTENSION cube;
 
+-- Check whether any of our opclasses fail amvalidate
+SELECT amname, opcname
+FROM pg_opclass opc LEFT JOIN pg_am am ON am.oid = opcmethod
+WHERE opc.oid >= 16384 AND NOT amvalidate(opc.oid);
+
 --
 -- testing the input and output functions
 --
@@ -17,17 +22,22 @@ SELECT '.1'::cube AS cube;
 SELECT '-.1'::cube AS cube;
 SELECT '1.0'::cube AS cube;
 SELECT '-1.0'::cube AS cube;
+SELECT 'infinity'::cube AS cube;
+SELECT '-infinity'::cube AS cube;
+SELECT 'NaN'::cube AS cube;
 SELECT '.1234567890123456'::cube AS cube;
 SELECT '+.1234567890123456'::cube AS cube;
 SELECT '-.1234567890123456'::cube AS cube;
 
 -- simple lists (points)
+SELECT '()'::cube AS cube;
 SELECT '1,2'::cube AS cube;
 SELECT '(1,2)'::cube AS cube;
 SELECT '1,2,3,4,5'::cube AS cube;
 SELECT '(1,2,3,4,5)'::cube AS cube;
 
 -- double lists (cubes)
+SELECT '(),()'::cube AS cube;
 SELECT '(0),(0)'::cube AS cube;
 SELECT '(0),(1)'::cube AS cube;
 SELECT '[(0),(0)]'::cube AS cube;
@@ -40,7 +50,6 @@ SELECT '[(0,0,0,0),(1,0,0,0)]'::cube AS cube;
 -- invalid input: parse errors
 SELECT ''::cube AS cube;
 SELECT 'ABC'::cube AS cube;
-SELECT '()'::cube AS cube;
 SELECT '[]'::cube AS cube;
 SELECT '[()]'::cube AS cube;
 SELECT '[(1)]'::cube AS cube;
@@ -68,6 +77,7 @@ SELECT '1,2ab'::cube AS cube; -- 6
 SELECT '1 e7'::cube AS cube; -- 6
 SELECT '1,2a'::cube AS cube; -- 7
 SELECT '1..2'::cube AS cube; -- 7
+SELECT '-1e-700'::cube AS cube; -- out of range
 
 --
 -- Testing building cubes from float8 values
@@ -373,6 +383,13 @@ SELECT * FROM test_cube WHERE c && '(3000,1000),(0,0)' ORDER BY c;
 -- Test sorting
 SELECT * FROM test_cube WHERE c && '(3000,1000),(0,0)' GROUP BY c ORDER BY c;
 
+-- Test index-only scans
+SET enable_bitmapscan = false;
+EXPLAIN (COSTS OFF)
+SELECT c FROM test_cube WHERE c <@ '(3000,1000),(0,0)' ORDER BY c;
+SELECT c FROM test_cube WHERE c <@ '(3000,1000),(0,0)' ORDER BY c;
+RESET enable_bitmapscan;
+
 -- Test kNN
 INSERT INTO test_cube VALUES ('(1,1)'), ('(100000)'), ('(0, 100000)'); -- Some corner cases
 SET enable_seqscan = false;
@@ -387,6 +404,10 @@ SELECT c~>1, c FROM test_cube ORDER BY c~>1 LIMIT 15; -- ascending by left bound
 SELECT c~>2, c FROM test_cube ORDER BY c~>2 LIMIT 15; -- ascending by right bound
 SELECT c~>3, c FROM test_cube ORDER BY c~>3 LIMIT 15; -- ascending by lower bound
 SELECT c~>4, c FROM test_cube ORDER BY c~>4 LIMIT 15; -- ascending by upper bound
+SELECT c~>(-1), c FROM test_cube ORDER BY c~>(-1) LIMIT 15; -- descending by left bound
+SELECT c~>(-2), c FROM test_cube ORDER BY c~>(-2) LIMIT 15; -- descending by right bound
+SELECT c~>(-3), c FROM test_cube ORDER BY c~>(-3) LIMIT 15; -- descending by lower bound
+SELECT c~>(-4), c FROM test_cube ORDER BY c~>(-4) LIMIT 15; -- descending by upper bound
 
 -- Same queries with sequential scan (should give the same results as above)
 RESET enable_seqscan;
@@ -398,4 +419,8 @@ SELECT c~>1, c FROM test_cube ORDER BY c~>1 LIMIT 15; -- ascending by left bound
 SELECT c~>2, c FROM test_cube ORDER BY c~>2 LIMIT 15; -- ascending by right bound
 SELECT c~>3, c FROM test_cube ORDER BY c~>3 LIMIT 15; -- ascending by lower bound
 SELECT c~>4, c FROM test_cube ORDER BY c~>4 LIMIT 15; -- ascending by upper bound
+SELECT c~>(-1), c FROM test_cube ORDER BY c~>(-1) LIMIT 15; -- descending by left bound
+SELECT c~>(-2), c FROM test_cube ORDER BY c~>(-2) LIMIT 15; -- descending by right bound
+SELECT c~>(-3), c FROM test_cube ORDER BY c~>(-3) LIMIT 15; -- descending by lower bound
+SELECT c~>(-4), c FROM test_cube ORDER BY c~>(-4) LIMIT 15; -- descending by upper bound
 RESET enable_indexscan;

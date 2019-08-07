@@ -1,738 +1,144 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->DELETE</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="DECLARE"
-HREF="sql-declare.html"><LINK
-REL="NEXT"
-TITLE="DISCARD"
-HREF="sql-discard.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="DECLARE"
-HREF="sql-declare.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="DISCARD"
-HREF="sql-discard.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-DELETE"
-></A
->DELETE</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN85308"
-></A
-><H2
->Name</H2
->DELETE&nbsp;--&nbsp;delete rows of a table</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN85311"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->[ WITH [ RECURSIVE ] <TT
-CLASS="REPLACEABLE"
-><I
->with_query</I
-></TT
-> [, ...] ]
-DELETE FROM [ ONLY ] <TT
-CLASS="REPLACEABLE"
-><I
->table_name</I
-></TT
-> [ * ] [ [ AS ] <TT
-CLASS="REPLACEABLE"
-><I
->alias</I
-></TT
-> ]
-    [ USING <TT
-CLASS="REPLACEABLE"
-><I
->using_list</I
-></TT
-> ]
-    [ WHERE <TT
-CLASS="REPLACEABLE"
-><I
->condition</I
-></TT
-> | WHERE CURRENT OF <TT
-CLASS="REPLACEABLE"
-><I
->cursor_name</I
-></TT
-> ]
-    [ RETURNING * | <TT
-CLASS="REPLACEABLE"
-><I
->output_expression</I
-></TT
-> [ [ AS ] <TT
-CLASS="REPLACEABLE"
-><I
->output_name</I
-></TT
-> ] [, ...] ]</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN85321"
-></A
-><H2
->Description</H2
-><P
->   <TT
-CLASS="COMMAND"
->DELETE</TT
-> deletes rows that satisfy the
-   <TT
-CLASS="LITERAL"
->WHERE</TT
-> clause from the specified table.  If the
-   <TT
-CLASS="LITERAL"
->WHERE</TT
-> clause is absent, the effect is to delete
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>DELETE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-declare.html" title="DECLARE" /><link rel="next" href="sql-discard.html" title="DISCARD" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">DELETE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-declare.html" title="DECLARE">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-discard.html" title="DISCARD">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-DELETE"><div class="titlepage"></div><a id="id-1.9.3.100.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">DELETE</span></h2><p>DELETE — delete rows of a table</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+[ WITH [ RECURSIVE ] <em class="replaceable"><code>with_query</code></em> [, ...] ]
+DELETE FROM [ ONLY ] <em class="replaceable"><code>table_name</code></em> [ * ] [ [ AS ] <em class="replaceable"><code>alias</code></em> ]
+    [ USING <em class="replaceable"><code>using_list</code></em> ]
+    [ WHERE <em class="replaceable"><code>condition</code></em> | WHERE CURRENT OF <em class="replaceable"><code>cursor_name</code></em> ]
+    [ RETURNING * | <em class="replaceable"><code>output_expression</code></em> [ [ AS ] <em class="replaceable"><code>output_name</code></em> ] [, ...] ]
+</pre></div><div class="refsect1" id="id-1.9.3.100.5"><h2>Description</h2><p>
+   <code class="command">DELETE</code> deletes rows that satisfy the
+   <code class="literal">WHERE</code> clause from the specified table.  If the
+   <code class="literal">WHERE</code> clause is absent, the effect is to delete
    all rows in the table.  The result is a valid, but empty table.
-  </P
-><DIV
-CLASS="TIP"
-><BLOCKQUOTE
-CLASS="TIP"
-><P
-><B
->Tip: </B
->     <A
-HREF="sql-truncate.html"
->TRUNCATE</A
-> is a
-     <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> extension that provides a
+  </p><div class="tip"><h3 class="title">Tip</h3><p>
+     <a class="xref" href="sql-truncate.html" title="TRUNCATE"><span class="refentrytitle">TRUNCATE</span></a> provides a
      faster mechanism to remove all rows from a table.
-    </P
-></BLOCKQUOTE
-></DIV
-><P
->   There are two ways to delete rows in a table using information
+    </p></div><p>
+   There are two ways to delete rows in a table using information
    contained in other tables in the database: using sub-selects, or
-   specifying additional tables in the <TT
-CLASS="LITERAL"
->USING</TT
-> clause.
+   specifying additional tables in the <code class="literal">USING</code> clause.
    Which technique is more appropriate depends on the specific
    circumstances.
-  </P
-><P
->   The optional <TT
-CLASS="LITERAL"
->RETURNING</TT
-> clause causes <TT
-CLASS="COMMAND"
->DELETE</TT
->
+  </p><p>
+   The optional <code class="literal">RETURNING</code> clause causes <code class="command">DELETE</code>
    to compute and return value(s) based on each row actually deleted.
    Any expression using the table's columns, and/or columns of other
-   tables mentioned in <TT
-CLASS="LITERAL"
->USING</TT
->, can be computed.
-   The syntax of the <TT
-CLASS="LITERAL"
->RETURNING</TT
-> list is identical to that of the
-   output list of <TT
-CLASS="COMMAND"
->SELECT</TT
->.
-  </P
-><P
->   You must have the <TT
-CLASS="LITERAL"
->DELETE</TT
-> privilege on the table
-   to delete from it, as well as the <TT
-CLASS="LITERAL"
->SELECT</TT
->
-   privilege for any table in the <TT
-CLASS="LITERAL"
->USING</TT
-> clause or
-   whose values are read in the <TT
-CLASS="REPLACEABLE"
-><I
->condition</I
-></TT
->.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN85344"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->with_query</I
-></TT
-></DT
-><DD
-><P
->      The <TT
-CLASS="LITERAL"
->WITH</TT
-> clause allows you to specify one or more
-      subqueries that can be referenced by name in the <TT
-CLASS="COMMAND"
->DELETE</TT
->
-      query. See <A
-HREF="queries-with.html"
->Section 7.8</A
-> and <A
-HREF="sql-select.html"
->SELECT</A
->
+   tables mentioned in <code class="literal">USING</code>, can be computed.
+   The syntax of the <code class="literal">RETURNING</code> list is identical to that of the
+   output list of <code class="command">SELECT</code>.
+  </p><p>
+   You must have the <code class="literal">DELETE</code> privilege on the table
+   to delete from it, as well as the <code class="literal">SELECT</code>
+   privilege for any table in the <code class="literal">USING</code> clause or
+   whose values are read in the <em class="replaceable"><code>condition</code></em>.
+  </p></div><div class="refsect1" id="id-1.9.3.100.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>with_query</code></em></span></dt><dd><p>
+      The <code class="literal">WITH</code> clause allows you to specify one or more
+      subqueries that can be referenced by name in the <code class="command">DELETE</code>
+      query. See <a class="xref" href="queries-with.html" title="7.8. WITH Queries (Common Table Expressions)">Section 7.8</a> and <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a>
       for details.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->table_name</I
-></TT
-></DT
-><DD
-><P
->      The name (optionally schema-qualified) of the table to delete rows
-      from.  If <TT
-CLASS="LITERAL"
->ONLY</TT
-> is specified before the table name,
+     </p></dd><dt><span class="term"><em class="replaceable"><code>table_name</code></em></span></dt><dd><p>
+      The name (optionally schema-qualified) of the table to delete rows
+      from.  If <code class="literal">ONLY</code> is specified before the table name,
       matching rows are deleted from the named table only.  If
-      <TT
-CLASS="LITERAL"
->ONLY</TT
-> is not specified, matching rows are also deleted
+      <code class="literal">ONLY</code> is not specified, matching rows are also deleted
       from any tables inheriting from the named table.  Optionally,
-      <TT
-CLASS="LITERAL"
->*</TT
-> can be specified after the table name to explicitly
+      <code class="literal">*</code> can be specified after the table name to explicitly
       indicate that descendant tables are included.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->alias</I
-></TT
-></DT
-><DD
-><P
->      A substitute name for the target table. When an alias is
+     </p></dd><dt><span class="term"><em class="replaceable"><code>alias</code></em></span></dt><dd><p>
+      A substitute name for the target table. When an alias is
       provided, it completely hides the actual name of the table.  For
-      example, given <TT
-CLASS="LITERAL"
->DELETE FROM foo AS f</TT
->, the remainder
-      of the <TT
-CLASS="COMMAND"
->DELETE</TT
-> statement must refer to this
-      table as <TT
-CLASS="LITERAL"
->f</TT
-> not <TT
-CLASS="LITERAL"
->foo</TT
->.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->using_list</I
-></TT
-></DT
-><DD
-><P
->      A list of table expressions, allowing columns from other tables
-      to appear in the <TT
-CLASS="LITERAL"
->WHERE</TT
-> condition.  This is similar
-      to the list of tables that can be specified in the <A
-HREF="sql-select.html#SQL-FROM"
-><I
-><I
->FROM</I
-> Clause</I
-></A
-> of a
-      <TT
-CLASS="COMMAND"
->SELECT</TT
-> statement; for example, an alias for
+      example, given <code class="literal">DELETE FROM foo AS f</code>, the remainder
+      of the <code class="command">DELETE</code> statement must refer to this
+      table as <code class="literal">f</code> not <code class="literal">foo</code>.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>using_list</code></em></span></dt><dd><p>
+      A list of table expressions, allowing columns from other tables
+      to appear in the <code class="literal">WHERE</code> condition.  This is similar
+      to the list of tables that can be specified in the <a class="xref" href="sql-select.html#SQL-FROM" title="FROM Clause"><code class="literal">FROM</code> Clause</a> of a
+      <code class="command">SELECT</code> statement; for example, an alias for
       the table name can be specified.  Do not repeat the target table
-      in the <TT
-CLASS="REPLACEABLE"
-><I
->using_list</I
-></TT
->,
+      in the <em class="replaceable"><code>using_list</code></em>,
       unless you wish to set up a self-join.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->condition</I
-></TT
-></DT
-><DD
-><P
->      An expression that returns a value of type <TT
-CLASS="TYPE"
->boolean</TT
->.
-      Only rows for which this expression returns <TT
-CLASS="LITERAL"
->true</TT
->
+     </p></dd><dt><span class="term"><em class="replaceable"><code>condition</code></em></span></dt><dd><p>
+      An expression that returns a value of type <code class="type">boolean</code>.
+      Only rows for which this expression returns <code class="literal">true</code>
       will be deleted.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->cursor_name</I
-></TT
-></DT
-><DD
-><P
->      The name of the cursor to use in a <TT
-CLASS="LITERAL"
->WHERE CURRENT OF</TT
->
+     </p></dd><dt><span class="term"><em class="replaceable"><code>cursor_name</code></em></span></dt><dd><p>
+      The name of the cursor to use in a <code class="literal">WHERE CURRENT OF</code>
       condition.  The row to be deleted is the one most recently fetched
       from this cursor.  The cursor must be a non-grouping
-      query on the <TT
-CLASS="COMMAND"
->DELETE</TT
->'s target table.
-      Note that <TT
-CLASS="LITERAL"
->WHERE CURRENT OF</TT
-> cannot be
+      query on the <code class="command">DELETE</code>'s target table.
+      Note that <code class="literal">WHERE CURRENT OF</code> cannot be
       specified together with a Boolean condition.  See
-      <A
-HREF="sql-declare.html"
->DECLARE</A
->
+      <a class="xref" href="sql-declare.html" title="DECLARE"><span class="refentrytitle">DECLARE</span></a>
       for more information about using cursors with
-      <TT
-CLASS="LITERAL"
->WHERE CURRENT OF</TT
->.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->output_expression</I
-></TT
-></DT
-><DD
-><P
->      An expression to be computed and returned by the <TT
-CLASS="COMMAND"
->DELETE</TT
->
+      <code class="literal">WHERE CURRENT OF</code>.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>output_expression</code></em></span></dt><dd><p>
+      An expression to be computed and returned by the <code class="command">DELETE</code>
       command after each row is deleted.  The expression can use any
-      column names of the table named by <TT
-CLASS="REPLACEABLE"
-><I
->table_name</I
-></TT
->
-      or table(s) listed in <TT
-CLASS="LITERAL"
->USING</TT
->.
-      Write <TT
-CLASS="LITERAL"
->*</TT
-> to return all columns.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->output_name</I
-></TT
-></DT
-><DD
-><P
->      A name to use for a returned column.
-     </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN85413"
-></A
-><H2
->Outputs</H2
-><P
->   On successful completion, a <TT
-CLASS="COMMAND"
->DELETE</TT
-> command returns a command
+      column names of the table named by <em class="replaceable"><code>table_name</code></em>
+      or table(s) listed in <code class="literal">USING</code>.
+      Write <code class="literal">*</code> to return all columns.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>output_name</code></em></span></dt><dd><p>
+      A name to use for a returned column.
+     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.100.7"><h2>Outputs</h2><p>
+   On successful completion, a <code class="command">DELETE</code> command returns a command
    tag of the form
-</P><PRE
-CLASS="SCREEN"
->DELETE <TT
-CLASS="REPLACEABLE"
-><I
->count</I
-></TT
-></PRE
-><P>
-   The <TT
-CLASS="REPLACEABLE"
-><I
->count</I
-></TT
-> is the number
+</p><pre class="screen">
+DELETE <em class="replaceable"><code>count</code></em>
+</pre><p>
+   The <em class="replaceable"><code>count</code></em> is the number
    of rows deleted.  Note that the number may be less than the number of
-   rows that matched the <TT
-CLASS="REPLACEABLE"
-><I
->condition</I
-></TT
-> when deletes were
-   suppressed by a <TT
-CLASS="LITERAL"
->BEFORE DELETE</TT
-> trigger.  If <TT
-CLASS="REPLACEABLE"
-><I
->count</I
-></TT
-> is 0, no rows were deleted by
+   rows that matched the <em class="replaceable"><code>condition</code></em> when deletes were
+   suppressed by a <code class="literal">BEFORE DELETE</code> trigger.  If <em class="replaceable"><code>count</code></em> is 0, no rows were deleted by
    the query (this is not considered an error).
-  </P
-><P
->   If the <TT
-CLASS="COMMAND"
->DELETE</TT
-> command contains a <TT
-CLASS="LITERAL"
->RETURNING</TT
->
-   clause, the result will be similar to that of a <TT
-CLASS="COMMAND"
->SELECT</TT
->
+  </p><p>
+   If the <code class="command">DELETE</code> command contains a <code class="literal">RETURNING</code>
+   clause, the result will be similar to that of a <code class="command">SELECT</code>
    statement containing the columns and values defined in the
-   <TT
-CLASS="LITERAL"
->RETURNING</TT
-> list, computed over the row(s) deleted by the
+   <code class="literal">RETURNING</code> list, computed over the row(s) deleted by the
    command.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN85428"
-></A
-><H2
->Notes</H2
-><P
->   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> lets you reference columns of
-   other tables in the <TT
-CLASS="LITERAL"
->WHERE</TT
-> condition by specifying the
-   other tables in the <TT
-CLASS="LITERAL"
->USING</TT
-> clause.  For example,
+  </p></div><div class="refsect1" id="id-1.9.3.100.8"><h2>Notes</h2><p>
+   <span class="productname">PostgreSQL</span> lets you reference columns of
+   other tables in the <code class="literal">WHERE</code> condition by specifying the
+   other tables in the <code class="literal">USING</code> clause.  For example,
    to delete all films produced by a given producer, one can do:
-</P><PRE
-CLASS="PROGRAMLISTING"
->DELETE FROM films USING producers
-  WHERE producer_id = producers.id AND producers.name = 'foo';</PRE
-><P>
-   What is essentially happening here is a join between <TT
-CLASS="STRUCTNAME"
->films</TT
->
-   and <TT
-CLASS="STRUCTNAME"
->producers</TT
->, with all successfully joined
-   <TT
-CLASS="STRUCTNAME"
->films</TT
-> rows being marked for deletion.
+</p><pre class="programlisting">
+DELETE FROM films USING producers
+  WHERE producer_id = producers.id AND producers.name = 'foo';
+</pre><p>
+   What is essentially happening here is a join between <code class="structname">films</code>
+   and <code class="structname">producers</code>, with all successfully joined
+   <code class="structname">films</code> rows being marked for deletion.
    This syntax is not standard.  A more standard way to do it is:
-</P><PRE
-CLASS="PROGRAMLISTING"
->DELETE FROM films
-  WHERE producer_id IN (SELECT id FROM producers WHERE name = 'foo');</PRE
-><P>
+</p><pre class="programlisting">
+DELETE FROM films
+  WHERE producer_id IN (SELECT id FROM producers WHERE name = 'foo');
+</pre><p>
    In some cases the join style is easier to write or faster to
    execute than the sub-select style.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN85439"
-></A
-><H2
->Examples</H2
-><P
->   Delete all films but musicals:
-</P><PRE
-CLASS="PROGRAMLISTING"
->DELETE FROM films WHERE kind &lt;&gt; 'Musical';</PRE
-><P>
-  </P
-><P
->   Clear the table <TT
-CLASS="LITERAL"
->films</TT
->:
-</P><PRE
-CLASS="PROGRAMLISTING"
->DELETE FROM films;</PRE
-><P>
-  </P
-><P
->   Delete completed tasks, returning full details of the deleted rows:
-</P><PRE
-CLASS="PROGRAMLISTING"
->DELETE FROM tasks WHERE status = 'DONE' RETURNING *;</PRE
-><P>
-  </P
-><P
->   Delete the row of <TT
-CLASS="STRUCTNAME"
->tasks</TT
-> on which the cursor
-   <TT
-CLASS="LITERAL"
->c_tasks</TT
-> is currently positioned:
-</P><PRE
-CLASS="PROGRAMLISTING"
->DELETE FROM tasks WHERE CURRENT OF c_tasks;</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN85452"
-></A
-><H2
->Compatibility</H2
-><P
->   This command conforms to the <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> standard, except
-   that the <TT
-CLASS="LITERAL"
->USING</TT
-> and <TT
-CLASS="LITERAL"
->RETURNING</TT
-> clauses
-   are <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> extensions, as is the ability
-   to use <TT
-CLASS="LITERAL"
->WITH</TT
-> with <TT
-CLASS="COMMAND"
->DELETE</TT
->.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-declare.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-discard.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->DECLARE</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->DISCARD</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="refsect1" id="id-1.9.3.100.9"><h2>Examples</h2><p>
+   Delete all films but musicals:
+</p><pre class="programlisting">
+DELETE FROM films WHERE kind &lt;&gt; 'Musical';
+</pre><p>
+  </p><p>
+   Clear the table <code class="literal">films</code>:
+</p><pre class="programlisting">
+DELETE FROM films;
+</pre><p>
+  </p><p>
+   Delete completed tasks, returning full details of the deleted rows:
+</p><pre class="programlisting">
+DELETE FROM tasks WHERE status = 'DONE' RETURNING *;
+</pre><p>
+  </p><p>
+   Delete the row of <code class="structname">tasks</code> on which the cursor
+   <code class="literal">c_tasks</code> is currently positioned:
+</p><pre class="programlisting">
+DELETE FROM tasks WHERE CURRENT OF c_tasks;
+</pre></div><div class="refsect1" id="id-1.9.3.100.10"><h2>Compatibility</h2><p>
+   This command conforms to the <acronym class="acronym">SQL</acronym> standard, except
+   that the <code class="literal">USING</code> and <code class="literal">RETURNING</code> clauses
+   are <span class="productname">PostgreSQL</span> extensions, as is the ability
+   to use <code class="literal">WITH</code> with <code class="command">DELETE</code>.
+  </p></div><div class="refsect1" id="id-1.9.3.100.11"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-truncate.html" title="TRUNCATE"><span class="refentrytitle">TRUNCATE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-declare.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-discard.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">DECLARE </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> DISCARD</td></tr></table></div></body></html>

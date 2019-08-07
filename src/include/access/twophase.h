@@ -4,7 +4,7 @@
  *	  Two-phase-commit related declarations.
  *
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/twophase.h
@@ -15,6 +15,7 @@
 #define TWOPHASE_H
 
 #include "access/xlogdefs.h"
+#include "access/xact.h"
 #include "datatype/timestamp.h"
 #include "storage/lock.h"
 
@@ -46,14 +47,17 @@ extern bool StandbyTransactionIdIsPrepared(TransactionId xid);
 
 extern TransactionId PrescanPreparedTransactions(TransactionId **xids_p,
 							int *nxids_p);
-extern void StandbyRecoverPreparedTransactions(bool overwriteOK);
+extern void ParsePrepareRecord(uint8 info, char *xlrec,
+				   xl_xact_parsed_prepare *parsed);
+extern void StandbyRecoverPreparedTransactions(void);
 extern void RecoverPreparedTransactions(void);
-
-extern void RecreateTwoPhaseFile(TransactionId xid, void *content, int len);
-extern void RemoveTwoPhaseFile(TransactionId xid, bool giveWarning);
 
 extern void CheckPointTwoPhase(XLogRecPtr redo_horizon);
 
 extern void FinishPreparedTransaction(const char *gid, bool isCommit);
 
-#endif   /* TWOPHASE_H */
+extern void PrepareRedoAdd(char *buf, XLogRecPtr start_lsn,
+			   XLogRecPtr end_lsn, RepOriginId origin_id);
+extern void PrepareRedoRemove(TransactionId xid, bool giveWarning);
+extern void restoreTwoPhaseData(void);
+#endif							/* TWOPHASE_H */

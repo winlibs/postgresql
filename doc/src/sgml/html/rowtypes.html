@@ -1,126 +1,14 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Composite Types</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Data Types"
-HREF="datatype.html"><LINK
-REL="PREVIOUS"
-TITLE="Arrays"
-HREF="arrays.html"><LINK
-REL="NEXT"
-TITLE="Range Types"
-HREF="rangetypes.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Arrays"
-HREF="arrays.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="datatype.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 8. Data Types</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Range Types"
-HREF="rangetypes.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="ROWTYPES"
->8.16. Composite Types</A
-></H1
-><P
->  A <I
-CLASS="FIRSTTERM"
->composite type</I
-> represents the structure of a row or record;
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>8.16. Composite Types</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="arrays.html" title="8.15. Arrays" /><link rel="next" href="rangetypes.html" title="8.17. Range Types" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">8.16. Composite Types</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="arrays.html" title="8.15. Arrays">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="datatype.html" title="Chapter 8. Data Types">Up</a></td><th width="60%" align="center">Chapter 8. Data Types</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="rangetypes.html" title="8.17. Range Types">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="ROWTYPES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">8.16. Composite Types</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-DECLARING">8.16.1. Declaration of Composite Types</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#id-1.5.7.24.6">8.16.2. Constructing Composite Values</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-ACCESSING">8.16.3. Accessing Composite Types</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#id-1.5.7.24.8">8.16.4. Modifying Composite Types</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-USAGE">8.16.5. Using Composite Types in Queries</a></span></dt><dt><span class="sect2"><a href="rowtypes.html#ROWTYPES-IO-SYNTAX">8.16.6. Composite Type Input and Output Syntax</a></span></dt></dl></div><a id="id-1.5.7.24.2" class="indexterm"></a><a id="id-1.5.7.24.3" class="indexterm"></a><p>
+  A <em class="firstterm">composite type</em> represents the structure of a row or record;
   it is essentially just a list of field names and their data types.
-  <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> allows  composite types to be
+  <span class="productname">PostgreSQL</span> allows  composite types to be
   used in many of the same ways that simple types can be used.  For example, a
   column of a table can be declared to be of a composite type.
- </P
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="ROWTYPES-DECLARING"
->8.16.1. Declaration of Composite Types</A
-></H2
-><P
->  Here are two simple examples of defining composite types:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE TYPE complex AS (
+ </p><div class="sect2" id="ROWTYPES-DECLARING"><div class="titlepage"><div><div><h3 class="title">8.16.1. Declaration of Composite Types</h3></div></div></div><p>
+  Here are two simple examples of defining composite types:
+</p><pre class="programlisting">
+CREATE TYPE complex AS (
     r       double precision,
     i       double precision
 );
@@ -129,762 +17,364 @@ CREATE TYPE inventory_item AS (
     name            text,
     supplier_id     integer,
     price           numeric
-);</PRE
-><P>
-  The syntax is comparable to <TT
-CLASS="COMMAND"
->CREATE TABLE</TT
->, except that only
-  field names and types can be specified; no constraints (such as <TT
-CLASS="LITERAL"
->NOT
-  NULL</TT
->) can presently be included.  Note that the <TT
-CLASS="LITERAL"
->AS</TT
-> keyword
+);
+</pre><p>
+  The syntax is comparable to <code class="command">CREATE TABLE</code>, except that only
+  field names and types can be specified; no constraints (such as <code class="literal">NOT
+  NULL</code>) can presently be included.  Note that the <code class="literal">AS</code> keyword
   is essential; without it, the system will think a different kind
-  of <TT
-CLASS="COMMAND"
->CREATE TYPE</TT
-> command is meant, and you will get odd syntax
+  of <code class="command">CREATE TYPE</code> command is meant, and you will get odd syntax
   errors.
- </P
-><P
->  Having defined the types, we can use them to create tables:
+ </p><p>
+  Having defined the types, we can use them to create tables:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE TABLE on_hand (
+</p><pre class="programlisting">
+CREATE TABLE on_hand (
     item      inventory_item,
     count     integer
 );
 
-INSERT INTO on_hand VALUES (ROW('fuzzy dice', 42, 1.99), 1000);</PRE
-><P>
+INSERT INTO on_hand VALUES (ROW('fuzzy dice', 42, 1.99), 1000);
+</pre><p>
 
   or functions:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION price_extension(inventory_item, integer) RETURNS numeric
+</p><pre class="programlisting">
+CREATE FUNCTION price_extension(inventory_item, integer) RETURNS numeric
 AS 'SELECT $1.price * $2' LANGUAGE SQL;
 
-SELECT price_extension(item, 10) FROM on_hand;</PRE
-><P>
+SELECT price_extension(item, 10) FROM on_hand;
+</pre><p>
 
- </P
-><P
->  Whenever you create a table, a composite type is also automatically
+ </p><p>
+  Whenever you create a table, a composite type is also automatically
   created, with the same name as the table, to represent the table's
   row type.  For example, had we said:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE TABLE inventory_item (
+</p><pre class="programlisting">
+CREATE TABLE inventory_item (
     name            text,
     supplier_id     integer REFERENCES suppliers,
     price           numeric CHECK (price &gt; 0)
-);</PRE
-><P>
-  then the same <TT
-CLASS="LITERAL"
->inventory_item</TT
-> composite type shown above would
+);
+</pre><p>
+  then the same <code class="literal">inventory_item</code> composite type shown above would
   come into being as a
   byproduct, and could be used just as above.  Note however an important
   restriction of the current implementation: since no constraints are
   associated with a composite type, the constraints shown in the table
-  definition <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->do not apply</I
-></SPAN
-> to values of the composite type
-  outside the table.  (A partial workaround is to use domain
-  types as members of composite types.)
- </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN8140"
->8.16.2. Constructing Composite Values</A
-></H2
-><P
->   To write a composite value as a literal constant, enclose the field
+  definition <span class="emphasis"><em>do not apply</em></span> to values of the composite type
+  outside the table.  (To work around this, create a domain over the composite
+  type, and apply the desired constraints as <code class="literal">CHECK</code>
+  constraints of the domain.)
+ </p></div><div class="sect2" id="id-1.5.7.24.6"><div class="titlepage"><div><div><h3 class="title">8.16.2. Constructing Composite Values</h3></div></div></div><a id="id-1.5.7.24.6.2" class="indexterm"></a><p>
+   To write a composite value as a literal constant, enclose the field
    values within parentheses and separate them by commas.  You can put double
    quotes around any field value, and must do so if it contains commas or
-   parentheses.  (More details appear <A
-HREF="rowtypes.html#ROWTYPES-IO-SYNTAX"
->below</A
->.)  Thus, the general format of
+   parentheses.  (More details appear <a class="link" href="rowtypes.html#ROWTYPES-IO-SYNTAX" title="8.16.6. Composite Type Input and Output Syntax">below</a>.)  Thus, the general format of
    a composite constant is the following:
-</P><PRE
-CLASS="SYNOPSIS"
->'( <TT
-CLASS="REPLACEABLE"
-><I
->val1</I
-></TT
-> , <TT
-CLASS="REPLACEABLE"
-><I
->val2</I
-></TT
-> , ... )'</PRE
-><P>
+</p><pre class="synopsis">
+'( <em class="replaceable"><code>val1</code></em> , <em class="replaceable"><code>val2</code></em> , ... )'
+</pre><p>
    An example is:
-</P><PRE
-CLASS="PROGRAMLISTING"
->'("fuzzy dice",42,1.99)'</PRE
-><P>
-   which would be a valid value of the <TT
-CLASS="LITERAL"
->inventory_item</TT
-> type
+</p><pre class="programlisting">
+'("fuzzy dice",42,1.99)'
+</pre><p>
+   which would be a valid value of the <code class="literal">inventory_item</code> type
    defined above.  To make a field be NULL, write no characters at all
    in its position in the list.  For example, this constant specifies
    a NULL third field:
-</P><PRE
-CLASS="PROGRAMLISTING"
->'("fuzzy dice",42,)'</PRE
-><P>
+</p><pre class="programlisting">
+'("fuzzy dice",42,)'
+</pre><p>
    If you want an empty string rather than NULL, write double quotes:
-</P><PRE
-CLASS="PROGRAMLISTING"
->'("",42,)'</PRE
-><P>
+</p><pre class="programlisting">
+'("",42,)'
+</pre><p>
    Here the first field is a non-NULL empty string, the third is NULL.
-  </P
-><P
->   (These constants are actually only a special case of
-   the generic type constants discussed in <A
-HREF="sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS-GENERIC"
->Section 4.1.2.7</A
->.  The constant is initially
+  </p><p>
+   (These constants are actually only a special case of
+   the generic type constants discussed in <a class="xref" href="sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS-GENERIC" title="4.1.2.7. Constants of Other Types">Section 4.1.2.7</a>.  The constant is initially
    treated as a string and passed to the composite-type input conversion
    routine.  An explicit type specification might be necessary to tell
    which type to convert the constant to.)
-  </P
-><P
->  The <TT
-CLASS="LITERAL"
->ROW</TT
-> expression syntax can also be used to
+  </p><p>
+  The <code class="literal">ROW</code> expression syntax can also be used to
   construct composite values.  In most cases this is considerably
   simpler to use than the string-literal syntax since you don't have
   to worry about multiple layers of quoting.  We already used this
   method above:
-</P><PRE
-CLASS="PROGRAMLISTING"
->ROW('fuzzy dice', 42, 1.99)
-ROW('', 42, NULL)</PRE
-><P>
+</p><pre class="programlisting">
+ROW('fuzzy dice', 42, 1.99)
+ROW('', 42, NULL)
+</pre><p>
   The ROW keyword is actually optional as long as you have more than one
   field in the expression, so these can be simplified to:
-</P><PRE
-CLASS="PROGRAMLISTING"
->('fuzzy dice', 42, 1.99)
-('', 42, NULL)</PRE
-><P>
-  The <TT
-CLASS="LITERAL"
->ROW</TT
-> expression syntax is discussed in more detail in <A
-HREF="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS"
->Section 4.2.13</A
->.
- </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="ROWTYPES-ACCESSING"
->8.16.3. Accessing Composite Types</A
-></H2
-><P
->  To access a field of a composite column, one writes a dot and the field
+</p><pre class="programlisting">
+('fuzzy dice', 42, 1.99)
+('', 42, NULL)
+</pre><p>
+  The <code class="literal">ROW</code> expression syntax is discussed in more detail in <a class="xref" href="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS" title="4.2.13. Row Constructors">Section 4.2.13</a>.
+ </p></div><div class="sect2" id="ROWTYPES-ACCESSING"><div class="titlepage"><div><div><h3 class="title">8.16.3. Accessing Composite Types</h3></div></div></div><p>
+  To access a field of a composite column, one writes a dot and the field
   name, much like selecting a field from a table name.  In fact, it's so
   much like selecting from a table name that you often have to use parentheses
   to keep from confusing the parser.  For example, you might try to select
-  some subfields from our <TT
-CLASS="LITERAL"
->on_hand</TT
-> example table with something
+  some subfields from our <code class="literal">on_hand</code> example table with something
   like:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT item.name FROM on_hand WHERE item.price &gt; 9.99;</PRE
-><P>
+</p><pre class="programlisting">
+SELECT item.name FROM on_hand WHERE item.price &gt; 9.99;
+</pre><p>
 
-  This will not work since the name <TT
-CLASS="LITERAL"
->item</TT
-> is taken to be a table
-  name, not a column name of <TT
-CLASS="LITERAL"
->on_hand</TT
->, per SQL syntax rules.
+  This will not work since the name <code class="literal">item</code> is taken to be a table
+  name, not a column name of <code class="literal">on_hand</code>, per SQL syntax rules.
   You must write it like this:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT (item).name FROM on_hand WHERE (item).price &gt; 9.99;</PRE
-><P>
+</p><pre class="programlisting">
+SELECT (item).name FROM on_hand WHERE (item).price &gt; 9.99;
+</pre><p>
 
   or if you need to use the table name as well (for instance in a multitable
   query), like this:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT (on_hand.item).name FROM on_hand WHERE (on_hand.item).price &gt; 9.99;</PRE
-><P>
+</p><pre class="programlisting">
+SELECT (on_hand.item).name FROM on_hand WHERE (on_hand.item).price &gt; 9.99;
+</pre><p>
 
   Now the parenthesized object is correctly interpreted as a reference to
-  the <TT
-CLASS="LITERAL"
->item</TT
-> column, and then the subfield can be selected from it.
- </P
-><P
->  Similar syntactic issues apply whenever you select a field from a composite
+  the <code class="literal">item</code> column, and then the subfield can be selected from it.
+ </p><p>
+  Similar syntactic issues apply whenever you select a field from a composite
   value.  For instance, to select just one field from the result of a function
   that returns a composite value, you'd need to write something like:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT (my_func(...)).field FROM ...</PRE
-><P>
+</p><pre class="programlisting">
+SELECT (my_func(...)).field FROM ...
+</pre><p>
 
   Without the extra parentheses, this will generate a syntax error.
- </P
-><P
->  The special field name <TT
-CLASS="LITERAL"
->*</TT
-> means <SPAN
-CLASS="QUOTE"
->"all fields"</SPAN
->, as
-  further explained in <A
-HREF="rowtypes.html#ROWTYPES-USAGE"
->Section 8.16.5</A
->.
- </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN8178"
->8.16.4. Modifying Composite Types</A
-></H2
-><P
->  Here are some examples of the proper syntax for inserting and updating
+ </p><p>
+  The special field name <code class="literal">*</code> means <span class="quote">“<span class="quote">all fields</span>”</span>, as
+  further explained in <a class="xref" href="rowtypes.html#ROWTYPES-USAGE" title="8.16.5. Using Composite Types in Queries">Section 8.16.5</a>.
+ </p></div><div class="sect2" id="id-1.5.7.24.8"><div class="titlepage"><div><div><h3 class="title">8.16.4. Modifying Composite Types</h3></div></div></div><p>
+  Here are some examples of the proper syntax for inserting and updating
   composite columns.
   First, inserting or updating a whole column:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->INSERT INTO mytab (complex_col) VALUES((1.1,2.2));
+</p><pre class="programlisting">
+INSERT INTO mytab (complex_col) VALUES((1.1,2.2));
 
-UPDATE mytab SET complex_col = ROW(1.1,2.2) WHERE ...;</PRE
-><P>
+UPDATE mytab SET complex_col = ROW(1.1,2.2) WHERE ...;
+</pre><p>
 
-  The first example omits <TT
-CLASS="LITERAL"
->ROW</TT
->, the second uses it; we
+  The first example omits <code class="literal">ROW</code>, the second uses it; we
   could have done it either way.
- </P
-><P
->  We can update an individual subfield of a composite column:
+ </p><p>
+  We can update an individual subfield of a composite column:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->UPDATE mytab SET complex_col.r = (complex_col).r + 1 WHERE ...;</PRE
-><P>
+</p><pre class="programlisting">
+UPDATE mytab SET complex_col.r = (complex_col).r + 1 WHERE ...;
+</pre><p>
 
   Notice here that we don't need to (and indeed cannot)
   put parentheses around the column name appearing just after
-  <TT
-CLASS="LITERAL"
->SET</TT
->, but we do need parentheses when referencing the same
+  <code class="literal">SET</code>, but we do need parentheses when referencing the same
   column in the expression to the right of the equal sign.
- </P
-><P
->  And we can specify subfields as targets for <TT
-CLASS="COMMAND"
->INSERT</TT
->, too:
+ </p><p>
+  And we can specify subfields as targets for <code class="command">INSERT</code>, too:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->INSERT INTO mytab (complex_col.r, complex_col.i) VALUES(1.1, 2.2);</PRE
-><P>
+</p><pre class="programlisting">
+INSERT INTO mytab (complex_col.r, complex_col.i) VALUES(1.1, 2.2);
+</pre><p>
 
   Had we not supplied values for all the subfields of the column, the
   remaining subfields would have been filled with null values.
- </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="ROWTYPES-USAGE"
->8.16.5. Using Composite Types in Queries</A
-></H2
-><P
->   There are various special syntax rules and behaviors associated with
+ </p></div><div class="sect2" id="ROWTYPES-USAGE"><div class="titlepage"><div><div><h3 class="title">8.16.5. Using Composite Types in Queries</h3></div></div></div><p>
+   There are various special syntax rules and behaviors associated with
    composite types in queries.  These rules provide useful shortcuts,
    but can be confusing if you don't know the logic behind them.
-  </P
-><P
->   In <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, a reference to a table name (or alias)
+  </p><p>
+   In <span class="productname">PostgreSQL</span>, a reference to a table name (or alias)
    in a query is effectively a reference to the composite value of the
    table's current row.  For example, if we had a table
-   <TT
-CLASS="STRUCTNAME"
->inventory_item</TT
-> as shown
-   <A
-HREF="rowtypes.html#ROWTYPES-DECLARING"
->above</A
->, we could write:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT c FROM inventory_item c;</PRE
-><P>
+   <code class="structname">inventory_item</code> as shown
+   <a class="link" href="rowtypes.html#ROWTYPES-DECLARING" title="8.16.1. Declaration of Composite Types">above</a>, we could write:
+</p><pre class="programlisting">
+SELECT c FROM inventory_item c;
+</pre><p>
    This query produces a single composite-valued column, so we might get
    output like:
-</P><PRE
-CLASS="PROGRAMLISTING"
->           c
+</p><pre class="programlisting">
+           c
 ------------------------
  ("fuzzy dice",42,1.99)
-(1 row)</PRE
-><P>
+(1 row)
+</pre><p>
    Note however that simple names are matched to column names before table
    names, so this example works only because there is no column
-   named <TT
-CLASS="STRUCTFIELD"
->c</TT
-> in the query's tables.
-  </P
-><P
->   The ordinary qualified-column-name
-   syntax <TT
-CLASS="REPLACEABLE"
-><I
->table_name</I
-></TT
-><TT
-CLASS="LITERAL"
->.</TT
-><TT
-CLASS="REPLACEABLE"
-><I
->column_name</I
-></TT
->
-   can be understood as applying <A
-HREF="sql-expressions.html#FIELD-SELECTION"
->field
-   selection</A
-> to the composite value of the table's current row.
+   named <code class="structfield">c</code> in the query's tables.
+  </p><p>
+   The ordinary qualified-column-name
+   syntax <em class="replaceable"><code>table_name</code></em><code class="literal">.</code><em class="replaceable"><code>column_name</code></em>
+   can be understood as applying <a class="link" href="sql-expressions.html#FIELD-SELECTION" title="4.2.4. Field Selection">field
+   selection</a> to the composite value of the table's current row.
    (For efficiency reasons, it's not actually implemented that way.)
-  </P
-><P
->   When we write
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT c.* FROM inventory_item c;</PRE
-><P>
+  </p><p>
+   When we write
+</p><pre class="programlisting">
+SELECT c.* FROM inventory_item c;
+</pre><p>
    then, according to the SQL standard, we should get the contents of the
    table expanded into separate columns:
-</P><PRE
-CLASS="PROGRAMLISTING"
->    name    | supplier_id | price
+</p><pre class="programlisting">
+    name    | supplier_id | price
 ------------+-------------+-------
  fuzzy dice |          42 |  1.99
-(1 row)</PRE
-><P>
+(1 row)
+</pre><p>
    as if the query were
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT c.name, c.supplier_id, c.price FROM inventory_item c;</PRE
-><P>
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> will apply this expansion behavior to
-   any composite-valued expression, although as shown <A
-HREF="rowtypes.html#ROWTYPES-ACCESSING"
->above</A
->, you need to write parentheses
-   around the value that <TT
-CLASS="LITERAL"
->.*</TT
-> is applied to whenever it's not a
-   simple table name.  For example, if <CODE
-CLASS="FUNCTION"
->myfunc()</CODE
-> is a function
-   returning a composite type with columns <TT
-CLASS="STRUCTFIELD"
->a</TT
->,
-   <TT
-CLASS="STRUCTFIELD"
->b</TT
->, and <TT
-CLASS="STRUCTFIELD"
->c</TT
->, then these two queries have the
+</p><pre class="programlisting">
+SELECT c.name, c.supplier_id, c.price FROM inventory_item c;
+</pre><p>
+   <span class="productname">PostgreSQL</span> will apply this expansion behavior to
+   any composite-valued expression, although as shown <a class="link" href="rowtypes.html#ROWTYPES-ACCESSING" title="8.16.3. Accessing Composite Types">above</a>, you need to write parentheses
+   around the value that <code class="literal">.*</code> is applied to whenever it's not a
+   simple table name.  For example, if <code class="function">myfunc()</code> is a function
+   returning a composite type with columns <code class="structfield">a</code>,
+   <code class="structfield">b</code>, and <code class="structfield">c</code>, then these two queries have the
    same result:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT (myfunc(x)).* FROM some_table;
-SELECT (myfunc(x)).a, (myfunc(x)).b, (myfunc(x)).c FROM some_table;</PRE
-><P>
-  </P
-><DIV
-CLASS="TIP"
-><BLOCKQUOTE
-CLASS="TIP"
-><P
-><B
->Tip: </B
->    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> handles column expansion by
+</p><pre class="programlisting">
+SELECT (myfunc(x)).* FROM some_table;
+SELECT (myfunc(x)).a, (myfunc(x)).b, (myfunc(x)).c FROM some_table;
+</pre><p>
+  </p><div class="tip"><h3 class="title">Tip</h3><p>
+    <span class="productname">PostgreSQL</span> handles column expansion by
     actually transforming the first form into the second.  So, in this
-    example, <CODE
-CLASS="FUNCTION"
->myfunc()</CODE
-> would get invoked three times per row
+    example, <code class="function">myfunc()</code> would get invoked three times per row
     with either syntax.  If it's an expensive function you may wish to
     avoid that, which you can do with a query like:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT (m).* FROM (SELECT myfunc(x) AS m FROM some_table OFFSET 0) ss;</PRE
-><P>
-    The <TT
-CLASS="LITERAL"
->OFFSET 0</TT
-> clause keeps the optimizer
-    from <SPAN
-CLASS="QUOTE"
->"flattening"</SPAN
-> the sub-select to arrive at the form with
-    multiple calls of <CODE
-CLASS="FUNCTION"
->myfunc()</CODE
->.
-   </P
-></BLOCKQUOTE
-></DIV
-><P
->   The <TT
-CLASS="REPLACEABLE"
-><I
->composite_value</I
-></TT
-><TT
-CLASS="LITERAL"
->.*</TT
-> syntax results in
+</p><pre class="programlisting">
+SELECT m.* FROM some_table, LATERAL myfunc(x) AS m;
+</pre><p>
+    Placing the function in
+    a <code class="literal">LATERAL</code> <code class="literal">FROM</code> item keeps it from
+    being invoked more than once per row.  <code class="literal">m.*</code> is still
+    expanded into <code class="literal">m.a, m.b, m.c</code>, but now those variables
+    are just references to the output of the <code class="literal">FROM</code> item.
+    (The <code class="literal">LATERAL</code> keyword is optional here, but we show it
+    to clarify that the function is getting <code class="structfield">x</code>
+    from <code class="structname">some_table</code>.)
+   </p></div><p>
+   The <em class="replaceable"><code>composite_value</code></em><code class="literal">.*</code> syntax results in
    column expansion of this kind when it appears at the top level of
-   a <A
-HREF="queries-select-lists.html"
-><TT
-CLASS="COMMAND"
->SELECT</TT
-> output
-   list</A
->, a <A
-HREF="dml-returning.html"
-><TT
-CLASS="LITERAL"
->RETURNING</TT
->
-   list</A
-> in <TT
-CLASS="COMMAND"
->INSERT</TT
->/<TT
-CLASS="COMMAND"
->UPDATE</TT
->/<TT
-CLASS="COMMAND"
->DELETE</TT
->,
-   a <A
-HREF="queries-values.html"
-><TT
-CLASS="LITERAL"
->VALUES</TT
-> clause</A
->, or
-   a <A
-HREF="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS"
->row constructor</A
->.
+   a <a class="link" href="queries-select-lists.html" title="7.3. Select Lists"><code class="command">SELECT</code> output
+   list</a>, a <a class="link" href="dml-returning.html" title="6.4. Returning Data From Modified Rows"><code class="literal">RETURNING</code>
+   list</a> in <code class="command">INSERT</code>/<code class="command">UPDATE</code>/<code class="command">DELETE</code>,
+   a <a class="link" href="queries-values.html" title="7.7. VALUES Lists"><code class="literal">VALUES</code> clause</a>, or
+   a <a class="link" href="sql-expressions.html#SQL-SYNTAX-ROW-CONSTRUCTORS" title="4.2.13. Row Constructors">row constructor</a>.
    In all other contexts (including when nested inside one of those
-   constructs), attaching <TT
-CLASS="LITERAL"
->.*</TT
-> to a composite value does not
-   change the value, since it means <SPAN
-CLASS="QUOTE"
->"all columns"</SPAN
-> and so the
+   constructs), attaching <code class="literal">.*</code> to a composite value does not
+   change the value, since it means <span class="quote">“<span class="quote">all columns</span>”</span> and so the
    same composite value is produced again.  For example,
-   if <CODE
-CLASS="FUNCTION"
->somefunc()</CODE
-> accepts a composite-valued argument,
+   if <code class="function">somefunc()</code> accepts a composite-valued argument,
    these queries are the same:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT somefunc(c.*) FROM inventory_item c;
-SELECT somefunc(c) FROM inventory_item c;</PRE
-><P>
+</p><pre class="programlisting">
+SELECT somefunc(c.*) FROM inventory_item c;
+SELECT somefunc(c) FROM inventory_item c;
+</pre><p>
 
-   In both cases, the current row of <TT
-CLASS="STRUCTNAME"
->inventory_item</TT
-> is
+   In both cases, the current row of <code class="structname">inventory_item</code> is
    passed to the function as a single composite-valued argument.
-   Even though <TT
-CLASS="LITERAL"
->.*</TT
-> does nothing in such cases, using it is good
+   Even though <code class="literal">.*</code> does nothing in such cases, using it is good
    style, since it makes clear that a composite value is intended.  In
-   particular, the parser will consider <TT
-CLASS="LITERAL"
->c</TT
-> in <TT
-CLASS="LITERAL"
->c.*</TT
-> to
+   particular, the parser will consider <code class="literal">c</code> in <code class="literal">c.*</code> to
    refer to a table name or alias, not to a column name, so that there is
-   no ambiguity; whereas without <TT
-CLASS="LITERAL"
->.*</TT
->, it is not clear
-   whether <TT
-CLASS="LITERAL"
->c</TT
-> means a table name or a column name, and in fact
+   no ambiguity; whereas without <code class="literal">.*</code>, it is not clear
+   whether <code class="literal">c</code> means a table name or a column name, and in fact
    the column-name interpretation will be preferred if there is a column
-   named <TT
-CLASS="LITERAL"
->c</TT
->.
-  </P
-><P
->   Another example demonstrating these concepts is that all these queries
+   named <code class="literal">c</code>.
+  </p><p>
+   Another example demonstrating these concepts is that all these queries
    mean the same thing:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT * FROM inventory_item c ORDER BY c;
+</p><pre class="programlisting">
+SELECT * FROM inventory_item c ORDER BY c;
 SELECT * FROM inventory_item c ORDER BY c.*;
-SELECT * FROM inventory_item c ORDER BY ROW(c.*);</PRE
-><P>
-   All of these <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clauses specify the row's composite
+SELECT * FROM inventory_item c ORDER BY ROW(c.*);
+</pre><p>
+   All of these <code class="literal">ORDER BY</code> clauses specify the row's composite
    value, resulting in sorting the rows according to the rules described
-   in <A
-HREF="functions-comparisons.html#COMPOSITE-TYPE-COMPARISON"
->Section 9.23.6</A
->.  However,
-   if <TT
-CLASS="STRUCTNAME"
->inventory_item</TT
-> contained a column
-   named <TT
-CLASS="STRUCTFIELD"
->c</TT
->, the first case would be different from the
+   in <a class="xref" href="functions-comparisons.html#COMPOSITE-TYPE-COMPARISON" title="9.23.6. Composite Type Comparison">Section 9.23.6</a>.  However,
+   if <code class="structname">inventory_item</code> contained a column
+   named <code class="structfield">c</code>, the first case would be different from the
    others, as it would mean to sort by that column only.  Given the column
    names previously shown, these queries are also equivalent to those above:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT * FROM inventory_item c ORDER BY ROW(c.name, c.supplier_id, c.price);
-SELECT * FROM inventory_item c ORDER BY (c.name, c.supplier_id, c.price);</PRE
-><P>
-   (The last case uses a row constructor with the key word <TT
-CLASS="LITERAL"
->ROW</TT
->
+</p><pre class="programlisting">
+SELECT * FROM inventory_item c ORDER BY ROW(c.name, c.supplier_id, c.price);
+SELECT * FROM inventory_item c ORDER BY (c.name, c.supplier_id, c.price);
+</pre><p>
+   (The last case uses a row constructor with the key word <code class="literal">ROW</code>
    omitted.)
-  </P
-><P
->   Another special syntactical behavior associated with composite values is
-   that we can use <I
-CLASS="FIRSTTERM"
->functional notation</I
-> for extracting a field
+  </p><p>
+   Another special syntactical behavior associated with composite values is
+   that we can use <em class="firstterm">functional notation</em> for extracting a field
    of a composite value.  The simple way to explain this is that
-   the notations <TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->field</I
-></TT
->(<TT
-CLASS="REPLACEABLE"
-><I
->table</I
-></TT
->)</TT
->
-   and <TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->table</I
-></TT
->.<TT
-CLASS="REPLACEABLE"
-><I
->field</I
-></TT
-></TT
->
+   the notations <code class="literal"><em class="replaceable"><code>field</code></em>(<em class="replaceable"><code>table</code></em>)</code>
+   and <code class="literal"><em class="replaceable"><code>table</code></em>.<em class="replaceable"><code>field</code></em></code>
    are interchangeable.  For example, these queries are equivalent:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT c.name FROM inventory_item c WHERE c.price &gt; 1000;
-SELECT name(c) FROM inventory_item c WHERE price(c) &gt; 1000;</PRE
-><P>
+</p><pre class="programlisting">
+SELECT c.name FROM inventory_item c WHERE c.price &gt; 1000;
+SELECT name(c) FROM inventory_item c WHERE price(c) &gt; 1000;
+</pre><p>
 
    Moreover, if we have a function that accepts a single argument of a
    composite type, we can call it with either notation.  These queries are
    all equivalent:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT somefunc(c) FROM inventory_item c;
+</p><pre class="programlisting">
+SELECT somefunc(c) FROM inventory_item c;
 SELECT somefunc(c.*) FROM inventory_item c;
-SELECT c.somefunc FROM inventory_item c;</PRE
-><P>
-  </P
-><P
->   This equivalence between functional notation and field notation
+SELECT c.somefunc FROM inventory_item c;
+</pre><p>
+  </p><p>
+   This equivalence between functional notation and field notation
    makes it possible to use functions on composite types to implement
-   <SPAN
-CLASS="QUOTE"
->"computed fields"</SPAN
->.
-   
-   
+   <span class="quote">“<span class="quote">computed fields</span>”</span>.
+   <a id="id-1.5.7.24.9.10.2" class="indexterm"></a>
+   <a id="id-1.5.7.24.9.10.3" class="indexterm"></a>
    An application using the last query above wouldn't need to be directly
-   aware that <TT
-CLASS="LITERAL"
->somefunc</TT
-> isn't a real column of the table.
-  </P
-><DIV
-CLASS="TIP"
-><BLOCKQUOTE
-CLASS="TIP"
-><P
-><B
->Tip: </B
->    Because of this behavior, it's unwise to give a function that takes a
+   aware that <code class="literal">somefunc</code> isn't a real column of the table.
+  </p><div class="tip"><h3 class="title">Tip</h3><p>
+    Because of this behavior, it's unwise to give a function that takes a
     single composite-type argument the same name as any of the fields of
     that composite type.  If there is ambiguity, the field-name
-    interpretation will be preferred, so that such a function could not be
-    called without tricks.  One way to force the function interpretation is
-    to schema-qualify the function name, that is, write
-    <TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->schema</I
-></TT
->.<TT
-CLASS="REPLACEABLE"
-><I
->func</I
-></TT
->(<TT
-CLASS="REPLACEABLE"
-><I
->compositevalue</I
-></TT
->)</TT
->.
-   </P
-></BLOCKQUOTE
-></DIV
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="ROWTYPES-IO-SYNTAX"
->8.16.6. Composite Type Input and Output Syntax</A
-></H2
-><P
->   The external text representation of a composite value consists of items that
+    interpretation will be chosen if field-name syntax is used, while the
+    function will be chosen if function-call syntax is used.  However,
+    <span class="productname">PostgreSQL</span> versions before 11 always chose the
+    field-name interpretation, unless the syntax of the call required it to
+    be a function call.  One way to force the function interpretation in
+    older versions is to schema-qualify the function name, that is, write
+    <code class="literal"><em class="replaceable"><code>schema</code></em>.<em class="replaceable"><code>func</code></em>(<em class="replaceable"><code>compositevalue</code></em>)</code>.
+   </p></div></div><div class="sect2" id="ROWTYPES-IO-SYNTAX"><div class="titlepage"><div><div><h3 class="title">8.16.6. Composite Type Input and Output Syntax</h3></div></div></div><p>
+   The external text representation of a composite value consists of items that
    are interpreted according to the I/O conversion rules for the individual
    field types, plus decoration that indicates the composite structure.
-   The decoration consists of parentheses (<TT
-CLASS="LITERAL"
->(</TT
-> and <TT
-CLASS="LITERAL"
->)</TT
->)
-   around the whole value, plus commas (<TT
-CLASS="LITERAL"
->,</TT
->) between adjacent
+   The decoration consists of parentheses (<code class="literal">(</code> and <code class="literal">)</code>)
+   around the whole value, plus commas (<code class="literal">,</code>) between adjacent
    items.  Whitespace outside the parentheses is ignored, but within the
    parentheses it is considered part of the field value, and might or might not be
    significant depending on the input conversion rules for the field data type.
    For example, in:
-</P><PRE
-CLASS="PROGRAMLISTING"
->'(  42)'</PRE
-><P>
+</p><pre class="programlisting">
+'(  42)'
+</pre><p>
    the whitespace will be ignored if the field type is integer, but not if
    it is text.
-  </P
-><P
->   As shown previously, when writing a composite value you can write double
+  </p><p>
+   As shown previously, when writing a composite value you can write double
    quotes around any individual field value.
-   You <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->must</I
-></SPAN
-> do so if the field value would otherwise
+   You <span class="emphasis"><em>must</em></span> do so if the field value would otherwise
    confuse the composite-value parser.  In particular, fields containing
    parentheses, commas, double quotes, or backslashes must be double-quoted.
    To put a double quote or backslash in a quoted composite field value,
@@ -894,155 +384,40 @@ CLASS="EMPHASIS"
    Alternatively, you can avoid quoting and use backslash-escaping to
    protect all data characters
    that would otherwise be taken as composite syntax.
-  </P
-><P
->   A completely empty field value (no characters at all between the commas
+  </p><p>
+   A completely empty field value (no characters at all between the commas
    or parentheses) represents a NULL.  To write a value that is an empty
-   string rather than NULL, write <TT
-CLASS="LITERAL"
->""</TT
->.
-  </P
-><P
->   The composite output routine will put double quotes around field values
+   string rather than NULL, write <code class="literal">""</code>.
+  </p><p>
+   The composite output routine will put double quotes around field values
    if they are empty strings or contain parentheses, commas,
    double quotes, backslashes, or white space.  (Doing so for white space
    is not essential, but aids legibility.)  Double quotes and backslashes
    embedded in field values will be doubled.
-  </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->   Remember that what you write in an SQL command will first be interpreted
+  </p><div class="note"><h3 class="title">Note</h3><p>
+   Remember that what you write in an SQL command will first be interpreted
    as a string literal, and then as a composite.  This doubles the number of
    backslashes you need (assuming escape string syntax is used).
-   For example, to insert a <TT
-CLASS="TYPE"
->text</TT
-> field
+   For example, to insert a <code class="type">text</code> field
    containing a double quote and a backslash in a composite
    value, you'd need to write:
-</P><PRE
-CLASS="PROGRAMLISTING"
->INSERT ... VALUES ('("\"\\")');</PRE
-><P>
+</p><pre class="programlisting">
+INSERT ... VALUES ('("\"\\")');
+</pre><p>
    The string-literal processor removes one level of backslashes, so that
    what arrives at the composite-value parser looks like
-   <TT
-CLASS="LITERAL"
->("\"\\")</TT
->.  In turn, the string
-   fed to the <TT
-CLASS="TYPE"
->text</TT
-> data type's input routine
-   becomes <TT
-CLASS="LITERAL"
->"\</TT
->.  (If we were working
+   <code class="literal">("\"\\")</code>.  In turn, the string
+   fed to the <code class="type">text</code> data type's input routine
+   becomes <code class="literal">"\</code>.  (If we were working
    with a data type whose input routine also treated backslashes specially,
-   <TT
-CLASS="TYPE"
->bytea</TT
-> for example, we might need as many as eight backslashes
+   <code class="type">bytea</code> for example, we might need as many as eight backslashes
    in the command to get one backslash into the stored composite field.)
-   Dollar quoting (see <A
-HREF="sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING"
->Section 4.1.2.4</A
->) can be
+   Dollar quoting (see <a class="xref" href="sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING" title="4.1.2.4. Dollar-quoted String Constants">Section 4.1.2.4</a>) can be
    used to avoid the need to double backslashes.
-  </P
-></BLOCKQUOTE
-></DIV
-><DIV
-CLASS="TIP"
-><BLOCKQUOTE
-CLASS="TIP"
-><P
-><B
->Tip: </B
->   The <TT
-CLASS="LITERAL"
->ROW</TT
-> constructor syntax is usually easier to work with
+  </p></div><div class="tip"><h3 class="title">Tip</h3><p>
+   The <code class="literal">ROW</code> constructor syntax is usually easier to work with
    than the composite-literal syntax when writing composite values in SQL
    commands.
-   In <TT
-CLASS="LITERAL"
->ROW</TT
->, individual field values are written the same way
+   In <code class="literal">ROW</code>, individual field values are written the same way
    they would be written when not members of a composite.
-  </P
-></BLOCKQUOTE
-></DIV
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="arrays.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="rangetypes.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Arrays</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="datatype.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Range Types</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="arrays.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datatype.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="rangetypes.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">8.15. Arrays </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 8.17. Range Types</td></tr></table></div></body></html>

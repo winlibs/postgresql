@@ -76,7 +76,7 @@
  *
  * repl_gram.y				- Parser for the replication commands
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -98,6 +98,8 @@
 /* Result of the parsing is returned here */
 Node *replication_parse_result;
 
+static SQLCmd *make_sqlcmd(void);
+
 
 /*
  * Bison doesn't allocate anything that needs to live across parser calls,
@@ -111,7 +113,7 @@ Node *replication_parse_result;
 #define YYFREE   pfree
 
 
-#line 115 "repl_gram.c" /* yacc.c:339  */
+#line 117 "repl_gram.c" /* yacc.c:339  */
 
 # ifndef YY_NULLPTR
 #  if defined __cplusplus && 201103L <= __cplusplus
@@ -147,24 +149,32 @@ extern int replication_yydebug;
     IDENT = 259,
     UCONST = 260,
     RECPTR = 261,
-    K_BASE_BACKUP = 262,
-    K_IDENTIFY_SYSTEM = 263,
-    K_START_REPLICATION = 264,
-    K_CREATE_REPLICATION_SLOT = 265,
-    K_DROP_REPLICATION_SLOT = 266,
-    K_TIMELINE_HISTORY = 267,
-    K_LABEL = 268,
-    K_PROGRESS = 269,
-    K_FAST = 270,
-    K_NOWAIT = 271,
-    K_MAX_RATE = 272,
-    K_WAL = 273,
-    K_TABLESPACE_MAP = 274,
-    K_TIMELINE = 275,
-    K_PHYSICAL = 276,
-    K_LOGICAL = 277,
-    K_SLOT = 278,
-    K_RESERVE_WAL = 279
+    T_WORD = 262,
+    K_BASE_BACKUP = 263,
+    K_IDENTIFY_SYSTEM = 264,
+    K_SHOW = 265,
+    K_START_REPLICATION = 266,
+    K_CREATE_REPLICATION_SLOT = 267,
+    K_DROP_REPLICATION_SLOT = 268,
+    K_TIMELINE_HISTORY = 269,
+    K_LABEL = 270,
+    K_PROGRESS = 271,
+    K_FAST = 272,
+    K_WAIT = 273,
+    K_NOWAIT = 274,
+    K_MAX_RATE = 275,
+    K_WAL = 276,
+    K_TABLESPACE_MAP = 277,
+    K_NOVERIFY_CHECKSUMS = 278,
+    K_TIMELINE = 279,
+    K_PHYSICAL = 280,
+    K_LOGICAL = 281,
+    K_SLOT = 282,
+    K_RESERVE_WAL = 283,
+    K_TEMPORARY = 284,
+    K_EXPORT_SNAPSHOT = 285,
+    K_NOEXPORT_SNAPSHOT = 286,
+    K_USE_SNAPSHOT = 287
   };
 #endif
 
@@ -173,7 +183,7 @@ extern int replication_yydebug;
 
 union YYSTYPE
 {
-#line 45 "repl_gram.y" /* yacc.c:355  */
+#line 47 "repl_gram.y" /* yacc.c:355  */
 
 		char					*str;
 		bool					boolval;
@@ -184,7 +194,7 @@ union YYSTYPE
 		List					*list;
 		DefElem					*defelt;
 
-#line 188 "repl_gram.c" /* yacc.c:355  */
+#line 198 "repl_gram.c" /* yacc.c:355  */
 };
 
 typedef union YYSTYPE YYSTYPE;
@@ -201,7 +211,7 @@ int replication_yyparse (void);
 
 /* Copy the second part of user declarations.  */
 
-#line 205 "repl_gram.c" /* yacc.c:358  */
+#line 215 "repl_gram.c" /* yacc.c:358  */
 
 #ifdef short
 # undef short
@@ -441,23 +451,23 @@ union yyalloc
 #endif /* !YYCOPY_NEEDED */
 
 /* YYFINAL -- State number of the termination state.  */
-#define YYFINAL  22
+#define YYFINAL  28
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   37
+#define YYLAST   49
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  29
+#define YYNTOKENS  38
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  21
+#define YYNNTS  26
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  43
+#define YYNRULES  57
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  59
+#define YYNSTATES  76
 
 /* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
    by yylex, with out-of-bounds checking.  */
 #define YYUNDEFTOK  2
-#define YYMAXUTOK   279
+#define YYMAXUTOK   287
 
 #define YYTRANSLATE(YYX)                                                \
   ((unsigned int) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
@@ -470,8 +480,8 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
-      26,    27,     2,     2,    28,     2,     2,     2,     2,     2,
-       2,     2,     2,     2,     2,     2,     2,     2,     2,    25,
+      35,    36,     2,     2,    37,     2,    34,     2,     2,     2,
+       2,     2,     2,     2,     2,     2,     2,     2,     2,    33,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -493,18 +503,20 @@ static const yytype_uint8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     2,     2,     2,     2,
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
-      15,    16,    17,    18,    19,    20,    21,    22,    23,    24
+      15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
+      25,    26,    27,    28,    29,    30,    31,    32
 };
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint16 yyrline[] =
 {
-       0,    96,    96,   102,   103,   107,   108,   109,   110,   111,
-     112,   113,   120,   131,   141,   144,   148,   153,   158,   163,
-     168,   173,   178,   187,   197,   210,   223,   238,   253,   270,
-     271,   275,   276,   280,   283,   287,   295,   300,   301,   305,
-     309,   316,   323,   324
+       0,   108,   108,   114,   115,   119,   120,   121,   122,   123,
+     124,   125,   126,   127,   134,   144,   151,   152,   161,   170,
+     173,   177,   182,   187,   192,   197,   202,   207,   212,   221,
+     232,   246,   249,   253,   258,   263,   268,   277,   285,   299,
+     314,   329,   346,   347,   351,   352,   356,   359,   363,   371,
+     376,   377,   381,   385,   392,   399,   400,   404
 };
 #endif
 
@@ -514,17 +526,21 @@ static const yytype_uint16 yyrline[] =
 static const char *const yytname[] =
 {
   "$end", "error", "$undefined", "SCONST", "IDENT", "UCONST", "RECPTR",
-  "K_BASE_BACKUP", "K_IDENTIFY_SYSTEM", "K_START_REPLICATION",
-  "K_CREATE_REPLICATION_SLOT", "K_DROP_REPLICATION_SLOT",
-  "K_TIMELINE_HISTORY", "K_LABEL", "K_PROGRESS", "K_FAST", "K_NOWAIT",
-  "K_MAX_RATE", "K_WAL", "K_TABLESPACE_MAP", "K_TIMELINE", "K_PHYSICAL",
-  "K_LOGICAL", "K_SLOT", "K_RESERVE_WAL", "';'", "'('", "')'", "','",
-  "$accept", "firstcmd", "opt_semicolon", "command", "identify_system",
-  "base_backup", "base_backup_opt_list", "base_backup_opt",
-  "create_replication_slot", "drop_replication_slot", "start_replication",
-  "start_logical_replication", "timeline_history", "opt_physical",
-  "opt_reserve_wal", "opt_slot", "opt_timeline", "plugin_options",
-  "plugin_opt_list", "plugin_opt_elem", "plugin_opt_arg", YY_NULLPTR
+  "T_WORD", "K_BASE_BACKUP", "K_IDENTIFY_SYSTEM", "K_SHOW",
+  "K_START_REPLICATION", "K_CREATE_REPLICATION_SLOT",
+  "K_DROP_REPLICATION_SLOT", "K_TIMELINE_HISTORY", "K_LABEL", "K_PROGRESS",
+  "K_FAST", "K_WAIT", "K_NOWAIT", "K_MAX_RATE", "K_WAL",
+  "K_TABLESPACE_MAP", "K_NOVERIFY_CHECKSUMS", "K_TIMELINE", "K_PHYSICAL",
+  "K_LOGICAL", "K_SLOT", "K_RESERVE_WAL", "K_TEMPORARY",
+  "K_EXPORT_SNAPSHOT", "K_NOEXPORT_SNAPSHOT", "K_USE_SNAPSHOT", "';'",
+  "'.'", "'('", "')'", "','", "$accept", "firstcmd", "opt_semicolon",
+  "command", "identify_system", "show", "var_name", "base_backup",
+  "base_backup_opt_list", "base_backup_opt", "create_replication_slot",
+  "create_slot_opt_list", "create_slot_opt", "drop_replication_slot",
+  "start_replication", "start_logical_replication", "timeline_history",
+  "opt_physical", "opt_temporary", "opt_slot", "opt_timeline",
+  "plugin_options", "plugin_opt_list", "plugin_opt_elem", "plugin_opt_arg",
+  "sql_cmd", YY_NULLPTR
 };
 #endif
 
@@ -535,14 +551,15 @@ static const yytype_uint16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,   271,   272,   273,   274,
-     275,   276,   277,   278,   279,    59,    40,    41,    44
+     275,   276,   277,   278,   279,   280,   281,   282,   283,   284,
+     285,   286,   287,    59,    46,    40,    41,    44
 };
 # endif
 
-#define YYPACT_NINF -21
+#define YYPACT_NINF -27
 
 #define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-21)))
+  (!!((Yystate) == (-27)))
 
 #define YYTABLE_NINF -1
 
@@ -553,12 +570,14 @@ static const yytype_uint16 yytoknum[] =
      STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-       0,   -21,   -21,    -6,    14,    15,    16,    20,    -3,   -21,
-     -21,   -21,   -21,   -21,   -21,   -21,   -13,    19,     3,    -8,
-     -21,   -21,   -21,   -21,   -21,    22,   -21,   -21,   -21,    21,
-     -21,   -21,   -21,     5,   -21,    23,     4,    26,   -21,   -21,
-      25,    12,   -21,   -21,   -21,     7,    29,   -21,    31,   -21,
-     -21,    33,   -12,   -21,   -21,   -21,   -21,    31,   -21
+      -4,   -27,   -27,   -27,    -1,   -16,    11,    18,    23,    29,
+      -2,   -27,   -27,   -27,   -27,   -27,   -27,   -27,   -27,   -27,
+      -3,   -27,     0,    26,     7,     4,    17,   -27,   -27,   -27,
+     -27,    33,   -27,   -27,   -27,    32,   -27,   -27,   -27,   -27,
+      34,    13,   -27,    35,   -27,   -24,   -27,   -27,   -27,   -27,
+      36,    16,   -27,    39,     9,    40,   -27,    -7,   -27,    42,
+     -27,   -27,   -27,   -27,   -27,   -27,   -27,    -7,    44,   -10,
+     -27,   -27,   -27,   -27,    42,   -27
 };
 
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -566,28 +585,30 @@ static const yytype_int8 yypact[] =
      means the default is an error.  */
 static const yytype_uint8 yydefact[] =
 {
-       0,    15,    12,    34,     0,     0,     0,     0,     4,     5,
-       6,     9,    10,     7,     8,    11,    13,     0,    30,     0,
-      25,    28,     1,     3,     2,     0,    17,    18,    20,     0,
-      19,    22,    14,    33,    29,     0,    32,     0,    16,    21,
-       0,    36,    31,    23,    24,    38,     0,    26,     0,    27,
-      35,    43,     0,    39,    42,    41,    37,     0,    40
+       0,    57,    20,    14,     0,    47,     0,     0,     0,     0,
+       4,     5,    12,     6,     9,    10,     7,     8,    11,    13,
+      18,    16,    15,     0,    43,    45,    37,    41,     1,     3,
+       2,     0,    22,    23,    25,     0,    24,    27,    28,    19,
+       0,    46,    42,     0,    44,     0,    38,    21,    26,    17,
+       0,    49,    32,     0,    51,     0,    39,    29,    32,     0,
+      40,    48,    36,    33,    34,    35,    31,    30,    56,     0,
+      52,    55,    54,    50,     0,    53
 };
 
   /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -21,   -21,   -21,   -21,   -21,   -21,   -21,   -21,   -21,   -21,
-     -21,   -21,   -21,   -21,   -21,   -21,   -21,   -21,   -21,   -20,
-     -21
+     -27,   -27,   -27,   -27,   -27,   -27,   -27,   -27,   -27,   -27,
+     -27,    -9,   -27,   -27,   -27,   -27,   -27,   -27,   -27,   -27,
+     -27,   -27,   -27,   -26,   -27,   -27
 };
 
   /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-      -1,     7,    24,     8,     9,    10,    16,    32,    11,    12,
-      13,    14,    15,    35,    43,    18,    47,    49,    52,    53,
-      55
+      -1,     9,    30,    10,    11,    12,    22,    13,    20,    39,
+      14,    57,    66,    15,    16,    17,    18,    43,    45,    24,
+      56,    60,    69,    70,    72,    19
 };
 
   /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -595,50 +616,56 @@ static const yytype_int8 yydefgoto[] =
      number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_uint8 yytable[] =
 {
-      25,    26,    27,    28,    29,    30,    31,     1,     2,     3,
-       4,     5,     6,    36,    37,    56,    57,    17,    19,    20,
-      22,    21,    23,    33,    34,    38,    39,    40,    42,    41,
-      44,    45,    46,    48,    50,    51,    54,    58
+       1,    52,    53,    21,     2,     3,     4,     5,     6,     7,
+       8,    23,    31,    32,    33,    25,    34,    35,    36,    37,
+      38,    62,    26,    63,    64,    65,    73,    74,    27,    28,
+      41,    29,    42,    44,    40,    46,    47,    48,    49,    50,
+      55,    51,    54,    58,    59,    61,    68,    71,    75,    67
 };
 
 static const yytype_uint8 yycheck[] =
 {
-      13,    14,    15,    16,    17,    18,    19,     7,     8,     9,
-      10,    11,    12,    21,    22,    27,    28,    23,     4,     4,
-       0,     5,    25,     4,    21,     3,     5,    22,    24,     6,
-       4,     6,    20,    26,     5,     4,     3,    57
+       4,    25,    26,     4,     8,     9,    10,    11,    12,    13,
+      14,    27,    15,    16,    17,     4,    19,    20,    21,    22,
+      23,    28,     4,    30,    31,    32,    36,    37,     5,     0,
+       4,    33,    25,    29,    34,    18,     3,     5,     4,    26,
+      24,     6,     6,     4,    35,     5,     4,     3,    74,    58
 };
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
 static const yytype_uint8 yystos[] =
 {
-       0,     7,     8,     9,    10,    11,    12,    30,    32,    33,
-      34,    37,    38,    39,    40,    41,    35,    23,    44,     4,
-       4,     5,     0,    25,    31,    13,    14,    15,    16,    17,
-      18,    19,    36,     4,    21,    42,    21,    22,     3,     5,
-      22,     6,    24,    43,     4,     6,    20,    45,    26,    46,
-       5,     4,    47,    48,     3,    49,    27,    28,    48
+       0,     4,     8,     9,    10,    11,    12,    13,    14,    39,
+      41,    42,    43,    45,    48,    51,    52,    53,    54,    63,
+      46,     4,    44,    27,    57,     4,     4,     5,     0,    33,
+      40,    15,    16,    17,    19,    20,    21,    22,    23,    47,
+      34,     4,    25,    55,    29,    56,    18,     3,     5,     4,
+      26,     6,    25,    26,     6,    24,    58,    49,     4,    35,
+      59,     5,    28,    30,    31,    32,    50,    49,     4,    60,
+      61,     3,    62,    36,    37,    61
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
 static const yytype_uint8 yyr1[] =
 {
-       0,    29,    30,    31,    31,    32,    32,    32,    32,    32,
-      32,    32,    33,    34,    35,    35,    36,    36,    36,    36,
-      36,    36,    36,    37,    37,    38,    39,    40,    41,    42,
-      42,    43,    43,    44,    44,    45,    45,    46,    46,    47,
-      47,    48,    49,    49
+       0,    38,    39,    40,    40,    41,    41,    41,    41,    41,
+      41,    41,    41,    41,    42,    43,    44,    44,    45,    46,
+      46,    47,    47,    47,    47,    47,    47,    47,    47,    48,
+      48,    49,    49,    50,    50,    50,    50,    51,    51,    52,
+      53,    54,    55,    55,    56,    56,    57,    57,    58,    58,
+      59,    59,    60,    60,    61,    62,    62,    63
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
 static const yytype_uint8 yyr2[] =
 {
        0,     2,     2,     1,     0,     1,     1,     1,     1,     1,
-       1,     1,     1,     2,     2,     0,     2,     1,     1,     1,
-       1,     2,     1,     4,     4,     2,     5,     6,     2,     1,
-       0,     1,     0,     2,     0,     2,     0,     3,     0,     1,
-       3,     2,     1,     0
+       1,     1,     1,     1,     1,     2,     1,     3,     2,     2,
+       0,     2,     1,     1,     1,     1,     2,     1,     1,     5,
+       6,     2,     0,     1,     1,     1,     1,     2,     3,     5,
+       6,     2,     1,     0,     1,     0,     2,     0,     2,     0,
+       3,     0,     1,     3,     2,     1,     0,     1
 };
 
 
@@ -1315,146 +1342,240 @@ yyreduce:
   switch (yyn)
     {
         case 2:
-#line 97 "repl_gram.y" /* yacc.c:1646  */
+#line 109 "repl_gram.y" /* yacc.c:1646  */
     {
 					replication_parse_result = (yyvsp[-1].node);
 				}
-#line 1323 "repl_gram.c" /* yacc.c:1646  */
-    break;
-
-  case 12:
-#line 121 "repl_gram.y" /* yacc.c:1646  */
-    {
-					(yyval.node) = (Node *) makeNode(IdentifySystemCmd);
-				}
-#line 1331 "repl_gram.c" /* yacc.c:1646  */
-    break;
-
-  case 13:
-#line 132 "repl_gram.y" /* yacc.c:1646  */
-    {
-					BaseBackupCmd *cmd =
-						(BaseBackupCmd *) makeNode(BaseBackupCmd);
-					cmd->options = (yyvsp[0].list);
-					(yyval.node) = (Node *) cmd;
-				}
-#line 1342 "repl_gram.c" /* yacc.c:1646  */
+#line 1350 "repl_gram.c" /* yacc.c:1646  */
     break;
 
   case 14:
-#line 142 "repl_gram.y" /* yacc.c:1646  */
-    { (yyval.list) = lappend((yyvsp[-1].list), (yyvsp[0].defelt)); }
-#line 1348 "repl_gram.c" /* yacc.c:1646  */
+#line 135 "repl_gram.y" /* yacc.c:1646  */
+    {
+					(yyval.node) = (Node *) makeNode(IdentifySystemCmd);
+				}
+#line 1358 "repl_gram.c" /* yacc.c:1646  */
     break;
 
   case 15:
-#line 144 "repl_gram.y" /* yacc.c:1646  */
-    { (yyval.list) = NIL; }
-#line 1354 "repl_gram.c" /* yacc.c:1646  */
+#line 145 "repl_gram.y" /* yacc.c:1646  */
+    {
+					VariableShowStmt *n = makeNode(VariableShowStmt);
+					n->name = (yyvsp[0].str);
+					(yyval.node) = (Node *) n;
+				}
+#line 1368 "repl_gram.c" /* yacc.c:1646  */
     break;
 
   case 16:
-#line 149 "repl_gram.y" /* yacc.c:1646  */
-    {
-				  (yyval.defelt) = makeDefElem("label",
-								   (Node *)makeString((yyvsp[0].str)));
-				}
-#line 1363 "repl_gram.c" /* yacc.c:1646  */
+#line 151 "repl_gram.y" /* yacc.c:1646  */
+    { (yyval.str) = (yyvsp[0].str); }
+#line 1374 "repl_gram.c" /* yacc.c:1646  */
     break;
 
   case 17:
-#line 154 "repl_gram.y" /* yacc.c:1646  */
-    {
-				  (yyval.defelt) = makeDefElem("progress",
-								   (Node *)makeInteger(TRUE));
-				}
-#line 1372 "repl_gram.c" /* yacc.c:1646  */
+#line 153 "repl_gram.y" /* yacc.c:1646  */
+    { (yyval.str) = psprintf("%s.%s", (yyvsp[-2].str), (yyvsp[0].str)); }
+#line 1380 "repl_gram.c" /* yacc.c:1646  */
     break;
 
   case 18:
-#line 159 "repl_gram.y" /* yacc.c:1646  */
+#line 162 "repl_gram.y" /* yacc.c:1646  */
     {
-				  (yyval.defelt) = makeDefElem("fast",
-								   (Node *)makeInteger(TRUE));
-				}
-#line 1381 "repl_gram.c" /* yacc.c:1646  */
-    break;
-
-  case 19:
-#line 164 "repl_gram.y" /* yacc.c:1646  */
-    {
-				  (yyval.defelt) = makeDefElem("wal",
-								   (Node *)makeInteger(TRUE));
+					BaseBackupCmd *cmd = makeNode(BaseBackupCmd);
+					cmd->options = (yyvsp[0].list);
+					(yyval.node) = (Node *) cmd;
 				}
 #line 1390 "repl_gram.c" /* yacc.c:1646  */
     break;
 
+  case 19:
+#line 171 "repl_gram.y" /* yacc.c:1646  */
+    { (yyval.list) = lappend((yyvsp[-1].list), (yyvsp[0].defelt)); }
+#line 1396 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
   case 20:
-#line 169 "repl_gram.y" /* yacc.c:1646  */
-    {
-				  (yyval.defelt) = makeDefElem("nowait",
-								   (Node *)makeInteger(TRUE));
-				}
-#line 1399 "repl_gram.c" /* yacc.c:1646  */
+#line 173 "repl_gram.y" /* yacc.c:1646  */
+    { (yyval.list) = NIL; }
+#line 1402 "repl_gram.c" /* yacc.c:1646  */
     break;
 
   case 21:
-#line 174 "repl_gram.y" /* yacc.c:1646  */
+#line 178 "repl_gram.y" /* yacc.c:1646  */
     {
-				  (yyval.defelt) = makeDefElem("max_rate",
-								   (Node *)makeInteger((yyvsp[0].uintval)));
+				  (yyval.defelt) = makeDefElem("label",
+								   (Node *)makeString((yyvsp[0].str)), -1);
 				}
-#line 1408 "repl_gram.c" /* yacc.c:1646  */
+#line 1411 "repl_gram.c" /* yacc.c:1646  */
     break;
 
   case 22:
-#line 179 "repl_gram.y" /* yacc.c:1646  */
+#line 183 "repl_gram.y" /* yacc.c:1646  */
     {
-				  (yyval.defelt) = makeDefElem("tablespace_map",
-								   (Node *)makeInteger(TRUE));
+				  (yyval.defelt) = makeDefElem("progress",
+								   (Node *)makeInteger(true), -1);
 				}
-#line 1417 "repl_gram.c" /* yacc.c:1646  */
+#line 1420 "repl_gram.c" /* yacc.c:1646  */
     break;
 
   case 23:
 #line 188 "repl_gram.y" /* yacc.c:1646  */
     {
-					CreateReplicationSlotCmd *cmd;
-					cmd = makeNode(CreateReplicationSlotCmd);
-					cmd->kind = REPLICATION_KIND_PHYSICAL;
-					cmd->slotname = (yyvsp[-2].str);
-					cmd->reserve_wal = (yyvsp[0].boolval);
-					(yyval.node) = (Node *) cmd;
+				  (yyval.defelt) = makeDefElem("fast",
+								   (Node *)makeInteger(true), -1);
 				}
-#line 1430 "repl_gram.c" /* yacc.c:1646  */
+#line 1429 "repl_gram.c" /* yacc.c:1646  */
     break;
 
   case 24:
+#line 193 "repl_gram.y" /* yacc.c:1646  */
+    {
+				  (yyval.defelt) = makeDefElem("wal",
+								   (Node *)makeInteger(true), -1);
+				}
+#line 1438 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 25:
 #line 198 "repl_gram.y" /* yacc.c:1646  */
+    {
+				  (yyval.defelt) = makeDefElem("nowait",
+								   (Node *)makeInteger(true), -1);
+				}
+#line 1447 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 26:
+#line 203 "repl_gram.y" /* yacc.c:1646  */
+    {
+				  (yyval.defelt) = makeDefElem("max_rate",
+								   (Node *)makeInteger((yyvsp[0].uintval)), -1);
+				}
+#line 1456 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 27:
+#line 208 "repl_gram.y" /* yacc.c:1646  */
+    {
+				  (yyval.defelt) = makeDefElem("tablespace_map",
+								   (Node *)makeInteger(true), -1);
+				}
+#line 1465 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 28:
+#line 213 "repl_gram.y" /* yacc.c:1646  */
+    {
+				  (yyval.defelt) = makeDefElem("noverify_checksums",
+								   (Node *)makeInteger(true), -1);
+				}
+#line 1474 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 29:
+#line 222 "repl_gram.y" /* yacc.c:1646  */
+    {
+					CreateReplicationSlotCmd *cmd;
+					cmd = makeNode(CreateReplicationSlotCmd);
+					cmd->kind = REPLICATION_KIND_PHYSICAL;
+					cmd->slotname = (yyvsp[-3].str);
+					cmd->temporary = (yyvsp[-2].boolval);
+					cmd->options = (yyvsp[0].list);
+					(yyval.node) = (Node *) cmd;
+				}
+#line 1488 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 30:
+#line 233 "repl_gram.y" /* yacc.c:1646  */
     {
 					CreateReplicationSlotCmd *cmd;
 					cmd = makeNode(CreateReplicationSlotCmd);
 					cmd->kind = REPLICATION_KIND_LOGICAL;
-					cmd->slotname = (yyvsp[-2].str);
-					cmd->plugin = (yyvsp[0].str);
+					cmd->slotname = (yyvsp[-4].str);
+					cmd->temporary = (yyvsp[-3].boolval);
+					cmd->plugin = (yyvsp[-1].str);
+					cmd->options = (yyvsp[0].list);
 					(yyval.node) = (Node *) cmd;
 				}
-#line 1443 "repl_gram.c" /* yacc.c:1646  */
+#line 1503 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 25:
-#line 211 "repl_gram.y" /* yacc.c:1646  */
+  case 31:
+#line 247 "repl_gram.y" /* yacc.c:1646  */
+    { (yyval.list) = lappend((yyvsp[-1].list), (yyvsp[0].defelt)); }
+#line 1509 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 32:
+#line 249 "repl_gram.y" /* yacc.c:1646  */
+    { (yyval.list) = NIL; }
+#line 1515 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 33:
+#line 254 "repl_gram.y" /* yacc.c:1646  */
+    {
+				  (yyval.defelt) = makeDefElem("export_snapshot",
+								   (Node *)makeInteger(true), -1);
+				}
+#line 1524 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 34:
+#line 259 "repl_gram.y" /* yacc.c:1646  */
+    {
+				  (yyval.defelt) = makeDefElem("export_snapshot",
+								   (Node *)makeInteger(false), -1);
+				}
+#line 1533 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 35:
+#line 264 "repl_gram.y" /* yacc.c:1646  */
+    {
+				  (yyval.defelt) = makeDefElem("use_snapshot",
+								   (Node *)makeInteger(true), -1);
+				}
+#line 1542 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 36:
+#line 269 "repl_gram.y" /* yacc.c:1646  */
+    {
+				  (yyval.defelt) = makeDefElem("reserve_wal",
+								   (Node *)makeInteger(true), -1);
+				}
+#line 1551 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 37:
+#line 278 "repl_gram.y" /* yacc.c:1646  */
     {
 					DropReplicationSlotCmd *cmd;
 					cmd = makeNode(DropReplicationSlotCmd);
 					cmd->slotname = (yyvsp[0].str);
+					cmd->wait = false;
 					(yyval.node) = (Node *) cmd;
 				}
-#line 1454 "repl_gram.c" /* yacc.c:1646  */
+#line 1563 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 26:
-#line 224 "repl_gram.y" /* yacc.c:1646  */
+  case 38:
+#line 286 "repl_gram.y" /* yacc.c:1646  */
+    {
+					DropReplicationSlotCmd *cmd;
+					cmd = makeNode(DropReplicationSlotCmd);
+					cmd->slotname = (yyvsp[-1].str);
+					cmd->wait = true;
+					(yyval.node) = (Node *) cmd;
+				}
+#line 1575 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 39:
+#line 300 "repl_gram.y" /* yacc.c:1646  */
     {
 					StartReplicationCmd *cmd;
 
@@ -1465,11 +1586,11 @@ yyreduce:
 					cmd->timeline = (yyvsp[0].uintval);
 					(yyval.node) = (Node *) cmd;
 				}
-#line 1469 "repl_gram.c" /* yacc.c:1646  */
+#line 1590 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 27:
-#line 239 "repl_gram.y" /* yacc.c:1646  */
+  case 40:
+#line 315 "repl_gram.y" /* yacc.c:1646  */
     {
 					StartReplicationCmd *cmd;
 					cmd = makeNode(StartReplicationCmd);
@@ -1479,11 +1600,11 @@ yyreduce:
 					cmd->options = (yyvsp[0].list);
 					(yyval.node) = (Node *) cmd;
 				}
-#line 1483 "repl_gram.c" /* yacc.c:1646  */
+#line 1604 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 28:
-#line 254 "repl_gram.y" /* yacc.c:1646  */
+  case 41:
+#line 330 "repl_gram.y" /* yacc.c:1646  */
     {
 					TimeLineHistoryCmd *cmd;
 
@@ -1497,35 +1618,35 @@ yyreduce:
 
 					(yyval.node) = (Node *) cmd;
 				}
-#line 1501 "repl_gram.c" /* yacc.c:1646  */
+#line 1622 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 31:
-#line 275 "repl_gram.y" /* yacc.c:1646  */
+  case 44:
+#line 351 "repl_gram.y" /* yacc.c:1646  */
     { (yyval.boolval) = true; }
-#line 1507 "repl_gram.c" /* yacc.c:1646  */
+#line 1628 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 32:
-#line 276 "repl_gram.y" /* yacc.c:1646  */
+  case 45:
+#line 352 "repl_gram.y" /* yacc.c:1646  */
     { (yyval.boolval) = false; }
-#line 1513 "repl_gram.c" /* yacc.c:1646  */
+#line 1634 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 33:
-#line 281 "repl_gram.y" /* yacc.c:1646  */
+  case 46:
+#line 357 "repl_gram.y" /* yacc.c:1646  */
     { (yyval.str) = (yyvsp[0].str); }
-#line 1519 "repl_gram.c" /* yacc.c:1646  */
+#line 1640 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 34:
-#line 283 "repl_gram.y" /* yacc.c:1646  */
+  case 47:
+#line 359 "repl_gram.y" /* yacc.c:1646  */
     { (yyval.str) = NULL; }
-#line 1525 "repl_gram.c" /* yacc.c:1646  */
+#line 1646 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 35:
-#line 288 "repl_gram.y" /* yacc.c:1646  */
+  case 48:
+#line 364 "repl_gram.y" /* yacc.c:1646  */
     {
 					if ((yyvsp[0].uintval) <= 0)
 						ereport(ERROR,
@@ -1533,65 +1654,71 @@ yyreduce:
 								 (errmsg("invalid timeline %u", (yyvsp[0].uintval)))));
 					(yyval.uintval) = (yyvsp[0].uintval);
 				}
-#line 1537 "repl_gram.c" /* yacc.c:1646  */
+#line 1658 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 36:
-#line 295 "repl_gram.y" /* yacc.c:1646  */
+  case 49:
+#line 371 "repl_gram.y" /* yacc.c:1646  */
     { (yyval.uintval) = 0; }
-#line 1543 "repl_gram.c" /* yacc.c:1646  */
+#line 1664 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 37:
-#line 300 "repl_gram.y" /* yacc.c:1646  */
+  case 50:
+#line 376 "repl_gram.y" /* yacc.c:1646  */
     { (yyval.list) = (yyvsp[-1].list); }
-#line 1549 "repl_gram.c" /* yacc.c:1646  */
+#line 1670 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 38:
-#line 301 "repl_gram.y" /* yacc.c:1646  */
+  case 51:
+#line 377 "repl_gram.y" /* yacc.c:1646  */
     { (yyval.list) = NIL; }
-#line 1555 "repl_gram.c" /* yacc.c:1646  */
+#line 1676 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 39:
-#line 306 "repl_gram.y" /* yacc.c:1646  */
+  case 52:
+#line 382 "repl_gram.y" /* yacc.c:1646  */
     {
 					(yyval.list) = list_make1((yyvsp[0].defelt));
 				}
-#line 1563 "repl_gram.c" /* yacc.c:1646  */
+#line 1684 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 40:
-#line 310 "repl_gram.y" /* yacc.c:1646  */
+  case 53:
+#line 386 "repl_gram.y" /* yacc.c:1646  */
     {
 					(yyval.list) = lappend((yyvsp[-2].list), (yyvsp[0].defelt));
 				}
-#line 1571 "repl_gram.c" /* yacc.c:1646  */
+#line 1692 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 41:
-#line 317 "repl_gram.y" /* yacc.c:1646  */
+  case 54:
+#line 393 "repl_gram.y" /* yacc.c:1646  */
     {
-					(yyval.defelt) = makeDefElem((yyvsp[-1].str), (yyvsp[0].node));
+					(yyval.defelt) = makeDefElem((yyvsp[-1].str), (yyvsp[0].node), -1);
 				}
-#line 1579 "repl_gram.c" /* yacc.c:1646  */
+#line 1700 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 42:
-#line 323 "repl_gram.y" /* yacc.c:1646  */
+  case 55:
+#line 399 "repl_gram.y" /* yacc.c:1646  */
     { (yyval.node) = (Node *) makeString((yyvsp[0].str)); }
-#line 1585 "repl_gram.c" /* yacc.c:1646  */
+#line 1706 "repl_gram.c" /* yacc.c:1646  */
     break;
 
-  case 43:
-#line 324 "repl_gram.y" /* yacc.c:1646  */
+  case 56:
+#line 400 "repl_gram.y" /* yacc.c:1646  */
     { (yyval.node) = NULL; }
-#line 1591 "repl_gram.c" /* yacc.c:1646  */
+#line 1712 "repl_gram.c" /* yacc.c:1646  */
+    break;
+
+  case 57:
+#line 404 "repl_gram.y" /* yacc.c:1646  */
+    { (yyval.node) = (Node *) make_sqlcmd(); }
+#line 1718 "repl_gram.c" /* yacc.c:1646  */
     break;
 
 
-#line 1595 "repl_gram.c" /* yacc.c:1646  */
+#line 1722 "repl_gram.c" /* yacc.c:1646  */
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -1819,7 +1946,23 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 326 "repl_gram.y" /* yacc.c:1906  */
+#line 406 "repl_gram.y" /* yacc.c:1906  */
 
+
+static SQLCmd *
+make_sqlcmd(void)
+{
+	SQLCmd *cmd = makeNode(SQLCmd);
+	int tok;
+
+	/* Just move lexer to the end of command. */
+	for (;;)
+	{
+		tok = yylex();
+		if (tok == ';' || tok == 0)
+			break;
+	}
+	return cmd;
+}
 
 #include "repl_scanner.c"

@@ -1,934 +1,141 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->ALTER EXTENSION</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="ALTER EVENT TRIGGER"
-HREF="sql-altereventtrigger.html"><LINK
-REL="NEXT"
-TITLE="ALTER FOREIGN DATA WRAPPER"
-HREF="sql-alterforeigndatawrapper.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="ALTER EVENT TRIGGER"
-HREF="sql-altereventtrigger.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="ALTER FOREIGN DATA WRAPPER"
-HREF="sql-alterforeigndatawrapper.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-ALTEREXTENSION"
-></A
->ALTER EXTENSION</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN73207"
-></A
-><H2
->Name</H2
->ALTER EXTENSION&nbsp;--&nbsp;   change the definition of an extension
-  </DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN73210"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->ALTER EXTENSION <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> UPDATE [ TO <TT
-CLASS="REPLACEABLE"
-><I
->new_version</I
-></TT
-> ]
-ALTER EXTENSION <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> SET SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->new_schema</I
-></TT
->
-ALTER EXTENSION <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> ADD <TT
-CLASS="REPLACEABLE"
-><I
->member_object</I
-></TT
->
-ALTER EXTENSION <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> DROP <TT
-CLASS="REPLACEABLE"
-><I
->member_object</I
-></TT
->
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ALTER EXTENSION</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-altereventtrigger.html" title="ALTER EVENT TRIGGER" /><link rel="next" href="sql-alterforeigndatawrapper.html" title="ALTER FOREIGN DATA WRAPPER" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">ALTER EXTENSION</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-altereventtrigger.html" title="ALTER EVENT TRIGGER">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-alterforeigndatawrapper.html" title="ALTER FOREIGN DATA WRAPPER">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-ALTEREXTENSION"><div class="titlepage"></div><a id="id-1.9.3.11.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">ALTER EXTENSION</span></h2><p>ALTER EXTENSION — 
+   change the definition of an extension
+  </p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+ALTER EXTENSION <em class="replaceable"><code>name</code></em> UPDATE [ TO <em class="replaceable"><code>new_version</code></em> ]
+ALTER EXTENSION <em class="replaceable"><code>name</code></em> SET SCHEMA <em class="replaceable"><code>new_schema</code></em>
+ALTER EXTENSION <em class="replaceable"><code>name</code></em> ADD <em class="replaceable"><code>member_object</code></em>
+ALTER EXTENSION <em class="replaceable"><code>name</code></em> DROP <em class="replaceable"><code>member_object</code></em>
 
-<SPAN
-CLASS="phrase"
-><SPAN
-CLASS="PHRASE"
->where <TT
-CLASS="REPLACEABLE"
-><I
->member_object</I
-></TT
-> is:</SPAN
-></SPAN
->
+<span class="phrase">where <em class="replaceable"><code>member_object</code></em> is:</span>
 
-  ACCESS METHOD <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  AGGREGATE <TT
-CLASS="REPLACEABLE"
-><I
->aggregate_name</I
-></TT
-> ( <TT
-CLASS="REPLACEABLE"
-><I
->aggregate_signature</I
-></TT
-> ) |
-  CAST (<TT
-CLASS="REPLACEABLE"
-><I
->source_type</I
-></TT
-> AS <TT
-CLASS="REPLACEABLE"
-><I
->target_type</I
-></TT
->) |
-  COLLATION <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  CONVERSION <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  DOMAIN <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  EVENT TRIGGER <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  FOREIGN DATA WRAPPER <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  FOREIGN TABLE <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  FUNCTION <TT
-CLASS="REPLACEABLE"
-><I
->function_name</I
-></TT
-> ( [ [ <TT
-CLASS="REPLACEABLE"
-><I
->argmode</I
-></TT
-> ] [ <TT
-CLASS="REPLACEABLE"
-><I
->argname</I
-></TT
-> ] <TT
-CLASS="REPLACEABLE"
-><I
->argtype</I
-></TT
-> [, ...] ] ) |
-  MATERIALIZED VIEW <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  OPERATOR <TT
-CLASS="REPLACEABLE"
-><I
->operator_name</I
-></TT
-> (<TT
-CLASS="REPLACEABLE"
-><I
->left_type</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->right_type</I
-></TT
->) |
-  OPERATOR CLASS <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> USING <TT
-CLASS="REPLACEABLE"
-><I
->index_method</I
-></TT
-> |
-  OPERATOR FAMILY <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> USING <TT
-CLASS="REPLACEABLE"
-><I
->index_method</I
-></TT
-> |
-  [ PROCEDURAL ] LANGUAGE <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  SEQUENCE <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  SERVER <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  TABLE <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  TEXT SEARCH CONFIGURATION <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  TEXT SEARCH DICTIONARY <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  TEXT SEARCH PARSER <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  TEXT SEARCH TEMPLATE <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  TRANSFORM FOR <TT
-CLASS="REPLACEABLE"
-><I
->type_name</I
-></TT
-> LANGUAGE <TT
-CLASS="REPLACEABLE"
-><I
->lang_name</I
-></TT
-> |
-  TYPE <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-> |
-  VIEW <TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
->
+  ACCESS METHOD <em class="replaceable"><code>object_name</code></em> |
+  AGGREGATE <em class="replaceable"><code>aggregate_name</code></em> ( <em class="replaceable"><code>aggregate_signature</code></em> ) |
+  CAST (<em class="replaceable"><code>source_type</code></em> AS <em class="replaceable"><code>target_type</code></em>) |
+  COLLATION <em class="replaceable"><code>object_name</code></em> |
+  CONVERSION <em class="replaceable"><code>object_name</code></em> |
+  DOMAIN <em class="replaceable"><code>object_name</code></em> |
+  EVENT TRIGGER <em class="replaceable"><code>object_name</code></em> |
+  FOREIGN DATA WRAPPER <em class="replaceable"><code>object_name</code></em> |
+  FOREIGN TABLE <em class="replaceable"><code>object_name</code></em> |
+  FUNCTION <em class="replaceable"><code>function_name</code></em> [ ( [ [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>argtype</code></em> [, ...] ] ) ] |
+  MATERIALIZED VIEW <em class="replaceable"><code>object_name</code></em> |
+  OPERATOR <em class="replaceable"><code>operator_name</code></em> (<em class="replaceable"><code>left_type</code></em>, <em class="replaceable"><code>right_type</code></em>) |
+  OPERATOR CLASS <em class="replaceable"><code>object_name</code></em> USING <em class="replaceable"><code>index_method</code></em> |
+  OPERATOR FAMILY <em class="replaceable"><code>object_name</code></em> USING <em class="replaceable"><code>index_method</code></em> |
+  [ PROCEDURAL ] LANGUAGE <em class="replaceable"><code>object_name</code></em> |
+  PROCEDURE <em class="replaceable"><code>procedure_name</code></em> [ ( [ [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>argtype</code></em> [, ...] ] ) ] |
+  ROUTINE <em class="replaceable"><code>routine_name</code></em> [ ( [ [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>argtype</code></em> [, ...] ] ) ] |
+  SCHEMA <em class="replaceable"><code>object_name</code></em> |
+  SEQUENCE <em class="replaceable"><code>object_name</code></em> |
+  SERVER <em class="replaceable"><code>object_name</code></em> |
+  TABLE <em class="replaceable"><code>object_name</code></em> |
+  TEXT SEARCH CONFIGURATION <em class="replaceable"><code>object_name</code></em> |
+  TEXT SEARCH DICTIONARY <em class="replaceable"><code>object_name</code></em> |
+  TEXT SEARCH PARSER <em class="replaceable"><code>object_name</code></em> |
+  TEXT SEARCH TEMPLATE <em class="replaceable"><code>object_name</code></em> |
+  TRANSFORM FOR <em class="replaceable"><code>type_name</code></em> LANGUAGE <em class="replaceable"><code>lang_name</code></em> |
+  TYPE <em class="replaceable"><code>object_name</code></em> |
+  VIEW <em class="replaceable"><code>object_name</code></em>
 
-<SPAN
-CLASS="phrase"
-><SPAN
-CLASS="PHRASE"
->and <TT
-CLASS="REPLACEABLE"
-><I
->aggregate_signature</I
-></TT
-> is:</SPAN
-></SPAN
->
+<span class="phrase">and <em class="replaceable"><code>aggregate_signature</code></em> is:</span>
 
 * |
-[ <TT
-CLASS="REPLACEABLE"
-><I
->argmode</I
-></TT
-> ] [ <TT
-CLASS="REPLACEABLE"
-><I
->argname</I
-></TT
-> ] <TT
-CLASS="REPLACEABLE"
-><I
->argtype</I
-></TT
-> [ , ... ] |
-[ [ <TT
-CLASS="REPLACEABLE"
-><I
->argmode</I
-></TT
-> ] [ <TT
-CLASS="REPLACEABLE"
-><I
->argname</I
-></TT
-> ] <TT
-CLASS="REPLACEABLE"
-><I
->argtype</I
-></TT
-> [ , ... ] ] ORDER BY [ <TT
-CLASS="REPLACEABLE"
-><I
->argmode</I
-></TT
-> ] [ <TT
-CLASS="REPLACEABLE"
-><I
->argname</I
-></TT
-> ] <TT
-CLASS="REPLACEABLE"
-><I
->argtype</I
-></TT
-> [ , ... ]</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN73269"
-></A
-><H2
->Description</H2
-><P
->   <TT
-CLASS="COMMAND"
->ALTER EXTENSION</TT
-> changes the definition of an installed
+[ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>argtype</code></em> [ , ... ] |
+[ [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>argtype</code></em> [ , ... ] ] ORDER BY [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>argname</code></em> ] <em class="replaceable"><code>argtype</code></em> [ , ... ]
+</pre></div><div class="refsect1" id="id-1.9.3.11.5"><h2>Description</h2><p>
+   <code class="command">ALTER EXTENSION</code> changes the definition of an installed
    extension.  There are several subforms:
 
-   <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="LITERAL"
->UPDATE</TT
-></DT
-><DD
-><P
->      This form updates the extension to a newer version.  The extension
+   </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">UPDATE</code></span></dt><dd><p>
+      This form updates the extension to a newer version.  The extension
       must supply a suitable update script (or series of scripts) that can
       modify the currently-installed version into the requested version.
-     </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->SET SCHEMA</TT
-></DT
-><DD
-><P
->      This form moves the extension's objects into another schema. The
-      extension has to be <I
-CLASS="FIRSTTERM"
->relocatable</I
-> for this command to
+     </p></dd><dt><span class="term"><code class="literal">SET SCHEMA</code></span></dt><dd><p>
+      This form moves the extension's objects into another schema. The
+      extension has to be <em class="firstterm">relocatable</em> for this command to
       succeed.
-     </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->ADD <TT
-CLASS="REPLACEABLE"
-><I
->member_object</I
-></TT
-></TT
-></DT
-><DD
-><P
->      This form adds an existing object to the extension.  This is mainly
+     </p></dd><dt><span class="term"><code class="literal">ADD <em class="replaceable"><code>member_object</code></em></code></span></dt><dd><p>
+      This form adds an existing object to the extension.  This is mainly
       useful in extension update scripts.  The object will subsequently
       be treated as a member of the extension; notably, it can only be
       dropped by dropping the extension.
-     </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->DROP <TT
-CLASS="REPLACEABLE"
-><I
->member_object</I
-></TT
-></TT
-></DT
-><DD
-><P
->      This form removes a member object from the extension.  This is mainly
+     </p></dd><dt><span class="term"><code class="literal">DROP <em class="replaceable"><code>member_object</code></em></code></span></dt><dd><p>
+      This form removes a member object from the extension.  This is mainly
       useful in extension update scripts.  The object is not dropped, only
       disassociated from the extension.
-     </P
-></DD
-></DL
-></DIV
-><P>
+     </p></dd></dl></div><p>
 
-   See <A
-HREF="extend-extensions.html"
->Section 36.15</A
-> for more information about these
+   See <a class="xref" href="extend-extensions.html" title="38.16. Packaging Related Objects into an Extension">Section 38.16</a> for more information about these
    operations.
-  </P
-><P
->   You must own the extension to use <TT
-CLASS="COMMAND"
->ALTER EXTENSION</TT
->.
-   The <TT
-CLASS="LITERAL"
->ADD</TT
->/<TT
-CLASS="LITERAL"
->DROP</TT
-> forms require ownership of the
+  </p><p>
+   You must own the extension to use <code class="command">ALTER EXTENSION</code>.
+   The <code class="literal">ADD</code>/<code class="literal">DROP</code> forms require ownership of the
    added/dropped object as well.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN73302"
-></A
-><H2
->Parameters</H2
-><P
->   <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-></DT
-><DD
-><P
->       The name of an installed extension.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->new_version</I
-></TT
-></DT
-><DD
-><P
->       The desired new version of the extension.  This can be written as
+  </p></div><div class="refsect1" id="id-1.9.3.11.6"><h2>Parameters</h2><p>
+   </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
+       The name of an installed extension.
+      </p></dd><dt><span class="term"><em class="replaceable"><code>new_version</code></em></span></dt><dd><p>
+       The desired new version of the extension.  This can be written as
        either an identifier or a string literal.  If not specified,
-       <TT
-CLASS="COMMAND"
->ALTER EXTENSION UPDATE</TT
-> attempts to update to whatever is
+       <code class="command">ALTER EXTENSION UPDATE</code> attempts to update to whatever is
        shown as the default version in the extension's control file.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->new_schema</I
-></TT
-></DT
-><DD
-><P
->       The new schema for the extension.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->object_name</I
-></TT
-><BR><TT
-CLASS="REPLACEABLE"
-><I
->aggregate_name</I
-></TT
-><BR><TT
-CLASS="REPLACEABLE"
-><I
->function_name</I
-></TT
-><BR><TT
-CLASS="REPLACEABLE"
-><I
->operator_name</I
-></TT
-></DT
-><DD
-><P
->       The name of an object to be added to or removed from the extension.
+      </p></dd><dt><span class="term"><em class="replaceable"><code>new_schema</code></em></span></dt><dd><p>
+       The new schema for the extension.
+      </p></dd><dt><span class="term"><em class="replaceable"><code>object_name</code></em><br /></span><span class="term"><em class="replaceable"><code>aggregate_name</code></em><br /></span><span class="term"><em class="replaceable"><code>function_name</code></em><br /></span><span class="term"><em class="replaceable"><code>operator_name</code></em><br /></span><span class="term"><em class="replaceable"><code>procedure_name</code></em><br /></span><span class="term"><em class="replaceable"><code>routine_name</code></em></span></dt><dd><p>
+       The name of an object to be added to or removed from the extension.
        Names of tables,
        aggregates, domains, foreign tables, functions, operators,
-       operator classes, operator families, sequences, text search objects,
+       operator classes, operator families, procedures, routines, sequences, text search objects,
        types, and views can be schema-qualified.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->source_type</I
-></TT
-></DT
-><DD
-><P
->       The name of the source data type of the cast.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->target_type</I
-></TT
-></DT
-><DD
-><P
->       The name of the target data type of the cast.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->argmode</I
-></TT
-></DT
-><DD
-><P
->       The mode of a function or aggregate
-       argument: <TT
-CLASS="LITERAL"
->IN</TT
->, <TT
-CLASS="LITERAL"
->OUT</TT
->,
-       <TT
-CLASS="LITERAL"
->INOUT</TT
->, or <TT
-CLASS="LITERAL"
->VARIADIC</TT
->.
-       If omitted, the default is <TT
-CLASS="LITERAL"
->IN</TT
->.
-       Note that <TT
-CLASS="COMMAND"
->ALTER EXTENSION</TT
-> does not actually pay
-       any attention to <TT
-CLASS="LITERAL"
->OUT</TT
-> arguments, since only the input
+      </p></dd><dt><span class="term"><em class="replaceable"><code>source_type</code></em></span></dt><dd><p>
+       The name of the source data type of the cast.
+      </p></dd><dt><span class="term"><em class="replaceable"><code>target_type</code></em></span></dt><dd><p>
+       The name of the target data type of the cast.
+      </p></dd><dt><span class="term"><em class="replaceable"><code>argmode</code></em></span></dt><dd><p>
+       The mode of a function, procedure, or aggregate
+       argument: <code class="literal">IN</code>, <code class="literal">OUT</code>,
+       <code class="literal">INOUT</code>, or <code class="literal">VARIADIC</code>.
+       If omitted, the default is <code class="literal">IN</code>.
+       Note that <code class="command">ALTER EXTENSION</code> does not actually pay
+       any attention to <code class="literal">OUT</code> arguments, since only the input
        arguments are needed to determine the function's identity.
-       So it is sufficient to list the <TT
-CLASS="LITERAL"
->IN</TT
->, <TT
-CLASS="LITERAL"
->INOUT</TT
->,
-       and <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> arguments.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->argname</I
-></TT
-></DT
-><DD
-><P
->       The name of a function or aggregate argument.
-       Note that <TT
-CLASS="COMMAND"
->ALTER EXTENSION</TT
-> does not actually pay
+       So it is sufficient to list the <code class="literal">IN</code>, <code class="literal">INOUT</code>,
+       and <code class="literal">VARIADIC</code> arguments.
+      </p></dd><dt><span class="term"><em class="replaceable"><code>argname</code></em></span></dt><dd><p>
+       The name of a function, procedure, or aggregate argument.
+       Note that <code class="command">ALTER EXTENSION</code> does not actually pay
        any attention to argument names, since only the argument data
        types are needed to determine the function's identity.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->argtype</I
-></TT
-></DT
-><DD
-><P
->       The data type of a function or aggregate argument.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->left_type</I
-></TT
-><BR><TT
-CLASS="REPLACEABLE"
-><I
->right_type</I
-></TT
-></DT
-><DD
-><P
->       The data type(s) of the operator's arguments (optionally
-       schema-qualified).  Write <TT
-CLASS="LITERAL"
->NONE</TT
-> for the missing argument
+      </p></dd><dt><span class="term"><em class="replaceable"><code>argtype</code></em></span></dt><dd><p>
+       The data type of a function, procedure, or aggregate argument.
+      </p></dd><dt><span class="term"><em class="replaceable"><code>left_type</code></em><br /></span><span class="term"><em class="replaceable"><code>right_type</code></em></span></dt><dd><p>
+       The data type(s) of the operator's arguments (optionally
+       schema-qualified).  Write <code class="literal">NONE</code> for the missing argument
        of a prefix or postfix operator.
-      </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->PROCEDURAL</TT
-></DT
-><DD
-><P
->       This is a noise word.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->type_name</I
-></TT
-></DT
-><DD
-><P
->       The name of the data type of the transform.
-      </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->lang_name</I
-></TT
-></DT
-><DD
-><P
->       The name of the language of the transform.
-      </P
-></DD
-></DL
-></DIV
-><P>
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN73392"
-></A
-><H2
->Examples</H2
-><P
->   To update the <TT
-CLASS="LITERAL"
->hstore</TT
-> extension to version 2.0:
-</P><PRE
-CLASS="PROGRAMLISTING"
->ALTER EXTENSION hstore UPDATE TO '2.0';</PRE
-><P>
-  </P
-><P
->   To change the schema of the <TT
-CLASS="LITERAL"
->hstore</TT
-> extension
-   to <TT
-CLASS="LITERAL"
->utils</TT
->:
-</P><PRE
-CLASS="PROGRAMLISTING"
->ALTER EXTENSION hstore SET SCHEMA utils;</PRE
-><P>
-  </P
-><P
->   To add an existing function to the <TT
-CLASS="LITERAL"
->hstore</TT
-> extension:
-</P><PRE
-CLASS="PROGRAMLISTING"
->ALTER EXTENSION hstore ADD FUNCTION populate_record(anyelement, hstore);</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN73404"
-></A
-><H2
->Compatibility</H2
-><P
->   <TT
-CLASS="COMMAND"
->ALTER EXTENSION</TT
-> is a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
+      </p></dd><dt><span class="term"><code class="literal">PROCEDURAL</code></span></dt><dd><p>
+       This is a noise word.
+      </p></dd><dt><span class="term"><em class="replaceable"><code>type_name</code></em></span></dt><dd><p>
+       The name of the data type of the transform.
+      </p></dd><dt><span class="term"><em class="replaceable"><code>lang_name</code></em></span></dt><dd><p>
+       The name of the language of the transform.
+      </p></dd></dl></div><p>
+  </p></div><div class="refsect1" id="id-1.9.3.11.7"><h2>Examples</h2><p>
+   To update the <code class="literal">hstore</code> extension to version 2.0:
+</p><pre class="programlisting">
+ALTER EXTENSION hstore UPDATE TO '2.0';
+</pre><p>
+  </p><p>
+   To change the schema of the <code class="literal">hstore</code> extension
+   to <code class="literal">utils</code>:
+</p><pre class="programlisting">
+ALTER EXTENSION hstore SET SCHEMA utils;
+</pre><p>
+  </p><p>
+   To add an existing function to the <code class="literal">hstore</code> extension:
+</p><pre class="programlisting">
+ALTER EXTENSION hstore ADD FUNCTION populate_record(anyelement, hstore);
+</pre></div><div class="refsect1" id="id-1.9.3.11.8"><h2>Compatibility</h2><p>
+   <code class="command">ALTER EXTENSION</code> is a <span class="productname">PostgreSQL</span>
    extension.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-ALTEREXTENSION-SEE-ALSO"
-></A
-><H2
->See Also</H2
-><A
-HREF="sql-createextension.html"
->CREATE EXTENSION</A
->, <A
-HREF="sql-dropextension.html"
->DROP EXTENSION</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-altereventtrigger.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-alterforeigndatawrapper.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->ALTER EVENT TRIGGER</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->ALTER FOREIGN DATA WRAPPER</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="refsect1" id="SQL-ALTEREXTENSION-SEE-ALSO"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-createextension.html" title="CREATE EXTENSION"><span class="refentrytitle">CREATE EXTENSION</span></a>, <a class="xref" href="sql-dropextension.html" title="DROP EXTENSION"><span class="refentrytitle">DROP EXTENSION</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-altereventtrigger.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-alterforeigndatawrapper.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ALTER EVENT TRIGGER </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> ALTER FOREIGN DATA WRAPPER</td></tr></table></div></body></html>

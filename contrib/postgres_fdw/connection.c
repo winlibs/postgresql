@@ -3,7 +3,7 @@
  * connection.c
  *		  Connection management functions for postgres_fdw
  *
- * Portions Copyright (c) 2012-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2012-2018, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *		  contrib/postgres_fdw/connection.c
@@ -19,6 +19,7 @@
 #include "access/xact.h"
 #include "mb/pg_wchar.h"
 #include "miscadmin.h"
+#include "pgstat.h"
 #include "storage/latch.h"
 #include "utils/hsearch.h"
 #include "utils/inval.h"
@@ -74,7 +75,7 @@ static bool xact_got_connection = false;
 /* prototypes of private functions */
 static PGconn *connect_pg_server(ForeignServer *server, UserMapping *user);
 static void disconnect_pg_server(ConnCacheEntry *entry);
-static void check_conn_params(const char **keywords, const char **values);
+static void check_conn_params(const char **keywords, const char **values, UserMapping *user);
 static void configure_remote_session(PGconn *conn);
 static void do_sql_command(PGconn *conn, const char *sql);
 static void begin_remote_xact(ConnCacheEntry *entry);
@@ -260,37 +261,27 @@ connect_pg_server(ForeignServer *server, UserMapping *user)
 		keywords[n] = values[n] = NULL;
 
 		/* verify connection parameters and make connection */
-		check_conn_params(keywords, values);
+		check_conn_params(keywords, values, user);
 
 		conn = PQconnectdbParams(keywords, values, false);
 		if (!conn || PQstatus(conn) != CONNECTION_OK)
-		{
-			char	   *connmessage;
-			int			msglen;
-
-			/* libpq typically appends a newline, strip that */
-			connmessage = pstrdup(PQerrorMessage(conn));
-			msglen = strlen(connmessage);
-			if (msglen > 0 && connmessage[msglen - 1] == '\n')
-				connmessage[msglen - 1] = '\0';
 			ereport(ERROR,
-			   (errcode(ERRCODE_SQLCLIENT_UNABLE_TO_ESTABLISH_SQLCONNECTION),
-				errmsg("could not connect to server \"%s\"",
-					   server->servername),
-				errdetail_internal("%s", connmessage)));
-		}
+					(errcode(ERRCODE_SQLCLIENT_UNABLE_TO_ESTABLISH_SQLCONNECTION),
+					 errmsg("could not connect to server \"%s\"",
+							server->servername),
+					 errdetail_internal("%s", pchomp(PQerrorMessage(conn)))));
 
 		/*
 		 * Check that non-superuser has used password to establish connection;
 		 * otherwise, he's piggybacking on the postgres server's user
 		 * identity. See also dblink_security_check() in contrib/dblink.
 		 */
-		if (!superuser() && !PQconnectionUsedPassword(conn))
+		if (!superuser_arg(user->userid) && !PQconnectionUsedPassword(conn))
 			ereport(ERROR,
-				  (errcode(ERRCODE_S_R_E_PROHIBITED_SQL_STATEMENT_ATTEMPTED),
-				   errmsg("password is required"),
-				   errdetail("Non-superuser cannot connect if the server does not request a password."),
-				   errhint("Target server's authentication method must be changed.")));
+					(errcode(ERRCODE_S_R_E_PROHIBITED_SQL_STATEMENT_ATTEMPTED),
+					 errmsg("password is required"),
+					 errdetail("Non-superuser cannot connect if the server does not request a password."),
+					 errhint("Target server's authentication method must be changed.")));
 
 		/* Prepare new session for use */
 		configure_remote_session(conn);
@@ -331,12 +322,12 @@ disconnect_pg_server(ConnCacheEntry *entry)
  * contrib/dblink.)
  */
 static void
-check_conn_params(const char **keywords, const char **values)
+check_conn_params(const char **keywords, const char **values, UserMapping *user)
 {
 	int			i;
 
 	/* no check required if superuser */
-	if (superuser())
+	if (superuser_arg(user->userid))
 		return;
 
 	/* ok if params contain a non-empty password */
@@ -557,7 +548,7 @@ pgfdw_get_result(PGconn *conn, const char *query)
 				wc = WaitLatchOrSocket(MyLatch,
 									   WL_LATCH_SET | WL_SOCKET_READABLE,
 									   PQsocket(conn),
-									   -1L);
+									   -1L, PG_WAIT_EXTENSION);
 				ResetLatch(MyLatch);
 
 				CHECK_FOR_INTERRUPTS();
@@ -630,16 +621,16 @@ pgfdw_report_error(int elevel, PGresult *res, PGconn *conn,
 		 * return NULL, not a PGresult at all.
 		 */
 		if (message_primary == NULL)
-			message_primary = PQerrorMessage(conn);
+			message_primary = pchomp(PQerrorMessage(conn));
 
 		ereport(elevel,
 				(errcode(sqlstate),
 				 message_primary ? errmsg_internal("%s", message_primary) :
 				 errmsg("could not obtain message string for remote error"),
-			   message_detail ? errdetail_internal("%s", message_detail) : 0,
+				 message_detail ? errdetail_internal("%s", message_detail) : 0,
 				 message_hint ? errhint("%s", message_hint) : 0,
 				 message_context ? errcontext("%s", message_context) : 0,
-				 sql ? errcontext("Remote SQL command: %s", sql) : 0));
+				 sql ? errcontext("remote SQL command: %s", sql) : 0));
 	}
 	PG_CATCH();
 	{
@@ -1161,9 +1152,9 @@ pgfdw_get_cleanup_result(PGconn *conn, TimestampTz endtime, PGresult **result)
 
 				/* Sleep until there's something to do */
 				wc = WaitLatchOrSocket(MyLatch,
-							  WL_LATCH_SET | WL_SOCKET_READABLE | WL_TIMEOUT,
+									   WL_LATCH_SET | WL_SOCKET_READABLE | WL_TIMEOUT,
 									   PQsocket(conn),
-									   cur_timeout);
+									   cur_timeout, PG_WAIT_EXTENSION);
 				ResetLatch(MyLatch);
 
 				CHECK_FOR_INTERRUPTS();

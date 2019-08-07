@@ -4,7 +4,7 @@
  *	  postgres transaction system definitions
  *
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/xact.h
@@ -21,6 +21,13 @@
 #include "storage/sinval.h"
 #include "utils/datetime.h"
 
+/*
+ * Maximum size of Global Transaction ID (including '\0').
+ *
+ * Note that the max value of GIDSIZE must fit in the uint16 gidlen,
+ * specified in TwoPhaseFileHeader.
+ */
+#define GIDSIZE 200
 
 /*
  * Xact isolation levels
@@ -57,13 +64,12 @@ extern bool XactDeferrable;
 typedef enum
 {
 	SYNCHRONOUS_COMMIT_OFF,		/* asynchronous commit */
-	SYNCHRONOUS_COMMIT_LOCAL_FLUSH,		/* wait for local flush only */
+	SYNCHRONOUS_COMMIT_LOCAL_FLUSH, /* wait for local flush only */
 	SYNCHRONOUS_COMMIT_REMOTE_WRITE,	/* wait for local flush and remote
 										 * write */
 	SYNCHRONOUS_COMMIT_REMOTE_FLUSH,	/* wait for local and remote flush */
-	SYNCHRONOUS_COMMIT_REMOTE_APPLY		/* wait for local flush and remote
-										 * apply */
-}	SyncCommitLevel;
+	SYNCHRONOUS_COMMIT_REMOTE_APPLY /* wait for local flush and remote apply */
+}			SyncCommitLevel;
 
 /* Define the default setting for synchronous_commit */
 #define SYNCHRONOUS_COMMIT_ON	SYNCHRONOUS_COMMIT_REMOTE_FLUSH
@@ -71,8 +77,32 @@ typedef enum
 /* Synchronous commit level */
 extern int	synchronous_commit;
 
-/* Kluge for 2PC support */
-extern bool MyXactAccessedTempRel;
+/*
+ * Miscellaneous flag bits to record events which occur on the top level
+ * transaction. These flags are only persisted in MyXactFlags and are intended
+ * so we remember to do certain things later in the transaction. This is
+ * globally accessible, so can be set from anywhere in the code which requires
+ * recording flags.
+ */
+extern int	MyXactFlags;
+
+/*
+ * XACT_FLAGS_ACCESSEDTEMPREL - set when a temporary relation is accessed. We
+ * don't allow PREPARE TRANSACTION in that case.
+ */
+#define XACT_FLAGS_ACCESSEDTEMPREL				(1U << 0)
+
+/*
+ * XACT_FLAGS_ACQUIREDACCESSEXCLUSIVELOCK - records whether the top level xact
+ * logged any Access Exclusive Locks.
+ */
+#define XACT_FLAGS_ACQUIREDACCESSEXCLUSIVELOCK	(1U << 1)
+
+/*
+ * XACT_FLAGS_ACCESSEDTEMPNAMESPACE - set when a temporary namespace is
+ * accessed.  We don't allow PREPARE TRANSACTION in that case.
+ */
+#define XACT_FLAGS_ACCESSEDTEMPNAMESPACE		(1U << 2)
 
 /*
  *	start- and end-of-transaction callbacks for dynamically loaded modules
@@ -100,7 +130,7 @@ typedef enum
 } SubXactEvent;
 
 typedef void (*SubXactCallback) (SubXactEvent event, SubTransactionId mySubid,
-									SubTransactionId parentSubid, void *arg);
+								 SubTransactionId parentSubid, void *arg);
 
 
 /* ----------------
@@ -137,6 +167,8 @@ typedef void (*SubXactCallback) (SubXactEvent event, SubTransactionId mySubid,
 #define XACT_XINFO_HAS_INVALS			(1U << 3)
 #define XACT_XINFO_HAS_TWOPHASE			(1U << 4)
 #define XACT_XINFO_HAS_ORIGIN			(1U << 5)
+#define XACT_XINFO_HAS_AE_LOCKS			(1U << 6)
+#define XACT_XINFO_HAS_GID				(1U << 7)
 
 /*
  * Also stored in xinfo, these indicating a variety of additional actions that
@@ -242,6 +274,7 @@ typedef struct xl_xact_commit
 	/* xl_xact_relfilenodes follows if XINFO_HAS_RELFILENODES */
 	/* xl_xact_invals follows if XINFO_HAS_INVALS */
 	/* xl_xact_twophase follows if XINFO_HAS_TWOPHASE */
+	/* twophase_gid follows if XINFO_HAS_GID. As a null-terminated string. */
 	/* xl_xact_origin follows if XINFO_HAS_ORIGIN, stored unaligned! */
 } xl_xact_commit;
 #define MinSizeOfXactCommit (offsetof(xl_xact_commit, xact_time) + sizeof(TimestampTz))
@@ -251,11 +284,13 @@ typedef struct xl_xact_abort
 	TimestampTz xact_time;		/* time of abort */
 
 	/* xl_xact_xinfo follows if XLOG_XACT_HAS_INFO */
-	/* No db_info required */
+	/* xl_xact_dbinfo follows if XINFO_HAS_DBINFO */
 	/* xl_xact_subxacts follows if HAS_SUBXACT */
 	/* xl_xact_relfilenodes follows if HAS_RELFILENODES */
 	/* No invalidation messages needed. */
 	/* xl_xact_twophase follows if XINFO_HAS_TWOPHASE */
+	/* twophase_gid follows if XINFO_HAS_GID. As a null-terminated string. */
+	/* xl_xact_origin follows if XINFO_HAS_ORIGIN, stored unaligned! */
 } xl_xact_abort;
 #define MinSizeOfXactAbort sizeof(xl_xact_abort)
 
@@ -267,7 +302,6 @@ typedef struct xl_xact_abort
 typedef struct xl_xact_parsed_commit
 {
 	TimestampTz xact_time;
-
 	uint32		xinfo;
 
 	Oid			dbId;			/* MyDatabaseId */
@@ -283,15 +317,23 @@ typedef struct xl_xact_parsed_commit
 	SharedInvalidationMessage *msgs;
 
 	TransactionId twophase_xid; /* only for 2PC */
+	char		twophase_gid[GIDSIZE];	/* only for 2PC */
+	int			nabortrels;		/* only for 2PC */
+	RelFileNode *abortnodes;	/* only for 2PC */
 
 	XLogRecPtr	origin_lsn;
 	TimestampTz origin_timestamp;
 } xl_xact_parsed_commit;
 
+typedef xl_xact_parsed_commit xl_xact_parsed_prepare;
+
 typedef struct xl_xact_parsed_abort
 {
 	TimestampTz xact_time;
 	uint32		xinfo;
+
+	Oid			dbId;			/* MyDatabaseId */
+	Oid			tsId;			/* MyDatabaseTableSpace */
 
 	int			nsubxacts;
 	TransactionId *subxacts;
@@ -300,6 +342,10 @@ typedef struct xl_xact_parsed_abort
 	RelFileNode *xnodes;
 
 	TransactionId twophase_xid; /* only for 2PC */
+	char		twophase_gid[GIDSIZE];	/* only for 2PC */
+
+	XLogRecPtr	origin_lsn;
+	TimestampTz origin_timestamp;
 } xl_xact_parsed_abort;
 
 
@@ -332,12 +378,14 @@ extern void CommitTransactionCommand(void);
 extern void AbortCurrentTransaction(void);
 extern void BeginTransactionBlock(void);
 extern bool EndTransactionBlock(void);
-extern bool PrepareTransactionBlock(char *gid);
+extern bool PrepareTransactionBlock(const char *gid);
 extern void UserAbortTransactionBlock(void);
-extern void ReleaseSavepoint(List *options);
-extern void DefineSavepoint(char *name);
-extern void RollbackToSavepoint(List *options);
-extern void BeginInternalSubTransaction(char *name);
+extern void BeginImplicitTransactionBlock(void);
+extern void EndImplicitTransactionBlock(void);
+extern void ReleaseSavepoint(const char *name);
+extern void DefineSavepoint(const char *name);
+extern void RollbackToSavepoint(const char *name);
+extern void BeginInternalSubTransaction(const char *name);
 extern void ReleaseCurrentSubTransaction(void);
 extern void RollbackAndReleaseCurrentSubTransaction(void);
 extern bool IsSubTransaction(void);
@@ -349,10 +397,10 @@ extern bool IsTransactionBlock(void);
 extern bool IsTransactionOrTransactionBlock(void);
 extern char TransactionBlockStatusCode(void);
 extern void AbortOutOfAnyTransaction(void);
-extern void PreventTransactionChain(bool isTopLevel, const char *stmtType);
-extern void RequireTransactionChain(bool isTopLevel, const char *stmtType);
-extern void WarnNoTransactionChain(bool isTopLevel, const char *stmtType);
-extern bool IsInTransactionChain(bool isTopLevel);
+extern void PreventInTransactionBlock(bool isTopLevel, const char *stmtType);
+extern void RequireTransactionBlock(bool isTopLevel, const char *stmtType);
+extern void WarnNoTransactionBlock(bool isTopLevel, const char *stmtType);
+extern bool IsInTransactionBlock(bool isTopLevel);
 extern void RegisterXactCallback(XactCallback callback, void *arg);
 extern void UnregisterXactCallback(XactCallback callback, void *arg);
 extern void RegisterSubXactCallback(SubXactCallback callback, void *arg);
@@ -365,12 +413,15 @@ extern XLogRecPtr XactLogCommitRecord(TimestampTz commit_time,
 					int nrels, RelFileNode *rels,
 					int nmsgs, SharedInvalidationMessage *msgs,
 					bool relcacheInval, bool forceSync,
-					TransactionId twophase_xid);
+					int xactflags,
+					TransactionId twophase_xid,
+					const char *twophase_gid);
 
 extern XLogRecPtr XactLogAbortRecord(TimestampTz abort_time,
 				   int nsubxacts, TransactionId *subxacts,
 				   int nrels, RelFileNode *rels,
-				   TransactionId twophase_xid);
+				   int xactflags, TransactionId twophase_xid,
+				   const char *twophase_gid);
 extern void xact_redo(XLogReaderState *record);
 
 /* xactdesc.c */
@@ -385,4 +436,4 @@ extern void EnterParallelMode(void);
 extern void ExitParallelMode(void);
 extern bool IsInParallelMode(void);
 
-#endif   /* XACT_H */
+#endif							/* XACT_H */

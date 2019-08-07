@@ -92,7 +92,7 @@ int main()
   if( threads == NULL )
     {
       fprintf(stderr, "Cannot alloc memory\n");
-      return( 1 );
+      return 1;
     }
   for( n = 0; n < nthreads; n++ )
     {
@@ -134,7 +134,7 @@ int main()
   else
     printf("ERROR: Failure - expecting %d rows, got %d.\n", nthreads * iterations, l_rows);
 
-  return( 0 );
+  return 0;
 }
 
 void *test_thread(void *arg)
@@ -161,7 +161,7 @@ void *test_thread(void *arg)
 #endif
 
   /* build up connection name, and connect to database */
-#ifndef WIN32_ONLY_COMPILER
+#ifndef _MSC_VER
   snprintf(l_connection, sizeof(l_connection), "thread_%03ld", threadnum);
 #else
   _snprintf(l_connection, sizeof(l_connection), "thread_%03ld", threadnum);
@@ -178,7 +178,7 @@ if (sqlca.sqlcode < 0) sqlprint();}
   if( sqlca.sqlcode != 0 )
     {
       printf("%s: ERROR: cannot connect to database!\n", l_connection);
-      return( NULL );
+      return NULL;
     }
   { ECPGtrans(__LINE__, NULL, "begin");
 #line 127 "thread_implicit.pgc"
@@ -217,6 +217,6 @@ if (sqlca.sqlcode < 0) sqlprint();}
 if (sqlca.sqlcode < 0) sqlprint();}
 #line 139 "thread_implicit.pgc"
 
-  return( NULL );
+  return NULL;
 }
 #endif /* ENABLE_THREAD_SAFETY */

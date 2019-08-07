@@ -32,7 +32,7 @@
  *	  clients.
  *
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -74,8 +74,6 @@
 #include <sys/socket.h>
 #include <fcntl.h>
 #include <sys/param.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 #include <netdb.h>
 #include <limits.h>
 
@@ -99,21 +97,24 @@
 #include "access/xlog.h"
 #include "bootstrap/bootstrap.h"
 #include "catalog/pg_control.h"
+#include "common/file_perm.h"
+#include "common/ip.h"
 #include "lib/ilist.h"
 #include "libpq/auth.h"
-#include "libpq/ip.h"
 #include "libpq/libpq.h"
 #include "libpq/pqformat.h"
 #include "libpq/pqsignal.h"
 #include "miscadmin.h"
 #include "pg_getopt.h"
 #include "pgstat.h"
+#include "port/pg_bswap.h"
 #include "postmaster/autovacuum.h"
 #include "postmaster/bgworker_internals.h"
 #include "postmaster/fork_process.h"
 #include "postmaster/pgarch.h"
 #include "postmaster/postmaster.h"
 #include "postmaster/syslogger.h"
+#include "replication/logicallauncher.h"
 #include "replication/walsender.h"
 #include "storage/fd.h"
 #include "storage/ipc.h"
@@ -125,8 +126,10 @@
 #include "utils/datetime.h"
 #include "utils/dynamic_loader.h"
 #include "utils/memutils.h"
+#include "utils/pidfile.h"
 #include "utils/ps_status.h"
 #include "utils/timeout.h"
+#include "utils/varlena.h"
 
 #ifdef EXEC_BACKEND
 #include "storage/spin.h"
@@ -165,7 +168,7 @@
 typedef struct bkend
 {
 	pid_t		pid;			/* process id of backend */
-	long		cancel_key;		/* cancel key for cancels for this backend */
+	int32		cancel_key;		/* cancel key for cancels for this backend */
 	int			child_slot;		/* PMChildSlot for this backend, if any */
 
 	/*
@@ -200,9 +203,9 @@ char	   *ListenAddresses;
 
 /*
  * ReservedBackends is the number of backends reserved for superuser use.
- * This number is taken out of the pool size given by MaxBackends so
+ * This number is taken out of the pool size given by MaxConnections so
  * number of backend slots available to non-superusers is
- * (MaxBackends - ReservedBackends).  Note what this really means is
+ * (MaxConnections - ReservedBackends).  Note what this really means is
  * "if there are <= ReservedBackends connections available, only superusers
  * can make new connections" --- pre-existing superuser connections don't
  * count against the limit.
@@ -339,13 +342,14 @@ static PMState pmState = PM_INIT;
 /* Start time of SIGKILL timeout during immediate shutdown or child crash */
 /* Zero means timeout is not running */
 static time_t AbortStartTime = 0;
+
 /* Length of said timeout */
 #define SIGKILL_CHILDREN_AFTER_SECS		5
 
-static bool ReachedNormalRunning = false;		/* T if we've reached PM_RUN */
+static bool ReachedNormalRunning = false;	/* T if we've reached PM_RUN */
 
-bool		ClientAuthInProgress = false;		/* T during new-client
-												 * authentication */
+bool		ClientAuthInProgress = false;	/* T during new-client
+											 * authentication */
 
 bool		redirection_done = false;	/* stderr redirected for syslogger? */
 
@@ -362,13 +366,20 @@ static volatile sig_atomic_t WalReceiverRequested = false;
 static volatile bool StartWorkerNeeded = true;
 static volatile bool HaveCrashedWorker = false;
 
+#ifndef HAVE_STRONG_RANDOM
 /*
- * State for assigning random salts and cancel keys.
+ * State for assigning cancel keys.
  * Also, the global MyCancelKey passes the cancel key assigned to a given
  * backend from the postmaster to that backend (via fork).
  */
 static unsigned int random_seed = 0;
 static struct timeval random_start_time;
+#endif
+
+#ifdef USE_SSL
+/* Set when and if SSL has been initialized properly */
+static bool LoadedSSL = false;
+#endif
 
 #ifdef USE_BONJOUR
 static DNSServiceRef bonjour_sdref = NULL;
@@ -380,7 +391,7 @@ static DNSServiceRef bonjour_sdref = NULL;
 static void CloseServerPorts(int status, Datum arg);
 static void unlink_external_pid_file(int status, Datum arg);
 static void getInstallationPaths(const char *argv0);
-static void checkDataDir(void);
+static void checkControlFile(void);
 static Port *ConnCreate(int serverFd);
 static void ConnFree(Port *port);
 static void reset_shared(int port);
@@ -408,8 +419,7 @@ static void processCancelRequest(Port *port, void *pkt);
 static int	initMasks(fd_set *rmask);
 static void report_fork_failure_to_client(Port *port, int errnum);
 static CAC_state canAcceptConnections(void);
-static long PostmasterRandom(void);
-static void RandomSalt(char *md5Salt);
+static bool RandomCancelKey(int32 *cancel_key);
 static void signal_child(pid_t pid, int signal);
 static bool SignalSomeChildren(int signal, int targets);
 static void TerminateChildren(int signal);
@@ -452,7 +462,7 @@ typedef struct
 	HANDLE		procHandle;
 	DWORD		procId;
 } win32_deadchild_waitinfo;
-#endif   /* WIN32 */
+#endif							/* WIN32 */
 
 static pid_t backend_forkexec(Port *port);
 static pid_t internal_forkexec(int argc, char *argv[], Port *port);
@@ -478,11 +488,12 @@ typedef struct
 	InheritableSocket portsocket;
 	char		DataDir[MAXPGPATH];
 	pgsocket	ListenSocket[MAXLISTEN];
-	long		MyCancelKey;
+	int32		MyCancelKey;
 	int			MyPMChildSlot;
 #ifndef WIN32
 	unsigned long UsedShmemSegID;
 #else
+	void	   *ShmemProtectiveRegion;
 	HANDLE		UsedShmemSegID;
 #endif
 	void	   *UsedShmemSegAddr;
@@ -490,7 +501,7 @@ typedef struct
 	VariableCache ShmemVariableCache;
 	Backend    *ShmemBackendArray;
 #ifndef HAVE_SPINLOCKS
-	PGSemaphore SpinlockSemaArray;
+	PGSemaphore *SpinlockSemaArray;
 #endif
 	int			NamedLWLockTrancheRequests;
 	NamedLWLockTranche *NamedLWLockTrancheArray;
@@ -534,7 +545,7 @@ static bool save_backend_variables(BackendParameters *param, Port *port,
 
 static void ShmemBackendArrayAdd(Backend *bn);
 static void ShmemBackendArrayRemove(Backend *bn);
-#endif   /* EXEC_BACKEND */
+#endif							/* EXEC_BACKEND */
 
 #define StartupDataBase()		StartChildProcess(StartupProcess)
 #define StartBackgroundWriter() StartChildProcess(BgWriterProcess)
@@ -578,9 +589,14 @@ PostmasterMain(int argc, char *argv[])
 	IsPostmasterEnvironment = true;
 
 	/*
-	 * for security, no dir or file created can be group or other accessible
+	 * We should not be creating any files or directories before we check the
+	 * data directory (see checkDataDir()), but just in case set the umask to
+	 * the most restrictive (owner-only) permissions.
+	 *
+	 * checkDataDir() will reset the umask based on the data directory
+	 * permissions.
 	 */
-	umask(S_IRWXG | S_IRWXO);
+	umask(PG_MODE_MASK_OWNER);
 
 	/*
 	 * Initialize random(3) so we don't get the same values in every run.
@@ -628,20 +644,18 @@ PostmasterMain(int argc, char *argv[])
 	pqinitmask();
 	PG_SETMASK(&BlockSig);
 
-	pqsignal_no_restart(SIGHUP, SIGHUP_handler);		/* reread config file
-														 * and have children do
-														 * same */
+	pqsignal_no_restart(SIGHUP, SIGHUP_handler);	/* reread config file and
+													 * have children do same */
 	pqsignal_no_restart(SIGINT, pmdie); /* send SIGTERM and shut down */
-	pqsignal_no_restart(SIGQUIT, pmdie);		/* send SIGQUIT and die */
-	pqsignal_no_restart(SIGTERM, pmdie);		/* wait for children and shut
-												 * down */
+	pqsignal_no_restart(SIGQUIT, pmdie);	/* send SIGQUIT and die */
+	pqsignal_no_restart(SIGTERM, pmdie);	/* wait for children and shut down */
 	pqsignal(SIGALRM, SIG_IGN); /* ignored */
 	pqsignal(SIGPIPE, SIG_IGN); /* ignored */
-	pqsignal_no_restart(SIGUSR1, sigusr1_handler);		/* message from child
-														 * process */
-	pqsignal_no_restart(SIGUSR2, dummy_handler);		/* unused, reserve for
-														 * children */
-	pqsignal_no_restart(SIGCHLD, reaper);		/* handle child termination */
+	pqsignal_no_restart(SIGUSR1, sigusr1_handler);	/* message from child
+													 * process */
+	pqsignal_no_restart(SIGUSR2, dummy_handler);	/* unused, reserve for
+													 * children */
+	pqsignal_no_restart(SIGCHLD, reaper);	/* handle child termination */
 	pqsignal(SIGTTIN, SIG_IGN); /* ignored */
 	pqsignal(SIGTTOU, SIG_IGN); /* ignored */
 	/* ignore SIGXFSZ, so that ulimit violations work like disk full */
@@ -869,20 +883,20 @@ PostmasterMain(int argc, char *argv[])
 	/* Verify that DataDir looks reasonable */
 	checkDataDir();
 
+	/* Check that pg_control exists */
+	checkControlFile();
+
 	/* And switch working directory into it */
 	ChangeToDataDir();
 
 	/*
 	 * Check for invalid combinations of GUC settings.
 	 */
-	if (ReservedBackends >= MaxConnections)
+	if (ReservedBackends + max_wal_senders >= MaxConnections)
 	{
-		write_stderr("%s: superuser_reserved_connections must be less than max_connections\n", progname);
-		ExitPostmaster(1);
-	}
-	if (max_wal_senders >= MaxConnections)
-	{
-		write_stderr("%s: max_wal_senders must be less than max_connections\n", progname);
+		write_stderr("%s: superuser_reserved_connections (%d) plus max_wal_senders (%d) must be less than max_connections (%d)\n",
+					 progname,
+					 ReservedBackends, max_wal_senders, MaxConnections);
 		ExitPostmaster(1);
 	}
 	if (XLogArchiveMode > ARCHIVE_MODE_OFF && wal_level == WAL_LEVEL_MINIMAL)
@@ -917,15 +931,15 @@ PostmasterMain(int argc, char *argv[])
 		char	  **p;
 
 		ereport(DEBUG3,
-			(errmsg_internal("%s: PostmasterMain: initial environment dump:",
-							 progname)));
+				(errmsg_internal("%s: PostmasterMain: initial environment dump:",
+								 progname)));
 		ereport(DEBUG3,
-			 (errmsg_internal("-----------------------------------------")));
+				(errmsg_internal("-----------------------------------------")));
 		for (p = environ; *p; ++p)
 			ereport(DEBUG3,
 					(errmsg_internal("\t%s", *p)));
 		ereport(DEBUG3,
-			 (errmsg_internal("-----------------------------------------")));
+				(errmsg_internal("-----------------------------------------")));
 	}
 
 	/*
@@ -945,12 +959,34 @@ PostmasterMain(int argc, char *argv[])
 	CreateDataDirLockFile(true);
 
 	/*
+	 * Read the control file (for error checking and config info).
+	 *
+	 * Since we verify the control file's CRC, this has a useful side effect
+	 * on machines where we need a run-time test for CRC support instructions.
+	 * The postmaster will do the test once at startup, and then its child
+	 * processes will inherit the correct function pointer and not need to
+	 * repeat the test.
+	 */
+	LocalProcessControlFile(false);
+
+	/*
 	 * Initialize SSL library, if specified.
 	 */
 #ifdef USE_SSL
 	if (EnableSSL)
-		secure_initialize();
+	{
+		(void) secure_initialize(true);
+		LoadedSSL = true;
+	}
 #endif
+
+	/*
+	 * Register the apply launcher.  Since it registers a background worker,
+	 * it needs to be called before InitializeMaxBackends(), and it's probably
+	 * a good idea to call it before any modules had chance to take the
+	 * background worker slots.
+	 */
+	ApplyLauncherRegister();
 
 	/*
 	 * process any libraries that should be preloaded at postmaster start
@@ -1052,7 +1088,7 @@ PostmasterMain(int argc, char *argv[])
 								 "_postgresql._tcp.",
 								 NULL,
 								 NULL,
-								 htons(PostPortNumber),
+								 pg_hton16(PostPortNumber),
 								 0,
 								 NULL,
 								 NULL,
@@ -1168,7 +1204,7 @@ PostmasterMain(int argc, char *argv[])
 	win32ChildQueue = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 1);
 	if (win32ChildQueue == NULL)
 		ereport(FATAL,
-		   (errmsg("could not create I/O completion port for child queue")));
+				(errmsg("could not create I/O completion port for child queue")));
 #endif
 
 	/*
@@ -1233,6 +1269,13 @@ PostmasterMain(int argc, char *argv[])
 	 */
 	RemovePromoteSignalFiles();
 
+	/* Remove any outdated file holding the current log filenames. */
+	if (unlink(LOG_METAINFO_DATAFILE) < 0 && errno != ENOENT)
+		ereport(LOG,
+				(errcode_for_file_access(),
+				 errmsg("could not remove file \"%s\": %m",
+						LOG_METAINFO_DATAFILE)));
+
 	/*
 	 * If enabled, start up syslogger collection subprocess
 	 */
@@ -1252,8 +1295,8 @@ PostmasterMain(int argc, char *argv[])
 	if (!(Log_destination & LOG_DESTINATION_STDERR))
 		ereport(LOG,
 				(errmsg("ending log output to stderr"),
-			  errhint("Future log output will go to log destination \"%s\".",
-					  Log_destination_string)));
+				 errhint("Future log output will go to log destination \"%s\".",
+						 Log_destination_string)));
 
 	whereToSendOutput = DestNone;
 
@@ -1293,7 +1336,7 @@ PostmasterMain(int argc, char *argv[])
 #ifdef HAVE_PTHREAD_IS_THREADED_NP
 
 	/*
-	 * On Darwin, libintl replaces setlocale() with a version that calls
+	 * On macOS, libintl replaces setlocale() with a version that calls
 	 * CFLocaleCopyCurrent() when its second argument is "" and every relevant
 	 * environment variable is unset or empty.  CFLocaleCopyCurrent() makes
 	 * the process multithreaded.  The postmaster calls sigprocmask() and
@@ -1305,15 +1348,23 @@ PostmasterMain(int argc, char *argv[])
 		ereport(FATAL,
 				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 				 errmsg("postmaster became multithreaded during startup"),
-		 errhint("Set the LC_ALL environment variable to a valid locale.")));
+				 errhint("Set the LC_ALL environment variable to a valid locale.")));
 #endif
 
 	/*
 	 * Remember postmaster startup time
 	 */
 	PgStartTime = GetCurrentTimestamp();
-	/* PostmasterRandom wants its own copy */
+#ifndef HAVE_STRONG_RANDOM
+	/* RandomCancelKey wants its own copy */
 	gettimeofday(&random_start_time, NULL);
+#endif
+
+	/*
+	 * Report postmaster status in the postmaster.pid file, to allow pg_ctl to
+	 * see what's happening.
+	 */
+	AddToDataDirLockFile(LOCK_FILE_LINE_PM_STATUS, PM_STATUS_STARTING);
 
 	/*
 	 * We're ready to rock and roll...
@@ -1435,82 +1486,17 @@ getInstallationPaths(const char *argv0)
 	 */
 }
 
-
 /*
- * Validate the proposed data directory
+ * Check that pg_control exists in the correct location in the data directory.
+ *
+ * No attempt is made to validate the contents of pg_control here.  This is
+ * just a sanity check to see if we are looking at a real data directory.
  */
 static void
-checkDataDir(void)
+checkControlFile(void)
 {
 	char		path[MAXPGPATH];
 	FILE	   *fp;
-	struct stat stat_buf;
-
-	Assert(DataDir);
-
-	if (stat(DataDir, &stat_buf) != 0)
-	{
-		if (errno == ENOENT)
-			ereport(FATAL,
-					(errcode_for_file_access(),
-					 errmsg("data directory \"%s\" does not exist",
-							DataDir)));
-		else
-			ereport(FATAL,
-					(errcode_for_file_access(),
-				 errmsg("could not read permissions of directory \"%s\": %m",
-						DataDir)));
-	}
-
-	/* eventual chdir would fail anyway, but let's test ... */
-	if (!S_ISDIR(stat_buf.st_mode))
-		ereport(FATAL,
-				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
-				 errmsg("specified data directory \"%s\" is not a directory",
-						DataDir)));
-
-	/*
-	 * Check that the directory belongs to my userid; if not, reject.
-	 *
-	 * This check is an essential part of the interlock that prevents two
-	 * postmasters from starting in the same directory (see CreateLockFile()).
-	 * Do not remove or weaken it.
-	 *
-	 * XXX can we safely enable this check on Windows?
-	 */
-#if !defined(WIN32) && !defined(__CYGWIN__)
-	if (stat_buf.st_uid != geteuid())
-		ereport(FATAL,
-				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
-				 errmsg("data directory \"%s\" has wrong ownership",
-						DataDir),
-				 errhint("The server must be started by the user that owns the data directory.")));
-#endif
-
-	/*
-	 * Check if the directory has group or world access.  If so, reject.
-	 *
-	 * It would be possible to allow weaker constraints (for example, allow
-	 * group access) but we cannot make a general assumption that that is
-	 * okay; for example there are platforms where nearly all users
-	 * customarily belong to the same group.  Perhaps this test should be
-	 * configurable.
-	 *
-	 * XXX temporarily suppress check when on Windows, because there may not
-	 * be proper support for Unix-y file permissions.  Need to think of a
-	 * reasonable check to apply on Windows.
-	 */
-#if !defined(WIN32) && !defined(__CYGWIN__)
-	if (stat_buf.st_mode & (S_IRWXG | S_IRWXO))
-		ereport(FATAL,
-				(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
-				 errmsg("data directory \"%s\" has group or world access",
-						DataDir),
-				 errdetail("Permissions should be u=rwx (0700).")));
-#endif
-
-	/* Look for PG_VERSION before looking for pg_control */
-	ValidatePgVersion(DataDir);
 
 	snprintf(path, sizeof(path), "%s/global/pg_control", DataDir);
 
@@ -1536,7 +1522,7 @@ checkDataDir(void)
  * cases are as shown in the code.
  */
 static void
-DetermineSleepTime(struct timeval * timeout)
+DetermineSleepTime(struct timeval *timeout)
 {
 	TimestampTz next_wakeup = 0;
 
@@ -1598,7 +1584,7 @@ DetermineSleepTime(struct timeval * timeout)
 			}
 
 			this_wakeup = TimestampTzPlusMilliseconds(rw->rw_crashed_at,
-									 1000L * rw->rw_worker.bgw_restart_time);
+													  1000L * rw->rw_worker.bgw_restart_time);
 			if (next_wakeup == 0 || this_wakeup < next_wakeup)
 				next_wakeup = this_wakeup;
 		}
@@ -1931,7 +1917,7 @@ ProcessStartupPacket(Port *port, bool SSLdone)
 		return STATUS_ERROR;
 	}
 
-	len = ntohl(len);
+	len = pg_ntoh32(len);
 	len -= 4;
 
 	if (len < (int32) sizeof(ProtocolVersion) ||
@@ -1967,7 +1953,7 @@ ProcessStartupPacket(Port *port, bool SSLdone)
 	 * The first field is either a protocol version number or a special
 	 * request code.
 	 */
-	port->proto = proto = ntohl(*((ProtocolVersion *) buf));
+	port->proto = proto = pg_ntoh32(*((ProtocolVersion *) buf));
 
 	if (proto == CANCEL_REQUEST_CODE)
 	{
@@ -1982,7 +1968,7 @@ ProcessStartupPacket(Port *port, bool SSLdone)
 
 #ifdef USE_SSL
 		/* No SSL when disabled or on Unix sockets */
-		if (!EnableSSL || IS_AF_UNIX(port->laddr.addr.ss_family))
+		if (!LoadedSSL || IS_AF_UNIX(port->laddr.addr.ss_family))
 			SSLok = 'N';
 		else
 			SSLok = 'S';		/* Support for SSL */
@@ -2087,9 +2073,9 @@ retry1:
 				else if (!parse_bool(valptr, &am_walsender))
 					ereport(FATAL,
 							(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-						 errmsg("invalid value for parameter \"%s\": \"%s\"",
-								"replication",
-								valptr),
+							 errmsg("invalid value for parameter \"%s\": \"%s\"",
+									"replication",
+									valptr),
 							 errhint("Valid values are: \"false\", 0, \"true\", 1, \"database\".")));
 			}
 			else if (strncmp(nameptr, "_pq_.", 5) == 0)
@@ -2125,8 +2111,8 @@ retry1:
 		/*
 		 * If the client requested a newer protocol version or if the client
 		 * requested any protocol options we didn't recognize, let them know
-		 * the newest minor protocol version we do support and the names of any
-		 * unrecognized options.
+		 * the newest minor protocol version we do support and the names of
+		 * any unrecognized options.
 		 */
 		if (PG_PROTOCOL_MINOR(proto) > PG_PROTOCOL_MINOR(PG_PROTOCOL_LATEST) ||
 			unrecognized_protocol_options != NIL)
@@ -2158,7 +2144,7 @@ retry1:
 	if (port->user_name == NULL || port->user_name[0] == '\0')
 		ereport(FATAL,
 				(errcode(ERRCODE_INVALID_AUTHORIZATION_SPECIFICATION),
-			 errmsg("no PostgreSQL user name specified in startup packet")));
+				 errmsg("no PostgreSQL user name specified in startup packet")));
 
 	/* The database defaults to the user name. */
 	if (port->database_name == NULL || port->database_name[0] == '\0')
@@ -2264,8 +2250,8 @@ SendNegotiateProtocolVersion(List *unrecognized_protocol_options)
 	ListCell   *lc;
 
 	pq_beginmessage(&buf, 'v'); /* NegotiateProtocolVersion */
-	pq_sendint(&buf, PG_PROTOCOL_LATEST, 4);
-	pq_sendint(&buf, list_length(unrecognized_protocol_options), 4);
+	pq_sendint32(&buf, PG_PROTOCOL_LATEST);
+	pq_sendint32(&buf, list_length(unrecognized_protocol_options));
 	foreach(lc, unrecognized_protocol_options)
 		pq_sendstring(&buf, lfirst(lc));
 	pq_endmessage(&buf);
@@ -2283,7 +2269,7 @@ processCancelRequest(Port *port, void *pkt)
 {
 	CancelRequestPacket *canc = (CancelRequestPacket *) pkt;
 	int			backendPID;
-	long		cancelAuthCode;
+	int32		cancelAuthCode;
 	Backend    *bp;
 
 #ifndef EXEC_BACKEND
@@ -2292,8 +2278,8 @@ processCancelRequest(Port *port, void *pkt)
 	int			i;
 #endif
 
-	backendPID = (int) ntohl(canc->backendPID);
-	cancelAuthCode = (long) ntohl(canc->cancelAuthCode);
+	backendPID = (int) pg_ntoh32(canc->backendPID);
+	cancelAuthCode = (int32) pg_ntoh32(canc->cancelAuthCode);
 
 	/*
 	 * See if we have a matching backend.  In the EXEC_BACKEND case, we can no
@@ -2415,15 +2401,6 @@ ConnCreate(int serverFd)
 	}
 
 	/*
-	 * Precompute password salt values to use for this connection. It's
-	 * slightly annoying to do this long in advance of knowing whether we'll
-	 * need 'em or not, but we must do the random() calls before we fork, not
-	 * after.  Else the postmaster's random sequence won't get advanced, and
-	 * all backends would end up using the same salt...
-	 */
-	RandomSalt(port->md5Salt);
-
-	/*
 	 * Allocate GSSAPI specific state struct
 	 */
 #ifndef EXEC_BACKEND
@@ -2533,7 +2510,7 @@ reset_shared(int port)
 	 * determine IPC keys.  This helps ensure that we will clean up dead IPC
 	 * objects if the postmaster crashes and is restarted.
 	 */
-	CreateSharedMemoryAndSemaphores(false, port);
+	CreateSharedMemoryAndSemaphores(port);
 }
 
 
@@ -2574,12 +2551,29 @@ SIGHUP_handler(SIGNAL_ARGS)
 
 		/* Reload authentication config files too */
 		if (!load_hba())
-			ereport(WARNING,
-					(errmsg("pg_hba.conf not reloaded")));
+			ereport(LOG,
+					(errmsg("pg_hba.conf was not reloaded")));
 
 		if (!load_ident())
-			ereport(WARNING,
-					(errmsg("pg_ident.conf not reloaded")));
+			ereport(LOG,
+					(errmsg("pg_ident.conf was not reloaded")));
+
+#ifdef USE_SSL
+		/* Reload SSL configuration as well */
+		if (EnableSSL)
+		{
+			if (secure_initialize(false) == 0)
+				LoadedSSL = true;
+			else
+				ereport(LOG,
+						(errmsg("SSL configuration was not reloaded")));
+		}
+		else
+		{
+			secure_destroy();
+			LoadedSSL = false;
+		}
+#endif
 
 #ifdef EXEC_BACKEND
 		/* Update the starting-point file for future children */
@@ -2621,6 +2615,9 @@ pmdie(SIGNAL_ARGS)
 			Shutdown = SmartShutdown;
 			ereport(LOG,
 					(errmsg("received smart shutdown request")));
+
+			/* Report status */
+			AddToDataDirLockFile(LOCK_FILE_LINE_PM_STATUS, PM_STATUS_STOPPING);
 #ifdef USE_SYSTEMD
 			sd_notify(0, "STOPPING=1");
 #endif
@@ -2631,7 +2628,7 @@ pmdie(SIGNAL_ARGS)
 				/* autovac workers are told to shut down immediately */
 				/* and bgworkers too; does this need tweaking? */
 				SignalSomeChildren(SIGTERM,
-							   BACKEND_TYPE_AUTOVAC | BACKEND_TYPE_BGWORKER);
+								   BACKEND_TYPE_AUTOVAC | BACKEND_TYPE_BGWORKER);
 				/* and the autovac launcher too */
 				if (AutoVacPID != 0)
 					signal_child(AutoVacPID, SIGTERM);
@@ -2676,6 +2673,9 @@ pmdie(SIGNAL_ARGS)
 			Shutdown = FastShutdown;
 			ereport(LOG,
 					(errmsg("received fast shutdown request")));
+
+			/* Report status */
+			AddToDataDirLockFile(LOCK_FILE_LINE_PM_STATUS, PM_STATUS_STOPPING);
 #ifdef USE_SYSTEMD
 			sd_notify(0, "STOPPING=1");
 #endif
@@ -2708,7 +2708,7 @@ pmdie(SIGNAL_ARGS)
 						(errmsg("aborting any active transactions")));
 				/* shut down all backends and workers */
 				SignalSomeChildren(SIGTERM,
-								 BACKEND_TYPE_NORMAL | BACKEND_TYPE_AUTOVAC |
+								   BACKEND_TYPE_NORMAL | BACKEND_TYPE_AUTOVAC |
 								   BACKEND_TYPE_BGWORKER);
 				/* and the autovac launcher too */
 				if (AutoVacPID != 0)
@@ -2740,6 +2740,9 @@ pmdie(SIGNAL_ARGS)
 			Shutdown = ImmediateShutdown;
 			ereport(LOG,
 					(errmsg("received immediate shutdown request")));
+
+			/* Report status */
+			AddToDataDirLockFile(LOCK_FILE_LINE_PM_STATUS, PM_STATUS_STOPPING);
 #ifdef USE_SYSTEMD
 			sd_notify(0, "STOPPING=1");
 #endif
@@ -2822,7 +2825,7 @@ reaper(SIGNAL_ARGS)
 				LogChildExit(LOG, _("startup process"),
 							 pid, exitstatus);
 				ereport(LOG,
-				(errmsg("aborting startup due to startup process failure")));
+						(errmsg("aborting startup due to startup process failure")));
 				ExitPostmaster(1);
 			}
 
@@ -2883,8 +2886,10 @@ reaper(SIGNAL_ARGS)
 
 			/* at this point we are really open for business */
 			ereport(LOG,
-				 (errmsg("database system is ready to accept connections")));
+					(errmsg("database system is ready to accept connections")));
 
+			/* Report status */
+			AddToDataDirLockFile(LOCK_FILE_LINE_PM_STATUS, PM_STATUS_READY);
 #ifdef USE_SYSTEMD
 			sd_notify(0, "READY=1");
 #endif
@@ -3092,9 +3097,9 @@ CleanupBackgroundWorker(int pid,
 						int exitstatus) /* child's exit status */
 {
 	char		namebuf[MAXPGPATH];
-	slist_iter	iter;
+	slist_mutable_iter iter;
 
-	slist_foreach(iter, &BackgroundWorkerList)
+	slist_foreach_modify(iter, &BackgroundWorkerList)
 	{
 		RegisteredBgWorker *rw;
 
@@ -3109,8 +3114,9 @@ CleanupBackgroundWorker(int pid,
 			exitstatus = 0;
 #endif
 
-		snprintf(namebuf, MAXPGPATH, "%s: %s", _("worker process"),
-				 rw->rw_worker.bgw_name);
+		snprintf(namebuf, MAXPGPATH, _("background worker \"%s\""),
+				 rw->rw_worker.bgw_type);
+
 
 		if (!EXIT_STATUS_0(exitstatus))
 		{
@@ -3168,7 +3174,7 @@ CleanupBackgroundWorker(int pid,
 		rw->rw_backend = NULL;
 		rw->rw_pid = 0;
 		rw->rw_child_slot = 0;
-		ReportBackgroundWorkerPID(rw);	/* report child death */
+		ReportBackgroundWorkerExit(&iter);	/* report child death */
 
 		LogChildExit(EXIT_STATUS_0(exitstatus) ? DEBUG1 : LOG,
 					 namebuf, pid, exitstatus);
@@ -3539,7 +3545,7 @@ LogChildExit(int lev, const char *procname, int pid, int exitstatus)
 	if (!EXIT_STATUS_0(exitstatus))
 		activity = pgstat_get_crashed_backend_activity(pid,
 													   activity_buffer,
-													sizeof(activity_buffer));
+													   sizeof(activity_buffer));
 
 	if (WIFEXITED(exitstatus))
 		ereport(lev,
@@ -3562,16 +3568,16 @@ LogChildExit(int lev, const char *procname, int pid, int exitstatus)
 				 errhint("See C include file \"ntstatus.h\" for a description of the hexadecimal value."),
 				 activity ? errdetail("Failed process was running: %s", activity) : 0));
 #elif defined(HAVE_DECL_SYS_SIGLIST) && HAVE_DECL_SYS_SIGLIST
-	ereport(lev,
+		ereport(lev,
 
-	/*------
-	  translator: %s is a noun phrase describing a child process, such as
-	  "server process" */
-			(errmsg("%s (PID %d) was terminated by signal %d: %s",
-					procname, pid, WTERMSIG(exitstatus),
-					WTERMSIG(exitstatus) < NSIG ?
-					sys_siglist[WTERMSIG(exitstatus)] : "(unknown)"),
-	  activity ? errdetail("Failed process was running: %s", activity) : 0));
+		/*------
+		  translator: %s is a noun phrase describing a child process, such as
+		  "server process" */
+				(errmsg("%s (PID %d) was terminated by signal %d: %s",
+						procname, pid, WTERMSIG(exitstatus),
+						WTERMSIG(exitstatus) < NSIG ?
+						sys_siglist[WTERMSIG(exitstatus)] : "(unknown)"),
+				 activity ? errdetail("Failed process was running: %s", activity) : 0));
 #else
 		ereport(lev,
 
@@ -3718,12 +3724,8 @@ PostmasterStateMachine(void)
 		 * dead_end children left. There shouldn't be any regular backends
 		 * left by now anyway; what we're really waiting for is walsenders and
 		 * archiver.
-		 *
-		 * Walreceiver should normally be dead by now, but not when a fast
-		 * shutdown is performed during recovery.
 		 */
-		if (PgArchPID == 0 && CountChildren(BACKEND_TYPE_ALL) == 0 &&
-			WalReceiverPID == 0)
+		if (PgArchPID == 0 && CountChildren(BACKEND_TYPE_ALL) == 0)
 		{
 			pmState = PM_WAIT_DEAD_END;
 		}
@@ -3821,6 +3823,10 @@ PostmasterStateMachine(void)
 		ResetBackgroundWorkerCrashTimes();
 
 		shmem_exit(1);
+
+		/* re-read control file into local memory */
+		LocalProcessControlFile(true);
+
 		reset_shared(PostPortNumber);
 
 		StartupPID = StartupDataBase();
@@ -3976,7 +3982,15 @@ BackendStartup(Port *port)
 	 * backend will have its own copy in the forked-off process' value of
 	 * MyCancelKey, so that it can transmit the key to the frontend.
 	 */
-	MyCancelKey = PostmasterRandom();
+	if (!RandomCancelKey(&MyCancelKey))
+	{
+		free(bn);
+		ereport(LOG,
+				(errcode(ERRCODE_INTERNAL_ERROR),
+				 errmsg("could not generate random cancel key")));
+		return STATUS_ERROR;
+	}
+
 	bn->cancel_key = MyCancelKey;
 
 	/* Pass down canAcceptConnections state */
@@ -4015,7 +4029,7 @@ BackendStartup(Port *port)
 		/* And run the backend */
 		BackendRun(port);
 	}
-#endif   /* EXEC_BACKEND */
+#endif							/* EXEC_BACKEND */
 
 	if (pid < 0)
 	{
@@ -4042,7 +4056,7 @@ BackendStartup(Port *port)
 	 * of backends.
 	 */
 	bn->pid = pid;
-	bn->bkend_type = BACKEND_TYPE_NORMAL;		/* Can change later to WALSND */
+	bn->bkend_type = BACKEND_TYPE_NORMAL;	/* Can change later to WALSND */
 	dlist_push_head(&BackendList, &bn->elem);
 
 #ifdef EXEC_BACKEND
@@ -4132,7 +4146,7 @@ BackendInitialize(Port *port)
 	 * Must do this now because authentication uses libpq to send messages.
 	 */
 	pq_init();					/* initialize libpq to talk to client */
-	whereToSendOutput = DestRemote;		/* now safe to ereport to client */
+	whereToSendOutput = DestRemote; /* now safe to ereport to client */
 
 	/*
 	 * We arrange for a simple exit(1) if we receive SIGTERM or SIGQUIT or
@@ -4162,7 +4176,7 @@ BackendInitialize(Port *port)
 	if ((ret = pg_getnameinfo_all(&port->raddr.addr, port->raddr.salen,
 								  remote_host, sizeof(remote_host),
 								  remote_port, sizeof(remote_port),
-				 (log_hostname ? 0 : NI_NUMERICHOST) | NI_NUMERICSERV)) != 0)
+								  (log_hostname ? 0 : NI_NUMERICHOST) | NI_NUMERICSERV)) != 0)
 		ereport(WARNING,
 				(errmsg_internal("pg_getnameinfo_all() failed: %s",
 								 gai_strerror(ret))));
@@ -4246,14 +4260,14 @@ BackendInitialize(Port *port)
 	 *
 	 * For a walsender, the ps display is set in the following form:
 	 *
-	 * postgres: wal sender process <user> <host> <activity>
+	 * postgres: walsender <user> <host> <activity>
 	 *
-	 * To achieve that, we pass "wal sender process" as username and username
-	 * as dbname to init_ps_display(). XXX: should add a new variant of
+	 * To achieve that, we pass "walsender" as username and username as dbname
+	 * to init_ps_display(). XXX: should add a new variant of
 	 * init_ps_display() to avoid abusing the parameters like this.
 	 */
 	if (am_walsender)
-		init_ps_display("wal sender process", port->user_name, remote_ps_data,
+		init_ps_display(pgstat_get_backend_desc(B_WAL_SENDER), port->user_name, remote_ps_data,
 						update_process_title ? "authentication" : "");
 	else
 		init_ps_display(port->user_name, port->database_name, remote_ps_data,
@@ -4289,8 +4303,10 @@ BackendRun(Port *port)
 	 * generator state.  We have to clobber the static random_seed *and* start
 	 * a new random sequence in the random() library function.
 	 */
+#ifndef HAVE_STRONG_RANDOM
 	random_seed = 0;
 	random_start_time.tv_usec = 0;
+#endif
 	/* slightly hacky way to convert timestamptz into integers */
 	TimestampDifference(0, port->SessionStartTime, &secs, &usecs);
 	srandom((unsigned int) (MyProcPid ^ (usecs << 12) ^ secs));
@@ -4423,9 +4439,9 @@ internal_forkexec(int argc, char *argv[], Port *port)
 	{
 		/*
 		 * As in OpenTemporaryFileInTablespace, try to make the temp-file
-		 * directory
+		 * directory, ignoring errors.
 		 */
-		mkdir(PG_TEMP_FILES_DIR, S_IRWXU);
+		(void) MakePGDirectory(PG_TEMP_FILES_DIR);
 
 		fp = AllocateFile(tmpfilename, PG_BINARY_W);
 		if (!fp)
@@ -4675,7 +4691,7 @@ retry:
 									 pgwin32_deadchild_callback,
 									 childinfo,
 									 INFINITE,
-								WT_EXECUTEONLYONCE | WT_EXECUTEINWAITTHREAD))
+									 WT_EXECUTEONLYONCE | WT_EXECUTEINWAITTHREAD))
 		ereport(FATAL,
 				(errmsg_internal("could not register process for wait: error code %lu",
 								 GetLastError())));
@@ -4686,7 +4702,7 @@ retry:
 
 	return pi.dwProcessId;
 }
-#endif   /* WIN32 */
+#endif							/* WIN32 */
 
 
 /*
@@ -4791,6 +4807,20 @@ SubPostmasterMain(int argc, char *argv[])
 	read_nondefault_variables();
 
 	/*
+	 * Check that the data directory looks valid, which will also check the
+	 * privileges on the data directory and update our umask and file/group
+	 * variables for creating files later.  Note: this should really be done
+	 * before we create any files or directories.
+	 */
+	checkDataDir();
+
+	/*
+	 * (re-)read control file, as it contains config. The postmaster will
+	 * already have read this, but this process doesn't know about that.
+	 */
+	LocalProcessControlFile(false);
+
+	/*
 	 * Reload any libraries that were preloaded by the postmaster.  Since we
 	 * exec'd this process, those libraries didn't come along with us; but we
 	 * should load them into all child processes to be consistent with the
@@ -4808,12 +4838,22 @@ SubPostmasterMain(int argc, char *argv[])
 		 * context structures contain function pointers and cannot be passed
 		 * through the parameter file.
 		 *
+		 * If for some reason reload fails (maybe the user installed broken
+		 * key files), soldier on without SSL; that's better than all
+		 * connections becoming impossible.
+		 *
 		 * XXX should we do this in all child processes?  For the moment it's
 		 * enough to do it in backend children.
 		 */
 #ifdef USE_SSL
 		if (EnableSSL)
-			secure_initialize();
+		{
+			if (secure_initialize(false) == 0)
+				LoadedSSL = true;
+			else
+				ereport(LOG,
+						(errmsg("SSL configuration could not be loaded in child process")));
+		}
 #endif
 
 		/*
@@ -4834,7 +4874,7 @@ SubPostmasterMain(int argc, char *argv[])
 		InitProcess();
 
 		/* Attach process to shared data structures */
-		CreateSharedMemoryAndSemaphores(false, 0);
+		CreateSharedMemoryAndSemaphores(0);
 
 		/* And run the backend */
 		BackendRun(&port);		/* does not return */
@@ -4848,9 +4888,9 @@ SubPostmasterMain(int argc, char *argv[])
 		InitAuxiliaryProcess();
 
 		/* Attach process to shared data structures */
-		CreateSharedMemoryAndSemaphores(false, 0);
+		CreateSharedMemoryAndSemaphores(0);
 
-		AuxiliaryProcessMain(argc - 2, argv + 2);		/* does not return */
+		AuxiliaryProcessMain(argc - 2, argv + 2);	/* does not return */
 	}
 	if (strcmp(argv[1], "--forkavlauncher") == 0)
 	{
@@ -4861,9 +4901,9 @@ SubPostmasterMain(int argc, char *argv[])
 		InitProcess();
 
 		/* Attach process to shared data structures */
-		CreateSharedMemoryAndSemaphores(false, 0);
+		CreateSharedMemoryAndSemaphores(0);
 
-		AutoVacLauncherMain(argc - 2, argv + 2);		/* does not return */
+		AutoVacLauncherMain(argc - 2, argv + 2);	/* does not return */
 	}
 	if (strcmp(argv[1], "--forkavworker") == 0)
 	{
@@ -4874,7 +4914,7 @@ SubPostmasterMain(int argc, char *argv[])
 		InitProcess();
 
 		/* Attach process to shared data structures */
-		CreateSharedMemoryAndSemaphores(false, 0);
+		CreateSharedMemoryAndSemaphores(0);
 
 		AutoVacWorkerMain(argc - 2, argv + 2);	/* does not return */
 	}
@@ -4892,7 +4932,7 @@ SubPostmasterMain(int argc, char *argv[])
 		InitProcess();
 
 		/* Attach process to shared data structures */
-		CreateSharedMemoryAndSemaphores(false, 0);
+		CreateSharedMemoryAndSemaphores(0);
 
 		/* Fetch MyBgworkerEntry from shared memory */
 		shmem_slot = atoi(argv[1] + 15);
@@ -4904,24 +4944,24 @@ SubPostmasterMain(int argc, char *argv[])
 	{
 		/* Do not want to attach to shared memory */
 
-		PgArchiverMain(argc, argv);		/* does not return */
+		PgArchiverMain(argc, argv); /* does not return */
 	}
 	if (strcmp(argv[1], "--forkcol") == 0)
 	{
 		/* Do not want to attach to shared memory */
 
-		PgstatCollectorMain(argc, argv);		/* does not return */
+		PgstatCollectorMain(argc, argv);	/* does not return */
 	}
 	if (strcmp(argv[1], "--forklog") == 0)
 	{
 		/* Do not want to attach to shared memory */
 
-		SysLoggerMain(argc, argv);		/* does not return */
+		SysLoggerMain(argc, argv);	/* does not return */
 	}
 
 	abort();					/* shouldn't get here */
 }
-#endif   /* EXEC_BACKEND */
+#endif							/* EXEC_BACKEND */
 
 
 /*
@@ -4944,7 +4984,7 @@ ExitPostmaster(int status)
 		ereport(LOG,
 				(errcode(ERRCODE_INTERNAL_ERROR),
 				 errmsg_internal("postmaster became multithreaded"),
-		   errdetail("Please report this to <pgsql-bugs@postgresql.org>.")));
+				 errdetail("Please report this to <pgsql-bugs@postgresql.org>.")));
 #endif
 
 	/* should cleanup shared memory and kill all backends */
@@ -5006,10 +5046,18 @@ sigusr1_handler(SIGNAL_ARGS)
 		if (XLogArchivingAlways())
 			PgArchPID = pgarch_start();
 
-#ifdef USE_SYSTEMD
+		/*
+		 * If we aren't planning to enter hot standby mode later, treat
+		 * RECOVERY_STARTED as meaning we're out of startup, and report status
+		 * accordingly.
+		 */
 		if (!EnableHotStandby)
+		{
+			AddToDataDirLockFile(LOCK_FILE_LINE_PM_STATUS, PM_STATUS_STANDBY);
+#ifdef USE_SYSTEMD
 			sd_notify(0, "READY=1");
 #endif
+		}
 
 		pmState = PM_RECOVERY;
 	}
@@ -5023,8 +5071,10 @@ sigusr1_handler(SIGNAL_ARGS)
 		PgStatPID = pgstat_start();
 
 		ereport(LOG,
-		(errmsg("database system is ready to accept read only connections")));
+				(errmsg("database system is ready to accept read only connections")));
 
+		/* Report status */
+		AddToDataDirLockFile(LOCK_FILE_LINE_PM_STATUS, PM_STATUS_READY);
 #ifdef USE_SYSTEMD
 		sd_notify(0, "READY=1");
 #endif
@@ -5042,7 +5092,7 @@ sigusr1_handler(SIGNAL_ARGS)
 	{
 		/*
 		 * Send SIGUSR1 to archiver process, to wake it up and begin archiving
-		 * next transaction log file.
+		 * next WAL file.
 		 */
 		signal_child(PgArchPID, SIGUSR1);
 	}
@@ -5084,16 +5134,25 @@ sigusr1_handler(SIGNAL_ARGS)
 		MaybeStartWalReceiver();
 	}
 
-	if (CheckPostmasterSignal(PMSIGNAL_ADVANCE_STATE_MACHINE) &&
-		(pmState == PM_WAIT_BACKUP || pmState == PM_WAIT_BACKENDS))
+	/*
+	 * Try to advance postmaster's state machine, if a child requests it.
+	 *
+	 * Be careful about the order of this action relative to sigusr1_handler's
+	 * other actions.  Generally, this should be after other actions, in case
+	 * they have effects PostmasterStateMachine would need to know about.
+	 * However, we should do it before the CheckPromoteSignal step, which
+	 * cannot have any (immediate) effect on the state machine, but does
+	 * depend on what state we're in now.
+	 */
+	if (CheckPostmasterSignal(PMSIGNAL_ADVANCE_STATE_MACHINE))
 	{
-		/* Advance postmaster's state machine */
 		PostmasterStateMachine();
 	}
 
-	if (CheckPromoteSignal() && StartupPID != 0 &&
+	if (StartupPID != 0 &&
 		(pmState == PM_STARTUP || pmState == PM_RECOVERY ||
-		 pmState == PM_HOT_STANDBY || pmState == PM_WAIT_READONLY))
+		 pmState == PM_HOT_STANDBY || pmState == PM_WAIT_READONLY) &&
+		CheckPromoteSignal())
 	{
 		/* Tell startup process to finish recovery */
 		signal_child(StartupPID, SIGUSR2);
@@ -5145,65 +5204,43 @@ StartupPacketTimeoutHandler(void)
 
 
 /*
- * RandomSalt
+ * Generate a random cancel key.
  */
-static void
-RandomSalt(char *md5Salt)
+static bool
+RandomCancelKey(int32 *cancel_key)
 {
-	long		rand;
+#ifdef HAVE_STRONG_RANDOM
+	return pg_strong_random((char *) cancel_key, sizeof(int32));
+#else
 
 	/*
-	 * We use % 255, sacrificing one possible byte value, so as to ensure that
-	 * all bits of the random() value participate in the result. While at it,
-	 * add one to avoid generating any null bytes.
+	 * If built with --disable-strong-random, use plain old erand48.
+	 *
+	 * We cannot use pg_backend_random() in postmaster, because it stores its
+	 * state in shared memory.
 	 */
-	rand = PostmasterRandom();
-	md5Salt[0] = (rand % 255) + 1;
-	rand = PostmasterRandom();
-	md5Salt[1] = (rand % 255) + 1;
-	rand = PostmasterRandom();
-	md5Salt[2] = (rand % 255) + 1;
-	rand = PostmasterRandom();
-	md5Salt[3] = (rand % 255) + 1;
-}
+	static unsigned short seed[3];
 
-/*
- * PostmasterRandom
- *
- * Caution: use this only for values needed during connection-request
- * processing.  Otherwise, the intended property of having an unpredictable
- * delay between random_start_time and random_stop_time will be broken.
- */
-static long
-PostmasterRandom(void)
-{
 	/*
 	 * Select a random seed at the time of first receiving a request.
 	 */
 	if (random_seed == 0)
 	{
-		do
-		{
-			struct timeval random_stop_time;
+		struct timeval random_stop_time;
 
-			gettimeofday(&random_stop_time, NULL);
+		gettimeofday(&random_stop_time, NULL);
 
-			/*
-			 * We are not sure how much precision is in tv_usec, so we swap
-			 * the high and low 16 bits of 'random_stop_time' and XOR them
-			 * with 'random_start_time'. On the off chance that the result is
-			 * 0, we loop until it isn't.
-			 */
-			random_seed = random_start_time.tv_usec ^
-				((random_stop_time.tv_usec << 16) |
-				 ((random_stop_time.tv_usec >> 16) & 0xffff));
-		}
-		while (random_seed == 0);
+		seed[0] = (unsigned short) random_start_time.tv_usec;
+		seed[1] = (unsigned short) (random_stop_time.tv_usec) ^ (random_start_time.tv_usec >> 16);
+		seed[2] = (unsigned short) (random_stop_time.tv_usec >> 16);
 
-		srandom(random_seed);
+		random_seed = 1;
 	}
 
-	return random();
+	*cancel_key = pg_jrand48(seed);
+
+	return true;
+#endif
 }
 
 /*
@@ -5300,7 +5337,7 @@ StartChildProcess(AuxProcType type)
 		AuxiliaryProcessMain(ac, av);
 		ExitPostmaster(0);
 	}
-#endif   /* EXEC_BACKEND */
+#endif							/* EXEC_BACKEND */
 
 	if (pid < 0)
 	{
@@ -5316,7 +5353,7 @@ StartChildProcess(AuxProcType type)
 				break;
 			case BgWriterProcess:
 				ereport(LOG,
-				   (errmsg("could not fork background writer process: %m")));
+						(errmsg("could not fork background writer process: %m")));
 				break;
 			case CheckpointerProcess:
 				ereport(LOG,
@@ -5374,16 +5411,23 @@ StartAutovacuumWorker(void)
 	 */
 	if (canAcceptConnections() == CAC_OK)
 	{
+		/*
+		 * Compute the cancel key that will be assigned to this session. We
+		 * probably don't need cancel keys for autovac workers, but we'd
+		 * better have something random in the field to prevent unfriendly
+		 * people from sending cancels to them.
+		 */
+		if (!RandomCancelKey(&MyCancelKey))
+		{
+			ereport(LOG,
+					(errcode(ERRCODE_INTERNAL_ERROR),
+					 errmsg("could not generate random cancel key")));
+			return;
+		}
+
 		bn = (Backend *) malloc(sizeof(Backend));
 		if (bn)
 		{
-			/*
-			 * Compute the cancel key that will be assigned to this session.
-			 * We probably don't need cancel keys for autovac workers, but
-			 * we'd better have something random in the field to prevent
-			 * unfriendly people from sending cancels to them.
-			 */
-			MyCancelKey = PostmasterRandom();
 			bn->cancel_key = MyCancelKey;
 
 			/* Autovac workers are not dead_end and need a child slot */
@@ -5435,6 +5479,14 @@ StartAutovacuumWorker(void)
 /*
  * MaybeStartWalReceiver
  *		Start the WAL receiver process, if not running and our state allows.
+ *
+ * Note: if WalReceiverPID is already nonzero, it might seem that we should
+ * clear WalReceiverRequested.  However, there's a race condition if the
+ * walreceiver terminates and the startup process immediately requests a new
+ * one: it's quite possible to get the signal for the request before reaping
+ * the dead walreceiver process.  Better to risk launching an extra
+ * walreceiver than to miss launching one we need.  (The walreceiver code
+ * has logic to recognize that it should go away if not needed.)
  */
 static void
 MaybeStartWalReceiver(void)
@@ -5445,7 +5497,9 @@ MaybeStartWalReceiver(void)
 		Shutdown == NoShutdown)
 	{
 		WalReceiverPID = StartWalReceiver();
-		WalReceiverRequested = false;
+		if (WalReceiverPID != 0)
+			WalReceiverRequested = false;
+		/* else leave the flag set, so we'll try again later */
 	}
 }
 
@@ -5504,7 +5558,7 @@ MaxLivePostmasterChildren(void)
  * Connect background worker to a database.
  */
 void
-BackgroundWorkerInitializeConnection(char *dbname, char *username)
+BackgroundWorkerInitializeConnection(const char *dbname, const char *username, uint32 flags)
 {
 	BackgroundWorker *worker = MyBgworkerEntry;
 
@@ -5514,7 +5568,7 @@ BackgroundWorkerInitializeConnection(char *dbname, char *username)
 				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
 				 errmsg("database connection requirement not indicated during registration")));
 
-	InitPostgres(dbname, InvalidOid, username, InvalidOid, NULL);
+	InitPostgres(dbname, InvalidOid, username, InvalidOid, NULL, (flags & BGWORKER_BYPASS_ALLOWCONN) != 0);
 
 	/* it had better not gotten out of "init" mode yet */
 	if (!IsInitProcessingMode())
@@ -5527,7 +5581,7 @@ BackgroundWorkerInitializeConnection(char *dbname, char *username)
  * Connect background worker to a database using OIDs.
  */
 void
-BackgroundWorkerInitializeConnectionByOid(Oid dboid, Oid useroid)
+BackgroundWorkerInitializeConnectionByOid(Oid dboid, Oid useroid, uint32 flags)
 {
 	BackgroundWorker *worker = MyBgworkerEntry;
 
@@ -5537,7 +5591,7 @@ BackgroundWorkerInitializeConnectionByOid(Oid dboid, Oid useroid)
 				(errcode(ERRCODE_PROGRAM_LIMIT_EXCEEDED),
 				 errmsg("database connection requirement not indicated during registration")));
 
-	InitPostgres(NULL, dboid, NULL, useroid, NULL);
+	InitPostgres(NULL, dboid, NULL, useroid, NULL, (flags & BGWORKER_BYPASS_ALLOWCONN) != 0);
 
 	/* it had better not gotten out of "init" mode yet */
 	if (!IsInitProcessingMode())
@@ -5729,8 +5783,23 @@ bgworker_should_start_now(BgWorkerStartTime start_time)
 static bool
 assign_backendlist_entry(RegisteredBgWorker *rw)
 {
-	Backend    *bn = malloc(sizeof(Backend));
+	Backend    *bn;
 
+	/*
+	 * Compute the cancel key that will be assigned to this session. We
+	 * probably don't need cancel keys for background workers, but we'd better
+	 * have something random in the field to prevent unfriendly people from
+	 * sending cancels to them.
+	 */
+	if (!RandomCancelKey(&MyCancelKey))
+	{
+		ereport(LOG,
+				(errcode(ERRCODE_INTERNAL_ERROR),
+				 errmsg("could not generate random cancel key")));
+		return false;
+	}
+
+	bn = malloc(sizeof(Backend));
 	if (bn == NULL)
 	{
 		ereport(LOG,
@@ -5739,15 +5808,7 @@ assign_backendlist_entry(RegisteredBgWorker *rw)
 		return false;
 	}
 
-	/*
-	 * Compute the cancel key that will be assigned to this session. We
-	 * probably don't need cancel keys for background workers, but we'd better
-	 * have something random in the field to prevent unfriendly people from
-	 * sending cancels to them.
-	 */
-	MyCancelKey = PostmasterRandom();
 	bn->cancel_key = MyCancelKey;
-
 	bn->child_slot = MyPMChildSlot = AssignPostmasterChildSlot();
 	bn->bkend_type = BACKEND_TYPE_BGWORKER;
 	bn->dead_end = false;
@@ -5839,7 +5900,7 @@ maybe_start_bgworkers(void)
 				now = GetCurrentTimestamp();
 
 			if (!TimestampDifferenceExceeds(rw->rw_crashed_at, now,
-									  rw->rw_worker.bgw_restart_time * 1000))
+											rw->rw_worker.bgw_restart_time * 1000))
 			{
 				/* Set flag to remember that we have workers to start later */
 				HaveCrashedWorker = true;
@@ -5952,6 +6013,9 @@ save_backend_variables(BackendParameters *param, Port *port,
 	param->MyCancelKey = MyCancelKey;
 	param->MyPMChildSlot = MyPMChildSlot;
 
+#ifdef WIN32
+	param->ShmemProtectiveRegion = ShmemProtectiveRegion;
+#endif
 	param->UsedShmemSegID = UsedShmemSegID;
 	param->UsedShmemSegAddr = UsedShmemSegAddr;
 
@@ -6185,6 +6249,9 @@ restore_backend_variables(BackendParameters *param, Port *port)
 	MyCancelKey = param->MyCancelKey;
 	MyPMChildSlot = param->MyPMChildSlot;
 
+#ifdef WIN32
+	ShmemProtectiveRegion = param->ShmemProtectiveRegion;
+#endif
 	UsedShmemSegID = param->UsedShmemSegID;
 	UsedShmemSegAddr = param->UsedShmemSegAddr;
 
@@ -6269,7 +6336,7 @@ ShmemBackendArrayRemove(Backend *bn)
 	/* Mark the slot as empty */
 	ShmemBackendArray[i].pid = 0;
 }
-#endif   /* EXEC_BACKEND */
+#endif							/* EXEC_BACKEND */
 
 
 #ifdef WIN32
@@ -6345,7 +6412,7 @@ pgwin32_deadchild_callback(PVOID lpParameter, BOOLEAN TimerOrWaitFired)
 	/* Queue SIGCHLD signal */
 	pg_queue_signal(SIGCHLD);
 }
-#endif   /* WIN32 */
+#endif							/* WIN32 */
 
 /*
  * Initialize one and only handle for monitoring postmaster death.
@@ -6396,5 +6463,5 @@ InitPostmasterDeathWatchHandle(void)
 		ereport(FATAL,
 				(errmsg_internal("could not duplicate postmaster handle: error code %lu",
 								 GetLastError())));
-#endif   /* WIN32 */
+#endif							/* WIN32 */
 }

@@ -4,7 +4,7 @@
  *	  various support functions for SP-GiST
  *
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * IDENTIFICATION
@@ -22,6 +22,7 @@
 #include "storage/bufmgr.h"
 #include "storage/indexfsm.h"
 #include "storage/lmgr.h"
+#include "utils/builtins.h"
 #include "utils/index_selfuncs.h"
 #include "utils/lsyscache.h"
 
@@ -48,6 +49,8 @@ spghandler(PG_FUNCTION_ARGS)
 	amroutine->amstorage = false;
 	amroutine->amclusterable = false;
 	amroutine->ampredlocks = false;
+	amroutine->amcanparallel = false;
+	amroutine->amcaninclude = false;
 	amroutine->amkeytype = InvalidOid;
 
 	amroutine->ambuild = spgbuild;
@@ -67,6 +70,9 @@ spghandler(PG_FUNCTION_ARGS)
 	amroutine->amendscan = spgendscan;
 	amroutine->ammarkpos = NULL;
 	amroutine->amrestrpos = NULL;
+	amroutine->amestimateparallelscan = NULL;
+	amroutine->aminitparallelscan = NULL;
+	amroutine->amparallelrescan = NULL;
 
 	PG_RETURN_POINTER(amroutine);
 }
@@ -107,7 +113,7 @@ spgGetCache(Relation index)
 		 * tupdesc.  We pass this to the opclass config function so that
 		 * polymorphic opclasses are possible.
 		 */
-		atttype = index->rd_att->attrs[0]->atttypid;
+		atttype = TupleDescAttr(index->rd_att, 0)->atttypid;
 
 		/* Call the config function to get config info for the opclass */
 		in.attType = atttype;
@@ -120,6 +126,22 @@ spgGetCache(Relation index)
 
 		/* Get the information we need about each relevant datatype */
 		fillTypeDesc(&cache->attType, atttype);
+
+		if (OidIsValid(cache->config.leafType) &&
+			cache->config.leafType != atttype)
+		{
+			if (!OidIsValid(index_getprocid(index, 1, SPGIST_COMPRESS_PROC)))
+				ereport(ERROR,
+						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+						 errmsg("compress method must be defined when leaf type is different from input type")));
+
+			fillTypeDesc(&cache->attLeafType, cache->config.leafType);
+		}
+		else
+		{
+			cache->attLeafType = cache->attType;
+		}
+
 		fillTypeDesc(&cache->attPrefixType, cache->config.prefixType);
 		fillTypeDesc(&cache->attLabelType, cache->config.labelType);
 
@@ -159,6 +181,7 @@ initSpGistState(SpGistState *state, Relation index)
 
 	state->config = cache->config;
 	state->attType = cache->attType;
+	state->attLeafType = cache->attLeafType;
 	state->attPrefixType = cache->attPrefixType;
 	state->attLabelType = cache->attLabelType;
 
@@ -251,14 +274,26 @@ SpGistUpdateMetaPage(Relation index)
 	if (cache != NULL)
 	{
 		Buffer		metabuffer;
-		SpGistMetaPageData *metadata;
 
 		metabuffer = ReadBuffer(index, SPGIST_METAPAGE_BLKNO);
 
 		if (ConditionalLockBuffer(metabuffer))
 		{
-			metadata = SpGistPageGetMeta(BufferGetPage(metabuffer));
+			Page		metapage = BufferGetPage(metabuffer);
+			SpGistMetaPageData *metadata = SpGistPageGetMeta(metapage);
+
 			metadata->lastUsedPages = cache->lastUsedPages;
+
+			/*
+			 * Set pd_lower just past the end of the metadata.  This is
+			 * essential, because without doing so, metadata will be lost if
+			 * xlog.c compresses the page.  (We must do this here because
+			 * pre-v11 versions of PG did not set the metapage's pd_lower
+			 * correctly, so a pg_upgraded index might contain the wrong
+			 * value.)
+			 */
+			((PageHeader) metapage)->pd_lower =
+				((char *) metadata + sizeof(SpGistMetaPageData)) - (char *) metapage;
 
 			MarkBufferDirty(metabuffer);
 			UnlockReleaseBuffer(metabuffer);
@@ -529,6 +564,14 @@ SpGistInitMetapage(Page page)
 	/* initialize last-used-page cache to empty */
 	for (i = 0; i < SPGIST_CACHED_PAGES; i++)
 		metadata->lastUsedPages.cachedPage[i].blkno = InvalidBlockNumber;
+
+	/*
+	 * Set pd_lower just past the end of the metadata.  This is essential,
+	 * because without doing so, metadata will be lost if xlog.c compresses
+	 * the page.
+	 */
+	((PageHeader) page)->pd_lower =
+		((char *) metadata + sizeof(SpGistMetaPageData)) - (char *) page;
 }
 
 /*
@@ -593,7 +636,7 @@ spgFormLeafTuple(SpGistState *state, ItemPointer heapPtr,
 	/* compute space needed (note result is already maxaligned) */
 	size = SGLTHDRSZ;
 	if (!isnull)
-		size += SpGistGetTypeSize(&state->attType, datum);
+		size += SpGistGetTypeSize(&state->attLeafType, datum);
 
 	/*
 	 * Ensure that we can replace the tuple with a dead tuple later.  This
@@ -609,7 +652,7 @@ spgFormLeafTuple(SpGistState *state, ItemPointer heapPtr,
 	tup->nextOffset = InvalidOffsetNumber;
 	tup->heapPtr = *heapPtr;
 	if (!isnull)
-		memcpyDatum(SGLTDATAPTR(tup), &state->attType, datum);
+		memcpyDatum(SGLTDATAPTR(tup), &state->attLeafType, datum);
 
 	return tup;
 }
@@ -700,7 +743,7 @@ spgFormInnerTuple(SpGistState *state, bool hasPrefix, Datum prefix,
 				 errmsg("SP-GiST inner tuple size %zu exceeds maximum %zu",
 						(Size) size,
 						SPGIST_PAGE_CAPACITY - sizeof(ItemIdData)),
-			errhint("Values larger than a buffer page cannot be indexed.")));
+				 errhint("Values larger than a buffer page cannot be indexed.")));
 
 	/*
 	 * Check for overflow of header fields --- probably can't fail if the
@@ -843,7 +886,7 @@ SpGistPageAddNewItem(SpGistState *state, Page page, Item item, Size size,
 			for (; i <= maxoff; i++)
 			{
 				SpGistDeadTuple it = (SpGistDeadTuple) PageGetItem(page,
-													 PageGetItemId(page, i));
+																   PageGetItemId(page, i));
 
 				if (it->tupstate == SPGIST_PLACEHOLDER)
 				{

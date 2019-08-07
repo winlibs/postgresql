@@ -1,318 +1,71 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Data Values</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="PL/Python - Python Procedural Language"
-HREF="plpython.html"><LINK
-REL="PREVIOUS"
-TITLE="PL/Python Functions"
-HREF="plpython-funcs.html"><LINK
-REL="NEXT"
-TITLE="Sharing Data"
-HREF="plpython-sharing.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="PL/Python Functions"
-HREF="plpython-funcs.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plpython.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 44. PL/Python - Python Procedural Language</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Sharing Data"
-HREF="plpython-sharing.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="PLPYTHON-DATA"
->44.3. Data Values</A
-></H1
-><P
->   Generally speaking, the aim of PL/Python is to provide
-   a <SPAN
-CLASS="QUOTE"
->"natural"</SPAN
-> mapping between the PostgreSQL and the
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>46.3. Data Values</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpython-funcs.html" title="46.2. PL/Python Functions" /><link rel="next" href="plpython-sharing.html" title="46.4. Sharing Data" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">46.3. Data Values</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpython-funcs.html" title="46.2. PL/Python Functions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpython.html" title="Chapter 46. PL/Python - Python Procedural Language">Up</a></td><th width="60%" align="center">Chapter 46. PL/Python - Python Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpython-sharing.html" title="46.4. Sharing Data">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPYTHON-DATA"><div class="titlepage"><div><div><h2 class="title" style="clear: both">46.3. Data Values</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpython-data.html#id-1.8.11.11.3">46.3.1. Data Type Mapping</a></span></dt><dt><span class="sect2"><a href="plpython-data.html#id-1.8.11.11.4">46.3.2. Null, None</a></span></dt><dt><span class="sect2"><a href="plpython-data.html#PLPYTHON-ARRAYS">46.3.3. Arrays, Lists</a></span></dt><dt><span class="sect2"><a href="plpython-data.html#id-1.8.11.11.6">46.3.4. Composite Types</a></span></dt><dt><span class="sect2"><a href="plpython-data.html#id-1.8.11.11.7">46.3.5. Set-returning Functions</a></span></dt></dl></div><p>
+   Generally speaking, the aim of PL/Python is to provide
+   a <span class="quote">“<span class="quote">natural</span>”</span> mapping between the PostgreSQL and the
    Python worlds.  This informs the data mapping rules described
    below.
-  </P
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN68987"
->44.3.1. Data Type Mapping</A
-></H2
-><P
->    When a PL/Python function is called, its arguments are converted from
+  </p><div class="sect2" id="id-1.8.11.11.3"><div class="titlepage"><div><div><h3 class="title">46.3.1. Data Type Mapping</h3></div></div></div><p>
+    When a PL/Python function is called, its arguments are converted from
     their PostgreSQL data type to a corresponding Python type:
 
-    <P
-></P
-></P><UL
-><LI
-><P
->       PostgreSQL <TT
-CLASS="TYPE"
->boolean</TT
-> is converted to Python <TT
-CLASS="TYPE"
->bool</TT
->.
-      </P
-></LI
-><LI
-><P
->       PostgreSQL <TT
-CLASS="TYPE"
->smallint</TT
-> and <TT
-CLASS="TYPE"
->int</TT
-> are
-       converted to Python <TT
-CLASS="TYPE"
->int</TT
->.
-       PostgreSQL <TT
-CLASS="TYPE"
->bigint</TT
-> and <TT
-CLASS="TYPE"
->oid</TT
-> are converted
-       to <TT
-CLASS="TYPE"
->long</TT
-> in Python 2 and to <TT
-CLASS="TYPE"
->int</TT
-> in
+    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       PostgreSQL <code class="type">boolean</code> is converted to Python <code class="type">bool</code>.
+      </p></li><li class="listitem"><p>
+       PostgreSQL <code class="type">smallint</code> and <code class="type">int</code> are
+       converted to Python <code class="type">int</code>.
+       PostgreSQL <code class="type">bigint</code> and <code class="type">oid</code> are converted
+       to <code class="type">long</code> in Python 2 and to <code class="type">int</code> in
        Python 3.
-      </P
-></LI
-><LI
-><P
->       PostgreSQL <TT
-CLASS="TYPE"
->real</TT
-> and <TT
-CLASS="TYPE"
->double</TT
-> are converted to
-       Python <TT
-CLASS="TYPE"
->float</TT
->.
-      </P
-></LI
-><LI
-><P
->       PostgreSQL <TT
-CLASS="TYPE"
->numeric</TT
-> is converted to
-       Python <TT
-CLASS="TYPE"
->Decimal</TT
->.  This type is imported from
-       the <TT
-CLASS="LITERAL"
->cdecimal</TT
-> package if that is available.
+      </p></li><li class="listitem"><p>
+       PostgreSQL <code class="type">real</code> and <code class="type">double</code> are converted to
+       Python <code class="type">float</code>.
+      </p></li><li class="listitem"><p>
+       PostgreSQL <code class="type">numeric</code> is converted to
+       Python <code class="type">Decimal</code>.  This type is imported from
+       the <code class="literal">cdecimal</code> package if that is available.
        Otherwise,
-       <TT
-CLASS="LITERAL"
->decimal.Decimal</TT
-> from the standard library will be
-       used.  <TT
-CLASS="LITERAL"
->cdecimal</TT
-> is significantly faster
-       than <TT
-CLASS="LITERAL"
->decimal</TT
->.  In Python 3.3 and up,
-       however, <TT
-CLASS="LITERAL"
->cdecimal</TT
-> has been integrated into the
-       standard library under the name <TT
-CLASS="LITERAL"
->decimal</TT
->, so there is
+       <code class="literal">decimal.Decimal</code> from the standard library will be
+       used.  <code class="literal">cdecimal</code> is significantly faster
+       than <code class="literal">decimal</code>.  In Python 3.3 and up,
+       however, <code class="literal">cdecimal</code> has been integrated into the
+       standard library under the name <code class="literal">decimal</code>, so there is
        no longer any difference.
-      </P
-></LI
-><LI
-><P
->       PostgreSQL <TT
-CLASS="TYPE"
->bytea</TT
-> is converted to
-       Python <TT
-CLASS="TYPE"
->str</TT
-> in Python 2 and to <TT
-CLASS="TYPE"
->bytes</TT
->
+      </p></li><li class="listitem"><p>
+       PostgreSQL <code class="type">bytea</code> is converted to
+       Python <code class="type">str</code> in Python 2 and to <code class="type">bytes</code>
        in Python 3.  In Python 2, the string should be treated as a
        byte sequence without any character encoding.
-      </P
-></LI
-><LI
-><P
->       All other data types, including the PostgreSQL character string
-       types, are converted to a Python <TT
-CLASS="TYPE"
->str</TT
->.  In Python
+      </p></li><li class="listitem"><p>
+       All other data types, including the PostgreSQL character string
+       types, are converted to a Python <code class="type">str</code>.  In Python
        2, this string will be in the PostgreSQL server encoding; in
        Python 3, it will be a Unicode string like all strings.
-      </P
-></LI
-><LI
-><P
->       For nonscalar data types, see below.
-      </P
-></LI
-></UL
-><P>
-   </P
-><P
->    When a PL/Python function returns, its return value is converted to the
+      </p></li><li class="listitem"><p>
+       For nonscalar data types, see below.
+      </p></li></ul></div><p>
+   </p><p>
+    When a PL/Python function returns, its return value is converted to the
     function's declared PostgreSQL return data type as follows:
 
-    <P
-></P
-></P><UL
-><LI
-><P
->       When the PostgreSQL return type is <TT
-CLASS="TYPE"
->boolean</TT
->, the
+    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       When the PostgreSQL return type is <code class="type">boolean</code>, the
        return value will be evaluated for truth according to the
-       <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->Python</I
-></SPAN
-> rules.  That is, 0 and empty string
-       are false, but notably <TT
-CLASS="LITERAL"
->'f'</TT
-> is true.
-      </P
-></LI
-><LI
-><P
->       When the PostgreSQL return type is <TT
-CLASS="TYPE"
->bytea</TT
->, the
+       <span class="emphasis"><em>Python</em></span> rules.  That is, 0 and empty string
+       are false, but notably <code class="literal">'f'</code> is true.
+      </p></li><li class="listitem"><p>
+       When the PostgreSQL return type is <code class="type">bytea</code>, the
        return value will be converted to a string (Python 2) or bytes
        (Python 3) using the respective Python built-ins, with the
-       result being converted to <TT
-CLASS="TYPE"
->bytea</TT
->.
-      </P
-></LI
-><LI
-><P
->       For all other PostgreSQL return types, the return value is converted
-       to a string using the Python built-in <TT
-CLASS="LITERAL"
->str</TT
->, and the
+       result being converted to <code class="type">bytea</code>.
+      </p></li><li class="listitem"><p>
+       For all other PostgreSQL return types, the return value is converted
+       to a string using the Python built-in <code class="literal">str</code>, and the
        result is passed to the input function of the PostgreSQL data type.
-       (If the Python value is a <TT
-CLASS="TYPE"
->float</TT
->, it is converted using
-       the <TT
-CLASS="LITERAL"
->repr</TT
-> built-in instead of <TT
-CLASS="LITERAL"
->str</TT
->, to
+       (If the Python value is a <code class="type">float</code>, it is converted using
+       the <code class="literal">repr</code> built-in instead of <code class="literal">str</code>, to
        avoid loss of precision.)
-      </P
-><P
->       Strings in Python 2 are required to be in the PostgreSQL server
+      </p><p>
+       Strings in Python 2 are required to be in the PostgreSQL server
        encoding when they are passed to PostgreSQL.  Strings that are
        not valid in the current server encoding will raise an error,
        but not all encoding mismatches can be detected, so garbage
@@ -320,58 +73,26 @@ CLASS="LITERAL"
        strings are converted to the correct encoding automatically, so
        it can be safer and more convenient to use those.  In Python 3,
        all strings are Unicode strings.
-      </P
-></LI
-><LI
-><P
->       For nonscalar data types, see below.
-      </P
-></LI
-></UL
-><P>
+      </p></li><li class="listitem"><p>
+       For nonscalar data types, see below.
+      </p></li></ul></div><p>
 
     Note that logical mismatches between the declared PostgreSQL
     return type and the Python data type of the actual return object
     are not flagged; the value will be converted in any case.
-   </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN69049"
->44.3.2. Null, None</A
-></H2
-><P
->   If an SQL null value is passed to a
-   function, the argument value will appear as <TT
-CLASS="SYMBOL"
->None</TT
-> in
-   Python. For example, the function definition of <CODE
-CLASS="FUNCTION"
->pymax</CODE
->
-   shown in <A
-HREF="plpython-funcs.html"
->Section 44.2</A
-> will return the wrong answer for null
-   inputs. We could add <TT
-CLASS="LITERAL"
->STRICT</TT
-> to the function definition
-   to make <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> do something more reasonable:
+   </p></div><div class="sect2" id="id-1.8.11.11.4"><div class="titlepage"><div><div><h3 class="title">46.3.2. Null, None</h3></div></div></div><p>
+   If an SQL null value<a id="id-1.8.11.11.4.2.1" class="indexterm"></a> is passed to a
+   function, the argument value will appear as <code class="symbol">None</code> in
+   Python. For example, the function definition of <code class="function">pymax</code>
+   shown in <a class="xref" href="plpython-funcs.html" title="46.2. PL/Python Functions">Section 46.2</a> will return the wrong answer for null
+   inputs. We could add <code class="literal">STRICT</code> to the function definition
+   to make <span class="productname">PostgreSQL</span> do something more reasonable:
    if a null value is passed, the function will not be called at all,
    but will just return a null result automatically. Alternatively,
    we could check for null inputs in the function body:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION pymax (a integer, b integer)
+</p><pre class="programlisting">
+CREATE FUNCTION pymax (a integer, b integer)
   RETURNS integer
 AS $$
   if (a is None) or (b is None):
@@ -379,51 +100,63 @@ AS $$
   if a &gt; b:
     return a
   return b
-$$ LANGUAGE plpythonu;</PRE
-><P>
+$$ LANGUAGE plpythonu;
+</pre><p>
 
    As shown above, to return an SQL null value from a PL/Python
-   function, return the value <TT
-CLASS="SYMBOL"
->None</TT
->. This can be done whether the
+   function, return the value <code class="symbol">None</code>. This can be done whether the
    function is strict or not.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="PLPYTHON-ARRAYS"
->44.3.3. Arrays, Lists</A
-></H2
-><P
->   SQL array values are passed into PL/Python as a Python list.  To
+  </p></div><div class="sect2" id="PLPYTHON-ARRAYS"><div class="titlepage"><div><div><h3 class="title">46.3.3. Arrays, Lists</h3></div></div></div><p>
+   SQL array values are passed into PL/Python as a Python list.  To
    return an SQL array value out of a PL/Python function, return a
-   Python sequence, for example a list or tuple:
+   Python list:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION return_arr()
+</p><pre class="programlisting">
+CREATE FUNCTION return_arr()
   RETURNS int[]
 AS $$
-return (1, 2, 3, 4, 5)
+return [1, 2, 3, 4, 5]
 $$ LANGUAGE plpythonu;
 
 SELECT return_arr();
  return_arr  
 -------------
  {1,2,3,4,5}
-(1 row)</PRE
-><P>
+(1 row)
+</pre><p>
 
+   Multidimensional arrays are passed into PL/Python as nested Python lists.
+   A 2-dimensional array is a list of lists, for example. When returning
+   a multi-dimensional SQL array out of a PL/Python function, the inner
+   lists at each level must all be of the same size. For example:
+
+</p><pre class="programlisting">
+CREATE FUNCTION test_type_conversion_array_int4(x int4[]) RETURNS int4[] AS $$
+plpy.info(x, type(x))
+return x
+$$ LANGUAGE plpythonu;
+
+SELECT * FROM test_type_conversion_array_int4(ARRAY[[1,2,3],[4,5,6]]);
+INFO:  ([[1, 2, 3], [4, 5, 6]], &lt;type 'list'&gt;)
+ test_type_conversion_array_int4 
+---------------------------------
+ {{1,2,3},{4,5,6}}
+(1 row)
+</pre><p>
+
+   Other Python sequences, like tuples, are also accepted for
+   backwards-compatibility with PostgreSQL versions 9.6 and below, when
+   multi-dimensional arrays were not supported. However, they are always
+   treated as one-dimensional arrays, because they are ambiguous with
+   composite types. For the same reason, when a composite type is used in a
+   multi-dimensional array, it must be represented by a tuple, rather than a
+   list.
+  </p><p>
    Note that in Python, strings are sequences, which can have
    undesirable effects that might be familiar to Python programmers:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION return_str_arr()
+</p><pre class="programlisting">
+CREATE FUNCTION return_str_arr()
   RETURNS varchar[]
 AS $$
 return "hello"
@@ -433,30 +166,16 @@ SELECT return_str_arr();
  return_str_arr
 ----------------
  {h,e,l,l,o}
-(1 row)</PRE
-><P>
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN69067"
->44.3.4. Composite Types</A
-></H2
-><P
->   Composite-type arguments are passed to the function as Python mappings. The
+(1 row)
+</pre><p>
+  </p></div><div class="sect2" id="id-1.8.11.11.6"><div class="titlepage"><div><div><h3 class="title">46.3.4. Composite Types</h3></div></div></div><p>
+   Composite-type arguments are passed to the function as Python mappings. The
    element names of the mapping are the attribute names of the composite type.
    If an attribute in the passed row has the null value, it has the value
-   <TT
-CLASS="SYMBOL"
->None</TT
-> in the mapping. Here is an example:
+   <code class="symbol">None</code> in the mapping. Here is an example:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE TABLE employee (
+</p><pre class="programlisting">
+CREATE TABLE employee (
   name text,
   salary integer,
   age integer
@@ -470,93 +189,65 @@ AS $$
   if (e["age"] &lt; 30) and (e["salary"] &gt; 100000):
     return True
   return False
-$$ LANGUAGE plpythonu;</PRE
-><P>
-  </P
-><P
->   There are multiple ways to return row or composite types from a Python
+$$ LANGUAGE plpythonu;
+</pre><p>
+  </p><p>
+   There are multiple ways to return row or composite types from a Python
    function. The following examples assume we have:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE TYPE named_value AS (
+</p><pre class="programlisting">
+CREATE TYPE named_value AS (
   name   text,
   value  integer
-);</PRE
-><P>
+);
+</pre><p>
 
    A composite result can be returned as a:
 
-   <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
->Sequence type (a tuple or list, but not a set because
-     it is not indexable)</DT
-><DD
-><P
->       Returned sequence objects must have the same number of items as the
+   </p><div class="variablelist"><dl class="variablelist"><dt><span class="term">Sequence type (a tuple or list, but not a set because
+     it is not indexable)</span></dt><dd><p>
+       Returned sequence objects must have the same number of items as the
        composite result type has fields. The item with index 0 is assigned to
        the first field of the composite type, 1 to the second and so on. For
        example:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION make_pair (name text, value integer)
+</p><pre class="programlisting">
+CREATE FUNCTION make_pair (name text, value integer)
   RETURNS named_value
 AS $$
-  return [ name, value ]
-  # or alternatively, as tuple: return ( name, value )
-$$ LANGUAGE plpythonu;</PRE
-><P>
+  return ( name, value )
+  # or alternatively, as tuple: return [ name, value ]
+$$ LANGUAGE plpythonu;
+</pre><p>
 
-       To return a SQL null for any column, insert <TT
-CLASS="SYMBOL"
->None</TT
-> at
+       To return a SQL null for any column, insert <code class="symbol">None</code> at
        the corresponding position.
-      </P
-></DD
-><DT
->Mapping (dictionary)</DT
-><DD
-><P
->       The value for each result type column is retrieved from the mapping
+      </p><p>
+       When an array of composite types is returned, it cannot be returned as a list,
+       because it is ambiguous whether the Python list represents a composite type,
+       or another array dimension.
+      </p></dd><dt><span class="term">Mapping (dictionary)</span></dt><dd><p>
+       The value for each result type column is retrieved from the mapping
        with the column name as key. Example:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION make_pair (name text, value integer)
+</p><pre class="programlisting">
+CREATE FUNCTION make_pair (name text, value integer)
   RETURNS named_value
 AS $$
   return { "name": name, "value": value }
-$$ LANGUAGE plpythonu;</PRE
-><P>
+$$ LANGUAGE plpythonu;
+</pre><p>
 
        Any extra dictionary key/value pairs are ignored. Missing keys are
        treated as errors.
        To return a SQL null value for any column, insert
-       <TT
-CLASS="SYMBOL"
->None</TT
-> with the corresponding column name as the key.
-      </P
-></DD
-><DT
->Object (any object providing method <TT
-CLASS="LITERAL"
->__getattr__</TT
->)</DT
-><DD
-><P
->       This works the same as a mapping.
+       <code class="symbol">None</code> with the corresponding column name as the key.
+      </p></dd><dt><span class="term">Object (any object providing method <code class="literal">__getattr__</code>)</span></dt><dd><p>
+       This works the same as a mapping.
        Example:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION make_pair (name text, value integer)
+</p><pre class="programlisting">
+CREATE FUNCTION make_pair (name text, value integer)
   RETURNS named_value
 AS $$
   class named_value:
@@ -570,91 +261,56 @@ AS $$
   nv.name = name
   nv.value = value
   return nv
-$$ LANGUAGE plpythonu;</PRE
-><P>
-      </P
-></DD
-></DL
-></DIV
-><P>
-  </P
-><P
->    Functions with <TT
-CLASS="LITERAL"
->OUT</TT
-> parameters are also supported.  For example:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION multiout_simple(OUT i integer, OUT j integer) AS $$
+$$ LANGUAGE plpythonu;
+</pre><p>
+      </p></dd></dl></div><p>
+  </p><p>
+    Functions with <code class="literal">OUT</code> parameters are also supported.  For example:
+</p><pre class="programlisting">
+CREATE FUNCTION multiout_simple(OUT i integer, OUT j integer) AS $$
 return (1, 2)
 $$ LANGUAGE plpythonu;
 
-SELECT * FROM multiout_simple();</PRE
-><P>
-   </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN69096"
->44.3.5. Set-returning Functions</A
-></H2
-><P
->   A <SPAN
-CLASS="APPLICATION"
->PL/Python</SPAN
-> function can also return sets of
+SELECT * FROM multiout_simple();
+</pre><p>
+   </p><p>
+    Output parameters of procedures are passed back the same way.  For example:
+</p><pre class="programlisting">
+CREATE PROCEDURE python_triple(INOUT a integer, INOUT b integer) AS $$
+return (a * 3, b * 3)
+$$ LANGUAGE plpythonu;
+
+CALL python_triple(5, 10);
+</pre><p>
+   </p></div><div class="sect2" id="id-1.8.11.11.7"><div class="titlepage"><div><div><h3 class="title">46.3.5. Set-returning Functions</h3></div></div></div><p>
+   A <span class="application">PL/Python</span> function can also return sets of
    scalar or composite types. There are several ways to achieve this because
    the returned object is internally turned into an iterator. The following
    examples assume we have composite type:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE TYPE greeting AS (
+</p><pre class="programlisting">
+CREATE TYPE greeting AS (
   how text,
   who text
-);</PRE
-><P>
+);
+</pre><p>
 
    A set result can be returned from a:
 
-   <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
->Sequence type (tuple, list, set)</DT
-><DD
-><P
-></P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION greet (how text)
+   </p><div class="variablelist"><dl class="variablelist"><dt><span class="term">Sequence type (tuple, list, set)</span></dt><dd><p>
+</p><pre class="programlisting">
+CREATE FUNCTION greet (how text)
   RETURNS SETOF greeting
 AS $$
   # return tuple containing lists as composite types
   # all other combinations work also
   return ( [ how, "World" ], [ how, "PostgreSQL" ], [ how, "PL/Python" ] )
-$$ LANGUAGE plpythonu;</PRE
-><P>
-      </P
-></DD
-><DT
->Iterator (any object providing <TT
-CLASS="SYMBOL"
->__iter__</TT
-> and
-      <TT
-CLASS="SYMBOL"
->next</TT
-> methods)</DT
-><DD
-><P
-></P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION greet (how text)
+$$ LANGUAGE plpythonu;
+</pre><p>
+      </p></dd><dt><span class="term">Iterator (any object providing <code class="symbol">__iter__</code> and
+      <code class="symbol">next</code> methods)</span></dt><dd><p>
+</p><pre class="programlisting">
+CREATE FUNCTION greet (how text)
   RETURNS SETOF greeting
 AS $$
   class producer:
@@ -673,160 +329,28 @@ AS $$
       return ( self.how, self.who[self.ndx] )
 
   return producer(how, [ "World", "PostgreSQL", "PL/Python" ])
-$$ LANGUAGE plpythonu;</PRE
-><P>
-      </P
-></DD
-><DT
->Generator (<TT
-CLASS="LITERAL"
->yield</TT
->)</DT
-><DD
-><P
-></P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION greet (how text)
+$$ LANGUAGE plpythonu;
+</pre><p>
+      </p></dd><dt><span class="term">Generator (<code class="literal">yield</code>)</span></dt><dd><p>
+</p><pre class="programlisting">
+CREATE FUNCTION greet (how text)
   RETURNS SETOF greeting
 AS $$
   for who in [ "World", "PostgreSQL", "PL/Python" ]:
     yield ( how, who )
-$$ LANGUAGE plpythonu;</PRE
-><P>
+$$ LANGUAGE plpythonu;
+</pre><p>
 
-       <DIV
-CLASS="WARNING"
-><P
-></P
-><TABLE
-CLASS="WARNING"
-BORDER="1"
-WIDTH="90%"
-><TR
-><TD
-ALIGN="CENTER"
-><B
->Warning</B
-></TD
-></TR
-><TR
-><TD
-ALIGN="LEFT"
-><P
->         Due to Python
-         <A
-HREF="http://bugs.python.org/issue1483133"
-TARGET="_top"
->bug #1483133</A
->,
-         some debug versions of Python 2.4
-         (configured and compiled with option <TT
-CLASS="LITERAL"
->--with-pydebug</TT
->)
-         are known to crash the <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> server
-         when using an iterator to return a set result.
-         Unpatched versions of Fedora 4 contain this bug.
-         It does not happen in production versions of Python or on patched
-         versions of Fedora 4.
-        </P
-></TD
-></TR
-></TABLE
-></DIV
->
-      </P
-></DD
-></DL
-></DIV
-><P>
-  </P
-><P
->    Set-returning functions with <TT
-CLASS="LITERAL"
->OUT</TT
-> parameters
-    (using <TT
-CLASS="LITERAL"
->RETURNS SETOF record</TT
->) are also
+      </p></dd></dl></div><p>
+  </p><p>
+    Set-returning functions with <code class="literal">OUT</code> parameters
+    (using <code class="literal">RETURNS SETOF record</code>) are also
     supported.  For example:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION multiout_simple_setof(n integer, OUT integer, OUT integer) RETURNS SETOF record AS $$
+</p><pre class="programlisting">
+CREATE FUNCTION multiout_simple_setof(n integer, OUT integer, OUT integer) RETURNS SETOF record AS $$
 return [(1, 2)] * n
 $$ LANGUAGE plpythonu;
 
-SELECT * FROM multiout_simple_setof(3);</PRE
-><P>
-   </P
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plpython-funcs.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="plpython-sharing.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->PL/Python Functions</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="plpython.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Sharing Data</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+SELECT * FROM multiout_simple_setof(3);
+</pre><p>
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpython-funcs.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpython.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpython-sharing.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">46.2. PL/Python Functions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 46.4. Sharing Data</td></tr></table></div></body></html>

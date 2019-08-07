@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "PG_DUMP" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "PG_DUMP" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -42,7 +42,7 @@ pg_dump
 does not block other users accessing the database (readers or writers)\&.
 .PP
 pg_dump
-only dumps a single database\&. To backup global objects that are common to all databases in a cluster, such as roles and tablespaces, use
+only dumps a single database\&. To back up an entire cluster, or to back up global objects that are common to all databases in a cluster (such as roles and tablespaces), use
 \fBpg_dumpall\fR(1)\&.
 .PP
 Dumps can be output in script or archive file formats\&. Script dumps are plain\-text files containing the SQL commands required to reconstruct the database to the state it was in at the time it was saved\&. To restore from such a script, feed it to
@@ -102,7 +102,26 @@ Include large objects in the dump\&. This is the default behavior except when
 \fB\-\-schema\-only\fR
 is specified\&. The
 \fB\-b\fR
-switch is therefore only useful to add large objects to dumps where a specific schema or table has been requested\&. Note that blobs are considered data and therefore will be included when \-\-data\-only is used, but not when \-\-schema\-only is\&.
+switch is therefore only useful to add large objects to dumps where a specific schema or table has been requested\&. Note that blobs are considered data and therefore will be included when
+\fB\-\-data\-only\fR
+is used, but not when
+\fB\-\-schema\-only\fR
+is\&.
+.RE
+.PP
+\fB\-B\fR
+.br
+\fB\-\-no\-blobs\fR
+.RS 4
+Exclude large objects in the dump\&.
+.sp
+When both
+\fB\-b\fR
+and
+\fB\-B\fR
+are given, the behavior is to output large objects, when data is being dumped, see the
+\fB\-b\fR
+documentation\&.
 .RE
 .PP
 \fB\-c\fR
@@ -124,6 +143,15 @@ This option is only meaningful for the plain\-text format\&. For the archive for
 Begin the output with a command to create the database itself and reconnect to the created database\&. (With a script of this form, it doesn\*(Aqt matter which database in the destination installation you connect to before running the script\&.) If
 \fB\-\-clean\fR
 is also specified, the script drops and recreates the target database before reconnecting to it\&.
+.sp
+With
+\fB\-\-create\fR, the output also includes the database\*(Aqs comment if any, and any configuration variable settings that are specific to this database, that is, any
+\fBALTER DATABASE \&.\&.\&. SET \&.\&.\&.\fR
+and
+\fBALTER ROLE \&.\&.\&. IN DATABASE \&.\&.\&. SET \&.\&.\&.\fR
+commands that mention this database\&. Access privileges for the database itself are also dumped, unless
+\fB\-\-no\-acl\fR
+is specified\&.
 .sp
 This option is only meaningful for the plain\-text format\&. For the archive formats, you can specify the option when you call
 \fBpg_restore\fR\&.
@@ -221,7 +249,7 @@ has no choice but to abort the dump\&.
 .sp
 For a consistent backup, the database server needs to support synchronized snapshots, a feature that was introduced in
 PostgreSQL
-9\&.2\&. With this feature, database clients can ensure they see the same data set even though they use different connections\&.
+9\&.2 for primary servers and 10 for standbys\&. With this feature, database clients can ensure they see the same data set even though they use different connections\&.
 \fBpg_dump \-j\fR
 uses multiple database connections; it connects to the database once with the master process and once again for each worker job\&. Without the synchronized snapshot feature, the different worker jobs wouldn\*(Aqt be guaranteed to see the same data in each connection, which could lead to an inconsistent backup\&.
 .sp
@@ -601,16 +629,53 @@ databases\&. However, since this option generates a separate command for each ro
 option is safe against column order changes, though even slower\&.
 .RE
 .PP
+\fB\-\-load\-via\-partition\-root\fR
+.RS 4
+When dumping data for a table partition, make the
+\fBCOPY\fR
+or
+\fBINSERT\fR
+statements target the root of the partitioning hierarchy that contains it, rather than the partition itself\&. This causes the appropriate partition to be re\-determined for each row when the data is loaded\&. This may be useful when reloading data on a server where rows do not always fall into the same partitions as they did on the original server\&. That could happen, for example, if the partitioning column is of type text and the two systems have different definitions of the collation used to sort the partitioning column\&.
+.sp
+It is best not to use parallelism when restoring from an archive made with this option, because
+pg_restore
+will not know exactly which partition(s) a given archive data item will load data into\&. This could result in inefficiency due to lock conflicts between parallel jobs, or perhaps even reload failures due to foreign key constraints being set up before all the relevant data is loaded\&.
+.RE
+.PP
 \fB\-\-lock\-wait\-timeout=\fR\fB\fItimeout\fR\fR
 .RS 4
 Do not wait forever to acquire shared table locks at the beginning of the dump\&. Instead fail if unable to lock a table within the specified
 \fItimeout\fR\&. The timeout may be specified in any of the formats accepted by
-\fBSET statement_timeout\fR\&. (Allowed values vary depending on the server version you are dumping from, but an integer number of milliseconds is accepted by all versions since 7\&.3\&. This option is ignored when dumping from a pre\-7\&.3 server\&.)
+\fBSET statement_timeout\fR\&. (Allowed formats vary depending on the server version you are dumping from, but an integer number of milliseconds is accepted by all versions\&.)
+.RE
+.PP
+\fB\-\-no\-comments\fR
+.RS 4
+Do not dump comments\&.
+.RE
+.PP
+\fB\-\-no\-publications\fR
+.RS 4
+Do not dump publications\&.
 .RE
 .PP
 \fB\-\-no\-security\-labels\fR
 .RS 4
 Do not dump security labels\&.
+.RE
+.PP
+\fB\-\-no\-subscriptions\fR
+.RS 4
+Do not dump subscriptions\&.
+.RE
+.PP
+\fB\-\-no\-sync\fR
+.RS 4
+By default,
+\fBpg_dump\fR
+will wait for all files to be written safely to disk\&. This option causes
+\fBpg_dump\fR
+to return without waiting, which is faster, but means that a subsequent operating system crash can leave the dump corrupt\&. Generally, this option is useful for testing but should not be used when dumping data from production installation\&.
 .RE
 .PP
 \fB\-\-no\-synchronized\-snapshots\fR
@@ -663,7 +728,7 @@ Use a
 serializable
 transaction for the dump, to ensure that the snapshot used is consistent with later database states; but do this by waiting for a point in the transaction stream at which no anomalies can be present, so that there isn\*(Aqt a risk of the dump failing or causing other transactions to roll back with a
 serialization_failure\&. See
-Chapter 13, Concurrency Control, in the documentation
+Chapter\ \&13
 for more information about transaction isolation and concurrency control\&.
 .sp
 This option is not beneficial for a dump which is intended only for disaster recovery\&. It could be useful for a dump used to load a copy of the database for reporting or other read\-only load sharing while the original database continues to be updated\&. Without it the dump may reflect a state which is not consistent with any serial execution of the transactions eventually committed\&. For example, if batch processing techniques are used, a batch may show as closed in the dump without all of the items which are in the batch appearing\&.
@@ -674,11 +739,11 @@ This option will make no difference if there are no read\-write transactions act
 \fB\-\-snapshot=\fR\fB\fIsnapshotname\fR\fR
 .RS 4
 Use the specified synchronized snapshot when making a dump of the database (see
-Table\ \&9.81, \(lqSnapshot Synchronization Functions\(rq
+Table\ \&9.82
 for more details)\&.
 .sp
 This option is useful when needing to synchronize the dump with a logical replication slot (see
-Chapter 47, Logical Decoding, in the documentation) or with a concurrent session\&.
+Chapter\ \&49) or with a concurrent session\&.
 .sp
 In the case of a parallel dump, the snapshot name defined by this option is used rather than taking a new snapshot\&.
 .RE
@@ -737,7 +802,7 @@ or
 postgres://), it is treated as a
 \fIconninfo\fR
 string\&. See
-Section 32.1, \(lqDatabase Connection Control Functions\(rq, in the documentation
+Section\ \&34.1
 for more information\&.
 .RE
 .PP
@@ -823,7 +888,7 @@ PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section\ \&34.14)\&.
 .SH "DIAGNOSTICS"
 .PP
 pg_dump
@@ -876,13 +941,10 @@ pg_dump
 does not contain the statistics used by the optimizer to make query planning decisions\&. Therefore, it is wise to run
 \fBANALYZE\fR
 after restoring from a dump file to ensure optimal performance; see
-Section 24.1.3, \(lqUpdating Planner Statistics\(rq, in the documentation
+Section\ \&24.1.3
 and
-Section 24.1.6, \(lqThe Autovacuum Daemon\(rq, in the documentation
-for more information\&. The dump file also does not contain any
-\fBALTER DATABASE \&.\&.\&. SET\fR
-commands; these settings are dumped by
-\fBpg_dumpall\fR(1), along with database users and other installation\-wide settings\&.
+Section\ \&24.1.6
+for more information\&.
 .PP
 Because
 pg_dump
@@ -896,7 +958,7 @@ pg_dump\*(Aqs version\&.
 pg_dump
 can also dump from
 PostgreSQL
-servers older than its own version\&. (Currently, servers back to version 7\&.0 are supported\&.) However,
+servers older than its own version\&. (Currently, servers back to version 8\&.0 are supported\&.) However,
 pg_dump
 cannot dump from
 PostgreSQL
@@ -906,6 +968,14 @@ pg_dump\*(Aqs output can be loaded into a server of an older major version \(em 
 option is recommended in cross\-version cases, as it can prevent problems arising from varying reserved\-word lists in different
 PostgreSQL
 versions\&.
+.PP
+When dumping logical replication subscriptions,
+pg_dump
+will generate
+\fBCREATE SUBSCRIPTION\fR
+commands that use the
+connect = false
+option, so that restoring the subscription does not make remote connections for creating a replication slot or for initial table copy\&. That way, the dump can be restored without requiring network access to the remote servers\&. It is then up to the user to reactivate the subscriptions in a suitable way\&. If the involved hosts have changed, the connection information might have to be changed\&. It might also be appropriate to truncate the target tables before initiating a new full table copy\&.
 .SH "EXAMPLES"
 .PP
 To dump a database called
@@ -979,6 +1049,18 @@ newdb:
 .\}
 .nf
 $ \fBpg_restore \-d newdb db\&.dump\fR
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To reload an archive file into the same database it was dumped from, discarding the current contents of that database:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+$ \fBpg_restore \-d postgres \-\-clean \-\-create db\&.dump\fR
 .fi
 .if n \{\
 .RE

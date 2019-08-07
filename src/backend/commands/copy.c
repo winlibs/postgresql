@@ -3,7 +3,7 @@
  * copy.c
  *		Implements the COPY utility command
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -17,19 +17,21 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <sys/stat.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
 
 #include "access/heapam.h"
 #include "access/htup_details.h"
 #include "access/sysattr.h"
 #include "access/xact.h"
 #include "access/xlog.h"
+#include "catalog/dependency.h"
+#include "catalog/pg_authid.h"
 #include "catalog/pg_type.h"
 #include "commands/copy.h"
 #include "commands/defrem.h"
 #include "commands/trigger.h"
+#include "executor/execPartition.h"
 #include "executor/executor.h"
+#include "foreign/fdwapi.h"
 #include "libpq/libpq.h"
 #include "libpq/pqformat.h"
 #include "mb/pg_wchar.h"
@@ -37,6 +39,8 @@
 #include "optimizer/clauses.h"
 #include "optimizer/planner.h"
 #include "nodes/makefuncs.h"
+#include "parser/parse_relation.h"
+#include "port/pg_bswap.h"
 #include "rewrite/rewriteHandler.h"
 #include "storage/fd.h"
 #include "tcop/tcopprot.h"
@@ -60,7 +64,8 @@ typedef enum CopyDest
 {
 	COPY_FILE,					/* to/from file (or a piped program) */
 	COPY_OLD_FE,				/* to/from frontend (2.0 protocol) */
-	COPY_NEW_FE					/* to/from frontend (3.0 protocol) */
+	COPY_NEW_FE,				/* to/from frontend (3.0 protocol) */
+	COPY_CALLBACK				/* to/from callback function */
 } CopyDest;
 
 /*
@@ -87,7 +92,7 @@ typedef enum EolType
  * characters, else we might find a false match to a trailing byte. In
  * supported server encodings, there is no possibility of a false match, and
  * it's faster to make useless comparisons to trailing bytes than it is to
- * invoke pg_encoding_mblen() to skip over them. encoding_embeds_ascii is TRUE
+ * invoke pg_encoding_mblen() to skip over them. encoding_embeds_ascii is true
  * when we have to do it the hard way.
  */
 typedef struct CopyStateData
@@ -97,10 +102,12 @@ typedef struct CopyStateData
 	FILE	   *copy_file;		/* used if copy_dest == COPY_FILE */
 	StringInfo	fe_msgbuf;		/* used for all dests during COPY TO, only for
 								 * dest == COPY_NEW_FE in COPY FROM */
-	bool		fe_eof;			/* true if detected end of copy data */
+	bool		is_copy_from;	/* COPY TO, or COPY FROM? */
+	bool		reached_eof;	/* true if we read to end of copy data (not
+								 * all copy_dest types maintain this) */
 	EolType		eol_type;		/* EOL type of input */
 	int			file_encoding;	/* file or remote side's character encoding */
-	bool		need_transcoding;		/* file encoding diff from server? */
+	bool		need_transcoding;	/* file encoding diff from server? */
 	bool		encoding_embeds_ascii;	/* ASCII can be non-first byte? */
 
 	/* parameters from the COPY command */
@@ -109,6 +116,7 @@ typedef struct CopyStateData
 	List	   *attnumlist;		/* integer list of attnums to copy */
 	char	   *filename;		/* filename, or NULL for STDIN/STDOUT */
 	bool		is_program;		/* is 'filename' a program to popen? */
+	copy_data_source_cb data_source_cb; /* function for reading data */
 	bool		binary;			/* binary format? */
 	bool		oids;			/* include OIDs? */
 	bool		freeze;			/* freeze rows on loading? */
@@ -116,17 +124,17 @@ typedef struct CopyStateData
 	bool		header_line;	/* CSV header line? */
 	char	   *null_print;		/* NULL marker string (server encoding!) */
 	int			null_print_len; /* length of same */
-	char	   *null_print_client;		/* same converted to file encoding */
+	char	   *null_print_client;	/* same converted to file encoding */
 	char	   *delim;			/* column delimiter (must be 1 byte) */
 	char	   *quote;			/* CSV quote char (must be 1 byte) */
 	char	   *escape;			/* CSV escape char (must be 1 byte) */
 	List	   *force_quote;	/* list of column names */
 	bool		force_quote_all;	/* FORCE_QUOTE *? */
-	bool	   *force_quote_flags;		/* per-column CSV FQ flags */
+	bool	   *force_quote_flags;	/* per-column CSV FQ flags */
 	List	   *force_notnull;	/* list of column names */
 	bool	   *force_notnull_flags;	/* per-column CSV FNN flags */
 	List	   *force_null;		/* list of column names */
-	bool	   *force_null_flags;		/* per-column CSV FN flags */
+	bool	   *force_null_flags;	/* per-column CSV FN flags */
 	bool		convert_selectively;	/* do selective binary conversion? */
 	List	   *convert_select; /* list of column names (can be NIL) */
 	bool	   *convert_select_flags;	/* per-column CSV/TEXT CS flags */
@@ -159,8 +167,13 @@ typedef struct CopyStateData
 	Oid		   *typioparams;	/* array of element types for in_functions */
 	int		   *defmap;			/* array of default att numbers */
 	ExprState **defexprs;		/* array of default att expressions */
-	bool		volatile_defexprs;		/* is any of defexprs volatile? */
+	bool		volatile_defexprs;	/* is any of defexprs volatile? */
 	List	   *range_table;
+
+	/* Tuple-routing support info */
+	PartitionTupleRouting *partition_tuple_routing;
+
+	TransitionCaptureState *transition_capture;
 
 	/*
 	 * These variables are used to reduce overhead in textual COPY FROM.
@@ -185,7 +198,7 @@ typedef struct CopyStateData
 	 * can display it in error messages if appropriate.
 	 */
 	StringInfoData line_buf;
-	bool		line_buf_converted;		/* converted to server encoding? */
+	bool		line_buf_converted; /* converted to server encoding? */
 	bool		line_buf_valid; /* contains the row being processed? */
 
 	/*
@@ -279,20 +292,19 @@ static const char BinarySignature[11] = "PGCOPY\n\377\r\n\0";
 
 
 /* non-export function prototypes */
-static CopyState BeginCopy(bool is_from, Relation rel, Node *raw_query,
-		  const char *queryString, const Oid queryRelId, List *attnamelist,
+static CopyState BeginCopy(ParseState *pstate, bool is_from, Relation rel,
+		  RawStmt *raw_query, Oid queryRelId, List *attnamelist,
 		  List *options);
 static void EndCopy(CopyState cstate);
 static void ClosePipeToProgram(CopyState cstate);
-static CopyState BeginCopyTo(Relation rel, Node *query, const char *queryString,
-			const Oid queryRelId, const char *filename, bool is_program,
+static CopyState BeginCopyTo(ParseState *pstate, Relation rel, RawStmt *query,
+			Oid queryRelId, const char *filename, bool is_program,
 			List *attnamelist, List *options);
 static void EndCopyTo(CopyState cstate);
 static uint64 DoCopyTo(CopyState cstate);
 static uint64 CopyTo(CopyState cstate);
 static void CopyOneRowTo(CopyState cstate, Oid tupleOid,
 			 Datum *values, bool *nulls);
-static uint64 CopyFrom(CopyState cstate);
 static void CopyFromInsertBatch(CopyState cstate, EState *estate,
 					CommandId mycid, int hi_options,
 					ResultRelInfo *resultRelInfo, TupleTableSlot *myslot,
@@ -346,33 +358,21 @@ SendCopyBegin(CopyState cstate)
 		int			i;
 
 		pq_beginmessage(&buf, 'H');
-		pq_sendbyte(&buf, format);		/* overall format */
-		pq_sendint(&buf, natts, 2);
+		pq_sendbyte(&buf, format);	/* overall format */
+		pq_sendint16(&buf, natts);
 		for (i = 0; i < natts; i++)
-			pq_sendint(&buf, format, 2);		/* per-column formats */
+			pq_sendint16(&buf, format); /* per-column formats */
 		pq_endmessage(&buf);
 		cstate->copy_dest = COPY_NEW_FE;
 	}
-	else if (PG_PROTOCOL_MAJOR(FrontendProtocol) >= 2)
+	else
 	{
 		/* old way */
 		if (cstate->binary)
 			ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			errmsg("COPY BINARY is not supported to stdout or from stdin")));
+					 errmsg("COPY BINARY is not supported to stdout or from stdin")));
 		pq_putemptymessage('H');
-		/* grottiness needed for old COPY OUT protocol */
-		pq_startcopyout();
-		cstate->copy_dest = COPY_OLD_FE;
-	}
-	else
-	{
-		/* very old way */
-		if (cstate->binary)
-			ereport(ERROR,
-					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			errmsg("COPY BINARY is not supported to stdout or from stdin")));
-		pq_putemptymessage('B');
 		/* grottiness needed for old COPY OUT protocol */
 		pq_startcopyout();
 		cstate->copy_dest = COPY_OLD_FE;
@@ -391,34 +391,22 @@ ReceiveCopyBegin(CopyState cstate)
 		int			i;
 
 		pq_beginmessage(&buf, 'G');
-		pq_sendbyte(&buf, format);		/* overall format */
-		pq_sendint(&buf, natts, 2);
+		pq_sendbyte(&buf, format);	/* overall format */
+		pq_sendint16(&buf, natts);
 		for (i = 0; i < natts; i++)
-			pq_sendint(&buf, format, 2);		/* per-column formats */
+			pq_sendint16(&buf, format); /* per-column formats */
 		pq_endmessage(&buf);
 		cstate->copy_dest = COPY_NEW_FE;
 		cstate->fe_msgbuf = makeStringInfo();
 	}
-	else if (PG_PROTOCOL_MAJOR(FrontendProtocol) >= 2)
+	else
 	{
 		/* old way */
 		if (cstate->binary)
 			ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			errmsg("COPY BINARY is not supported to stdout or from stdin")));
+					 errmsg("COPY BINARY is not supported to stdout or from stdin")));
 		pq_putemptymessage('G');
-		/* any error in old protocol will make us lose sync */
-		pq_startmsgread();
-		cstate->copy_dest = COPY_OLD_FE;
-	}
-	else
-	{
-		/* very old way */
-		if (cstate->binary)
-			ereport(ERROR,
-					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			errmsg("COPY BINARY is not supported to stdout or from stdin")));
-		pq_putemptymessage('D');
 		/* any error in old protocol will make us lose sync */
 		pq_startmsgread();
 		cstate->copy_dest = COPY_OLD_FE;
@@ -546,6 +534,9 @@ CopySendEndOfRow(CopyState cstate)
 			/* Dump the accumulated row as one CopyData message */
 			(void) pq_putmessage('d', fe_msgbuf->data, fe_msgbuf->len);
 			break;
+		case COPY_CALLBACK:
+			Assert(false);		/* Not yet supported. */
+			break;
 	}
 
 	resetStringInfo(fe_msgbuf);
@@ -577,6 +568,8 @@ CopyGetData(CopyState cstate, void *databuf, int minread, int maxread)
 				ereport(ERROR,
 						(errcode_for_file_access(),
 						 errmsg("could not read from COPY file: %m")));
+			if (bytesread == 0)
+				cstate->reached_eof = true;
 			break;
 		case COPY_OLD_FE:
 
@@ -597,7 +590,7 @@ CopyGetData(CopyState cstate, void *databuf, int minread, int maxread)
 			bytesread = minread;
 			break;
 		case COPY_NEW_FE:
-			while (maxread > 0 && bytesread < minread && !cstate->fe_eof)
+			while (maxread > 0 && bytesread < minread && !cstate->reached_eof)
 			{
 				int			avail;
 
@@ -621,20 +614,20 @@ CopyGetData(CopyState cstate, void *databuf, int minread, int maxread)
 					RESUME_CANCEL_INTERRUPTS();
 					switch (mtype)
 					{
-						case 'd':		/* CopyData */
+						case 'd':	/* CopyData */
 							break;
-						case 'c':		/* CopyDone */
+						case 'c':	/* CopyDone */
 							/* COPY IN correctly terminated by frontend */
-							cstate->fe_eof = true;
+							cstate->reached_eof = true;
 							return bytesread;
-						case 'f':		/* CopyFail */
+						case 'f':	/* CopyFail */
 							ereport(ERROR,
 									(errcode(ERRCODE_QUERY_CANCELED),
 									 errmsg("COPY from stdin failed: %s",
-									   pq_getmsgstring(cstate->fe_msgbuf))));
+											pq_getmsgstring(cstate->fe_msgbuf))));
 							break;
-						case 'H':		/* Flush */
-						case 'S':		/* Sync */
+						case 'H':	/* Flush */
+						case 'S':	/* Sync */
 
 							/*
 							 * Ignore Flush/Sync for the convenience of client
@@ -660,6 +653,9 @@ CopyGetData(CopyState cstate, void *databuf, int minread, int maxread)
 				bytesread += avail;
 			}
 			break;
+		case COPY_CALLBACK:
+			bytesread = cstate->data_source_cb(databuf, minread, maxread);
+			break;
 	}
 
 	return bytesread;
@@ -678,7 +674,7 @@ CopySendInt32(CopyState cstate, int32 val)
 {
 	uint32		buf;
 
-	buf = htonl((uint32) val);
+	buf = pg_hton32((uint32) val);
 	CopySendData(cstate, &buf, sizeof(buf));
 }
 
@@ -697,7 +693,7 @@ CopyGetInt32(CopyState cstate, int32 *val)
 		*val = 0;				/* suppress compiler warning */
 		return false;
 	}
-	*val = (int32) ntohl(buf);
+	*val = (int32) pg_ntoh32(buf);
 	return true;
 }
 
@@ -709,7 +705,7 @@ CopySendInt16(CopyState cstate, int16 val)
 {
 	uint16		buf;
 
-	buf = htons((uint16) val);
+	buf = pg_hton16((uint16) val);
 	CopySendData(cstate, &buf, sizeof(buf));
 }
 
@@ -726,7 +722,7 @@ CopyGetInt16(CopyState cstate, int16 *val)
 		*val = 0;				/* suppress compiler warning */
 		return false;
 	}
-	*val = (int16) ntohs(buf);
+	*val = (int16) pg_ntoh16(buf);
 	return true;
 }
 
@@ -734,7 +730,7 @@ CopyGetInt16(CopyState cstate, int16 *val)
 /*
  * CopyLoadRawBuf loads some more data into raw_buf
  *
- * Returns TRUE if able to obtain at least one more byte, else FALSE.
+ * Returns true if able to obtain at least one more byte, else false.
  *
  * If raw_buf_index < raw_buf_len, the unprocessed bytes are transferred
  * down to the start of the buffer and then we load more data after that.
@@ -771,7 +767,7 @@ CopyLoadRawBuf(CopyState cstate)
  *	 DoCopy executes the SQL COPY statement
  *
  * Either unload or reload contents of table <relation>, depending on <from>.
- * (<from> = TRUE means we are inserting into the table.)  In the "TO" case
+ * (<from> = true means we are inserting into the table.)  In the "TO" case
  * we also support copying the output of an arbitrary SELECT, INSERT, UPDATE
  * or DELETE query.
  *
@@ -780,44 +776,60 @@ CopyLoadRawBuf(CopyState cstate)
  * input/output stream. The latter could be either stdin/stdout or a
  * socket, depending on whether we're running under Postmaster control.
  *
- * Do not allow a Postgres user without superuser privilege to read from
- * or write to a file.
+ * Do not allow a Postgres user without the 'pg_access_server_files' role to
+ * read from or write to a file.
  *
  * Do not allow the copy if user doesn't have proper permission to access
  * the table or the specifically requested columns.
  */
-Oid
-DoCopy(const CopyStmt *stmt, const char *queryString, uint64 *processed)
+void
+DoCopy(ParseState *pstate, const CopyStmt *stmt,
+	   int stmt_location, int stmt_len,
+	   uint64 *processed)
 {
 	CopyState	cstate;
 	bool		is_from = stmt->is_from;
 	bool		pipe = (stmt->filename == NULL);
 	Relation	rel;
 	Oid			relid;
-	Node	   *query = NULL;
-	List	   *range_table = NIL;
+	RawStmt    *query = NULL;
 
-	/* Disallow COPY to/from file or program except to superusers. */
-	if (!pipe && !superuser())
+	/*
+	 * Disallow COPY to/from file or program except to users with the
+	 * appropriate role.
+	 */
+	if (!pipe)
 	{
 		if (stmt->is_program)
-			ereport(ERROR,
-					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-					 errmsg("must be superuser to COPY to or from an external program"),
-					 errhint("Anyone can COPY to stdout or from stdin. "
-						   "psql's \\copy command also works for anyone.")));
+		{
+			if (!is_member_of_role(GetUserId(), DEFAULT_ROLE_EXECUTE_SERVER_PROGRAM))
+				ereport(ERROR,
+						(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+						 errmsg("must be superuser or a member of the pg_execute_server_program role to COPY to or from an external program"),
+						 errhint("Anyone can COPY to stdout or from stdin. "
+								 "psql's \\copy command also works for anyone.")));
+		}
 		else
-			ereport(ERROR,
-					(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-					 errmsg("must be superuser to COPY to or from a file"),
-					 errhint("Anyone can COPY to stdout or from stdin. "
-						   "psql's \\copy command also works for anyone.")));
+		{
+			if (is_from && !is_member_of_role(GetUserId(), DEFAULT_ROLE_READ_SERVER_FILES))
+				ereport(ERROR,
+						(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+						 errmsg("must be superuser or a member of the pg_read_server_files role to COPY from a file"),
+						 errhint("Anyone can COPY to stdout or from stdin. "
+								 "psql's \\copy command also works for anyone.")));
+
+			if (!is_from && !is_member_of_role(GetUserId(), DEFAULT_ROLE_WRITE_SERVER_FILES))
+				ereport(ERROR,
+						(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+						 errmsg("must be superuser or a member of the pg_write_server_files role to COPY to a file"),
+						 errhint("Anyone can COPY to stdout or from stdin. "
+								 "psql's \\copy command also works for anyone.")));
+		}
 	}
 
 	if (stmt->relation)
 	{
 		TupleDesc	tupDesc;
-		AclMode		required_access = (is_from ? ACL_INSERT : ACL_SELECT);
 		List	   *attnums;
 		ListCell   *cur;
 		RangeTblEntry *rte;
@@ -830,12 +842,8 @@ DoCopy(const CopyStmt *stmt, const char *queryString, uint64 *processed)
 
 		relid = RelationGetRelid(rel);
 
-		rte = makeNode(RangeTblEntry);
-		rte->rtekind = RTE_RELATION;
-		rte->relid = RelationGetRelid(rel);
-		rte->relkind = rel->rd_rel->relkind;
-		rte->requiredPerms = required_access;
-		range_table = list_make1(rte);
+		rte = addRangeTableEntryForRelation(pstate, rel, NULL, false, false);
+		rte->requiredPerms = (is_from ? ACL_INSERT : ACL_SELECT);
 
 		tupDesc = RelationGetDescr(rel);
 		attnums = CopyGetAttnums(tupDesc, rel, stmt->attlist);
@@ -849,7 +857,7 @@ DoCopy(const CopyStmt *stmt, const char *queryString, uint64 *processed)
 			else
 				rte->selectedCols = bms_add_member(rte->selectedCols, attno);
 		}
-		ExecCheckRTPerms(range_table, true);
+		ExecCheckRTPerms(pstate->p_rtable, true);
 
 		/*
 		 * Permission check for row security policies.
@@ -876,7 +884,7 @@ DoCopy(const CopyStmt *stmt, const char *queryString, uint64 *processed)
 			if (is_from)
 				ereport(ERROR,
 						(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-				   errmsg("COPY FROM not supported with row-level security"),
+						 errmsg("COPY FROM not supported with row-level security"),
 						 errhint("Use INSERT statements instead.")));
 
 			/*
@@ -888,8 +896,8 @@ DoCopy(const CopyStmt *stmt, const char *queryString, uint64 *processed)
 			 * statement.
 			 *
 			 * In the case that columns are specified in the attribute list,
-			 * create a ColumnRef and ResTarget for each column and add them to
-			 * the target list for the resulting SELECT statement.
+			 * create a ColumnRef and ResTarget for each column and add them
+			 * to the target list for the resulting SELECT statement.
 			 */
 			if (!stmt->attlist)
 			{
@@ -946,7 +954,10 @@ DoCopy(const CopyStmt *stmt, const char *queryString, uint64 *processed)
 			select->targetList = targetList;
 			select->fromClause = list_make1(from);
 
-			query = (Node *) select;
+			query = makeNode(RawStmt);
+			query->stmt = (Node *) select;
+			query->stmt_location = stmt_location;
+			query->stmt_len = stmt_len;
 
 			/*
 			 * Close the relation for now, but keep the lock on it to prevent
@@ -962,7 +973,11 @@ DoCopy(const CopyStmt *stmt, const char *queryString, uint64 *processed)
 	{
 		Assert(stmt->query);
 
-		query = stmt->query;
+		query = makeNode(RawStmt);
+		query->stmt = stmt->query;
+		query->stmt_location = stmt_location;
+		query->stmt_len = stmt_len;
+
 		relid = InvalidOid;
 		rel = NULL;
 	}
@@ -976,15 +991,14 @@ DoCopy(const CopyStmt *stmt, const char *queryString, uint64 *processed)
 			PreventCommandIfReadOnly("COPY FROM");
 		PreventCommandIfParallelMode("COPY FROM");
 
-		cstate = BeginCopyFrom(rel, stmt->filename, stmt->is_program,
-							   stmt->attlist, stmt->options);
-		cstate->range_table = range_table;
+		cstate = BeginCopyFrom(pstate, rel, stmt->filename, stmt->is_program,
+							   NULL, stmt->attlist, stmt->options);
 		*processed = CopyFrom(cstate);	/* copy from file to database */
 		EndCopyFrom(cstate);
 	}
 	else
 	{
-		cstate = BeginCopyTo(rel, query, queryString, relid,
+		cstate = BeginCopyTo(pstate, rel, query, relid,
 							 stmt->filename, stmt->is_program,
 							 stmt->attlist, stmt->options);
 		*processed = DoCopyTo(cstate);	/* copy from database to file */
@@ -998,8 +1012,6 @@ DoCopy(const CopyStmt *stmt, const char *queryString, uint64 *processed)
 	 */
 	if (rel != NULL)
 		heap_close(rel, (is_from ? NoLock : AccessShareLock));
-
-	return relid;
 }
 
 /*
@@ -1020,7 +1032,8 @@ DoCopy(const CopyStmt *stmt, const char *queryString, uint64 *processed)
  * self-consistency of the options list.
  */
 void
-ProcessCopyOptions(CopyState cstate,
+ProcessCopyOptions(ParseState *pstate,
+				   CopyState cstate,
 				   bool is_from,
 				   List *options)
 {
@@ -1031,12 +1044,14 @@ ProcessCopyOptions(CopyState cstate,
 	if (cstate == NULL)
 		cstate = (CopyStateData *) palloc0(sizeof(CopyStateData));
 
+	cstate->is_copy_from = is_from;
+
 	cstate->file_encoding = -1;
 
 	/* Extract options from the statement node tree */
 	foreach(option, options)
 	{
-		DefElem    *defel = (DefElem *) lfirst(option);
+		DefElem    *defel = lfirst_node(DefElem, option);
 
 		if (strcmp(defel->defname, "format") == 0)
 		{
@@ -1045,7 +1060,8 @@ ProcessCopyOptions(CopyState cstate,
 			if (format_specified)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			format_specified = true;
 			if (strcmp(fmt, "text") == 0)
 				 /* default format */ ;
@@ -1056,14 +1072,16 @@ ProcessCopyOptions(CopyState cstate,
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-						 errmsg("COPY format \"%s\" not recognized", fmt)));
+						 errmsg("COPY format \"%s\" not recognized", fmt),
+						 parser_errposition(pstate, defel->location)));
 		}
 		else if (strcmp(defel->defname, "oids") == 0)
 		{
 			if (cstate->oids)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			cstate->oids = defGetBoolean(defel);
 		}
 		else if (strcmp(defel->defname, "freeze") == 0)
@@ -1071,7 +1089,8 @@ ProcessCopyOptions(CopyState cstate,
 			if (cstate->freeze)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			cstate->freeze = defGetBoolean(defel);
 		}
 		else if (strcmp(defel->defname, "delimiter") == 0)
@@ -1079,7 +1098,8 @@ ProcessCopyOptions(CopyState cstate,
 			if (cstate->delim)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			cstate->delim = defGetString(defel);
 		}
 		else if (strcmp(defel->defname, "null") == 0)
@@ -1087,7 +1107,8 @@ ProcessCopyOptions(CopyState cstate,
 			if (cstate->null_print)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			cstate->null_print = defGetString(defel);
 		}
 		else if (strcmp(defel->defname, "header") == 0)
@@ -1095,7 +1116,8 @@ ProcessCopyOptions(CopyState cstate,
 			if (cstate->header_line)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			cstate->header_line = defGetBoolean(defel);
 		}
 		else if (strcmp(defel->defname, "quote") == 0)
@@ -1103,7 +1125,8 @@ ProcessCopyOptions(CopyState cstate,
 			if (cstate->quote)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			cstate->quote = defGetString(defel);
 		}
 		else if (strcmp(defel->defname, "escape") == 0)
@@ -1111,7 +1134,8 @@ ProcessCopyOptions(CopyState cstate,
 			if (cstate->escape)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			cstate->escape = defGetString(defel);
 		}
 		else if (strcmp(defel->defname, "force_quote") == 0)
@@ -1119,30 +1143,34 @@ ProcessCopyOptions(CopyState cstate,
 			if (cstate->force_quote || cstate->force_quote_all)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			if (defel->arg && IsA(defel->arg, A_Star))
 				cstate->force_quote_all = true;
 			else if (defel->arg && IsA(defel->arg, List))
-				cstate->force_quote = (List *) defel->arg;
+				cstate->force_quote = castNode(List, defel->arg);
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						 errmsg("argument to option \"%s\" must be a list of column names",
-								defel->defname)));
+								defel->defname),
+						 parser_errposition(pstate, defel->location)));
 		}
 		else if (strcmp(defel->defname, "force_not_null") == 0)
 		{
 			if (cstate->force_notnull)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			if (defel->arg && IsA(defel->arg, List))
-				cstate->force_notnull = (List *) defel->arg;
+				cstate->force_notnull = castNode(List, defel->arg);
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						 errmsg("argument to option \"%s\" must be a list of column names",
-								defel->defname)));
+								defel->defname),
+						 parser_errposition(pstate, defel->location)));
 		}
 		else if (strcmp(defel->defname, "force_null") == 0)
 		{
@@ -1151,12 +1179,13 @@ ProcessCopyOptions(CopyState cstate,
 						(errcode(ERRCODE_SYNTAX_ERROR),
 						 errmsg("conflicting or redundant options")));
 			if (defel->arg && IsA(defel->arg, List))
-				cstate->force_null = (List *) defel->arg;
+				cstate->force_null = castNode(List, defel->arg);
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						 errmsg("argument to option \"%s\" must be a list of column names",
-								defel->defname)));
+								defel->defname),
+						 parser_errposition(pstate, defel->location)));
 		}
 		else if (strcmp(defel->defname, "convert_selectively") == 0)
 		{
@@ -1168,34 +1197,39 @@ ProcessCopyOptions(CopyState cstate,
 			if (cstate->convert_selectively)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			cstate->convert_selectively = true;
 			if (defel->arg == NULL || IsA(defel->arg, List))
-				cstate->convert_select = (List *) defel->arg;
+				cstate->convert_select = castNode(List, defel->arg);
 			else
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						 errmsg("argument to option \"%s\" must be a list of column names",
-								defel->defname)));
+								defel->defname),
+						 parser_errposition(pstate, defel->location)));
 		}
 		else if (strcmp(defel->defname, "encoding") == 0)
 		{
 			if (cstate->file_encoding >= 0)
 				ereport(ERROR,
 						(errcode(ERRCODE_SYNTAX_ERROR),
-						 errmsg("conflicting or redundant options")));
+						 errmsg("conflicting or redundant options"),
+						 parser_errposition(pstate, defel->location)));
 			cstate->file_encoding = pg_char_to_encoding(defGetString(defel));
 			if (cstate->file_encoding < 0)
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
 						 errmsg("argument to option \"%s\" must be a valid encoding name",
-								defel->defname)));
+								defel->defname),
+						 parser_errposition(pstate, defel->location)));
 		}
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_SYNTAX_ERROR),
 					 errmsg("option \"%s\" not recognized",
-							defel->defname)));
+							defel->defname),
+					 parser_errposition(pstate, defel->location)));
 	}
 
 	/*
@@ -1232,14 +1266,14 @@ ProcessCopyOptions(CopyState cstate,
 	if (strlen(cstate->delim) != 1)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			  errmsg("COPY delimiter must be a single one-byte character")));
+				 errmsg("COPY delimiter must be a single one-byte character")));
 
 	/* Disallow end-of-line characters */
 	if (strchr(cstate->delim, '\r') != NULL ||
 		strchr(cstate->delim, '\n') != NULL)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			 errmsg("COPY delimiter cannot be newline or carriage return")));
+				 errmsg("COPY delimiter cannot be newline or carriage return")));
 
 	if (strchr(cstate->null_print, '\r') != NULL ||
 		strchr(cstate->null_print, '\n') != NULL)
@@ -1315,7 +1349,7 @@ ProcessCopyOptions(CopyState cstate,
 	if (cstate->force_notnull != NIL && !is_from)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			  errmsg("COPY force not null only available using COPY FROM")));
+				 errmsg("COPY force not null only available using COPY FROM")));
 
 	/* Check force_null */
 	if (!cstate->csv_mode && cstate->force_null != NIL)
@@ -1332,7 +1366,7 @@ ProcessCopyOptions(CopyState cstate,
 	if (strchr(cstate->null_print, cstate->delim[0]) != NULL)
 		ereport(ERROR,
 				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-		errmsg("COPY delimiter must not appear in the NULL specification")));
+				 errmsg("COPY delimiter must not appear in the NULL specification")));
 
 	/* Don't allow the CSV quote char to appear in the null string. */
 	if (cstate->csv_mode &&
@@ -1358,11 +1392,11 @@ ProcessCopyOptions(CopyState cstate,
  * NULL values as <null_print>.
  */
 static CopyState
-BeginCopy(bool is_from,
+BeginCopy(ParseState *pstate,
+		  bool is_from,
 		  Relation rel,
-		  Node *raw_query,
-		  const char *queryString,
-		  const Oid queryRelId,
+		  RawStmt *raw_query,
+		  Oid queryRelId,
 		  List *attnamelist,
 		  List *options)
 {
@@ -1385,7 +1419,7 @@ BeginCopy(bool is_from,
 	oldcontext = MemoryContextSwitchTo(cstate->copycontext);
 
 	/* Extract options from the statement node tree */
-	ProcessCopyOptions(cstate, is_from, options);
+	ProcessCopyOptions(pstate, cstate, is_from, options);
 
 	/* Process the source/target relation or query */
 	if (rel)
@@ -1429,15 +1463,16 @@ BeginCopy(bool is_from,
 		 * function and is executed repeatedly.  (See also the same hack in
 		 * DECLARE CURSOR and PREPARE.)  XXX FIXME someday.
 		 */
-		rewritten = pg_analyze_and_rewrite((Node *) copyObject(raw_query),
-										   queryString, NULL, 0);
+		rewritten = pg_analyze_and_rewrite(copyObject(raw_query),
+										   pstate->p_sourcetext, NULL, 0,
+										   NULL);
 
 		/* check that we got back something we can work with */
 		if (rewritten == NIL)
 		{
 			ereport(ERROR,
 					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-			 errmsg("DO INSTEAD NOTHING rules are not supported for COPY")));
+					 errmsg("DO INSTEAD NOTHING rules are not supported for COPY")));
 		}
 		else if (list_length(rewritten) > 1)
 		{
@@ -1446,7 +1481,7 @@ BeginCopy(bool is_from,
 			/* examine queries to determine which error message to issue */
 			foreach(lc, rewritten)
 			{
-				Query	   *q = (Query *) lfirst(lc);
+				Query	   *q = lfirst_node(Query, lc);
 
 				if (q->querySource == QSRC_QUAL_INSTEAD_RULE)
 					ereport(ERROR,
@@ -1455,7 +1490,7 @@ BeginCopy(bool is_from,
 				if (q->querySource == QSRC_NON_INSTEAD_RULE)
 					ereport(ERROR,
 							(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
-					errmsg("DO ALSO rules are not supported for the COPY")));
+							 errmsg("DO ALSO rules are not supported for the COPY")));
 			}
 
 			ereport(ERROR,
@@ -1463,7 +1498,7 @@ BeginCopy(bool is_from,
 					 errmsg("multi-statement DO INSTEAD rules are not supported for COPY")));
 		}
 
-		query = (Query *) linitial(rewritten);
+		query = linitial_node(Query, rewritten);
 
 		/* The grammar allows SELECT INTO, but we don't support that */
 		if (query->utilityStmt != NULL &&
@@ -1515,7 +1550,7 @@ BeginCopy(bool is_from,
 			if (!list_member_oid(plan->relationOids, queryRelId))
 				ereport(ERROR,
 						(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
-				errmsg("relation referenced by COPY statement has changed")));
+						 errmsg("relation referenced by COPY statement has changed")));
 		}
 
 		/*
@@ -1530,10 +1565,10 @@ BeginCopy(bool is_from,
 		((DR_copy *) dest)->cstate = cstate;
 
 		/* Create a QueryDesc requesting no output */
-		cstate->queryDesc = CreateQueryDesc(plan, queryString,
+		cstate->queryDesc = CreateQueryDesc(plan, pstate->p_sourcetext,
 											GetActiveSnapshot(),
 											InvalidSnapshot,
-											dest, NULL, 0);
+											dest, NULL, NULL, 0);
 
 		/*
 		 * Call ExecutorStart to prepare the plan for execution.
@@ -1569,12 +1604,13 @@ BeginCopy(bool is_from,
 		foreach(cur, attnums)
 		{
 			int			attnum = lfirst_int(cur);
+			Form_pg_attribute attr = TupleDescAttr(tupDesc, attnum - 1);
 
 			if (!list_member_int(cstate->attnumlist, attnum))
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
-				   errmsg("FORCE_QUOTE column \"%s\" not referenced by COPY",
-						  NameStr(tupDesc->attrs[attnum - 1]->attname))));
+						 errmsg("FORCE_QUOTE column \"%s\" not referenced by COPY",
+								NameStr(attr->attname))));
 			cstate->force_quote_flags[attnum - 1] = true;
 		}
 	}
@@ -1591,12 +1627,13 @@ BeginCopy(bool is_from,
 		foreach(cur, attnums)
 		{
 			int			attnum = lfirst_int(cur);
+			Form_pg_attribute attr = TupleDescAttr(tupDesc, attnum - 1);
 
 			if (!list_member_int(cstate->attnumlist, attnum))
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
-				errmsg("FORCE_NOT_NULL column \"%s\" not referenced by COPY",
-					   NameStr(tupDesc->attrs[attnum - 1]->attname))));
+						 errmsg("FORCE_NOT_NULL column \"%s\" not referenced by COPY",
+								NameStr(attr->attname))));
 			cstate->force_notnull_flags[attnum - 1] = true;
 		}
 	}
@@ -1613,12 +1650,13 @@ BeginCopy(bool is_from,
 		foreach(cur, attnums)
 		{
 			int			attnum = lfirst_int(cur);
+			Form_pg_attribute attr = TupleDescAttr(tupDesc, attnum - 1);
 
 			if (!list_member_int(cstate->attnumlist, attnum))
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
-					errmsg("FORCE_NULL column \"%s\" not referenced by COPY",
-						   NameStr(tupDesc->attrs[attnum - 1]->attname))));
+						 errmsg("FORCE_NULL column \"%s\" not referenced by COPY",
+								NameStr(attr->attname))));
 			cstate->force_null_flags[attnum - 1] = true;
 		}
 	}
@@ -1636,12 +1674,13 @@ BeginCopy(bool is_from,
 		foreach(cur, attnums)
 		{
 			int			attnum = lfirst_int(cur);
+			Form_pg_attribute attr = TupleDescAttr(tupDesc, attnum - 1);
 
 			if (!list_member_int(cstate->attnumlist, attnum))
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_COLUMN_REFERENCE),
 						 errmsg_internal("selected column \"%s\" not referenced by COPY",
-							 NameStr(tupDesc->attrs[attnum - 1]->attname))));
+										 NameStr(attr->attname))));
 			cstate->convert_select_flags[attnum - 1] = true;
 		}
 	}
@@ -1661,7 +1700,7 @@ BeginCopy(bool is_from,
 	/* See Multibyte encoding comment above */
 	cstate->encoding_embeds_ascii = PG_ENCODING_IS_CLIENT_ONLY(cstate->file_encoding);
 
-	cstate->copy_dest = COPY_FILE;		/* default */
+	cstate->copy_dest = COPY_FILE;	/* default */
 
 	MemoryContextSwitchTo(oldcontext);
 
@@ -1684,11 +1723,23 @@ ClosePipeToProgram(CopyState cstate)
 				(errcode_for_file_access(),
 				 errmsg("could not close pipe to external command: %m")));
 	else if (pclose_rc != 0)
+	{
+		/*
+		 * If we ended a COPY FROM PROGRAM before reaching EOF, then it's
+		 * expectable for the called program to fail with SIGPIPE, and we
+		 * should not report that as an error.  Otherwise, SIGPIPE indicates a
+		 * problem.
+		 */
+		if (cstate->is_copy_from && !cstate->reached_eof &&
+			wait_result_is_signal(pclose_rc, SIGPIPE))
+			return;
+
 		ereport(ERROR,
 				(errcode(ERRCODE_EXTERNAL_ROUTINE_EXCEPTION),
 				 errmsg("program \"%s\" failed",
 						cstate->filename),
 				 errdetail_internal("%s", wait_result_to_str(pclose_rc))));
+	}
 }
 
 /*
@@ -1718,10 +1769,10 @@ EndCopy(CopyState cstate)
  * Setup CopyState to read tuples from a table or a query for COPY TO.
  */
 static CopyState
-BeginCopyTo(Relation rel,
-			Node *query,
-			const char *queryString,
-			const Oid queryRelId,
+BeginCopyTo(ParseState *pstate,
+			Relation rel,
+			RawStmt *query,
+			Oid queryRelId,
 			const char *filename,
 			bool is_program,
 			List *attnamelist,
@@ -1756,6 +1807,12 @@ BeginCopyTo(Relation rel,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					 errmsg("cannot copy from sequence \"%s\"",
 							RelationGetRelationName(rel))));
+		else if (rel->rd_rel->relkind == RELKIND_PARTITIONED_TABLE)
+			ereport(ERROR,
+					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
+					 errmsg("cannot copy from partitioned table \"%s\"",
+							RelationGetRelationName(rel)),
+					 errhint("Try the COPY (SELECT ...) TO variant.")));
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
@@ -1763,7 +1820,7 @@ BeginCopyTo(Relation rel,
 							RelationGetRelationName(rel))));
 	}
 
-	cstate = BeginCopy(false, rel, query, queryString, queryRelId, attnamelist,
+	cstate = BeginCopy(pstate, false, rel, query, queryRelId, attnamelist,
 					   options);
 	oldcontext = MemoryContextSwitchTo(cstate->copycontext);
 
@@ -1799,7 +1856,7 @@ BeginCopyTo(Relation rel,
 			if (!is_absolute_path(filename))
 				ereport(ERROR,
 						(errcode(ERRCODE_INVALID_NAME),
-					  errmsg("relative path not allowed for COPY to file")));
+						 errmsg("relative path not allowed for COPY to file")));
 
 			oumask = umask(S_IWGRP | S_IWOTH);
 			PG_TRY();
@@ -1814,10 +1871,18 @@ BeginCopyTo(Relation rel,
 			PG_END_TRY();
 			umask(oumask);
 			if (cstate->copy_file == NULL)
+			{
+				/* copy errno because ereport subfunctions might change it */
+				int			save_errno = errno;
+
 				ereport(ERROR,
 						(errcode_for_file_access(),
 						 errmsg("could not open file \"%s\" for writing: %m",
-								cstate->filename)));
+								cstate->filename),
+						 (save_errno == ENOENT || save_errno == EACCES) ?
+						 errhint("COPY TO instructs the PostgreSQL server process to write a file. "
+								 "You may want a client-side facility such as psql's \\copy.") : 0));
+			}
 
 			if (fstat(fileno(cstate->copy_file), &st))
 				ereport(ERROR,
@@ -1900,7 +1965,6 @@ CopyTo(CopyState cstate)
 {
 	TupleDesc	tupDesc;
 	int			num_phys_attrs;
-	Form_pg_attribute *attr;
 	ListCell   *cur;
 	uint64		processed;
 
@@ -1908,9 +1972,8 @@ CopyTo(CopyState cstate)
 		tupDesc = RelationGetDescr(cstate->rel);
 	else
 		tupDesc = cstate->queryDesc->tupDesc;
-	attr = tupDesc->attrs;
 	num_phys_attrs = tupDesc->natts;
-	cstate->null_print_client = cstate->null_print;		/* default */
+	cstate->null_print_client = cstate->null_print; /* default */
 
 	/* We use fe_msgbuf as a per-row buffer regardless of copy_dest */
 	cstate->fe_msgbuf = makeStringInfo();
@@ -1922,13 +1985,14 @@ CopyTo(CopyState cstate)
 		int			attnum = lfirst_int(cur);
 		Oid			out_func_oid;
 		bool		isvarlena;
+		Form_pg_attribute attr = TupleDescAttr(tupDesc, attnum - 1);
 
 		if (cstate->binary)
-			getTypeBinaryOutputInfo(attr[attnum - 1]->atttypid,
+			getTypeBinaryOutputInfo(attr->atttypid,
 									&out_func_oid,
 									&isvarlena);
 		else
-			getTypeOutputInfo(attr[attnum - 1]->atttypid,
+			getTypeOutputInfo(attr->atttypid,
 							  &out_func_oid,
 							  &isvarlena);
 		fmgr_info(out_func_oid, &cstate->out_functions[attnum - 1]);
@@ -1968,8 +2032,8 @@ CopyTo(CopyState cstate)
 		 */
 		if (cstate->need_transcoding)
 			cstate->null_print_client = pg_server_to_any(cstate->null_print,
-													  cstate->null_print_len,
-													  cstate->file_encoding);
+														 cstate->null_print_len,
+														 cstate->file_encoding);
 
 		/* if a header has been requested send the line */
 		if (cstate->header_line)
@@ -1985,7 +2049,7 @@ CopyTo(CopyState cstate)
 					CopySendChar(cstate, cstate->delim[0]);
 				hdr_delim = true;
 
-				colname = NameStr(attr[attnum - 1]->attname);
+				colname = NameStr(TupleDescAttr(tupDesc, attnum - 1)->attname);
 
 				CopyAttributeOutCSV(cstate, colname, false,
 									list_length(cstate->attnumlist) == 1);
@@ -2028,7 +2092,7 @@ CopyTo(CopyState cstate)
 	else
 	{
 		/* run the plan --- the dest receiver will send tuples */
-		ExecutorRun(cstate->queryDesc, ForwardScanDirection, 0L);
+		ExecutorRun(cstate->queryDesc, ForwardScanDirection, 0L, true);
 		processed = ((DR_copy *) cstate->queryDesc->dest)->processed;
 	}
 
@@ -2079,7 +2143,7 @@ CopyOneRowTo(CopyState cstate, Oid tupleOid, Datum *values, bool *nulls)
 		if (cstate->oids)
 		{
 			string = DatumGetCString(DirectFunctionCall1(oidout,
-												ObjectIdGetDatum(tupleOid)));
+														 ObjectIdGetDatum(tupleOid)));
 			CopySendString(cstate, string);
 			need_delim = true;
 		}
@@ -2251,7 +2315,7 @@ limit_printout_length(const char *str)
 /*
  * Copy FROM file to relation.
  */
-static uint64
+uint64
 CopyFrom(CopyState cstate)
 {
 	HeapTuple	tuple;
@@ -2259,7 +2323,9 @@ CopyFrom(CopyState cstate)
 	Datum	   *values;
 	bool	   *nulls;
 	ResultRelInfo *resultRelInfo;
+	ResultRelInfo *saved_resultRelInfo = NULL;
 	EState	   *estate = CreateExecutorState(); /* for ExecConstraints() */
+	ModifyTableState *mtstate;
 	ExprContext *econtext;
 	TupleTableSlot *myslot;
 	MemoryContext oldcontext = CurrentMemoryContext;
@@ -2271,6 +2337,7 @@ CopyFrom(CopyState cstate)
 	uint64		processed = 0;
 	bool		useHeapMultiInsert;
 	int			nBufferedTuples = 0;
+	int			prev_leaf_part_index = -1;
 
 #define MAX_BUFFERED_TUPLES 1000
 	HeapTuple  *bufferedTuples = NULL;	/* initialize to silence warning */
@@ -2279,22 +2346,27 @@ CopyFrom(CopyState cstate)
 
 	Assert(cstate->rel);
 
-	if (cstate->rel->rd_rel->relkind != RELKIND_RELATION)
+	/*
+	 * The target must be a plain, foreign, or partitioned relation, or have
+	 * an INSTEAD OF INSERT row trigger.  (Currently, such triggers are only
+	 * allowed on views, so we only hint about them in the view case.)
+	 */
+	if (cstate->rel->rd_rel->relkind != RELKIND_RELATION &&
+		cstate->rel->rd_rel->relkind != RELKIND_FOREIGN_TABLE &&
+		cstate->rel->rd_rel->relkind != RELKIND_PARTITIONED_TABLE &&
+		!(cstate->rel->trigdesc &&
+		  cstate->rel->trigdesc->trig_insert_instead_row))
 	{
 		if (cstate->rel->rd_rel->relkind == RELKIND_VIEW)
 			ereport(ERROR,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					 errmsg("cannot copy to view \"%s\"",
-							RelationGetRelationName(cstate->rel))));
+							RelationGetRelationName(cstate->rel)),
+					 errhint("To enable copying to a view, provide an INSTEAD OF INSERT trigger.")));
 		else if (cstate->rel->rd_rel->relkind == RELKIND_MATVIEW)
 			ereport(ERROR,
 					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
 					 errmsg("cannot copy to materialized view \"%s\"",
-							RelationGetRelationName(cstate->rel))));
-		else if (cstate->rel->rd_rel->relkind == RELKIND_FOREIGN_TABLE)
-			ereport(ERROR,
-					(errcode(ERRCODE_WRONG_OBJECT_TYPE),
-					 errmsg("cannot copy to foreign table \"%s\"",
 							RelationGetRelationName(cstate->rel))));
 		else if (cstate->rel->rd_rel->relkind == RELKIND_SEQUENCE)
 			ereport(ERROR,
@@ -2343,11 +2415,27 @@ CopyFrom(CopyState cstate)
 	 * go into pages containing tuples from any other transactions --- but this
 	 * must be the case if we have a new table or new relfilenode, so we need
 	 * no additional work to enforce that.
+	 *
+	 * We currently don't support this optimization if the COPY target is a
+	 * partitioned table as we currently only lazily initialize partition
+	 * information when routing the first tuple to the partition.  We cannot
+	 * know at this stage if we can perform this optimization.  It should be
+	 * possible to improve on this, but it does mean maintaining heap insert
+	 * option flags per partition and setting them when we first open the
+	 * partition.
+	 *
+	 * This optimization is not supported for relation types which do not
+	 * have any physical storage, with foreign tables and views using
+	 * INSTEAD OF triggers entering in this category.  Partitioned tables
+	 * are not supported as per the description above.
 	 *----------
 	 */
 	/* createSubid is creation check, newRelfilenodeSubid is truncation check */
-	if (cstate->rel->rd_createSubid != InvalidSubTransactionId ||
-		cstate->rel->rd_newRelfilenodeSubid != InvalidSubTransactionId)
+	if (cstate->rel->rd_rel->relkind != RELKIND_FOREIGN_TABLE &&
+		cstate->rel->rd_rel->relkind != RELKIND_PARTITIONED_TABLE &&
+		cstate->rel->rd_rel->relkind != RELKIND_VIEW &&
+		(cstate->rel->rd_createSubid != InvalidSubTransactionId ||
+		 cstate->rel->rd_newRelfilenodeSubid != InvalidSubTransactionId))
 	{
 		hi_options |= HEAP_INSERT_SKIP_FSM;
 		if (!XLogIsNeeded())
@@ -2360,13 +2448,29 @@ CopyFrom(CopyState cstate)
 	 * earlier scan or command. The subxact test ensures that if this subxact
 	 * aborts then the frozen rows won't be visible after xact cleanup.  Note
 	 * that the stronger test of exactly which subtransaction created it is
-	 * crucial for correctness of this optimisation. The test for an earlier
+	 * crucial for correctness of this optimization. The test for an earlier
 	 * scan or command tolerates false negatives. FREEZE causes other sessions
 	 * to see rows they would not see under MVCC, and a false negative merely
 	 * spreads that anomaly to the current session.
 	 */
 	if (cstate->freeze)
 	{
+		/*
+		 * We currently disallow COPY FREEZE on partitioned tables.  The
+		 * reason for this is that we've simply not yet opened the partitions
+		 * to determine if the optimization can be applied to them.  We could
+		 * go and open them all here, but doing so may be quite a costly
+		 * overhead for small copies.  In any case, we may just end up routing
+		 * tuples to a small number of partitions.  It seems better just to
+		 * raise an ERROR for partitioned tables.
+		 */
+		if (cstate->rel->rd_rel->relkind == RELKIND_PARTITIONED_TABLE)
+		{
+			ereport(ERROR,
+				(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					errmsg("cannot perform FREEZE on a partitioned table")));
+		}
+
 		/*
 		 * Tolerate one registration for the benefit of FirstXactSnapshot.
 		 * Scan-bearing queries generally create at least two registrations,
@@ -2382,7 +2486,7 @@ CopyFrom(CopyState cstate)
 					 errmsg("cannot perform FREEZE because of prior transaction activity")));
 
 		if (cstate->rel->rd_createSubid != GetCurrentSubTransactionId() &&
-		 cstate->rel->rd_newRelfilenodeSubid != GetCurrentSubTransactionId())
+			cstate->rel->rd_newRelfilenodeSubid != GetCurrentSubTransactionId())
 			ereport(ERROR,
 					(errcode(ERRCODE_OBJECT_NOT_IN_PREREQUISITE_STATE),
 					 errmsg("cannot perform FREEZE because the table was not created or truncated in the current subtransaction")));
@@ -2399,7 +2503,11 @@ CopyFrom(CopyState cstate)
 	InitResultRelInfo(resultRelInfo,
 					  cstate->rel,
 					  1,		/* dummy rangetable index */
+					  NULL,
 					  0);
+
+	/* Verify the named relation is a valid target for INSERT */
+	CheckValidResultRel(resultRelInfo, CMD_INSERT);
 
 	ExecOpenIndices(resultRelInfo, false);
 
@@ -2409,10 +2517,57 @@ CopyFrom(CopyState cstate)
 	estate->es_range_table = cstate->range_table;
 
 	/* Set up a tuple slot too */
-	myslot = ExecInitExtraTupleSlot(estate);
-	ExecSetSlotDescriptor(myslot, tupDesc);
+	myslot = ExecInitExtraTupleSlot(estate, tupDesc);
 	/* Triggers might need a slot as well */
-	estate->es_trig_tuple_slot = ExecInitExtraTupleSlot(estate);
+	estate->es_trig_tuple_slot = ExecInitExtraTupleSlot(estate, NULL);
+
+	/*
+	 * Set up a ModifyTableState so we can let FDW(s) init themselves for
+	 * foreign-table result relation(s).
+	 */
+	mtstate = makeNode(ModifyTableState);
+	mtstate->ps.plan = NULL;
+	mtstate->ps.state = estate;
+	mtstate->operation = CMD_INSERT;
+	mtstate->resultRelInfo = estate->es_result_relations;
+
+	if (resultRelInfo->ri_FdwRoutine != NULL &&
+		resultRelInfo->ri_FdwRoutine->BeginForeignInsert != NULL)
+		resultRelInfo->ri_FdwRoutine->BeginForeignInsert(mtstate,
+														 resultRelInfo);
+
+	/* Prepare to catch AFTER triggers. */
+	AfterTriggerBeginQuery();
+
+	/*
+	 * If there are any triggers with transition tables on the named relation,
+	 * we need to be prepared to capture transition tuples.
+	 */
+	cstate->transition_capture =
+		MakeTransitionCaptureState(cstate->rel->trigdesc,
+								   RelationGetRelid(cstate->rel),
+								   CMD_INSERT);
+
+	/*
+	 * If the named relation is a partitioned table, initialize state for
+	 * CopyFrom tuple routing.
+	 */
+	if (cstate->rel->rd_rel->relkind == RELKIND_PARTITIONED_TABLE)
+	{
+		PartitionTupleRouting *proute;
+
+		proute = cstate->partition_tuple_routing =
+			ExecSetupPartitionTupleRouting(NULL, cstate->rel);
+
+		/*
+		 * If we are capturing transition tuples, they may need to be
+		 * converted from partition format back to partitioned table format
+		 * (this is only ever necessary if a BEFORE trigger modifies the
+		 * tuple).
+		 */
+		if (cstate->transition_capture != NULL)
+			ExecSetupChildParentMapForLeaf(proute);
+	}
 
 	/*
 	 * It's more efficient to prepare a bunch of tuples for insertion, and
@@ -2421,11 +2576,14 @@ CopyFrom(CopyState cstate)
 	 * BEFORE/INSTEAD OF triggers, or we need to evaluate volatile default
 	 * expressions. Such triggers or expressions might query the table we're
 	 * inserting to, and act differently if the tuples that have already been
-	 * processed and prepared for insertion are not there.
+	 * processed and prepared for insertion are not there.  We also can't do
+	 * it if the table is foreign or partitioned.
 	 */
 	if ((resultRelInfo->ri_TrigDesc != NULL &&
 		 (resultRelInfo->ri_TrigDesc->trig_insert_before_row ||
 		  resultRelInfo->ri_TrigDesc->trig_insert_instead_row)) ||
+		resultRelInfo->ri_FdwRoutine != NULL ||
+		cstate->partition_tuple_routing != NULL ||
 		cstate->volatile_defexprs)
 	{
 		useHeapMultiInsert = false;
@@ -2435,9 +2593,6 @@ CopyFrom(CopyState cstate)
 		useHeapMultiInsert = true;
 		bufferedTuples = palloc(MAX_BUFFERED_TUPLES * sizeof(HeapTuple));
 	}
-
-	/* Prepare to catch AFTER triggers. */
-	AfterTriggerBeginQuery();
 
 	/*
 	 * Check BEFORE STATEMENT insertion triggers. It's debatable whether we
@@ -2502,6 +2657,100 @@ CopyFrom(CopyState cstate)
 		slot = myslot;
 		ExecStoreTuple(tuple, slot, InvalidBuffer, false);
 
+		/* Determine the partition to heap_insert the tuple into */
+		if (cstate->partition_tuple_routing)
+		{
+			int			leaf_part_index;
+			PartitionTupleRouting *proute = cstate->partition_tuple_routing;
+
+			/*
+			 * Away we go ... If we end up not finding a partition after all,
+			 * ExecFindPartition() does not return and errors out instead.
+			 * Otherwise, the returned value is to be used as an index into
+			 * arrays mt_partitions[] and mt_partition_tupconv_maps[] that
+			 * will get us the ResultRelInfo and TupleConversionMap for the
+			 * partition, respectively.
+			 */
+			leaf_part_index = ExecFindPartition(resultRelInfo,
+												proute->partition_dispatch_info,
+												slot,
+												estate);
+			Assert(leaf_part_index >= 0 &&
+				   leaf_part_index < proute->num_partitions);
+
+			/*
+			 * If this tuple is mapped to a partition that is not same as the
+			 * previous one, we'd better make the bulk insert mechanism gets a
+			 * new buffer.
+			 */
+			if (prev_leaf_part_index != leaf_part_index)
+			{
+				ReleaseBulkInsertStatePin(bistate);
+				prev_leaf_part_index = leaf_part_index;
+			}
+
+			/*
+			 * Save the old ResultRelInfo and switch to the one corresponding
+			 * to the selected partition.
+			 */
+			saved_resultRelInfo = resultRelInfo;
+			resultRelInfo = proute->partitions[leaf_part_index];
+			if (resultRelInfo == NULL)
+			{
+				resultRelInfo = ExecInitPartitionInfo(mtstate,
+													  saved_resultRelInfo,
+													  proute, estate,
+													  leaf_part_index);
+				Assert(resultRelInfo != NULL);
+			}
+
+			/*
+			 * For ExecInsertIndexTuples() to work on the partition's indexes
+			 */
+			estate->es_result_relation_info = resultRelInfo;
+
+			/*
+			 * If we're capturing transition tuples, we might need to convert
+			 * from the partition rowtype to parent rowtype.
+			 */
+			if (cstate->transition_capture != NULL)
+			{
+				if (resultRelInfo->ri_TrigDesc &&
+					resultRelInfo->ri_TrigDesc->trig_insert_before_row)
+				{
+					/*
+					 * If there are any BEFORE triggers on the partition,
+					 * we'll have to be ready to convert their result back to
+					 * tuplestore format.
+					 */
+					cstate->transition_capture->tcs_original_insert_tuple = NULL;
+					cstate->transition_capture->tcs_map =
+						TupConvMapForLeaf(proute, saved_resultRelInfo,
+										  leaf_part_index);
+				}
+				else
+				{
+					/*
+					 * Otherwise, just remember the original unconverted
+					 * tuple, to avoid a needless round trip conversion.
+					 */
+					cstate->transition_capture->tcs_original_insert_tuple = tuple;
+					cstate->transition_capture->tcs_map = NULL;
+				}
+			}
+
+			/*
+			 * We might need to convert from the parent rowtype to the
+			 * partition rowtype.
+			 */
+			tuple = ConvertPartitionTupleSlot(proute->parent_child_tupconv_maps[leaf_part_index],
+											  tuple,
+											  proute->partition_tuple_slot,
+											  &slot);
+
+			tuple->t_tableOid = RelationGetRelid(resultRelInfo->ri_RelationDesc);
+		}
+
 		skip_tuple = false;
 
 		/* BEFORE ROW INSERT Triggers */
@@ -2512,66 +2761,125 @@ CopyFrom(CopyState cstate)
 
 			if (slot == NULL)	/* "do nothing" */
 				skip_tuple = true;
-			else	/* trigger might have changed tuple */
+			else				/* trigger might have changed tuple */
 				tuple = ExecMaterializeSlot(slot);
 		}
 
 		if (!skip_tuple)
 		{
-			/* Check the constraints of the tuple */
-			if (cstate->rel->rd_att->constr)
-				ExecConstraints(resultRelInfo, slot, estate);
-
-			if (useHeapMultiInsert)
+			if (resultRelInfo->ri_TrigDesc &&
+				resultRelInfo->ri_TrigDesc->trig_insert_instead_row)
 			{
-				/* Add this tuple to the tuple buffer */
-				if (nBufferedTuples == 0)
-					firstBufferedLineNo = cstate->cur_lineno;
-				bufferedTuples[nBufferedTuples++] = tuple;
-				bufferedTuplesSize += tuple->t_len;
-
-				/*
-				 * If the buffer filled up, flush it. Also flush if the total
-				 * size of all the tuples in the buffer becomes large, to
-				 * avoid using large amounts of memory for the buffers when
-				 * the tuples are exceptionally wide.
-				 */
-				if (nBufferedTuples == MAX_BUFFERED_TUPLES ||
-					bufferedTuplesSize > 65535)
-				{
-					CopyFromInsertBatch(cstate, estate, mycid, hi_options,
-										resultRelInfo, myslot, bistate,
-										nBufferedTuples, bufferedTuples,
-										firstBufferedLineNo);
-					nBufferedTuples = 0;
-					bufferedTuplesSize = 0;
-				}
+				/* Pass the data to the INSTEAD ROW INSERT trigger */
+				ExecIRInsertTriggers(estate, resultRelInfo, slot);
 			}
 			else
 			{
-				List	   *recheckIndexes = NIL;
+				/*
+				 * If the target is a plain table, check the constraints of
+				 * the tuple.
+				 */
+				if (resultRelInfo->ri_FdwRoutine == NULL &&
+					resultRelInfo->ri_RelationDesc->rd_att->constr)
+					ExecConstraints(resultRelInfo, slot, estate);
 
-				/* OK, store the tuple and create index entries for it */
-				heap_insert(cstate->rel, tuple, mycid, hi_options, bistate);
+				/*
+				 * Also check the tuple against the partition constraint, if
+				 * there is one; except that if we got here via tuple-routing,
+				 * we don't need to if there's no BR trigger defined on the
+				 * partition.
+				 */
+				if (resultRelInfo->ri_PartitionCheck &&
+					(saved_resultRelInfo == NULL ||
+					 (resultRelInfo->ri_TrigDesc &&
+					  resultRelInfo->ri_TrigDesc->trig_insert_before_row)))
+					ExecPartitionCheck(resultRelInfo, slot, estate, true);
 
-				if (resultRelInfo->ri_NumIndices > 0)
-					recheckIndexes = ExecInsertIndexTuples(slot, &(tuple->t_self),
-														 estate, false, NULL,
-														   NIL);
+				if (useHeapMultiInsert)
+				{
+					/* Add this tuple to the tuple buffer */
+					if (nBufferedTuples == 0)
+						firstBufferedLineNo = cstate->cur_lineno;
+					bufferedTuples[nBufferedTuples++] = tuple;
+					bufferedTuplesSize += tuple->t_len;
 
-				/* AFTER ROW INSERT Triggers */
-				ExecARInsertTriggers(estate, resultRelInfo, tuple,
-									 recheckIndexes);
+					/*
+					 * If the buffer filled up, flush it.  Also flush if the
+					 * total size of all the tuples in the buffer becomes
+					 * large, to avoid using large amounts of memory for the
+					 * buffer when the tuples are exceptionally wide.
+					 */
+					if (nBufferedTuples == MAX_BUFFERED_TUPLES ||
+						bufferedTuplesSize > 65535)
+					{
+						CopyFromInsertBatch(cstate, estate, mycid, hi_options,
+											resultRelInfo, myslot, bistate,
+											nBufferedTuples, bufferedTuples,
+											firstBufferedLineNo);
+						nBufferedTuples = 0;
+						bufferedTuplesSize = 0;
+					}
+				}
+				else
+				{
+					List	   *recheckIndexes = NIL;
 
-				list_free(recheckIndexes);
+					/* OK, store the tuple */
+					if (resultRelInfo->ri_FdwRoutine != NULL)
+					{
+						slot = resultRelInfo->ri_FdwRoutine->ExecForeignInsert(estate,
+																			   resultRelInfo,
+																			   slot,
+																			   NULL);
+
+						if (slot == NULL)	/* "do nothing" */
+							goto next_tuple;
+
+						/* FDW might have changed tuple */
+						tuple = ExecMaterializeSlot(slot);
+
+						/*
+						 * AFTER ROW Triggers might reference the tableoid
+						 * column, so initialize t_tableOid before evaluating
+						 * them.
+						 */
+						tuple->t_tableOid = RelationGetRelid(resultRelInfo->ri_RelationDesc);
+					}
+					else
+						heap_insert(resultRelInfo->ri_RelationDesc, tuple,
+									mycid, hi_options, bistate);
+
+					/* And create index entries for it */
+					if (resultRelInfo->ri_NumIndices > 0)
+						recheckIndexes = ExecInsertIndexTuples(slot,
+															   &(tuple->t_self),
+															   estate,
+															   false,
+															   NULL,
+															   NIL);
+
+					/* AFTER ROW INSERT Triggers */
+					ExecARInsertTriggers(estate, resultRelInfo, tuple,
+										 recheckIndexes, cstate->transition_capture);
+
+					list_free(recheckIndexes);
+				}
 			}
 
 			/*
-			 * We count only tuples not suppressed by a BEFORE INSERT trigger;
-			 * this is the same definition used by execMain.c for counting
-			 * tuples inserted by an INSERT command.
+			 * We count only tuples not suppressed by a BEFORE INSERT trigger
+			 * or FDW; this is the same definition used by nodeModifyTable.c
+			 * for counting tuples inserted by an INSERT command.
 			 */
 			processed++;
+		}
+
+next_tuple:
+		/* Restore the saved ResultRelInfo */
+		if (saved_resultRelInfo)
+		{
+			resultRelInfo = saved_resultRelInfo;
+			estate->es_result_relation_info = resultRelInfo;
 		}
 	}
 
@@ -2597,7 +2905,7 @@ CopyFrom(CopyState cstate)
 		pq_endmsgread();
 
 	/* Execute AFTER STATEMENT insertion triggers */
-	ExecASInsertTriggers(estate, resultRelInfo);
+	ExecASInsertTriggers(estate, resultRelInfo, cstate->transition_capture);
 
 	/* Handle queued AFTER triggers */
 	AfterTriggerEndQuery(estate);
@@ -2607,7 +2915,20 @@ CopyFrom(CopyState cstate)
 
 	ExecResetTupleTable(estate->es_tupleTable, false);
 
+	/* Allow the FDW to shut down */
+	if (resultRelInfo->ri_FdwRoutine != NULL &&
+		resultRelInfo->ri_FdwRoutine->EndForeignInsert != NULL)
+		resultRelInfo->ri_FdwRoutine->EndForeignInsert(estate,
+													   resultRelInfo);
+
 	ExecCloseIndices(resultRelInfo);
+
+	/* Close all the partitioned tables, leaf partitions, and their indices */
+	if (cstate->partition_tuple_routing)
+		ExecCleanupTupleRouting(mtstate, cstate->partition_tuple_routing);
+
+	/* Close any trigger target relations */
+	ExecCleanUpTriggerState(estate);
 
 	FreeExecutorState(estate);
 
@@ -2674,7 +2995,7 @@ CopyFromInsertBatch(CopyState cstate, EState *estate, CommandId mycid,
 									  estate, false, NULL, NIL);
 			ExecARInsertTriggers(estate, resultRelInfo,
 								 bufferedTuples[i],
-								 recheckIndexes);
+								 recheckIndexes, cstate->transition_capture);
 			list_free(recheckIndexes);
 		}
 	}
@@ -2684,14 +3005,15 @@ CopyFromInsertBatch(CopyState cstate, EState *estate, CommandId mycid,
 	 * anyway.
 	 */
 	else if (resultRelInfo->ri_TrigDesc != NULL &&
-			 resultRelInfo->ri_TrigDesc->trig_insert_after_row)
+			 (resultRelInfo->ri_TrigDesc->trig_insert_after_row ||
+			  resultRelInfo->ri_TrigDesc->trig_insert_new_table))
 	{
 		for (i = 0; i < nBufferedTuples; i++)
 		{
 			cstate->cur_lineno = firstBufferedLineNo + i;
 			ExecARInsertTriggers(estate, resultRelInfo,
 								 bufferedTuples[i],
-								 NIL);
+								 NIL, cstate->transition_capture);
 		}
 	}
 
@@ -2710,16 +3032,17 @@ CopyFromInsertBatch(CopyState cstate, EState *estate, CommandId mycid,
  * Returns a CopyState, to be passed to NextCopyFrom and related functions.
  */
 CopyState
-BeginCopyFrom(Relation rel,
+BeginCopyFrom(ParseState *pstate,
+			  Relation rel,
 			  const char *filename,
 			  bool is_program,
+			  copy_data_source_cb data_source_cb,
 			  List *attnamelist,
 			  List *options)
 {
 	CopyState	cstate;
 	bool		pipe = (filename == NULL);
 	TupleDesc	tupDesc;
-	Form_pg_attribute *attr;
 	AttrNumber	num_phys_attrs,
 				num_defaults;
 	FmgrInfo   *in_functions;
@@ -2731,11 +3054,11 @@ BeginCopyFrom(Relation rel,
 	MemoryContext oldcontext;
 	bool		volatile_defexprs;
 
-	cstate = BeginCopy(true, rel, NULL, NULL, InvalidOid, attnamelist, options);
+	cstate = BeginCopy(pstate, true, rel, NULL, InvalidOid, attnamelist, options);
 	oldcontext = MemoryContextSwitchTo(cstate->copycontext);
 
 	/* Initialize state variables */
-	cstate->fe_eof = false;
+	cstate->reached_eof = false;
 	cstate->eol_type = EOL_UNKNOWN;
 	cstate->cur_relname = RelationGetRelationName(cstate->rel);
 	cstate->cur_lineno = 0;
@@ -2749,8 +3072,11 @@ BeginCopyFrom(Relation rel,
 	cstate->raw_buf = (char *) palloc(RAW_BUF_SIZE + 1);
 	cstate->raw_buf_index = cstate->raw_buf_len = 0;
 
+	/* Assign range table, we'll need it in CopyFrom. */
+	if (pstate)
+		cstate->range_table = pstate->p_rtable;
+
 	tupDesc = RelationGetDescr(cstate->rel);
-	attr = tupDesc->attrs;
 	num_phys_attrs = tupDesc->natts;
 	num_defaults = 0;
 	volatile_defexprs = false;
@@ -2768,16 +3094,18 @@ BeginCopyFrom(Relation rel,
 
 	for (attnum = 1; attnum <= num_phys_attrs; attnum++)
 	{
+		Form_pg_attribute att = TupleDescAttr(tupDesc, attnum - 1);
+
 		/* We don't need info for dropped attributes */
-		if (attr[attnum - 1]->attisdropped)
+		if (att->attisdropped)
 			continue;
 
 		/* Fetch the input function and typioparam info */
 		if (cstate->binary)
-			getTypeBinaryInputInfo(attr[attnum - 1]->atttypid,
+			getTypeBinaryInputInfo(att->atttypid,
 								   &in_func_oid, &typioparams[attnum - 1]);
 		else
-			getTypeInputInfo(attr[attnum - 1]->atttypid,
+			getTypeInputInfo(att->atttypid,
 							 &in_func_oid, &typioparams[attnum - 1]);
 		fmgr_info(in_func_oid, &in_functions[attnum - 1]);
 
@@ -2808,7 +3136,7 @@ BeginCopyFrom(Relation rel,
 				 * the special case of when the default expression is the
 				 * nextval() of a sequence which in this specific case is
 				 * known to be safe for use with the multi-insert
-				 * optimisation. Hence we use this special case function
+				 * optimization. Hence we use this special case function
 				 * checker rather than the standard check for
 				 * contain_volatile_functions().
 				 */
@@ -2827,7 +3155,12 @@ BeginCopyFrom(Relation rel,
 	cstate->num_defaults = num_defaults;
 	cstate->is_program = is_program;
 
-	if (pipe)
+	if (data_source_cb)
+	{
+		cstate->copy_dest = COPY_CALLBACK;
+		cstate->data_source_cb = data_source_cb;
+	}
+	else if (pipe)
 	{
 		Assert(!is_program);	/* the grammar does not allow this */
 		if (whereToSendOutput == DestRemote)
@@ -2854,10 +3187,18 @@ BeginCopyFrom(Relation rel,
 
 			cstate->copy_file = AllocateFile(cstate->filename, PG_BINARY_R);
 			if (cstate->copy_file == NULL)
+			{
+				/* copy errno because ereport subfunctions might change it */
+				int			save_errno = errno;
+
 				ereport(ERROR,
 						(errcode_for_file_access(),
 						 errmsg("could not open file \"%s\" for reading: %m",
-								cstate->filename)));
+								cstate->filename),
+						 (save_errno == ENOENT || save_errno == EACCES) ?
+						 errhint("COPY FROM instructs the PostgreSQL server process to read a file. "
+								 "You may want a client-side facility such as psql's \\copy.") : 0));
+			}
 
 			if (fstat(fileno(cstate->copy_file), &st))
 				ereport(ERROR,
@@ -2899,7 +3240,7 @@ BeginCopyFrom(Relation rel,
 		if ((tmp >> 16) != 0)
 			ereport(ERROR,
 					(errcode(ERRCODE_BAD_COPY_FILE_FORMAT),
-				 errmsg("unrecognized critical flags in COPY file header")));
+					 errmsg("unrecognized critical flags in COPY file header")));
 		/* Header extension length */
 		if (!CopyGetInt32(cstate, &tmp) ||
 			tmp < 0)
@@ -3006,7 +3347,6 @@ NextCopyFrom(CopyState cstate, ExprContext *econtext,
 			 Datum *values, bool *nulls, Oid *tupleOid)
 {
 	TupleDesc	tupDesc;
-	Form_pg_attribute *attr;
 	AttrNumber	num_phys_attrs,
 				attr_count,
 				num_defaults = cstate->num_defaults;
@@ -3020,7 +3360,6 @@ NextCopyFrom(CopyState cstate, ExprContext *econtext,
 	ExprState **defexprs = cstate->defexprs;
 
 	tupDesc = RelationGetDescr(cstate->rel);
-	attr = tupDesc->attrs;
 	num_phys_attrs = tupDesc->natts;
 	attr_count = list_length(cstate->attnumlist);
 	nfields = file_has_oids ? (attr_count + 1) : attr_count;
@@ -3067,7 +3406,7 @@ NextCopyFrom(CopyState cstate, ExprContext *econtext,
 				cstate->cur_attname = "oid";
 				cstate->cur_attval = string;
 				*tupleOid = DatumGetObjectId(DirectFunctionCall1(oidin,
-												   CStringGetDatum(string)));
+																 CStringGetDatum(string)));
 				if (*tupleOid == InvalidOid)
 					ereport(ERROR,
 							(errcode(ERRCODE_BAD_COPY_FILE_FORMAT),
@@ -3082,12 +3421,13 @@ NextCopyFrom(CopyState cstate, ExprContext *econtext,
 		{
 			int			attnum = lfirst_int(cur);
 			int			m = attnum - 1;
+			Form_pg_attribute att = TupleDescAttr(tupDesc, m);
 
 			if (fieldno >= fldct)
 				ereport(ERROR,
 						(errcode(ERRCODE_BAD_COPY_FILE_FORMAT),
 						 errmsg("missing data for column \"%s\"",
-								NameStr(attr[m]->attname))));
+								NameStr(att->attname))));
 			string = field_strings[fieldno++];
 
 			if (cstate->convert_select_flags &&
@@ -3121,12 +3461,12 @@ NextCopyFrom(CopyState cstate, ExprContext *econtext,
 				}
 			}
 
-			cstate->cur_attname = NameStr(attr[m]->attname);
+			cstate->cur_attname = NameStr(att->attname);
 			cstate->cur_attval = string;
 			values[m] = InputFunctionCall(&in_functions[m],
 										  string,
 										  typioparams[m],
-										  attr[m]->atttypmod);
+										  att->atttypmod);
 			if (string != NULL)
 				nulls[m] = false;
 			cstate->cur_attname = NULL;
@@ -3187,8 +3527,8 @@ NextCopyFrom(CopyState cstate, ExprContext *econtext,
 			loaded_oid =
 				DatumGetObjectId(CopyReadBinaryAttribute(cstate,
 														 0,
-													&cstate->oid_in_function,
-													  cstate->oid_typioparam,
+														 &cstate->oid_in_function,
+														 cstate->oid_typioparam,
 														 -1,
 														 &isnull));
 			if (isnull || loaded_oid == InvalidOid)
@@ -3205,14 +3545,15 @@ NextCopyFrom(CopyState cstate, ExprContext *econtext,
 		{
 			int			attnum = lfirst_int(cur);
 			int			m = attnum - 1;
+			Form_pg_attribute att = TupleDescAttr(tupDesc, m);
 
-			cstate->cur_attname = NameStr(attr[m]->attname);
+			cstate->cur_attname = NameStr(att->attname);
 			i++;
 			values[m] = CopyReadBinaryAttribute(cstate,
 												i,
 												&in_functions[m],
 												typioparams[m],
-												attr[m]->atttypmod,
+												att->atttypmod,
 												&nulls[m]);
 			cstate->cur_attname = NULL;
 		}
@@ -3233,7 +3574,7 @@ NextCopyFrom(CopyState cstate, ExprContext *econtext,
 		Assert(CurrentMemoryContext == econtext->ecxt_per_tuple_memory);
 
 		values[defmap[i]] = ExecEvalExpr(defexprs[i], econtext,
-										 &nulls[defmap[i]], NULL);
+										 &nulls[defmap[i]]);
 	}
 
 	return true;
@@ -3506,8 +3847,8 @@ CopyReadLineText(CopyState cstate)
 
 				if (c == '\n')
 				{
-					raw_buf_ptr++;		/* eat newline */
-					cstate->eol_type = EOL_CRNL;		/* in case not set yet */
+					raw_buf_ptr++;	/* eat newline */
+					cstate->eol_type = EOL_CRNL;	/* in case not set yet */
 				}
 				else
 				{
@@ -3516,10 +3857,10 @@ CopyReadLineText(CopyState cstate)
 						ereport(ERROR,
 								(errcode(ERRCODE_BAD_COPY_FILE_FORMAT),
 								 !cstate->csv_mode ?
-							errmsg("literal carriage return found in data") :
-							errmsg("unquoted carriage return found in data"),
+								 errmsg("literal carriage return found in data") :
+								 errmsg("unquoted carriage return found in data"),
 								 !cstate->csv_mode ?
-						errhint("Use \"\\r\" to represent carriage return.") :
+								 errhint("Use \"\\r\" to represent carriage return.") :
 								 errhint("Use quoted CSV field to represent carriage return.")));
 
 					/*
@@ -3536,7 +3877,7 @@ CopyReadLineText(CopyState cstate)
 						 errmsg("literal carriage return found in data") :
 						 errmsg("unquoted carriage return found in data"),
 						 !cstate->csv_mode ?
-					   errhint("Use \"\\r\" to represent carriage return.") :
+						 errhint("Use \"\\r\" to represent carriage return.") :
 						 errhint("Use quoted CSV field to represent carriage return.")));
 			/* If reach here, we have found the line terminator */
 			break;
@@ -3553,7 +3894,7 @@ CopyReadLineText(CopyState cstate)
 						 errmsg("unquoted newline found in data"),
 						 !cstate->csv_mode ?
 						 errhint("Use \"\\n\" to represent newline.") :
-					 errhint("Use quoted CSV field to represent newline.")));
+						 errhint("Use quoted CSV field to represent newline.")));
 			cstate->eol_type = EOL_NL;	/* in case not set yet */
 			/* If reach here, we have found the line terminator */
 			break;
@@ -3644,8 +3985,8 @@ CopyReadLineText(CopyState cstate)
 				 */
 				if (prev_raw_ptr > cstate->raw_buf_index)
 					appendBinaryStringInfo(&cstate->line_buf,
-									 cstate->raw_buf + cstate->raw_buf_index,
-									   prev_raw_ptr - cstate->raw_buf_index);
+										   cstate->raw_buf + cstate->raw_buf_index,
+										   prev_raw_ptr - cstate->raw_buf_index);
 				cstate->raw_buf_index = raw_buf_ptr;
 				result = true;	/* report EOF */
 				break;
@@ -4257,7 +4598,7 @@ CopyAttributeOutText(CopyState cstate, char *string)
 							break;
 						/* All ASCII control chars are length 1 */
 						ptr++;
-						continue;		/* fall to end of loop */
+						continue;	/* fall to end of loop */
 				}
 				/* if we get here, we need to convert the control char */
 				DUMPSOFAR();
@@ -4317,7 +4658,7 @@ CopyAttributeOutText(CopyState cstate, char *string)
 							break;
 						/* All ASCII control chars are length 1 */
 						ptr++;
-						continue;		/* fall to end of loop */
+						continue;	/* fall to end of loop */
 				}
 				/* if we get here, we need to convert the control char */
 				DUMPSOFAR();
@@ -4442,13 +4783,12 @@ CopyGetAttnums(TupleDesc tupDesc, Relation rel, List *attnamelist)
 	if (attnamelist == NIL)
 	{
 		/* Generate default column list */
-		Form_pg_attribute *attr = tupDesc->attrs;
 		int			attr_count = tupDesc->natts;
 		int			i;
 
 		for (i = 0; i < attr_count; i++)
 		{
-			if (attr[i]->attisdropped)
+			if (TupleDescAttr(tupDesc, i)->attisdropped)
 				continue;
 			attnums = lappend_int(attnums, i + 1);
 		}
@@ -4468,11 +4808,13 @@ CopyGetAttnums(TupleDesc tupDesc, Relation rel, List *attnamelist)
 			attnum = InvalidAttrNumber;
 			for (i = 0; i < tupDesc->natts; i++)
 			{
-				if (tupDesc->attrs[i]->attisdropped)
+				Form_pg_attribute att = TupleDescAttr(tupDesc, i);
+
+				if (att->attisdropped)
 					continue;
-				if (namestrcmp(&(tupDesc->attrs[i]->attname), name) == 0)
+				if (namestrcmp(&(att->attname), name) == 0)
 				{
-					attnum = tupDesc->attrs[i]->attnum;
+					attnum = att->attnum;
 					break;
 				}
 			}
@@ -4481,8 +4823,8 @@ CopyGetAttnums(TupleDesc tupDesc, Relation rel, List *attnamelist)
 				if (rel != NULL)
 					ereport(ERROR,
 							(errcode(ERRCODE_UNDEFINED_COLUMN),
-					errmsg("column \"%s\" of relation \"%s\" does not exist",
-						   name, RelationGetRelationName(rel))));
+							 errmsg("column \"%s\" of relation \"%s\" does not exist",
+									name, RelationGetRelationName(rel))));
 				else
 					ereport(ERROR,
 							(errcode(ERRCODE_UNDEFINED_COLUMN),

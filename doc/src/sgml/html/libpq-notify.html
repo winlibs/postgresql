@@ -1,369 +1,72 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Asynchronous Notification</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="libpq - C Library"
-HREF="libpq.html"><LINK
-REL="PREVIOUS"
-TITLE="The Fast-Path Interface"
-HREF="libpq-fastpath.html"><LINK
-REL="NEXT"
-TITLE="Functions Associated with the COPY Command"
-HREF="libpq-copy.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="The Fast-Path Interface"
-HREF="libpq-fastpath.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="libpq.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 32. <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> - C Library</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Functions Associated with the COPY Command"
-HREF="libpq-copy.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="LIBPQ-NOTIFY"
->32.8. Asynchronous Notification</A
-></H1
-><P
->   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> offers asynchronous notification
-   via the <TT
-CLASS="COMMAND"
->LISTEN</TT
-> and <TT
-CLASS="COMMAND"
->NOTIFY</TT
->
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>34.8. Asynchronous Notification</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="libpq-fastpath.html" title="34.7. The Fast-Path Interface" /><link rel="next" href="libpq-copy.html" title="34.9. Functions Associated with the COPY Command" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">34.8. Asynchronous Notification</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="libpq-fastpath.html" title="34.7. The Fast-Path Interface">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="libpq.html" title="Chapter 34. libpq - C Library">Up</a></td><th width="60%" align="center">Chapter 34. <span xmlns="http://www.w3.org/1999/xhtml" class="application">libpq</span> - C Library</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="libpq-copy.html" title="34.9. Functions Associated with the COPY Command">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="LIBPQ-NOTIFY"><div class="titlepage"><div><div><h2 class="title" style="clear: both">34.8. Asynchronous Notification</h2></div></div></div><a id="id-1.7.3.15.2" class="indexterm"></a><p>
+   <span class="productname">PostgreSQL</span> offers asynchronous notification
+   via the <code class="command">LISTEN</code> and <code class="command">NOTIFY</code>
    commands.  A client session registers its interest in a particular
-   notification channel with the <TT
-CLASS="COMMAND"
->LISTEN</TT
-> command (and
-   can stop listening with the <TT
-CLASS="COMMAND"
->UNLISTEN</TT
-> command).  All
+   notification channel with the <code class="command">LISTEN</code> command (and
+   can stop listening with the <code class="command">UNLISTEN</code> command).  All
    sessions listening on a particular channel will be notified
-   asynchronously when a <TT
-CLASS="COMMAND"
->NOTIFY</TT
-> command with that
-   channel name is executed by any session. A <SPAN
-CLASS="QUOTE"
->"payload"</SPAN
-> string can
+   asynchronously when a <code class="command">NOTIFY</code> command with that
+   channel name is executed by any session. A <span class="quote">“<span class="quote">payload</span>”</span> string can
    be passed to communicate additional data to the listeners.
-  </P
-><P
->   <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> applications submit
-   <TT
-CLASS="COMMAND"
->LISTEN</TT
->, <TT
-CLASS="COMMAND"
->UNLISTEN</TT
->,
-   and <TT
-CLASS="COMMAND"
->NOTIFY</TT
-> commands as
-   ordinary SQL commands.  The arrival of <TT
-CLASS="COMMAND"
->NOTIFY</TT
->
+  </p><p>
+   <span class="application">libpq</span> applications submit
+   <code class="command">LISTEN</code>, <code class="command">UNLISTEN</code>,
+   and <code class="command">NOTIFY</code> commands as
+   ordinary SQL commands.  The arrival of <code class="command">NOTIFY</code>
    messages can subsequently be detected by calling
-   <CODE
-CLASS="FUNCTION"
->PQnotifies</CODE
->.
-  </P
-><P
->   The function <CODE
-CLASS="FUNCTION"
->PQnotifies</CODE
-> returns the next notification
+   <code class="function">PQnotifies</code>.<a id="id-1.7.3.15.4.7" class="indexterm"></a>
+  </p><p>
+   The function <code class="function">PQnotifies</code> returns the next notification
    from a list of unhandled notification messages received from the server.
    It returns a null pointer if there are no pending notifications.  Once a
-   notification is returned from <CODE
-CLASS="FUNCTION"
->PQnotifies</CODE
->, it is considered
+   notification is returned from <code class="function">PQnotifies</code>, it is considered
    handled and will be removed from the list of notifications.
 
-</P><PRE
-CLASS="SYNOPSIS"
->PGnotify *PQnotifies(PGconn *conn);
+</p><pre class="synopsis">
+PGnotify *PQnotifies(PGconn *conn);
 
 typedef struct pgNotify
 {
     char *relname;              /* notification channel name */
     int  be_pid;                /* process ID of notifying server process */
     char *extra;                /* notification payload string */
-} PGnotify;</PRE
-><P>
+} PGnotify;
+</pre><p>
 
-   After processing a <TT
-CLASS="STRUCTNAME"
->PGnotify</TT
-> object returned
-   by <CODE
-CLASS="FUNCTION"
->PQnotifies</CODE
->, be sure to free it with
-   <CODE
-CLASS="FUNCTION"
->PQfreemem</CODE
->.  It is sufficient to free the
-   <TT
-CLASS="STRUCTNAME"
->PGnotify</TT
-> pointer; the
-   <TT
-CLASS="STRUCTFIELD"
->relname</TT
-> and <TT
-CLASS="STRUCTFIELD"
->extra</TT
->
+   After processing a <code class="structname">PGnotify</code> object returned
+   by <code class="function">PQnotifies</code>, be sure to free it with
+   <code class="function">PQfreemem</code>.  It is sufficient to free the
+   <code class="structname">PGnotify</code> pointer; the
+   <code class="structfield">relname</code> and <code class="structfield">extra</code>
    fields do not represent separate allocations.  (The names of these fields
    are historical; in particular, channel names need not have anything to
    do with relation names.)
-  </P
-><P
->   <A
-HREF="libpq-example.html#LIBPQ-EXAMPLE-2"
->Example 32-2</A
-> gives a sample program that illustrates
+  </p><p>
+   <a class="xref" href="libpq-example.html#LIBPQ-EXAMPLE-2" title="Example 34.2. libpq Example Program 2">Example 34.2</a> gives a sample program that illustrates
    the use of asynchronous notification.
-  </P
-><P
->   <CODE
-CLASS="FUNCTION"
->PQnotifies</CODE
-> does not actually read data from the
+  </p><p>
+   <code class="function">PQnotifies</code> does not actually read data from the
    server; it just returns messages previously absorbed by another
-   <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> function.  In ancient releases of
-   <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
->, the only way to ensure timely receipt
-   of <TT
-CLASS="COMMAND"
->NOTIFY</TT
-> messages was to constantly submit commands, even
-   empty ones, and then check <CODE
-CLASS="FUNCTION"
->PQnotifies</CODE
-> after each
-   <CODE
-CLASS="FUNCTION"
->PQexec</CODE
->.  While this still works, it is deprecated
+   <span class="application">libpq</span> function.  In ancient releases of
+   <span class="application">libpq</span>, the only way to ensure timely receipt
+   of <code class="command">NOTIFY</code> messages was to constantly submit commands, even
+   empty ones, and then check <code class="function">PQnotifies</code> after each
+   <code class="function">PQexec</code>.  While this still works, it is deprecated
    as a waste of processing power.
-  </P
-><P
->   A better way to check for <TT
-CLASS="COMMAND"
->NOTIFY</TT
-> messages when you have no
+  </p><p>
+   A better way to check for <code class="command">NOTIFY</code> messages when you have no
    useful commands to execute is to call
-   <CODE
-CLASS="FUNCTION"
->PQconsumeInput</CODE
->, then check
-   <CODE
-CLASS="FUNCTION"
->PQnotifies</CODE
->.  You can use
-   <CODE
-CLASS="FUNCTION"
->select()</CODE
-> to wait for data to arrive from the
-   server, thereby using no <ACRONYM
-CLASS="ACRONYM"
->CPU</ACRONYM
-> power unless there is
-   something to do.  (See <CODE
-CLASS="FUNCTION"
->PQsocket</CODE
-> to obtain the file
-   descriptor number to use with <CODE
-CLASS="FUNCTION"
->select()</CODE
->.) Note that
+   <code class="function">PQconsumeInput</code>, then check
+   <code class="function">PQnotifies</code>.  You can use
+   <code class="function">select()</code> to wait for data to arrive from the
+   server, thereby using no <acronym class="acronym">CPU</acronym> power unless there is
+   something to do.  (See <code class="function">PQsocket</code> to obtain the file
+   descriptor number to use with <code class="function">select()</code>.) Note that
    this will work OK whether you submit commands with
-   <CODE
-CLASS="FUNCTION"
->PQsendQuery</CODE
->/<CODE
-CLASS="FUNCTION"
->PQgetResult</CODE
-> or
-   simply use <CODE
-CLASS="FUNCTION"
->PQexec</CODE
->.  You should, however, remember
-   to check <CODE
-CLASS="FUNCTION"
->PQnotifies</CODE
-> after each
-   <CODE
-CLASS="FUNCTION"
->PQgetResult</CODE
-> or <CODE
-CLASS="FUNCTION"
->PQexec</CODE
->, to
+   <code class="function">PQsendQuery</code>/<code class="function">PQgetResult</code> or
+   simply use <code class="function">PQexec</code>.  You should, however, remember
+   to check <code class="function">PQnotifies</code> after each
+   <code class="function">PQgetResult</code> or <code class="function">PQexec</code>, to
    see if any notifications came in during the processing of the command.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="libpq-fastpath.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="libpq-copy.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->The Fast-Path Interface</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="libpq.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Functions Associated with the <TT
-CLASS="COMMAND"
->COPY</TT
-> Command</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="libpq-fastpath.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="libpq.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="libpq-copy.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">34.7. The Fast-Path Interface </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 34.9. Functions Associated with the <code class="command">COPY</code> Command</td></tr></table></div></body></html>

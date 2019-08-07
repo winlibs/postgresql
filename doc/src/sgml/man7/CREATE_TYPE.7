@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE TYPE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE TYPE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -101,7 +101,7 @@ privilege on all attribute types\&.
 The second form of
 \fBCREATE TYPE\fR
 creates an enumerated (enum) type, as described in
-Section 8.7, \(lqEnumerated Types\(rq, in the documentation\&. Enum types take a list of quoted labels, each of which must be less than
+Section\ \&8.7\&. Enum types take a list of quoted labels, each of which must be less than
 NAMEDATALEN
 bytes long (64 bytes in a standard
 PostgreSQL
@@ -112,7 +112,7 @@ ALTER TYPE (\fBALTER_TYPE\fR(7))\&.)
 The third form of
 \fBCREATE TYPE\fR
 creates a new range type, as described in
-Section 8.17, \(lqRange Types\(rq, in the documentation\&.
+Section\ \&8.17\&.
 .PP
 The range type\*(Aqs
 \fIsubtype\fR
@@ -124,7 +124,7 @@ option\&.
 The optional
 \fIcanonical\fR
 function must take one argument of the range type being defined, and return a value of the same type\&. This is used to convert range values to a canonical form, when applicable\&. See
-Section 8.17.8, \(lqDefining New Range Types\(rq, in the documentation
+Section\ \&8.17.8
 for more information\&. Creating a
 \fIcanonical\fR
 function is a bit tricky, since it must be defined before the range type can be declared\&. To do this, you must first create a shell type, which is a placeholder type that has no properties except a name and an owner\&. This is done by issuing the command
@@ -137,7 +137,7 @@ function must take two values of the
 type as argument, and return a
 double precision
 value representing the difference between the two given values\&. While this is optional, providing it allows much greater efficiency of GiST indexes on columns of the range type\&. See
-Section 8.17.8, \(lqDefining New Range Types\(rq, in the documentation
+Section\ \&8.17.8
 for more information\&.
 .SS "Base Types"
 .PP
@@ -241,7 +241,7 @@ to
 VARIABLE\&. (Internally, this is represented by setting
 typlen
 to \-1\&.) The internal representation of all variable\-length types must start with a 4\-byte integer giving the total length of this value of the type\&. (Note that the length field is often encoded, as described in
-Section 65.2, \(lqTOAST\(rq, in the documentation; it\*(Aqs unwise to access it directly\&.)
+Section\ \&68.2; it\*(Aqs unwise to access it directly\&.)
 .PP
 The optional flag
 PASSEDBYVALUE
@@ -279,9 +279,9 @@ values other than
 plain
 imply that the functions of the data type can handle values that have been
 toasted, as described in
-Section 65.2, \(lqTOAST\(rq, in the documentation
+Section\ \&68.2
 and
-Section 36.11.1, \(lqTOAST Considerations\(rq, in the documentation\&. The specific other value given merely determines the default TOAST storage strategy for columns of a toastable data type; users can pick other strategies for individual columns using
+Section\ \&38.12.1\&. The specific other value given merely determines the default TOAST storage strategy for columns of a toastable data type; users can pick other strategies for individual columns using
 ALTER TABLE SET STORAGE\&.
 .PP
 The
@@ -304,7 +304,7 @@ and
 parameters can be used to help control which implicit cast will be applied in ambiguous situations\&. Each data type belongs to a category named by a single ASCII character, and each type is either
 \(lqpreferred\(rq
 or not within its category\&. The parser will prefer casting to preferred types (but only from other types within the same category) when this rule is helpful in resolving overloaded functions or operators\&. For more details see
-Chapter 10, Type Conversion, in the documentation\&. For types that have no implicit casts to or from any other types, it is sufficient to leave these settings at the defaults\&. However, for a group of related types that have implicit casts, it is often helpful to mark them all as belonging to a category and select one or two of the
+Chapter\ \&10\&. For types that have no implicit casts to or from any other types, it is sufficient to leave these settings at the defaults\&. However, for a group of related types that have implicit casts, it is often helpful to mark them all as belonging to a category and select one or two of the
 \(lqmost general\(rq
 types as being preferred within the category\&. The
 \fIcategory\fR
@@ -479,7 +479,7 @@ The category code (a single ASCII character) for this type\&. The default is
 \*(AqU\*(Aq
 for
 \(lquser\-defined type\(rq\&. Other standard category codes can be found in
-Table\ \&50.56, \(lqtypcategory Codes\(rq\&. You may also choose other ASCII characters in order to create custom categories\&.
+Table\ \&52.63\&. You may also choose other ASCII characters in order to create custom categories\&.
 .RE
 .PP
 \fIpreferred\fR
@@ -530,7 +530,7 @@ will first see the name of the new data type as the return type of the input fun
 .PP
 In
 PostgreSQL
-versions before 7\&.3, it was customary to avoid creating a shell type at all, by replacing the functions\*(Aq forward references to the type name with the placeholder pseudotype
+versions before 7\&.3, it was customary to avoid creating a shell type at all, by replacing the functions\*(Aq forward references to the type name with the placeholder pseudo\-type
 opaque\&. The
 cstring
 arguments and results also had to be declared as
@@ -658,7 +658,7 @@ CREATE TABLE big_objs (
 .\}
 .PP
 More examples, including suitable input and output functions, are in
-Section 36.11, \(lqUser-defined Types\(rq, in the documentation\&.
+Section\ \&38.12\&.
 .SH "COMPATIBILITY"
 .PP
 The first form of the

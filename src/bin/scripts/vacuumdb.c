@@ -2,7 +2,7 @@
  *
  * vacuumdb
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/bin/scripts/vacuumdb.c
@@ -15,6 +15,8 @@
 #ifdef HAVE_SYS_SELECT_H
 #include <sys/select.h>
 #endif
+
+#include "catalog/pg_class_d.h"
 
 #include "common.h"
 #include "fe_utils/simple_list.h"
@@ -391,8 +393,12 @@ vacuum_one_database(const char *dbname, vacuumingOptions *vacopts,
 		initPQExpBuffer(&buf);
 
 		res = executeQuery(conn,
-			"SELECT c.relname, ns.nspname FROM pg_class c, pg_namespace ns\n"
-			 " WHERE relkind IN (\'r\', \'m\') AND c.relnamespace = ns.oid\n"
+						   "SELECT c.relname, ns.nspname"
+						   " FROM pg_class c, pg_namespace ns\n"
+						   " WHERE relkind IN ("
+						   CppAsString2(RELKIND_RELATION) ", "
+						   CppAsString2(RELKIND_MATVIEW) ")"
+						   " AND c.relnamespace = ns.oid\n"
 						   " ORDER BY c.relpages DESC;",
 						   progname, echo);
 
@@ -400,8 +406,7 @@ vacuum_one_database(const char *dbname, vacuumingOptions *vacopts,
 		for (i = 0; i < ntups; i++)
 		{
 			appendPQExpBufferStr(&buf,
-								 fmtQualifiedId(PQserverVersion(conn),
-												PQgetvalue(res, i, 1),
+								 fmtQualifiedId(PQgetvalue(res, i, 1),
 												PQgetvalue(res, i, 0)));
 
 			simple_string_list_append(&dbtables, buf.data);
@@ -519,7 +524,10 @@ vacuum_one_database(const char *dbname, vacuumingOptions *vacopts,
 		for (j = 0; j < concurrentCons; j++)
 		{
 			if (!GetQueryResult((slots + j)->connection, progname))
+			{
+				failed = true;
 				goto finish;
+			}
 		}
 	}
 
@@ -559,7 +567,7 @@ vacuum_all_databases(vacuumingOptions *vacopts,
 	conn = connectMaintenanceDatabase(maintenance_db, host, port, username,
 									  prompt_password, progname, echo);
 	result = executeQuery(conn,
-			"SELECT datname FROM pg_database WHERE datallowconn ORDER BY 1;",
+						  "SELECT datname FROM pg_database WHERE datallowconn ORDER BY 1;",
 						  progname, echo);
 	PQfinish(conn);
 
@@ -716,7 +724,7 @@ run_vacuum_command(PGconn *conn, const char *sql, bool echo,
 	{
 		if (table)
 			fprintf(stderr,
-			_("%s: vacuuming of table \"%s\" in database \"%s\" failed: %s"),
+					_("%s: vacuuming of table \"%s\" in database \"%s\" failed: %s"),
 					progname, table, PQdb(conn), PQerrorMessage(conn));
 		else
 			fprintf(stderr, _("%s: vacuuming of database \"%s\" failed: %s"),

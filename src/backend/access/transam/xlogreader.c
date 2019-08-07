@@ -3,7 +3,7 @@
  * xlogreader.c
  *		Generic XLog reading facility
  *
- * Portions Copyright (c) 2013-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 2013-2018, PostgreSQL Global Development Group
  *
  * IDENTIFICATION
  *		src/backend/access/transam/xlogreader.c
@@ -32,7 +32,7 @@
 static bool allocate_recordbuf(XLogReaderState *state, uint32 reclength);
 
 static bool ValidXLogRecordHeader(XLogReaderState *state, XLogRecPtr RecPtr,
-				 XLogRecPtr PrevRecPtr, XLogRecord *record, bool randAccess);
+					  XLogRecPtr PrevRecPtr, XLogRecord *record, bool randAccess);
 static bool ValidXLogRecord(XLogReaderState *state, XLogRecord *record,
 				XLogRecPtr recptr);
 static int ReadPageInternal(XLogReaderState *state, XLogRecPtr pageptr,
@@ -66,7 +66,8 @@ report_invalid_record(XLogReaderState *state, const char *fmt,...)
  * Returns NULL if the xlogreader couldn't be allocated.
  */
 XLogReaderState *
-XLogReaderAllocate(XLogPageReadCB pagereadfunc, void *private_data)
+XLogReaderAllocate(int wal_segment_size, XLogPageReadCB pagereadfunc,
+				   void *private_data)
 {
 	XLogReaderState *state;
 
@@ -93,6 +94,7 @@ XLogReaderAllocate(XLogPageReadCB pagereadfunc, void *private_data)
 		return NULL;
 	}
 
+	state->wal_segment_size = wal_segment_size;
 	state->read_page = pagereadfunc;
 	/* system_identifier initialized to zeroes above */
 	state->private_data = private_data;
@@ -275,7 +277,7 @@ XLogReadRecord(XLogReaderState *state, XLogRecPtr RecPtr, char **errormsg)
 	 */
 	readOff = ReadPageInternal(state,
 							   targetPagePtr,
-						  Min(targetRecOff + SizeOfXLogRecord, XLOG_BLCKSZ));
+							   Min(targetRecOff + SizeOfXLogRecord, XLOG_BLCKSZ));
 	if (readOff < 0)
 		goto err;
 
@@ -343,7 +345,7 @@ XLogReadRecord(XLogReaderState *state, XLogRecPtr RecPtr, char **errormsg)
 		if (total_len < SizeOfXLogRecord)
 		{
 			report_invalid_record(state,
-						 "invalid record length at %X/%X: wanted %u, got %u",
+								  "invalid record length at %X/%X: wanted %u, got %u",
 								  (uint32) (RecPtr >> 32), (uint32) RecPtr,
 								  (uint32) SizeOfXLogRecord, total_len);
 			goto err;
@@ -386,8 +388,8 @@ XLogReadRecord(XLogReaderState *state, XLogRecPtr RecPtr, char **errormsg)
 
 			/* Wait for the next page to become available */
 			readOff = ReadPageInternal(state, targetPagePtr,
-								 Min(total_len - gotlen + SizeOfXLogShortPHD,
-									 XLOG_BLCKSZ));
+									   Min(total_len - gotlen + SizeOfXLogShortPHD,
+										   XLOG_BLCKSZ));
 
 			if (readOff < 0)
 				goto err;
@@ -400,7 +402,7 @@ XLogReadRecord(XLogReaderState *state, XLogRecPtr RecPtr, char **errormsg)
 			{
 				report_invalid_record(state,
 									  "there is no contrecord flag at %X/%X",
-								   (uint32) (RecPtr >> 32), (uint32) RecPtr);
+									  (uint32) (RecPtr >> 32), (uint32) RecPtr);
 				goto err;
 			}
 
@@ -414,7 +416,7 @@ XLogReadRecord(XLogReaderState *state, XLogRecPtr RecPtr, char **errormsg)
 				report_invalid_record(state,
 									  "invalid contrecord length %u at %X/%X",
 									  pageHeader->xlp_rem_len,
-								   (uint32) (RecPtr >> 32), (uint32) RecPtr);
+									  (uint32) (RecPtr >> 32), (uint32) RecPtr);
 				goto err;
 			}
 
@@ -466,7 +468,7 @@ XLogReadRecord(XLogReaderState *state, XLogRecPtr RecPtr, char **errormsg)
 	{
 		/* Wait for the record data to become available */
 		readOff = ReadPageInternal(state, targetPagePtr,
-								 Min(targetRecOff + total_len, XLOG_BLCKSZ));
+								   Min(targetRecOff + total_len, XLOG_BLCKSZ));
 		if (readOff < 0)
 			goto err;
 
@@ -483,11 +485,12 @@ XLogReadRecord(XLogReaderState *state, XLogRecPtr RecPtr, char **errormsg)
 	/*
 	 * Special processing if it's an XLOG SWITCH record
 	 */
-	if (record->xl_rmid == RM_XLOG_ID && record->xl_info == XLOG_SWITCH)
+	if (record->xl_rmid == RM_XLOG_ID &&
+		(record->xl_info & ~XLR_INFO_MASK) == XLOG_SWITCH)
 	{
 		/* Pretend it extends to end of segment */
-		state->EndRecPtr += XLogSegSize - 1;
-		state->EndRecPtr -= state->EndRecPtr % XLogSegSize;
+		state->EndRecPtr += state->wal_segment_size - 1;
+		state->EndRecPtr -= XLogSegmentOffset(state->EndRecPtr, state->wal_segment_size);
 	}
 
 	if (DecodeXLogRecord(state, record, errormsg))
@@ -529,8 +532,8 @@ ReadPageInternal(XLogReaderState *state, XLogRecPtr pageptr, int reqLen)
 
 	Assert((pageptr % XLOG_BLCKSZ) == 0);
 
-	XLByteToSeg(pageptr, targetSegNo);
-	targetPageOff = (pageptr % XLogSegSize);
+	XLByteToSeg(pageptr, targetSegNo, state->wal_segment_size);
+	targetPageOff = XLogSegmentOffset(pageptr, state->wal_segment_size);
 
 	/* check whether we have all the requested data already */
 	if (targetSegNo == state->readSegNo && targetPageOff == state->readOff &&
@@ -640,7 +643,7 @@ ValidXLogRecordHeader(XLogReaderState *state, XLogRecPtr RecPtr,
 	if (record->xl_tot_len < SizeOfXLogRecord)
 	{
 		report_invalid_record(state,
-						 "invalid record length at %X/%X: wanted %u, got %u",
+							  "invalid record length at %X/%X: wanted %u, got %u",
 							  (uint32) (RecPtr >> 32), (uint32) RecPtr,
 							  (uint32) SizeOfXLogRecord, record->xl_tot_len);
 		return false;
@@ -662,7 +665,7 @@ ValidXLogRecordHeader(XLogReaderState *state, XLogRecPtr RecPtr,
 		if (!(record->xl_prev < RecPtr))
 		{
 			report_invalid_record(state,
-							"record with incorrect prev-link %X/%X at %X/%X",
+								  "record with incorrect prev-link %X/%X at %X/%X",
 								  (uint32) (record->xl_prev >> 32),
 								  (uint32) record->xl_prev,
 								  (uint32) (RecPtr >> 32), (uint32) RecPtr);
@@ -679,7 +682,7 @@ ValidXLogRecordHeader(XLogReaderState *state, XLogRecPtr RecPtr,
 		if (record->xl_prev != PrevRecPtr)
 		{
 			report_invalid_record(state,
-							"record with incorrect prev-link %X/%X at %X/%X",
+								  "record with incorrect prev-link %X/%X at %X/%X",
 								  (uint32) (record->xl_prev >> 32),
 								  (uint32) record->xl_prev,
 								  (uint32) (RecPtr >> 32), (uint32) RecPtr);
@@ -716,7 +719,7 @@ ValidXLogRecord(XLogReaderState *state, XLogRecord *record, XLogRecPtr recptr)
 	if (!EQ_CRC32C(record->xl_crc, crc))
 	{
 		report_invalid_record(state,
-			   "incorrect resource manager data checksum in record at %X/%X",
+							  "incorrect resource manager data checksum in record at %X/%X",
 							  (uint32) (recptr >> 32), (uint32) recptr);
 		return false;
 	}
@@ -741,19 +744,19 @@ XLogReaderValidatePageHeader(XLogReaderState *state, XLogRecPtr recptr,
 
 	Assert((recptr % XLOG_BLCKSZ) == 0);
 
-	XLByteToSeg(recptr, segno);
-	offset = recptr % XLogSegSize;
+	XLByteToSeg(recptr, segno, state->wal_segment_size);
+	offset = XLogSegmentOffset(recptr, state->wal_segment_size);
 
-	XLogSegNoOffsetToRecPtr(segno, offset, recaddr);
+	XLogSegNoOffsetToRecPtr(segno, offset, state->wal_segment_size, recaddr);
 
 	if (hdr->xlp_magic != XLOG_PAGE_MAGIC)
 	{
 		char		fname[MAXFNAMELEN];
 
-		XLogFileName(fname, state->readPageTLI, segno);
+		XLogFileName(fname, state->readPageTLI, segno, state->wal_segment_size);
 
 		report_invalid_record(state,
-					"invalid magic number %04X in log segment %s, offset %u",
+							  "invalid magic number %04X in log segment %s, offset %u",
 							  hdr->xlp_magic,
 							  fname,
 							  offset);
@@ -764,10 +767,10 @@ XLogReaderValidatePageHeader(XLogReaderState *state, XLogRecPtr recptr,
 	{
 		char		fname[MAXFNAMELEN];
 
-		XLogFileName(fname, state->readPageTLI, segno);
+		XLogFileName(fname, state->readPageTLI, segno, state->wal_segment_size);
 
 		report_invalid_record(state,
-					   "invalid info bits %04X in log segment %s, offset %u",
+							  "invalid info bits %04X in log segment %s, offset %u",
 							  hdr->xlp_info,
 							  fname,
 							  offset);
@@ -797,10 +800,10 @@ XLogReaderValidatePageHeader(XLogReaderState *state, XLogRecPtr recptr,
 								  fhdrident_str, sysident_str);
 			return false;
 		}
-		else if (longhdr->xlp_seg_size != XLogSegSize)
+		else if (longhdr->xlp_seg_size != state->wal_segment_size)
 		{
 			report_invalid_record(state,
-								  "WAL file is from different database system: incorrect XLOG_SEG_SIZE in page header");
+								  "WAL file is from different database system: incorrect segment size in page header");
 			return false;
 		}
 		else if (longhdr->xlp_xlog_blcksz != XLOG_BLCKSZ)
@@ -814,11 +817,11 @@ XLogReaderValidatePageHeader(XLogReaderState *state, XLogRecPtr recptr,
 	{
 		char		fname[MAXFNAMELEN];
 
-		XLogFileName(fname, state->readPageTLI, segno);
+		XLogFileName(fname, state->readPageTLI, segno, state->wal_segment_size);
 
 		/* hmm, first page of file doesn't have a long header? */
 		report_invalid_record(state,
-					   "invalid info bits %04X in log segment %s, offset %u",
+							  "invalid info bits %04X in log segment %s, offset %u",
 							  hdr->xlp_info,
 							  fname,
 							  offset);
@@ -826,19 +829,19 @@ XLogReaderValidatePageHeader(XLogReaderState *state, XLogRecPtr recptr,
 	}
 
 	/*
-	 * Check that the address on the page agrees with what we expected.
-	 * This check typically fails when an old WAL segment is recycled,
-	 * and hasn't yet been overwritten with new data yet.
+	 * Check that the address on the page agrees with what we expected. This
+	 * check typically fails when an old WAL segment is recycled, and hasn't
+	 * yet been overwritten with new data yet.
 	 */
 	if (hdr->xlp_pageaddr != recaddr)
 	{
 		char		fname[MAXFNAMELEN];
 
-		XLogFileName(fname, state->readPageTLI, segno);
+		XLogFileName(fname, state->readPageTLI, segno, state->wal_segment_size);
 
 		report_invalid_record(state,
-					"unexpected pageaddr %X/%X in log segment %s, offset %u",
-			  (uint32) (hdr->xlp_pageaddr >> 32), (uint32) hdr->xlp_pageaddr,
+							  "unexpected pageaddr %X/%X in log segment %s, offset %u",
+							  (uint32) (hdr->xlp_pageaddr >> 32), (uint32) hdr->xlp_pageaddr,
 							  fname,
 							  offset);
 		return false;
@@ -859,7 +862,7 @@ XLogReaderValidatePageHeader(XLogReaderState *state, XLogRecPtr recptr,
 		{
 			char		fname[MAXFNAMELEN];
 
-			XLogFileName(fname, state->readPageTLI, segno);
+			XLogFileName(fname, state->readPageTLI, segno, state->wal_segment_size);
 
 			report_invalid_record(state,
 								  "out-of-sequence timeline ID %u (after %u) in log segment %s, offset %u",
@@ -919,8 +922,8 @@ XLogFindNextRecord(XLogReaderState *state, XLogRecPtr RecPtr)
 		 * that, except when caller has explicitly specified the offset that
 		 * falls somewhere there or when we are skipping multi-page
 		 * continuation record. It doesn't matter though because
-		 * ReadPageInternal() is prepared to handle that and will read at least
-		 * short page-header worth of data
+		 * ReadPageInternal() is prepared to handle that and will read at
+		 * least short page-header worth of data
 		 */
 		targetRecOff = tmpRecPtr % XLOG_BLCKSZ;
 
@@ -1001,7 +1004,7 @@ out:
 	return found;
 }
 
-#endif   /* FRONTEND */
+#endif							/* FRONTEND */
 
 
 /* ----------------------------------------
@@ -1024,6 +1027,7 @@ ResetDecoder(XLogReaderState *state)
 		state->blocks[block_id].in_use = false;
 		state->blocks[block_id].has_image = false;
 		state->blocks[block_id].has_data = false;
+		state->blocks[block_id].apply_image = false;
 	}
 	state->max_block_id = -1;
 }
@@ -1116,6 +1120,7 @@ DecodeXLogRecord(XLogReaderState *state, XLogRecord *record, char **errormsg)
 
 			blk = &state->blocks[block_id];
 			blk->in_use = true;
+			blk->apply_image = false;
 
 			COPY_HEADER_FIELD(&fork_flags, sizeof(uint8));
 			blk->forknum = fork_flags & BKPBLOCK_FORK_MASK;
@@ -1128,14 +1133,14 @@ DecodeXLogRecord(XLogReaderState *state, XLogRecord *record, char **errormsg)
 			if (blk->has_data && blk->data_len == 0)
 			{
 				report_invalid_record(state,
-					  "BKPBLOCK_HAS_DATA set, but no data included at %X/%X",
+									  "BKPBLOCK_HAS_DATA set, but no data included at %X/%X",
 									  (uint32) (state->ReadRecPtr >> 32), (uint32) state->ReadRecPtr);
 				goto err;
 			}
 			if (!blk->has_data && blk->data_len != 0)
 			{
 				report_invalid_record(state,
-				 "BKPBLOCK_HAS_DATA not set, but data length is %u at %X/%X",
+									  "BKPBLOCK_HAS_DATA not set, but data length is %u at %X/%X",
 									  (unsigned int) blk->data_len,
 									  (uint32) (state->ReadRecPtr >> 32), (uint32) state->ReadRecPtr);
 				goto err;
@@ -1147,6 +1152,9 @@ DecodeXLogRecord(XLogReaderState *state, XLogRecord *record, char **errormsg)
 				COPY_HEADER_FIELD(&blk->bimg_len, sizeof(uint16));
 				COPY_HEADER_FIELD(&blk->hole_offset, sizeof(uint16));
 				COPY_HEADER_FIELD(&blk->bimg_info, sizeof(uint8));
+
+				blk->apply_image = ((blk->bimg_info & BKPIMAGE_APPLY) != 0);
+
 				if (blk->bimg_info & BKPIMAGE_IS_COMPRESSED)
 				{
 					if (blk->bimg_info & BKPIMAGE_HAS_HOLE)
@@ -1230,7 +1238,7 @@ DecodeXLogRecord(XLogReaderState *state, XLogRecord *record, char **errormsg)
 				if (rnode == NULL)
 				{
 					report_invalid_record(state,
-						"BKPBLOCK_SAME_REL set but no previous rel at %X/%X",
+										  "BKPBLOCK_SAME_REL set but no previous rel at %X/%X",
 										  (uint32) (state->ReadRecPtr >> 32), (uint32) state->ReadRecPtr);
 					goto err;
 				}
@@ -1270,6 +1278,9 @@ DecodeXLogRecord(XLogReaderState *state, XLogRecord *record, char **errormsg)
 
 		if (!blk->in_use)
 			continue;
+
+		Assert(blk->has_image || !blk->apply_image);
+
 		if (blk->has_image)
 		{
 			blk->bkp_image = ptr;
@@ -1281,7 +1292,13 @@ DecodeXLogRecord(XLogReaderState *state, XLogRecord *record, char **errormsg)
 			{
 				if (blk->data)
 					pfree(blk->data);
-				blk->data_bufsz = blk->data_len;
+
+				/*
+				 * Force the initial request to be BLCKSZ so that we don't
+				 * waste time with lots of trips through this stanza as a
+				 * result of WAL compression.
+				 */
+				blk->data_bufsz = MAXALIGN(Max(blk->data_len, BLCKSZ));
 				blk->data = palloc(blk->data_bufsz);
 			}
 			memcpy(blk->data, ptr, blk->data_len);
@@ -1323,7 +1340,7 @@ DecodeXLogRecord(XLogReaderState *state, XLogRecord *record, char **errormsg)
 shortdata_err:
 	report_invalid_record(state,
 						  "record with invalid length at %X/%X",
-			 (uint32) (state->ReadRecPtr >> 32), (uint32) state->ReadRecPtr);
+						  (uint32) (state->ReadRecPtr >> 32), (uint32) state->ReadRecPtr);
 err:
 	*errormsg = state->errormsg_buf;
 
@@ -1334,12 +1351,12 @@ err:
  * Returns information about the block that a block reference refers to.
  *
  * If the WAL record contains a block reference with the given ID, *rnode,
- * *forknum, and *blknum are filled in (if not NULL), and returns TRUE.
- * Otherwise returns FALSE.
+ * *forknum, and *blknum are filled in (if not NULL), and returns true.
+ * Otherwise returns false.
  */
 bool
 XLogRecGetBlockTag(XLogReaderState *record, uint8 block_id,
-				RelFileNode *rnode, ForkNumber *forknum, BlockNumber *blknum)
+				   RelFileNode *rnode, ForkNumber *forknum, BlockNumber *blknum)
 {
 	DecodedBkpBlock *bkpb;
 

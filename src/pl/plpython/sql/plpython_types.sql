@@ -237,7 +237,66 @@ SELECT * FROM test_type_conversion_array_int4(ARRAY[NULL,1]);
 SELECT * FROM test_type_conversion_array_int4(ARRAY[]::integer[]);
 SELECT * FROM test_type_conversion_array_int4(NULL);
 SELECT * FROM test_type_conversion_array_int4(ARRAY[[1,2,3],[4,5,6]]);
+SELECT * FROM test_type_conversion_array_int4(ARRAY[[[1,2,NULL],[NULL,5,6]],[[NULL,8,9],[10,11,12]]]);
+SELECT * FROM test_type_conversion_array_int4('[2:4]={1,2,3}');
 
+CREATE FUNCTION test_type_conversion_array_int8(x int8[]) RETURNS int8[] AS $$
+plpy.info(x, type(x))
+return x
+$$ LANGUAGE plpythonu;
+
+SELECT * FROM test_type_conversion_array_int8(ARRAY[[[1,2,NULL],[NULL,5,6]],[[NULL,8,9],[10,11,12]]]::int8[]);
+
+CREATE FUNCTION test_type_conversion_array_date(x date[]) RETURNS date[] AS $$
+plpy.info(x, type(x))
+return x
+$$ LANGUAGE plpythonu;
+
+SELECT * FROM test_type_conversion_array_date(ARRAY[[['2016-09-21','2016-09-22',NULL],[NULL,'2016-10-21','2016-10-22']],
+            [[NULL,'2016-11-21','2016-10-21'],['2015-09-21','2015-09-22','2014-09-21']]]::date[]);
+
+CREATE FUNCTION test_type_conversion_array_timestamp(x timestamp[]) RETURNS timestamp[] AS $$
+plpy.info(x, type(x))
+return x
+$$ LANGUAGE plpythonu;
+
+SELECT * FROM test_type_conversion_array_timestamp(ARRAY[[['2016-09-21 15:34:24.078792-04','2016-10-22 11:34:24.078795-04',NULL],
+            [NULL,'2016-10-21 11:34:25.078792-04','2016-10-21 11:34:24.098792-04']],
+            [[NULL,'2016-01-21 11:34:24.078792-04','2016-11-21 11:34:24.108792-04'],
+            ['2015-09-21 11:34:24.079792-04','2014-09-21 11:34:24.078792-04','2013-09-21 11:34:24.078792-04']]]::timestamp[]);
+
+
+CREATE OR REPLACE FUNCTION pyreturnmultidemint4(h int4, i int4, j int4, k int4 ) RETURNS int4[] AS $BODY$
+m = [[[[x for x in range(h)] for y in range(i)] for z in range(j)] for w in range(k)]
+plpy.info(m, type(m))
+return m
+$BODY$ LANGUAGE plpythonu;
+
+select pyreturnmultidemint4(8,5,3,2);
+
+CREATE OR REPLACE FUNCTION pyreturnmultidemint8(h int4, i int4, j int4, k int4 ) RETURNS int8[] AS $BODY$
+m = [[[[x for x in range(h)] for y in range(i)] for z in range(j)] for w in range(k)]
+plpy.info(m, type(m))
+return m
+$BODY$ LANGUAGE plpythonu;
+
+select pyreturnmultidemint8(5,5,3,2);
+
+CREATE OR REPLACE FUNCTION pyreturnmultidemfloat4(h int4, i int4, j int4, k int4 ) RETURNS float4[] AS $BODY$
+m = [[[[x for x in range(h)] for y in range(i)] for z in range(j)] for w in range(k)]
+plpy.info(m, type(m))
+return m
+$BODY$ LANGUAGE plpythonu;
+
+select pyreturnmultidemfloat4(6,5,3,2);
+
+CREATE OR REPLACE FUNCTION pyreturnmultidemfloat8(h int4, i int4, j int4, k int4 ) RETURNS float8[] AS $BODY$
+m = [[[[x for x in range(h)] for y in range(i)] for z in range(j)] for w in range(k)]
+plpy.info(m, type(m))
+return m
+$BODY$ LANGUAGE plpythonu;
+
+select pyreturnmultidemfloat8(7,5,3,2);
 
 CREATE FUNCTION test_type_conversion_array_text(x text[]) RETURNS text[] AS $$
 plpy.info(x, type(x))
@@ -245,6 +304,7 @@ return x
 $$ LANGUAGE plpythonu;
 
 SELECT * FROM test_type_conversion_array_text(ARRAY['foo', 'bar']);
+SELECT * FROM test_type_conversion_array_text(ARRAY[['foo', 'bar'],['foo2', 'bar2']]);
 
 
 CREATE FUNCTION test_type_conversion_array_bytea(x bytea[]) RETURNS bytea[] AS $$
@@ -267,6 +327,18 @@ return [123, 'abc']
 $$ LANGUAGE plpythonu;
 
 SELECT * FROM test_type_conversion_array_mixed2();
+
+CREATE FUNCTION test_type_conversion_mdarray_malformed() RETURNS int[] AS $$
+return [[1,2,3],[4,5]]
+$$ LANGUAGE plpythonu;
+
+SELECT * FROM test_type_conversion_mdarray_malformed();
+
+CREATE FUNCTION test_type_conversion_mdarray_toodeep() RETURNS int[] AS $$
+return [[[[[[[1]]]]]]]
+$$ LANGUAGE plpythonu;
+
+SELECT * FROM test_type_conversion_mdarray_toodeep();
 
 
 CREATE FUNCTION test_type_conversion_array_record() RETURNS type_record[] AS $$
@@ -315,6 +387,55 @@ $$ LANGUAGE plpythonu;
 SELECT * FROM test_type_conversion_array_domain_check_violation();
 
 
+--
+-- Arrays of domains
+--
+
+CREATE FUNCTION test_read_uint2_array(x uint2[]) RETURNS uint2 AS $$
+plpy.info(x, type(x))
+return x[0]
+$$ LANGUAGE plpythonu;
+
+select test_read_uint2_array(array[1::uint2]);
+
+CREATE FUNCTION test_build_uint2_array(x int2) RETURNS uint2[] AS $$
+return [x, x]
+$$ LANGUAGE plpythonu;
+
+select test_build_uint2_array(1::int2);
+select test_build_uint2_array(-1::int2);  -- fail
+
+--
+-- ideally this would work, but for now it doesn't, because the return value
+-- is [[2,4], [2,4]] which our conversion code thinks should become a 2-D
+-- integer array, not an array of arrays.
+--
+CREATE FUNCTION test_type_conversion_domain_array(x integer[])
+  RETURNS ordered_pair_domain[] AS $$
+return [x, x]
+$$ LANGUAGE plpythonu;
+
+select test_type_conversion_domain_array(array[2,4]);
+select test_type_conversion_domain_array(array[4,2]);  -- fail
+
+CREATE FUNCTION test_type_conversion_domain_array2(x ordered_pair_domain)
+  RETURNS integer AS $$
+plpy.info(x, type(x))
+return x[1]
+$$ LANGUAGE plpythonu;
+
+select test_type_conversion_domain_array2(array[2,4]);
+select test_type_conversion_domain_array2(array[4,2]);  -- fail
+
+CREATE FUNCTION test_type_conversion_array_domain_array(x ordered_pair_domain[])
+  RETURNS ordered_pair_domain AS $$
+plpy.info(x, type(x))
+return x[0]
+$$ LANGUAGE plpythonu;
+
+select test_type_conversion_array_domain_array(array[array[2,4]::ordered_pair_domain]);
+
+
 ---
 --- Composite types
 ---
@@ -356,6 +477,48 @@ SELECT test_composite_type_input(row(1, 2));
 ALTER TYPE named_pair RENAME TO named_pair_2;
 
 SELECT test_composite_type_input(row(1, 2));
+
+
+--
+-- Domains within composite
+--
+
+CREATE TYPE nnint_container AS (f1 int, f2 nnint);
+
+CREATE FUNCTION nnint_test(x int, y int) RETURNS nnint_container AS $$
+return {'f1': x, 'f2': y}
+$$ LANGUAGE plpythonu;
+
+SELECT nnint_test(null, 3);
+SELECT nnint_test(3, null);  -- fail
+
+
+--
+-- Domains of composite
+--
+
+CREATE DOMAIN ordered_named_pair AS named_pair_2 CHECK((VALUE).i <= (VALUE).j);
+
+CREATE FUNCTION read_ordered_named_pair(p ordered_named_pair) RETURNS integer AS $$
+return p['i'] + p['j']
+$$ LANGUAGE plpythonu;
+
+SELECT read_ordered_named_pair(row(1, 2));
+SELECT read_ordered_named_pair(row(2, 1));  -- fail
+
+CREATE FUNCTION build_ordered_named_pair(i int, j int) RETURNS ordered_named_pair AS $$
+return {'i': i, 'j': j}
+$$ LANGUAGE plpythonu;
+
+SELECT build_ordered_named_pair(1,2);
+SELECT build_ordered_named_pair(2,1);  -- fail
+
+CREATE FUNCTION build_ordered_named_pairs(i int, j int) RETURNS ordered_named_pair[] AS $$
+return [{'i': i, 'j': j}, {'i': i, 'j': j+1}]
+$$ LANGUAGE plpythonu;
+
+SELECT build_ordered_named_pairs(1,2);
+SELECT build_ordered_named_pairs(2,1);  -- fail
 
 
 --

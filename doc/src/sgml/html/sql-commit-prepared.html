@@ -1,308 +1,33 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->COMMIT PREPARED</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="COMMIT"
-HREF="sql-commit.html"><LINK
-REL="NEXT"
-TITLE="COPY"
-HREF="sql-copy.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="COMMIT"
-HREF="sql-commit.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="COPY"
-HREF="sql-copy.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-COMMIT-PREPARED"
-></A
->COMMIT PREPARED</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN77750"
-></A
-><H2
->Name</H2
->COMMIT PREPARED&nbsp;--&nbsp;commit a transaction that was earlier prepared for two-phase commit</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN77753"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->COMMIT PREPARED <TT
-CLASS="REPLACEABLE"
-><I
->transaction_id</I
-></TT
-></PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77756"
-></A
-><H2
->Description</H2
-><P
->   <TT
-CLASS="COMMAND"
->COMMIT PREPARED</TT
-> commits a transaction that is in
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>COMMIT PREPARED</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-commit.html" title="COMMIT" /><link rel="next" href="sql-copy.html" title="COPY" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">COMMIT PREPARED</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-commit.html" title="COMMIT">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-copy.html" title="COPY">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-COMMIT-PREPARED"><div class="titlepage"></div><a id="id-1.9.3.54.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">COMMIT PREPARED</span></h2><p>COMMIT PREPARED — commit a transaction that was earlier prepared for two-phase commit</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+COMMIT PREPARED <em class="replaceable"><code>transaction_id</code></em>
+</pre></div><div class="refsect1" id="id-1.9.3.54.5"><h2>Description</h2><p>
+   <code class="command">COMMIT PREPARED</code> commits a transaction that is in
    prepared state.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77760"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->transaction_id</I
-></TT
-></DT
-><DD
-><P
->      The transaction identifier of the transaction that is to be
+  </p></div><div class="refsect1" id="id-1.9.3.54.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>transaction_id</code></em></span></dt><dd><p>
+      The transaction identifier of the transaction that is to be
       committed.
-     </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77768"
-></A
-><H2
->Notes</H2
-><P
->   To commit a prepared transaction, you must be either the same user that
+     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.54.7"><h2>Notes</h2><p>
+   To commit a prepared transaction, you must be either the same user that
    executed the transaction originally, or a superuser.  But you do not
    have to be in the same session that executed the transaction.
-  </P
-><P
->   This command cannot be executed inside a transaction block. The prepared
+  </p><p>
+   This command cannot be executed inside a transaction block. The prepared
    transaction is committed immediately.
-  </P
-><P
->   All currently available prepared transactions are listed in the
-   <A
-HREF="view-pg-prepared-xacts.html"
-><TT
-CLASS="STRUCTNAME"
->pg_prepared_xacts</TT
-></A
->
+  </p><p>
+   All currently available prepared transactions are listed in the
+   <a class="link" href="view-pg-prepared-xacts.html" title="52.77. pg_prepared_xacts"><code class="structname">pg_prepared_xacts</code></a>
    system view.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-COMMIT-PREPARED-EXAMPLES"
-></A
-><H2
->Examples</H2
-><P
->   Commit the transaction identified by the transaction
-   identifier <TT
-CLASS="LITERAL"
->foobar</TT
->:
+  </p></div><div class="refsect1" id="SQL-COMMIT-PREPARED-EXAMPLES"><h2>Examples</h2><p>
+   Commit the transaction identified by the transaction
+   identifier <code class="literal">foobar</code>:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->COMMIT PREPARED 'foobar';</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77780"
-></A
-><H2
->Compatibility</H2
-><P
->   <TT
-CLASS="COMMAND"
->COMMIT PREPARED</TT
-> is a
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> extension.  It is intended for use by
+</p><pre class="programlisting">
+COMMIT PREPARED 'foobar';
+</pre></div><div class="refsect1" id="id-1.9.3.54.9"><h2>Compatibility</h2><p>
+   <code class="command">COMMIT PREPARED</code> is a
+   <span class="productname">PostgreSQL</span> extension.  It is intended for use by
    external transaction management systems, some of which are covered by
    standards (such as X/Open XA), but the SQL side of those systems is not
    standardized.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77785"
-></A
-><H2
->See Also</H2
-><A
-HREF="sql-prepare-transaction.html"
->PREPARE TRANSACTION</A
->, <A
-HREF="sql-rollback-prepared.html"
->ROLLBACK PREPARED</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commit.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-copy.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->COMMIT</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->COPY</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="refsect1" id="id-1.9.3.54.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-prepare-transaction.html" title="PREPARE TRANSACTION"><span class="refentrytitle">PREPARE TRANSACTION</span></a>, <a class="xref" href="sql-rollback-prepared.html" title="ROLLBACK PREPARED"><span class="refentrytitle">ROLLBACK PREPARED</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-commit.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-copy.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">COMMIT </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> COPY</td></tr></table></div></body></html>

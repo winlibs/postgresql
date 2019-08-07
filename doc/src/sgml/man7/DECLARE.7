@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "DECLARE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "DECLARE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -56,7 +56,7 @@ allows a user to create cursors, which can be used to retrieve a small number of
 This page describes usage of cursors at the SQL command level\&. If you are trying to use cursors inside a
 PL/pgSQL
 function, the rules are different \(em see
-Section 41.7, \(lqCursors\(rq, in the documentation\&.
+Section\ \&43.7\&.
 .sp .5v
 .RE
 .SH "PARAMETERS"
@@ -216,7 +216,7 @@ may not be specified in this case\&.
 Scrollable and
 WITH HOLD
 cursors may give unexpected results if they invoke any volatile functions (see
-Section 36.6, \(lqFunction Volatility Categories\(rq, in the documentation)\&. When a previously fetched row is re\-fetched, the functions might be re\-executed, perhaps leading to results different from the first time\&. One workaround for such cases is to declare the cursor
+Section\ \&38.7)\&. When a previously fetched row is re\-fetched, the functions might be re\-executed, perhaps leading to results different from the first time\&. One workaround for such cases is to declare the cursor
 WITH HOLD
 and commit the transaction before reading any rows from it\&. This will force the entire output of the cursor to be materialized in temporary storage, so that volatile functions are executed exactly once for each row\&.
 .sp .5v

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SECURITY LABEL" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SECURITY LABEL" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -41,13 +41,17 @@ SECURITY LABEL [ FOR \fIprovider\fR ] ON
   DOMAIN \fIobject_name\fR |
   EVENT TRIGGER \fIobject_name\fR |
   FOREIGN TABLE \fIobject_name\fR
-  FUNCTION \fIfunction_name\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) |
+  FUNCTION \fIfunction_name\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ] |
   LARGE OBJECT \fIlarge_object_oid\fR |
   MATERIALIZED VIEW \fIobject_name\fR |
   [ PROCEDURAL ] LANGUAGE \fIobject_name\fR |
+  PROCEDURE \fIprocedure_name\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ] |
+  PUBLICATION \fIobject_name\fR |
   ROLE \fIobject_name\fR |
+  ROUTINE \fIroutine_name\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ] |
   SCHEMA \fIobject_name\fR |
   SEQUENCE \fIobject_name\fR |
+  SUBSCRIPTION \fIobject_name\fR |
   TABLESPACE \fIobject_name\fR |
   TYPE \fIobject_name\fR |
   VIEW \fIobject_name\fR
@@ -95,8 +99,12 @@ SE\-Linux\&. Such systems make all access control decisions based on object labe
 \fIaggregate_name\fR
 .br
 \fIfunction_name\fR
+.br
+\fIprocedure_name\fR
+.br
+\fIroutine_name\fR
 .RS 4
-The name of the object to be labeled\&. Names of tables, aggregates, domains, foreign tables, functions, sequences, types, and views can be schema\-qualified\&.
+The name of the object to be labeled\&. Names of tables, aggregates, domains, foreign tables, functions, procedures, routines, sequences, types, and views can be schema\-qualified\&.
 .RE
 .PP
 \fIprovider\fR
@@ -106,7 +114,7 @@ The name of the provider with which this label is to be associated\&. The named 
 .PP
 \fIargmode\fR
 .RS 4
-The mode of a function or aggregate argument:
+The mode of a function, procedure, or aggregate argument:
 IN,
 OUT,
 INOUT, or
@@ -124,14 +132,14 @@ arguments\&.
 .PP
 \fIargname\fR
 .RS 4
-The name of a function or aggregate argument\&. Note that
+The name of a function, procedure, or aggregate argument\&. Note that
 \fBSECURITY LABEL\fR
 does not actually pay any attention to argument names, since only the argument data types are needed to determine the function\*(Aqs identity\&.
 .RE
 .PP
 \fIargtype\fR
 .RS 4
-The data type of a function or aggregate argument\&.
+The data type of a function, procedure, or aggregate argument\&.
 .RE
 .PP
 \fIlarge_object_oid\fR

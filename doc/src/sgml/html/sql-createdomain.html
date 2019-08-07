@@ -1,450 +1,113 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->CREATE DOMAIN</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="CREATE DATABASE"
-HREF="sql-createdatabase.html"><LINK
-REL="NEXT"
-TITLE="CREATE EVENT TRIGGER"
-HREF="sql-createeventtrigger.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="CREATE DATABASE"
-HREF="sql-createdatabase.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="CREATE EVENT TRIGGER"
-HREF="sql-createeventtrigger.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-CREATEDOMAIN"
-></A
->CREATE DOMAIN</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN79305"
-></A
-><H2
->Name</H2
->CREATE DOMAIN&nbsp;--&nbsp;define a new domain</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN79308"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->CREATE DOMAIN <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> [ AS ] <TT
-CLASS="REPLACEABLE"
-><I
->data_type</I
-></TT
->
-    [ COLLATE <TT
-CLASS="REPLACEABLE"
-><I
->collation</I
-></TT
-> ]
-    [ DEFAULT <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> ]
-    [ <TT
-CLASS="REPLACEABLE"
-><I
->constraint</I
-></TT
-> [ ... ] ]
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE DOMAIN</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-createdatabase.html" title="CREATE DATABASE" /><link rel="next" href="sql-createeventtrigger.html" title="CREATE EVENT TRIGGER" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE DOMAIN</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createdatabase.html" title="CREATE DATABASE">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createeventtrigger.html" title="CREATE EVENT TRIGGER">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATEDOMAIN"><div class="titlepage"></div><a id="id-1.9.3.62.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE DOMAIN</span></h2><p>CREATE DOMAIN — define a new domain</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+CREATE DOMAIN <em class="replaceable"><code>name</code></em> [ AS ] <em class="replaceable"><code>data_type</code></em>
+    [ COLLATE <em class="replaceable"><code>collation</code></em> ]
+    [ DEFAULT <em class="replaceable"><code>expression</code></em> ]
+    [ <em class="replaceable"><code>constraint</code></em> [ ... ] ]
 
-<SPAN
-CLASS="phrase"
-><SPAN
-CLASS="PHRASE"
->where <TT
-CLASS="REPLACEABLE"
-><I
->constraint</I
-></TT
-> is:</SPAN
-></SPAN
->
+<span class="phrase">where <em class="replaceable"><code>constraint</code></em> is:</span>
 
-[ CONSTRAINT <TT
-CLASS="REPLACEABLE"
-><I
->constraint_name</I
-></TT
-> ]
-{ NOT NULL | NULL | CHECK (<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->) }</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN79319"
-></A
-><H2
->Description</H2
-><P
->   <TT
-CLASS="COMMAND"
->CREATE DOMAIN</TT
-> creates a new domain.  A domain is
+[ CONSTRAINT <em class="replaceable"><code>constraint_name</code></em> ]
+{ NOT NULL | NULL | CHECK (<em class="replaceable"><code>expression</code></em>) }
+</pre></div><div class="refsect1" id="id-1.9.3.62.5"><h2>Description</h2><p>
+   <code class="command">CREATE DOMAIN</code> creates a new domain.  A domain is
    essentially a data type with optional constraints (restrictions on
    the allowed set of values).
    The user who defines a domain becomes its owner.
-  </P
-><P
->   If a schema name is given (for example, <TT
-CLASS="LITERAL"
->CREATE DOMAIN
-   myschema.mydomain ...</TT
->) then the domain is created in the
+  </p><p>
+   If a schema name is given (for example, <code class="literal">CREATE DOMAIN
+   myschema.mydomain ...</code>) then the domain is created in the
    specified schema.  Otherwise it is created in the current schema.
    The domain name must be unique among the types and domains existing
    in its schema.
-  </P
-><P
->   Domains are useful for abstracting common constraints on fields into
+  </p><p>
+   Domains are useful for abstracting common constraints on fields into
    a single location for maintenance.  For example, several tables might
    contain email address columns, all requiring the same CHECK constraint
    to verify the address syntax.
    Define a domain rather than setting up each table's constraint
    individually.
-  </P
-><P
->   To be able to create a domain, you must have <TT
-CLASS="LITERAL"
->USAGE</TT
->
+  </p><p>
+   To be able to create a domain, you must have <code class="literal">USAGE</code>
    privilege on the underlying type.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN79328"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-></DT
-><DD
-><P
->        The name (optionally schema-qualified) of a domain to be created.
-       </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->data_type</I
-></TT
-></DT
-><DD
-><P
->        The underlying data type of the domain. This can include array
+  </p></div><div class="refsect1" id="id-1.9.3.62.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
+        The name (optionally schema-qualified) of a domain to be created.
+       </p></dd><dt><span class="term"><em class="replaceable"><code>data_type</code></em></span></dt><dd><p>
+        The underlying data type of the domain. This can include array
         specifiers.
-       </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->collation</I
-></TT
-></DT
-><DD
-><P
->        An optional collation for the domain.  If no collation is
+       </p></dd><dt><span class="term"><em class="replaceable"><code>collation</code></em></span></dt><dd><p>
+        An optional collation for the domain.  If no collation is
         specified, the underlying data type's default collation is used.
-        The underlying type must be collatable if <TT
-CLASS="LITERAL"
->COLLATE</TT
->
+        The underlying type must be collatable if <code class="literal">COLLATE</code>
         is specified.
-       </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->DEFAULT <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-></TT
-></DT
-><DD
-><P
->        The <TT
-CLASS="LITERAL"
->DEFAULT</TT
-> clause specifies a default value for
+       </p></dd><dt><span class="term"><code class="literal">DEFAULT <em class="replaceable"><code>expression</code></em></code></span></dt><dd><p>
+        The <code class="literal">DEFAULT</code> clause specifies a default value for
         columns of the domain data type.  The value is any
         variable-free expression (but subqueries are not allowed).
         The data type of the default expression must match the data
         type of the domain.  If no default value is specified, then
         the default value is the null value.
-       </P
-><P
->        The default expression will be used in any insert operation
+       </p><p>
+        The default expression will be used in any insert operation
         that does not specify a value for the column.  If a default
         value is defined for a particular column, it overrides any
         default associated with the domain.  In turn, the domain
         default overrides any default value associated with the
         underlying data type.
-       </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->CONSTRAINT <TT
-CLASS="REPLACEABLE"
-><I
->constraint_name</I
-></TT
-></TT
-></DT
-><DD
-><P
->        An optional name for a constraint.  If not specified,
+       </p></dd><dt><span class="term"><code class="literal">CONSTRAINT <em class="replaceable"><code>constraint_name</code></em></code></span></dt><dd><p>
+        An optional name for a constraint.  If not specified,
         the system generates a name.
-       </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->NOT NULL</TT
-></DT
-><DD
-><P
->        Values of this domain are prevented from being null
+       </p></dd><dt><span class="term"><code class="literal">NOT NULL</code></span></dt><dd><p>
+        Values of this domain are prevented from being null
         (but see notes below).
-       </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->NULL</TT
-></DT
-><DD
-><P
->        Values of this domain are allowed to be null.  This is the default.
-       </P
-><P
->        This clause is only intended for compatibility with
+       </p></dd><dt><span class="term"><code class="literal">NULL</code></span></dt><dd><p>
+        Values of this domain are allowed to be null.  This is the default.
+       </p><p>
+        This clause is only intended for compatibility with
         nonstandard SQL databases.  Its use is discouraged in new
         applications.
-       </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->CHECK (<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</TT
-></DT
-><DD
-><P
-><TT
-CLASS="LITERAL"
->CHECK</TT
-> clauses specify integrity constraints or tests
+       </p></dd><dt><span class="term"><code class="literal">CHECK (<em class="replaceable"><code>expression</code></em>)</code></span></dt><dd><p><code class="literal">CHECK</code> clauses specify integrity constraints or tests
       which values of the domain must satisfy.
       Each constraint must be an expression
-      producing a Boolean result.  It should use the key word <TT
-CLASS="LITERAL"
->VALUE</TT
->
+      producing a Boolean result.  It should use the key word <code class="literal">VALUE</code>
       to refer to the value being tested.  Expressions evaluating
       to TRUE or UNKNOWN succeed.  If the expression produces a FALSE result,
       an error is reported and the value is not allowed to be converted
       to the domain type.
-     </P
-><P
->      Currently, <TT
-CLASS="LITERAL"
->CHECK</TT
-> expressions cannot contain
-      subqueries nor refer to variables other than <TT
-CLASS="LITERAL"
->VALUE</TT
->.
-     </P
-><P
->      When a domain has multiple <TT
-CLASS="LITERAL"
->CHECK</TT
-> constraints,
+     </p><p>
+      Currently, <code class="literal">CHECK</code> expressions cannot contain
+      subqueries nor refer to variables other than <code class="literal">VALUE</code>.
+     </p><p>
+      When a domain has multiple <code class="literal">CHECK</code> constraints,
       they will be tested in alphabetical order by name.
-      (<SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> versions before 9.5 did not honor any
-      particular firing order for <TT
-CLASS="LITERAL"
->CHECK</TT
-> constraints.)
-     </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN79387"
-></A
-><H2
->Notes</H2
-><P
->   Domain constraints, particularly <TT
-CLASS="LITERAL"
->NOT NULL</TT
->, are checked when
+      (<span class="productname">PostgreSQL</span> versions before 9.5 did not honor any
+      particular firing order for <code class="literal">CHECK</code> constraints.)
+     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.62.7"><h2>Notes</h2><p>
+   Domain constraints, particularly <code class="literal">NOT NULL</code>, are checked when
    converting a value to the domain type.  It is possible for a column that
    is nominally of the domain type to read as null despite there being such
    a constraint.  For example, this can happen in an outer-join query, if
    the domain column is on the nullable side of the outer join.  A more
    subtle example is
-</P><PRE
-CLASS="PROGRAMLISTING"
->INSERT INTO tab (domcol) VALUES ((SELECT domcol FROM tab WHERE false));</PRE
-><P>
+</p><pre class="programlisting">
+INSERT INTO tab (domcol) VALUES ((SELECT domcol FROM tab WHERE false));
+</pre><p>
    The empty scalar sub-SELECT will produce a null value that is considered
    to be of the domain type, so no further constraint checking is applied
    to it, and the insertion will succeed.
-  </P
-><P
->   It is very difficult to avoid such problems, because of SQL's general
+  </p><p>
+   It is very difficult to avoid such problems, because of SQL's general
    assumption that a null value is a valid value of every data type.  Best practice
    therefore is to design a domain's constraints so that a null value is allowed,
-   and then to apply column <TT
-CLASS="LITERAL"
->NOT NULL</TT
-> constraints to columns of
+   and then to apply column <code class="literal">NOT NULL</code> constraints to columns of
    the domain type as needed, rather than directly to the domain type.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN79394"
-></A
-><H2
->Examples</H2
-><P
->   This example creates the <TT
-CLASS="TYPE"
->us_postal_code</TT
-> data type and
+  </p></div><div class="refsect1" id="id-1.9.3.62.8"><h2>Examples</h2><p>
+   This example creates the <code class="type">us_postal_code</code> data type and
    then uses the type in a table definition.  A regular expression test
    is used to verify that the value looks like a valid US postal code:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE DOMAIN us_postal_code AS TEXT
+</p><pre class="programlisting">
+CREATE DOMAIN us_postal_code AS TEXT
 CHECK(
    VALUE ~ '^\d{5}$'
 OR VALUE ~ '^\d{5}-\d{4}$'
@@ -457,100 +120,8 @@ CREATE TABLE us_snail_addy (
   street3 TEXT,
   city TEXT NOT NULL,
   postal us_postal_code NOT NULL
-);</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-CREATEDOMAIN-COMPATIBILITY"
-></A
-><H2
->Compatibility</H2
-><P
->   The command <TT
-CLASS="COMMAND"
->CREATE DOMAIN</TT
-> conforms to the SQL
+);
+</pre></div><div class="refsect1" id="SQL-CREATEDOMAIN-COMPATIBILITY"><h2>Compatibility</h2><p>
+   The command <code class="command">CREATE DOMAIN</code> conforms to the SQL
    standard.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-CREATEDOMAIN-SEE-ALSO"
-></A
-><H2
->See Also</H2
-><A
-HREF="sql-alterdomain.html"
->ALTER DOMAIN</A
->, <A
-HREF="sql-dropdomain.html"
->DROP DOMAIN</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-createdatabase.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-createeventtrigger.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->CREATE DATABASE</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->CREATE EVENT TRIGGER</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="refsect1" id="SQL-CREATEDOMAIN-SEE-ALSO"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alterdomain.html" title="ALTER DOMAIN"><span class="refentrytitle">ALTER DOMAIN</span></a>, <a class="xref" href="sql-dropdomain.html" title="DROP DOMAIN"><span class="refentrytitle">DROP DOMAIN</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createdatabase.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createeventtrigger.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE DATABASE </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE EVENT TRIGGER</td></tr></table></div></body></html>

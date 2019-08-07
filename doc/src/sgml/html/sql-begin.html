@@ -1,425 +1,71 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->BEGIN</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="ANALYZE"
-HREF="sql-analyze.html"><LINK
-REL="NEXT"
-TITLE="CHECKPOINT"
-HREF="sql-checkpoint.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="ANALYZE"
-HREF="sql-analyze.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="CHECKPOINT"
-HREF="sql-checkpoint.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-BEGIN"
-></A
->BEGIN</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN77210"
-></A
-><H2
->Name</H2
->BEGIN&nbsp;--&nbsp;start a transaction block</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN77213"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->BEGIN [ WORK | TRANSACTION ] [ <TT
-CLASS="REPLACEABLE"
-><I
->transaction_mode</I
-></TT
-> [, ...] ]
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>BEGIN</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-analyze.html" title="ANALYZE" /><link rel="next" href="sql-call.html" title="CALL" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">BEGIN</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-analyze.html" title="ANALYZE">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-call.html" title="CALL">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-BEGIN"><div class="titlepage"></div><a id="id-1.9.3.47.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">BEGIN</span></h2><p>BEGIN — start a transaction block</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+BEGIN [ WORK | TRANSACTION ] [ <em class="replaceable"><code>transaction_mode</code></em> [, ...] ]
 
-<SPAN
-CLASS="phrase"
-><SPAN
-CLASS="PHRASE"
->where <TT
-CLASS="REPLACEABLE"
-><I
->transaction_mode</I
-></TT
-> is one of:</SPAN
-></SPAN
->
+<span class="phrase">where <em class="replaceable"><code>transaction_mode</code></em> is one of:</span>
 
     ISOLATION LEVEL { SERIALIZABLE | REPEATABLE READ | READ COMMITTED | READ UNCOMMITTED }
     READ WRITE | READ ONLY
-    [ NOT ] DEFERRABLE</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77218"
-></A
-><H2
->Description</H2
-><P
->   <TT
-CLASS="COMMAND"
->BEGIN</TT
-> initiates a transaction block, that is,
-   all statements after a <TT
-CLASS="COMMAND"
->BEGIN</TT
-> command will be
-   executed in a single transaction until an explicit <A
-HREF="sql-commit.html"
->COMMIT</A
-> or <A
-HREF="sql-rollback.html"
->ROLLBACK</A
-> is given.
-   By default (without <TT
-CLASS="COMMAND"
->BEGIN</TT
->),
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> executes
-   transactions in <SPAN
-CLASS="QUOTE"
->"autocommit"</SPAN
-> mode, that is, each
+    [ NOT ] DEFERRABLE
+</pre></div><div class="refsect1" id="id-1.9.3.47.5"><h2>Description</h2><p>
+   <code class="command">BEGIN</code> initiates a transaction block, that is,
+   all statements after a <code class="command">BEGIN</code> command will be
+   executed in a single transaction until an explicit <a class="xref" href="sql-commit.html" title="COMMIT"><span class="refentrytitle">COMMIT</span></a> or <a class="xref" href="sql-rollback.html" title="ROLLBACK"><span class="refentrytitle">ROLLBACK</span></a> is given.
+   By default (without <code class="command">BEGIN</code>),
+   <span class="productname">PostgreSQL</span> executes
+   transactions in <span class="quote">“<span class="quote">autocommit</span>”</span> mode, that is, each
    statement is executed in its own transaction and a commit is
    implicitly performed at the end of the statement (if execution was
    successful, otherwise a rollback is done).
-  </P
-><P
->   Statements are executed more quickly in a transaction block, because
+  </p><p>
+   Statements are executed more quickly in a transaction block, because
    transaction start/commit requires significant CPU and disk
    activity. Execution of multiple statements inside a transaction is
    also useful to ensure consistency when making several related changes:
    other sessions will be unable to see the intermediate states
    wherein not all the related updates have been done.
-  </P
-><P
->   If the isolation level, read/write mode, or deferrable mode is specified, the new
+  </p><p>
+   If the isolation level, read/write mode, or deferrable mode is specified, the new
    transaction has those characteristics, as if
-   <A
-HREF="sql-set-transaction.html"
->SET TRANSACTION</A
->
+   <a class="xref" href="sql-set-transaction.html" title="SET TRANSACTION"><span class="refentrytitle">SET TRANSACTION</span></a>
    was executed.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77231"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="LITERAL"
->WORK</TT
-><BR><TT
-CLASS="LITERAL"
->TRANSACTION</TT
-></DT
-><DD
-><P
->      Optional key words. They have no effect.
-     </P
-></DD
-></DL
-></DIV
-><P
->   Refer to <A
-HREF="sql-set-transaction.html"
->SET TRANSACTION</A
-> for information on the meaning
+  </p></div><div class="refsect1" id="id-1.9.3.47.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">WORK</code><br /></span><span class="term"><code class="literal">TRANSACTION</code></span></dt><dd><p>
+      Optional key words. They have no effect.
+     </p></dd></dl></div><p>
+   Refer to <a class="xref" href="sql-set-transaction.html" title="SET TRANSACTION"><span class="refentrytitle">SET TRANSACTION</span></a> for information on the meaning
    of the other parameters to this statement.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77243"
-></A
-><H2
->Notes</H2
-><P
->   <A
-HREF="sql-start-transaction.html"
->START TRANSACTION</A
-> has the same functionality
-   as <TT
-CLASS="COMMAND"
->BEGIN</TT
->.
-  </P
-><P
->   Use <A
-HREF="sql-commit.html"
->COMMIT</A
-> or
-   <A
-HREF="sql-rollback.html"
->ROLLBACK</A
->
+  </p></div><div class="refsect1" id="id-1.9.3.47.7"><h2>Notes</h2><p>
+   <a class="xref" href="sql-start-transaction.html" title="START TRANSACTION"><span class="refentrytitle">START TRANSACTION</span></a> has the same functionality
+   as <code class="command">BEGIN</code>.
+  </p><p>
+   Use <a class="xref" href="sql-commit.html" title="COMMIT"><span class="refentrytitle">COMMIT</span></a> or
+   <a class="xref" href="sql-rollback.html" title="ROLLBACK"><span class="refentrytitle">ROLLBACK</span></a>
    to terminate a transaction block.
-  </P
-><P
->   Issuing <TT
-CLASS="COMMAND"
->BEGIN</TT
-> when already inside a transaction block will
+  </p><p>
+   Issuing <code class="command">BEGIN</code> when already inside a transaction block will
    provoke a warning message.  The state of the transaction is not affected.
    To nest transactions within a transaction block, use savepoints
-   (see <A
-HREF="sql-savepoint.html"
->SAVEPOINT</A
->).
-  </P
-><P
->   For reasons of backwards compatibility, the commas between successive
-   <TT
-CLASS="REPLACEABLE"
-><I
->transaction_modes</I
-></TT
-> can be
+   (see <a class="xref" href="sql-savepoint.html" title="SAVEPOINT"><span class="refentrytitle">SAVEPOINT</span></a>).
+  </p><p>
+   For reasons of backwards compatibility, the commas between successive
+   <em class="replaceable"><code>transaction_modes</code></em> can be
    omitted.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77256"
-></A
-><H2
->Examples</H2
-><P
->   To begin a transaction block:
+  </p></div><div class="refsect1" id="id-1.9.3.47.8"><h2>Examples</h2><p>
+   To begin a transaction block:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->BEGIN;</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77260"
-></A
-><H2
->Compatibility</H2
-><P
->   <TT
-CLASS="COMMAND"
->BEGIN</TT
-> is a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
+</p><pre class="programlisting">
+BEGIN;
+</pre></div><div class="refsect1" id="id-1.9.3.47.9"><h2>Compatibility</h2><p>
+   <code class="command">BEGIN</code> is a <span class="productname">PostgreSQL</span>
    language extension.  It is equivalent to the SQL-standard command
-   <A
-HREF="sql-start-transaction.html"
->START TRANSACTION</A
->, whose reference page
+   <a class="xref" href="sql-start-transaction.html" title="START TRANSACTION"><span class="refentrytitle">START TRANSACTION</span></a>, whose reference page
    contains additional compatibility information.
-  </P
-><P
->   The <TT
-CLASS="LITERAL"
->DEFERRABLE</TT
->
-   <TT
-CLASS="REPLACEABLE"
-><I
->transaction_mode</I
-></TT
->
-   is a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> language extension.
-  </P
-><P
->   Incidentally, the <TT
-CLASS="LITERAL"
->BEGIN</TT
-> key word is used for a
+  </p><p>
+   The <code class="literal">DEFERRABLE</code>
+   <em class="replaceable"><code>transaction_mode</code></em>
+   is a <span class="productname">PostgreSQL</span> language extension.
+  </p><p>
+   Incidentally, the <code class="literal">BEGIN</code> key word is used for a
    different purpose in embedded SQL. You are advised to be careful
    about the transaction semantics when porting database applications.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77272"
-></A
-><H2
->See Also</H2
-><A
-HREF="sql-commit.html"
->COMMIT</A
->, <A
-HREF="sql-rollback.html"
->ROLLBACK</A
->, <A
-HREF="sql-start-transaction.html"
->START TRANSACTION</A
->, <A
-HREF="sql-savepoint.html"
->SAVEPOINT</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-analyze.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-checkpoint.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->ANALYZE</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->CHECKPOINT</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="refsect1" id="id-1.9.3.47.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-commit.html" title="COMMIT"><span class="refentrytitle">COMMIT</span></a>, <a class="xref" href="sql-rollback.html" title="ROLLBACK"><span class="refentrytitle">ROLLBACK</span></a>, <a class="xref" href="sql-start-transaction.html" title="START TRANSACTION"><span class="refentrytitle">START TRANSACTION</span></a>, <a class="xref" href="sql-savepoint.html" title="SAVEPOINT"><span class="refentrytitle">SAVEPOINT</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-analyze.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-call.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ANALYZE </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CALL</td></tr></table></div></body></html>

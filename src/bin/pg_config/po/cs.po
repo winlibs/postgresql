@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: pg_config-cs (PostgreSQL 9.3)\n"
 "Report-Msgid-Bugs-To: pgsql-bugs@postgresql.org\n"
-"POT-Creation-Date: 2018-07-13 16:03+0000\n"
-"PO-Revision-Date: 2018-07-14 01:09+0200\n"
+"POT-Creation-Date: 2018-07-13 19:45+0000\n"
+"PO-Revision-Date: 2018-07-13 23:47+0200\n"
 "Last-Translator: Tomas Vondra <tv@fuzzy.cz>\n"
 "Language-Team: Czech <info@cspug.cx>\n"
 "Language: cs\n"
@@ -18,11 +18,11 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
 "X-Generator: Poedit 2.0.7\n"
 
-#: ../../common/config_info.c:131 ../../common/config_info.c:139
-#: ../../common/config_info.c:147 ../../common/config_info.c:155
-#: ../../common/config_info.c:163 ../../common/config_info.c:171
-#: ../../common/config_info.c:179 ../../common/config_info.c:187
-#: ../../common/config_info.c:195
+#: ../../common/config_info.c:130 ../../common/config_info.c:138
+#: ../../common/config_info.c:146 ../../common/config_info.c:154
+#: ../../common/config_info.c:162 ../../common/config_info.c:170
+#: ../../common/config_info.c:178 ../../common/config_info.c:186
+#: ../../common/config_info.c:194
 msgid "not recorded"
 msgstr "nezaznamenáno"
 

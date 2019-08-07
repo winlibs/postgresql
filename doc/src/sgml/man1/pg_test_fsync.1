@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "PG_TEST_FSYNC" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "PG_TEST_FSYNC" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -39,7 +39,7 @@ is intended to give you a reasonable idea of what the fastest
 wal_sync_method
 is on your specific system, as well as supplying diagnostic information in the event of an identified I/O problem\&. However, differences shown by
 pg_test_fsync
-might not make any significant difference in real database throughput, especially since many database servers are not speed\-limited by their transaction logs\&.
+might not make any significant difference in real database throughput, especially since many database servers are not speed\-limited by their write\-ahead logs\&.
 pg_test_fsync
 reports average file sync operation time in microseconds for each
 wal_sync_method, which can also be used to inform efforts to optimize the value of
@@ -54,8 +54,8 @@ accepts the following command\-line options:
 \fB\-\-filename\fR
 .RS 4
 Specifies the file name to write test data in\&. This file should be in the same file system that the
-pg_xlog
-directory is or will be placed in\&. (pg_xlog
+pg_wal
+directory is or will be placed in\&. (pg_wal
 contains the
 WAL
 files\&.) The default is

@@ -35,6 +35,10 @@ OBJS = $(LIBOBJS) $(PG_CRC32C_OBJS) chklocale.o erand48.o inet_net_ntop.o \
 	pgstrcasecmp.o pqsignal.o \
 	qsort.o qsort_arg.o quotes.o sprompt.o tar.o thread.o
 
+ifeq ($(enable_strong_random), yes)
+OBJS += pg_strong_random.o
+endif
+
 # foo_srv.o and foo.o are both built from foo.c, but only foo.o has -DFRONTEND
 OBJS_SRV = $(OBJS:%.o=%_srv.o)
 
@@ -61,6 +65,10 @@ thread.o: CFLAGS+=$(PTHREAD_CFLAGS)
 pg_crc32c_sse42.o: CFLAGS+=$(CFLAGS_SSE42)
 pg_crc32c_sse42_srv.o: CFLAGS+=$(CFLAGS_SSE42)
 
+# pg_crc32c_armv8.o and its _srv.o version need CFLAGS_ARMV8_CRC32C
+pg_crc32c_armv8.o: CFLAGS+=$(CFLAGS_ARMV8_CRC32C)
+pg_crc32c_armv8_srv.o: CFLAGS+=$(CFLAGS_ARMV8_CRC32C)
+
 #
 # Server versions of object files
 #
@@ -78,13 +86,6 @@ libpgport_srv.a: $(OBJS_SRV)
 # into src/backend/port/ anyway).
 %_srv.o: %.c %.o
 	$(CC) $(CFLAGS) $(subst -DFRONTEND,, $(CPPFLAGS)) -c $< -o $@
-
-$(OBJS_SRV): | submake-errcodes
-
-.PHONY: submake-errcodes
-
-submake-errcodes:
-	$(MAKE) -C ../backend submake-errcodes
 
 # Dependency is to ensure that path changes propagate
 

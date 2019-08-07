@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ANALYZE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ANALYZE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,16 @@ ANALYZE \- collect statistics about a database
 .SH "SYNOPSIS"
 .sp
 .nf
-ANALYZE [ VERBOSE ] [ \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ] ]
+ANALYZE [ ( \fIoption\fR [, \&.\&.\&.] ) ] [ \fItable_and_columns\fR [, \&.\&.\&.] ]
+ANALYZE [ VERBOSE ] [ \fItable_and_columns\fR [, \&.\&.\&.] ]
+
+where \fIoption\fR can be one of:
+
+    VERBOSE
+
+and \fItable_and_columns\fR is:
+
+    \fItable_name\fR [ ( \fIcolumn_name\fR [, \&.\&.\&.] ) ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -41,11 +50,17 @@ collects statistics about the contents of tables in the database, and stores the
 pg_statistic
 system catalog\&. Subsequently, the query planner uses these statistics to help determine the most efficient execution plans for queries\&.
 .PP
-With no parameter,
+Without a
+\fItable_and_columns\fR
+list,
 \fBANALYZE\fR
-examines every table in the current database\&. With a parameter,
+processes every table and materialized view in the current database that the current user has permission to analyze\&. With a list,
 \fBANALYZE\fR
-examines only that table\&. It is further possible to give a list of column names, in which case only the statistics for those columns are collected\&.
+processes only those table(s)\&. It is further possible to give a list of column names for a table, in which case only the statistics for those columns are collected\&.
+.PP
+When the option list is surrounded by parentheses, the options can be written in any order\&. The parenthesized syntax was added in
+PostgreSQL
+11; the unparenthesized syntax is deprecated\&.
 .SH "PARAMETERS"
 .PP
 VERBOSE
@@ -55,7 +70,7 @@ Enables display of progress messages\&.
 .PP
 \fItable_name\fR
 .RS 4
-The name (possibly schema\-qualified) of a specific table to analyze\&. If omitted, all regular tables (but not foreign tables) in the current database are analyzed\&.
+The name (possibly schema\-qualified) of a specific table to analyze\&. If omitted, all regular tables, partitioned tables, and materialized views in the current database are analyzed (but not foreign tables)\&. If the specified table is a partitioned table, both the inheritance statistics of the partitioned table as a whole and statistics of the individual partitions are updated\&.
 .RE
 .PP
 \fIcolumn_name\fR
@@ -78,7 +93,7 @@ Foreign tables are analyzed only when explicitly selected\&. Not all foreign dat
 In the default
 PostgreSQL
 configuration, the autovacuum daemon (see
-Section 24.1.6, \(lqThe Autovacuum Daemon\(rq, in the documentation) takes care of automatic analyzing of tables when they are first loaded with data, and as they change throughout regular operation\&. When autovacuum is disabled, it is a good idea to run
+Section\ \&24.1.6) takes care of automatic analyzing of tables when they are first loaded with data, and as they change throughout regular operation\&. When autovacuum is disabled, it is a good idea to run
 \fBANALYZE\fR
 periodically, or just after making major changes in the contents of a table\&. Accurate statistics will help the planner to choose the most appropriate query plan, and thereby improve the speed of query processing\&. A common strategy for read\-mostly databases is to run
 \fBVACUUM\fR(7)
@@ -94,7 +109,7 @@ The statistics collected by
 usually include a list of some of the most common values in each column and a histogram showing the approximate data distribution in each column\&. One or both of these can be omitted if
 \fBANALYZE\fR
 deems them uninteresting (for example, in a unique\-key column, there are no common values) or if the column data type does not support the appropriate operators\&. There is more information about the statistics in
-Chapter 24, Routine Database Maintenance Tasks, in the documentation\&.
+Chapter\ \&24\&.
 .PP
 For large tables,
 \fBANALYZE\fR
@@ -148,4 +163,4 @@ There is no
 \fBANALYZE\fR
 statement in the SQL standard\&.
 .SH "SEE ALSO"
-\fBVACUUM\fR(7), \fBvacuumdb\fR(1), Section 19.4.4, \(lqCost-based Vacuum Delay\(rq, in the documentation, Section 24.1.6, \(lqThe Autovacuum Daemon\(rq, in the documentation
+\fBVACUUM\fR(7), \fBvacuumdb\fR(1), Section\ \&19.4.4, Section\ \&24.1.6

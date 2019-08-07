@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE SEQUENCE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE SEQUENCE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,9 @@ CREATE_SEQUENCE \- define a new sequence generator
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE [ TEMPORARY | TEMP ] SEQUENCE [ IF NOT EXISTS ] \fIname\fR [ INCREMENT [ BY ] \fIincrement\fR ]
+CREATE [ TEMPORARY | TEMP ] SEQUENCE [ IF NOT EXISTS ] \fIname\fR
+    [ AS \fIdata_type\fR ]
+    [ INCREMENT [ BY ] \fIincrement\fR ]
     [ MINVALUE \fIminvalue\fR | NO MINVALUE ] [ MAXVALUE \fImaxvalue\fR | NO MAXVALUE ]
     [ START [ WITH ] \fIstart\fR ] [ CACHE \fIcache\fR ] [ [ NO ] CYCLE ]
     [ OWNED BY { \fItable_name\fR\&.\fIcolumn_name\fR | NONE } ]
@@ -50,7 +52,7 @@ After a sequence is created, you use the functions
 \fBcurrval\fR, and
 \fBsetval\fR
 to operate on the sequence\&. These functions are documented in
-Section 9.16, \(lqSequence Manipulation Functions\(rq, in the documentation\&.
+Section\ \&9.16\&.
 .PP
 Although you cannot update a sequence directly, you can use a query like:
 .sp
@@ -86,6 +88,18 @@ Do not throw an error if a relation with the same name already exists\&. A notic
 The name (optionally schema\-qualified) of the sequence to be created\&.
 .RE
 .PP
+\fIdata_type\fR
+.RS 4
+The optional clause
+AS \fIdata_type\fR
+specifies the data type of the sequence\&. Valid types are
+smallint,
+integer, and
+bigint\&.
+bigint
+is the default\&. The data type determines the default minimum and maximum values of the sequence\&.
+.RE
+.PP
 \fIincrement\fR
 .RS 4
 The optional clause
@@ -101,7 +115,7 @@ The optional clause
 MINVALUE \fIminvalue\fR
 determines the minimum value a sequence can generate\&. If this clause is not supplied or
 \fBNO MINVALUE\fR
-is specified, then defaults will be used\&. The defaults are 1 and \-2^63\-1 for ascending and descending sequences, respectively\&.
+is specified, then defaults will be used\&. The default for an ascending sequence is 1\&. The default for a descending sequence is the minimum value of the data type\&.
 .RE
 .PP
 \fImaxvalue\fR
@@ -112,7 +126,7 @@ The optional clause
 MAXVALUE \fImaxvalue\fR
 determines the maximum value for the sequence\&. If this clause is not supplied or
 \fBNO MAXVALUE\fR
-is specified, then default values will be used\&. The defaults are 2^63\-1 and \-1 for ascending and descending sequences, respectively\&.
+is specified, then default values will be used\&. The default for an ascending sequence is the maximum value of the data type\&. The default for a descending sequence is \-1\&.
 .RE
 .PP
 \fIstart\fR
@@ -302,19 +316,6 @@ END;
 conforms to the
 SQL
 standard, with the following exceptions:
-.sp
-.RS 4
-.ie n \{\
-\h'-04'\(bu\h'+03'\c
-.\}
-.el \{\
-.sp -1
-.IP \(bu 2.3
-.\}
-The standard\*(Aqs
-AS \fIdata_type\fR
-expression is not supported\&.
-.RE
 .sp
 .RS 4
 .ie n \{\

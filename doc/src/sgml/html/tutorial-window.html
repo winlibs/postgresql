@@ -1,125 +1,23 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Window Functions</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Advanced Features"
-HREF="tutorial-advanced.html"><LINK
-REL="PREVIOUS"
-TITLE="Transactions"
-HREF="tutorial-transactions.html"><LINK
-REL="NEXT"
-TITLE="Inheritance"
-HREF="tutorial-inheritance.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Transactions"
-HREF="tutorial-transactions.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="tutorial-advanced.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 3. Advanced Features</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Inheritance"
-HREF="tutorial-inheritance.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="TUTORIAL-WINDOW"
->3.5. Window Functions</A
-></H1
-><P
->    A <I
-CLASS="FIRSTTERM"
->window function</I
-> performs a calculation across a set of
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>3.5. Window Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="tutorial-transactions.html" title="3.4. Transactions" /><link rel="next" href="tutorial-inheritance.html" title="3.6. Inheritance" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">3.5. Window Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="tutorial-transactions.html" title="3.4. Transactions">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="tutorial-advanced.html" title="Chapter 3. Advanced Features">Up</a></td><th width="60%" align="center">Chapter 3. Advanced Features</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="tutorial-inheritance.html" title="3.6. Inheritance">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="TUTORIAL-WINDOW"><div class="titlepage"><div><div><h2 class="title" style="clear: both">3.5. Window Functions</h2></div></div></div><a id="id-1.4.5.6.2" class="indexterm"></a><p>
+    A <em class="firstterm">window function</em> performs a calculation across a set of
     table rows that are somehow related to the current row.  This is comparable
     to the type of calculation that can be done with an aggregate function.
-    But unlike regular aggregate functions, use of a window function does not
-    cause rows to become grouped into a single output row &mdash; the
+    However, window functions do not cause rows to become grouped into a single
+    output row like non-window aggregate calls would.  Instead, the
     rows retain their separate identities.  Behind the scenes, the window
     function is able to access more than just the current row of the query
     result.
-   </P
-><P
->    Here is an example that shows how to compare each employee's salary
+   </p><p>
+    Here is an example that shows how to compare each employee's salary
     with the average salary in his or her department:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT depname, empno, salary, avg(salary) OVER (PARTITION BY depname) FROM empsalary;</PRE
-><P>
+</p><pre class="programlisting">
+SELECT depname, empno, salary, avg(salary) OVER (PARTITION BY depname) FROM empsalary;
+</pre><p>
 
-</P><PRE
-CLASS="SCREEN"
->  depname  | empno | salary |          avg          
+</p><pre class="screen">
+  depname  | empno | salary |          avg          
 -----------+-------+--------+-----------------------
  develop   |    11 |   5200 | 5020.0000000000000000
  develop   |     7 |   4200 | 5020.0000000000000000
@@ -131,82 +29,41 @@ CLASS="SCREEN"
  sales     |     3 |   4800 | 4866.6666666666666667
  sales     |     1 |   5000 | 4866.6666666666666667
  sales     |     4 |   4800 | 4866.6666666666666667
-(10 rows)</PRE
-><P>
+(10 rows)
+</pre><p>
 
     The first three output columns come directly from the table
-    <TT
-CLASS="STRUCTNAME"
->empsalary</TT
->, and there is one output row for each row in the
+    <code class="structname">empsalary</code>, and there is one output row for each row in the
     table.  The fourth column represents an average taken across all the table
-    rows that have the same <TT
-CLASS="STRUCTFIELD"
->depname</TT
-> value as the current row.
-    (This actually is the same function as the regular <CODE
-CLASS="FUNCTION"
->avg</CODE
->
-    aggregate function, but the <TT
-CLASS="LITERAL"
->OVER</TT
-> clause causes it to be
-    treated as a window function and computed across an appropriate set of
-    rows.)
-   </P
-><P
->    A window function call always contains an <TT
-CLASS="LITERAL"
->OVER</TT
-> clause
+    rows that have the same <code class="structfield">depname</code> value as the current row.
+    (This actually is the same function as the non-window <code class="function">avg</code>
+    aggregate, but the <code class="literal">OVER</code> clause causes it to be
+    treated as a window function and computed across the window frame.)
+   </p><p>
+    A window function call always contains an <code class="literal">OVER</code> clause
     directly following the window function's name and argument(s).  This is what
-    syntactically distinguishes it from a regular function or aggregate
-    function.  The <TT
-CLASS="LITERAL"
->OVER</TT
-> clause determines exactly how the
+    syntactically distinguishes it from a normal function or non-window
+    aggregate.  The <code class="literal">OVER</code> clause determines exactly how the
     rows of the query are split up for processing by the window function.
-    The <TT
-CLASS="LITERAL"
->PARTITION BY</TT
-> list within <TT
-CLASS="LITERAL"
->OVER</TT
-> specifies
-    dividing the rows into groups, or partitions, that share the same
-    values of the <TT
-CLASS="LITERAL"
->PARTITION BY</TT
-> expression(s).  For each row,
+    The <code class="literal">PARTITION BY</code> clause within <code class="literal">OVER</code>
+    divides the rows into groups, or partitions, that share the same
+    values of the <code class="literal">PARTITION BY</code> expression(s).  For each row,
     the window function is computed across the rows that fall into the
     same partition as the current row.
-   </P
-><P
->    You can also control the order in which rows are processed by
-    window functions using <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> within <TT
-CLASS="LITERAL"
->OVER</TT
->.
-    (The window <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> does not even have to match the
+   </p><p>
+    You can also control the order in which rows are processed by
+    window functions using <code class="literal">ORDER BY</code> within <code class="literal">OVER</code>.
+    (The window <code class="literal">ORDER BY</code> does not even have to match the
     order in which the rows are output.)  Here is an example:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT depname, empno, salary,
+</p><pre class="programlisting">
+SELECT depname, empno, salary,
        rank() OVER (PARTITION BY depname ORDER BY salary DESC)
-FROM empsalary;</PRE
-><P>
+FROM empsalary;
+</pre><p>
 
-</P><PRE
-CLASS="SCREEN"
->  depname  | empno | salary | rank 
+</p><pre class="screen">
+  depname  | empno | salary | rank 
 -----------+-------+--------+------
  develop   |     8 |   6000 |    1
  develop   |    10 |   5200 |    2
@@ -218,113 +75,43 @@ CLASS="SCREEN"
  sales     |     1 |   5000 |    1
  sales     |     4 |   4800 |    2
  sales     |     3 |   4800 |    2
-(10 rows)</PRE
-><P>
+(10 rows)
+</pre><p>
 
-    As shown here, the <CODE
-CLASS="FUNCTION"
->rank</CODE
-> function produces a numerical rank
-    within the current row's partition for each distinct <TT
-CLASS="LITERAL"
->ORDER BY</TT
->
-    value, in the order defined by the <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clause.
-    <CODE
-CLASS="FUNCTION"
->rank</CODE
-> needs no explicit parameter, because its behavior
-    is entirely determined by the <TT
-CLASS="LITERAL"
->OVER</TT
-> clause.
-   </P
-><P
->    The rows considered by a window function are those of the <SPAN
-CLASS="QUOTE"
->"virtual
-    table"</SPAN
-> produced by the query's <TT
-CLASS="LITERAL"
->FROM</TT
-> clause as filtered by its
-    <TT
-CLASS="LITERAL"
->WHERE</TT
->, <TT
-CLASS="LITERAL"
->GROUP BY</TT
->, and <TT
-CLASS="LITERAL"
->HAVING</TT
-> clauses
+    As shown here, the <code class="function">rank</code> function produces a numerical rank
+    for each distinct <code class="literal">ORDER BY</code> value in the current row's
+    partition, using the order defined by the <code class="literal">ORDER BY</code> clause.
+    <code class="function">rank</code> needs no explicit parameter, because its behavior
+    is entirely determined by the <code class="literal">OVER</code> clause.
+   </p><p>
+    The rows considered by a window function are those of the <span class="quote">“<span class="quote">virtual
+    table</span>”</span> produced by the query's <code class="literal">FROM</code> clause as filtered by its
+    <code class="literal">WHERE</code>, <code class="literal">GROUP BY</code>, and <code class="literal">HAVING</code> clauses
     if any.  For example, a row removed because it does not meet the
-    <TT
-CLASS="LITERAL"
->WHERE</TT
-> condition is not seen by any window function.
+    <code class="literal">WHERE</code> condition is not seen by any window function.
     A query can contain multiple window functions that slice up the data
-    in different ways by means of different <TT
-CLASS="LITERAL"
->OVER</TT
-> clauses, but
+    in different ways using different <code class="literal">OVER</code> clauses, but
     they all act on the same collection of rows defined by this virtual table.
-   </P
-><P
->    We already saw that <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> can be omitted if the ordering
-    of rows is not important.  It is also possible to omit <TT
-CLASS="LITERAL"
->PARTITION
-    BY</TT
->, in which case there is just one partition containing all the rows.
-   </P
-><P
->    There is another important concept associated with window functions:
+   </p><p>
+    We already saw that <code class="literal">ORDER BY</code> can be omitted if the ordering
+    of rows is not important.  It is also possible to omit <code class="literal">PARTITION
+    BY</code>, in which case there is a single partition containing all rows.
+   </p><p>
+    There is another important concept associated with window functions:
     for each row, there is a set of rows within its partition called its
-    <I
-CLASS="FIRSTTERM"
->window frame</I
->.  Many (but not all) window functions act only
+    <em class="firstterm">window frame</em>.  Some window functions act only
     on the rows of the window frame, rather than of the whole partition.
-    By default, if <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> is supplied then the frame consists of
+    By default, if <code class="literal">ORDER BY</code> is supplied then the frame consists of
     all rows from the start of the partition up through the current row, plus
     any following rows that are equal to the current row according to the
-    <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clause.  When <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> is omitted the
+    <code class="literal">ORDER BY</code> clause.  When <code class="literal">ORDER BY</code> is omitted the
     default frame consists of all rows in the partition.
-     <A
-NAME="AEN1044"
-HREF="#FTN.AEN1044"
-><SPAN
-CLASS="footnote"
->[1]</SPAN
-></A
->
-    Here is an example using <CODE
-CLASS="FUNCTION"
->sum</CODE
->:
-   </P
-><PRE
-CLASS="PROGRAMLISTING"
->SELECT salary, sum(salary) OVER () FROM empsalary;</PRE
-><PRE
-CLASS="SCREEN"
-> salary |  sum  
+     <a href="#ftn.id-1.4.5.6.9.5" class="footnote"><sup class="footnote" id="id-1.4.5.6.9.5">[4]</sup></a>
+    Here is an example using <code class="function">sum</code>:
+   </p><pre class="programlisting">
+SELECT salary, sum(salary) OVER () FROM empsalary;
+</pre><pre class="screen">
+ salary |  sum  
 --------+-------
    5200 | 47100
    5000 | 47100
@@ -336,33 +123,18 @@ CLASS="SCREEN"
    4800 | 47100
    6000 | 47100
    5200 | 47100
-(10 rows)</PRE
-><P
->    Above, since there is no <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> in the <TT
-CLASS="LITERAL"
->OVER</TT
->
+(10 rows)
+</pre><p>
+    Above, since there is no <code class="literal">ORDER BY</code> in the <code class="literal">OVER</code>
     clause, the window frame is the same as the partition, which for lack of
-    <TT
-CLASS="LITERAL"
->PARTITION BY</TT
-> is the whole table; in other words each sum is
+    <code class="literal">PARTITION BY</code> is the whole table; in other words each sum is
     taken over the whole table and so we get the same result for each output
-    row.  But if we add an <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clause, we get very different
+    row.  But if we add an <code class="literal">ORDER BY</code> clause, we get very different
     results:
-   </P
-><PRE
-CLASS="PROGRAMLISTING"
->SELECT salary, sum(salary) OVER (ORDER BY salary) FROM empsalary;</PRE
-><PRE
-CLASS="SCREEN"
-> salary |  sum  
+   </p><pre class="programlisting">
+SELECT salary, sum(salary) OVER (ORDER BY salary) FROM empsalary;
+</pre><pre class="screen">
+ salary |  sum  
 --------+-------
    3500 |  3500
    3900 |  7400
@@ -374,199 +146,57 @@ CLASS="SCREEN"
    5200 | 41100
    5200 | 41100
    6000 | 47100
-(10 rows)</PRE
-><P
->    Here the sum is taken from the first (lowest) salary up through the
+(10 rows)
+</pre><p>
+    Here the sum is taken from the first (lowest) salary up through the
     current one, including any duplicates of the current one (notice the
     results for the duplicated salaries).
-   </P
-><P
->    Window functions are permitted only in the <TT
-CLASS="LITERAL"
->SELECT</TT
-> list
-    and the <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clause of the query. They are forbidden
-    elsewhere, such as in <TT
-CLASS="LITERAL"
->GROUP BY</TT
->, <TT
-CLASS="LITERAL"
->HAVING</TT
->
-    and <TT
-CLASS="LITERAL"
->WHERE</TT
-> clauses.  This is because they logically
+   </p><p>
+    Window functions are permitted only in the <code class="literal">SELECT</code> list
+    and the <code class="literal">ORDER BY</code> clause of the query. They are forbidden
+    elsewhere, such as in <code class="literal">GROUP BY</code>, <code class="literal">HAVING</code>
+    and <code class="literal">WHERE</code> clauses.  This is because they logically
     execute after the processing of those clauses.  Also, window functions
-    execute after regular aggregate functions.  This means it is valid to
+    execute after non-window aggregate functions.  This means it is valid to
     include an aggregate function call in the arguments of a window function,
     but not vice versa.
-   </P
-><P
->    If there is a need to filter or group rows after the window calculations
+   </p><p>
+    If there is a need to filter or group rows after the window calculations
     are performed, you can use a sub-select.  For example:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT depname, empno, salary, enroll_date
+</p><pre class="programlisting">
+SELECT depname, empno, salary, enroll_date
 FROM
   (SELECT depname, empno, salary, enroll_date,
           rank() OVER (PARTITION BY depname ORDER BY salary DESC, empno) AS pos
      FROM empsalary
   ) AS ss
-WHERE pos &lt; 3;</PRE
-><P>
+WHERE pos &lt; 3;
+</pre><p>
 
     The above query only shows the rows from the inner query having
-    <TT
-CLASS="LITERAL"
->rank</TT
-> less than 3.
-   </P
-><P
->    When a query involves multiple window functions, it is possible to write
-    out each one with a separate <TT
-CLASS="LITERAL"
->OVER</TT
-> clause, but this is
+    <code class="literal">rank</code> less than 3.
+   </p><p>
+    When a query involves multiple window functions, it is possible to write
+    out each one with a separate <code class="literal">OVER</code> clause, but this is
     duplicative and error-prone if the same windowing behavior is wanted
     for several functions.  Instead, each windowing behavior can be named
-    in a <TT
-CLASS="LITERAL"
->WINDOW</TT
-> clause and then referenced in <TT
-CLASS="LITERAL"
->OVER</TT
->.
+    in a <code class="literal">WINDOW</code> clause and then referenced in <code class="literal">OVER</code>.
     For example:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT sum(salary) OVER w, avg(salary) OVER w
+</p><pre class="programlisting">
+SELECT sum(salary) OVER w, avg(salary) OVER w
   FROM empsalary
-  WINDOW w AS (PARTITION BY depname ORDER BY salary DESC);</PRE
-><P>
-   </P
-><P
->    More details about window functions can be found in
-    <A
-HREF="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS"
->Section 4.2.8</A
->,
-    <A
-HREF="functions-window.html"
->Section 9.21</A
->,
-    <A
-HREF="queries-table-expressions.html#QUERIES-WINDOW"
->Section 7.2.5</A
->, and the
-    <A
-HREF="sql-select.html"
->SELECT</A
-> reference page.
-   </P
-></DIV
-><H3
-CLASS="FOOTNOTES"
->Notes</H3
-><TABLE
-BORDER="0"
-CLASS="FOOTNOTES"
-WIDTH="100%"
-><TR
-><TD
-ALIGN="LEFT"
-VALIGN="TOP"
-WIDTH="5%"
-><A
-NAME="FTN.AEN1044"
-HREF="tutorial-window.html#AEN1044"
-><SPAN
-CLASS="footnote"
->[1]</SPAN
-></A
-></TD
-><TD
-ALIGN="LEFT"
-VALIGN="TOP"
-WIDTH="95%"
-><P
->       There are options to define the window frame in other ways, but
+  WINDOW w AS (PARTITION BY depname ORDER BY salary DESC);
+</pre><p>
+   </p><p>
+    More details about window functions can be found in
+    <a class="xref" href="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS" title="4.2.8. Window Function Calls">Section 4.2.8</a>,
+    <a class="xref" href="functions-window.html" title="9.21. Window Functions">Section 9.21</a>,
+    <a class="xref" href="queries-table-expressions.html#QUERIES-WINDOW" title="7.2.5. Window Function Processing">Section 7.2.5</a>, and the
+    <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a> reference page.
+   </p><div class="footnotes"><br /><hr style="width:100; text-align:left;margin-left: 0" /><div id="ftn.id-1.4.5.6.9.5" class="footnote"><p><a href="#id-1.4.5.6.9.5" class="para"><sup class="para">[4] </sup></a>
+       There are options to define the window frame in other ways, but
        this tutorial does not cover them.  See
-       <A
-HREF="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS"
->Section 4.2.8</A
-> for details.
-      </P
-></TD
-></TR
-></TABLE
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="tutorial-transactions.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="tutorial-inheritance.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Transactions</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="tutorial-advanced.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Inheritance</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+       <a class="xref" href="sql-expressions.html#SYNTAX-WINDOW-FUNCTIONS" title="4.2.8. Window Function Calls">Section 4.2.8</a> for details.
+      </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="tutorial-transactions.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="tutorial-advanced.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="tutorial-inheritance.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">3.4. Transactions </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 3.6. Inheritance</td></tr></table></div></body></html>

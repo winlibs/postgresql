@@ -1,576 +1,119 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->CREATE EXTENSION</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="CREATE EVENT TRIGGER"
-HREF="sql-createeventtrigger.html"><LINK
-REL="NEXT"
-TITLE="CREATE FOREIGN DATA WRAPPER"
-HREF="sql-createforeigndatawrapper.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="CREATE EVENT TRIGGER"
-HREF="sql-createeventtrigger.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="CREATE FOREIGN DATA WRAPPER"
-HREF="sql-createforeigndatawrapper.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-CREATEEXTENSION"
-></A
->CREATE EXTENSION</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN79497"
-></A
-><H2
->Name</H2
->CREATE EXTENSION&nbsp;--&nbsp;install an extension</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN79500"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->CREATE EXTENSION [ IF NOT EXISTS ] <TT
-CLASS="REPLACEABLE"
-><I
->extension_name</I
-></TT
->
-    [ WITH ] [ SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> ]
-             [ VERSION <TT
-CLASS="REPLACEABLE"
-><I
->version</I
-></TT
-> ]
-             [ FROM <TT
-CLASS="REPLACEABLE"
-><I
->old_version</I
-></TT
-> ]
-             [ CASCADE ]</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN79506"
-></A
-><H2
->Description</H2
-><P
->   <TT
-CLASS="COMMAND"
->CREATE EXTENSION</TT
-> loads a new extension into the current
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CREATE EXTENSION</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-createeventtrigger.html" title="CREATE EVENT TRIGGER" /><link rel="next" href="sql-createforeigndatawrapper.html" title="CREATE FOREIGN DATA WRAPPER" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CREATE EXTENSION</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-createeventtrigger.html" title="CREATE EVENT TRIGGER">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-createforeigndatawrapper.html" title="CREATE FOREIGN DATA WRAPPER">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CREATEEXTENSION"><div class="titlepage"></div><a id="id-1.9.3.64.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CREATE EXTENSION</span></h2><p>CREATE EXTENSION — install an extension</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+CREATE EXTENSION [ IF NOT EXISTS ] <em class="replaceable"><code>extension_name</code></em>
+    [ WITH ] [ SCHEMA <em class="replaceable"><code>schema_name</code></em> ]
+             [ VERSION <em class="replaceable"><code>version</code></em> ]
+             [ FROM <em class="replaceable"><code>old_version</code></em> ]
+             [ CASCADE ]
+</pre></div><div class="refsect1" id="id-1.9.3.64.5"><h2>Description</h2><p>
+   <code class="command">CREATE EXTENSION</code> loads a new extension into the current
    database.  There must not be an extension of the same name already loaded.
-  </P
-><P
->   Loading an extension essentially amounts to running the extension's script
-   file.  The script will typically create new <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> objects such as
+  </p><p>
+   Loading an extension essentially amounts to running the extension's script
+   file.  The script will typically create new <acronym class="acronym">SQL</acronym> objects such as
    functions, data types, operators and index support methods.
-   <TT
-CLASS="COMMAND"
->CREATE EXTENSION</TT
-> additionally records the identities
+   <code class="command">CREATE EXTENSION</code> additionally records the identities
    of all the created objects, so that they can be dropped again if
-   <TT
-CLASS="COMMAND"
->DROP EXTENSION</TT
-> is issued.
-  </P
-><P
->   Loading an extension requires the same privileges that would be
+   <code class="command">DROP EXTENSION</code> is issued.
+  </p><p>
+   Loading an extension requires the same privileges that would be
    required to create its component objects.  For most extensions this
    means superuser or database owner privileges are needed.
-   The user who runs <TT
-CLASS="COMMAND"
->CREATE EXTENSION</TT
-> becomes the
+   The user who runs <code class="command">CREATE EXTENSION</code> becomes the
    owner of the extension for purposes of later privilege checks, as well
    as the owner of any objects created by the extension's script.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN79516"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="LITERAL"
->IF NOT EXISTS</TT
-></DT
-><DD
-><P
->        Do not throw an error if an extension with the same name already
+  </p></div><div class="refsect1" id="id-1.9.3.64.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">IF NOT EXISTS</code></span></dt><dd><p>
+        Do not throw an error if an extension with the same name already
         exists.  A notice is issued in this case.  Note that there is no
         guarantee that the existing extension is anything like the one that
         would have been created from the currently-available script file.
-       </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->extension_name</I
-></TT
-></DT
-><DD
-><P
->        The name of the extension to be
-        installed. <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> will create the
+       </p></dd><dt><span class="term"><em class="replaceable"><code>extension_name</code></em></span></dt><dd><p>
+        The name of the extension to be
+        installed. <span class="productname">PostgreSQL</span> will create the
         extension using details from the file
-        <TT
-CLASS="LITERAL"
->SHAREDIR/extension/</TT
-><TT
-CLASS="REPLACEABLE"
-><I
->extension_name</I
-></TT
-><TT
-CLASS="LITERAL"
->.control</TT
->.
-       </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-></DT
-><DD
-><P
->        The name of the schema in which to install the extension's
+        <code class="literal">SHAREDIR/extension/</code><em class="replaceable"><code>extension_name</code></em><code class="literal">.control</code>.
+       </p></dd><dt><span class="term"><em class="replaceable"><code>schema_name</code></em></span></dt><dd><p>
+        The name of the schema in which to install the extension's
         objects, given that the extension allows its contents to be
         relocated.  The named schema must already exist.
         If not specified, and the extension's control file does not specify a
         schema either, the current default object creation schema is used.
-       </P
-><P
->        If the extension specifies a <TT
-CLASS="LITERAL"
->schema</TT
-> parameter in its
+       </p><p>
+        If the extension specifies a <code class="literal">schema</code> parameter in its
         control file, then that schema cannot be overridden with
-        a <TT
-CLASS="LITERAL"
->SCHEMA</TT
-> clause.  Normally, an error will be raised if
-        a <TT
-CLASS="LITERAL"
->SCHEMA</TT
-> clause is given and it conflicts with the
-        extension's <TT
-CLASS="LITERAL"
->schema</TT
-> parameter.  However, if
-        the <TT
-CLASS="LITERAL"
->CASCADE</TT
-> clause is also given,
-        then <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> is
+        a <code class="literal">SCHEMA</code> clause.  Normally, an error will be raised if
+        a <code class="literal">SCHEMA</code> clause is given and it conflicts with the
+        extension's <code class="literal">schema</code> parameter.  However, if
+        the <code class="literal">CASCADE</code> clause is also given,
+        then <em class="replaceable"><code>schema_name</code></em> is
         ignored when it conflicts.  The
-        given <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> will be
+        given <em class="replaceable"><code>schema_name</code></em> will be
         used for installation of any needed extensions that do not
-        specify <TT
-CLASS="LITERAL"
->schema</TT
-> in their control files.
-       </P
-><P
->        Remember that the extension itself is not considered to be within any
+        specify <code class="literal">schema</code> in their control files.
+       </p><p>
+        Remember that the extension itself is not considered to be within any
         schema: extensions have unqualified names that must be unique
         database-wide.  But objects belonging to the extension can be within
         schemas.
-       </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->version</I
-></TT
-></DT
-><DD
-><P
->        The version of the extension to install.  This can be written as
+       </p></dd><dt><span class="term"><em class="replaceable"><code>version</code></em></span></dt><dd><p>
+        The version of the extension to install.  This can be written as
         either an identifier or a string literal.  The default version is
         whatever is specified in the extension's control file.
-       </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->old_version</I
-></TT
-></DT
-><DD
-><P
->        <TT
-CLASS="LITERAL"
->FROM</TT
-> <TT
-CLASS="REPLACEABLE"
-><I
->old_version</I
-></TT
->
+       </p></dd><dt><span class="term"><em class="replaceable"><code>old_version</code></em></span></dt><dd><p>
+        <code class="literal">FROM</code> <em class="replaceable"><code>old_version</code></em>
         must be specified when, and only when, you are attempting to install
-        an extension that replaces an <SPAN
-CLASS="QUOTE"
->"old style"</SPAN
-> module that is just
+        an extension that replaces an <span class="quote">“<span class="quote">old style</span>”</span> module that is just
         a collection of objects not packaged into an extension.  This option
-        causes <TT
-CLASS="COMMAND"
->CREATE EXTENSION</TT
-> to run an alternative installation
+        causes <code class="command">CREATE EXTENSION</code> to run an alternative installation
         script that absorbs the existing objects into the extension, instead
-        of creating new objects.  Be careful that <TT
-CLASS="LITERAL"
->SCHEMA</TT
-> specifies
+        of creating new objects.  Be careful that <code class="literal">SCHEMA</code> specifies
         the schema containing these pre-existing objects.
-       </P
-><P
->        The value to use for <TT
-CLASS="REPLACEABLE"
-><I
->old_version</I
-></TT
-> is determined by the
+       </p><p>
+        The value to use for <em class="replaceable"><code>old_version</code></em> is determined by the
         extension's author, and might vary if there is more than one version
         of the old-style module that can be upgraded into an extension.
         For the standard additional modules supplied with pre-9.1
-        <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, use <TT
-CLASS="LITERAL"
->unpackaged</TT
->
-        for <TT
-CLASS="REPLACEABLE"
-><I
->old_version</I
-></TT
-> when
+        <span class="productname">PostgreSQL</span>, use <code class="literal">unpackaged</code>
+        for <em class="replaceable"><code>old_version</code></em> when
         updating a module to extension style.
-       </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->CASCADE</TT
-></DT
-><DD
-><P
->        Automatically install any extensions that this extension depends on
+       </p></dd><dt><span class="term"><code class="literal">CASCADE</code></span></dt><dd><p>
+        Automatically install any extensions that this extension depends on
         that are not already installed.  Their dependencies are likewise
-        automatically installed, recursively.  The <TT
-CLASS="LITERAL"
->SCHEMA</TT
-> clause,
+        automatically installed, recursively.  The <code class="literal">SCHEMA</code> clause,
         if given, applies to all extensions that get installed this way.
         Other options of the statement are not applied to
         automatically-installed extensions; in particular, their default
         versions are always selected.
-       </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN79574"
-></A
-><H2
->Notes</H2
-><P
->   Before you can use <TT
-CLASS="COMMAND"
->CREATE EXTENSION</TT
-> to load an extension
+       </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.64.7"><h2>Notes</h2><p>
+   Before you can use <code class="command">CREATE EXTENSION</code> to load an extension
    into a database, the extension's supporting files must be installed.
    Information about installing the extensions supplied with
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> can be found in
-   <A
-HREF="contrib.html"
->Additional Supplied Modules</A
->.
-  </P
-><P
->   The extensions currently available for loading can be identified from the
-   <A
-HREF="view-pg-available-extensions.html"
-><TT
-CLASS="STRUCTNAME"
->pg_available_extensions</TT
-></A
->
+   <span class="productname">PostgreSQL</span> can be found in
+   <a class="link" href="contrib.html" title="Appendix F. Additional Supplied Modules">Additional Supplied Modules</a>.
+  </p><p>
+   The extensions currently available for loading can be identified from the
+   <a class="link" href="view-pg-available-extensions.html" title="52.65. pg_available_extensions"><code class="structname">pg_available_extensions</code></a>
    or
-   <A
-HREF="view-pg-available-extension-versions.html"
-><TT
-CLASS="STRUCTNAME"
->pg_available_extension_versions</TT
-></A
->
+   <a class="link" href="view-pg-available-extension-versions.html" title="52.66. pg_available_extension_versions"><code class="structname">pg_available_extension_versions</code></a>
    system views.
-  </P
-><P
->   For information about writing new extensions, see
-   <A
-HREF="extend-extensions.html"
->Section 36.15</A
->.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN79587"
-></A
-><H2
->Examples</H2
-><P
->   Install the <A
-HREF="hstore.html"
->hstore</A
-> extension into the
+  </p><p>
+   For information about writing new extensions, see
+   <a class="xref" href="extend-extensions.html" title="38.16. Packaging Related Objects into an Extension">Section 38.16</a>.
+  </p></div><div class="refsect1" id="id-1.9.3.64.8"><h2>Examples</h2><p>
+   Install the <a class="link" href="hstore.html" title="F.16. hstore">hstore</a> extension into the
    current database:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE EXTENSION hstore;</PRE
-><P>
-  </P
-><P
->   Update a pre-9.1 installation of <TT
-CLASS="LITERAL"
->hstore</TT
-> into
+</p><pre class="programlisting">
+CREATE EXTENSION hstore;
+</pre><p>
+  </p><p>
+   Update a pre-9.1 installation of <code class="literal">hstore</code> into
    extension style:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE EXTENSION hstore SCHEMA public FROM unpackaged;</PRE
-><P>
+</p><pre class="programlisting">
+CREATE EXTENSION hstore SCHEMA public FROM unpackaged;
+</pre><p>
    Be careful to specify the schema in which you installed the existing
-   <TT
-CLASS="LITERAL"
->hstore</TT
-> objects.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN79596"
-></A
-><H2
->Compatibility</H2
-><P
->   <TT
-CLASS="COMMAND"
->CREATE EXTENSION</TT
-> is a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
+   <code class="literal">hstore</code> objects.
+  </p></div><div class="refsect1" id="id-1.9.3.64.9"><h2>Compatibility</h2><p>
+   <code class="command">CREATE EXTENSION</code> is a <span class="productname">PostgreSQL</span>
    extension.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN79601"
-></A
-><H2
->See Also</H2
-><A
-HREF="sql-alterextension.html"
->ALTER EXTENSION</A
->, <A
-HREF="sql-dropextension.html"
->DROP EXTENSION</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-createeventtrigger.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-createforeigndatawrapper.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->CREATE EVENT TRIGGER</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->CREATE FOREIGN DATA WRAPPER</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="refsect1" id="id-1.9.3.64.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-alterextension.html" title="ALTER EXTENSION"><span class="refentrytitle">ALTER EXTENSION</span></a>, <a class="xref" href="sql-dropextension.html" title="DROP EXTENSION"><span class="refentrytitle">DROP EXTENSION</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-createeventtrigger.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-createforeigndatawrapper.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CREATE EVENT TRIGGER </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CREATE FOREIGN DATA WRAPPER</td></tr></table></div></body></html>

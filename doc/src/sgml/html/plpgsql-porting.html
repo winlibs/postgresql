@@ -1,334 +1,72 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Porting from Oracle PL/SQL</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="PL/pgSQL - SQL Procedural Language"
-HREF="plpgsql.html"><LINK
-REL="PREVIOUS"
-TITLE="Tips for Developing in PL/pgSQL"
-HREF="plpgsql-development-tips.html"><LINK
-REL="NEXT"
-TITLE="PL/Tcl - Tcl Procedural Language"
-HREF="pltcl.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Tips for Developing in PL/pgSQL"
-HREF="plpgsql-development-tips.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plpgsql.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 41. <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> - <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> Procedural Language</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="PL/Tcl - Tcl Procedural Language"
-HREF="pltcl.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="PLPGSQL-PORTING"
->41.12. Porting from <SPAN
-CLASS="PRODUCTNAME"
->Oracle</SPAN
-> PL/SQL</A
-></H1
-><P
->   This section explains differences between
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->'s <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->
-   language and Oracle's <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> language,
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.13. Porting from Oracle PL/SQL</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL" /><link rel="next" href="pltcl.html" title="Chapter 44. PL/Tcl - Tcl Procedural Language" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.13. Porting from <span xmlns="http://www.w3.org/1999/xhtml" class="productname">Oracle</span> PL/SQL</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-development-tips.html" title="43.12. Tips for Developing in PL/pgSQL">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL - SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> - <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="pltcl.html" title="Chapter 44. PL/Tcl - Tcl Procedural Language">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-PORTING"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.13. Porting from <span class="productname">Oracle</span> PL/SQL</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-porting.html#id-1.8.8.15.6">43.13.1. Porting Examples</a></span></dt><dt><span class="sect2"><a href="plpgsql-porting.html#PLPGSQL-PORTING-OTHER">43.13.2. Other Things to Watch For</a></span></dt><dt><span class="sect2"><a href="plpgsql-porting.html#PLPGSQL-PORTING-APPENDIX">43.13.3. Appendix</a></span></dt></dl></div><a id="id-1.8.8.15.2" class="indexterm"></a><a id="id-1.8.8.15.3" class="indexterm"></a><p>
+   This section explains differences between
+   <span class="productname">PostgreSQL</span>'s <span class="application">PL/pgSQL</span>
+   language and Oracle's <span class="application">PL/SQL</span> language,
    to help developers who port applications from
-   <SPAN
-CLASS="TRADEMARK"
->Oracle</SPAN
->&reg; to <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.
-  </P
-><P
->   <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> is similar to PL/SQL in many
+   <span class="trademark">Oracle</span>® to <span class="productname">PostgreSQL</span>.
+  </p><p>
+   <span class="application">PL/pgSQL</span> is similar to PL/SQL in many
    aspects. It is a block-structured, imperative language, and all
    variables have to be declared.  Assignments, loops, and conditionals
    are similar.  The main differences you should keep in mind when
-   porting from <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> to
-   <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> are:
+   porting from <span class="application">PL/SQL</span> to
+   <span class="application">PL/pgSQL</span> are:
 
-    <P
-></P
-></P><UL
-><LI
-><P
->       If a name used in a SQL command could be either a column name of a
+    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+       If a name used in a SQL command could be either a column name of a
        table or a reference to a variable of the function,
-       <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> treats it as a column name.  This corresponds
-       to <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->'s
-       <TT
-CLASS="LITERAL"
->plpgsql.variable_conflict</TT
-> = <TT
-CLASS="LITERAL"
->use_column</TT
->
+       <span class="application">PL/SQL</span> treats it as a column name.  This corresponds
+       to <span class="application">PL/pgSQL</span>'s
+       <code class="literal">plpgsql.variable_conflict</code> = <code class="literal">use_column</code>
        behavior, which is not the default,
-       as explained in <A
-HREF="plpgsql-implementation.html#PLPGSQL-VAR-SUBST"
->Section 41.10.1</A
->.
+       as explained in <a class="xref" href="plpgsql-implementation.html#PLPGSQL-VAR-SUBST" title="43.11.1. Variable Substitution">Section 43.11.1</a>.
        It's often best to avoid such ambiguities in the first place,
        but if you have to port a large amount of code that depends on
-       this behavior, setting <TT
-CLASS="LITERAL"
->variable_conflict</TT
-> may be the
+       this behavior, setting <code class="literal">variable_conflict</code> may be the
        best solution.
-      </P
-></LI
-><LI
-><P
->       In <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> the function body must be written as
+      </p></li><li class="listitem"><p>
+       In <span class="productname">PostgreSQL</span> the function body must be written as
        a string literal.  Therefore you need to use dollar quoting or escape
-       single quotes in the function body. (See <A
-HREF="plpgsql-development-tips.html#PLPGSQL-QUOTE-TIPS"
->Section 41.11.1</A
->.)
-      </P
-></LI
-><LI
-><P
->       Data type names often need translation.  For example, in Oracle string
-       values are commonly declared as being of type <TT
-CLASS="TYPE"
->varchar2</TT
->, which
-       is a non-SQL-standard type.  In <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->,
-       use type <TT
-CLASS="TYPE"
->varchar</TT
-> or <TT
-CLASS="TYPE"
->text</TT
-> instead.  Similarly, replace
-       type <TT
-CLASS="TYPE"
->number</TT
-> with <TT
-CLASS="TYPE"
->numeric</TT
->, or use some other numeric
+       single quotes in the function body. (See <a class="xref" href="plpgsql-development-tips.html#PLPGSQL-QUOTE-TIPS" title="43.12.1. Handling of Quotation Marks">Section 43.12.1</a>.)
+      </p></li><li class="listitem"><p>
+       Data type names often need translation.  For example, in Oracle string
+       values are commonly declared as being of type <code class="type">varchar2</code>, which
+       is a non-SQL-standard type.  In <span class="productname">PostgreSQL</span>,
+       use type <code class="type">varchar</code> or <code class="type">text</code> instead.  Similarly, replace
+       type <code class="type">number</code> with <code class="type">numeric</code>, or use some other numeric
        data type if there's a more appropriate one.
-      </P
-></LI
-><LI
-><P
->       Instead of packages, use schemas to organize your functions
+      </p></li><li class="listitem"><p>
+       Instead of packages, use schemas to organize your functions
        into groups.
-      </P
-></LI
-><LI
-><P
->       Since there are no packages, there are no package-level variables
+      </p></li><li class="listitem"><p>
+       Since there are no packages, there are no package-level variables
        either. This is somewhat annoying.  You can keep per-session state
        in temporary tables instead.
-      </P
-></LI
-><LI
-><P
->       Integer <TT
-CLASS="COMMAND"
->FOR</TT
-> loops with <TT
-CLASS="LITERAL"
->REVERSE</TT
-> work
-       differently: <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> counts down from the second
-       number to the first, while <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> counts down
+      </p></li><li class="listitem"><p>
+       Integer <code class="command">FOR</code> loops with <code class="literal">REVERSE</code> work
+       differently: <span class="application">PL/SQL</span> counts down from the second
+       number to the first, while <span class="application">PL/pgSQL</span> counts down
        from the first number to the second, requiring the loop bounds
        to be swapped when porting.  This incompatibility is unfortunate
-       but is unlikely to be changed. (See <A
-HREF="plpgsql-control-structures.html#PLPGSQL-INTEGER-FOR"
->Section 41.6.3.5</A
->.)
-      </P
-></LI
-><LI
-><P
->       <TT
-CLASS="COMMAND"
->FOR</TT
-> loops over queries (other than cursors) also work
+       but is unlikely to be changed. (See <a class="xref" href="plpgsql-control-structures.html#PLPGSQL-INTEGER-FOR" title="43.6.5.5. FOR (Integer Variant)">Section 43.6.5.5</a>.)
+      </p></li><li class="listitem"><p>
+       <code class="command">FOR</code> loops over queries (other than cursors) also work
        differently: the target variable(s) must have been declared,
-       whereas <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> always declares them implicitly.
+       whereas <span class="application">PL/SQL</span> always declares them implicitly.
        An advantage of this is that the variable values are still accessible
        after the loop exits.
-      </P
-></LI
-><LI
-><P
->       There are various notational differences for the use of cursor
+      </p></li><li class="listitem"><p>
+       There are various notational differences for the use of cursor
        variables.
-      </P
-></LI
-></UL
-><P>
-   </P
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN67601"
->41.12.1. Porting Examples</A
-></H2
-><P
->    <A
-HREF="plpgsql-porting.html#PGSQL-PORTING-EX1"
->Example 41-8</A
-> shows how to port a simple
-    function from <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> to <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->.
-   </P
-><DIV
-CLASS="EXAMPLE"
-><A
-NAME="PGSQL-PORTING-EX1"
-></A
-><P
-><B
->Example 41-8. Porting a Simple Function from <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> to <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-></B
-></P
-><P
->     Here is an <SPAN
-CLASS="PRODUCTNAME"
->Oracle</SPAN
-> <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> function:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE OR REPLACE FUNCTION cs_fmt_browser_version(v_name varchar2,
+      </p></li></ul></div><p>
+   </p><div class="sect2" id="id-1.8.8.15.6"><div class="titlepage"><div><div><h3 class="title">43.13.1. Porting Examples</h3></div></div></div><p>
+    <a class="xref" href="plpgsql-porting.html#PGSQL-PORTING-EX1" title="Example 43.9. Porting a Simple Function from PL/SQL to PL/pgSQL">Example 43.9</a> shows how to port a simple
+    function from <span class="application">PL/SQL</span> to <span class="application">PL/pgSQL</span>.
+   </p><div class="example" id="PGSQL-PORTING-EX1"><p class="title"><strong>Example 43.9. Porting a Simple Function from <span class="application">PL/SQL</span> to <span class="application">PL/pgSQL</span></strong></p><div class="example-contents"><p>
+     Here is an <span class="productname">Oracle</span> <span class="application">PL/SQL</span> function:
+</p><pre class="programlisting">
+CREATE OR REPLACE FUNCTION cs_fmt_browser_version(v_name varchar2,
                                                   v_version varchar2)
 RETURN varchar2 IS
 BEGIN
@@ -338,114 +76,41 @@ BEGIN
     RETURN v_name || '/' || v_version;
 END;
 /
-show errors;</PRE
-><P>
-    </P
-><P
->     Let's go through this function and see the differences compared to
-     <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->:
+show errors;
+</pre><p>
+    </p><p>
+     Let's go through this function and see the differences compared to
+     <span class="application">PL/pgSQL</span>:
 
-     <P
-></P
-></P><UL
-><LI
-><P
->        The type name <TT
-CLASS="TYPE"
->varchar2</TT
-> has to be changed to <TT
-CLASS="TYPE"
->varchar</TT
->
-        or <TT
-CLASS="TYPE"
->text</TT
->.  In the examples in this section, we'll
-        use <TT
-CLASS="TYPE"
->varchar</TT
->, but <TT
-CLASS="TYPE"
->text</TT
-> is often a better choice if
+     </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+        The type name <code class="type">varchar2</code> has to be changed to <code class="type">varchar</code>
+        or <code class="type">text</code>.  In the examples in this section, we'll
+        use <code class="type">varchar</code>, but <code class="type">text</code> is often a better choice if
         you do not need specific string length limits.
-       </P
-></LI
-><LI
-><P
->        The <TT
-CLASS="LITERAL"
->RETURN</TT
-> key word in the function
+       </p></li><li class="listitem"><p>
+        The <code class="literal">RETURN</code> key word in the function
         prototype (not the function body) becomes
-        <TT
-CLASS="LITERAL"
->RETURNS</TT
-> in
-        <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.
-        Also, <TT
-CLASS="LITERAL"
->IS</TT
-> becomes <TT
-CLASS="LITERAL"
->AS</TT
->, and you need to
-        add a <TT
-CLASS="LITERAL"
->LANGUAGE</TT
-> clause because <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->
+        <code class="literal">RETURNS</code> in
+        <span class="productname">PostgreSQL</span>.
+        Also, <code class="literal">IS</code> becomes <code class="literal">AS</code>, and you need to
+        add a <code class="literal">LANGUAGE</code> clause because <span class="application">PL/pgSQL</span>
         is not the only possible function language.
-       </P
-></LI
-><LI
-><P
->        In <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, the function body is considered
+       </p></li><li class="listitem"><p>
+        In <span class="productname">PostgreSQL</span>, the function body is considered
         to be a string literal, so you need to use quote marks or dollar
-        quotes around it.  This substitutes for the terminating <TT
-CLASS="LITERAL"
->/</TT
->
+        quotes around it.  This substitutes for the terminating <code class="literal">/</code>
         in the Oracle approach.
-       </P
-></LI
-><LI
-><P
->        The <TT
-CLASS="LITERAL"
->show errors</TT
-> command does not exist in
-        <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, and is not needed since errors are
+       </p></li><li class="listitem"><p>
+        The <code class="literal">show errors</code> command does not exist in
+        <span class="productname">PostgreSQL</span>, and is not needed since errors are
         reported automatically.
-       </P
-></LI
-></UL
-><P>
-    </P
-><P
->     This is how this function would look when ported to
-     <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->:
+       </p></li></ul></div><p>
+    </p><p>
+     This is how this function would look when ported to
+     <span class="productname">PostgreSQL</span>:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE OR REPLACE FUNCTION cs_fmt_browser_version(v_name varchar,
+</p><pre class="programlisting">
+CREATE OR REPLACE FUNCTION cs_fmt_browser_version(v_name varchar,
                                                   v_version varchar)
 RETURNS varchar AS $$
 BEGIN
@@ -454,50 +119,21 @@ BEGIN
     END IF;
     RETURN v_name || '/' || v_version;
 END;
-$$ LANGUAGE plpgsql;</PRE
-><P>
-    </P
-></DIV
-><P
->    <A
-HREF="plpgsql-porting.html#PLPGSQL-PORTING-EX2"
->Example 41-9</A
-> shows how to port a
+$$ LANGUAGE plpgsql;
+</pre><p>
+    </p></div></div><br class="example-break" /><p>
+    <a class="xref" href="plpgsql-porting.html#PLPGSQL-PORTING-EX2" title="Example 43.10. Porting a Function that Creates Another Function from PL/SQL to PL/pgSQL">Example 43.10</a> shows how to port a
     function that creates another function and how to handle the
     ensuing quoting problems.
-   </P
-><DIV
-CLASS="EXAMPLE"
-><A
-NAME="PLPGSQL-PORTING-EX2"
-></A
-><P
-><B
->Example 41-9. Porting a Function that Creates Another Function from <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> to <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-></B
-></P
-><P
->     The following procedure grabs rows from a
-     <TT
-CLASS="COMMAND"
->SELECT</TT
-> statement and builds a large function
-     with the results in <TT
-CLASS="LITERAL"
->IF</TT
-> statements, for the
+   </p><div class="example" id="PLPGSQL-PORTING-EX2"><p class="title"><strong>Example 43.10. Porting a Function that Creates Another Function from <span class="application">PL/SQL</span> to <span class="application">PL/pgSQL</span></strong></p><div class="example-contents"><p>
+     The following procedure grabs rows from a
+     <code class="command">SELECT</code> statement and builds a large function
+     with the results in <code class="literal">IF</code> statements, for the
      sake of efficiency.
-    </P
-><P
->     This is the Oracle version:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE OR REPLACE PROCEDURE cs_update_referrer_type_proc IS
+    </p><p>
+     This is the Oracle version:
+</p><pre class="programlisting">
+CREATE OR REPLACE PROCEDURE cs_update_referrer_type_proc IS
     CURSOR referrer_keys IS
         SELECT * FROM cs_referrer_keys
         ORDER BY try_order;
@@ -519,17 +155,12 @@ BEGIN
     EXECUTE IMMEDIATE func_cmd;
 END;
 /
-show errors;</PRE
-><P>
-    </P
-><P
->     Here is how this function would end up in <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE OR REPLACE FUNCTION cs_update_referrer_type_proc() RETURNS void AS $func$
+show errors;
+</pre><p>
+    </p><p>
+     Here is how this function would end up in <span class="productname">PostgreSQL</span>:
+</p><pre class="programlisting">
+CREATE OR REPLACE PROCEDURE cs_update_referrer_type_proc() AS $func$
 DECLARE
     referrer_keys CURSOR IS
         SELECT * FROM cs_referrer_keys
@@ -559,113 +190,39 @@ BEGIN
 
     EXECUTE func_cmd;
 END;
-$func$ LANGUAGE plpgsql;</PRE
-><P>
+$func$ LANGUAGE plpgsql;
+</pre><p>
      Notice how the body of the function is built separately and passed
-     through <TT
-CLASS="LITERAL"
->quote_literal</TT
-> to double any quote marks in it.  This
+     through <code class="literal">quote_literal</code> to double any quote marks in it.  This
      technique is needed because we cannot safely use dollar quoting for
      defining the new function: we do not know for sure what strings will
-     be interpolated from the <TT
-CLASS="STRUCTFIELD"
->referrer_key.key_string</TT
-> field.
-     (We are assuming here that <TT
-CLASS="STRUCTFIELD"
->referrer_key.kind</TT
-> can be
-     trusted to always be <TT
-CLASS="LITERAL"
->host</TT
->, <TT
-CLASS="LITERAL"
->domain</TT
->, or
-     <TT
-CLASS="LITERAL"
->url</TT
->, but <TT
-CLASS="STRUCTFIELD"
->referrer_key.key_string</TT
-> might be
+     be interpolated from the <code class="structfield">referrer_key.key_string</code> field.
+     (We are assuming here that <code class="structfield">referrer_key.kind</code> can be
+     trusted to always be <code class="literal">host</code>, <code class="literal">domain</code>, or
+     <code class="literal">url</code>, but <code class="structfield">referrer_key.key_string</code> might be
      anything, in particular it might contain dollar signs.) This function
      is actually an improvement on the Oracle original, because it will
-     not generate broken code when <TT
-CLASS="STRUCTFIELD"
->referrer_key.key_string</TT
-> or
-     <TT
-CLASS="STRUCTFIELD"
->referrer_key.referrer_type</TT
-> contain quote marks.
-    </P
-></DIV
-><P
->    <A
-HREF="plpgsql-porting.html#PLPGSQL-PORTING-EX3"
->Example 41-10</A
-> shows how to port a function
-    with <TT
-CLASS="LITERAL"
->OUT</TT
-> parameters and string manipulation.
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> does not have a built-in
-    <CODE
-CLASS="FUNCTION"
->instr</CODE
-> function, but you can create one
+     not generate broken code when <code class="structfield">referrer_key.key_string</code> or
+     <code class="structfield">referrer_key.referrer_type</code> contain quote marks.
+    </p></div></div><br class="example-break" /><p>
+    <a class="xref" href="plpgsql-porting.html#PLPGSQL-PORTING-EX3" title="Example 43.11. Porting a Procedure With String Manipulation and OUT Parameters from PL/SQL to PL/pgSQL">Example 43.11</a> shows how to port a function
+    with <code class="literal">OUT</code> parameters and string manipulation.
+    <span class="productname">PostgreSQL</span> does not have a built-in
+    <code class="function">instr</code> function, but you can create one
     using a combination of other
-    functions. In <A
-HREF="plpgsql-porting.html#PLPGSQL-PORTING-APPENDIX"
->Section 41.12.3</A
-> there is a
-    <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> implementation of
-    <CODE
-CLASS="FUNCTION"
->instr</CODE
-> that you can use to make your porting
+    functions. In <a class="xref" href="plpgsql-porting.html#PLPGSQL-PORTING-APPENDIX" title="43.13.3. Appendix">Section 43.13.3</a> there is a
+    <span class="application">PL/pgSQL</span> implementation of
+    <code class="function">instr</code> that you can use to make your porting
     easier.
-   </P
-><DIV
-CLASS="EXAMPLE"
-><A
-NAME="PLPGSQL-PORTING-EX3"
-></A
-><P
-><B
->Example 41-10. Porting a Procedure With String Manipulation and
-    <TT
-CLASS="LITERAL"
->OUT</TT
-> Parameters from <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> to
-    <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-></B
-></P
-><P
->     The following <SPAN
-CLASS="PRODUCTNAME"
->Oracle</SPAN
-> PL/SQL procedure is used
+   </p><div class="example" id="PLPGSQL-PORTING-EX3"><p class="title"><strong>Example 43.11. Porting a Procedure With String Manipulation and
+    <code class="literal">OUT</code> Parameters from <span class="application">PL/SQL</span> to
+    <span class="application">PL/pgSQL</span></strong></p><div class="example-contents"><p>
+     The following <span class="productname">Oracle</span> PL/SQL procedure is used
      to parse a URL and return several elements (host, path, and query).
-    </P
-><P
->     This is the Oracle version:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE OR REPLACE PROCEDURE cs_parse_url(
+    </p><p>
+     This is the Oracle version:
+</p><pre class="programlisting">
+CREATE OR REPLACE PROCEDURE cs_parse_url(
     v_url IN VARCHAR2,
     v_host OUT VARCHAR2,  -- This will be passed back
     v_path OUT VARCHAR2,  -- This one too
@@ -701,17 +258,12 @@ BEGIN
     v_query := substr(v_url, a_pos1 + 1);
 END;
 /
-show errors;</PRE
-><P>
-    </P
-><P
->     Here is a possible translation into <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE OR REPLACE FUNCTION cs_parse_url(
+show errors;
+</pre><p>
+    </p><p>
+     Here is a possible translation into <span class="application">PL/pgSQL</span>:
+</p><pre class="programlisting">
+CREATE OR REPLACE FUNCTION cs_parse_url(
     v_url IN VARCHAR,
     v_host OUT VARCHAR,  -- This will be passed back
     v_path OUT VARCHAR,  -- This one too
@@ -747,68 +299,29 @@ BEGIN
     v_path := substr(v_url, a_pos2, a_pos1 - a_pos2);
     v_query := substr(v_url, a_pos1 + 1);
 END;
-$$ LANGUAGE plpgsql;</PRE
-><P>
+$$ LANGUAGE plpgsql;
+</pre><p>
 
      This function could be used like this:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT * FROM cs_parse_url('http://foobar.com/query.cgi?baz');</PRE
-><P>
-    </P
-></DIV
-><P
->    <A
-HREF="plpgsql-porting.html#PLPGSQL-PORTING-EX4"
->Example 41-11</A
-> shows how to port a procedure
+</p><pre class="programlisting">
+SELECT * FROM cs_parse_url('http://foobar.com/query.cgi?baz');
+</pre><p>
+    </p></div></div><br class="example-break" /><p>
+    <a class="xref" href="plpgsql-porting.html#PLPGSQL-PORTING-EX4" title="Example 43.12. Porting a Procedure from PL/SQL to PL/pgSQL">Example 43.12</a> shows how to port a procedure
     that uses numerous features that are specific to Oracle.
-   </P
-><DIV
-CLASS="EXAMPLE"
-><A
-NAME="PLPGSQL-PORTING-EX4"
-></A
-><P
-><B
->Example 41-11. Porting a Procedure from <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> to <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-></B
-></P
-><P
->     The Oracle version:
+   </p><div class="example" id="PLPGSQL-PORTING-EX4"><p class="title"><strong>Example 43.12. Porting a Procedure from <span class="application">PL/SQL</span> to <span class="application">PL/pgSQL</span></strong></p><div class="example-contents"><p>
+     The Oracle version:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE OR REPLACE PROCEDURE cs_create_job(v_job_id IN INTEGER) IS
+</p><pre class="programlisting">
+CREATE OR REPLACE PROCEDURE cs_create_job(v_job_id IN INTEGER) IS
     a_running_job_count INTEGER;
-    PRAGMA AUTONOMOUS_TRANSACTION;<A
-NAME="CO.PLPGSQL-PORTING-PRAGMA"
-><B
->(1)</B
-></A
->
 BEGIN
-    LOCK TABLE cs_jobs IN EXCLUSIVE MODE;<A
-NAME="CO.PLPGSQL-PORTING-LOCKTABLE"
-><B
->(2)</B
-></A
->
+    LOCK TABLE cs_jobs IN EXCLUSIVE MODE;
 
     SELECT count(*) INTO a_running_job_count FROM cs_jobs WHERE end_stamp IS NULL;
 
     IF a_running_job_count &gt; 0 THEN
-        COMMIT; -- free lock<A
-NAME="CO.PLPGSQL-PORTING-COMMIT"
-><B
->(3)</B
-></A
->
+        COMMIT; -- free lock
         raise_application_error(-20000,
                  'Unable to create a new job: a job is currently running.');
     END IF;
@@ -824,99 +337,13 @@ NAME="CO.PLPGSQL-PORTING-COMMIT"
     COMMIT;
 END;
 /
-show errors</PRE
-><P>
-   </P
-><P
->    Procedures like this can easily be converted into <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
-    functions returning <TT
-CLASS="TYPE"
->void</TT
->. This procedure in
-    particular is interesting because it can teach us some things:
+show errors
+</pre><p>
+   </p><p>
+    This is how we could port this procedure to <span class="application">PL/pgSQL</span>:
 
-    <DIV
-CLASS="CALLOUTLIST"
-><DL
-COMPACT="COMPACT"
-><DT
-><A
-HREF="plpgsql-porting.html#CO.PLPGSQL-PORTING-PRAGMA"
-><B
->(1)</B
-></A
-></DT
-><DD
->       There is no <TT
-CLASS="LITERAL"
->PRAGMA</TT
-> statement in <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.
-      </DD
-><DT
-><A
-HREF="plpgsql-porting.html#CO.PLPGSQL-PORTING-LOCKTABLE"
-><B
->(2)</B
-></A
-></DT
-><DD
->       If you do a <TT
-CLASS="COMMAND"
->LOCK TABLE</TT
-> in <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->,
-       the lock will not be released until the calling transaction is
-       finished.
-      </DD
-><DT
-><A
-HREF="plpgsql-porting.html#CO.PLPGSQL-PORTING-COMMIT"
-><B
->(3)</B
-></A
-></DT
-><DD
->       You cannot issue <TT
-CLASS="COMMAND"
->COMMIT</TT
-> in a
-       <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> function.  The function is
-       running within some outer transaction and so <TT
-CLASS="COMMAND"
->COMMIT</TT
->
-       would imply terminating the function's execution.  However, in
-       this particular case it is not necessary anyway, because the lock
-       obtained by the <TT
-CLASS="COMMAND"
->LOCK TABLE</TT
-> will be released when
-       we raise an error.
-      </DD
-></DL
-></DIV
->
-   </P
-><P
->    This is how we could port this procedure to <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->:
-
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE OR REPLACE FUNCTION cs_create_job(v_job_id integer) RETURNS void AS $$
+</p><pre class="programlisting">
+CREATE OR REPLACE PROCEDURE cs_create_job(v_job_id integer) AS $$
 DECLARE
     a_running_job_count integer;
 BEGIN
@@ -925,12 +352,8 @@ BEGIN
     SELECT count(*) INTO a_running_job_count FROM cs_jobs WHERE end_stamp IS NULL;
 
     IF a_running_job_count &gt; 0 THEN
-        RAISE EXCEPTION 'Unable to create a new job: a job is currently running';<A
-NAME="CO.PLPGSQL-PORTING-RAISE"
-><B
->(1)</B
-></A
->
+        COMMIT; -- free lock
+        RAISE EXCEPTION 'Unable to create a new job: a job is currently running'; -- <span id="co.plpgsql-porting-raise"></span>(1)
     END IF;
 
     DELETE FROM cs_active_job;
@@ -939,126 +362,38 @@ NAME="CO.PLPGSQL-PORTING-RAISE"
     BEGIN
         INSERT INTO cs_jobs (job_id, start_stamp) VALUES (v_job_id, now());
     EXCEPTION
-        WHEN unique_violation THEN <A
-NAME="CO.PLPGSQL-PORTING-EXCEPTION"
-><B
->(2)</B
-></A
->
+        WHEN unique_violation THEN -- <span id="co.plpgsql-porting-exception"></span>(2)
             -- don't worry if it already exists
     END;
+    COMMIT;
 END;
-$$ LANGUAGE plpgsql;</PRE
-><P>
+$$ LANGUAGE plpgsql;
+</pre><p>
 
-    <DIV
-CLASS="CALLOUTLIST"
-><DL
-COMPACT="COMPACT"
-><DT
-><A
-HREF="plpgsql-porting.html#CO.PLPGSQL-PORTING-RAISE"
-><B
->(1)</B
-></A
-></DT
-><DD
->       The syntax of <TT
-CLASS="LITERAL"
->RAISE</TT
-> is considerably different from
-       Oracle's statement, although the basic case <TT
-CLASS="LITERAL"
->RAISE</TT
->
-       <TT
-CLASS="REPLACEABLE"
-><I
->exception_name</I
-></TT
-> works
+    </p><div class="calloutlist"><table border="0" summary="Callout list"><tr><td width="5%" valign="top" align="left"><p><a href="#co.plpgsql-porting-raise">(1)</a> </p></td><td valign="top" align="left"><p>
+       The syntax of <code class="literal">RAISE</code> is considerably different from
+       Oracle's statement, although the basic case <code class="literal">RAISE</code>
+       <em class="replaceable"><code>exception_name</code></em> works
        similarly.
-      </DD
-><DT
-><A
-HREF="plpgsql-porting.html#CO.PLPGSQL-PORTING-EXCEPTION"
-><B
->(2)</B
-></A
-></DT
-><DD
->       The exception names supported by <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> are
+      </p></td></tr><tr><td width="5%" valign="top" align="left"><p><a href="#co.plpgsql-porting-exception">(2)</a> </p></td><td valign="top" align="left"><p>
+       The exception names supported by <span class="application">PL/pgSQL</span> are
        different from Oracle's.  The set of built-in exception names
-       is much larger (see <A
-HREF="errcodes-appendix.html"
->Appendix A</A
->).  There
+       is much larger (see <a class="xref" href="errcodes-appendix.html" title="Appendix A. PostgreSQL Error Codes">Appendix A</a>).  There
        is not currently a way to declare user-defined exception names,
        although you can throw user-chosen SQLSTATE values instead.
-      </DD
-></DL
-></DIV
->
-
-    The main functional difference between this procedure and the
-    Oracle equivalent is that the exclusive lock on the <TT
-CLASS="LITERAL"
->cs_jobs</TT
->
-    table will be held until the calling transaction completes.  Also, if
-    the caller later aborts (for example due to an error), the effects of
-    this procedure will be rolled back.
-   </P
-></DIV
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="PLPGSQL-PORTING-OTHER"
->41.12.2. Other Things to Watch For</A
-></H2
-><P
->    This section explains a few other things to watch for when porting
-    Oracle <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> functions to
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.
-   </P
-><DIV
-CLASS="SECT3"
-><H3
-CLASS="SECT3"
-><A
-NAME="PLPGSQL-PORTING-EXCEPTIONS"
->41.12.2.1. Implicit Rollback after Exceptions</A
-></H3
-><P
->     In <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->, when an exception is caught by an
-     <TT
-CLASS="LITERAL"
->EXCEPTION</TT
-> clause, all database changes since the block's
-     <TT
-CLASS="LITERAL"
->BEGIN</TT
-> are automatically rolled back.  That is, the behavior
+      </p></td></tr></table></div><p>
+   </p></div></div><br class="example-break" /></div><div class="sect2" id="PLPGSQL-PORTING-OTHER"><div class="titlepage"><div><div><h3 class="title">43.13.2. Other Things to Watch For</h3></div></div></div><p>
+    This section explains a few other things to watch for when porting
+    Oracle <span class="application">PL/SQL</span> functions to
+    <span class="productname">PostgreSQL</span>.
+   </p><div class="sect3" id="PLPGSQL-PORTING-EXCEPTIONS"><div class="titlepage"><div><div><h4 class="title">43.13.2.1. Implicit Rollback after Exceptions</h4></div></div></div><p>
+     In <span class="application">PL/pgSQL</span>, when an exception is caught by an
+     <code class="literal">EXCEPTION</code> clause, all database changes since the block's
+     <code class="literal">BEGIN</code> are automatically rolled back.  That is, the behavior
      is equivalent to what you'd get in Oracle with:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->BEGIN
+</p><pre class="programlisting">
+BEGIN
     SAVEPOINT s1;
     ... code here ...
 EXCEPTION
@@ -1068,144 +403,46 @@ EXCEPTION
     WHEN ... THEN
         ROLLBACK TO s1;
         ... code here ...
-END;</PRE
-><P>
+END;
+</pre><p>
 
      If you are translating an Oracle procedure that uses
-     <TT
-CLASS="COMMAND"
->SAVEPOINT</TT
-> and <TT
-CLASS="COMMAND"
->ROLLBACK TO</TT
-> in this style,
-     your task is easy: just omit the <TT
-CLASS="COMMAND"
->SAVEPOINT</TT
-> and
-     <TT
-CLASS="COMMAND"
->ROLLBACK TO</TT
->.  If you have a procedure that uses
-     <TT
-CLASS="COMMAND"
->SAVEPOINT</TT
-> and <TT
-CLASS="COMMAND"
->ROLLBACK TO</TT
-> in a different way
+     <code class="command">SAVEPOINT</code> and <code class="command">ROLLBACK TO</code> in this style,
+     your task is easy: just omit the <code class="command">SAVEPOINT</code> and
+     <code class="command">ROLLBACK TO</code>.  If you have a procedure that uses
+     <code class="command">SAVEPOINT</code> and <code class="command">ROLLBACK TO</code> in a different way
      then some actual thought will be required.
-    </P
-></DIV
-><DIV
-CLASS="SECT3"
-><H3
-CLASS="SECT3"
-><A
-NAME="AEN67752"
->41.12.2.2. <TT
-CLASS="COMMAND"
->EXECUTE</TT
-></A
-></H3
-><P
->     The <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> version of
-     <TT
-CLASS="COMMAND"
->EXECUTE</TT
-> works similarly to the
-     <SPAN
-CLASS="APPLICATION"
->PL/SQL</SPAN
-> version, but you have to remember to use
-     <CODE
-CLASS="FUNCTION"
->quote_literal</CODE
-> and
-     <CODE
-CLASS="FUNCTION"
->quote_ident</CODE
-> as described in <A
-HREF="plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN"
->Section 41.5.4</A
->.  Constructs of the
-     type <TT
-CLASS="LITERAL"
->EXECUTE 'SELECT * FROM $1';</TT
-> will not work
+    </p></div><div class="sect3" id="id-1.8.8.15.7.4"><div class="titlepage"><div><div><h4 class="title">43.13.2.2. <code class="command">EXECUTE</code></h4></div></div></div><p>
+     The <span class="application">PL/pgSQL</span> version of
+     <code class="command">EXECUTE</code> works similarly to the
+     <span class="application">PL/SQL</span> version, but you have to remember to use
+     <code class="function">quote_literal</code> and
+     <code class="function">quote_ident</code> as described in <a class="xref" href="plpgsql-statements.html#PLPGSQL-STATEMENTS-EXECUTING-DYN" title="43.5.4. Executing Dynamic Commands">Section 43.5.4</a>.  Constructs of the
+     type <code class="literal">EXECUTE 'SELECT * FROM $1';</code> will not work
      reliably unless you use these functions.
-    </P
-></DIV
-><DIV
-CLASS="SECT3"
-><H3
-CLASS="SECT3"
-><A
-NAME="PLPGSQL-PORTING-OPTIMIZATION"
->41.12.2.3. Optimizing <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> Functions</A
-></H3
-><P
->     <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> gives you two function creation
-     modifiers to optimize execution: <SPAN
-CLASS="QUOTE"
->"volatility"</SPAN
-> (whether
+    </p></div><div class="sect3" id="PLPGSQL-PORTING-OPTIMIZATION"><div class="titlepage"><div><div><h4 class="title">43.13.2.3. Optimizing <span class="application">PL/pgSQL</span> Functions</h4></div></div></div><p>
+     <span class="productname">PostgreSQL</span> gives you two function creation
+     modifiers to optimize execution: <span class="quote">“<span class="quote">volatility</span>”</span> (whether
      the function always returns the same result when given the same
-     arguments) and <SPAN
-CLASS="QUOTE"
->"strictness"</SPAN
-> (whether the function
-     returns null if any argument is null).  Consult the <A
-HREF="sql-createfunction.html"
->CREATE FUNCTION</A
->
+     arguments) and <span class="quote">“<span class="quote">strictness</span>”</span> (whether the function
+     returns null if any argument is null).  Consult the <a class="xref" href="sql-createfunction.html" title="CREATE FUNCTION"><span class="refentrytitle">CREATE FUNCTION</span></a>
      reference page for details.
-    </P
-><P
->     When making use of these optimization attributes, your
-     <TT
-CLASS="COMMAND"
->CREATE FUNCTION</TT
-> statement might look something
+    </p><p>
+     When making use of these optimization attributes, your
+     <code class="command">CREATE FUNCTION</code> statement might look something
      like this:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION foo(...) RETURNS integer AS $$
+</p><pre class="programlisting">
+CREATE FUNCTION foo(...) RETURNS integer AS $$
 ...
-$$ LANGUAGE plpgsql STRICT IMMUTABLE;</PRE
-><P>
-    </P
-></DIV
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="PLPGSQL-PORTING-APPENDIX"
->41.12.3. Appendix</A
-></H2
-><P
->    This section contains the code for a set of Oracle-compatible
-    <CODE
-CLASS="FUNCTION"
->instr</CODE
-> functions that you can use to simplify
+$$ LANGUAGE plpgsql STRICT IMMUTABLE;
+</pre><p>
+    </p></div></div><div class="sect2" id="PLPGSQL-PORTING-APPENDIX"><div class="titlepage"><div><div><h3 class="title">43.13.3. Appendix</h3></div></div></div><p>
+    This section contains the code for a set of Oracle-compatible
+    <code class="function">instr</code> functions that you can use to simplify
     your porting efforts.
-   </P
-><PRE
-CLASS="PROGRAMLISTING"
->--
+   </p><a id="id-1.8.8.15.8.3" class="indexterm"></a><pre class="programlisting">
+--
 -- instr functions that mimic Oracle's counterpart
 -- Syntax: instr(string1, string2 [, n [, m]])
 -- where [] denotes optional parameters.
@@ -1235,7 +472,7 @@ DECLARE
     length integer;
     ss_length integer;
 BEGIN
-    IF beg_index &#62; 0 THEN
+    IF beg_index &gt; 0 THEN
         temp_str := substring(string FROM beg_index);
         pos := position(string_to_search_for IN temp_str);
 
@@ -1244,12 +481,12 @@ BEGIN
         ELSE
             RETURN pos + beg_index - 1;
         END IF;
-    ELSIF beg_index &#60; 0 THEN
+    ELSIF beg_index &lt; 0 THEN
         ss_length := char_length(string_to_search_for);
         length := char_length(string);
         beg := length + 1 + beg_index;
 
-        WHILE beg &#62; 0 LOOP
+        WHILE beg &gt; 0 LOOP
             temp_str := substring(string FROM beg FOR ss_length);
             IF string_to_search_for = temp_str THEN
                 RETURN beg;
@@ -1278,12 +515,12 @@ DECLARE
     length integer;
     ss_length integer;
 BEGIN
-    IF occur_index &#60;= 0 THEN
+    IF occur_index &lt;= 0 THEN
         RAISE 'argument ''%'' is out of range', occur_index
           USING ERRCODE = '22003';
     END IF;
 
-    IF beg_index &#62; 0 THEN
+    IF beg_index &gt; 0 THEN
         beg := beg_index - 1;
         FOR i IN 1..occur_index LOOP
             temp_str := substring(string FROM beg + 1);
@@ -1295,12 +532,12 @@ BEGIN
         END LOOP;
 
         RETURN beg;
-    ELSIF beg_index &#60; 0 THEN
+    ELSIF beg_index &lt; 0 THEN
         ss_length := char_length(string_to_search_for);
         length := char_length(string);
         beg := length + 1 + beg_index;
 
-        WHILE beg &#62; 0 LOOP
+        WHILE beg &gt; 0 LOOP
             temp_str := substring(string FROM beg FOR ss_length);
             IF string_to_search_for = temp_str THEN
                 occur_number := occur_number + 1;
@@ -1317,74 +554,6 @@ BEGIN
         RETURN 0;
     END IF;
 END;
-$$ LANGUAGE plpgsql STRICT IMMUTABLE;</PRE
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plpgsql-development-tips.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="pltcl.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Tips for Developing in <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="plpgsql.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->PL/Tcl - Tcl Procedural Language</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+$$ LANGUAGE plpgsql STRICT IMMUTABLE;
+
+</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-development-tips.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="pltcl.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.12. Tips for Developing in <span class="application">PL/pgSQL</span> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 44. PL/Tcl - Tcl Procedural Language</td></tr></table></div></body></html>

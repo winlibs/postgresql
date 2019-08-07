@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE OPERATOR" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE OPERATOR" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -33,7 +33,7 @@ CREATE_OPERATOR \- define a new operator
 .sp
 .nf
 CREATE OPERATOR \fIname\fR (
-    PROCEDURE = \fIfunction_name\fR
+    {FUNCTION|PROCEDURE} = \fIfunction_name\fR
     [, LEFTARG = \fIleft_type\fR ] [, RIGHTARG = \fIright_type\fR ]
     [, COMMUTATOR = \fIcom_op\fR ] [, NEGATOR = \fIneg_op\fR ]
     [, RESTRICT = \fIres_proc\fR ] [, JOIN = \fIjoin_proc\fR ]
@@ -138,12 +138,21 @@ should be defined\&.
 .PP
 The
 \fIfunction_name\fR
-procedure must have been previously defined using
+function must have been previously defined using
 \fBCREATE FUNCTION\fR
 and must be defined to accept the correct number of arguments (either one or two) of the indicated types\&.
 .PP
+In the syntax of
+CREATE OPERATOR, the keywords
+FUNCTION
+and
+PROCEDURE
+are equivalent, but the referenced function must in any case be a function, not a procedure\&. The use of the keyword
+PROCEDURE
+here is historical and deprecated\&.
+.PP
 The other clauses specify optional operator optimization clauses\&. Their meaning is detailed in
-Section 36.13, \(lqOperator Optimization Information\(rq, in the documentation\&.
+Section\ \&38.14\&.
 .PP
 To be able to create an operator, you must have
 USAGE
@@ -222,12 +231,12 @@ COMMUTATOR = OPERATOR(myschema\&.===) ,
 .SH "NOTES"
 .PP
 Refer to
-Section 36.12, \(lqUser-defined Operators\(rq, in the documentation
+Section\ \&38.13
 for further information\&.
 .PP
 It is not possible to specify an operator\*(Aqs lexical precedence in
 \fBCREATE OPERATOR\fR, because the parser\*(Aqs precedence behavior is hard\-wired\&. See
-Section 4.1.6, \(lqOperator Precedence\(rq, in the documentation
+Section\ \&4.1.6
 for precedence details\&.
 .PP
 The obsolete options
@@ -256,11 +265,11 @@ box:
 CREATE OPERATOR === (
     LEFTARG = box,
     RIGHTARG = box,
-    PROCEDURE = area_equal_procedure,
+    FUNCTION = area_equal_function,
     COMMUTATOR = ===,
     NEGATOR = !==,
-    RESTRICT = area_restriction_procedure,
-    JOIN = area_join_procedure,
+    RESTRICT = area_restriction_function,
+    JOIN = area_join_function,
     HASHES, MERGES
 );
 .fi

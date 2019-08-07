@@ -387,6 +387,47 @@ COPY rls_t1 (a, b) TO stdout;
 
 RESET SESSION AUTHORIZATION;
 
+-- test with INSTEAD OF INSERT trigger on a view
+CREATE TABLE instead_of_insert_tbl(id serial, name text);
+CREATE VIEW instead_of_insert_tbl_view AS SELECT ''::text AS str;
+
+COPY instead_of_insert_tbl_view FROM stdin; -- fail
+test1
+\.
+
+CREATE FUNCTION fun_instead_of_insert_tbl() RETURNS trigger AS $$
+BEGIN
+  INSERT INTO instead_of_insert_tbl (name) VALUES (NEW.str);
+  RETURN NULL;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER trig_instead_of_insert_tbl_view
+  INSTEAD OF INSERT ON instead_of_insert_tbl_view
+  FOR EACH ROW EXECUTE PROCEDURE fun_instead_of_insert_tbl();
+
+COPY instead_of_insert_tbl_view FROM stdin;
+test1
+\.
+
+SELECT * FROM instead_of_insert_tbl;
+
+-- Test of COPY optimization with view using INSTEAD OF INSERT
+-- trigger when relation is created in the same transaction as
+-- when COPY is executed.
+BEGIN;
+CREATE VIEW instead_of_insert_tbl_view_2 as select ''::text as str;
+CREATE TRIGGER trig_instead_of_insert_tbl_view_2
+  INSTEAD OF INSERT ON instead_of_insert_tbl_view_2
+  FOR EACH ROW EXECUTE PROCEDURE fun_instead_of_insert_tbl();
+
+COPY instead_of_insert_tbl_view_2 FROM stdin;
+test1
+\.
+
+SELECT * FROM instead_of_insert_tbl;
+COMMIT;
+
+-- clean up
 DROP TABLE forcetest;
 DROP TABLE vistest;
 DROP FUNCTION truncate_in_subxact();
@@ -396,3 +437,7 @@ DROP ROLE regress_rls_copy_user;
 DROP ROLE regress_rls_copy_user_colperms;
 DROP FUNCTION fn_x_before();
 DROP FUNCTION fn_x_after();
+DROP TABLE instead_of_insert_tbl;
+DROP VIEW instead_of_insert_tbl_view;
+DROP VIEW instead_of_insert_tbl_view_2;
+DROP FUNCTION fun_instead_of_insert_tbl();

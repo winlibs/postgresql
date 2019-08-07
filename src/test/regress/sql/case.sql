@@ -58,6 +58,11 @@ SELECT '6' AS "One",
     ELSE 7
   END AS "Two WHEN with default";
 
+
+SELECT '7' AS "None",
+   CASE WHEN random() < 0 THEN 1
+   END AS "NULL on no matches";
+
 -- Constant-expression folding shouldn't evaluate unreachable subexpressions
 SELECT CASE WHEN 1=0 THEN 1/0 WHEN 1=1 THEN 1 ELSE 2/0 END;
 SELECT CASE 1 WHEN 0 THEN 1/0 WHEN 1 THEN 1 ELSE 2/0 END;
@@ -161,7 +166,7 @@ SELECT * FROM CASE_TBL;
 --
 
 -- This test exercises a bug caused by aliasing econtext->caseValue_isNull
--- with the isNull argument of the inner CASE's ExecEvalCase() call.  After
+-- with the isNull argument of the inner CASE's CaseExpr evaluation.  After
 -- evaluating the vol(null) expression in the inner CASE's second WHEN-clause,
 -- the isNull flag for the case test value incorrectly became true, causing
 -- the third WHEN-clause not to match.  The volatile function calls are needed
@@ -225,6 +230,19 @@ SELECT CASE make_ad(1,2)
   WHEN array[2,5]::arrdomain THEN 'still wrong'
   WHEN array[1,2]::arrdomain THEN 'right'
   END;
+
+ROLLBACK;
+
+-- Test interaction of CASE with ArrayCoerceExpr (bug #15471)
+BEGIN;
+
+CREATE TYPE casetestenum AS ENUM ('e', 'f', 'g');
+
+SELECT
+  CASE 'foo'::text
+    WHEN 'foo' THEN ARRAY['a', 'b', 'c', 'd'] || enum_range(NULL::casetestenum)::text[]
+    ELSE ARRAY['x', 'y']
+    END;
 
 ROLLBACK;
 

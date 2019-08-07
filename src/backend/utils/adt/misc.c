@@ -3,7 +3,7 @@
  * misc.c
  *
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -26,9 +26,11 @@
 #include "catalog/pg_tablespace.h"
 #include "catalog/pg_type.h"
 #include "commands/dbcommands.h"
+#include "commands/tablespace.h"
 #include "common/keywords.h"
 #include "funcapi.h"
 #include "miscadmin.h"
+#include "pgstat.h"
 #include "parser/scansup.h"
 #include "postmaster/syslogger.h"
 #include "rewrite/rewriteHandler.h"
@@ -43,12 +45,10 @@
 #include "utils/builtins.h"
 #include "utils/timestamp.h"
 
-#define atooid(x)  ((Oid) strtoul((x), NULL, 10))
-
 
 /*
  * Common subroutine for num_nulls() and num_nonnulls().
- * Returns TRUE if successful, FALSE if function should return NULL.
+ * Returns true if successful, false if function should return NULL.
  * If successful, total argument count and number of nulls are
  * returned into *nargs and *nulls.
  */
@@ -311,7 +311,7 @@ pg_terminate_backend(PG_FUNCTION_ARGS)
 	if (r == SIGNAL_BACKEND_NOSUPERUSER)
 		ereport(ERROR,
 				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
-			(errmsg("must be a superuser to terminate superuser process"))));
+				 (errmsg("must be a superuser to terminate superuser process"))));
 
 	if (r == SIGNAL_BACKEND_NOPERMISSION)
 		ereport(ERROR,
@@ -344,16 +344,41 @@ pg_reload_conf(PG_FUNCTION_ARGS)
 /*
  * Rotate log file
  *
- * Permission checking for this function is managed through the normal
- * GRANT system.
+ * This function is kept to support adminpack 1.0.
  */
 Datum
 pg_rotate_logfile(PG_FUNCTION_ARGS)
 {
+	if (!superuser())
+		ereport(ERROR,
+				(errcode(ERRCODE_INSUFFICIENT_PRIVILEGE),
+				 (errmsg("must be superuser to rotate log files with adminpack 1.0"),
+				  errhint("Consider using pg_logfile_rotate(), which is part of core, instead."))));
+
 	if (!Logging_collector)
 	{
 		ereport(WARNING,
-		(errmsg("rotation not possible because log collection not active")));
+				(errmsg("rotation not possible because log collection not active")));
+		PG_RETURN_BOOL(false);
+	}
+
+	SendPostmasterSignal(PMSIGNAL_ROTATE_LOGFILE);
+	PG_RETURN_BOOL(true);
+}
+
+/*
+ * Rotate log file
+ *
+ * Permission checking for this function is managed through the normal
+ * GRANT system.
+ */
+Datum
+pg_rotate_logfile_v2(PG_FUNCTION_ARGS)
+{
+	if (!Logging_collector)
+	{
+		ereport(WARNING,
+				(errmsg("rotation not possible because log collection not active")));
 		PG_RETURN_BOOL(false);
 	}
 
@@ -411,7 +436,7 @@ pg_tablespace_databases(PG_FUNCTION_ARGS)
 							 errmsg("could not open directory \"%s\": %m",
 									fctx->location)));
 				ereport(WARNING,
-					  (errmsg("%u is not a tablespace OID", tablespaceOid)));
+						(errmsg("%u is not a tablespace OID", tablespaceOid)));
 			}
 		}
 		funcctx->user_fctx = fctx;
@@ -426,9 +451,9 @@ pg_tablespace_databases(PG_FUNCTION_ARGS)
 
 	while ((de = ReadDir(fctx->dirdesc, fctx->location)) != NULL)
 	{
-		char	   *subdir;
-		DIR		   *dirdesc;
 		Oid			datOid = atooid(de->d_name);
+		char	   *subdir;
+		bool		isempty;
 
 		/* this test skips . and .., but is awfully weak */
 		if (!datOid)
@@ -437,16 +462,10 @@ pg_tablespace_databases(PG_FUNCTION_ARGS)
 		/* if database subdir is empty, don't report tablespace as used */
 
 		subdir = psprintf("%s/%s", fctx->location, de->d_name);
-		dirdesc = AllocateDir(subdir);
-		while ((de = ReadDir(dirdesc, subdir)) != NULL)
-		{
-			if (strcmp(de->d_name, ".") != 0 && strcmp(de->d_name, "..") != 0)
-				break;
-		}
-		FreeDir(dirdesc);
+		isempty = directory_is_empty(subdir);
 		pfree(subdir);
 
-		if (!de)
+		if (isempty)
 			continue;			/* indeed, nothing in it */
 
 		SRF_RETURN_NEXT(funcctx, ObjectIdGetDatum(datOid));
@@ -534,12 +553,7 @@ pg_sleep(PG_FUNCTION_ARGS)
 	 * less than the specified time when WaitLatch is terminated early by a
 	 * non-query-canceling signal such as SIGHUP.
 	 */
-
-#ifdef HAVE_INT64_TIMESTAMP
 #define GetNowFloat()	((float8) GetCurrentTimestamp() / 1000000.0)
-#else
-#define GetNowFloat()	GetCurrentTimestamp()
-#endif
 
 	endtime = GetNowFloat() + secs;
 
@@ -560,7 +574,8 @@ pg_sleep(PG_FUNCTION_ARGS)
 
 		(void) WaitLatch(MyLatch,
 						 WL_LATCH_SET | WL_TIMEOUT,
-						 delay_ms);
+						 delay_ms,
+						 WAIT_EVENT_PG_SLEEP);
 		ResetLatch(MyLatch);
 	}
 
@@ -794,9 +809,9 @@ parse_ident(PG_FUNCTION_ARGS)
 				if (endp == NULL)
 					ereport(ERROR,
 							(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-						   errmsg("string is not a valid identifier: \"%s\"",
-								  text_to_cstring(qualname)),
-						   errdetail("String has unclosed double quotes.")));
+							 errmsg("string is not a valid identifier: \"%s\"",
+									text_to_cstring(qualname)),
+							 errdetail("String has unclosed double quotes.")));
 				if (endp[1] != '"')
 					break;
 				memmove(endp, endp + 1, strlen(endp));
@@ -889,4 +904,121 @@ parse_ident(PG_FUNCTION_ARGS)
 	}
 
 	PG_RETURN_DATUM(makeArrayResult(astate, CurrentMemoryContext));
+}
+
+/*
+ * pg_current_logfile
+ *
+ * Report current log file used by log collector by scanning current_logfiles.
+ */
+Datum
+pg_current_logfile(PG_FUNCTION_ARGS)
+{
+	FILE	   *fd;
+	char		lbuffer[MAXPGPATH];
+	char	   *logfmt;
+	char	   *log_filepath;
+	char	   *log_format = lbuffer;
+	char	   *nlpos;
+
+	/* The log format parameter is optional */
+	if (PG_NARGS() == 0 || PG_ARGISNULL(0))
+		logfmt = NULL;
+	else
+	{
+		logfmt = text_to_cstring(PG_GETARG_TEXT_PP(0));
+
+		if (strcmp(logfmt, "stderr") != 0 && strcmp(logfmt, "csvlog") != 0)
+			ereport(ERROR,
+					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
+					 errmsg("log format \"%s\" is not supported", logfmt),
+					 errhint("The supported log formats are \"stderr\" and \"csvlog\".")));
+	}
+
+	fd = AllocateFile(LOG_METAINFO_DATAFILE, "r");
+	if (fd == NULL)
+	{
+		if (errno != ENOENT)
+			ereport(ERROR,
+					(errcode_for_file_access(),
+					 errmsg("could not read file \"%s\": %m",
+							LOG_METAINFO_DATAFILE)));
+		PG_RETURN_NULL();
+	}
+
+	/*
+	 * Read the file to gather current log filename(s) registered by the
+	 * syslogger.
+	 */
+	while (fgets(lbuffer, sizeof(lbuffer), fd) != NULL)
+	{
+		/*
+		 * Extract log format and log file path from the line; lbuffer ==
+		 * log_format, they share storage.
+		 */
+		log_filepath = strchr(lbuffer, ' ');
+		if (log_filepath == NULL)
+		{
+			/* Uh oh.  No space found, so file content is corrupted. */
+			elog(ERROR,
+				 "missing space character in \"%s\"", LOG_METAINFO_DATAFILE);
+			break;
+		}
+
+		*log_filepath = '\0';
+		log_filepath++;
+		nlpos = strchr(log_filepath, '\n');
+		if (nlpos == NULL)
+		{
+			/* Uh oh.  No newline found, so file content is corrupted. */
+			elog(ERROR,
+				 "missing newline character in \"%s\"", LOG_METAINFO_DATAFILE);
+			break;
+		}
+		*nlpos = '\0';
+
+		if (logfmt == NULL || strcmp(logfmt, log_format) == 0)
+		{
+			FreeFile(fd);
+			PG_RETURN_TEXT_P(cstring_to_text(log_filepath));
+		}
+	}
+
+	/* Close the current log filename file. */
+	FreeFile(fd);
+
+	PG_RETURN_NULL();
+}
+
+/*
+ * Report current log file used by log collector (1 argument version)
+ *
+ * note: this wrapper is necessary to pass the sanity check in opr_sanity,
+ * which checks that all built-in functions that share the implementing C
+ * function take the same number of arguments
+ */
+Datum
+pg_current_logfile_1arg(PG_FUNCTION_ARGS)
+{
+	return pg_current_logfile(fcinfo);
+}
+
+/*
+ * SQL wrapper around RelationGetReplicaIndex().
+ */
+Datum
+pg_get_replica_identity_index(PG_FUNCTION_ARGS)
+{
+	Oid			reloid = PG_GETARG_OID(0);
+	Oid			idxoid;
+	Relation	rel;
+
+	rel = heap_open(reloid, AccessShareLock);
+	idxoid = RelationGetReplicaIndex(rel);
+	heap_close(rel, AccessShareLock);
+
+	if (OidIsValid(idxoid))
+		PG_RETURN_OID(idxoid);
+	else
+		PG_RETURN_NULL();
 }

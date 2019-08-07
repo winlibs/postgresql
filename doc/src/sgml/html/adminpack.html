@@ -1,495 +1,54 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->adminpack</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Additional Supplied Modules"
-HREF="contrib.html"><LINK
-REL="PREVIOUS"
-TITLE="Additional Supplied Modules"
-HREF="contrib.html"><LINK
-REL="NEXT"
-TITLE="auth_delay"
-HREF="auth-delay.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Additional Supplied Modules"
-HREF="contrib.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="contrib.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Appendix F. Additional Supplied Modules</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="auth_delay"
-HREF="auth-delay.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="ADMINPACK"
->F.1. adminpack</A
-></H1
-><P
->  <TT
-CLASS="FILENAME"
->adminpack</TT
-> provides a number of support functions which
-  <SPAN
-CLASS="APPLICATION"
->pgAdmin</SPAN
-> and other administration and management tools can
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.1. adminpack</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="contrib.html" title="Appendix F. Additional Supplied Modules" /><link rel="next" href="amcheck.html" title="F.2. amcheck" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.1. adminpack</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="contrib.html" title="Appendix F. Additional Supplied Modules">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="amcheck.html" title="F.2. amcheck">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="ADMINPACK"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.1. adminpack</h2></div></div></div><a id="id-1.11.7.10.2" class="indexterm"></a><p>
+  <code class="filename">adminpack</code> provides a number of support functions which
+  <span class="application">pgAdmin</span> and other administration and management tools can
   use to provide additional functionality, such as remote management
   of server log files.
-  Use of all these functions is restricted to superusers.
- </P
-><P
->  The functions shown in <A
-HREF="adminpack.html#FUNCTIONS-ADMINPACK-TABLE"
->Table F-1</A
-> provide
+  Use of all these functions is only allowed to the superuser by default but may be
+  allowed to other users by using the <code class="command">GRANT</code> command.
+ </p><p>
+  The functions shown in <a class="xref" href="adminpack.html#FUNCTIONS-ADMINPACK-TABLE" title="Table F.1. adminpack Functions">Table F.1</a> provide
   write access to files on the machine hosting the server.  (See also the
-  functions in <A
-HREF="functions-admin.html#FUNCTIONS-ADMIN-GENFILE-TABLE"
->Table 9-86</A
->, which
+  functions in <a class="xref" href="functions-admin.html#FUNCTIONS-ADMIN-GENFILE-TABLE" title="Table 9.88. Generic File Access Functions">Table 9.88</a>, which
   provide read-only access.)
-  Only files within the database cluster directory can be accessed, but
-  either a relative or absolute path is allowable.
- </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="FUNCTIONS-ADMINPACK-TABLE"
-></A
-><P
-><B
->Table F-1. <TT
-CLASS="FILENAME"
->adminpack</TT
-> Functions</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><THEAD
-><TR
-><TH
->Name</TH
-><TH
->Return Type</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><CODE
-CLASS="FUNCTION"
->pg_catalog.pg_file_write(filename text, data text, append boolean)</CODE
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bigint</TT
-></TD
-><TD
->      Write, or append to, a text file
-     </TD
-></TR
-><TR
-><TD
-><CODE
-CLASS="FUNCTION"
->pg_catalog.pg_file_rename(oldname text, newname text [<SPAN
-CLASS="OPTIONAL"
->, archivename text</SPAN
->])</CODE
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->      Rename a file
-     </TD
-></TR
-><TR
-><TD
-><CODE
-CLASS="FUNCTION"
->pg_catalog.pg_file_unlink(filename text)</CODE
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->      Remove a file
-     </TD
-></TR
-><TR
-><TD
-><CODE
-CLASS="FUNCTION"
->pg_catalog.pg_logdir_ls()</CODE
-></TD
-><TD
-><TT
-CLASS="TYPE"
->setof record</TT
-></TD
-><TD
->      List the log files in the <TT
-CLASS="VARNAME"
->log_directory</TT
-> directory
-     </TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->  <CODE
-CLASS="FUNCTION"
->pg_file_write</CODE
-> writes the specified <TT
-CLASS="PARAMETER"
->data</TT
-> into
-  the file named by <TT
-CLASS="PARAMETER"
->filename</TT
->.  If <TT
-CLASS="PARAMETER"
->append</TT
-> is
-  false, the file must not already exist.  If <TT
-CLASS="PARAMETER"
->append</TT
-> is true,
+  Only files within the database cluster directory can be accessed, unless the
+  user is a superuser or given one of the pg_read_server_files, or pg_write_server_files
+  roles, as appropriate for the function, but either a relative or absolute path is
+  allowable.
+ </p><div class="table" id="FUNCTIONS-ADMINPACK-TABLE"><p class="title"><strong>Table F.1. <code class="filename">adminpack</code> Functions</strong></p><div class="table-contents"><table class="table" summary="adminpack Functions" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Name</th><th>Return Type</th><th>Description</th></tr></thead><tbody><tr><td><code class="function">pg_catalog.pg_file_write(filename text, data text, append boolean)</code></td><td><code class="type">bigint</code></td><td>
+      Write, or append to, a text file
+     </td></tr><tr><td><code class="function">pg_catalog.pg_file_rename(oldname text, newname text [<span class="optional">, archivename text</span>])</code></td><td><code class="type">boolean</code></td><td>
+      Rename a file
+     </td></tr><tr><td><code class="function">pg_catalog.pg_file_unlink(filename text)</code></td><td><code class="type">boolean</code></td><td>
+      Remove a file
+     </td></tr><tr><td><code class="function">pg_catalog.pg_logdir_ls()</code></td><td><code class="type">setof record</code></td><td>
+      List the log files in the <code class="varname">log_directory</code> directory
+     </td></tr></tbody></table></div></div><br class="table-break" /><a id="id-1.11.7.10.6" class="indexterm"></a><p>
+  <code class="function">pg_file_write</code> writes the specified <em class="parameter"><code>data</code></em> into
+  the file named by <em class="parameter"><code>filename</code></em>.  If <em class="parameter"><code>append</code></em> is
+  false, the file must not already exist.  If <em class="parameter"><code>append</code></em> is true,
   the file can already exist, and will be appended to if so.
   Returns the number of bytes written.
- </P
-><P
->  <CODE
-CLASS="FUNCTION"
->pg_file_rename</CODE
-> renames a file.  If <TT
-CLASS="PARAMETER"
->archivename</TT
->
-  is omitted or NULL, it simply renames <TT
-CLASS="PARAMETER"
->oldname</TT
->
-  to <TT
-CLASS="PARAMETER"
->newname</TT
-> (which must not already exist).
-  If <TT
-CLASS="PARAMETER"
->archivename</TT
-> is provided, it first
-  renames <TT
-CLASS="PARAMETER"
->newname</TT
-> to <TT
-CLASS="PARAMETER"
->archivename</TT
-> (which must
-  not already exist), and then renames <TT
-CLASS="PARAMETER"
->oldname</TT
->
-  to <TT
-CLASS="PARAMETER"
->newname</TT
->.  In event of failure of the second rename step,
-  it will try to rename <TT
-CLASS="PARAMETER"
->archivename</TT
-> back
-  to <TT
-CLASS="PARAMETER"
->newname</TT
-> before reporting the error.
+ </p><a id="id-1.11.7.10.8" class="indexterm"></a><p>
+  <code class="function">pg_file_rename</code> renames a file.  If <em class="parameter"><code>archivename</code></em>
+  is omitted or NULL, it simply renames <em class="parameter"><code>oldname</code></em>
+  to <em class="parameter"><code>newname</code></em> (which must not already exist).
+  If <em class="parameter"><code>archivename</code></em> is provided, it first
+  renames <em class="parameter"><code>newname</code></em> to <em class="parameter"><code>archivename</code></em> (which must
+  not already exist), and then renames <em class="parameter"><code>oldname</code></em>
+  to <em class="parameter"><code>newname</code></em>.  In event of failure of the second rename step,
+  it will try to rename <em class="parameter"><code>archivename</code></em> back
+  to <em class="parameter"><code>newname</code></em> before reporting the error.
   Returns true on success, false if the source file(s) are not present or
   not writable; other cases throw errors.
- </P
-><P
->  <CODE
-CLASS="FUNCTION"
->pg_file_unlink</CODE
-> removes the specified file.
+ </p><a id="id-1.11.7.10.10" class="indexterm"></a><p>
+  <code class="function">pg_file_unlink</code> removes the specified file.
   Returns true on success, false if the specified file is not present
-  or the <CODE
-CLASS="FUNCTION"
->unlink()</CODE
-> call fails; other cases throw errors.
- </P
-><P
->  <CODE
-CLASS="FUNCTION"
->pg_logdir_ls</CODE
-> returns the start timestamps and path
-  names of all the log files in the <A
-HREF="runtime-config-logging.html#GUC-LOG-DIRECTORY"
->log_directory</A
->
-  directory.  The <A
-HREF="runtime-config-logging.html#GUC-LOG-FILENAME"
->log_filename</A
-> parameter must have its
-  default setting (<TT
-CLASS="LITERAL"
->postgresql-%Y-%m-%d_%H%M%S.log</TT
->) to use this
+  or the <code class="function">unlink()</code> call fails; other cases throw errors.
+ </p><a id="id-1.11.7.10.12" class="indexterm"></a><p>
+  <code class="function">pg_logdir_ls</code> returns the start timestamps and path
+  names of all the log files in the <a class="xref" href="runtime-config-logging.html#GUC-LOG-DIRECTORY">log_directory</a>
+  directory.  The <a class="xref" href="runtime-config-logging.html#GUC-LOG-FILENAME">log_filename</a> parameter must have its
+  default setting (<code class="literal">postgresql-%Y-%m-%d_%H%M%S.log</code>) to use this
   function.
- </P
-><P
->  The functions shown
-  in <A
-HREF="adminpack.html#FUNCTIONS-ADMINPACK-DEPRECATED-TABLE"
->Table F-2</A
-> are deprecated
-  and should not be used in new applications; instead use those shown
-  in <A
-HREF="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE"
->Table 9-77</A
->
-  and <A
-HREF="functions-admin.html#FUNCTIONS-ADMIN-GENFILE-TABLE"
->Table 9-86</A
->.  These functions are
-  provided in <TT
-CLASS="FILENAME"
->adminpack</TT
-> only for compatibility with old
-  versions of <SPAN
-CLASS="APPLICATION"
->pgAdmin</SPAN
->.
- </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="FUNCTIONS-ADMINPACK-DEPRECATED-TABLE"
-></A
-><P
-><B
->Table F-2. Deprecated <TT
-CLASS="FILENAME"
->adminpack</TT
-> Functions</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><THEAD
-><TR
-><TH
->Name</TH
-><TH
->Return Type</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><CODE
-CLASS="FUNCTION"
->pg_catalog.pg_file_read(filename text, offset bigint, nbytes bigint)</CODE
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text</TT
-></TD
-><TD
->      Alternate name for <CODE
-CLASS="FUNCTION"
->pg_read_file()</CODE
->
-     </TD
-></TR
-><TR
-><TD
-><CODE
-CLASS="FUNCTION"
->pg_catalog.pg_file_length(filename text)</CODE
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bigint</TT
-></TD
-><TD
->      Same as <TT
-CLASS="STRUCTFIELD"
->size</TT
-> column returned
-      by <CODE
-CLASS="FUNCTION"
->pg_stat_file()</CODE
->
-     </TD
-></TR
-><TR
-><TD
-><CODE
-CLASS="FUNCTION"
->pg_catalog.pg_logfile_rotate()</CODE
-></TD
-><TD
-><TT
-CLASS="TYPE"
->integer</TT
-></TD
-><TD
->      Alternate name for <CODE
-CLASS="FUNCTION"
->pg_rotate_logfile()</CODE
->, but note that it
-      returns integer 0 or 1 rather than boolean
-     </TD
-></TR
-></TBODY
-></TABLE
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="contrib.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="auth-delay.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Additional Supplied Modules</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="contrib.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->auth_delay</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+ </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="contrib.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="amcheck.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Appendix F. Additional Supplied Modules </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> F.2. amcheck</td></tr></table></div></body></html>

@@ -1,1423 +1,222 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->cube</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Additional Supplied Modules"
-HREF="contrib.html"><LINK
-REL="PREVIOUS"
-TITLE="citext"
-HREF="citext.html"><LINK
-REL="NEXT"
-TITLE="dblink"
-HREF="dblink.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="citext"
-HREF="citext.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="contrib.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Appendix F. Additional Supplied Modules</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="dblink"
-HREF="dblink.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="CUBE"
->F.9. cube</A
-></H1
-><P
->  This module implements a data type <TT
-CLASS="TYPE"
->cube</TT
-> for
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>F.9. cube</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="citext.html" title="F.8. citext" /><link rel="next" href="dblink.html" title="F.10. dblink" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">F.9. cube</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="citext.html" title="F.8. citext">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="contrib.html" title="Appendix F. Additional Supplied Modules">Up</a></td><th width="60%" align="center">Appendix F. Additional Supplied Modules</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="dblink.html" title="F.10. dblink">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="CUBE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">F.9. cube</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="cube.html#id-1.11.7.18.4">F.9.1. Syntax</a></span></dt><dt><span class="sect2"><a href="cube.html#id-1.11.7.18.5">F.9.2. Precision</a></span></dt><dt><span class="sect2"><a href="cube.html#id-1.11.7.18.6">F.9.3. Usage</a></span></dt><dt><span class="sect2"><a href="cube.html#id-1.11.7.18.7">F.9.4. Defaults</a></span></dt><dt><span class="sect2"><a href="cube.html#id-1.11.7.18.8">F.9.5. Notes</a></span></dt><dt><span class="sect2"><a href="cube.html#id-1.11.7.18.9">F.9.6. Credits</a></span></dt></dl></div><a id="id-1.11.7.18.2" class="indexterm"></a><p>
+  This module implements a data type <code class="type">cube</code> for
   representing multidimensional cubes.
- </P
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN135264"
->F.9.1. Syntax</A
-></H2
-><P
->   <A
-HREF="cube.html#CUBE-REPR-TABLE"
->Table F-3</A
-> shows the valid external
-   representations for the <TT
-CLASS="TYPE"
->cube</TT
->
-   type.  <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->y</I
-></TT
->, etc. denote
+ </p><div class="sect2" id="id-1.11.7.18.4"><div class="titlepage"><div><div><h3 class="title">F.9.1. Syntax</h3></div></div></div><p>
+   <a class="xref" href="cube.html#CUBE-REPR-TABLE" title="Table F.2. Cube External Representations">Table F.2</a> shows the valid external
+   representations for the <code class="type">cube</code>
+   type.  <em class="replaceable"><code>x</code></em>, <em class="replaceable"><code>y</code></em>, etc. denote
    floating-point numbers.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="CUBE-REPR-TABLE"
-></A
-><P
-><B
->Table F-3. Cube External Representations</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><THEAD
-><TR
-><TH
->External Syntax</TH
-><TH
->Meaning</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-></TT
-></TD
-><TD
->A one-dimensional point
+  </p><div class="table" id="CUBE-REPR-TABLE"><p class="title"><strong>Table F.2. Cube External Representations</strong></p><div class="table-contents"><table class="table" summary="Cube External Representations" border="1"><colgroup><col /><col /></colgroup><thead><tr><th>External Syntax</th><th>Meaning</th></tr></thead><tbody><tr><td><code class="literal"><em class="replaceable"><code>x</code></em></code></td><td>A one-dimensional point
        (or, zero-length one-dimensional interval)
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->(<TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
->)</TT
-></TD
-><TD
->Same as above</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
-><TT
-CLASS="REPLACEABLE"
-><I
->x1</I
-></TT
->,<TT
-CLASS="REPLACEABLE"
-><I
->x2</I
-></TT
->,...,<TT
-CLASS="REPLACEABLE"
-><I
->xn</I
-></TT
-></TT
-></TD
-><TD
->A point in n-dimensional space, represented internally as a
+      </td></tr><tr><td><code class="literal">(<em class="replaceable"><code>x</code></em>)</code></td><td>Same as above</td></tr><tr><td><code class="literal"><em class="replaceable"><code>x1</code></em>,<em class="replaceable"><code>x2</code></em>,...,<em class="replaceable"><code>xn</code></em></code></td><td>A point in n-dimensional space, represented internally as a
       zero-volume cube
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->(<TT
-CLASS="REPLACEABLE"
-><I
->x1</I
-></TT
->,<TT
-CLASS="REPLACEABLE"
-><I
->x2</I
-></TT
->,...,<TT
-CLASS="REPLACEABLE"
-><I
->xn</I
-></TT
->)</TT
-></TD
-><TD
->Same as above</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->(<TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
->),(<TT
-CLASS="REPLACEABLE"
-><I
->y</I
-></TT
->)</TT
-></TD
-><TD
->A one-dimensional interval starting at <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-> and ending at <TT
-CLASS="REPLACEABLE"
-><I
->y</I
-></TT
-> or vice versa; the
+      </td></tr><tr><td><code class="literal">(<em class="replaceable"><code>x1</code></em>,<em class="replaceable"><code>x2</code></em>,...,<em class="replaceable"><code>xn</code></em>)</code></td><td>Same as above</td></tr><tr><td><code class="literal">(<em class="replaceable"><code>x</code></em>),(<em class="replaceable"><code>y</code></em>)</code></td><td>A one-dimensional interval starting at <em class="replaceable"><code>x</code></em> and ending at <em class="replaceable"><code>y</code></em> or vice versa; the
        order does not matter
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[(<TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
->),(<TT
-CLASS="REPLACEABLE"
-><I
->y</I
-></TT
->)]</TT
-></TD
-><TD
->Same as above</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->(<TT
-CLASS="REPLACEABLE"
-><I
->x1</I
-></TT
->,...,<TT
-CLASS="REPLACEABLE"
-><I
->xn</I
-></TT
->),(<TT
-CLASS="REPLACEABLE"
-><I
->y1</I
-></TT
->,...,<TT
-CLASS="REPLACEABLE"
-><I
->yn</I
-></TT
->)</TT
-></TD
-><TD
->An n-dimensional cube represented by a pair of its diagonally
+      </td></tr><tr><td><code class="literal">[(<em class="replaceable"><code>x</code></em>),(<em class="replaceable"><code>y</code></em>)]</code></td><td>Same as above</td></tr><tr><td><code class="literal">(<em class="replaceable"><code>x1</code></em>,...,<em class="replaceable"><code>xn</code></em>),(<em class="replaceable"><code>y1</code></em>,...,<em class="replaceable"><code>yn</code></em>)</code></td><td>An n-dimensional cube represented by a pair of its diagonally
        opposite corners
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->[(<TT
-CLASS="REPLACEABLE"
-><I
->x1</I
-></TT
->,...,<TT
-CLASS="REPLACEABLE"
-><I
->xn</I
-></TT
->),(<TT
-CLASS="REPLACEABLE"
-><I
->y1</I
-></TT
->,...,<TT
-CLASS="REPLACEABLE"
-><I
->yn</I
-></TT
->)]</TT
-></TD
-><TD
->Same as above</TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   It does not matter which order the opposite corners of a cube are
-   entered in.  The <TT
-CLASS="TYPE"
->cube</TT
-> functions
+      </td></tr><tr><td><code class="literal">[(<em class="replaceable"><code>x1</code></em>,...,<em class="replaceable"><code>xn</code></em>),(<em class="replaceable"><code>y1</code></em>,...,<em class="replaceable"><code>yn</code></em>)]</code></td><td>Same as above</td></tr></tbody></table></div></div><br class="table-break" /><p>
+   It does not matter which order the opposite corners of a cube are
+   entered in.  The <code class="type">cube</code> functions
    automatically swap values if needed to create a uniform
-   <SPAN
-CLASS="QUOTE"
->"lower left &mdash; upper right"</SPAN
-> internal representation.
-   When the corners coincide, <TT
-CLASS="TYPE"
->cube</TT
-> stores only one corner
-   along with an <SPAN
-CLASS="QUOTE"
->"is point"</SPAN
-> flag to avoid wasting space.
-  </P
-><P
->   White space is ignored on input, so
-   <TT
-CLASS="LITERAL"
->[(<TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
->),(<TT
-CLASS="REPLACEABLE"
-><I
->y</I
-></TT
->)]</TT
-> is the same as
-   <TT
-CLASS="LITERAL"
->[ ( <TT
-CLASS="REPLACEABLE"
-><I
->x</I
-></TT
-> ), ( <TT
-CLASS="REPLACEABLE"
-><I
->y</I
-></TT
-> ) ]</TT
->.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN135345"
->F.9.2. Precision</A
-></H2
-><P
->   Values are stored internally as 64-bit floating point numbers. This means
+   <span class="quote">“<span class="quote">lower left — upper right</span>”</span> internal representation.
+   When the corners coincide, <code class="type">cube</code> stores only one corner
+   along with an <span class="quote">“<span class="quote">is point</span>”</span> flag to avoid wasting space.
+  </p><p>
+   White space is ignored on input, so
+   <code class="literal">[(<em class="replaceable"><code>x</code></em>),(<em class="replaceable"><code>y</code></em>)]</code> is the same as
+   <code class="literal">[ ( <em class="replaceable"><code>x</code></em> ), ( <em class="replaceable"><code>y</code></em> ) ]</code>.
+  </p></div><div class="sect2" id="id-1.11.7.18.5"><div class="titlepage"><div><div><h3 class="title">F.9.2. Precision</h3></div></div></div><p>
+   Values are stored internally as 64-bit floating point numbers. This means
    that numbers with more than about 16 significant digits will be truncated.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN135348"
->F.9.3. Usage</A
-></H2
-><P
->   <A
-HREF="cube.html#CUBE-OPERATORS-TABLE"
->Table F-4</A
-> shows the operators provided for
-   type <TT
-CLASS="TYPE"
->cube</TT
->.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="CUBE-OPERATORS-TABLE"
-></A
-><P
-><B
->Table F-4. Cube Operators</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><THEAD
-><TR
-><TH
->Operator</TH
-><TH
->Result</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a = b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->The cubes a and b are identical.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a &amp;&amp; b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->The cubes a and b overlap.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a @&gt; b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->The cube a contains the cube b.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a &lt;@ b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->The cube a is contained in the cube b.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a &lt; b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->The cube a is less than the cube b.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a &lt;= b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->The cube a is less than or equal to the cube b.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a &gt; b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->The cube a is greater than the cube b.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a &gt;= b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->The cube a is greater than or equal to the cube b.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a &lt;&gt; b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->The cube a is not equal to the cube b.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a -&gt; n</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->float8</TT
-></TD
-><TD
->Get <TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
->-th coordinate of cube (counting from 1).</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a ~&gt; n</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->float8</TT
-></TD
-><TD
->        Get <TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
->-th coordinate of cube in following way:
-        n = 2 * k - 1 means lower bound of <TT
-CLASS="REPLACEABLE"
-><I
->k</I
-></TT
->-th
+  </p></div><div class="sect2" id="id-1.11.7.18.6"><div class="titlepage"><div><div><h3 class="title">F.9.3. Usage</h3></div></div></div><p>
+   <a class="xref" href="cube.html#CUBE-OPERATORS-TABLE" title="Table F.3. Cube Operators">Table F.3</a> shows the operators provided for
+   type <code class="type">cube</code>.
+  </p><div class="table" id="CUBE-OPERATORS-TABLE"><p class="title"><strong>Table F.3. Cube Operators</strong></p><div class="table-contents"><table class="table" summary="Cube Operators" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Operator</th><th>Result</th><th>Description</th></tr></thead><tbody><tr><td><code class="literal">a = b</code></td><td><code class="type">boolean</code></td><td>The cubes a and b are identical.</td></tr><tr><td><code class="literal">a &amp;&amp; b</code></td><td><code class="type">boolean</code></td><td>The cubes a and b overlap.</td></tr><tr><td><code class="literal">a @&gt; b</code></td><td><code class="type">boolean</code></td><td>The cube a contains the cube b.</td></tr><tr><td><code class="literal">a &lt;@ b</code></td><td><code class="type">boolean</code></td><td>The cube a is contained in the cube b.</td></tr><tr><td><code class="literal">a &lt; b</code></td><td><code class="type">boolean</code></td><td>The cube a is less than the cube b.</td></tr><tr><td><code class="literal">a &lt;= b</code></td><td><code class="type">boolean</code></td><td>The cube a is less than or equal to the cube b.</td></tr><tr><td><code class="literal">a &gt; b</code></td><td><code class="type">boolean</code></td><td>The cube a is greater than the cube b.</td></tr><tr><td><code class="literal">a &gt;= b</code></td><td><code class="type">boolean</code></td><td>The cube a is greater than or equal to the cube b.</td></tr><tr><td><code class="literal">a &lt;&gt; b</code></td><td><code class="type">boolean</code></td><td>The cube a is not equal to the cube b.</td></tr><tr><td><code class="literal">a -&gt; n</code></td><td><code class="type">float8</code></td><td>Get <em class="replaceable"><code>n</code></em>-th coordinate of cube (counting from 1).</td></tr><tr><td><code class="literal">a ~&gt; n</code></td><td><code class="type">float8</code></td><td>
+        Get <em class="replaceable"><code>n</code></em>-th coordinate of cube in following way:
+        n = 2 * k - 1 means lower bound of <em class="replaceable"><code>k</code></em>-th
         dimension, n = 2 * k means upper bound of
-        <TT
-CLASS="REPLACEABLE"
-><I
->k</I
-></TT
->-th dimension.  This operator is designed
-        for KNN-GiST support.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a &lt;-&gt; b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->float8</TT
-></TD
-><TD
->Euclidean distance between a and b.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a &lt;#&gt; b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->float8</TT
-></TD
-><TD
->Taxicab (L-1 metric) distance between a and b.</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->a &lt;=&gt; b</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->float8</TT
-></TD
-><TD
->Chebyshev (L-inf metric) distance between a and b.</TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   (Before PostgreSQL 8.2, the containment operators <TT
-CLASS="LITERAL"
->@&gt;</TT
-> and <TT
-CLASS="LITERAL"
->&lt;@</TT
-> were
-   respectively called <TT
-CLASS="LITERAL"
->@</TT
-> and <TT
-CLASS="LITERAL"
->~</TT
->.  These names are still available, but are
+        <em class="replaceable"><code>k</code></em>-th dimension.  Negative
+        <em class="replaceable"><code>n</code></em> denotes the inverse value of the corresponding
+        positive coordinate.  This operator is designed for KNN-GiST support.
+      </td></tr><tr><td><code class="literal">a &lt;-&gt; b</code></td><td><code class="type">float8</code></td><td>Euclidean distance between a and b.</td></tr><tr><td><code class="literal">a &lt;#&gt; b</code></td><td><code class="type">float8</code></td><td>Taxicab (L-1 metric) distance between a and b.</td></tr><tr><td><code class="literal">a &lt;=&gt; b</code></td><td><code class="type">float8</code></td><td>Chebyshev (L-inf metric) distance between a and b.</td></tr></tbody></table></div></div><br class="table-break" /><p>
+   (Before PostgreSQL 8.2, the containment operators <code class="literal">@&gt;</code> and <code class="literal">&lt;@</code> were
+   respectively called <code class="literal">@</code> and <code class="literal">~</code>.  These names are still available, but are
    deprecated and will eventually be retired.  Notice that the old names
    are reversed from the convention formerly followed by the core geometric
    data types!)
-  </P
-><P
->   The scalar ordering operators (<TT
-CLASS="LITERAL"
->&lt;</TT
->, <TT
-CLASS="LITERAL"
->&gt;=</TT
->, etc)
+  </p><p>
+   The scalar ordering operators (<code class="literal">&lt;</code>, <code class="literal">&gt;=</code>, etc)
    do not make a lot of sense for any practical purpose but sorting.  These
    operators first compare the first coordinates, and if those are equal,
    compare the second coordinates, etc.  They exist mainly to support the
-   b-tree index operator class for <TT
-CLASS="TYPE"
->cube</TT
->, which can be useful for
-   example if you would like a UNIQUE constraint on a <TT
-CLASS="TYPE"
->cube</TT
-> column.
-  </P
-><P
->   The <TT
-CLASS="FILENAME"
->cube</TT
-> module also provides a GiST index operator class for
-   <TT
-CLASS="TYPE"
->cube</TT
-> values.
-   A <TT
-CLASS="TYPE"
->cube</TT
-> GiST index can be used to search for values using the
-   <TT
-CLASS="LITERAL"
->=</TT
->, <TT
-CLASS="LITERAL"
->&amp;&amp;</TT
->, <TT
-CLASS="LITERAL"
->@&gt;</TT
->, and
-   <TT
-CLASS="LITERAL"
->&lt;@</TT
-> operators in <TT
-CLASS="LITERAL"
->WHERE</TT
-> clauses.
-  </P
-><P
->   In addition, a <TT
-CLASS="TYPE"
->cube</TT
-> GiST index can be used to find nearest
+   b-tree index operator class for <code class="type">cube</code>, which can be useful for
+   example if you would like a UNIQUE constraint on a <code class="type">cube</code> column.
+  </p><p>
+   The <code class="filename">cube</code> module also provides a GiST index operator class for
+   <code class="type">cube</code> values.
+   A <code class="type">cube</code> GiST index can be used to search for values using the
+   <code class="literal">=</code>, <code class="literal">&amp;&amp;</code>, <code class="literal">@&gt;</code>, and
+   <code class="literal">&lt;@</code> operators in <code class="literal">WHERE</code> clauses.
+  </p><p>
+   In addition, a <code class="type">cube</code> GiST index can be used to find nearest
    neighbors using the metric operators
-   <TT
-CLASS="LITERAL"
->&lt;-&gt;</TT
->, <TT
-CLASS="LITERAL"
->&lt;#&gt;</TT
->, and
-   <TT
-CLASS="LITERAL"
->&lt;=&gt;</TT
-> in <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clauses.
+   <code class="literal">&lt;-&gt;</code>, <code class="literal">&lt;#&gt;</code>, and
+   <code class="literal">&lt;=&gt;</code> in <code class="literal">ORDER BY</code> clauses.
    For example, the nearest neighbor of the 3-D point (0.5, 0.5, 0.5)
    could be found efficiently with:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT c FROM test ORDER BY c &lt;-&gt; cube(array[0.5,0.5,0.5]) LIMIT 1;</PRE
-><P>
-  </P
-><P
->   The <TT
-CLASS="LITERAL"
->~&gt;</TT
-> operator can also be used in this way to
+</p><pre class="programlisting">
+SELECT c FROM test ORDER BY c &lt;-&gt; cube(array[0.5,0.5,0.5]) LIMIT 1;
+</pre><p>
+  </p><p>
+   The <code class="literal">~&gt;</code> operator can also be used in this way to
    efficiently retrieve the first few values sorted by a selected coordinate.
    For example, to get the first few cubes ordered by the first coordinate
    (lower left corner) ascending one could use the following query:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT c FROM test ORDER BY c ~&gt; 1 LIMIT 5;</PRE
-><P>
+</p><pre class="programlisting">
+SELECT c FROM test ORDER BY c ~&gt; 1 LIMIT 5;
+</pre><p>
    And to get 2-D cubes ordered by the first coordinate of the upper right
    corner descending:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT c FROM test ORDER BY c ~&gt; 3 DESC LIMIT 5;</PRE
-><P>
-  </P
-><P
->   <A
-HREF="cube.html#CUBE-FUNCTIONS-TABLE"
->Table F-5</A
-> shows the available functions.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="CUBE-FUNCTIONS-TABLE"
-></A
-><P
-><B
->Table F-5. Cube Functions</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><COL><THEAD
-><TR
-><TH
->Function</TH
-><TH
->Result</TH
-><TH
->Description</TH
-><TH
->Example</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube(float8)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->cube</TT
-></TD
-><TD
->Makes a one dimensional cube with both coordinates the same.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube(1) == '(1)'</TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube(float8, float8)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->cube</TT
-></TD
-><TD
->Makes a one dimensional cube.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube(1,2) == '(1),(2)'</TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube(float8[])</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->cube</TT
-></TD
-><TD
->Makes a zero-volume cube using the coordinates
+</p><pre class="programlisting">
+SELECT c FROM test ORDER BY c ~&gt; 3 DESC LIMIT 5;
+</pre><p>
+  </p><p>
+   <a class="xref" href="cube.html#CUBE-FUNCTIONS-TABLE" title="Table F.4. Cube Functions">Table F.4</a> shows the available functions.
+  </p><div class="table" id="CUBE-FUNCTIONS-TABLE"><p class="title"><strong>Table F.4. Cube Functions</strong></p><div class="table-contents"><table class="table" summary="Cube Functions" border="1"><colgroup><col /><col /><col /><col /></colgroup><thead><tr><th>Function</th><th>Result</th><th>Description</th><th>Example</th></tr></thead><tbody><tr><td><code class="literal">cube(float8)</code></td><td><code class="type">cube</code></td><td>Makes a one dimensional cube with both coordinates the same.
+      </td><td>
+       <code class="literal">cube(1) == '(1)'</code>
+      </td></tr><tr><td><code class="literal">cube(float8, float8)</code></td><td><code class="type">cube</code></td><td>Makes a one dimensional cube.
+      </td><td>
+       <code class="literal">cube(1,2) == '(1),(2)'</code>
+      </td></tr><tr><td><code class="literal">cube(float8[])</code></td><td><code class="type">cube</code></td><td>Makes a zero-volume cube using the coordinates
        defined by the array.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube(ARRAY[1,2]) == '(1,2)'</TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube(float8[], float8[])</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->cube</TT
-></TD
-><TD
->Makes a cube with upper right and lower left
+      </td><td>
+       <code class="literal">cube(ARRAY[1,2]) == '(1,2)'</code>
+      </td></tr><tr><td><code class="literal">cube(float8[], float8[])</code></td><td><code class="type">cube</code></td><td>Makes a cube with upper right and lower left
        coordinates as defined by the two arrays, which must be of the
        same length.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube(ARRAY[1,2], ARRAY[3,4]) == '(1,2),(3,4)'
-       </TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube(cube, float8)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->cube</TT
-></TD
-><TD
->Makes a new cube by adding a dimension on to an existing cube,
+      </td><td>
+       <code class="literal">cube(ARRAY[1,2], ARRAY[3,4]) == '(1,2),(3,4)'
+       </code>
+      </td></tr><tr><td><code class="literal">cube(cube, float8)</code></td><td><code class="type">cube</code></td><td>Makes a new cube by adding a dimension on to an existing cube,
        with the same values for both endpoints of the new coordinate.  This
        is useful for building cubes piece by piece from calculated values.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube('(1,2),(3,4)'::cube, 5) == '(1,2,5),(3,4,5)'</TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube(cube, float8, float8)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->cube</TT
-></TD
-><TD
->Makes a new cube by adding a dimension on to an existing
+      </td><td>
+       <code class="literal">cube('(1,2),(3,4)'::cube, 5) == '(1,2,5),(3,4,5)'</code>
+      </td></tr><tr><td><code class="literal">cube(cube, float8, float8)</code></td><td><code class="type">cube</code></td><td>Makes a new cube by adding a dimension on to an existing
        cube. This is useful for building cubes piece by piece from calculated
        values.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube('(1,2),(3,4)'::cube, 5, 6) == '(1,2,5),(3,4,6)'</TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_dim(cube)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->integer</TT
-></TD
-><TD
->Returns the number of dimensions of the cube.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube_dim('(1,2),(3,4)') == '2'</TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_ll_coord(cube, integer)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->float8</TT
-></TD
-><TD
->Returns the <TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
->-th coordinate value for the lower
+      </td><td>
+       <code class="literal">cube('(1,2),(3,4)'::cube, 5, 6) == '(1,2,5),(3,4,6)'</code>
+      </td></tr><tr><td><code class="literal">cube_dim(cube)</code></td><td><code class="type">integer</code></td><td>Returns the number of dimensions of the cube.
+      </td><td>
+       <code class="literal">cube_dim('(1,2),(3,4)') == '2'</code>
+      </td></tr><tr><td><code class="literal">cube_ll_coord(cube, integer)</code></td><td><code class="type">float8</code></td><td>Returns the <em class="replaceable"><code>n</code></em>-th coordinate value for the lower
        left corner of the cube.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube_ll_coord('(1,2),(3,4)', 2) == '2'</TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_ur_coord(cube, integer)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->float8</TT
-></TD
-><TD
->Returns the <TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
->-th coordinate value for the
+      </td><td>
+       <code class="literal">cube_ll_coord('(1,2),(3,4)', 2) == '2'</code>
+      </td></tr><tr><td><code class="literal">cube_ur_coord(cube, integer)</code></td><td><code class="type">float8</code></td><td>Returns the <em class="replaceable"><code>n</code></em>-th coordinate value for the
        upper right corner of the cube.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube_ur_coord('(1,2),(3,4)', 2) == '4'</TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_is_point(cube)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->boolean</TT
-></TD
-><TD
->Returns true if the cube is a point, that is,
-       the two defining corners are the same.</TD
-><TD
->&nbsp;</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_distance(cube, cube)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->float8</TT
-></TD
-><TD
->Returns the distance between two cubes. If both
+      </td><td>
+       <code class="literal">cube_ur_coord('(1,2),(3,4)', 2) == '4'</code>
+      </td></tr><tr><td><code class="literal">cube_is_point(cube)</code></td><td><code class="type">boolean</code></td><td>Returns true if the cube is a point, that is,
+       the two defining corners are the same.</td><td>
+      </td></tr><tr><td><code class="literal">cube_distance(cube, cube)</code></td><td><code class="type">float8</code></td><td>Returns the distance between two cubes. If both
        cubes are points, this is the normal distance function.
-      </TD
-><TD
->&nbsp;</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_subset(cube, integer[])</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->cube</TT
-></TD
-><TD
->Makes a new cube from an existing cube, using a list of
+      </td><td>
+      </td></tr><tr><td><code class="literal">cube_subset(cube, integer[])</code></td><td><code class="type">cube</code></td><td>Makes a new cube from an existing cube, using a list of
        dimension indexes from an array. Can be used to extract the endpoints
        of a single dimension, or to drop dimensions, or to reorder them as
        desired.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube_subset(cube('(1,3,5),(6,7,8)'), ARRAY[2]) == '(3),(7)'</TT
->
-       <TT
-CLASS="LITERAL"
->cube_subset(cube('(1,3,5),(6,7,8)'), ARRAY[3,2,1,1]) ==
-        '(5,3,1,1),(8,7,6,6)'</TT
->
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_union(cube, cube)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->cube</TT
-></TD
-><TD
->Produces the union of two cubes.
-      </TD
-><TD
->&nbsp;</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_inter(cube, cube)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->cube</TT
-></TD
-><TD
->Produces the intersection of two cubes.
-      </TD
-><TD
->&nbsp;</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="LITERAL"
->cube_enlarge(c cube, r double, n integer)</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->cube</TT
-></TD
-><TD
->Increases the size of the cube by the specified
-       radius <TT
-CLASS="REPLACEABLE"
-><I
->r</I
-></TT
-> in at least <TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
-> dimensions.
+      </td><td>
+       <code class="literal">cube_subset(cube('(1,3,5),(6,7,8)'), ARRAY[2]) == '(3),(7)'</code>
+       <code class="literal">cube_subset(cube('(1,3,5),(6,7,8)'), ARRAY[3,2,1,1]) ==
+        '(5,3,1,1),(8,7,6,6)'</code>
+      </td></tr><tr><td><code class="literal">cube_union(cube, cube)</code></td><td><code class="type">cube</code></td><td>Produces the union of two cubes.
+      </td><td>
+      </td></tr><tr><td><code class="literal">cube_inter(cube, cube)</code></td><td><code class="type">cube</code></td><td>Produces the intersection of two cubes.
+      </td><td>
+      </td></tr><tr><td><code class="literal">cube_enlarge(c cube, r double, n integer)</code></td><td><code class="type">cube</code></td><td>Increases the size of the cube by the specified
+       radius <em class="replaceable"><code>r</code></em> in at least <em class="replaceable"><code>n</code></em> dimensions.
        If the radius is negative the cube is shrunk instead.
-       All defined dimensions are changed by the radius <TT
-CLASS="REPLACEABLE"
-><I
->r</I
-></TT
->.
-       Lower-left coordinates are decreased by <TT
-CLASS="REPLACEABLE"
-><I
->r</I
-></TT
-> and
-       upper-right coordinates are increased by <TT
-CLASS="REPLACEABLE"
-><I
->r</I
-></TT
->.  If a
+       All defined dimensions are changed by the radius <em class="replaceable"><code>r</code></em>.
+       Lower-left coordinates are decreased by <em class="replaceable"><code>r</code></em> and
+       upper-right coordinates are increased by <em class="replaceable"><code>r</code></em>.  If a
        lower-left coordinate is increased to more than the corresponding
-       upper-right coordinate (this can only happen when <TT
-CLASS="REPLACEABLE"
-><I
->r</I
-></TT
->
+       upper-right coordinate (this can only happen when <em class="replaceable"><code>r</code></em>
        &lt; 0) than both coordinates are set to their average.
-       If <TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
-> is greater than the number of defined dimensions
-       and the cube is being enlarged (<TT
-CLASS="REPLACEABLE"
-><I
->r</I
-></TT
-> &gt; 0), then extra
-       dimensions are added to make <TT
-CLASS="REPLACEABLE"
-><I
->n</I
-></TT
-> altogether;
+       If <em class="replaceable"><code>n</code></em> is greater than the number of defined dimensions
+       and the cube is being enlarged (<em class="replaceable"><code>r</code></em> &gt; 0), then extra
+       dimensions are added to make <em class="replaceable"><code>n</code></em> altogether;
        0 is used as the initial value for the extra coordinates.
        This function is useful for creating bounding boxes around a point for
        searching for nearby points.
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->cube_enlarge('(1,2),(3,4)', 0.5, 3) ==
-        '(0.5,1.5,-0.5),(3.5,4.5,0.5)'</TT
->
-      </TD
-></TR
-></TBODY
-></TABLE
-></DIV
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN135620"
->F.9.4. Defaults</A
-></H2
-><P
->   I believe this union:
-  </P
-><PRE
-CLASS="PROGRAMLISTING"
->select cube_union('(0,5,2),(2,3,1)', '0');
+      </td><td>
+       <code class="literal">cube_enlarge('(1,2),(3,4)', 0.5, 3) ==
+        '(0.5,1.5,-0.5),(3.5,4.5,0.5)'</code>
+      </td></tr></tbody></table></div></div><br class="table-break" /></div><div class="sect2" id="id-1.11.7.18.7"><div class="titlepage"><div><div><h3 class="title">F.9.4. Defaults</h3></div></div></div><p>
+   I believe this union:
+  </p><pre class="programlisting">
+select cube_union('(0,5,2),(2,3,1)', '0');
 cube_union
 -------------------
 (0, 0, 0),(2, 5, 2)
-(1 row)</PRE
-><P
->    does not contradict common sense, neither does the intersection
-   </P
-><PRE
-CLASS="PROGRAMLISTING"
->select cube_inter('(0,-1),(1,1)', '(-2),(2)');
+(1 row)
+</pre><p>
+    does not contradict common sense, neither does the intersection
+   </p><pre class="programlisting">
+select cube_inter('(0,-1),(1,1)', '(-2),(2)');
 cube_inter
 -------------
 (0, 0),(1, 0)
-(1 row)</PRE
-><P
->    In all binary operations on differently-dimensioned cubes, I assume the
+(1 row)
+</pre><p>
+    In all binary operations on differently-dimensioned cubes, I assume the
     lower-dimensional one to be a Cartesian projection, i. e., having zeroes
     in place of coordinates omitted in the string representation. The above
     examples are equivalent to:
-   </P
-><PRE
-CLASS="PROGRAMLISTING"
->cube_union('(0,5,2),(2,3,1)','(0,0,0),(0,0,0)');
-cube_inter('(0,-1),(1,1)','(-2,0),(2,0)');</PRE
-><P
->    The following containment predicate uses the point syntax,
+   </p><pre class="programlisting">
+cube_union('(0,5,2),(2,3,1)','(0,0,0),(0,0,0)');
+cube_inter('(0,-1),(1,1)','(-2,0),(2,0)');
+</pre><p>
+    The following containment predicate uses the point syntax,
     while in fact the second argument is internally represented by a box.
     This syntax makes it unnecessary to define a separate point type
     and functions for (box,point) predicates.
-   </P
-><PRE
-CLASS="PROGRAMLISTING"
->select cube_contains('(0,0),(1,1)', '0.5,0.5');
+   </p><pre class="programlisting">
+select cube_contains('(0,0),(1,1)', '0.5,0.5');
 cube_contains
 --------------
 t
-(1 row)</PRE
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN135630"
->F.9.5. Notes</A
-></H2
-><P
->   For examples of usage, see the regression test <TT
-CLASS="FILENAME"
->sql/cube.sql</TT
->.
-  </P
-><P
->   To make it harder for people to break things, there
+(1 row)
+</pre></div><div class="sect2" id="id-1.11.7.18.8"><div class="titlepage"><div><div><h3 class="title">F.9.5. Notes</h3></div></div></div><p>
+   For examples of usage, see the regression test <code class="filename">sql/cube.sql</code>.
+  </p><p>
+   To make it harder for people to break things, there
    is a limit of 100 on the number of dimensions of cubes. This is set
-   in <TT
-CLASS="FILENAME"
->cubedata.h</TT
-> if you need something bigger.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN135636"
->F.9.6. Credits</A
-></H2
-><P
->   Original author: Gene Selkov, Jr. <CODE
-CLASS="EMAIL"
->&#60;<A
-HREF="mailto:selkovjr@mcs.anl.gov"
->selkovjr@mcs.anl.gov</A
->&#62;</CODE
->,
+   in <code class="filename">cubedata.h</code> if you need something bigger.
+  </p></div><div class="sect2" id="id-1.11.7.18.9"><div class="titlepage"><div><div><h3 class="title">F.9.6. Credits</h3></div></div></div><p>
+   Original author: Gene Selkov, Jr. <code class="email">&lt;<a class="email" href="mailto:selkovjr@mcs.anl.gov">selkovjr@mcs.anl.gov</a>&gt;</code>,
    Mathematics and Computer Science Division, Argonne National Laboratory.
-  </P
-><P
->   My thanks are primarily to Prof. Joe Hellerstein
-   (<A
-HREF="http://db.cs.berkeley.edu/jmh/"
-TARGET="_top"
->http://db.cs.berkeley.edu/jmh/</A
->) for elucidating the
-   gist of the GiST (<A
-HREF="http://gist.cs.berkeley.edu/"
-TARGET="_top"
->http://gist.cs.berkeley.edu/</A
->), and
+  </p><p>
+   My thanks are primarily to Prof. Joe Hellerstein
+   (<a class="ulink" href="http://db.cs.berkeley.edu/jmh/" target="_top">http://db.cs.berkeley.edu/jmh/</a>) for elucidating the
+   gist of the GiST (<a class="ulink" href="http://gist.cs.berkeley.edu/" target="_top">http://gist.cs.berkeley.edu/</a>), and
    to his former student Andy Dong for his example written for Illustra.
    I am also grateful to all Postgres developers, present and past, for
    enabling myself to create my own world and live undisturbed in it. And I
    would like to acknowledge my gratitude to Argonne Lab and to the
    U.S. Department of Energy for the years of faithful support of my database
    research.
-  </P
-><P
->   Minor updates to this package were made by Bruno Wolff III
-   <CODE
-CLASS="EMAIL"
->&#60;<A
-HREF="mailto:bruno@wolff.to"
->bruno@wolff.to</A
->&#62;</CODE
-> in August/September of 2002. These include
+  </p><p>
+   Minor updates to this package were made by Bruno Wolff III
+   <code class="email">&lt;<a class="email" href="mailto:bruno@wolff.to">bruno@wolff.to</a>&gt;</code> in August/September of 2002. These include
    changing the precision from single precision to double precision and adding
    some new functions.
-  </P
-><P
->   Additional updates were made by Joshua Reich <CODE
-CLASS="EMAIL"
->&#60;<A
-HREF="mailto:josh@root.net"
->josh@root.net</A
->&#62;</CODE
-> in
-   July 2006. These include <TT
-CLASS="LITERAL"
->cube(float8[], float8[])</TT
-> and
+  </p><p>
+   Additional updates were made by Joshua Reich <code class="email">&lt;<a class="email" href="mailto:josh@root.net">josh@root.net</a>&gt;</code> in
+   July 2006. These include <code class="literal">cube(float8[], float8[])</code> and
    cleaning up the code to use the V1 call protocol instead of the deprecated
    V0 protocol.
-  </P
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="citext.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="dblink.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->citext</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="contrib.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->dblink</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="citext.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="contrib.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="dblink.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">F.8. citext </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> F.10. dblink</td></tr></table></div></body></html>

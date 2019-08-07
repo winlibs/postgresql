@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE TRIGGER" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE TRIGGER" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -36,9 +36,10 @@ CREATE [ CONSTRAINT ] TRIGGER \fIname\fR { BEFORE | AFTER | INSTEAD OF } { \fIev
     ON \fItable_name\fR
     [ FROM \fIreferenced_table_name\fR ]
     [ NOT DEFERRABLE | [ DEFERRABLE ] [ INITIALLY IMMEDIATE | INITIALLY DEFERRED ] ]
+    [ REFERENCING { { OLD | NEW } TABLE [ AS ] \fItransition_relation_name\fR } [ \&.\&.\&. ] ]
     [ FOR [ EACH ] { ROW | STATEMENT } ]
     [ WHEN ( \fIcondition\fR ) ]
-    EXECUTE PROCEDURE \fIfunction_name\fR ( \fIarguments\fR )
+    EXECUTE { FUNCTION | PROCEDURE } \fIfunction_name\fR ( \fIarguments\fR )
 
 where \fIevent\fR can be one of:
 
@@ -52,7 +53,7 @@ where \fIevent\fR can be one of:
 \fBCREATE TRIGGER\fR
 creates a new trigger\&. The trigger will be associated with the specified table, view, or foreign table and will execute the specified function
 \fIfunction_name\fR
-when certain events occur\&.
+when certain operations are performed on that table\&.
 .PP
 The trigger can be specified to fire before the operation is attempted on a row (before constraints are checked and the
 \fBINSERT\fR,
@@ -80,15 +81,7 @@ triggers on the target relation to be called 10 separate times, once for each de
 FOR EACH STATEMENT
 only executes once for any given operation, regardless of how many rows it modifies (in particular, an operation that modifies zero rows will still result in the execution of any applicable
 FOR EACH STATEMENT
-triggers)\&. Note that with an
-\fBINSERT\fR
-with an
-ON CONFLICT DO UPDATE
-clause, both
-\fBINSERT\fR
-and
-\fBUPDATE\fR
-statement level trigger will be fired\&.
+triggers)\&.
 .PP
 Triggers that are specified to fire
 INSTEAD OF
@@ -191,17 +184,44 @@ option is specified, this command creates a
 constraint trigger\&. This is the same as a regular trigger except that the timing of the trigger firing can be adjusted using
 SET CONSTRAINTS (\fBSET_CONSTRAINTS\fR(7))\&. Constraint triggers must be
 AFTER ROW
-triggers on tables\&. They can be fired either at the end of the statement causing the triggering event, or at the end of the containing transaction; in the latter case they are said to be
+triggers on plain tables (not foreign tables)\&. They can be fired either at the end of the statement causing the triggering event, or at the end of the containing transaction; in the latter case they are said to be
 deferred\&. A pending deferred\-trigger firing can also be forced to happen immediately by using
 \fBSET CONSTRAINTS\fR\&. Constraint triggers are expected to raise an exception when the constraints they implement are violated\&.
+.PP
+The
+REFERENCING
+option enables collection of
+transition relations, which are row sets that include all of the rows inserted, deleted, or modified by the current SQL statement\&. This feature lets the trigger see a global view of what the statement did, not just one row at a time\&. This option is only allowed for an
+AFTER
+trigger that is not a constraint trigger; also, if the trigger is an
+UPDATE
+trigger, it must not specify a
+\fIcolumn_name\fR
+list\&.
+OLD TABLE
+may only be specified once, and only for a trigger that can fire on
+UPDATE
+or
+DELETE; it creates a transition relation containing the
+before\-images
+of all rows updated or deleted by the statement\&. Similarly,
+NEW TABLE
+may only be specified once, and only for a trigger that can fire on
+UPDATE
+or
+INSERT; it creates a transition relation containing the
+after\-images
+of all rows updated or inserted by the statement\&.
 .PP
 \fBSELECT\fR
 does not modify any rows so you cannot create
 \fBSELECT\fR
-triggers\&. Rules and views are more appropriate in such cases\&.
+triggers\&. Rules and views may provide workable solutions to problems that seem to need
+\fBSELECT\fR
+triggers\&.
 .PP
 Refer to
-Chapter 37, Triggers, in the documentation
+Chapter\ \&39
 for more information about triggers\&.
 .SH "PARAMETERS"
 .PP
@@ -228,7 +248,7 @@ INSERT,
 UPDATE,
 DELETE, or
 TRUNCATE; this specifies the event that will fire the trigger\&. Multiple events can be specified using
-OR\&.
+OR, except when transition relations are requested\&.
 .sp
 For
 UPDATE
@@ -249,7 +269,7 @@ The trigger will only fire if at least one of the listed columns is mentioned as
 command\&.
 .sp
 INSTEAD OF UPDATE
-events do not support lists of columns\&.
+events do not allow a list of columns\&. A column list cannot be specified when requesting transition relations, either\&.
 .RE
 .PP
 \fItable_name\fR
@@ -275,11 +295,28 @@ CREATE TABLE (\fBCREATE_TABLE\fR(7))
 documentation for details of these constraint options\&. This can only be specified for constraint triggers\&.
 .RE
 .PP
+REFERENCING
+.RS 4
+This keyword immediately precedes the declaration of one or two relation names that provide access to the transition relations of the triggering statement\&.
+.RE
+.PP
+OLD TABLE
+.br
+NEW TABLE
+.RS 4
+This clause indicates whether the following relation name is for the before\-image transition relation or the after\-image transition relation\&.
+.RE
+.PP
+\fItransition_relation_name\fR
+.RS 4
+The (unqualified) name to be used within the trigger for this transition relation\&.
+.RE
+.PP
 FOR EACH ROW
 .br
 FOR EACH STATEMENT
 .RS 4
-This specifies whether the trigger procedure should be fired once for every row affected by the trigger event, or just once per SQL statement\&. If neither is specified,
+This specifies whether the trigger function should be fired once for every row affected by the trigger event, or just once per SQL statement\&. If neither is specified,
 FOR EACH STATEMENT
 is the default\&. Constraint triggers can only be specified
 FOR EACH ROW\&.
@@ -327,6 +364,15 @@ condition is not deferred, but occurs immediately after the row update operation
 .RS 4
 A user\-supplied function that is declared as taking no arguments and returning type
 trigger, which is executed when the trigger fires\&.
+.sp
+In the syntax of
+CREATE TRIGGER, the keywords
+FUNCTION
+and
+PROCEDURE
+are equivalent, but the referenced function must in any case be a function, not a procedure\&. The use of the keyword
+PROCEDURE
+here is historical and deprecated\&.
 .RE
 .PP
 \fIarguments\fR
@@ -385,11 +431,35 @@ trigger\*(Aqs
 WHEN
 condition does not return true, it is not necessary to queue an event nor to re\-fetch the row at end of statement\&. This can result in significant speedups in statements that modify many rows, if the trigger only needs to be fired for a few of the rows\&.
 .PP
+In some cases it is possible for a single SQL command to fire more than one kind of trigger\&. For instance an
+\fBINSERT\fR
+with an
+ON CONFLICT DO UPDATE
+clause may cause both insert and update operations, so it will fire both kinds of triggers as needed\&. The transition relations supplied to triggers are specific to their event type; thus an
+\fBINSERT\fR
+trigger will see only the inserted rows, while an
+\fBUPDATE\fR
+trigger will see only the updated rows\&.
+.PP
+Row updates or deletions caused by foreign\-key enforcement actions, such as
+ON UPDATE CASCADE
+or
+ON DELETE SET NULL, are treated as part of the SQL command that caused them (note that such actions are never deferred)\&. Relevant triggers on the affected table will be fired, so that this provides another way in which a SQL command might fire triggers not directly matching its type\&. In simple cases, triggers that request transition relations will see all changes caused in their table by a single original SQL command as a single transition relation\&. However, there are cases in which the presence of an
+AFTER ROW
+trigger that requests transition relations will cause the foreign\-key enforcement actions triggered by a single SQL command to be split into multiple steps, each with its own transition relation(s)\&. In such cases, any statement\-level triggers that are present will be fired once per creation of a transition relation set, ensuring that the triggers see each affected row in a transition relation once and only once\&.
+.PP
 Statement\-level triggers on a view are fired only if the action on the view is handled by a row\-level
 INSTEAD OF
 trigger\&. If the action is handled by an
 INSTEAD
 rule, then whatever statements are emitted by the rule are executed in place of the original statement naming the view, so that the triggers that will be fired are those on tables named in the replacement statements\&. Similarly, if the view is automatically updatable, then the action is handled by automatically rewriting the statement into an action on the view\*(Aqs base table, so that the base table\*(Aqs statement\-level triggers are the ones that are fired\&.
+.PP
+Creating a row\-level trigger on a partitioned table will cause identical triggers to be created in all its existing partitions; and any partitions created or attached later will contain an identical trigger, too\&. Triggers on partitioned tables may only be
+AFTER\&.
+.PP
+Modifying a partitioned table or a table with inheritance children fires statement\-level triggers attached to the explicitly named table, but not statement\-level triggers for its partitions or child tables\&. In contrast, row\-level triggers are fired on the rows in affected partitions or child tables, even if they are not explicitly named in the query\&. If a statement\-level trigger has been defined with transition relations named by a
+REFERENCING
+clause, then before and after images of rows are visible from all affected partitions or child tables\&. In the case of inheritance children, the row images include only columns that are present in the table that the trigger is attached to\&. Currently, row\-level triggers with transition relations cannot be defined on partitions or inheritance child tables\&.
 .PP
 In
 PostgreSQL
@@ -415,7 +485,7 @@ is about to be updated:
 CREATE TRIGGER check_update
     BEFORE UPDATE ON accounts
     FOR EACH ROW
-    EXECUTE PROCEDURE check_account_update();
+    EXECUTE FUNCTION check_account_update();
 .fi
 .if n \{\
 .RE
@@ -434,7 +504,7 @@ command:
 CREATE TRIGGER check_update
     BEFORE UPDATE OF balance ON accounts
     FOR EACH ROW
-    EXECUTE PROCEDURE check_account_update();
+    EXECUTE FUNCTION check_account_update();
 .fi
 .if n \{\
 .RE
@@ -452,7 +522,7 @@ CREATE TRIGGER check_update
     BEFORE UPDATE ON accounts
     FOR EACH ROW
     WHEN (OLD\&.balance IS DISTINCT FROM NEW\&.balance)
-    EXECUTE PROCEDURE check_account_update();
+    EXECUTE FUNCTION check_account_update();
 .fi
 .if n \{\
 .RE
@@ -469,7 +539,7 @@ CREATE TRIGGER log_update
     AFTER UPDATE ON accounts
     FOR EACH ROW
     WHEN (OLD\&.* IS DISTINCT FROM NEW\&.*)
-    EXECUTE PROCEDURE log_account_update();
+    EXECUTE FUNCTION log_account_update();
 .fi
 .if n \{\
 .RE
@@ -486,13 +556,51 @@ for each row to insert rows into the tables underlying a view:
 CREATE TRIGGER view_insert
     INSTEAD OF INSERT ON my_view
     FOR EACH ROW
-    EXECUTE PROCEDURE view_insert_row();
+    EXECUTE FUNCTION view_insert_row();
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Execute the function
+\fBcheck_transfer_balances_to_zero\fR
+for each statement to confirm that the
+transfer
+rows offset to a net of zero:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE TRIGGER transfer_insert
+    AFTER INSERT ON transfer
+    REFERENCING NEW TABLE AS inserted
+    FOR EACH STATEMENT
+    EXECUTE FUNCTION check_transfer_balances_to_zero();
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+Execute the function
+\fBcheck_matching_pairs\fR
+for each row to confirm that changes are made to matching pairs at the same time (by the same statement):
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE TRIGGER paired_items_update
+    AFTER UPDATE ON paired_items
+    REFERENCING NEW TABLE AS newtab OLD TABLE AS oldtab
+    FOR EACH ROW
+    EXECUTE FUNCTION check_matching_pairs();
 .fi
 .if n \{\
 .RE
 .\}
 .PP
-Section 37.4, \(lqA Complete Trigger Example\(rq, in the documentation
+Section\ \&39.4
 contains a complete example of a trigger function written in C\&.
 .SH "COMPATIBILITY"
 .PP
@@ -512,14 +620,18 @@ standard\&. The following functionalities are currently missing:
 .sp -1
 .IP \(bu 2.3
 .\}
-SQL allows you to define aliases for the
-\(lqold\(rq
-and
-\(lqnew\(rq
-rows or tables for use in the definition of the triggered action (e\&.g\&.,
-CREATE TRIGGER \&.\&.\&. ON tablename REFERENCING OLD ROW AS somename NEW ROW AS othername \&.\&.\&.)\&. Since
-PostgreSQL
-allows trigger procedures to be written in any number of user\-defined languages, access to the data is handled in a language\-specific way\&.
+While transition table names for
+AFTER
+triggers are specified using the
+REFERENCING
+clause in the standard way, the row variables used in
+FOR EACH ROW
+triggers may not be specified in a
+REFERENCING
+clause\&. They are available in a manner that is dependent on the language in which the trigger function is written, but is fixed for any one language\&. Some languages effectively behave as though there is a
+REFERENCING
+clause containing
+OLD ROW AS OLD NEW ROW AS NEW\&.
 .RE
 .sp
 .RS 4
@@ -530,14 +642,10 @@ allows trigger procedures to be written in any number of user\-defined languages
 .sp -1
 .IP \(bu 2.3
 .\}
-PostgreSQL
-does not allow the old and new tables to be referenced in statement\-level triggers, i\&.e\&., the tables that contain all the old and/or new rows, which are referred to by the
-OLD TABLE
-and
-NEW TABLE
-clauses in the
-SQL
-standard\&.
+The standard allows transition tables to be used with column\-specific
+UPDATE
+triggers, but then the set of rows that should be visible in the transition tables depends on the trigger\*(Aqs column list\&. This is not currently implemented by
+PostgreSQL\&.
 .RE
 .sp
 .RS 4

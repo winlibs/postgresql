@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE OPERATOR CLASS" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE OPERATOR CLASS" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -44,7 +44,7 @@ CREATE OPERATOR CLASS \fIname\fR [ DEFAULT ] FOR TYPE \fIdata_type\fR
 \fBCREATE OPERATOR CLASS\fR
 creates a new operator class\&. An operator class defines how a particular data type can be used with an index\&. The operator class specifies that certain operators will fill particular roles or
 \(lqstrategies\(rq
-for this data type and this index method\&. The operator class also specifies the support procedures to be used by the index method when the operator class is selected for an index column\&. All the operators and functions used by an operator class must be defined before the operator class can be created\&.
+for this data type and this index method\&. The operator class also specifies the support functions to be used by the index method when the operator class is selected for an index column\&. All the operators and functions used by an operator class must be defined before the operator class can be created\&.
 .PP
 If a schema name is given then the operator class is created in the specified schema\&. Otherwise it is created in the current schema\&. Two operator classes in the same schema can have the same name only if they are for different index methods\&.
 .PP
@@ -60,7 +60,7 @@ option in
 \fBCREATE OPERATOR CLASS\fR\&. Without this option, the new class is placed into a family named the same as the new class (creating that family if it doesn\*(Aqt already exist)\&.
 .PP
 Refer to
-Section 36.14, \(lqInterfacing Extensions To Indexes\(rq, in the documentation
+Section\ \&38.15
 for further information\&.
 .SH "PARAMETERS"
 .PP
@@ -133,12 +133,12 @@ is the default\&.
 .PP
 \fIsupport_number\fR
 .RS 4
-The index method\*(Aqs support procedure number for a function associated with the operator class\&.
+The index method\*(Aqs support function number for a function associated with the operator class\&.
 .RE
 .PP
 \fIfunction_name\fR
 .RS 4
-The name (optionally schema\-qualified) of a function that is an index method support procedure for the operator class\&.
+The name (optionally schema\-qualified) of a function that is an index method support function for the operator class\&.
 .RE
 .PP
 \fIargument_type\fR
@@ -150,7 +150,14 @@ The parameter data type(s) of the function\&.
 .RS 4
 The data type actually stored in the index\&. Normally this is the same as the column data type, but some index methods (currently GiST, GIN and BRIN) allow it to be different\&. The
 STORAGE
-clause must be omitted unless the index method allows a different type to be used\&.
+clause must be omitted unless the index method allows a different type to be used\&. If the column
+\fIdata_type\fR
+is specified as
+anyarray, the
+\fIstorage_type\fR
+can be declared as
+anyelement
+to indicate that the index entries are members of the element type belonging to the actual array type that each particular index is created for\&.
 .RE
 .PP
 The

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "REASSIGN OWNED" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "REASSIGN OWNED" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -62,7 +62,7 @@ is often used to prepare for the removal of one or more roles\&. Because
 does not affect objects within other databases, it is usually necessary to execute this command in each database that contains objects owned by a role that is to be removed\&.
 .PP
 \fBREASSIGN OWNED\fR
-requires privileges on both the source role(s) and the target role\&.
+requires membership on both the source role(s) and the target role\&.
 .PP
 The
 DROP OWNED (\fBDROP_OWNED\fR(7))
@@ -72,12 +72,13 @@ The
 \fBREASSIGN OWNED\fR
 command does not affect any privileges granted to the
 \fIold_roles\fR
-for objects that are not owned by them\&. Use
+on objects that are not owned by them\&. Likewise, it does not affect default privileges created with
+\fBALTER DEFAULT PRIVILEGES\fR\&. Use
 \fBDROP OWNED\fR
 to revoke such privileges\&.
 .PP
 See
-Section 21.4, \(lqDropping Roles\(rq, in the documentation
+Section\ \&21.4
 for more discussion\&.
 .SH "COMPATIBILITY"
 .PP

@@ -1,28 +1,37 @@
-/*
- * pg_policy.h
- *	 definition of the system "policy" relation (pg_policy)
+/*-------------------------------------------------------------------------
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * pg_policy.h
+ *	  definition of the "policy" system catalog (pg_policy)
+ *
+ *
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
+ * src/include/catalog/pg_policy.h
+ *
+ * NOTES
+ *	  The Catalog.pm module reads this file and derives schema
+ *	  information.
+ *
+ *-------------------------------------------------------------------------
  */
 #ifndef PG_POLICY_H
 #define PG_POLICY_H
 
 #include "catalog/genbki.h"
+#include "catalog/pg_policy_d.h"
 
 /* ----------------
  *		pg_policy definition. cpp turns this into
  *		typedef struct FormData_pg_policy
  * ----------------
  */
-#define PolicyRelationId	3256
-
-CATALOG(pg_policy,3256)
+CATALOG(pg_policy,3256,PolicyRelationId)
 {
 	NameData	polname;		/* Policy name. */
 	Oid			polrelid;		/* Oid of the relation with policy. */
 	char		polcmd;			/* One of ACL_*_CHR, or '*' for all */
+	bool		polpermissive;	/* restrictive or permissive policy */
 
 #ifdef CATALOG_VARLEN
 	Oid			polroles[1];	/* Roles associated with policy, not-NULL */
@@ -38,16 +47,4 @@ CATALOG(pg_policy,3256)
  */
 typedef FormData_pg_policy *Form_pg_policy;
 
-/* ----------------
- *		compiler constants for pg_policy
- * ----------------
- */
-#define Natts_pg_policy				6
-#define Anum_pg_policy_polname		1
-#define Anum_pg_policy_polrelid		2
-#define Anum_pg_policy_polcmd		3
-#define Anum_pg_policy_polroles		4
-#define Anum_pg_policy_polqual		5
-#define Anum_pg_policy_polwithcheck 6
-
-#endif   /* PG_POLICY_H */
+#endif							/* PG_POLICY_H */

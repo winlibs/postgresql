@@ -4,7 +4,7 @@
  *	  prototypes for costsize.c and clausesel.c.
  *
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/optimizer/cost.h
@@ -35,8 +35,8 @@ typedef enum
 {
 	CONSTRAINT_EXCLUSION_OFF,	/* do not use c_e */
 	CONSTRAINT_EXCLUSION_ON,	/* apply c_e to all rels */
-	CONSTRAINT_EXCLUSION_PARTITION		/* apply c_e to otherrels only */
-}	ConstraintExclusionType;
+	CONSTRAINT_EXCLUSION_PARTITION	/* apply c_e to otherrels only */
+}			ConstraintExclusionType;
 
 
 /*
@@ -54,7 +54,7 @@ extern PGDLLIMPORT double parallel_tuple_cost;
 extern PGDLLIMPORT double parallel_setup_cost;
 extern PGDLLIMPORT int effective_cache_size;
 extern PGDLLIMPORT Cost disable_cost;
-extern PGDLLIMPORT int	max_parallel_workers_per_gather;
+extern PGDLLIMPORT int max_parallel_workers_per_gather;
 extern PGDLLIMPORT bool enable_seqscan;
 extern PGDLLIMPORT bool enable_indexscan;
 extern PGDLLIMPORT bool enable_indexonlyscan;
@@ -66,7 +66,13 @@ extern PGDLLIMPORT bool enable_nestloop;
 extern PGDLLIMPORT bool enable_material;
 extern PGDLLIMPORT bool enable_mergejoin;
 extern PGDLLIMPORT bool enable_hashjoin;
-extern PGDLLIMPORT int	constraint_exclusion;
+extern PGDLLIMPORT bool enable_gathermerge;
+extern PGDLLIMPORT bool enable_partitionwise_join;
+extern PGDLLIMPORT bool enable_partitionwise_aggregate;
+extern PGDLLIMPORT bool enable_parallel_append;
+extern PGDLLIMPORT bool enable_parallel_hash;
+extern PGDLLIMPORT bool enable_partition_pruning;
+extern PGDLLIMPORT int constraint_exclusion;
 
 extern double clamp_row_est(double nrows);
 extern double index_pages_fetched(double tuples_fetched, BlockNumber pages,
@@ -76,7 +82,7 @@ extern void cost_seqscan(Path *path, PlannerInfo *root, RelOptInfo *baserel,
 extern void cost_samplescan(Path *path, PlannerInfo *root, RelOptInfo *baserel,
 				ParamPathInfo *param_info);
 extern void cost_index(IndexPath *path, PlannerInfo *root,
-		   double loop_count);
+		   double loop_count, bool partial_path);
 extern void cost_bitmap_heap_scan(Path *path, PlannerInfo *root, RelOptInfo *baserel,
 					  ParamPathInfo *param_info,
 					  Path *bitmapqual, double loop_count);
@@ -89,15 +95,22 @@ extern void cost_subqueryscan(SubqueryScanPath *path, PlannerInfo *root,
 				  RelOptInfo *baserel, ParamPathInfo *param_info);
 extern void cost_functionscan(Path *path, PlannerInfo *root,
 				  RelOptInfo *baserel, ParamPathInfo *param_info);
+extern void cost_tableexprscan(Path *path, PlannerInfo *root,
+				   RelOptInfo *baserel, ParamPathInfo *param_info);
 extern void cost_valuesscan(Path *path, PlannerInfo *root,
 				RelOptInfo *baserel, ParamPathInfo *param_info);
+extern void cost_tablefuncscan(Path *path, PlannerInfo *root,
+				   RelOptInfo *baserel, ParamPathInfo *param_info);
 extern void cost_ctescan(Path *path, PlannerInfo *root,
 			 RelOptInfo *baserel, ParamPathInfo *param_info);
+extern void cost_namedtuplestorescan(Path *path, PlannerInfo *root,
+						 RelOptInfo *baserel, ParamPathInfo *param_info);
 extern void cost_recursive_union(Path *runion, Path *nrterm, Path *rterm);
 extern void cost_sort(Path *path, PlannerInfo *root,
 		  List *pathkeys, Cost input_cost, double tuples, int width,
 		  Cost comparison_cost, int sort_mem,
 		  double limit_tuples);
+extern void cost_append(AppendPath *path);
 extern void cost_merge_append(Path *path, PlannerInfo *root,
 				  List *pathkeys, int n_streams,
 				  Cost input_startup_cost, Cost input_total_cost,
@@ -108,6 +121,7 @@ extern void cost_material(Path *path,
 extern void cost_agg(Path *path, PlannerInfo *root,
 		 AggStrategy aggstrategy, const AggClauseCosts *aggcosts,
 		 int numGroupCols, double numGroups,
+		 List *quals,
 		 Cost input_startup_cost, Cost input_total_cost,
 		 double input_tuples);
 extern void cost_windowagg(Path *path, PlannerInfo *root,
@@ -116,45 +130,44 @@ extern void cost_windowagg(Path *path, PlannerInfo *root,
 			   double input_tuples);
 extern void cost_group(Path *path, PlannerInfo *root,
 		   int numGroupCols, double numGroups,
+		   List *quals,
 		   Cost input_startup_cost, Cost input_total_cost,
 		   double input_tuples);
 extern void initial_cost_nestloop(PlannerInfo *root,
 					  JoinCostWorkspace *workspace,
 					  JoinType jointype,
 					  Path *outer_path, Path *inner_path,
-					  SpecialJoinInfo *sjinfo,
-					  SemiAntiJoinFactors *semifactors);
+					  JoinPathExtraData *extra);
 extern void final_cost_nestloop(PlannerInfo *root, NestPath *path,
 					JoinCostWorkspace *workspace,
-					SpecialJoinInfo *sjinfo,
-					SemiAntiJoinFactors *semifactors);
+					JoinPathExtraData *extra);
 extern void initial_cost_mergejoin(PlannerInfo *root,
 					   JoinCostWorkspace *workspace,
 					   JoinType jointype,
 					   List *mergeclauses,
 					   Path *outer_path, Path *inner_path,
 					   List *outersortkeys, List *innersortkeys,
-					   SpecialJoinInfo *sjinfo);
+					   JoinPathExtraData *extra);
 extern void final_cost_mergejoin(PlannerInfo *root, MergePath *path,
 					 JoinCostWorkspace *workspace,
-					 SpecialJoinInfo *sjinfo);
+					 JoinPathExtraData *extra);
 extern void initial_cost_hashjoin(PlannerInfo *root,
 					  JoinCostWorkspace *workspace,
 					  JoinType jointype,
 					  List *hashclauses,
 					  Path *outer_path, Path *inner_path,
-					  SpecialJoinInfo *sjinfo,
-					  SemiAntiJoinFactors *semifactors);
+					  JoinPathExtraData *extra,
+					  bool parallel_hash);
 extern void final_cost_hashjoin(PlannerInfo *root, HashPath *path,
 					JoinCostWorkspace *workspace,
-					SpecialJoinInfo *sjinfo,
-					SemiAntiJoinFactors *semifactors);
+					JoinPathExtraData *extra);
 extern void cost_gather(GatherPath *path, PlannerInfo *root,
 			RelOptInfo *baserel, ParamPathInfo *param_info, double *rows);
 extern void cost_subplan(PlannerInfo *root, SubPlan *subplan, Plan *plan);
 extern void cost_qual_eval(QualCost *cost, List *quals, PlannerInfo *root);
 extern void cost_qual_eval_node(QualCost *cost, Node *qual, PlannerInfo *root);
 extern void compute_semi_anti_join_factors(PlannerInfo *root,
+							   RelOptInfo *joinrel,
 							   RelOptInfo *outerrel,
 							   RelOptInfo *innerrel,
 							   JoinType jointype,
@@ -181,8 +194,12 @@ extern void set_function_size_estimates(PlannerInfo *root, RelOptInfo *rel);
 extern void set_values_size_estimates(PlannerInfo *root, RelOptInfo *rel);
 extern void set_cte_size_estimates(PlannerInfo *root, RelOptInfo *rel,
 					   double cte_rows);
+extern void set_tablefunc_size_estimates(PlannerInfo *root, RelOptInfo *rel);
+extern void set_namedtuplestore_size_estimates(PlannerInfo *root, RelOptInfo *rel);
 extern void set_foreign_size_estimates(PlannerInfo *root, RelOptInfo *rel);
 extern PathTarget *set_pathtarget_cost_width(PlannerInfo *root, PathTarget *target);
+extern double compute_bitmap_pages(PlannerInfo *root, RelOptInfo *baserel,
+					 Path *bitmapqual, int loop_count, Cost *cost, double *tuple);
 
 /*
  * prototypes for clausesel.c
@@ -198,5 +215,9 @@ extern Selectivity clause_selectivity(PlannerInfo *root,
 				   int varRelid,
 				   JoinType jointype,
 				   SpecialJoinInfo *sjinfo);
+extern void cost_gather_merge(GatherMergePath *path, PlannerInfo *root,
+				  RelOptInfo *rel, ParamPathInfo *param_info,
+				  Cost input_startup_cost, Cost input_total_cost,
+				  double *rows);
 
-#endif   /* COST_H */
+#endif							/* COST_H */

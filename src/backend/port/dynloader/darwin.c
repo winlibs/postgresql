@@ -1,5 +1,5 @@
 /*
- * Dynamic loading support for Darwin
+ * Dynamic loading support for macOS (Darwin)
  *
  * If dlopen() is available (Darwin 10.3 and later), we just use it.
  * Otherwise we emulate it with the older, now deprecated, NSLinkModule API.
@@ -20,7 +20,7 @@
 #ifdef HAVE_DLOPEN
 
 void *
-pg_dlopen(char *filename)
+pg_dlopen(const char *filename)
 {
 	return dlopen(filename, RTLD_NOW | RTLD_GLOBAL);
 }
@@ -32,7 +32,7 @@ pg_dlclose(void *handle)
 }
 
 PGFunction
-pg_dlsym(void *handle, char *funcname)
+pg_dlsym(void *handle, const char *funcname)
 {
 	/* Do not prepend an underscore: see dlopen(3) */
 	return dlsym(handle, funcname);
@@ -54,7 +54,7 @@ pg_dlerror(void)
 static NSObjectFileImageReturnCode cofiff_result = NSObjectFileImageFailure;
 
 void *
-pg_dlopen(char *filename)
+pg_dlopen(const char *filename)
 {
 	NSObjectFileImage image;
 
@@ -69,14 +69,17 @@ pg_dlopen(char *filename)
 void
 pg_dlclose(void *handle)
 {
-	NSUnLinkModule(handle, FALSE);
+	NSUnLinkModule(handle, NSUNLINKMODULE_OPTION_NONE);
 }
 
 PGFunction
-pg_dlsym(void *handle, char *funcname)
+pg_dlsym(void *handle, const char *funcname)
 {
 	NSSymbol symbol;
 	char	   *symname = (char *) malloc(strlen(funcname) + 2);
+
+	if (!symname)
+		return NULL;
 
 	sprintf(symname, "_%s", funcname);
 	if (NSIsSymbolNameDefined(symname))
@@ -132,4 +135,4 @@ pg_dlerror(void)
 	return (char *) errorString;
 }
 
-#endif   /* HAVE_DLOPEN */
+#endif							/* HAVE_DLOPEN */

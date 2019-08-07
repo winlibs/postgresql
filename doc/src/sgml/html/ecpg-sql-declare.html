@@ -1,354 +1,43 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->DECLARE</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Embedded SQL Commands"
-HREF="ecpg-sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="DEALLOCATE DESCRIPTOR"
-HREF="ecpg-sql-deallocate-descriptor.html"><LINK
-REL="NEXT"
-TITLE="DESCRIBE"
-HREF="ecpg-sql-describe.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="DEALLOCATE DESCRIPTOR"
-HREF="ecpg-sql-deallocate-descriptor.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="ecpg-sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="DESCRIBE"
-HREF="ecpg-sql-describe.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="ECPG-SQL-DECLARE"
-></A
->DECLARE</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN52764"
-></A
-><H2
->Name</H2
->DECLARE&nbsp;--&nbsp;define a cursor</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN52767"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->DECLARE <TT
-CLASS="REPLACEABLE"
-><I
->cursor_name</I
-></TT
-> [ BINARY ] [ INSENSITIVE ] [ [ NO ] SCROLL ] CURSOR [ { WITH | WITHOUT } HOLD ] FOR <TT
-CLASS="REPLACEABLE"
-><I
->prepared_name</I
-></TT
->
-DECLARE <TT
-CLASS="REPLACEABLE"
-><I
->cursor_name</I
-></TT
-> [ BINARY ] [ INSENSITIVE ] [ [ NO ] SCROLL ] CURSOR [ { WITH | WITHOUT } HOLD ] FOR <TT
-CLASS="REPLACEABLE"
-><I
->query</I
-></TT
-></PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN52773"
-></A
-><H2
->Description</H2
-><P
->     <TT
-CLASS="COMMAND"
->DECLARE</TT
-> declares a cursor for iterating over
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>DECLARE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="ecpg-sql-deallocate-descriptor.html" title="DEALLOCATE DESCRIPTOR" /><link rel="next" href="ecpg-sql-describe.html" title="DESCRIBE" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">DECLARE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="ecpg-sql-deallocate-descriptor.html" title="DEALLOCATE DESCRIPTOR">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="ecpg-sql-commands.html" title="36.14. Embedded SQL Commands">Up</a></td><th width="60%" align="center">36.14. Embedded SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ecpg-sql-describe.html" title="DESCRIBE">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="ECPG-SQL-DECLARE"><div class="titlepage"></div><div class="refnamediv"><h2>DECLARE</h2><p>DECLARE — define a cursor</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+DECLARE <em class="replaceable"><code>cursor_name</code></em> [ BINARY ] [ INSENSITIVE ] [ [ NO ] SCROLL ] CURSOR [ { WITH | WITHOUT } HOLD ] FOR <em class="replaceable"><code>prepared_name</code></em>
+DECLARE <em class="replaceable"><code>cursor_name</code></em> [ BINARY ] [ INSENSITIVE ] [ [ NO ] SCROLL ] CURSOR [ { WITH | WITHOUT } HOLD ] FOR <em class="replaceable"><code>query</code></em>
+</pre></div><div class="refsect1" id="id-1.7.5.20.6.3"><h2>Description</h2><p>
+     <code class="command">DECLARE</code> declares a cursor for iterating over
      the result set of a prepared statement.  This command has
      slightly different semantics from the direct SQL
-     command <TT
-CLASS="COMMAND"
->DECLARE</TT
->: Whereas the latter executes a
+     command <code class="command">DECLARE</code>: Whereas the latter executes a
      query and prepares the result set for retrieval, this embedded
-     SQL command merely declares a name as a <SPAN
-CLASS="QUOTE"
->"loop
-     variable"</SPAN
-> for iterating over the result set of a query;
+     SQL command merely declares a name as a <span class="quote">“<span class="quote">loop
+     variable</span>”</span> for iterating over the result set of a query;
      the actual execution happens when the cursor is opened with
-     the <TT
-CLASS="COMMAND"
->OPEN</TT
-> command.
-    </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN52780"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->cursor_name</I
-></TT
-></DT
-><DD
-><P
->        A cursor name, case sensitive.  This can be an SQL identifier
+     the <code class="command">OPEN</code> command.
+    </p></div><div class="refsect1" id="id-1.7.5.20.6.4"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>cursor_name</code></em></span></dt><dd><p>
+        A cursor name, case sensitive.  This can be an SQL identifier
         or a host variable.
-       </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->prepared_name</I
-></TT
-></DT
-><DD
-><P
->        The name of a prepared query, either as an SQL identifier or a
+       </p></dd><dt><span class="term"><em class="replaceable"><code>prepared_name</code></em></span></dt><dd><p>
+        The name of a prepared query, either as an SQL identifier or a
         host variable.
-       </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->query</I
-></TT
-></DT
-><DD
-><P
->        A <A
-HREF="sql-select.html"
->SELECT</A
-> or
-        <A
-HREF="sql-values.html"
->VALUES</A
-> command which will provide the
+       </p></dd><dt><span class="term"><em class="replaceable"><code>query</code></em></span></dt><dd><p>
+        A <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a> or
+        <a class="xref" href="sql-values.html" title="VALUES"><span class="refentrytitle">VALUES</span></a> command which will provide the
         rows to be returned by the cursor.
-       </P
-></DD
-></DL
-></DIV
-><P
->     For the meaning of the cursor options,
-     see <A
-HREF="sql-declare.html"
->DECLARE</A
->.
-    </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN52802"
-></A
-><H2
->Examples</H2
-><P
->     Examples declaring a cursor for a query:
-</P><PRE
-CLASS="PROGRAMLISTING"
->EXEC SQL DECLARE C CURSOR FOR SELECT * FROM My_Table;
+       </p></dd></dl></div><p>
+     For the meaning of the cursor options,
+     see <a class="xref" href="sql-declare.html" title="DECLARE"><span class="refentrytitle">DECLARE</span></a>.
+    </p></div><div class="refsect1" id="id-1.7.5.20.6.5"><h2>Examples</h2><p>
+     Examples declaring a cursor for a query:
+</p><pre class="programlisting">
+EXEC SQL DECLARE C CURSOR FOR SELECT * FROM My_Table;
 EXEC SQL DECLARE C CURSOR FOR SELECT Item1 FROM T;
-EXEC SQL DECLARE cur1 CURSOR FOR SELECT version();</PRE
-><P>
-    </P
-><P
->     An example declaring a cursor for a prepared statement:
-</P><PRE
-CLASS="PROGRAMLISTING"
->EXEC SQL PREPARE stmt1 AS SELECT version();
-EXEC SQL DECLARE cur1 CURSOR FOR stmt1;</PRE
-><P>
-    </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN52808"
-></A
-><H2
->Compatibility</H2
-><P
->     <TT
-CLASS="COMMAND"
->DECLARE</TT
-> is specified in the SQL standard.
-    </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN52812"
-></A
-><H2
->See Also</H2
-><A
-HREF="ecpg-sql-open.html"
->OPEN</A
->, <A
-HREF="sql-close.html"
->CLOSE</A
->, <A
-HREF="sql-declare.html"
->DECLARE</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="ecpg-sql-deallocate-descriptor.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="ecpg-sql-describe.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->DEALLOCATE DESCRIPTOR</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="ecpg-sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->DESCRIBE</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+EXEC SQL DECLARE cur1 CURSOR FOR SELECT version();
+</pre><p>
+    </p><p>
+     An example declaring a cursor for a prepared statement:
+</p><pre class="programlisting">
+EXEC SQL PREPARE stmt1 AS SELECT version();
+EXEC SQL DECLARE cur1 CURSOR FOR stmt1;
+</pre><p>
+    </p></div><div class="refsect1" id="id-1.7.5.20.6.6"><h2>Compatibility</h2><p>
+     <code class="command">DECLARE</code> is specified in the SQL standard.
+    </p></div><div class="refsect1" id="id-1.7.5.20.6.7"><h2>See Also</h2><span class="simplelist"><a class="xref" href="ecpg-sql-open.html" title="OPEN">OPEN</a>, <a class="xref" href="sql-close.html" title="CLOSE"><span class="refentrytitle">CLOSE</span></a>, <a class="xref" href="sql-declare.html" title="DECLARE"><span class="refentrytitle">DECLARE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ecpg-sql-deallocate-descriptor.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ecpg-sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ecpg-sql-describe.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">DEALLOCATE DESCRIPTOR </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> DESCRIBE</td></tr></table></div></body></html>

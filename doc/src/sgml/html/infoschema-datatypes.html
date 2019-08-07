@@ -1,261 +1,33 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Data Types</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="The Information Schema"
-HREF="information-schema.html"><LINK
-REL="PREVIOUS"
-TITLE="The Schema"
-HREF="infoschema-schema.html"><LINK
-REL="NEXT"
-TITLE="information_schema_catalog_name"
-HREF="infoschema-information-schema-catalog-name.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="The Schema"
-HREF="infoschema-schema.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="information-schema.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 35. The Information Schema</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="information_schema_catalog_name"
-HREF="infoschema-information-schema-catalog-name.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="INFOSCHEMA-DATATYPES"
->35.2. Data Types</A
-></H1
-><P
->   The columns of the information schema views use special data types
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>37.2. Data Types</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="infoschema-schema.html" title="37.1. The Schema" /><link rel="next" href="infoschema-information-schema-catalog-name.html" title="37.3. information_schema_catalog_name" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">37.2. Data Types</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="infoschema-schema.html" title="37.1. The Schema">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="information-schema.html" title="Chapter 37. The Information Schema">Up</a></td><th width="60%" align="center">Chapter 37. The Information Schema</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="infoschema-information-schema-catalog-name.html" title="37.3. information_schema_catalog_name">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="INFOSCHEMA-DATATYPES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">37.2. Data Types</h2></div></div></div><p>
+   The columns of the information schema views use special data types
    that are defined in the information schema.  These are defined as
    simple domains over ordinary built-in types.  You should not use
    these types for work outside the information schema, but your
    applications must be prepared for them if they select from the
    information schema.
-  </P
-><P
->   These types are:
+  </p><p>
+   These types are:
 
-   <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="TYPE"
->cardinal_number</TT
-></DT
-><DD
-><P
->       A nonnegative integer.
-      </P
-></DD
-><DT
-><TT
-CLASS="TYPE"
->character_data</TT
-></DT
-><DD
-><P
->       A character string (without specific maximum length).
-      </P
-></DD
-><DT
-><TT
-CLASS="TYPE"
->sql_identifier</TT
-></DT
-><DD
-><P
->       A character string.  This type is used for SQL identifiers, the
-       type <TT
-CLASS="TYPE"
->character_data</TT
-> is used for any other kind of
+   </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="type">cardinal_number</code></span></dt><dd><p>
+       A nonnegative integer.
+      </p></dd><dt><span class="term"><code class="type">character_data</code></span></dt><dd><p>
+       A character string (without specific maximum length).
+      </p></dd><dt><span class="term"><code class="type">sql_identifier</code></span></dt><dd><p>
+       A character string.  This type is used for SQL identifiers, the
+       type <code class="type">character_data</code> is used for any other kind of
        text data.
-      </P
-></DD
-><DT
-><TT
-CLASS="TYPE"
->time_stamp</TT
-></DT
-><DD
-><P
->       A domain over the type <TT
-CLASS="TYPE"
->timestamp with time zone</TT
->
-      </P
-></DD
-><DT
-><TT
-CLASS="TYPE"
->yes_or_no</TT
-></DT
-><DD
-><P
->       A character string domain that contains
-       either <TT
-CLASS="LITERAL"
->YES</TT
-> or <TT
-CLASS="LITERAL"
->NO</TT
->.  This
+      </p></dd><dt><span class="term"><code class="type">time_stamp</code></span></dt><dd><p>
+       A domain over the type <code class="type">timestamp with time zone</code>
+      </p></dd><dt><span class="term"><code class="type">yes_or_no</code></span></dt><dd><p>
+       A character string domain that contains
+       either <code class="literal">YES</code> or <code class="literal">NO</code>.  This
        is used to represent Boolean (true/false) data in the
        information schema.  (The information schema was invented
-       before the type <TT
-CLASS="TYPE"
->boolean</TT
-> was added to the SQL
+       before the type <code class="type">boolean</code> was added to the SQL
        standard, so this convention is necessary to keep the
        information schema backward compatible.)
-      </P
-></DD
-></DL
-></DIV
-><P>
+      </p></dd></dl></div><p>
 
    Every column in the information schema has one of these five types.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="infoschema-schema.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="infoschema-information-schema-catalog-name.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->The Schema</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="information-schema.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><TT
-CLASS="LITERAL"
->information_schema_catalog_name</TT
-></TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="infoschema-schema.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="information-schema.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="infoschema-information-schema-catalog-name.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">37.1. The Schema </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 37.3. <code class="literal">information_schema_catalog_name</code></td></tr></table></div></body></html>

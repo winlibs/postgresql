@@ -1,223 +1,27 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->DISCONNECT</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Embedded SQL Commands"
-HREF="ecpg-sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="DESCRIBE"
-HREF="ecpg-sql-describe.html"><LINK
-REL="NEXT"
-TITLE="EXECUTE IMMEDIATE"
-HREF="ecpg-sql-execute-immediate.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="DESCRIBE"
-HREF="ecpg-sql-describe.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="ecpg-sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="EXECUTE IMMEDIATE"
-HREF="ecpg-sql-execute-immediate.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="ECPG-SQL-DISCONNECT"
-></A
->DISCONNECT</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN52870"
-></A
-><H2
->Name</H2
->DISCONNECT&nbsp;--&nbsp;terminate a database connection</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN52873"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->DISCONNECT <TT
-CLASS="REPLACEABLE"
-><I
->connection_name</I
-></TT
->
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>DISCONNECT</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="ecpg-sql-describe.html" title="DESCRIBE" /><link rel="next" href="ecpg-sql-execute-immediate.html" title="EXECUTE IMMEDIATE" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">DISCONNECT</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="ecpg-sql-describe.html" title="DESCRIBE">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="ecpg-sql-commands.html" title="36.14. Embedded SQL Commands">Up</a></td><th width="60%" align="center">36.14. Embedded SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ecpg-sql-execute-immediate.html" title="EXECUTE IMMEDIATE">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="ECPG-SQL-DISCONNECT"><div class="titlepage"></div><div class="refnamediv"><h2>DISCONNECT</h2><p>DISCONNECT — terminate a database connection</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+DISCONNECT <em class="replaceable"><code>connection_name</code></em>
 DISCONNECT [ CURRENT ]
 DISCONNECT DEFAULT
-DISCONNECT ALL</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN52876"
-></A
-><H2
->Description</H2
-><P
->     <TT
-CLASS="COMMAND"
->DISCONNECT</TT
-> closes a connection (or all
+DISCONNECT ALL
+</pre></div><div class="refsect1" id="id-1.7.5.20.8.3"><h2>Description</h2><p>
+     <code class="command">DISCONNECT</code> closes a connection (or all
      connections) to the database.
-    </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN52880"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->connection_name</I
-></TT
-></DT
-><DD
-><P
->        A database connection name established by
-        the <TT
-CLASS="COMMAND"
->CONNECT</TT
-> command.
-       </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->CURRENT</TT
-></DT
-><DD
-><P
->        Close the <SPAN
-CLASS="QUOTE"
->"current"</SPAN
-> connection, which is either
+    </p></div><div class="refsect1" id="id-1.7.5.20.8.4"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>connection_name</code></em></span></dt><dd><p>
+        A database connection name established by
+        the <code class="command">CONNECT</code> command.
+       </p></dd><dt><span class="term"><code class="literal">CURRENT</code></span></dt><dd><p>
+        Close the <span class="quote">“<span class="quote">current</span>”</span> connection, which is either
         the most recently opened connection, or the connection set by
-        the <TT
-CLASS="COMMAND"
->SET CONNECTION</TT
-> command.  This is also
+        the <code class="command">SET CONNECTION</code> command.  This is also
         the default if no argument is given to
-        the <TT
-CLASS="COMMAND"
->DISCONNECT</TT
-> command.
-       </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->DEFAULT</TT
-></DT
-><DD
-><P
->        Close the default connection.
-       </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->ALL</TT
-></DT
-><DD
-><P
->        Close all open connections.
-       </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN52907"
-></A
-><H2
->Examples</H2
-><PRE
-CLASS="PROGRAMLISTING"
->int
+        the <code class="command">DISCONNECT</code> command.
+       </p></dd><dt><span class="term"><code class="literal">DEFAULT</code></span></dt><dd><p>
+        Close the default connection.
+       </p></dd><dt><span class="term"><code class="literal">ALL</code></span></dt><dd><p>
+        Close all open connections.
+       </p></dd></dl></div></div><div class="refsect1" id="id-1.7.5.20.8.5"><h2>Examples</h2><pre class="programlisting">
+int
 main(void)
 {
     EXEC SQL CONNECT TO testdb AS DEFAULT USER testuser;
@@ -230,98 +34,7 @@ main(void)
     EXEC SQL DISCONNECT ALL;      /* close con2 and con1 */
 
     return 0;
-}</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN52910"
-></A
-><H2
->Compatibility</H2
-><P
->     <TT
-CLASS="COMMAND"
->DISCONNECT</TT
-> is specified in the SQL standard.
-    </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN52914"
-></A
-><H2
->See Also</H2
-><A
-HREF="ecpg-sql-connect.html"
->CONNECT</A
->, <A
-HREF="ecpg-sql-set-connection.html"
->SET CONNECTION</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="ecpg-sql-describe.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="ecpg-sql-execute-immediate.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->DESCRIBE</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="ecpg-sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->EXECUTE IMMEDIATE</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+}
+</pre></div><div class="refsect1" id="id-1.7.5.20.8.6"><h2>Compatibility</h2><p>
+     <code class="command">DISCONNECT</code> is specified in the SQL standard.
+    </p></div><div class="refsect1" id="id-1.7.5.20.8.7"><h2>See Also</h2><span class="simplelist"><a class="xref" href="ecpg-sql-connect.html" title="CONNECT">CONNECT</a>, <a class="xref" href="ecpg-sql-set-connection.html" title="SET CONNECTION">SET CONNECTION</a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ecpg-sql-describe.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ecpg-sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ecpg-sql-execute-immediate.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">DESCRIBE </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> EXECUTE IMMEDIATE</td></tr></table></div></body></html>

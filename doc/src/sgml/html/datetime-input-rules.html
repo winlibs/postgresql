@@ -1,403 +1,74 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Date/Time Input Interpretation</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Date/Time Support"
-HREF="datetime-appendix.html"><LINK
-REL="PREVIOUS"
-TITLE="Date/Time Support"
-HREF="datetime-appendix.html"><LINK
-REL="NEXT"
-TITLE="Handling of Invalid or Ambiguous Timestamps"
-HREF="datetime-invalid-input.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Date/Time Support"
-HREF="datetime-appendix.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="datetime-appendix.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Appendix B. Date/Time Support</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Handling of Invalid or Ambiguous Timestamps"
-HREF="datetime-invalid-input.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="DATETIME-INPUT-RULES"
->B.1. Date/Time Input Interpretation</A
-></H1
-><P
->    Date/time input strings are decoded using the following procedure.
-   </P
-><DIV
-CLASS="PROCEDURE"
-><OL
-TYPE="1"
-><LI
-CLASS="STEP"
-><P
->      Break the input string into tokens and categorize each token as
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>B.1. Date/Time Input Interpretation</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="datetime-appendix.html" title="Appendix B. Date/Time Support" /><link rel="next" href="datetime-invalid-input.html" title="B.2. Handling of Invalid or Ambiguous Timestamps" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">B.1. Date/Time Input Interpretation</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="datetime-appendix.html" title="Appendix B. Date/Time Support">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="datetime-appendix.html" title="Appendix B. Date/Time Support">Up</a></td><th width="60%" align="center">Appendix B. Date/Time Support</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="datetime-invalid-input.html" title="B.2. Handling of Invalid or Ambiguous Timestamps">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="DATETIME-INPUT-RULES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">B.1. Date/Time Input Interpretation</h2></div></div></div><p>
+    Date/time input strings are decoded using the following procedure.
+   </p><div class="procedure"><ol class="procedure" type="1"><li class="step"><p>
+      Break the input string into tokens and categorize each token as
       a string, time, time zone, or number.
-     </P
-><OL
-CLASS="SUBSTEPS"
-TYPE="a"
-><LI
-CLASS="STEP"
-><P
->        If the numeric token contains a colon (<TT
-CLASS="LITERAL"
->:</TT
->), this is
+     </p><ol type="a" class="substeps"><li class="step"><p>
+        If the numeric token contains a colon (<code class="literal">:</code>), this is
         a time string. Include all subsequent digits and colons.
-       </P
-></LI
-><LI
-CLASS="STEP"
-><P
->        If the numeric token contains a dash (<TT
-CLASS="LITERAL"
->-</TT
->), slash
-        (<TT
-CLASS="LITERAL"
->/</TT
->), or two or more dots (<TT
-CLASS="LITERAL"
->.</TT
->), this is
+       </p></li><li class="step"><p>
+        If the numeric token contains a dash (<code class="literal">-</code>), slash
+        (<code class="literal">/</code>), or two or more dots (<code class="literal">.</code>), this is
         a date string which might have a text month.  If a date token has
         already been seen, it is instead interpreted as a time zone
-        name (e.g., <TT
-CLASS="LITERAL"
->America/New_York</TT
->).
-       </P
-></LI
-><LI
-CLASS="STEP"
-><P
->        If the token is numeric only, then it is either a single field
+        name (e.g., <code class="literal">America/New_York</code>).
+       </p></li><li class="step"><p>
+        If the token is numeric only, then it is either a single field
         or an ISO 8601 concatenated date (e.g.,
-        <TT
-CLASS="LITERAL"
->19990113</TT
-> for January 13, 1999) or time
-        (e.g., <TT
-CLASS="LITERAL"
->141516</TT
-> for 14:15:16).
-       </P
-></LI
-><LI
-CLASS="STEP"
-><P
->        If the token starts with a plus (<TT
-CLASS="LITERAL"
->+</TT
->) or minus
-        (<TT
-CLASS="LITERAL"
->-</TT
->), then it is either a numeric time zone or a special
+        <code class="literal">19990113</code> for January 13, 1999) or time
+        (e.g., <code class="literal">141516</code> for 14:15:16).
+       </p></li><li class="step"><p>
+        If the token starts with a plus (<code class="literal">+</code>) or minus
+        (<code class="literal">-</code>), then it is either a numeric time zone or a special
         field.
-       </P
-></LI
-></OL
-></LI
-><LI
-CLASS="STEP"
-><P
->      If the token is an alphabetic string, match up with possible strings:
-     </P
-><OL
-CLASS="SUBSTEPS"
-TYPE="a"
-><LI
-CLASS="STEP"
-><P
->        See if the token matches any known time zone abbreviation.
+       </p></li></ol></li><li class="step"><p>
+      If the token is an alphabetic string, match up with possible strings:
+     </p><ol type="a" class="substeps"><li class="step"><p>
+        See if the token matches any known time zone abbreviation.
         These abbreviations are supplied by the configuration file
-        described in <A
-HREF="datetime-config-files.html"
->Section B.4</A
->.
-       </P
-></LI
-><LI
-CLASS="STEP"
-><P
->        If not found, search an internal table to match
-        the token as either a special string (e.g., <TT
-CLASS="LITERAL"
->today</TT
->),
-        day (e.g., <TT
-CLASS="LITERAL"
->Thursday</TT
->),
-        month (e.g., <TT
-CLASS="LITERAL"
->January</TT
->),
-        or noise word (e.g., <TT
-CLASS="LITERAL"
->at</TT
->, <TT
-CLASS="LITERAL"
->on</TT
->).
-       </P
-></LI
-><LI
-CLASS="STEP"
-><P
->        If still not found, throw an error.
-       </P
-></LI
-></OL
-></LI
-><LI
-CLASS="STEP"
-><P
->      When the token is a number or number field:
-     </P
-><OL
-CLASS="SUBSTEPS"
-TYPE="a"
-><LI
-CLASS="STEP"
-><P
->        If there are eight or six digits,
+        described in <a class="xref" href="datetime-config-files.html" title="B.4. Date/Time Configuration Files">Section B.4</a>.
+       </p></li><li class="step"><p>
+        If not found, search an internal table to match
+        the token as either a special string (e.g., <code class="literal">today</code>),
+        day (e.g., <code class="literal">Thursday</code>),
+        month (e.g., <code class="literal">January</code>),
+        or noise word (e.g., <code class="literal">at</code>, <code class="literal">on</code>).
+       </p></li><li class="step"><p>
+        If still not found, throw an error.
+       </p></li></ol></li><li class="step"><p>
+      When the token is a number or number field:
+     </p><ol type="a" class="substeps"><li class="step"><p>
+        If there are eight or six digits,
         and if no other date fields have been previously read, then interpret
-        as a <SPAN
-CLASS="QUOTE"
->"concatenated date"</SPAN
-> (e.g.,
-        <TT
-CLASS="LITERAL"
->19990118</TT
-> or <TT
-CLASS="LITERAL"
->990118</TT
->).
-        The interpretation is <TT
-CLASS="LITERAL"
->YYYYMMDD</TT
-> or <TT
-CLASS="LITERAL"
->YYMMDD</TT
->.
-       </P
-></LI
-><LI
-CLASS="STEP"
-><P
->        If the token is three digits
+        as a <span class="quote">“<span class="quote">concatenated date</span>”</span> (e.g.,
+        <code class="literal">19990118</code> or <code class="literal">990118</code>).
+        The interpretation is <code class="literal">YYYYMMDD</code> or <code class="literal">YYMMDD</code>.
+       </p></li><li class="step"><p>
+        If the token is three digits
         and a year has already been read, then interpret as day of year.
-       </P
-></LI
-><LI
-CLASS="STEP"
-><P
->        If four or six digits and a year has already been read, then
-        interpret as a time (<TT
-CLASS="LITERAL"
->HHMM</TT
-> or <TT
-CLASS="LITERAL"
->HHMMSS</TT
->).
-       </P
-></LI
-><LI
-CLASS="STEP"
-><P
->        If three or more digits and no date fields have yet been found,
+       </p></li><li class="step"><p>
+        If four or six digits and a year has already been read, then
+        interpret as a time (<code class="literal">HHMM</code> or <code class="literal">HHMMSS</code>).
+       </p></li><li class="step"><p>
+        If three or more digits and no date fields have yet been found,
         interpret as a year (this forces yy-mm-dd ordering of the remaining
         date fields).
-       </P
-></LI
-><LI
-CLASS="STEP"
-><P
->        Otherwise the date field ordering is assumed to follow the
-        <TT
-CLASS="VARNAME"
->DateStyle</TT
-> setting: mm-dd-yy, dd-mm-yy, or yy-mm-dd.
+       </p></li><li class="step"><p>
+        Otherwise the date field ordering is assumed to follow the
+        <code class="varname">DateStyle</code> setting: mm-dd-yy, dd-mm-yy, or yy-mm-dd.
         Throw an error if a month or day field is found to be out of range.
-       </P
-></LI
-></OL
-></LI
-><LI
-CLASS="STEP"
-><P
->      If BC has been specified, negate the year and add one for
+       </p></li></ol></li><li class="step"><p>
+      If BC has been specified, negate the year and add one for
       internal storage.  (There is no year zero in the Gregorian
       calendar, so numerically 1 BC becomes year zero.)
-     </P
-></LI
-><LI
-CLASS="STEP"
-><P
->      If BC was not specified, and if the year field was two digits in length,
+     </p></li><li class="step"><p>
+      If BC was not specified, and if the year field was two digits in length,
       then adjust the year to four digits. If the field is less than 70, then
       add 2000, otherwise add 1900.
 
-      <DIV
-CLASS="TIP"
-><BLOCKQUOTE
-CLASS="TIP"
-><P
-><B
->Tip: </B
->        Gregorian years AD 1-99 can be entered by using 4 digits with leading
-        zeros (e.g., <TT
-CLASS="LITERAL"
->0099</TT
-> is AD 99).
-       </P
-></BLOCKQUOTE
-></DIV
->
-     </P
-></LI
-></OL
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="datetime-appendix.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="datetime-invalid-input.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Date/Time Support</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="datetime-appendix.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Handling of Invalid or Ambiguous Timestamps</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+      </p><div class="tip"><h3 class="title">Tip</h3><p>
+        Gregorian years AD 1-99 can be entered by using 4 digits with leading
+        zeros (e.g., <code class="literal">0099</code> is AD 99).
+       </p></div><p>
+     </p></li></ol></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="datetime-appendix.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="datetime-appendix.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="datetime-invalid-input.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Appendix B. Date/Time Support </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> B.2. Handling of Invalid or Ambiguous Timestamps</td></tr></table></div></body></html>

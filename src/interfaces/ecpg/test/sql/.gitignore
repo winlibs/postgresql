@@ -6,6 +6,8 @@
 /code100.c
 /copystdout
 /copystdout.c
+/createtableas
+/createtableas.c
 /define
 /define.c
 /desc
@@ -38,3 +40,5 @@
 /show.c
 /sqlda
 /sqlda.c
+/twophase
+/twophase.c

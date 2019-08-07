@@ -1,128 +1,12 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Shutting Down the Server</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Server Setup and Operation"
-HREF="runtime.html"><LINK
-REL="PREVIOUS"
-TITLE="Managing Kernel Resources"
-HREF="kernel-resources.html"><LINK
-REL="NEXT"
-TITLE="Upgrading a PostgreSQL Cluster"
-HREF="upgrading.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Managing Kernel Resources"
-HREF="kernel-resources.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="runtime.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 18. Server Setup and Operation</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Upgrading a PostgreSQL Cluster"
-HREF="upgrading.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="SERVER-SHUTDOWN"
->18.5. Shutting Down the Server</A
-></H1
-><P
->   There are several ways to shut down the database server. You control
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>18.5. Shutting Down the Server</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="kernel-resources.html" title="18.4. Managing Kernel Resources" /><link rel="next" href="upgrading.html" title="18.6. Upgrading a PostgreSQL Cluster" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">18.5. Shutting Down the Server</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="kernel-resources.html" title="18.4. Managing Kernel Resources">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime.html" title="Chapter 18. Server Setup and Operation">Up</a></td><th width="60%" align="center">Chapter 18. Server Setup and Operation</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="upgrading.html" title="18.6. Upgrading a PostgreSQL Cluster">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="SERVER-SHUTDOWN"><div class="titlepage"><div><div><h2 class="title" style="clear: both">18.5. Shutting Down the Server</h2></div></div></div><a id="id-1.6.5.7.2" class="indexterm"></a><p>
+   There are several ways to shut down the database server. You control
    the type of shutdown by sending different signals to the master
-   <TT
-CLASS="COMMAND"
->postgres</TT
-> process.
+   <code class="command">postgres</code> process.
 
-   <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><SPAN
-CLASS="SYSTEMITEM"
->SIGTERM</SPAN
-></DT
-><DD
-><P
->       This is the <I
-CLASS="FIRSTTERM"
->Smart Shutdown</I
-> mode.
-       After receiving <SPAN
-CLASS="SYSTEMITEM"
->SIGTERM</SPAN
->, the server
+   </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><span class="systemitem">SIGTERM</span><a id="id-1.6.5.7.3.2.1.1.2" class="indexterm"></a></span></dt><dd><p>
+       This is the <em class="firstterm">Smart Shutdown</em> mode.
+       After receiving <span class="systemitem">SIGTERM</span>, the server
        disallows new connections, but lets existing sessions end their
        work normally. It shuts down only after all of the sessions terminate.
        If the server is in online backup mode, it additionally waits
@@ -132,207 +16,49 @@ CLASS="SYSTEMITEM"
        online backup mode).  If the server is in recovery when a smart
        shutdown is requested, recovery and streaming replication will be
        stopped only after all regular sessions have terminated.
-      </P
-></DD
-><DT
-><SPAN
-CLASS="SYSTEMITEM"
->SIGINT</SPAN
-></DT
-><DD
-><P
->       This is the <I
-CLASS="FIRSTTERM"
->Fast Shutdown</I
-> mode.
+      </p></dd><dt><span class="term"><span class="systemitem">SIGINT</span><a id="id-1.6.5.7.3.2.2.1.2" class="indexterm"></a></span></dt><dd><p>
+       This is the <em class="firstterm">Fast Shutdown</em> mode.
        The server disallows new connections and sends all existing
-       server processes <SPAN
-CLASS="SYSTEMITEM"
->SIGTERM</SPAN
->, which will cause them
+       server processes <span class="systemitem">SIGTERM</span>, which will cause them
        to abort their current transactions and exit promptly. It then
        waits for all server processes to exit and finally shuts down.
        If the server is in online backup mode, backup mode will be
        terminated, rendering the backup useless.
-      </P
-></DD
-><DT
-><SPAN
-CLASS="SYSTEMITEM"
->SIGQUIT</SPAN
-></DT
-><DD
-><P
->      This is the <I
-CLASS="FIRSTTERM"
->Immediate Shutdown</I
-> mode.
-      The server will send <SPAN
-CLASS="SYSTEMITEM"
->SIGQUIT</SPAN
-> to all child
+      </p></dd><dt><span class="term"><span class="systemitem">SIGQUIT</span><a id="id-1.6.5.7.3.2.3.1.2" class="indexterm"></a></span></dt><dd><p>
+      This is the <em class="firstterm">Immediate Shutdown</em> mode.
+      The server will send <span class="systemitem">SIGQUIT</span> to all child
       processes and wait for them to terminate.  If any do not terminate
-      within 5 seconds, they will be sent <SPAN
-CLASS="SYSTEMITEM"
->SIGKILL</SPAN
->.
+      within 5 seconds, they will be sent <span class="systemitem">SIGKILL</span>.
       The master server process exits as soon as all child processes have
       exited, without doing normal database shutdown processing.
       This will lead to recovery (by
       replaying the WAL log) upon next start-up. This is recommended
       only in emergencies.
-      </P
-></DD
-></DL
-></DIV
-><P>
-  </P
-><P
->   The <A
-HREF="app-pg-ctl.html"
-><SPAN
-CLASS="APPLICATION"
->pg_ctl</SPAN
-></A
-> program provides a convenient
+      </p></dd></dl></div><p>
+  </p><p>
+   The <a class="xref" href="app-pg-ctl.html" title="pg_ctl"><span class="refentrytitle"><span class="application">pg_ctl</span></span></a> program provides a convenient
    interface for sending these signals to shut down the server.
-   Alternatively, you can send the signal directly using <TT
-CLASS="COMMAND"
->kill</TT
->
+   Alternatively, you can send the signal directly using <code class="command">kill</code>
    on non-Windows systems.
-   The <ACRONYM
-CLASS="ACRONYM"
->PID</ACRONYM
-> of the <TT
-CLASS="COMMAND"
->postgres</TT
-> process can be
-   found using the <TT
-CLASS="COMMAND"
->ps</TT
-> program, or from the file
-   <TT
-CLASS="FILENAME"
->postmaster.pid</TT
-> in the data directory. For
+   The <acronym class="acronym">PID</acronym> of the <code class="command">postgres</code> process can be
+   found using the <code class="command">ps</code> program, or from the file
+   <code class="filename">postmaster.pid</code> in the data directory. For
    example, to do a fast shutdown:
-</P><PRE
-CLASS="SCREEN"
->$ <KBD
-CLASS="USERINPUT"
->kill -INT `head -1 /usr/local/pgsql/data/postmaster.pid`</KBD
-></PRE
-><P>
-  </P
-><DIV
-CLASS="IMPORTANT"
-><BLOCKQUOTE
-CLASS="IMPORTANT"
-><P
-><B
->Important: </B
->    It is best not to use <SPAN
-CLASS="SYSTEMITEM"
->SIGKILL</SPAN
-> to shut down
+</p><pre class="screen">
+$ <strong class="userinput"><code>kill -INT `head -1 /usr/local/pgsql/data/postmaster.pid`</code></strong>
+</pre><p>
+  </p><div class="important"><h3 class="title">Important</h3><p>
+    It is best not to use <span class="systemitem">SIGKILL</span> to shut down
     the server.  Doing so will prevent the server from releasing
     shared memory and semaphores, which might then have to be done
     manually before a new server can be started.  Furthermore,
-    <SPAN
-CLASS="SYSTEMITEM"
->SIGKILL</SPAN
-> kills the <TT
-CLASS="COMMAND"
->postgres</TT
->
+    <span class="systemitem">SIGKILL</span> kills the <code class="command">postgres</code>
     process without letting it relay the signal to its subprocesses,
     so it will be necessary to kill the individual subprocesses by hand as
     well.
-   </P
-></BLOCKQUOTE
-></DIV
-><P
->   To terminate an individual session while allowing other sessions to
-   continue, use <CODE
-CLASS="FUNCTION"
->pg_terminate_backend()</CODE
-> (see <A
-HREF="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE"
->Table 9-77</A
->) or send a
-   <SPAN
-CLASS="SYSTEMITEM"
->SIGTERM</SPAN
-> signal to the child process associated with
+   </p></div><p>
+   To terminate an individual session while allowing other sessions to
+   continue, use <code class="function">pg_terminate_backend()</code> (see <a class="xref" href="functions-admin.html#FUNCTIONS-ADMIN-SIGNAL-TABLE" title="Table 9.78. Server Signaling Functions">Table 9.78</a>) or send a
+   <span class="systemitem">SIGTERM</span> signal to the child process associated with
    the session.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="kernel-resources.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="upgrading.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Managing Kernel Resources</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="runtime.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Upgrading a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> Cluster</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="kernel-resources.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="upgrading.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">18.4. Managing Kernel Resources </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 18.6. Upgrading a <span class="productname">PostgreSQL</span> Cluster</td></tr></table></div></body></html>

@@ -1,2527 +1,541 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Aggregate Functions</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Functions and Operators"
-HREF="functions.html"><LINK
-REL="PREVIOUS"
-TITLE="Range Functions and Operators"
-HREF="functions-range.html"><LINK
-REL="NEXT"
-TITLE="Window Functions"
-HREF="functions-window.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Range Functions and Operators"
-HREF="functions-range.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="functions.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 9. Functions and Operators</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Window Functions"
-HREF="functions-window.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="FUNCTIONS-AGGREGATE"
->9.20. Aggregate Functions</A
-></H1
-><P
->   <I
-CLASS="FIRSTTERM"
->Aggregate functions</I
-> compute a single result
-   from a set of input values.  The built-in normal aggregate functions
-   are listed in
-   <A
-HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE"
->Table 9-51</A
-> and
-   <A
-HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
->Table 9-52</A
->.
-   The built-in ordered-set aggregate functions
-   are listed in <A
-HREF="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE"
->Table 9-53</A
-> and
-   <A
-HREF="functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE"
->Table 9-54</A
->.  Grouping operations,
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>9.20. Aggregate Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="functions-range.html" title="9.19. Range Functions and Operators" /><link rel="next" href="functions-window.html" title="9.21. Window Functions" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">9.20. Aggregate Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="functions-range.html" title="9.19. Range Functions and Operators">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="functions.html" title="Chapter 9. Functions and Operators">Up</a></td><th width="60%" align="center">Chapter 9. Functions and Operators</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="functions-window.html" title="9.21. Window Functions">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="FUNCTIONS-AGGREGATE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">9.20. Aggregate Functions</h2></div></div></div><a id="id-1.5.8.25.2" class="indexterm"></a><p>
+   <em class="firstterm">Aggregate functions</em> compute a single result
+   from a set of input values.  The built-in general-purpose aggregate
+   functions are listed in <a class="xref" href="functions-aggregate.html#FUNCTIONS-AGGREGATE-TABLE" title="Table 9.52. General-Purpose Aggregate Functions">Table 9.52</a>
+   and statistical aggregates in <a class="xref" href="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE" title="Table 9.53. Aggregate Functions for Statistics">Table 9.53</a>.
+   The built-in within-group ordered-set aggregate functions
+   are listed in <a class="xref" href="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE" title="Table 9.54. Ordered-Set Aggregate Functions">Table 9.54</a>
+   while the built-in within-group hypothetical-set ones are in <a class="xref" href="functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE" title="Table 9.55. Hypothetical-Set Aggregate Functions">Table 9.55</a>.  Grouping operations,
    which are closely related to aggregate functions, are listed in
-   <A
-HREF="functions-aggregate.html#FUNCTIONS-GROUPING-TABLE"
->Table 9-55</A
->.
+   <a class="xref" href="functions-aggregate.html#FUNCTIONS-GROUPING-TABLE" title="Table 9.56. Grouping Operations">Table 9.56</a>.
    The special syntax considerations for aggregate
-   functions are explained in <A
-HREF="sql-expressions.html#SYNTAX-AGGREGATES"
->Section 4.2.7</A
->.
-   Consult <A
-HREF="tutorial-agg.html"
->Section 2.7</A
-> for additional introductory
+   functions are explained in <a class="xref" href="sql-expressions.html#SYNTAX-AGGREGATES" title="4.2.7. Aggregate Expressions">Section 4.2.7</a>.
+   Consult <a class="xref" href="tutorial-agg.html" title="2.7. Aggregate Functions">Section 2.7</a> for additional introductory
    information.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="FUNCTIONS-AGGREGATE-TABLE"
-></A
-><P
-><B
->Table 9-51. General-Purpose Aggregate Functions</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><COL><COL><THEAD
-><TR
-><TH
->Function</TH
-><TH
->Argument Type(s)</TH
-><TH
->Return Type</TH
-><TH
->Partial Mode</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->array_agg(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       any non-array type
-      </TD
-><TD
->       array of the argument type
-      </TD
-><TD
->No</TD
-><TD
->input values, including nulls, concatenated into an array</TD
-></TR
-><TR
-><TD
->       <CODE
-CLASS="FUNCTION"
->array_agg(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       any array type
-      </TD
-><TD
->       same as argument data type
-      </TD
-><TD
->No</TD
-><TD
->input arrays concatenated into array of one higher dimension
+  </p><div class="table" id="FUNCTIONS-AGGREGATE-TABLE"><p class="title"><strong>Table 9.52. General-Purpose Aggregate Functions</strong></p><div class="table-contents"><table class="table" summary="General-Purpose Aggregate Functions" border="1"><colgroup><col /><col /><col /><col /><col /></colgroup><thead><tr><th>Function</th><th>Argument Type(s)</th><th>Return Type</th><th>Partial Mode</th><th>Description</th></tr></thead><tbody><tr><td>
+       <a id="id-1.5.8.25.4.2.2.1.1.1" class="indexterm"></a>
+       <code class="function">array_agg(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       any non-array type
+      </td><td>
+       array of the argument type
+      </td><td>No</td><td>input values, including nulls, concatenated into an array</td></tr><tr><td>
+       <code class="function">array_agg(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       any array type
+      </td><td>
+       same as argument data type
+      </td><td>No</td><td>input arrays concatenated into array of one higher dimension
        (inputs must all have same dimensionality,
-        and cannot be empty or NULL)</TD
-></TR
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->avg(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->smallint</TT
->, <TT
-CLASS="TYPE"
->int</TT
->,
-       <TT
-CLASS="TYPE"
->bigint</TT
->, <TT
-CLASS="TYPE"
->real</TT
->, <TT
-CLASS="TYPE"
->double
-       precision</TT
->, <TT
-CLASS="TYPE"
->numeric</TT
->, or <TT
-CLASS="TYPE"
->interval</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->numeric</TT
-> for any integer-type argument,
-       <TT
-CLASS="TYPE"
->double precision</TT
-> for a floating-point argument,
+        and cannot be empty or NULL)</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.3.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.4.2.2.3.1.2" class="indexterm"></a>
+       <code class="function">avg(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">smallint</code>, <code class="type">int</code>,
+       <code class="type">bigint</code>, <code class="type">real</code>, <code class="type">double
+       precision</code>, <code class="type">numeric</code>, or <code class="type">interval</code>
+      </td><td>
+       <code class="type">numeric</code> for any integer-type argument,
+       <code class="type">double precision</code> for a floating-point argument,
        otherwise the same as the argument data type
-      </TD
-><TD
->Yes</TD
-><TD
->the average (arithmetic mean) of all input values</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->bit_and(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->smallint</TT
->, <TT
-CLASS="TYPE"
->int</TT
->, <TT
-CLASS="TYPE"
->bigint</TT
->, or
-       <TT
-CLASS="TYPE"
->bit</TT
->
-      </TD
-><TD
->        same as argument data type
-      </TD
-><TD
->Yes</TD
-><TD
->the bitwise AND of all non-null input values, or null if none</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->bit_or(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->smallint</TT
->, <TT
-CLASS="TYPE"
->int</TT
->, <TT
-CLASS="TYPE"
->bigint</TT
->, or
-       <TT
-CLASS="TYPE"
->bit</TT
->
-      </TD
-><TD
->        same as argument data type
-      </TD
-><TD
->Yes</TD
-><TD
->the bitwise OR of all non-null input values, or null if none</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->bool_and(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->bool</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->bool</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->true if all input values are true, otherwise false</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->bool_or(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->bool</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->bool</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->true if at least one input value is true, otherwise false</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->count(*)</CODE
->
-      </TD
-><TD
->&nbsp;</TD
-><TD
-><TT
-CLASS="TYPE"
->bigint</TT
-></TD
-><TD
->Yes</TD
-><TD
->number of input rows</TD
-></TR
-><TR
-><TD
-><CODE
-CLASS="FUNCTION"
->count(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
-></TD
-><TD
->any</TD
-><TD
-><TT
-CLASS="TYPE"
->bigint</TT
-></TD
-><TD
->Yes</TD
-><TD
->       number of input rows for which the value of <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> is not null
-      </TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->every(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->bool</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->bool</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->equivalent to <CODE
-CLASS="FUNCTION"
->bool_and</CODE
-></TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->json_agg(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->any</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->json</TT
->
-      </TD
-><TD
->No</TD
-><TD
->aggregates values as a JSON array</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->jsonb_agg(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->any</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->jsonb</TT
->
-      </TD
-><TD
->No</TD
-><TD
->aggregates values as a JSON array</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->json_object_agg(<TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->(any, any)</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->json</TT
->
-      </TD
-><TD
->No</TD
-><TD
->aggregates name/value pairs as a JSON object</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->jsonb_object_agg(<TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->(any, any)</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->jsonb</TT
->
-      </TD
-><TD
->No</TD
-><TD
->aggregates name/value pairs as a JSON object</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->max(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->any numeric, string, date/time, network, or enum type,
-             or arrays of these types</TD
-><TD
->same as argument type</TD
-><TD
->Yes</TD
-><TD
->       maximum value of <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> across all input
+      </td><td>Yes</td><td>the average (arithmetic mean) of all input values</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.4.1.1" class="indexterm"></a>
+       <code class="function">bit_and(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">smallint</code>, <code class="type">int</code>, <code class="type">bigint</code>, or
+       <code class="type">bit</code>
+      </td><td>
+        same as argument data type
+      </td><td>Yes</td><td>the bitwise AND of all non-null input values, or null if none</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.5.1.1" class="indexterm"></a>
+       <code class="function">bit_or(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">smallint</code>, <code class="type">int</code>, <code class="type">bigint</code>, or
+       <code class="type">bit</code>
+      </td><td>
+        same as argument data type
+      </td><td>Yes</td><td>the bitwise OR of all non-null input values, or null if none</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.6.1.1" class="indexterm"></a>
+       <code class="function">bool_and(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">bool</code>
+      </td><td>
+       <code class="type">bool</code>
+      </td><td>Yes</td><td>true if all input values are true, otherwise false</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.7.1.1" class="indexterm"></a>
+       <code class="function">bool_or(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">bool</code>
+      </td><td>
+       <code class="type">bool</code>
+      </td><td>Yes</td><td>true if at least one input value is true, otherwise false</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.8.1.1" class="indexterm"></a>
+       <code class="function">count(*)</code>
+      </td><td> </td><td><code class="type">bigint</code></td><td>Yes</td><td>number of input rows</td></tr><tr><td><code class="function">count(<em class="replaceable"><code>expression</code></em>)</code></td><td>any</td><td><code class="type">bigint</code></td><td>Yes</td><td>
+       number of input rows for which the value of <em class="replaceable"><code>expression</code></em> is not null
+      </td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.10.1.1" class="indexterm"></a>
+       <code class="function">every(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">bool</code>
+      </td><td>
+       <code class="type">bool</code>
+      </td><td>Yes</td><td>equivalent to <code class="function">bool_and</code></td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.11.1.1" class="indexterm"></a>
+       <code class="function">json_agg(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">any</code>
+      </td><td>
+       <code class="type">json</code>
+      </td><td>No</td><td>aggregates values as a JSON array</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.12.1.1" class="indexterm"></a>
+       <code class="function">jsonb_agg(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">any</code>
+      </td><td>
+       <code class="type">jsonb</code>
+      </td><td>No</td><td>aggregates values as a JSON array</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.13.1.1" class="indexterm"></a>
+       <code class="function">json_object_agg(<em class="replaceable"><code>name</code></em>, <em class="replaceable"><code>value</code></em>)</code>
+      </td><td>
+       <code class="type">(any, any)</code>
+      </td><td>
+       <code class="type">json</code>
+      </td><td>No</td><td>aggregates name/value pairs as a JSON object</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.14.1.1" class="indexterm"></a>
+       <code class="function">jsonb_object_agg(<em class="replaceable"><code>name</code></em>, <em class="replaceable"><code>value</code></em>)</code>
+      </td><td>
+       <code class="type">(any, any)</code>
+      </td><td>
+       <code class="type">jsonb</code>
+      </td><td>No</td><td>aggregates name/value pairs as a JSON object</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.15.1.1" class="indexterm"></a>
+       <code class="function">max(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>any numeric, string, date/time, network, or enum type,
+             or arrays of these types</td><td>same as argument type</td><td>Yes</td><td>
+       maximum value of <em class="replaceable"><code>expression</code></em> across all input
        values
-      </TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->min(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->any numeric, string, date/time, network, or enum type,
-             or arrays of these types</TD
-><TD
->same as argument type</TD
-><TD
->Yes</TD
-><TD
->       minimum value of <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> across all input
+      </td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.16.1.1" class="indexterm"></a>
+       <code class="function">min(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>any numeric, string, date/time, network, or enum type,
+             or arrays of these types</td><td>same as argument type</td><td>Yes</td><td>
+       minimum value of <em class="replaceable"><code>expression</code></em> across all input
        values
-      </TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->         string_agg(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->,
-                    <TT
-CLASS="REPLACEABLE"
-><I
->delimiter</I
-></TT
->)
-       </CODE
->
-      </TD
-><TD
->       (<TT
-CLASS="TYPE"
->text</TT
->, <TT
-CLASS="TYPE"
->text</TT
->) or (<TT
-CLASS="TYPE"
->bytea</TT
->, <TT
-CLASS="TYPE"
->bytea</TT
->)
-      </TD
-><TD
->       same as argument types
-      </TD
-><TD
->No</TD
-><TD
->input values concatenated into a string, separated by delimiter</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->sum(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->smallint</TT
->, <TT
-CLASS="TYPE"
->int</TT
->,
-       <TT
-CLASS="TYPE"
->bigint</TT
->, <TT
-CLASS="TYPE"
->real</TT
->, <TT
-CLASS="TYPE"
->double
-       precision</TT
->, <TT
-CLASS="TYPE"
->numeric</TT
->,
-       <TT
-CLASS="TYPE"
->interval</TT
->, or <TT
-CLASS="TYPE"
->money</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->bigint</TT
-> for <TT
-CLASS="TYPE"
->smallint</TT
-> or
-       <TT
-CLASS="TYPE"
->int</TT
-> arguments, <TT
-CLASS="TYPE"
->numeric</TT
-> for
-       <TT
-CLASS="TYPE"
->bigint</TT
-> arguments, otherwise the same as the
+      </td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.17.1.1" class="indexterm"></a>
+       <code class="function">
+         string_agg(<em class="replaceable"><code>expression</code></em>,
+                    <em class="replaceable"><code>delimiter</code></em>)
+       </code>
+      </td><td>
+       (<code class="type">text</code>, <code class="type">text</code>) or (<code class="type">bytea</code>, <code class="type">bytea</code>)
+      </td><td>
+       same as argument types
+      </td><td>No</td><td>input values concatenated into a string, separated by delimiter</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.18.1.1" class="indexterm"></a>
+       <code class="function">sum(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">smallint</code>, <code class="type">int</code>,
+       <code class="type">bigint</code>, <code class="type">real</code>, <code class="type">double
+       precision</code>, <code class="type">numeric</code>,
+       <code class="type">interval</code>, or <code class="type">money</code>
+      </td><td>
+       <code class="type">bigint</code> for <code class="type">smallint</code> or
+       <code class="type">int</code> arguments, <code class="type">numeric</code> for
+       <code class="type">bigint</code> arguments, otherwise the same as the
        argument data type
-      </TD
-><TD
->Yes</TD
-><TD
->sum of <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> across all input values</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->xmlagg(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->xml</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->xml</TT
->
-      </TD
-><TD
->No</TD
-><TD
->concatenation of XML values (see also <A
-HREF="functions-xml.html#FUNCTIONS-XML-XMLAGG"
->Section 9.14.1.7</A
->)</TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   It should be noted that except for <CODE
-CLASS="FUNCTION"
->count</CODE
->,
+      </td><td>Yes</td><td>sum of <em class="replaceable"><code>expression</code></em> across all input values</td></tr><tr><td>
+       <a id="id-1.5.8.25.4.2.2.19.1.1" class="indexterm"></a>
+       <code class="function">xmlagg(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">xml</code>
+      </td><td>
+       <code class="type">xml</code>
+      </td><td>No</td><td>concatenation of XML values (see also <a class="xref" href="functions-xml.html#FUNCTIONS-XML-XMLAGG" title="9.14.1.7. xmlagg">Section 9.14.1.7</a>)</td></tr></tbody></table></div></div><br class="table-break" /><p>
+   It should be noted that except for <code class="function">count</code>,
    these functions return a null value when no rows are selected.  In
-   particular, <CODE
-CLASS="FUNCTION"
->sum</CODE
-> of no rows returns null, not
-   zero as one might expect, and <CODE
-CLASS="FUNCTION"
->array_agg</CODE
->
+   particular, <code class="function">sum</code> of no rows returns null, not
+   zero as one might expect, and <code class="function">array_agg</code>
    returns null rather than an empty array when there are no input
-   rows.  The <CODE
-CLASS="FUNCTION"
->coalesce</CODE
-> function can be used to
+   rows.  The <code class="function">coalesce</code> function can be used to
    substitute zero or an empty array for null when necessary.
-  </P
-><P
->   Aggregate functions which support <I
-CLASS="FIRSTTERM"
->Partial Mode</I
->
+  </p><p>
+   Aggregate functions which support <em class="firstterm">Partial Mode</em>
    are eligible to participate in various optimizations, such as parallel
    aggregation.
-  </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->      Boolean aggregates <CODE
-CLASS="FUNCTION"
->bool_and</CODE
-> and
-      <CODE
-CLASS="FUNCTION"
->bool_or</CODE
-> correspond to standard SQL aggregates
-      <CODE
-CLASS="FUNCTION"
->every</CODE
-> and <CODE
-CLASS="FUNCTION"
->any</CODE
-> or
-      <CODE
-CLASS="FUNCTION"
->some</CODE
->.
-      As for <CODE
-CLASS="FUNCTION"
->any</CODE
-> and <CODE
-CLASS="FUNCTION"
->some</CODE
->,
+  </p><div class="note"><h3 class="title">Note</h3><a id="id-1.5.8.25.7.1" class="indexterm"></a><a id="id-1.5.8.25.7.2" class="indexterm"></a><p>
+      Boolean aggregates <code class="function">bool_and</code> and
+      <code class="function">bool_or</code> correspond to standard SQL aggregates
+      <code class="function">every</code> and <code class="function">any</code> or
+      <code class="function">some</code>.
+      As for <code class="function">any</code> and <code class="function">some</code>,
       it seems that there is an ambiguity built into the standard syntax:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT b1 = ANY((SELECT b2 FROM t2 ...)) FROM t1 ...;</PRE
-><P>
-      Here <CODE
-CLASS="FUNCTION"
->ANY</CODE
-> can be considered either as introducing
+</p><pre class="programlisting">
+SELECT b1 = ANY((SELECT b2 FROM t2 ...)) FROM t1 ...;
+</pre><p>
+      Here <code class="function">ANY</code> can be considered either as introducing
       a subquery, or as being an aggregate function, if the subquery
       returns one row with a Boolean value.
       Thus the standard name cannot be given to these aggregates.
-    </P
-></BLOCKQUOTE
-></DIV
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->    Users accustomed to working with other SQL database management
+    </p></div><div class="note"><h3 class="title">Note</h3><p>
+    Users accustomed to working with other SQL database management
     systems might be disappointed by the performance of the
-    <CODE
-CLASS="FUNCTION"
->count</CODE
-> aggregate when it is applied to the
+    <code class="function">count</code> aggregate when it is applied to the
     entire table. A query like:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT count(*) FROM sometable;</PRE
-><P>
+</p><pre class="programlisting">
+SELECT count(*) FROM sometable;
+</pre><p>
     will require effort proportional to the size of the table:
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> will need to scan either the
+    <span class="productname">PostgreSQL</span> will need to scan either the
     entire table or the entirety of an index which includes all rows in
     the table.
-   </P
-></BLOCKQUOTE
-></DIV
-><P
->   The aggregate functions <CODE
-CLASS="FUNCTION"
->array_agg</CODE
->,
-   <CODE
-CLASS="FUNCTION"
->json_agg</CODE
->, <CODE
-CLASS="FUNCTION"
->jsonb_agg</CODE
->,
-   <CODE
-CLASS="FUNCTION"
->json_object_agg</CODE
->, <CODE
-CLASS="FUNCTION"
->jsonb_object_agg</CODE
->,
-   <CODE
-CLASS="FUNCTION"
->string_agg</CODE
->,
-   and <CODE
-CLASS="FUNCTION"
->xmlagg</CODE
->, as well as similar user-defined
+   </p></div><p>
+   The aggregate functions <code class="function">array_agg</code>,
+   <code class="function">json_agg</code>, <code class="function">jsonb_agg</code>,
+   <code class="function">json_object_agg</code>, <code class="function">jsonb_object_agg</code>,
+   <code class="function">string_agg</code>,
+   and <code class="function">xmlagg</code>, as well as similar user-defined
    aggregate functions, produce meaningfully different result values
    depending on the order of the input values.  This ordering is
    unspecified by default, but can be controlled by writing an
-   <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clause within the aggregate call, as shown in
-   <A
-HREF="sql-expressions.html#SYNTAX-AGGREGATES"
->Section 4.2.7</A
->.
+   <code class="literal">ORDER BY</code> clause within the aggregate call, as shown in
+   <a class="xref" href="sql-expressions.html#SYNTAX-AGGREGATES" title="4.2.7. Aggregate Expressions">Section 4.2.7</a>.
    Alternatively, supplying the input values from a sorted subquery
    will usually work.  For example:
 
-</P><PRE
-CLASS="SCREEN"
->SELECT xmlagg(x) FROM (SELECT x FROM test ORDER BY y DESC) AS tab;</PRE
-><P>
+</p><pre class="screen">
+SELECT xmlagg(x) FROM (SELECT x FROM test ORDER BY y DESC) AS tab;
+</pre><p>
 
    Beware that this approach can fail if the outer query level contains
    additional processing, such as a join, because that might cause the
    subquery's output to be reordered before the aggregate is computed.
-  </P
-><P
->   <A
-HREF="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
->Table 9-52</A
-> shows
+  </p><p>
+   <a class="xref" href="functions-aggregate.html#FUNCTIONS-AGGREGATE-STATISTICS-TABLE" title="Table 9.53. Aggregate Functions for Statistics">Table 9.53</a> shows
    aggregate functions typically used in statistical analysis.
    (These are separated out merely to avoid cluttering the listing
    of more-commonly-used aggregates.)  Where the description mentions
-   <TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
->, it means the
+   <em class="replaceable"><code>N</code></em>, it means the
    number of input rows for which all the input expressions are non-null.
    In all cases, null is returned if the computation is meaningless,
-   for example when <TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
-> is zero.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="FUNCTIONS-AGGREGATE-STATISTICS-TABLE"
-></A
-><P
-><B
->Table 9-52. Aggregate Functions for Statistics</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><COL><COL><THEAD
-><TR
-><TH
->Function</TH
-><TH
->Argument Type</TH
-><TH
->Return Type</TH
-><TH
->Partial Mode</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->corr(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->correlation coefficient</TD
-></TR
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->covar_pop(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->population covariance</TD
-></TR
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->covar_samp(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->sample covariance</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->regr_avgx(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->average of the independent variable
-      (<TT
-CLASS="LITERAL"
->sum(<TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)/<TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
-></TT
->)</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->regr_avgy(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->average of the dependent variable
-      (<TT
-CLASS="LITERAL"
->sum(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->)/<TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
-></TT
->)</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->regr_count(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->bigint</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->number of input rows in which both expressions are nonnull</TD
-></TR
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->regr_intercept(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->y-intercept of the least-squares-fit linear equation
-      determined by the (<TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->) pairs</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->regr_r2(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->square of the correlation coefficient</TD
-></TR
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->regr_slope(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->slope of the least-squares-fit linear equation determined
-      by the (<TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->,
-      <TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->) pairs</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->regr_sxx(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
-><TT
-CLASS="LITERAL"
->sum(<TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->^2) - sum(<TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)^2/<TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
-></TT
-> (<SPAN
-CLASS="QUOTE"
->"sum of
-      squares"</SPAN
-> of the independent variable)</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->regr_sxy(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
-><TT
-CLASS="LITERAL"
->sum(<TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->*<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->) - sum(<TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->) * sum(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->)/<TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
-></TT
-> (<SPAN
-CLASS="QUOTE"
->"sum of
-      products"</SPAN
-> of independent times dependent
-      variable)</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->regr_syy(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->, <TT
-CLASS="REPLACEABLE"
-><I
->X</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
-><TT
-CLASS="LITERAL"
->sum(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->^2) - sum(<TT
-CLASS="REPLACEABLE"
-><I
->Y</I
-></TT
->)^2/<TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
-></TT
-> (<SPAN
-CLASS="QUOTE"
->"sum of
-      squares"</SPAN
-> of the dependent variable)</TD
-></TR
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->stddev(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->smallint</TT
->, <TT
-CLASS="TYPE"
->int</TT
->,
-       <TT
-CLASS="TYPE"
->bigint</TT
->, <TT
-CLASS="TYPE"
->real</TT
->, <TT
-CLASS="TYPE"
->double
-       precision</TT
->, or <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
-> for floating-point arguments,
-       otherwise <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->historical alias for <CODE
-CLASS="FUNCTION"
->stddev_samp</CODE
-></TD
-></TR
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->stddev_pop(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->smallint</TT
->, <TT
-CLASS="TYPE"
->int</TT
->,
-       <TT
-CLASS="TYPE"
->bigint</TT
->, <TT
-CLASS="TYPE"
->real</TT
->, <TT
-CLASS="TYPE"
->double
-       precision</TT
->, or <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
-> for floating-point arguments,
-       otherwise <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->population standard deviation of the input values</TD
-></TR
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->stddev_samp(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->smallint</TT
->, <TT
-CLASS="TYPE"
->int</TT
->,
-       <TT
-CLASS="TYPE"
->bigint</TT
->, <TT
-CLASS="TYPE"
->real</TT
->, <TT
-CLASS="TYPE"
->double
-       precision</TT
->, or <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
-> for floating-point arguments,
-       otherwise <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->sample standard deviation of the input values</TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->variance</CODE
->(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->smallint</TT
->, <TT
-CLASS="TYPE"
->int</TT
->,
-       <TT
-CLASS="TYPE"
->bigint</TT
->, <TT
-CLASS="TYPE"
->real</TT
->, <TT
-CLASS="TYPE"
->double
-       precision</TT
->, or <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
-> for floating-point arguments,
-       otherwise <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->historical alias for <CODE
-CLASS="FUNCTION"
->var_samp</CODE
-></TD
-></TR
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->var_pop</CODE
->(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->smallint</TT
->, <TT
-CLASS="TYPE"
->int</TT
->,
-       <TT
-CLASS="TYPE"
->bigint</TT
->, <TT
-CLASS="TYPE"
->real</TT
->, <TT
-CLASS="TYPE"
->double
-       precision</TT
->, or <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
-> for floating-point arguments,
-       otherwise <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->population variance of the input values (square of the population standard deviation)</TD
-></TR
-><TR
-><TD
->       
-       
-       <CODE
-CLASS="FUNCTION"
->var_samp</CODE
->(<TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->)
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->smallint</TT
->, <TT
-CLASS="TYPE"
->int</TT
->,
-       <TT
-CLASS="TYPE"
->bigint</TT
->, <TT
-CLASS="TYPE"
->real</TT
->, <TT
-CLASS="TYPE"
->double
-       precision</TT
->, or <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
-> for floating-point arguments,
-       otherwise <TT
-CLASS="TYPE"
->numeric</TT
->
-      </TD
-><TD
->Yes</TD
-><TD
->sample variance of the input values (square of the sample standard deviation)</TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   <A
-HREF="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE"
->Table 9-53</A
-> shows some
-   aggregate functions that use the <I
-CLASS="FIRSTTERM"
->ordered-set aggregate</I
->
-   syntax.  These functions are sometimes referred to as <SPAN
-CLASS="QUOTE"
->"inverse
-   distribution"</SPAN
-> functions.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="FUNCTIONS-ORDEREDSET-TABLE"
-></A
-><P
-><B
->Table 9-53. Ordered-Set Aggregate Functions</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><COL><COL><COL><THEAD
-><TR
-><TH
->Function</TH
-><TH
->Direct Argument Type(s)</TH
-><TH
->Aggregated Argument Type(s)</TH
-><TH
->Return Type</TH
-><TH
->Partial Mode</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->mode() WITHIN GROUP (ORDER BY <TT
-CLASS="REPLACEABLE"
-><I
->sort_expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->&nbsp;</TD
-><TD
->       any sortable type
-      </TD
-><TD
->       same as sort expression
-      </TD
-><TD
->No</TD
-><TD
->       returns the most frequent input value (arbitrarily choosing the first
+   for example when <em class="replaceable"><code>N</code></em> is zero.
+  </p><a id="id-1.5.8.25.11" class="indexterm"></a><a id="id-1.5.8.25.12" class="indexterm"></a><div class="table" id="FUNCTIONS-AGGREGATE-STATISTICS-TABLE"><p class="title"><strong>Table 9.53. Aggregate Functions for Statistics</strong></p><div class="table-contents"><table class="table" summary="Aggregate Functions for Statistics" border="1"><colgroup><col /><col /><col /><col /><col /></colgroup><thead><tr><th>Function</th><th>Argument Type</th><th>Return Type</th><th>Partial Mode</th><th>Description</th></tr></thead><tbody><tr><td>
+       <a id="id-1.5.8.25.13.2.2.1.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.13.2.2.1.1.2" class="indexterm"></a>
+       <code class="function">corr(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td>correlation coefficient</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.2.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.13.2.2.2.1.2" class="indexterm"></a>
+       <code class="function">covar_pop(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td>population covariance</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.3.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.13.2.2.3.1.2" class="indexterm"></a>
+       <code class="function">covar_samp(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td>sample covariance</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.4.1.1" class="indexterm"></a>
+       <code class="function">regr_avgx(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td>average of the independent variable
+      (<code class="literal">sum(<em class="replaceable"><code>X</code></em>)/<em class="replaceable"><code>N</code></em></code>)</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.5.1.1" class="indexterm"></a>
+       <code class="function">regr_avgy(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td>average of the dependent variable
+      (<code class="literal">sum(<em class="replaceable"><code>Y</code></em>)/<em class="replaceable"><code>N</code></em></code>)</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.6.1.1" class="indexterm"></a>
+       <code class="function">regr_count(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">bigint</code>
+      </td><td>Yes</td><td>number of input rows in which both expressions are nonnull</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.7.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.13.2.2.7.1.2" class="indexterm"></a>
+       <code class="function">regr_intercept(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td>y-intercept of the least-squares-fit linear equation
+      determined by the (<em class="replaceable"><code>X</code></em>, <em class="replaceable"><code>Y</code></em>) pairs</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.8.1.1" class="indexterm"></a>
+       <code class="function">regr_r2(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td>square of the correlation coefficient</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.9.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.13.2.2.9.1.2" class="indexterm"></a>
+       <code class="function">regr_slope(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td>slope of the least-squares-fit linear equation determined
+      by the (<em class="replaceable"><code>X</code></em>,
+      <em class="replaceable"><code>Y</code></em>) pairs</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.10.1.1" class="indexterm"></a>
+       <code class="function">regr_sxx(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td><code class="literal">sum(<em class="replaceable"><code>X</code></em>^2) - sum(<em class="replaceable"><code>X</code></em>)^2/<em class="replaceable"><code>N</code></em></code> (<span class="quote">“<span class="quote">sum of
+      squares</span>”</span> of the independent variable)</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.11.1.1" class="indexterm"></a>
+       <code class="function">regr_sxy(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td><code class="literal">sum(<em class="replaceable"><code>X</code></em>*<em class="replaceable"><code>Y</code></em>) - sum(<em class="replaceable"><code>X</code></em>) * sum(<em class="replaceable"><code>Y</code></em>)/<em class="replaceable"><code>N</code></em></code> (<span class="quote">“<span class="quote">sum of
+      products</span>”</span> of independent times dependent
+      variable)</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.12.1.1" class="indexterm"></a>
+       <code class="function">regr_syy(<em class="replaceable"><code>Y</code></em>, <em class="replaceable"><code>X</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>Yes</td><td><code class="literal">sum(<em class="replaceable"><code>Y</code></em>^2) - sum(<em class="replaceable"><code>Y</code></em>)^2/<em class="replaceable"><code>N</code></em></code> (<span class="quote">“<span class="quote">sum of
+      squares</span>”</span> of the dependent variable)</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.13.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.13.2.2.13.1.2" class="indexterm"></a>
+       <code class="function">stddev(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">smallint</code>, <code class="type">int</code>,
+       <code class="type">bigint</code>, <code class="type">real</code>, <code class="type">double
+       precision</code>, or <code class="type">numeric</code>
+      </td><td>
+       <code class="type">double precision</code> for floating-point arguments,
+       otherwise <code class="type">numeric</code>
+      </td><td>Yes</td><td>historical alias for <code class="function">stddev_samp</code></td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.14.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.13.2.2.14.1.2" class="indexterm"></a>
+       <code class="function">stddev_pop(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">smallint</code>, <code class="type">int</code>,
+       <code class="type">bigint</code>, <code class="type">real</code>, <code class="type">double
+       precision</code>, or <code class="type">numeric</code>
+      </td><td>
+       <code class="type">double precision</code> for floating-point arguments,
+       otherwise <code class="type">numeric</code>
+      </td><td>Yes</td><td>population standard deviation of the input values</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.15.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.13.2.2.15.1.2" class="indexterm"></a>
+       <code class="function">stddev_samp(<em class="replaceable"><code>expression</code></em>)</code>
+      </td><td>
+       <code class="type">smallint</code>, <code class="type">int</code>,
+       <code class="type">bigint</code>, <code class="type">real</code>, <code class="type">double
+       precision</code>, or <code class="type">numeric</code>
+      </td><td>
+       <code class="type">double precision</code> for floating-point arguments,
+       otherwise <code class="type">numeric</code>
+      </td><td>Yes</td><td>sample standard deviation of the input values</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.16.1.1" class="indexterm"></a>
+       <code class="function">variance</code>(<em class="replaceable"><code>expression</code></em>)
+      </td><td>
+       <code class="type">smallint</code>, <code class="type">int</code>,
+       <code class="type">bigint</code>, <code class="type">real</code>, <code class="type">double
+       precision</code>, or <code class="type">numeric</code>
+      </td><td>
+       <code class="type">double precision</code> for floating-point arguments,
+       otherwise <code class="type">numeric</code>
+      </td><td>Yes</td><td>historical alias for <code class="function">var_samp</code></td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.17.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.13.2.2.17.1.2" class="indexterm"></a>
+       <code class="function">var_pop</code>(<em class="replaceable"><code>expression</code></em>)
+      </td><td>
+       <code class="type">smallint</code>, <code class="type">int</code>,
+       <code class="type">bigint</code>, <code class="type">real</code>, <code class="type">double
+       precision</code>, or <code class="type">numeric</code>
+      </td><td>
+       <code class="type">double precision</code> for floating-point arguments,
+       otherwise <code class="type">numeric</code>
+      </td><td>Yes</td><td>population variance of the input values (square of the population standard deviation)</td></tr><tr><td>
+       <a id="id-1.5.8.25.13.2.2.18.1.1" class="indexterm"></a>
+       <a id="id-1.5.8.25.13.2.2.18.1.2" class="indexterm"></a>
+       <code class="function">var_samp</code>(<em class="replaceable"><code>expression</code></em>)
+      </td><td>
+       <code class="type">smallint</code>, <code class="type">int</code>,
+       <code class="type">bigint</code>, <code class="type">real</code>, <code class="type">double
+       precision</code>, or <code class="type">numeric</code>
+      </td><td>
+       <code class="type">double precision</code> for floating-point arguments,
+       otherwise <code class="type">numeric</code>
+      </td><td>Yes</td><td>sample variance of the input values (square of the sample standard deviation)</td></tr></tbody></table></div></div><br class="table-break" /><p>
+   <a class="xref" href="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE" title="Table 9.54. Ordered-Set Aggregate Functions">Table 9.54</a> shows some
+   aggregate functions that use the <em class="firstterm">ordered-set aggregate</em>
+   syntax.  These functions are sometimes referred to as <span class="quote">“<span class="quote">inverse
+   distribution</span>”</span> functions.
+  </p><a id="id-1.5.8.25.15" class="indexterm"></a><a id="id-1.5.8.25.16" class="indexterm"></a><div class="table" id="FUNCTIONS-ORDEREDSET-TABLE"><p class="title"><strong>Table 9.54. Ordered-Set Aggregate Functions</strong></p><div class="table-contents"><table class="table" summary="Ordered-Set Aggregate Functions" border="1"><colgroup><col /><col /><col /><col /><col /><col /></colgroup><thead><tr><th>Function</th><th>Direct Argument Type(s)</th><th>Aggregated Argument Type(s)</th><th>Return Type</th><th>Partial Mode</th><th>Description</th></tr></thead><tbody><tr><td>
+       <a id="id-1.5.8.25.17.2.2.1.1.1" class="indexterm"></a>
+       <code class="function">mode() WITHIN GROUP (ORDER BY <em class="replaceable"><code>sort_expression</code></em>)</code>
+      </td><td>
+      </td><td>
+       any sortable type
+      </td><td>
+       same as sort expression
+      </td><td>No</td><td>
+       returns the most frequent input value (arbitrarily choosing the first
        one if there are multiple equally-frequent results)
-      </TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->percentile_cont(<TT
-CLASS="REPLACEABLE"
-><I
->fraction</I
-></TT
->) WITHIN GROUP (ORDER BY <TT
-CLASS="REPLACEABLE"
-><I
->sort_expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
-> or <TT
-CLASS="TYPE"
->interval</TT
->
-      </TD
-><TD
->       same as sort expression
-      </TD
-><TD
->No</TD
-><TD
->       continuous percentile: returns a value corresponding to the specified
+      </td></tr><tr><td>
+       <a id="id-1.5.8.25.17.2.2.2.1.1" class="indexterm"></a>
+       <code class="function">percentile_cont(<em class="replaceable"><code>fraction</code></em>) WITHIN GROUP (ORDER BY <em class="replaceable"><code>sort_expression</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       <code class="type">double precision</code> or <code class="type">interval</code>
+      </td><td>
+       same as sort expression
+      </td><td>No</td><td>
+       continuous percentile: returns a value corresponding to the specified
        fraction in the ordering, interpolating between adjacent input items if
        needed
-      </TD
-></TR
-><TR
-><TD
->       <CODE
-CLASS="FUNCTION"
->percentile_cont(<TT
-CLASS="REPLACEABLE"
-><I
->fractions</I
-></TT
->) WITHIN GROUP (ORDER BY <TT
-CLASS="REPLACEABLE"
-><I
->sort_expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision[]</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
-> or <TT
-CLASS="TYPE"
->interval</TT
->
-      </TD
-><TD
->       array of sort expression's type
-      </TD
-><TD
->No</TD
-><TD
->       multiple continuous percentile: returns an array of results matching
-       the shape of the <TT
-CLASS="REPLACEABLE"
-><I
->fractions</I
-></TT
-> parameter, with each
+      </td></tr><tr><td>
+       <code class="function">percentile_cont(<em class="replaceable"><code>fractions</code></em>) WITHIN GROUP (ORDER BY <em class="replaceable"><code>sort_expression</code></em>)</code>
+      </td><td>
+       <code class="type">double precision[]</code>
+      </td><td>
+       <code class="type">double precision</code> or <code class="type">interval</code>
+      </td><td>
+       array of sort expression's type
+      </td><td>No</td><td>
+       multiple continuous percentile: returns an array of results matching
+       the shape of the <em class="replaceable"><code>fractions</code></em> parameter, with each
        non-null element replaced by the value corresponding to that percentile
-      </TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->percentile_disc(<TT
-CLASS="REPLACEABLE"
-><I
->fraction</I
-></TT
->) WITHIN GROUP (ORDER BY <TT
-CLASS="REPLACEABLE"
-><I
->sort_expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->       any sortable type
-      </TD
-><TD
->       same as sort expression
-      </TD
-><TD
->No</TD
-><TD
->       discrete percentile: returns the first input value whose position in
+      </td></tr><tr><td>
+       <a id="id-1.5.8.25.17.2.2.4.1.1" class="indexterm"></a>
+       <code class="function">percentile_disc(<em class="replaceable"><code>fraction</code></em>) WITHIN GROUP (ORDER BY <em class="replaceable"><code>sort_expression</code></em>)</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>
+       any sortable type
+      </td><td>
+       same as sort expression
+      </td><td>No</td><td>
+       discrete percentile: returns the first input value whose position in
        the ordering equals or exceeds the specified fraction
-      </TD
-></TR
-><TR
-><TD
->       <CODE
-CLASS="FUNCTION"
->percentile_disc(<TT
-CLASS="REPLACEABLE"
-><I
->fractions</I
-></TT
->) WITHIN GROUP (ORDER BY <TT
-CLASS="REPLACEABLE"
-><I
->sort_expression</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision[]</TT
->
-      </TD
-><TD
->       any sortable type
-      </TD
-><TD
->       array of sort expression's type
-      </TD
-><TD
->No</TD
-><TD
->       multiple discrete percentile: returns an array of results matching the
-       shape of the <TT
-CLASS="REPLACEABLE"
-><I
->fractions</I
-></TT
-> parameter, with each non-null
+      </td></tr><tr><td>
+       <code class="function">percentile_disc(<em class="replaceable"><code>fractions</code></em>) WITHIN GROUP (ORDER BY <em class="replaceable"><code>sort_expression</code></em>)</code>
+      </td><td>
+       <code class="type">double precision[]</code>
+      </td><td>
+       any sortable type
+      </td><td>
+       array of sort expression's type
+      </td><td>No</td><td>
+       multiple discrete percentile: returns an array of results matching the
+       shape of the <em class="replaceable"><code>fractions</code></em> parameter, with each non-null
        element replaced by the input value corresponding to that percentile
-      </TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   All the aggregates listed in <A
-HREF="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE"
->Table 9-53</A
->
+      </td></tr></tbody></table></div></div><br class="table-break" /><p>
+   All the aggregates listed in <a class="xref" href="functions-aggregate.html#FUNCTIONS-ORDEREDSET-TABLE" title="Table 9.54. Ordered-Set Aggregate Functions">Table 9.54</a>
    ignore null values in their sorted input.  For those that take
-   a <TT
-CLASS="REPLACEABLE"
-><I
->fraction</I
-></TT
-> parameter, the fraction value must be
+   a <em class="replaceable"><code>fraction</code></em> parameter, the fraction value must be
    between 0 and 1; an error is thrown if not.  However, a null fraction value
    simply produces a null result.
-  </P
-><P
->   Each of the aggregates listed in
-   <A
-HREF="functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE"
->Table 9-54</A
-> is associated with a
+  </p><a id="id-1.5.8.25.19" class="indexterm"></a><p>
+   Each of the aggregates listed in
+   <a class="xref" href="functions-aggregate.html#FUNCTIONS-HYPOTHETICAL-TABLE" title="Table 9.55. Hypothetical-Set Aggregate Functions">Table 9.55</a> is associated with a
    window function of the same name defined in
-   <A
-HREF="functions-window.html"
->Section 9.21</A
->.  In each case, the aggregate result
+   <a class="xref" href="functions-window.html" title="9.21. Window Functions">Section 9.21</a>.  In each case, the aggregate result
    is the value that the associated window function would have
-   returned for the <SPAN
-CLASS="QUOTE"
->"hypothetical"</SPAN
-> row constructed from
-   <TT
-CLASS="REPLACEABLE"
-><I
->args</I
-></TT
->, if such a row had been added to the sorted
-   group of rows computed from the <TT
-CLASS="REPLACEABLE"
-><I
->sorted_args</I
-></TT
->.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="FUNCTIONS-HYPOTHETICAL-TABLE"
-></A
-><P
-><B
->Table 9-54. Hypothetical-Set Aggregate Functions</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><COL><COL><COL><THEAD
-><TR
-><TH
->Function</TH
-><TH
->Direct Argument Type(s)</TH
-><TH
->Aggregated Argument Type(s)</TH
-><TH
->Return Type</TH
-><TH
->Partial Mode</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->rank(<TT
-CLASS="REPLACEABLE"
-><I
->args</I
-></TT
->) WITHIN GROUP (ORDER BY <TT
-CLASS="REPLACEABLE"
-><I
->sorted_args</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> <TT
-CLASS="TYPE"
->"any"</TT
->
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> <TT
-CLASS="TYPE"
->"any"</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->bigint</TT
->
-      </TD
-><TD
->No</TD
-><TD
->       rank of the hypothetical row, with gaps for duplicate rows
-      </TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->dense_rank(<TT
-CLASS="REPLACEABLE"
-><I
->args</I
-></TT
->) WITHIN GROUP (ORDER BY <TT
-CLASS="REPLACEABLE"
-><I
->sorted_args</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> <TT
-CLASS="TYPE"
->"any"</TT
->
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> <TT
-CLASS="TYPE"
->"any"</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->bigint</TT
->
-      </TD
-><TD
->No</TD
-><TD
->       rank of the hypothetical row, without gaps
-      </TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->percent_rank(<TT
-CLASS="REPLACEABLE"
-><I
->args</I
-></TT
->) WITHIN GROUP (ORDER BY <TT
-CLASS="REPLACEABLE"
-><I
->sorted_args</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> <TT
-CLASS="TYPE"
->"any"</TT
->
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> <TT
-CLASS="TYPE"
->"any"</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->No</TD
-><TD
->       relative rank of the hypothetical row, ranging from 0 to 1
-      </TD
-></TR
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->cume_dist(<TT
-CLASS="REPLACEABLE"
-><I
->args</I
-></TT
->) WITHIN GROUP (ORDER BY <TT
-CLASS="REPLACEABLE"
-><I
->sorted_args</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> <TT
-CLASS="TYPE"
->"any"</TT
->
-      </TD
-><TD
->       <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> <TT
-CLASS="TYPE"
->"any"</TT
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->double precision</TT
->
-      </TD
-><TD
->No</TD
-><TD
->       relative rank of the hypothetical row, ranging from
-       1/<TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
-> to 1
-      </TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   For each of these hypothetical-set aggregates, the list of direct arguments
-   given in <TT
-CLASS="REPLACEABLE"
-><I
->args</I
-></TT
-> must match the number and types of
-   the aggregated arguments given in <TT
-CLASS="REPLACEABLE"
-><I
->sorted_args</I
-></TT
->.
+   returned for the <span class="quote">“<span class="quote">hypothetical</span>”</span> row constructed from
+   <em class="replaceable"><code>args</code></em>, if such a row had been added to the sorted
+   group of rows computed from the <em class="replaceable"><code>sorted_args</code></em>.
+  </p><div class="table" id="FUNCTIONS-HYPOTHETICAL-TABLE"><p class="title"><strong>Table 9.55. Hypothetical-Set Aggregate Functions</strong></p><div class="table-contents"><table class="table" summary="Hypothetical-Set Aggregate Functions" border="1"><colgroup><col /><col /><col /><col /><col /><col /></colgroup><thead><tr><th>Function</th><th>Direct Argument Type(s)</th><th>Aggregated Argument Type(s)</th><th>Return Type</th><th>Partial Mode</th><th>Description</th></tr></thead><tbody><tr><td>
+       <a id="id-1.5.8.25.21.2.2.1.1.1" class="indexterm"></a>
+       <code class="function">rank(<em class="replaceable"><code>args</code></em>) WITHIN GROUP (ORDER BY <em class="replaceable"><code>sorted_args</code></em>)</code>
+      </td><td>
+       <code class="literal">VARIADIC</code> <code class="type">"any"</code>
+      </td><td>
+       <code class="literal">VARIADIC</code> <code class="type">"any"</code>
+      </td><td>
+       <code class="type">bigint</code>
+      </td><td>No</td><td>
+       rank of the hypothetical row, with gaps for duplicate rows
+      </td></tr><tr><td>
+       <a id="id-1.5.8.25.21.2.2.2.1.1" class="indexterm"></a>
+       <code class="function">dense_rank(<em class="replaceable"><code>args</code></em>) WITHIN GROUP (ORDER BY <em class="replaceable"><code>sorted_args</code></em>)</code>
+      </td><td>
+       <code class="literal">VARIADIC</code> <code class="type">"any"</code>
+      </td><td>
+       <code class="literal">VARIADIC</code> <code class="type">"any"</code>
+      </td><td>
+       <code class="type">bigint</code>
+      </td><td>No</td><td>
+       rank of the hypothetical row, without gaps
+      </td></tr><tr><td>
+       <a id="id-1.5.8.25.21.2.2.3.1.1" class="indexterm"></a>
+       <code class="function">percent_rank(<em class="replaceable"><code>args</code></em>) WITHIN GROUP (ORDER BY <em class="replaceable"><code>sorted_args</code></em>)</code>
+      </td><td>
+       <code class="literal">VARIADIC</code> <code class="type">"any"</code>
+      </td><td>
+       <code class="literal">VARIADIC</code> <code class="type">"any"</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>No</td><td>
+       relative rank of the hypothetical row, ranging from 0 to 1
+      </td></tr><tr><td>
+       <a id="id-1.5.8.25.21.2.2.4.1.1" class="indexterm"></a>
+       <code class="function">cume_dist(<em class="replaceable"><code>args</code></em>) WITHIN GROUP (ORDER BY <em class="replaceable"><code>sorted_args</code></em>)</code>
+      </td><td>
+       <code class="literal">VARIADIC</code> <code class="type">"any"</code>
+      </td><td>
+       <code class="literal">VARIADIC</code> <code class="type">"any"</code>
+      </td><td>
+       <code class="type">double precision</code>
+      </td><td>No</td><td>
+       relative rank of the hypothetical row, ranging from
+       1/<em class="replaceable"><code>N</code></em> to 1
+      </td></tr></tbody></table></div></div><br class="table-break" /><p>
+   For each of these hypothetical-set aggregates, the list of direct arguments
+   given in <em class="replaceable"><code>args</code></em> must match the number and types of
+   the aggregated arguments given in <em class="replaceable"><code>sorted_args</code></em>.
    Unlike most built-in aggregates, these aggregates are not strict, that is
    they do not drop input rows containing nulls.  Null values sort according
-   to the rule specified in the <TT
-CLASS="LITERAL"
->ORDER BY</TT
-> clause.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="FUNCTIONS-GROUPING-TABLE"
-></A
-><P
-><B
->Table 9-55. Grouping Operations</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><THEAD
-><TR
-><TH
->Function</TH
-><TH
->Return Type</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
->       
-       <CODE
-CLASS="FUNCTION"
->GROUPING(<TT
-CLASS="REPLACEABLE"
-><I
->args...</I
-></TT
->)</CODE
->
-      </TD
-><TD
->       <TT
-CLASS="TYPE"
->integer</TT
->
-      </TD
-><TD
->       Integer bit mask indicating which arguments are not being included in the current
+   to the rule specified in the <code class="literal">ORDER BY</code> clause.
+  </p><div class="table" id="FUNCTIONS-GROUPING-TABLE"><p class="title"><strong>Table 9.56. Grouping Operations</strong></p><div class="table-contents"><table class="table" summary="Grouping Operations" border="1"><colgroup><col /><col /><col /></colgroup><thead><tr><th>Function</th><th>Return Type</th><th>Description</th></tr></thead><tbody><tr><td>
+       <a id="id-1.5.8.25.23.2.2.1.1.1" class="indexterm"></a>
+       <code class="function">GROUPING(<em class="replaceable"><code>args...</code></em>)</code>
+      </td><td>
+       <code class="type">integer</code>
+      </td><td>
+       Integer bit mask indicating which arguments are not being included in the current
        grouping set
-      </TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->    Grouping operations are used in conjunction with grouping sets (see
-    <A
-HREF="queries-table-expressions.html#QUERIES-GROUPING-SETS"
->Section 7.2.4</A
->) to distinguish result rows.  The
-    arguments to the <TT
-CLASS="LITERAL"
->GROUPING</TT
-> operation are not actually evaluated,
-    but they must match exactly expressions given in the <TT
-CLASS="LITERAL"
->GROUP BY</TT
->
+      </td></tr></tbody></table></div></div><br class="table-break" /><p>
+    Grouping operations are used in conjunction with grouping sets (see
+    <a class="xref" href="queries-table-expressions.html#QUERIES-GROUPING-SETS" title="7.2.4. GROUPING SETS, CUBE, and ROLLUP">Section 7.2.4</a>) to distinguish result rows.  The
+    arguments to the <code class="literal">GROUPING</code> operation are not actually evaluated,
+    but they must match exactly expressions given in the <code class="literal">GROUP BY</code>
     clause of the associated query level.  Bits are assigned with the rightmost
     argument being the least-significant bit; each bit is 0 if the corresponding
     expression is included in the grouping criteria of the grouping set generating
     the result row, and 1 if it is not.  For example:
-</P><PRE
-CLASS="SCREEN"
-><SAMP
-CLASS="PROMPT"
->=&gt;</SAMP
-> <KBD
-CLASS="USERINPUT"
->SELECT * FROM items_sold;</KBD
->
+</p><pre class="screen">
+<code class="prompt">=&gt;</code> <strong class="userinput"><code>SELECT * FROM items_sold;</code></strong>
  make  | model | sales
 -------+-------+-------
  Foo   | GT    |  10
@@ -2530,13 +544,7 @@ CLASS="USERINPUT"
  Bar   | Sport |  5
 (4 rows)
 
-<SAMP
-CLASS="PROMPT"
->=&gt;</SAMP
-> <KBD
-CLASS="USERINPUT"
->SELECT make, model, GROUPING(make,model), sum(sales) FROM items_sold GROUP BY ROLLUP(make,model);</KBD
->
+<code class="prompt">=&gt;</code> <strong class="userinput"><code>SELECT make, model, GROUPING(make,model), sum(sales) FROM items_sold GROUP BY ROLLUP(make,model);</code></strong>
  make  | model | grouping | sum
 -------+-------+----------+-----
  Foo   | GT    |        0 | 10
@@ -2546,72 +554,6 @@ CLASS="USERINPUT"
  Foo   |       |        1 | 30
  Bar   |       |        1 | 20
        |       |        3 | 50
-(7 rows)</PRE
-><P>
-   </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="functions-range.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="functions-window.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Range Functions and Operators</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="functions.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Window Functions</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+(7 rows)
+</pre><p>
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="functions-range.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="functions.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="functions-window.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">9.19. Range Functions and Operators </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 9.21. Window Functions</td></tr></table></div></body></html>

@@ -1,475 +1,121 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->GRANT</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="FETCH"
-HREF="sql-fetch.html"><LINK
-REL="NEXT"
-TITLE="IMPORT FOREIGN SCHEMA"
-HREF="sql-importforeignschema.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="FETCH"
-HREF="sql-fetch.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="IMPORT FOREIGN SCHEMA"
-HREF="sql-importforeignschema.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-GRANT"
-></A
->GRANT</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN88434"
-></A
-><H2
->Name</H2
->GRANT&nbsp;--&nbsp;define access privileges</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN88437"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->GRANT { { SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER }
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>GRANT</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-fetch.html" title="FETCH" /><link rel="next" href="sql-importforeignschema.html" title="IMPORT FOREIGN SCHEMA" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">GRANT</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-fetch.html" title="FETCH">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-importforeignschema.html" title="IMPORT FOREIGN SCHEMA">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-GRANT"><div class="titlepage"></div><a id="id-1.9.3.150.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">GRANT</span></h2><p>GRANT — define access privileges</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+GRANT { { SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER }
     [, ...] | ALL [ PRIVILEGES ] }
-    ON { [ TABLE ] <TT
-CLASS="REPLACEABLE"
-><I
->table_name</I
-></TT
-> [, ...]
-         | ALL TABLES IN SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> [, ...] }
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON { [ TABLE ] <em class="replaceable"><code>table_name</code></em> [, ...]
+         | ALL TABLES IN SCHEMA <em class="replaceable"><code>schema_name</code></em> [, ...] }
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
-GRANT { { SELECT | INSERT | UPDATE | REFERENCES } ( <TT
-CLASS="REPLACEABLE"
-><I
->column_name</I
-></TT
-> [, ...] )
-    [, ...] | ALL [ PRIVILEGES ] ( <TT
-CLASS="REPLACEABLE"
-><I
->column_name</I
-></TT
-> [, ...] ) }
-    ON [ TABLE ] <TT
-CLASS="REPLACEABLE"
-><I
->table_name</I
-></TT
-> [, ...]
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+GRANT { { SELECT | INSERT | UPDATE | REFERENCES } ( <em class="replaceable"><code>column_name</code></em> [, ...] )
+    [, ...] | ALL [ PRIVILEGES ] ( <em class="replaceable"><code>column_name</code></em> [, ...] ) }
+    ON [ TABLE ] <em class="replaceable"><code>table_name</code></em> [, ...]
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { { USAGE | SELECT | UPDATE }
     [, ...] | ALL [ PRIVILEGES ] }
-    ON { SEQUENCE <TT
-CLASS="REPLACEABLE"
-><I
->sequence_name</I
-></TT
-> [, ...]
-         | ALL SEQUENCES IN SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> [, ...] }
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON { SEQUENCE <em class="replaceable"><code>sequence_name</code></em> [, ...]
+         | ALL SEQUENCES IN SCHEMA <em class="replaceable"><code>schema_name</code></em> [, ...] }
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { { CREATE | CONNECT | TEMPORARY | TEMP } [, ...] | ALL [ PRIVILEGES ] }
-    ON DATABASE <TT
-CLASS="REPLACEABLE"
-><I
->database_name</I
-></TT
-> [, ...]
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON DATABASE <em class="replaceable"><code>database_name</code></em> [, ...]
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
-    ON DOMAIN <TT
-CLASS="REPLACEABLE"
-><I
->domain_name</I
-></TT
-> [, ...]
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON DOMAIN <em class="replaceable"><code>domain_name</code></em> [, ...]
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
-    ON FOREIGN DATA WRAPPER <TT
-CLASS="REPLACEABLE"
-><I
->fdw_name</I
-></TT
-> [, ...]
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON FOREIGN DATA WRAPPER <em class="replaceable"><code>fdw_name</code></em> [, ...]
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
-    ON FOREIGN SERVER <TT
-CLASS="REPLACEABLE"
-><I
->server_name</I
-></TT
-> [, ...]
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON FOREIGN SERVER <em class="replaceable"><code>server_name</code></em> [, ...]
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { EXECUTE | ALL [ PRIVILEGES ] }
-    ON { FUNCTION <TT
-CLASS="REPLACEABLE"
-><I
->function_name</I
-></TT
-> ( [ [ <TT
-CLASS="REPLACEABLE"
-><I
->argmode</I
-></TT
-> ] [ <TT
-CLASS="REPLACEABLE"
-><I
->arg_name</I
-></TT
-> ] <TT
-CLASS="REPLACEABLE"
-><I
->arg_type</I
-></TT
-> [, ...] ] ) [, ...]
-         | ALL FUNCTIONS IN SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> [, ...] }
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON { { FUNCTION | PROCEDURE | ROUTINE } <em class="replaceable"><code>routine_name</code></em> [ ( [ [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>arg_name</code></em> ] <em class="replaceable"><code>arg_type</code></em> [, ...] ] ) ] [, ...]
+         | ALL { FUNCTIONS | PROCEDURES | ROUTINES } IN SCHEMA <em class="replaceable"><code>schema_name</code></em> [, ...] }
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
-    ON LANGUAGE <TT
-CLASS="REPLACEABLE"
-><I
->lang_name</I
-></TT
-> [, ...]
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON LANGUAGE <em class="replaceable"><code>lang_name</code></em> [, ...]
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { { SELECT | UPDATE } [, ...] | ALL [ PRIVILEGES ] }
-    ON LARGE OBJECT <TT
-CLASS="REPLACEABLE"
-><I
->loid</I
-></TT
-> [, ...]
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON LARGE OBJECT <em class="replaceable"><code>loid</code></em> [, ...]
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { { CREATE | USAGE } [, ...] | ALL [ PRIVILEGES ] }
-    ON SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> [, ...]
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON SCHEMA <em class="replaceable"><code>schema_name</code></em> [, ...]
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { CREATE | ALL [ PRIVILEGES ] }
-    ON TABLESPACE <TT
-CLASS="REPLACEABLE"
-><I
->tablespace_name</I
-></TT
-> [, ...]
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON TABLESPACE <em class="replaceable"><code>tablespace_name</code></em> [, ...]
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
-    ON TYPE <TT
-CLASS="REPLACEABLE"
-><I
->type_name</I
-></TT
-> [, ...]
-    TO <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> [, ...] [ WITH GRANT OPTION ]
+    ON TYPE <em class="replaceable"><code>type_name</code></em> [, ...]
+    TO <em class="replaceable"><code>role_specification</code></em> [, ...] [ WITH GRANT OPTION ]
 
-<SPAN
-CLASS="phrase"
-><SPAN
-CLASS="PHRASE"
->where <TT
-CLASS="REPLACEABLE"
-><I
->role_specification</I
-></TT
-> can be:</SPAN
-></SPAN
->
+<span class="phrase">where <em class="replaceable"><code>role_specification</code></em> can be:</span>
 
-    [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
->
+    [ GROUP ] <em class="replaceable"><code>role_name</code></em>
   | PUBLIC
   | CURRENT_USER
   | SESSION_USER
 
-GRANT <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> [, ...] TO <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> [, ...] [ WITH ADMIN OPTION ]</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-GRANT-DESCRIPTION"
-></A
-><H2
->Description</H2
-><P
->   The <TT
-CLASS="COMMAND"
->GRANT</TT
-> command has two basic variants: one
+GRANT <em class="replaceable"><code>role_name</code></em> [, ...] TO <em class="replaceable"><code>role_name</code></em> [, ...] [ WITH ADMIN OPTION ]
+</pre></div><div class="refsect1" id="SQL-GRANT-DESCRIPTION"><h2>Description</h2><p>
+   The <code class="command">GRANT</code> command has two basic variants: one
    that grants privileges on a database object (table, column, view, foreign
-   table, sequence, database, foreign-data wrapper, foreign server, function,
+   table, sequence, database, foreign-data wrapper, foreign server, function, procedure,
    procedural language, schema, or tablespace), and one that grants
    membership in a role.  These variants are similar in many ways, but
    they are different enough to be described separately.
-  </P
-><DIV
-CLASS="REFSECT2"
-><A
-NAME="SQL-GRANT-DESCRIPTION-OBJECTS"
-></A
-><H3
->GRANT on Database Objects</H3
-><P
->   This variant of the <TT
-CLASS="COMMAND"
->GRANT</TT
-> command gives specific
+  </p><div class="refsect2" id="SQL-GRANT-DESCRIPTION-OBJECTS"><h3>GRANT on Database Objects</h3><p>
+   This variant of the <code class="command">GRANT</code> command gives specific
    privileges on a database object to
    one or more roles.  These privileges are added
    to those already granted, if any.
-  </P
-><P
->   There is also an option to grant privileges on all objects of the same
+  </p><p>
+   There is also an option to grant privileges on all objects of the same
    type within one or more schemas.  This functionality is currently supported
-   only for tables, sequences, and functions (but note that <TT
-CLASS="LITERAL"
->ALL
-   TABLES</TT
-> is considered to include views and foreign tables).
-  </P
-><P
->   The key word <TT
-CLASS="LITERAL"
->PUBLIC</TT
-> indicates that the
+   only for tables, sequences, functions, and procedures.  <code class="literal">ALL
+   TABLES</code> also affects views and foreign tables, just like the
+   specific-object <code class="command">GRANT</code> command.  <code class="literal">ALL
+   FUNCTIONS</code> also affects aggregate functions, but not procedures,
+   again just like the specific-object <code class="command">GRANT</code> command.
+  </p><p>
+   The key word <code class="literal">PUBLIC</code> indicates that the
    privileges are to be granted to all roles, including those that might
-   be created later.  <TT
-CLASS="LITERAL"
->PUBLIC</TT
-> can be thought of as an
+   be created later.  <code class="literal">PUBLIC</code> can be thought of as an
    implicitly defined group that always includes all roles.
    Any particular role will have the sum
    of privileges granted directly to it, privileges granted to any role it
    is presently a member of, and privileges granted to
-   <TT
-CLASS="LITERAL"
->PUBLIC</TT
->.
-  </P
-><P
->   If <TT
-CLASS="LITERAL"
->WITH GRANT OPTION</TT
-> is specified, the recipient
+   <code class="literal">PUBLIC</code>.
+  </p><p>
+   If <code class="literal">WITH GRANT OPTION</code> is specified, the recipient
    of the privilege can in turn grant it to others.  Without a grant
    option, the recipient cannot do that.  Grant options cannot be granted
-   to <TT
-CLASS="LITERAL"
->PUBLIC</TT
->.
-  </P
-><P
->   There is no need to grant privileges to the owner of an object
+   to <code class="literal">PUBLIC</code>.
+  </p><p>
+   There is no need to grant privileges to the owner of an object
    (usually the user that created it),
    as the owner has all privileges by default.  (The owner could,
    however, choose to revoke some of their own privileges for safety.)
-  </P
-><P
->   The right to drop an object, or to alter its definition in any way, is
+  </p><p>
+   The right to drop an object, or to alter its definition in any way, is
    not treated as a grantable privilege; it is inherent in the owner,
    and cannot be granted or revoked.  (However, a similar effect can be
    obtained by granting or revoking membership in the role that owns
    the object; see below.)  The owner implicitly has all grant
    options for the object, too.
-  </P
-><P
->   PostgreSQL grants default privileges on some types of objects to
-   <TT
-CLASS="LITERAL"
->PUBLIC</TT
->.  No privileges are granted to
-   <TT
-CLASS="LITERAL"
->PUBLIC</TT
-> by default on
+  </p><p>
+   PostgreSQL grants default privileges on some types of objects to
+   <code class="literal">PUBLIC</code>.  No privileges are granted to
+   <code class="literal">PUBLIC</code> by default on
    tables,
    table columns,
    sequences,
@@ -479,575 +125,236 @@ CLASS="LITERAL"
    schemas,
    or tablespaces.
    For other types of objects, the default privileges
-   granted to <TT
-CLASS="LITERAL"
->PUBLIC</TT
-> are as follows:
-   <TT
-CLASS="LITERAL"
->CONNECT</TT
-> and <TT
-CLASS="LITERAL"
->TEMPORARY</TT
-> (create
+   granted to <code class="literal">PUBLIC</code> are as follows:
+   <code class="literal">CONNECT</code> and <code class="literal">TEMPORARY</code> (create
    temporary tables) privileges for databases;
-   <TT
-CLASS="LITERAL"
->EXECUTE</TT
-> privilege for functions; and
-   <TT
-CLASS="LITERAL"
->USAGE</TT
-> privilege for languages and data types
+   <code class="literal">EXECUTE</code> privilege for functions and procedures; and
+   <code class="literal">USAGE</code> privilege for languages and data types
    (including domains).
-   The object owner can, of course, <TT
-CLASS="COMMAND"
->REVOKE</TT
->
+   The object owner can, of course, <code class="command">REVOKE</code>
    both default and  expressly granted privileges. (For maximum
-   security, issue the <TT
-CLASS="COMMAND"
->REVOKE</TT
-> in the same transaction that
+   security, issue the <code class="command">REVOKE</code> in the same transaction that
    creates the object; then there is no window in which another user
    can use the object.)
    Also, these initial default privilege settings can be changed using the
-   <A
-HREF="sql-alterdefaultprivileges.html"
->ALTER DEFAULT PRIVILEGES</A
->
+   <a class="xref" href="sql-alterdefaultprivileges.html" title="ALTER DEFAULT PRIVILEGES"><span class="refentrytitle">ALTER DEFAULT PRIVILEGES</span></a>
    command.
-  </P
-><P
->   The possible privileges are:
+  </p><p>
+   The possible privileges are:
 
-   <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
->SELECT</DT
-><DD
-><P
->       Allows <A
-HREF="sql-select.html"
->SELECT</A
-> from
+   </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">SELECT</code></span></dt><dd><p>
+       Allows <a class="xref" href="sql-select.html" title="SELECT"><span class="refentrytitle">SELECT</span></a> from
        any column, or the specific columns listed, of the specified table,
        view, or sequence.
        Also allows the use of
-       <A
-HREF="sql-copy.html"
->COPY</A
-> TO.
+       <a class="xref" href="sql-copy.html" title="COPY"><span class="refentrytitle">COPY</span></a> TO.
        This privilege is also needed to reference existing column values in
-       <A
-HREF="sql-update.html"
->UPDATE</A
-> or
-       <A
-HREF="sql-delete.html"
->DELETE</A
->.
+       <a class="xref" href="sql-update.html" title="UPDATE"><span class="refentrytitle">UPDATE</span></a> or
+       <a class="xref" href="sql-delete.html" title="DELETE"><span class="refentrytitle">DELETE</span></a>.
        For sequences, this privilege also allows the use of the
-       <CODE
-CLASS="FUNCTION"
->currval</CODE
-> function.
+       <code class="function">currval</code> function.
        For large objects, this privilege allows the object to be read.
-      </P
-></DD
-><DT
->INSERT</DT
-><DD
-><P
->       Allows <A
-HREF="sql-insert.html"
->INSERT</A
-> of a new
+      </p></dd><dt><span class="term"><code class="literal">INSERT</code></span></dt><dd><p>
+       Allows <a class="xref" href="sql-insert.html" title="INSERT"><span class="refentrytitle">INSERT</span></a> of a new
        row into the specified table.  If specific columns are listed,
-       only those columns may be assigned to in the <TT
-CLASS="COMMAND"
->INSERT</TT
->
+       only those columns may be assigned to in the <code class="command">INSERT</code>
        command (other columns will therefore receive default values).
-       Also allows <A
-HREF="sql-copy.html"
->COPY</A
-> FROM.
-      </P
-></DD
-><DT
->UPDATE</DT
-><DD
-><P
->       Allows <A
-HREF="sql-update.html"
->UPDATE</A
-> of any
+       Also allows <a class="xref" href="sql-copy.html" title="COPY"><span class="refentrytitle">COPY</span></a> FROM.
+      </p></dd><dt><span class="term"><code class="literal">UPDATE</code></span></dt><dd><p>
+       Allows <a class="xref" href="sql-update.html" title="UPDATE"><span class="refentrytitle">UPDATE</span></a> of any
        column, or the specific columns listed, of the specified table.
-       (In practice, any nontrivial <TT
-CLASS="COMMAND"
->UPDATE</TT
-> command will require
-       <TT
-CLASS="LITERAL"
->SELECT</TT
-> privilege as well, since it must reference table
+       (In practice, any nontrivial <code class="command">UPDATE</code> command will require
+       <code class="literal">SELECT</code> privilege as well, since it must reference table
        columns to determine which rows to update, and/or to compute new
        values for columns.)
-       <TT
-CLASS="LITERAL"
->SELECT ... FOR UPDATE</TT
->
-       and <TT
-CLASS="LITERAL"
->SELECT ... FOR SHARE</TT
->
+       <code class="literal">SELECT ... FOR UPDATE</code>
+       and <code class="literal">SELECT ... FOR SHARE</code>
        also require this privilege on at least one column, in addition to the
-       <TT
-CLASS="LITERAL"
->SELECT</TT
-> privilege.  For sequences, this
-       privilege allows the use of the <CODE
-CLASS="FUNCTION"
->nextval</CODE
-> and
-       <CODE
-CLASS="FUNCTION"
->setval</CODE
-> functions.
+       <code class="literal">SELECT</code> privilege.  For sequences, this
+       privilege allows the use of the <code class="function">nextval</code> and
+       <code class="function">setval</code> functions.
        For large objects, this privilege allows writing or truncating the
        object.
-      </P
-></DD
-><DT
->DELETE</DT
-><DD
-><P
->       Allows <A
-HREF="sql-delete.html"
->DELETE</A
-> of a row
+      </p></dd><dt><span class="term"><code class="literal">DELETE</code></span></dt><dd><p>
+       Allows <a class="xref" href="sql-delete.html" title="DELETE"><span class="refentrytitle">DELETE</span></a> of a row
        from the specified table.
-       (In practice, any nontrivial <TT
-CLASS="COMMAND"
->DELETE</TT
-> command will require
-       <TT
-CLASS="LITERAL"
->SELECT</TT
-> privilege as well, since it must reference table
+       (In practice, any nontrivial <code class="command">DELETE</code> command will require
+       <code class="literal">SELECT</code> privilege as well, since it must reference table
        columns to determine which rows to delete.)
-      </P
-></DD
-><DT
->TRUNCATE</DT
-><DD
-><P
->       Allows <A
-HREF="sql-truncate.html"
->TRUNCATE</A
-> on
+      </p></dd><dt><span class="term"><code class="literal">TRUNCATE</code></span></dt><dd><p>
+       Allows <a class="xref" href="sql-truncate.html" title="TRUNCATE"><span class="refentrytitle">TRUNCATE</span></a> on
        the specified table.
-      </P
-></DD
-><DT
->REFERENCES</DT
-><DD
-><P
->       To create a foreign key constraint, it is
-       necessary to have this privilege on both the referencing and
-       referenced columns.  The privilege may be granted for all columns
-       of a table, or just specific columns.
-      </P
-></DD
-><DT
->TRIGGER</DT
-><DD
-><P
->       Allows the creation of a trigger on the specified table.  (See the
-       <A
-HREF="sql-createtrigger.html"
->CREATE TRIGGER</A
-> statement.)
-      </P
-></DD
-><DT
->CREATE</DT
-><DD
-><P
->       For databases, allows new schemas to be created within the database.
-      </P
-><P
->       For schemas, allows new objects to be created within the schema.
-       To rename an existing object, you must own the object <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->and</I
-></SPAN
->
+      </p></dd><dt><span class="term"><code class="literal">REFERENCES</code></span></dt><dd><p>
+       Allows creation of a foreign key constraint referencing the specified
+       table, or specified column(s) of the table.  (See the
+       <a class="xref" href="sql-createtable.html" title="CREATE TABLE"><span class="refentrytitle">CREATE TABLE</span></a> statement.)
+      </p></dd><dt><span class="term"><code class="literal">TRIGGER</code></span></dt><dd><p>
+       Allows the creation of a trigger on the specified table.  (See the
+       <a class="xref" href="sql-createtrigger.html" title="CREATE TRIGGER"><span class="refentrytitle">CREATE TRIGGER</span></a> statement.)
+      </p></dd><dt><span class="term"><code class="literal">CREATE</code></span></dt><dd><p>
+       For databases, allows new schemas and publications to be created within the database.
+      </p><p>
+       For schemas, allows new objects to be created within the schema.
+       To rename an existing object, you must own the object <span class="emphasis"><em>and</em></span>
        have this privilege for the containing schema.
-      </P
-><P
->       For tablespaces, allows tables, indexes, and temporary files to be
+      </p><p>
+       For tablespaces, allows tables, indexes, and temporary files to be
        created within the tablespace, and allows databases to be created that
        have the tablespace as their default tablespace.  (Note that revoking
        this privilege will not alter the placement of existing objects.)
-      </P
-></DD
-><DT
->CONNECT</DT
-><DD
-><P
->       Allows the user to connect to the specified database.  This
+      </p></dd><dt><span class="term"><code class="literal">CONNECT</code></span></dt><dd><p>
+       Allows the user to connect to the specified database.  This
        privilege is checked at connection startup (in addition to checking
-       any restrictions imposed by <TT
-CLASS="FILENAME"
->pg_hba.conf</TT
->).
-      </P
-></DD
-><DT
->TEMPORARY<BR>TEMP</DT
-><DD
-><P
->       Allows temporary tables to be created while using the specified database.
-      </P
-></DD
-><DT
->EXECUTE</DT
-><DD
-><P
->       Allows the use of the specified function and the use of any
-       operators that are implemented on top of the function.  This is
-       the only type of privilege that is applicable to functions.
-       (This syntax works for aggregate functions, as well.)
-      </P
-></DD
-><DT
->USAGE</DT
-><DD
-><P
->       For procedural languages, allows the use of the specified language for
+       any restrictions imposed by <code class="filename">pg_hba.conf</code>).
+      </p></dd><dt><span class="term"><code class="literal">TEMPORARY</code><br /></span><span class="term"><code class="literal">TEMP</code></span></dt><dd><p>
+       Allows temporary tables to be created while using the specified database.
+      </p></dd><dt><span class="term"><code class="literal">EXECUTE</code></span></dt><dd><p>
+       Allows the use of the specified function or procedure and the use of
+       any operators that are implemented on top of the function.  This is the
+       only type of privilege that is applicable to functions and procedures.
+       The <code class="literal">FUNCTION</code> syntax also works for aggregate
+       functions.  Alternatively, use <code class="literal">ROUTINE</code> to refer to a function,
+       aggregate function, or procedure regardless of what it is.
+      </p></dd><dt><span class="term"><code class="literal">USAGE</code></span></dt><dd><p>
+       For procedural languages, allows the use of the specified language for
        the creation of functions in that language.  This is the only type
        of privilege that is applicable to procedural languages.
-      </P
-><P
->       For schemas, allows access to objects contained in the specified
+      </p><p>
+       For schemas, allows access to objects contained in the specified
        schema (assuming that the objects' own privilege requirements are
-       also met).  Essentially this allows the grantee to <SPAN
-CLASS="QUOTE"
->"look up"</SPAN
->
+       also met).  Essentially this allows the grantee to <span class="quote">“<span class="quote">look up</span>”</span>
        objects within the schema.  Without this permission, it is still
        possible to see the object names, e.g. by querying the system tables.
        Also, after revoking this permission, existing backends might have
        statements that have previously performed this lookup, so this is not
        a completely secure way to prevent object access.
-      </P
-><P
->       For sequences, this privilege allows the use of the
-       <CODE
-CLASS="FUNCTION"
->currval</CODE
-> and <CODE
-CLASS="FUNCTION"
->nextval</CODE
-> functions.
-      </P
-><P
->       For types and domains, this privilege allow the use of the type or
+      </p><p>
+       For sequences, this privilege allows the use of the
+       <code class="function">currval</code> and <code class="function">nextval</code> functions.
+      </p><p>
+       For types and domains, this privilege allows the use of the type or
        domain in the creation of tables, functions, and other schema objects.
-       (Note that it does not control general <SPAN
-CLASS="QUOTE"
->"usage"</SPAN
-> of the type,
+       (Note that it does not control general <span class="quote">“<span class="quote">usage</span>”</span> of the type,
        such as values of the type appearing in queries.  It only prevents
        objects from being created that depend on the type.  The main purpose of
        the privilege is controlling which users create dependencies on a type,
        which could prevent the owner from changing the type later.)
-      </P
-><P
->       For foreign-data wrappers, this privilege enables the grantee
-       to create new servers using that foreign-data wrapper.
-      </P
-><P
->       For servers, this privilege enables the grantee to create foreign
-       tables using the server, and also to create, alter, or drop their own
-       user's user mappings associated with that server.
-      </P
-></DD
-><DT
->ALL PRIVILEGES</DT
-><DD
-><P
->       Grant all of the available privileges at once.
-       The <TT
-CLASS="LITERAL"
->PRIVILEGES</TT
-> key word is optional in
-       <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, though it is required by
+      </p><p>
+       For foreign-data wrappers, this privilege allows creation of
+       new servers using the foreign-data wrapper.
+      </p><p>
+       For servers, this privilege allows creation of foreign tables using
+       the server.  Grantees may also create, alter, or drop their own
+       user mappings associated with that server.
+      </p></dd><dt><span class="term"><code class="literal">ALL PRIVILEGES</code></span></dt><dd><p>
+       Grant all of the available privileges at once.
+       The <code class="literal">PRIVILEGES</code> key word is optional in
+       <span class="productname">PostgreSQL</span>, though it is required by
        strict SQL.
-      </P
-></DD
-></DL
-></DIV
-><P>
+      </p></dd></dl></div><p>
 
    The privileges required by other commands are listed on the
    reference page of the respective command.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT2"
-><A
-NAME="SQL-GRANT-DESCRIPTION-ROLES"
-></A
-><H3
->GRANT on Roles</H3
-><P
->   This variant of the <TT
-CLASS="COMMAND"
->GRANT</TT
-> command grants membership
+  </p></div><div class="refsect2" id="SQL-GRANT-DESCRIPTION-ROLES"><h3>GRANT on Roles</h3><p>
+   This variant of the <code class="command">GRANT</code> command grants membership
    in a role to one or more other roles.  Membership in a role is significant
    because it conveys the privileges granted to a role to each of its
    members.
-  </P
-><P
->   If <TT
-CLASS="LITERAL"
->WITH ADMIN OPTION</TT
-> is specified, the member can
+  </p><p>
+   If <code class="literal">WITH ADMIN OPTION</code> is specified, the member can
    in turn grant membership in the role to others, and revoke membership
    in the role as well.  Without the admin option, ordinary users cannot
-   do that.  A role is not considered to hold <TT
-CLASS="LITERAL"
->WITH ADMIN
-   OPTION</TT
-> on itself, but it may grant or revoke membership in
+   do that.  A role is not considered to hold <code class="literal">WITH ADMIN
+   OPTION</code> on itself, but it may grant or revoke membership in
    itself from a database session where the session user matches the
    role.  Database superusers can grant or revoke membership in any role
-   to anyone.  Roles having <TT
-CLASS="LITERAL"
->CREATEROLE</TT
-> privilege can grant
+   to anyone.  Roles having <code class="literal">CREATEROLE</code> privilege can grant
    or revoke membership in any role that is not a superuser.
-  </P
-><P
->   Unlike the case with privileges, membership in a role cannot be granted
-   to <TT
-CLASS="LITERAL"
->PUBLIC</TT
->.  Note also that this form of the command does not
-   allow the noise word <TT
-CLASS="LITERAL"
->GROUP</TT
->.
-  </P
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-GRANT-NOTES"
-></A
-><H2
->Notes</H2
-><P
->    The <A
-HREF="sql-revoke.html"
->REVOKE</A
-> command is used
+  </p><p>
+   Unlike the case with privileges, membership in a role cannot be granted
+   to <code class="literal">PUBLIC</code>.  Note also that this form of the command does not
+   allow the noise word <code class="literal">GROUP</code>.
+  </p></div></div><div class="refsect1" id="SQL-GRANT-NOTES"><h2>Notes</h2><p>
+    The <a class="xref" href="sql-revoke.html" title="REVOKE"><span class="refentrytitle">REVOKE</span></a> command is used
     to revoke access privileges.
-   </P
-><P
->    Since <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.1, the concepts of users and
+   </p><p>
+    Since <span class="productname">PostgreSQL</span> 8.1, the concepts of users and
     groups have been unified into a single kind of entity called a role.
-    It is therefore no longer necessary to use the keyword <TT
-CLASS="LITERAL"
->GROUP</TT
->
-    to identify whether a grantee is a user or a group.  <TT
-CLASS="LITERAL"
->GROUP</TT
->
+    It is therefore no longer necessary to use the keyword <code class="literal">GROUP</code>
+    to identify whether a grantee is a user or a group.  <code class="literal">GROUP</code>
     is still allowed in the command, but it is a noise word.
-   </P
-><P
->    A user may perform <TT
-CLASS="COMMAND"
->SELECT</TT
->, <TT
-CLASS="COMMAND"
->INSERT</TT
->, etc. on a
+   </p><p>
+    A user may perform <code class="command">SELECT</code>, <code class="command">INSERT</code>, etc. on a
     column if they hold that privilege for either the specific column or
     its whole table.  Granting the privilege at the table level and then
     revoking it for one column will not do what one might wish: the
     table-level grant is unaffected by a column-level operation.
-   </P
-><P
->    When a non-owner of an object attempts to <TT
-CLASS="COMMAND"
->GRANT</TT
-> privileges
+   </p><p>
+    When a non-owner of an object attempts to <code class="command">GRANT</code> privileges
     on the object, the command will fail outright if the user has no
     privileges whatsoever on the object.  As long as some privilege is
     available, the command will proceed, but it will grant only those
-    privileges for which the user has grant options.  The <TT
-CLASS="COMMAND"
->GRANT ALL
-    PRIVILEGES</TT
-> forms will issue a warning message if no grant options are
+    privileges for which the user has grant options.  The <code class="command">GRANT ALL
+    PRIVILEGES</code> forms will issue a warning message if no grant options are
     held, while the other forms will issue a warning if grant options for
     any of the privileges specifically named in the command are not held.
     (In principle these statements apply to the object owner as well, but
     since the owner is always treated as holding all grant options, the
     cases can never occur.)
-   </P
-><P
->    It should be noted that database superusers can access
+   </p><p>
+    It should be noted that database superusers can access
     all objects regardless of object privilege settings.  This
-    is comparable to the rights of <TT
-CLASS="LITERAL"
->root</TT
-> in a Unix system.
-    As with <TT
-CLASS="LITERAL"
->root</TT
->, it's unwise to operate as a superuser
+    is comparable to the rights of <code class="literal">root</code> in a Unix system.
+    As with <code class="literal">root</code>, it's unwise to operate as a superuser
     except when absolutely necessary.
-   </P
-><P
->    If a superuser chooses to issue a <TT
-CLASS="COMMAND"
->GRANT</TT
-> or <TT
-CLASS="COMMAND"
->REVOKE</TT
->
+   </p><p>
+    If a superuser chooses to issue a <code class="command">GRANT</code> or <code class="command">REVOKE</code>
     command, the command is performed as though it were issued by the
     owner of the affected object.  In particular, privileges granted via
     such a command will appear to have been granted by the object owner.
     (For role membership, the membership appears to have been granted
     by the containing role itself.)
-   </P
-><P
->    <TT
-CLASS="COMMAND"
->GRANT</TT
-> and <TT
-CLASS="COMMAND"
->REVOKE</TT
-> can also be done by a role
+   </p><p>
+    <code class="command">GRANT</code> and <code class="command">REVOKE</code> can also be done by a role
     that is not the owner of the affected object, but is a member of the role
     that owns the object, or is a member of a role that holds privileges
-    <TT
-CLASS="LITERAL"
->WITH GRANT OPTION</TT
-> on the object.  In this case the
+    <code class="literal">WITH GRANT OPTION</code> on the object.  In this case the
     privileges will be recorded as having been granted by the role that
     actually owns the object or holds the privileges
-    <TT
-CLASS="LITERAL"
->WITH GRANT OPTION</TT
->.  For example, if table
-    <TT
-CLASS="LITERAL"
->t1</TT
-> is owned by role <TT
-CLASS="LITERAL"
->g1</TT
->, of which role
-    <TT
-CLASS="LITERAL"
->u1</TT
-> is a member, then <TT
-CLASS="LITERAL"
->u1</TT
-> can grant privileges
-    on <TT
-CLASS="LITERAL"
->t1</TT
-> to <TT
-CLASS="LITERAL"
->u2</TT
->, but those privileges will appear
-    to have been granted directly by <TT
-CLASS="LITERAL"
->g1</TT
->.  Any other member
-    of role <TT
-CLASS="LITERAL"
->g1</TT
-> could revoke them later.
-   </P
-><P
->    If the role executing <TT
-CLASS="COMMAND"
->GRANT</TT
-> holds the required privileges
+    <code class="literal">WITH GRANT OPTION</code>.  For example, if table
+    <code class="literal">t1</code> is owned by role <code class="literal">g1</code>, of which role
+    <code class="literal">u1</code> is a member, then <code class="literal">u1</code> can grant privileges
+    on <code class="literal">t1</code> to <code class="literal">u2</code>, but those privileges will appear
+    to have been granted directly by <code class="literal">g1</code>.  Any other member
+    of role <code class="literal">g1</code> could revoke them later.
+   </p><p>
+    If the role executing <code class="command">GRANT</code> holds the required privileges
     indirectly via more than one role membership path, it is unspecified
     which containing role will be recorded as having done the grant.  In such
-    cases it is best practice to use <TT
-CLASS="COMMAND"
->SET ROLE</TT
-> to become the
-    specific role you want to do the <TT
-CLASS="COMMAND"
->GRANT</TT
-> as.
-   </P
-><P
->    Granting permission on a table does not automatically extend
+    cases it is best practice to use <code class="command">SET ROLE</code> to become the
+    specific role you want to do the <code class="command">GRANT</code> as.
+   </p><p>
+    Granting permission on a table does not automatically extend
     permissions to any sequences used by the table, including
-    sequences tied to <TT
-CLASS="TYPE"
->SERIAL</TT
-> columns.  Permissions on
+    sequences tied to <code class="type">SERIAL</code> columns.  Permissions on
     sequences must be set separately.
-   </P
-><P
->    Use <A
-HREF="app-psql.html"
-><SPAN
-CLASS="APPLICATION"
->psql</SPAN
-></A
->'s <TT
-CLASS="COMMAND"
->\dp</TT
-> command
+   </p><p>
+    Use <a class="xref" href="app-psql.html" title="psql"><span class="refentrytitle"><span class="application">psql</span></span></a>'s <code class="command">\dp</code> command
     to obtain information about existing privileges for tables and
     columns.  For example:
-</P><PRE
-CLASS="PROGRAMLISTING"
->=&gt; \dp mytable
+</p><pre class="programlisting">
+=&gt; \dp mytable
                               Access privileges
  Schema |  Name   | Type  |   Access privileges   | Column access privileges 
 --------+---------+-------+-----------------------+--------------------------
  public | mytable | table | miriam=arwdDxt/miriam | col1:
                           : =r/miriam             :   miriam_rw=rw/miriam
                           : admin=arw/miriam        
-(1 row)</PRE
-><P>
-    The entries shown by <TT
-CLASS="COMMAND"
->\dp</TT
-> are interpreted thus:
-</P><PRE
-CLASS="LITERALLAYOUT"
->rolename=xxxx -- privileges granted to a role
+(1 row)
+</pre><p>
+    The entries shown by <code class="command">\dp</code> are interpreted thus:
+</p><pre class="literallayout">
+rolename=xxxx -- privileges granted to a role
         =xxxx -- privileges granted to PUBLIC
 
             r -- SELECT ("read")
@@ -1065,327 +372,98 @@ CLASS="LITERALLAYOUT"
       arwdDxt -- ALL PRIVILEGES (for tables, varies for other objects)
             * -- grant option for preceding privilege
 
-        /yyyy -- role that granted this privilege</PRE
-><P>
+        /yyyy -- role that granted this privilege
+</pre><p>
 
-    The above example display would be seen by user <TT
-CLASS="LITERAL"
->miriam</TT
-> after
-    creating table <TT
-CLASS="LITERAL"
->mytable</TT
-> and doing:
+    The above example display would be seen by user <code class="literal">miriam</code> after
+    creating table <code class="literal">mytable</code> and doing:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->GRANT SELECT ON mytable TO PUBLIC;
+</p><pre class="programlisting">
+GRANT SELECT ON mytable TO PUBLIC;
 GRANT SELECT, UPDATE, INSERT ON mytable TO admin;
-GRANT SELECT (col1), UPDATE (col1) ON mytable TO miriam_rw;</PRE
-><P>
-   </P
-><P
->    For non-table objects there are other <TT
-CLASS="COMMAND"
->\d</TT
-> commands
+GRANT SELECT (col1), UPDATE (col1) ON mytable TO miriam_rw;
+</pre><p>
+   </p><p>
+    For non-table objects there are other <code class="command">\d</code> commands
     that can display their privileges.
-   </P
-><P
->    If the <SPAN
-CLASS="QUOTE"
->"Access privileges"</SPAN
-> column is empty for a given object,
+   </p><p>
+    If the <span class="quote">“<span class="quote">Access privileges</span>”</span> column is empty for a given object,
     it means the object has default privileges (that is, its privileges column
     is null).  Default privileges always include all privileges for the owner,
-    and can include some privileges for <TT
-CLASS="LITERAL"
->PUBLIC</TT
-> depending on the
-    object type, as explained above.  The first <TT
-CLASS="COMMAND"
->GRANT</TT
-> or
-    <TT
-CLASS="COMMAND"
->REVOKE</TT
-> on an object
+    and can include some privileges for <code class="literal">PUBLIC</code> depending on the
+    object type, as explained above.  The first <code class="command">GRANT</code> or
+    <code class="command">REVOKE</code> on an object
     will instantiate the default privileges (producing, for example,
-    <TT
-CLASS="LITERAL"
->{miriam=arwdDxt/miriam}</TT
->) and then modify them per the
-    specified request.  Similarly, entries are shown in <SPAN
-CLASS="QUOTE"
->"Column access
-    privileges"</SPAN
-> only for columns with nondefault privileges.
-    (Note: for this purpose, <SPAN
-CLASS="QUOTE"
->"default privileges"</SPAN
-> always means the
+    <code class="literal">{miriam=arwdDxt/miriam}</code>) and then modify them per the
+    specified request.  Similarly, entries are shown in <span class="quote">“<span class="quote">Column access
+    privileges</span>”</span> only for columns with nondefault privileges.
+    (Note: for this purpose, <span class="quote">“<span class="quote">default privileges</span>”</span> always means the
     built-in default privileges for the object's type.  An object whose
-    privileges have been affected by an <TT
-CLASS="COMMAND"
->ALTER DEFAULT PRIVILEGES</TT
->
+    privileges have been affected by an <code class="command">ALTER DEFAULT PRIVILEGES</code>
     command will always be shown with an explicit privilege entry that
-    includes the effects of the <TT
-CLASS="COMMAND"
->ALTER</TT
->.)
-   </P
-><P
->    Notice that the owner's implicit grant options are not marked in the
-    access privileges display.  A <TT
-CLASS="LITERAL"
->*</TT
-> will appear only when
+    includes the effects of the <code class="command">ALTER</code>.)
+   </p><p>
+    Notice that the owner's implicit grant options are not marked in the
+    access privileges display.  A <code class="literal">*</code> will appear only when
     grant options have been explicitly granted to someone.
-   </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-GRANT-EXAMPLES"
-></A
-><H2
->Examples</H2
-><P
->   Grant insert privilege to all users on table <TT
-CLASS="LITERAL"
->films</TT
->:
+   </p></div><div class="refsect1" id="SQL-GRANT-EXAMPLES"><h2>Examples</h2><p>
+   Grant insert privilege to all users on table <code class="literal">films</code>:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->GRANT INSERT ON films TO PUBLIC;</PRE
-><P>
-  </P
-><P
->   Grant all available privileges to user <TT
-CLASS="LITERAL"
->manuel</TT
-> on view
-   <TT
-CLASS="LITERAL"
->kinds</TT
->:
+</p><pre class="programlisting">
+GRANT INSERT ON films TO PUBLIC;
+</pre><p>
+  </p><p>
+   Grant all available privileges to user <code class="literal">manuel</code> on view
+   <code class="literal">kinds</code>:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->GRANT ALL PRIVILEGES ON kinds TO manuel;</PRE
-><P>
+</p><pre class="programlisting">
+GRANT ALL PRIVILEGES ON kinds TO manuel;
+</pre><p>
 
    Note that while the above will indeed grant all privileges if executed by a
-   superuser or the owner of <TT
-CLASS="LITERAL"
->kinds</TT
->, when executed by someone
+   superuser or the owner of <code class="literal">kinds</code>, when executed by someone
    else it will only grant those permissions for which the someone else has
    grant options.
-  </P
-><P
->   Grant membership in role <TT
-CLASS="LITERAL"
->admins</TT
-> to user <TT
-CLASS="LITERAL"
->joe</TT
->:
+  </p><p>
+   Grant membership in role <code class="literal">admins</code> to user <code class="literal">joe</code>:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->GRANT admins TO joe;</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-GRANT-COMPATIBILITY"
-></A
-><H2
->Compatibility</H2
-><P
->    According to the SQL standard, the <TT
-CLASS="LITERAL"
->PRIVILEGES</TT
->
-    key word in <TT
-CLASS="LITERAL"
->ALL PRIVILEGES</TT
-> is required.  The
+</p><pre class="programlisting">
+GRANT admins TO joe;
+</pre></div><div class="refsect1" id="SQL-GRANT-COMPATIBILITY"><h2>Compatibility</h2><p>
+    According to the SQL standard, the <code class="literal">PRIVILEGES</code>
+    key word in <code class="literal">ALL PRIVILEGES</code> is required.  The
     SQL standard does not support setting the privileges on more than
     one object per command.
-   </P
-><P
->    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> allows an object owner to revoke their
+   </p><p>
+    <span class="productname">PostgreSQL</span> allows an object owner to revoke their
     own ordinary privileges: for example, a table owner can make the table
-    read-only to themselves by revoking their own <TT
-CLASS="LITERAL"
->INSERT</TT
->,
-    <TT
-CLASS="LITERAL"
->UPDATE</TT
->, <TT
-CLASS="LITERAL"
->DELETE</TT
->, and <TT
-CLASS="LITERAL"
->TRUNCATE</TT
->
+    read-only to themselves by revoking their own <code class="literal">INSERT</code>,
+    <code class="literal">UPDATE</code>, <code class="literal">DELETE</code>, and <code class="literal">TRUNCATE</code>
     privileges.  This is not possible according to the SQL standard.  The
-    reason is that <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> treats the owner's
+    reason is that <span class="productname">PostgreSQL</span> treats the owner's
     privileges as having been granted by the owner to themselves; therefore they
     can revoke them too.  In the SQL standard, the owner's privileges are
-    granted by an assumed entity <SPAN
-CLASS="QUOTE"
->"_SYSTEM"</SPAN
->.  Not being
-    <SPAN
-CLASS="QUOTE"
->"_SYSTEM"</SPAN
->, the owner cannot revoke these rights.
-   </P
-><P
->    According to the SQL standard, grant options can be granted to
-    <TT
-CLASS="LITERAL"
->PUBLIC</TT
->; PostgreSQL only supports granting grant options
+    granted by an assumed entity <span class="quote">“<span class="quote">_SYSTEM</span>”</span>.  Not being
+    <span class="quote">“<span class="quote">_SYSTEM</span>”</span>, the owner cannot revoke these rights.
+   </p><p>
+    According to the SQL standard, grant options can be granted to
+    <code class="literal">PUBLIC</code>; PostgreSQL only supports granting grant options
     to roles.
-   </P
-><P
->    The SQL standard provides for a <TT
-CLASS="LITERAL"
->USAGE</TT
-> privilege
+   </p><p>
+    The SQL standard provides for a <code class="literal">USAGE</code> privilege
     on other kinds of objects: character sets, collations,
     translations.
-   </P
-><P
->    In the SQL standard, sequences only have a <TT
-CLASS="LITERAL"
->USAGE</TT
->
-    privilege, which controls the use of the <TT
-CLASS="LITERAL"
->NEXT VALUE FOR</TT
->
+   </p><p>
+    In the SQL standard, sequences only have a <code class="literal">USAGE</code>
+    privilege, which controls the use of the <code class="literal">NEXT VALUE FOR</code>
     expression, which is equivalent to the
-    function <CODE
-CLASS="FUNCTION"
->nextval</CODE
-> in PostgreSQL.  The sequence
-    privileges <TT
-CLASS="LITERAL"
->SELECT</TT
-> and <TT
-CLASS="LITERAL"
->UPDATE</TT
-> are
+    function <code class="function">nextval</code> in PostgreSQL.  The sequence
+    privileges <code class="literal">SELECT</code> and <code class="literal">UPDATE</code> are
     PostgreSQL extensions.  The application of the
-    sequence <TT
-CLASS="LITERAL"
->USAGE</TT
-> privilege to
-    the <TT
-CLASS="LITERAL"
->currval</TT
-> function is also a PostgreSQL extension (as
+    sequence <code class="literal">USAGE</code> privilege to
+    the <code class="literal">currval</code> function is also a PostgreSQL extension (as
     is the function itself).
-   </P
-><P
->    Privileges on databases, tablespaces, schemas, and languages are
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> extensions.
-   </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN88714"
-></A
-><H2
->See Also</H2
-><A
-HREF="sql-revoke.html"
->REVOKE</A
->, <A
-HREF="sql-alterdefaultprivileges.html"
->ALTER DEFAULT PRIVILEGES</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-fetch.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-importforeignschema.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->FETCH</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->IMPORT FOREIGN SCHEMA</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   </p><p>
+    Privileges on databases, tablespaces, schemas, and languages are
+    <span class="productname">PostgreSQL</span> extensions.
+   </p></div><div class="refsect1" id="id-1.9.3.150.9"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-revoke.html" title="REVOKE"><span class="refentrytitle">REVOKE</span></a>, <a class="xref" href="sql-alterdefaultprivileges.html" title="ALTER DEFAULT PRIVILEGES"><span class="refentrytitle">ALTER DEFAULT PRIVILEGES</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-fetch.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-importforeignschema.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">FETCH </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> IMPORT FOREIGN SCHEMA</td></tr></table></div></body></html>

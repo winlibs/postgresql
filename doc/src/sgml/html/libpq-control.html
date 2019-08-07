@@ -1,475 +1,119 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Control Functions</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="libpq - C Library"
-HREF="libpq.html"><LINK
-REL="PREVIOUS"
-TITLE="Functions Associated with the COPY Command"
-HREF="libpq-copy.html"><LINK
-REL="NEXT"
-TITLE="Miscellaneous Functions"
-HREF="libpq-misc.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Functions Associated with the COPY Command"
-HREF="libpq-copy.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="libpq.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 32. <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> - C Library</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Miscellaneous Functions"
-HREF="libpq-misc.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="LIBPQ-CONTROL"
->32.10. Control Functions</A
-></H1
-><P
->   These functions control miscellaneous details of <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
->'s
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>34.10. Control Functions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="libpq-copy.html" title="34.9. Functions Associated with the COPY Command" /><link rel="next" href="libpq-misc.html" title="34.11. Miscellaneous Functions" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">34.10. Control Functions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="libpq-copy.html" title="34.9. Functions Associated with the COPY Command">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="libpq.html" title="Chapter 34. libpq - C Library">Up</a></td><th width="60%" align="center">Chapter 34. <span xmlns="http://www.w3.org/1999/xhtml" class="application">libpq</span> - C Library</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="libpq-misc.html" title="34.11. Miscellaneous Functions">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="LIBPQ-CONTROL"><div class="titlepage"><div><div><h2 class="title" style="clear: both">34.10. Control Functions</h2></div></div></div><p>
+   These functions control miscellaneous details of <span class="application">libpq</span>'s
    behavior.
-  </P
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><A
-NAME="LIBPQ-PQCLIENTENCODING"
-></A
-><CODE
-CLASS="FUNCTION"
->PQclientEncoding</CODE
->
-     </DT
-><DD
-><P
->      Returns the client encoding.
-</P><PRE
-CLASS="SYNOPSIS"
->int PQclientEncoding(const PGconn *<TT
-CLASS="REPLACEABLE"
-><I
->conn</I
-></TT
->);</PRE
-><P>
+  </p><div class="variablelist"><dl class="variablelist"><dt id="LIBPQ-PQCLIENTENCODING"><span class="term">
+     <code class="function">PQclientEncoding</code>
+     <a id="id-1.7.3.17.3.1.1.2" class="indexterm"></a>
+    </span></dt><dd><p>
+      Returns the client encoding.
+</p><pre class="synopsis">
+int PQclientEncoding(const PGconn *<em class="replaceable"><code>conn</code></em>);
+</pre><p>
 
       Note that it returns the encoding ID, not a symbolic string
-      such as <TT
-CLASS="LITERAL"
->EUC_JP</TT
->. If unsuccessful, it returns -1.
+      such as <code class="literal">EUC_JP</code>. If unsuccessful, it returns -1.
       To convert an encoding ID to an encoding name, you
       can use:
 
-</P><PRE
-CLASS="SYNOPSIS"
->char *pg_encoding_to_char(int <TT
-CLASS="REPLACEABLE"
-><I
->encoding_id</I
-></TT
->);</PRE
-><P>
-     </P
-></DD
-><DT
-><A
-NAME="LIBPQ-PQSETCLIENTENCODING"
-></A
-><CODE
-CLASS="FUNCTION"
->PQsetClientEncoding</CODE
->
-     </DT
-><DD
-><P
->      Sets the client encoding.
-</P><PRE
-CLASS="SYNOPSIS"
->int PQsetClientEncoding(PGconn *<TT
-CLASS="REPLACEABLE"
-><I
->conn</I
-></TT
->, const char *<TT
-CLASS="REPLACEABLE"
-><I
->encoding</I
-></TT
->);</PRE
-><P>
+</p><pre class="synopsis">
+char *pg_encoding_to_char(int <em class="replaceable"><code>encoding_id</code></em>);
+</pre><p>
+     </p></dd><dt id="LIBPQ-PQSETCLIENTENCODING"><span class="term">
+     <code class="function">PQsetClientEncoding</code>
+     <a id="id-1.7.3.17.3.2.1.2" class="indexterm"></a>
+    </span></dt><dd><p>
+      Sets the client encoding.
+</p><pre class="synopsis">
+int PQsetClientEncoding(PGconn *<em class="replaceable"><code>conn</code></em>, const char *<em class="replaceable"><code>encoding</code></em>);
+</pre><p>
 
-      <TT
-CLASS="REPLACEABLE"
-><I
->conn</I
-></TT
-> is a connection to the server,
-      and <TT
-CLASS="REPLACEABLE"
-><I
->encoding</I
-></TT
-> is the encoding you want to
+      <em class="replaceable"><code>conn</code></em> is a connection to the server,
+      and <em class="replaceable"><code>encoding</code></em> is the encoding you want to
       use. If the function successfully sets the encoding, it returns 0,
       otherwise -1. The current encoding for this connection can be
-      determined by using <CODE
-CLASS="FUNCTION"
->PQclientEncoding</CODE
->.
-     </P
-></DD
-><DT
-><A
-NAME="LIBPQ-PQSETERRORVERBOSITY"
-></A
-><CODE
-CLASS="FUNCTION"
->PQsetErrorVerbosity</CODE
->
-     </DT
-><DD
-><P
->      Determines the verbosity of messages returned by
-      <CODE
-CLASS="FUNCTION"
->PQerrorMessage</CODE
-> and <CODE
-CLASS="FUNCTION"
->PQresultErrorMessage</CODE
->.
-</P><PRE
-CLASS="SYNOPSIS"
->typedef enum
+      determined by using <code class="function">PQclientEncoding</code>.
+     </p></dd><dt id="LIBPQ-PQSETERRORVERBOSITY"><span class="term">
+     <code class="function">PQsetErrorVerbosity</code>
+     <a id="id-1.7.3.17.3.3.1.2" class="indexterm"></a>
+    </span></dt><dd><p>
+      Determines the verbosity of messages returned by
+      <code class="function">PQerrorMessage</code> and <code class="function">PQresultErrorMessage</code>.
+</p><pre class="synopsis">
+typedef enum
 {
     PQERRORS_TERSE,
     PQERRORS_DEFAULT,
     PQERRORS_VERBOSE
 } PGVerbosity;
 
-PGVerbosity PQsetErrorVerbosity(PGconn *conn, PGVerbosity verbosity);</PRE
-><P>
+PGVerbosity PQsetErrorVerbosity(PGconn *conn, PGVerbosity verbosity);
+</pre><p>
 
-      <CODE
-CLASS="FUNCTION"
->PQsetErrorVerbosity</CODE
-> sets the verbosity mode, returning
-      the connection's previous setting.  In <I
-CLASS="FIRSTTERM"
->TERSE</I
-> mode,
+      <code class="function">PQsetErrorVerbosity</code> sets the verbosity mode, returning
+      the connection's previous setting.  In <em class="firstterm">TERSE</em> mode,
       returned messages include severity, primary text, and position only;
       this will normally fit on a single line.  The default mode produces
       messages that include the above plus any detail, hint, or context
-      fields (these might span multiple lines).  The <I
-CLASS="FIRSTTERM"
->VERBOSE</I
->
+      fields (these might span multiple lines).  The <em class="firstterm">VERBOSE</em>
       mode includes all available fields.  Changing the verbosity does not
       affect the messages available from already-existing
-      <TT
-CLASS="STRUCTNAME"
->PGresult</TT
-> objects, only subsequently-created ones.
-      (But see <CODE
-CLASS="FUNCTION"
->PQresultVerboseErrorMessage</CODE
-> if you
+      <code class="structname">PGresult</code> objects, only subsequently-created ones.
+      (But see <code class="function">PQresultVerboseErrorMessage</code> if you
       want to print a previous error with a different verbosity.)
-     </P
-></DD
-><DT
-><A
-NAME="LIBPQ-PQSETERRORCONTEXTVISIBILITY"
-></A
-><CODE
-CLASS="FUNCTION"
->PQsetErrorContextVisibility</CODE
->
-     </DT
-><DD
-><P
->      Determines the handling of <TT
-CLASS="LITERAL"
->CONTEXT</TT
-> fields in messages
-      returned by <CODE
-CLASS="FUNCTION"
->PQerrorMessage</CODE
->
-      and <CODE
-CLASS="FUNCTION"
->PQresultErrorMessage</CODE
->.
-</P><PRE
-CLASS="SYNOPSIS"
->typedef enum
+     </p></dd><dt id="LIBPQ-PQSETERRORCONTEXTVISIBILITY"><span class="term">
+     <code class="function">PQsetErrorContextVisibility</code>
+     <a id="id-1.7.3.17.3.4.1.2" class="indexterm"></a>
+    </span></dt><dd><p>
+      Determines the handling of <code class="literal">CONTEXT</code> fields in messages
+      returned by <code class="function">PQerrorMessage</code>
+      and <code class="function">PQresultErrorMessage</code>.
+</p><pre class="synopsis">
+typedef enum
 {
     PQSHOW_CONTEXT_NEVER,
     PQSHOW_CONTEXT_ERRORS,
     PQSHOW_CONTEXT_ALWAYS
 } PGContextVisibility;
 
-PGContextVisibility PQsetErrorContextVisibility(PGconn *conn, PGContextVisibility show_context);</PRE
-><P>
+PGContextVisibility PQsetErrorContextVisibility(PGconn *conn, PGContextVisibility show_context);
+</pre><p>
 
-      <CODE
-CLASS="FUNCTION"
->PQsetErrorContextVisibility</CODE
-> sets the context display mode,
+      <code class="function">PQsetErrorContextVisibility</code> sets the context display mode,
       returning the connection's previous setting.  This mode controls
-      whether the <TT
-CLASS="LITERAL"
->CONTEXT</TT
-> field is included in messages
-      (unless the verbosity setting is <I
-CLASS="FIRSTTERM"
->TERSE</I
->, in which
-      case <TT
-CLASS="LITERAL"
->CONTEXT</TT
-> is never shown).  The <I
-CLASS="FIRSTTERM"
->NEVER</I
-> mode
-      never includes <TT
-CLASS="LITERAL"
->CONTEXT</TT
->, while <I
-CLASS="FIRSTTERM"
->ALWAYS</I
-> always
-      includes it if available.  In <I
-CLASS="FIRSTTERM"
->ERRORS</I
-> mode (the
-      default), <TT
-CLASS="LITERAL"
->CONTEXT</TT
-> fields are included only for error
+      whether the <code class="literal">CONTEXT</code> field is included in messages
+      (unless the verbosity setting is <em class="firstterm">TERSE</em>, in which
+      case <code class="literal">CONTEXT</code> is never shown).  The <em class="firstterm">NEVER</em> mode
+      never includes <code class="literal">CONTEXT</code>, while <em class="firstterm">ALWAYS</em> always
+      includes it if available.  In <em class="firstterm">ERRORS</em> mode (the
+      default), <code class="literal">CONTEXT</code> fields are included only for error
       messages, not for notices and warnings.  Changing this mode does not
       affect the messages available from
-      already-existing <TT
-CLASS="STRUCTNAME"
->PGresult</TT
-> objects, only
+      already-existing <code class="structname">PGresult</code> objects, only
       subsequently-created ones.
-      (But see <CODE
-CLASS="FUNCTION"
->PQresultVerboseErrorMessage</CODE
-> if you
+      (But see <code class="function">PQresultVerboseErrorMessage</code> if you
       want to print a previous error with a different display mode.)
-     </P
-></DD
-><DT
-><A
-NAME="LIBPQ-PQTRACE"
-></A
-><CODE
-CLASS="FUNCTION"
->PQtrace</CODE
->
-     </DT
-><DD
-><P
->      Enables  tracing of the client/server communication to a debugging file stream.
-</P><PRE
-CLASS="SYNOPSIS"
->void PQtrace(PGconn *conn, FILE *stream);</PRE
-><P>
-     </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->       On Windows, if the <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> library and an application are
+     </p></dd><dt id="LIBPQ-PQTRACE"><span class="term">
+     <code class="function">PQtrace</code>
+     <a id="id-1.7.3.17.3.5.1.2" class="indexterm"></a>
+    </span></dt><dd><p>
+      Enables  tracing of the client/server communication to a debugging file stream.
+</p><pre class="synopsis">
+void PQtrace(PGconn *conn, FILE *stream);
+</pre><p>
+     </p><div class="note"><h3 class="title">Note</h3><p>
+       On Windows, if the <span class="application">libpq</span> library and an application are
        compiled with different flags, this function call will crash the
-       application because the internal representation of the <TT
-CLASS="LITERAL"
->FILE</TT
->
+       application because the internal representation of the <code class="literal">FILE</code>
        pointers differ.  Specifically, multithreaded/single-threaded,
        release/debug, and static/dynamic flags should be the same for the
        library and all applications using that library.
-      </P
-></BLOCKQUOTE
-></DIV
-></DD
-><DT
-><A
-NAME="LIBPQ-PQUNTRACE"
-></A
-><CODE
-CLASS="FUNCTION"
->PQuntrace</CODE
->
-     </DT
-><DD
-><P
->      Disables tracing started by <CODE
-CLASS="FUNCTION"
->PQtrace</CODE
->.
-</P><PRE
-CLASS="SYNOPSIS"
->void PQuntrace(PGconn *conn);</PRE
-><P>
-     </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="libpq-copy.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="libpq-misc.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Functions Associated with the <TT
-CLASS="COMMAND"
->COPY</TT
-> Command</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="libpq.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Miscellaneous Functions</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+      </p></div></dd><dt id="LIBPQ-PQUNTRACE"><span class="term">
+     <code class="function">PQuntrace</code>
+     <a id="id-1.7.3.17.3.6.1.2" class="indexterm"></a>
+    </span></dt><dd><p>
+      Disables tracing started by <code class="function">PQtrace</code>.
+</p><pre class="synopsis">
+void PQuntrace(PGconn *conn);
+</pre><p>
+     </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="libpq-copy.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="libpq.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="libpq-misc.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">34.9. Functions Associated with the <code class="command">COPY</code> Command </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 34.11. Miscellaneous Functions</td></tr></table></div></body></html>

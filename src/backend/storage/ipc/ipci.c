@@ -3,7 +3,7 @@
  * ipci.c
  *	  POSTGRES inter-process communication initialization code.
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -28,6 +28,7 @@
 #include "postmaster/bgworker_internals.h"
 #include "postmaster/bgwriter.h"
 #include "postmaster/postmaster.h"
+#include "replication/logicallauncher.h"
 #include "replication/slot.h"
 #include "replication/walreceiver.h"
 #include "replication/walsender.h"
@@ -43,6 +44,7 @@
 #include "storage/procsignal.h"
 #include "storage/sinvaladt.h"
 #include "storage/spin.h"
+#include "utils/backend_random.h"
 #include "utils/snapmgr.h"
 
 
@@ -86,12 +88,9 @@ RequestAddinShmemSpace(Size size)
  * through the same code as before.  (Note that the called routines mostly
  * check IsUnderPostmaster, rather than EXEC_BACKEND, to detect this case.
  * This is a bit code-wasteful and could be cleaned up.)
- *
- * If "makePrivate" is true then we only need private memory, not shared
- * memory.  This is true for a standalone backend, false for a postmaster.
  */
 void
-CreateSharedMemoryAndSemaphores(bool makePrivate, int port)
+CreateSharedMemoryAndSemaphores(int port)
 {
 	PGShmemHeader *shim = NULL;
 
@@ -100,6 +99,10 @@ CreateSharedMemoryAndSemaphores(bool makePrivate, int port)
 		PGShmemHeader *seghdr;
 		Size		size;
 		int			numSemas;
+
+		/* Compute number of semaphores we'll need */
+		numSemas = ProcGlobalSemas();
+		numSemas += SpinlockSemas();
 
 		/*
 		 * Size of the Postgres shared-memory block is estimated via
@@ -111,6 +114,7 @@ CreateSharedMemoryAndSemaphores(bool makePrivate, int port)
 		 * need to be so careful during the actual allocation phase.
 		 */
 		size = 100000;
+		size = add_size(size, PGSemaphoreShmemSize(numSemas));
 		size = add_size(size, SpinlockSemaSize());
 		size = add_size(size, hash_estimate_size(SHMEM_INDEX_SIZE,
 												 sizeof(ShmemIndexEnt)));
@@ -137,10 +141,12 @@ CreateSharedMemoryAndSemaphores(bool makePrivate, int port)
 		size = add_size(size, ReplicationOriginShmemSize());
 		size = add_size(size, WalSndShmemSize());
 		size = add_size(size, WalRcvShmemSize());
+		size = add_size(size, ApplyLauncherShmemSize());
 		size = add_size(size, SnapMgrShmemSize());
 		size = add_size(size, BTreeShmemSize());
 		size = add_size(size, SyncScanShmemSize());
 		size = add_size(size, AsyncShmemSize());
+		size = add_size(size, BackendRandomShmemSize());
 #ifdef EXEC_BACKEND
 		size = add_size(size, ShmemBackendArraySize());
 #endif
@@ -157,27 +163,30 @@ CreateSharedMemoryAndSemaphores(bool makePrivate, int port)
 		/*
 		 * Create the shmem segment
 		 */
-		seghdr = PGSharedMemoryCreate(size, makePrivate, port, &shim);
+		seghdr = PGSharedMemoryCreate(size, port, &shim);
 
 		InitShmemAccess(seghdr);
 
 		/*
 		 * Create semaphores
 		 */
-		numSemas = ProcGlobalSemas();
-		numSemas += SpinlockSemas();
 		PGReserveSemaphores(numSemas, port);
+
+		/*
+		 * If spinlocks are disabled, initialize emulation layer (which
+		 * depends on semaphores, so the order is important here).
+		 */
+#ifndef HAVE_SPINLOCKS
+		SpinlockSemaInit();
+#endif
 	}
 	else
 	{
 		/*
 		 * We are reattaching to an existing shared memory segment. This
-		 * should only be reached in the EXEC_BACKEND case, and even then only
-		 * with makePrivate == false.
+		 * should only be reached in the EXEC_BACKEND case.
 		 */
-#ifdef EXEC_BACKEND
-		Assert(!makePrivate);
-#else
+#ifndef EXEC_BACKEND
 		elog(PANIC, "should be attached to shared memory already");
 #endif
 	}
@@ -245,6 +254,7 @@ CreateSharedMemoryAndSemaphores(bool makePrivate, int port)
 	ReplicationOriginShmemInit();
 	WalSndShmemInit();
 	WalRcvShmemInit();
+	ApplyLauncherShmemInit();
 
 	/*
 	 * Set up other modules that need some shared memory space
@@ -253,6 +263,7 @@ CreateSharedMemoryAndSemaphores(bool makePrivate, int port)
 	BTreeShmemInit();
 	SyncScanShmemInit();
 	AsyncShmemInit();
+	BackendRandomShmemInit();
 
 #ifdef EXEC_BACKEND
 

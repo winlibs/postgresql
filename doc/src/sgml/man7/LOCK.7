@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "LOCK" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "LOCK" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -49,6 +49,8 @@ is specified,
 does not wait to acquire the desired lock: if it cannot be acquired immediately, the command is aborted and an error is emitted\&. Once obtained, the lock is held for the remainder of the current transaction\&. (There is no
 \fBUNLOCK TABLE\fR
 command; locks are always released at transaction end\&.)
+.PP
+When a view is locked, all relations appearing in the view definition query are also locked recursively with the same lock mode\&.
 .PP
 When acquiring locks automatically for commands that reference tables,
 PostgreSQL
@@ -103,7 +105,7 @@ SHARE
 mode\&.) To avoid deadlocks, make sure all transactions acquire locks on the same objects in the same order, and if multiple lock modes are involved for a single object, then transactions should always acquire the most restrictive mode first\&.
 .PP
 More information about the lock modes and locking strategies can be found in
-Section 13.3, \(lqExplicit Locking\(rq, in the documentation\&.
+Section\ \&13.3\&.
 .SH "PARAMETERS"
 .PP
 \fIname\fR
@@ -127,7 +129,7 @@ command\&.
 \fIlockmode\fR
 .RS 4
 The lock mode specifies which locks this lock conflicts with\&. Lock modes are described in
-Section 13.3, \(lqExplicit Locking\(rq, in the documentation\&.
+Section\ \&13.3\&.
 .sp
 If no lock mode is specified, then
 ACCESS EXCLUSIVE, the most restrictive mode, is used\&.
@@ -159,6 +161,8 @@ DELETE, or
 TRUNCATE
 privileges\&.
 .PP
+The user performing the lock on the view must have the corresponding privilege on the view\&. In addition the view\*(Aqs owner must have the relevant privileges on the underlying base relations, but the user performing the lock does not need any permissions on the underlying base relations\&.
+.PP
 \fBLOCK TABLE\fR
 is useless outside a transaction block: the lock would remain held only to the completion of the statement\&. Therefore
 PostgreSQL
@@ -179,7 +183,7 @@ ROW EXCLUSIVE
 mode is a shareable table lock\&. Keep in mind that all the lock modes have identical semantics so far as
 \fBLOCK TABLE\fR
 is concerned, differing only in the rules about which modes conflict with which\&. For information on how to acquire an actual row\-level lock, see
-Section 13.3.2, \(lqRow-level Locks\(rq, in the documentation
+Section\ \&13.3.2
 and the
 The Locking Clause
 in the

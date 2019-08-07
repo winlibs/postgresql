@@ -42,7 +42,7 @@ inner_int_contains(ArrayType *a, ArrayType *b)
 			break;				/* db[j] is not in da */
 	}
 
-	return (n == nb) ? TRUE : FALSE;
+	return (n == nb) ? true : false;
 }
 
 /* arguments are assumed sorted */
@@ -67,12 +67,12 @@ inner_int_overlap(ArrayType *a, ArrayType *b)
 		if (da[i] < db[j])
 			i++;
 		else if (da[i] == db[j])
-			return TRUE;
+			return true;
 		else
 			j++;
 	}
 
-	return FALSE;
+	return false;
 }
 
 ArrayType *
@@ -222,7 +222,17 @@ ArrayType *
 new_intArrayType(int num)
 {
 	ArrayType  *r;
-	int			nbytes = ARR_OVERHEAD_NONULLS(1) + sizeof(int) * num;
+	int			nbytes;
+
+	/* if no elements, return a zero-dimensional array */
+	if (num <= 0)
+	{
+		Assert(num == 0);
+		r = construct_empty_array(INT4OID);
+		return r;
+	}
+
+	nbytes = ARR_OVERHEAD_NONULLS(1) + sizeof(int) * num;
 
 	r = (ArrayType *) palloc0(nbytes);
 
@@ -239,18 +249,21 @@ new_intArrayType(int num)
 ArrayType *
 resize_intArrayType(ArrayType *a, int num)
 {
-	int			nbytes = ARR_DATA_OFFSET(a) + sizeof(int) * num;
+	int			nbytes;
 	int			i;
 
 	/* if no elements, return a zero-dimensional array */
-	if (num == 0)
+	if (num <= 0)
 	{
+		Assert(num == 0);
 		ARR_NDIM(a) = 0;
 		return a;
 	}
 
 	if (num == ARRNELEMS(a))
 		return a;
+
+	nbytes = ARR_DATA_OFFSET(a) + sizeof(int) * num;
 
 	a = (ArrayType *) repalloc(a, nbytes);
 
@@ -284,12 +297,12 @@ internal_size(int *a, int len)
 
 	for (i = 0; i < len; i += 2)
 	{
-		if (!i || a[i] != a[i - 1])		/* do not count repeated range */
+		if (!i || a[i] != a[i - 1]) /* do not count repeated range */
 			size += (int64)(a[i + 1]) - (int64)(a[i]) + 1;
 	}
 
 	if (size > (int64)INT_MAX || size < (int64)INT_MIN)
-		return -1;						/* overflow */
+		return -1;				/* overflow */
 	return (int) size;
 }
 

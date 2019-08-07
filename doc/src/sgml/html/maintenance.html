@@ -1,307 +1,37 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Routine Database Maintenance Tasks</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Server Administration"
-HREF="admin.html"><LINK
-REL="PREVIOUS"
-TITLE="Character Set Support"
-HREF="multibyte.html"><LINK
-REL="NEXT"
-TITLE="Routine Vacuuming"
-HREF="routine-vacuuming.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="CHAPTER"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Character Set Support"
-HREF="multibyte.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="admin.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Routine Vacuuming"
-HREF="routine-vacuuming.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="CHAPTER"
-><H1
-><A
-NAME="MAINTENANCE"
-></A
->Chapter 24. Routine Database Maintenance Tasks</H1
-><DIV
-CLASS="TOC"
-><DL
-><DT
-><B
->Table of Contents</B
-></DT
-><DT
->24.1. <A
-HREF="routine-vacuuming.html"
->Routine Vacuuming</A
-></DT
-><DD
-><DL
-><DT
->24.1.1. <A
-HREF="routine-vacuuming.html#VACUUM-BASICS"
->Vacuuming Basics</A
-></DT
-><DT
->24.1.2. <A
-HREF="routine-vacuuming.html#VACUUM-FOR-SPACE-RECOVERY"
->Recovering Disk Space</A
-></DT
-><DT
->24.1.3. <A
-HREF="routine-vacuuming.html#VACUUM-FOR-STATISTICS"
->Updating Planner Statistics</A
-></DT
-><DT
->24.1.4. <A
-HREF="routine-vacuuming.html#VACUUM-FOR-VISIBILITY-MAP"
->Updating The Visibility Map</A
-></DT
-><DT
->24.1.5. <A
-HREF="routine-vacuuming.html#VACUUM-FOR-WRAPAROUND"
->Preventing Transaction ID Wraparound Failures</A
-></DT
-><DT
->24.1.6. <A
-HREF="routine-vacuuming.html#AUTOVACUUM"
->The Autovacuum Daemon</A
-></DT
-></DL
-></DD
-><DT
->24.2. <A
-HREF="routine-reindex.html"
->Routine Reindexing</A
-></DT
-><DT
->24.3. <A
-HREF="logfile-maintenance.html"
->Log File Maintenance</A
-></DT
-></DL
-></DIV
-><P
->   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, like any database software, requires that certain tasks
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 24. Routine Database Maintenance Tasks</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="multibyte.html" title="23.3. Character Set Support" /><link rel="next" href="routine-vacuuming.html" title="24.1. Routine Vacuuming" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">Chapter 24. Routine Database Maintenance Tasks</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="multibyte.html" title="23.3. Character Set Support">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="admin.html" title="Part III. Server Administration">Up</a></td><th width="60%" align="center">Part III. Server Administration</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="routine-vacuuming.html" title="24.1. Routine Vacuuming">Next</a></td></tr></table><hr></hr></div><div class="chapter" id="MAINTENANCE"><div class="titlepage"><div><div><h2 class="title">Chapter 24. Routine Database Maintenance Tasks</h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="sect1"><a href="routine-vacuuming.html">24.1. Routine Vacuuming</a></span></dt><dd><dl><dt><span class="sect2"><a href="routine-vacuuming.html#VACUUM-BASICS">24.1.1. Vacuuming Basics</a></span></dt><dt><span class="sect2"><a href="routine-vacuuming.html#VACUUM-FOR-SPACE-RECOVERY">24.1.2. Recovering Disk Space</a></span></dt><dt><span class="sect2"><a href="routine-vacuuming.html#VACUUM-FOR-STATISTICS">24.1.3. Updating Planner Statistics</a></span></dt><dt><span class="sect2"><a href="routine-vacuuming.html#VACUUM-FOR-VISIBILITY-MAP">24.1.4. Updating The Visibility Map</a></span></dt><dt><span class="sect2"><a href="routine-vacuuming.html#VACUUM-FOR-WRAPAROUND">24.1.5. Preventing Transaction ID Wraparound Failures</a></span></dt><dt><span class="sect2"><a href="routine-vacuuming.html#AUTOVACUUM">24.1.6. The Autovacuum Daemon</a></span></dt></dl></dd><dt><span class="sect1"><a href="routine-reindex.html">24.2. Routine Reindexing</a></span></dt><dt><span class="sect1"><a href="logfile-maintenance.html">24.3. Log File Maintenance</a></span></dt></dl></div><a id="id-1.6.11.2" class="indexterm"></a><a id="id-1.6.11.3" class="indexterm"></a><p>
+   <span class="productname">PostgreSQL</span>, like any database software, requires that certain tasks
    be performed regularly to achieve optimum performance. The tasks
-   discussed here are <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->required</I
-></SPAN
->, but they
+   discussed here are <span class="emphasis"><em>required</em></span>, but they
    are repetitive in nature and can easily be automated using standard
-   tools such as <SPAN
-CLASS="APPLICATION"
->cron</SPAN
-> scripts or
-   Windows' <SPAN
-CLASS="APPLICATION"
->Task Scheduler</SPAN
->.  It is the database
+   tools such as <span class="application">cron</span> scripts or
+   Windows' <span class="application">Task Scheduler</span>.  It is the database
    administrator's responsibility to set up appropriate scripts, and to
    check that they execute successfully.
-  </P
-><P
->   One obvious maintenance task is the creation of backup copies of the data on a
+  </p><p>
+   One obvious maintenance task is the creation of backup copies of the data on a
    regular schedule.  Without a recent backup, you have no chance of recovery
    after a catastrophe (disk failure, fire, mistakenly dropping a critical
    table, etc.).  The backup and recovery mechanisms available in
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> are discussed at length in
-   <A
-HREF="backup.html"
->Chapter 25</A
->.
-  </P
-><P
->   The other main category of maintenance task is periodic <SPAN
-CLASS="QUOTE"
->"vacuuming"</SPAN
->
+   <span class="productname">PostgreSQL</span> are discussed at length in
+   <a class="xref" href="backup.html" title="Chapter 25. Backup and Restore">Chapter 25</a>.
+  </p><p>
+   The other main category of maintenance task is periodic <span class="quote">“<span class="quote">vacuuming</span>”</span>
    of the database.  This activity is discussed in
-   <A
-HREF="routine-vacuuming.html"
->Section 24.1</A
->.  Closely related to this is updating
+   <a class="xref" href="routine-vacuuming.html" title="24.1. Routine Vacuuming">Section 24.1</a>.  Closely related to this is updating
    the statistics that will be used by the query planner, as discussed in
-   <A
-HREF="routine-vacuuming.html#VACUUM-FOR-STATISTICS"
->Section 24.1.3</A
->.
-  </P
-><P
->   Another task that might need periodic attention is log file management.
-   This is discussed in <A
-HREF="logfile-maintenance.html"
->Section 24.3</A
->.
-  </P
-><P
->   <A
-HREF="https://bucardo.org/check_postgres/"
-TARGET="_top"
-><SPAN
-CLASS="APPLICATION"
->check_postgres</SPAN
-></A
->
+   <a class="xref" href="routine-vacuuming.html#VACUUM-FOR-STATISTICS" title="24.1.3. Updating Planner Statistics">Section 24.1.3</a>.
+  </p><p>
+   Another task that might need periodic attention is log file management.
+   This is discussed in <a class="xref" href="logfile-maintenance.html" title="24.3. Log File Maintenance">Section 24.3</a>.
+  </p><p>
+   <a class="ulink" href="https://bucardo.org/check_postgres/" target="_top"><span class="application">check_postgres</span></a>
    is available for monitoring database health and reporting unusual
-   conditions.  <SPAN
-CLASS="APPLICATION"
->check_postgres</SPAN
-> integrates with
+   conditions.  <span class="application">check_postgres</span> integrates with
    Nagios and MRTG, but can be run standalone too.
-  </P
-><P
->   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> is low-maintenance compared
+  </p><p>
+   <span class="productname">PostgreSQL</span> is low-maintenance compared
    to some other database management systems.  Nonetheless,
    appropriate attention to these tasks will go far towards ensuring a
    pleasant and productive experience with the system.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="multibyte.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="routine-vacuuming.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Character Set Support</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="admin.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Routine Vacuuming</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="multibyte.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="admin.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="routine-vacuuming.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">23.3. Character Set Support </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 24.1. Routine Vacuuming</td></tr></table></div></body></html>

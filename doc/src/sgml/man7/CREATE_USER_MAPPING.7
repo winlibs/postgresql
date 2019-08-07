@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE USER MAPPING" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE USER MAPPING" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ CREATE_USER_MAPPING \- define a new mapping of a user to a foreign server
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE USER MAPPING FOR { \fIuser_name\fR | USER | CURRENT_USER | PUBLIC }
+CREATE USER MAPPING [ IF NOT EXISTS ] FOR { \fIuser_name\fR | USER | CURRENT_USER | PUBLIC }
     SERVER \fIserver_name\fR
     [ OPTIONS ( \fIoption\fR \*(Aq\fIvalue\fR\*(Aq [ , \&.\&.\&. ] ) ]
 .fi
@@ -45,6 +45,11 @@ The owner of a foreign server can create user mappings for that server for any u
 USAGE
 privilege on the server has been granted to the user\&.
 .SH "PARAMETERS"
+.PP
+IF NOT EXISTS
+.RS 4
+Do not throw an error if a mapping of the given user to the given foreign server already exists\&. A notice is issued in this case\&. Note that there is no guarantee that the existing user mapping is anything like the one that would have been created\&.
+.RE
 .PP
 \fIuser_name\fR
 .RS 4

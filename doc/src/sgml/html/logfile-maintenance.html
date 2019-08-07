@@ -1,365 +1,76 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Log File Maintenance</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Routine Database Maintenance Tasks"
-HREF="maintenance.html"><LINK
-REL="PREVIOUS"
-TITLE="Routine Reindexing"
-HREF="routine-reindex.html"><LINK
-REL="NEXT"
-TITLE="Backup and Restore"
-HREF="backup.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Routine Reindexing"
-HREF="routine-reindex.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="maintenance.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 24. Routine Database Maintenance Tasks</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Backup and Restore"
-HREF="backup.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="LOGFILE-MAINTENANCE"
->24.3. Log File Maintenance</A
-></H1
-><P
->   It is a good idea to save the database server's log output
-   somewhere, rather than just discarding it via <TT
-CLASS="FILENAME"
->/dev/null</TT
->.
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>24.3. Log File Maintenance</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="routine-reindex.html" title="24.2. Routine Reindexing" /><link rel="next" href="backup.html" title="Chapter 25. Backup and Restore" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">24.3. Log File Maintenance</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="routine-reindex.html" title="24.2. Routine Reindexing">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="maintenance.html" title="Chapter 24. Routine Database Maintenance Tasks">Up</a></td><th width="60%" align="center">Chapter 24. Routine Database Maintenance Tasks</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="backup.html" title="Chapter 25. Backup and Restore">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="LOGFILE-MAINTENANCE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">24.3. Log File Maintenance</h2></div></div></div><a id="id-1.6.11.12.2" class="indexterm"></a><p>
+   It is a good idea to save the database server's log output
+   somewhere, rather than just discarding it via <code class="filename">/dev/null</code>.
    The log output is invaluable when diagnosing
    problems.  However, the log output tends to be voluminous
    (especially at higher debug levels) so you won't want to save it
-   indefinitely.  You need to <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->rotate</I
-></SPAN
-> the log files so that
+   indefinitely.  You need to <span class="emphasis"><em>rotate</em></span> the log files so that
    new log files are started and old ones removed after a reasonable
    period of time.
-  </P
-><P
->   If you simply direct the <SPAN
-CLASS="SYSTEMITEM"
->stderr</SPAN
-> of
-   <TT
-CLASS="COMMAND"
->postgres</TT
-> into a
+  </p><p>
+   If you simply direct the <span class="systemitem">stderr</span> of
+   <code class="command">postgres</code> into a
    file, you will have log output, but
    the only way to truncate the log file is to stop and restart
    the server. This might be acceptable if you are using
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> in a development environment,
+   <span class="productname">PostgreSQL</span> in a development environment,
    but few production servers would find this behavior acceptable.
-  </P
-><P
->   A better approach is to send the server's
-   <SPAN
-CLASS="SYSTEMITEM"
->stderr</SPAN
-> output to some type of log rotation program.
+  </p><p>
+   A better approach is to send the server's
+   <span class="systemitem">stderr</span> output to some type of log rotation program.
    There is a built-in log rotation facility, which you can use by
-   setting the configuration parameter <TT
-CLASS="VARNAME"
->logging_collector</TT
-> to
-   <TT
-CLASS="LITERAL"
->true</TT
-> in <TT
-CLASS="FILENAME"
->postgresql.conf</TT
->.  The control
-   parameters for this program are described in <A
-HREF="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHERE"
->Section 19.8.1</A
->. You can also use this approach
-   to capture the log data in machine readable <ACRONYM
-CLASS="ACRONYM"
->CSV</ACRONYM
->
+   setting the configuration parameter <code class="varname">logging_collector</code> to
+   <code class="literal">true</code> in <code class="filename">postgresql.conf</code>.  The control
+   parameters for this program are described in <a class="xref" href="runtime-config-logging.html#RUNTIME-CONFIG-LOGGING-WHERE" title="19.8.1. Where To Log">Section 19.8.1</a>. You can also use this approach
+   to capture the log data in machine readable <acronym class="acronym">CSV</acronym>
    (comma-separated values) format.
-  </P
-><P
->   Alternatively, you might prefer to use an external log rotation
+  </p><p>
+   Alternatively, you might prefer to use an external log rotation
    program if you have one that you are already using with other
-   server software. For example, the <SPAN
-CLASS="APPLICATION"
->rotatelogs</SPAN
->
-   tool included in the <SPAN
-CLASS="PRODUCTNAME"
->Apache</SPAN
-> distribution
-   can be used with <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.  To do this,
+   server software. For example, the <span class="application">rotatelogs</span>
+   tool included in the <span class="productname">Apache</span> distribution
+   can be used with <span class="productname">PostgreSQL</span>.  To do this,
    just pipe the server's
-   <SPAN
-CLASS="SYSTEMITEM"
->stderr</SPAN
-> output to the desired program.
+   <span class="systemitem">stderr</span> output to the desired program.
    If you start the server with
-   <TT
-CLASS="COMMAND"
->pg_ctl</TT
->, then <SPAN
-CLASS="SYSTEMITEM"
->stderr</SPAN
->
-   is already redirected to <SPAN
-CLASS="SYSTEMITEM"
->stdout</SPAN
->, so you just need a
+   <code class="command">pg_ctl</code>, then <span class="systemitem">stderr</span>
+   is already redirected to <span class="systemitem">stdout</span>, so you just need a
    pipe command, for example:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->pg_ctl start | rotatelogs /var/log/pgsql_log 86400</PRE
-><P>
-  </P
-><P
->   Another production-grade approach to managing log output is to
-   send it to <SPAN
-CLASS="APPLICATION"
->syslog</SPAN
-> and let
-   <SPAN
-CLASS="APPLICATION"
->syslog</SPAN
-> deal with file rotation. To do this, set the
-   configuration parameter <TT
-CLASS="VARNAME"
->log_destination</TT
-> to <TT
-CLASS="LITERAL"
->syslog</TT
->
-   (to log to <SPAN
-CLASS="APPLICATION"
->syslog</SPAN
-> only) in
-   <TT
-CLASS="FILENAME"
->postgresql.conf</TT
->. Then you can send a <TT
-CLASS="LITERAL"
->SIGHUP</TT
->
-   signal to the <SPAN
-CLASS="APPLICATION"
->syslog</SPAN
-> daemon whenever you want to force it
+</p><pre class="programlisting">
+pg_ctl start | rotatelogs /var/log/pgsql_log 86400
+</pre><p>
+  </p><p>
+   Another production-grade approach to managing log output is to
+   send it to <span class="application">syslog</span> and let
+   <span class="application">syslog</span> deal with file rotation. To do this, set the
+   configuration parameter <code class="varname">log_destination</code> to <code class="literal">syslog</code>
+   (to log to <span class="application">syslog</span> only) in
+   <code class="filename">postgresql.conf</code>. Then you can send a <code class="literal">SIGHUP</code>
+   signal to the <span class="application">syslog</span> daemon whenever you want to force it
    to start writing a new log file.  If you want to automate log
-   rotation, the <SPAN
-CLASS="APPLICATION"
->logrotate</SPAN
-> program can be
+   rotation, the <span class="application">logrotate</span> program can be
    configured to work with log files from
-   <SPAN
-CLASS="APPLICATION"
->syslog</SPAN
->.
-  </P
-><P
->   On many systems, however, <SPAN
-CLASS="APPLICATION"
->syslog</SPAN
-> is not very reliable,
+   <span class="application">syslog</span>.
+  </p><p>
+   On many systems, however, <span class="application">syslog</span> is not very reliable,
    particularly with large log messages; it might truncate or drop messages
-   just when you need them the most.  Also, on <SPAN
-CLASS="PRODUCTNAME"
->Linux</SPAN
->,
-   <SPAN
-CLASS="APPLICATION"
->syslog</SPAN
-> will flush each message to disk, yielding poor
-   performance.  (You can use a <SPAN
-CLASS="QUOTE"
->"<TT
-CLASS="LITERAL"
->-</TT
->"</SPAN
-> at the start of the file name
-   in the <SPAN
-CLASS="APPLICATION"
->syslog</SPAN
-> configuration file to disable syncing.)
-  </P
-><P
->   Note that all the solutions described above take care of starting new
+   just when you need them the most.  Also, on <span class="productname">Linux</span>,
+   <span class="application">syslog</span> will flush each message to disk, yielding poor
+   performance.  (You can use a <span class="quote">“<span class="quote"><code class="literal">-</code></span>”</span> at the start of the file name
+   in the <span class="application">syslog</span> configuration file to disable syncing.)
+  </p><p>
+   Note that all the solutions described above take care of starting new
    log files at configurable intervals, but they do not handle deletion
    of old, no-longer-useful log files.  You will probably want to set
    up a batch job to periodically delete old log files.  Another possibility
    is to configure the rotation program so that old log files are overwritten
    cyclically.
-  </P
-><P
->   <A
-HREF="https://pgbadger.darold.net/"
-TARGET="_top"
-><SPAN
-CLASS="PRODUCTNAME"
->pgBadger</SPAN
-></A
->
+  </p><p>
+   <a class="ulink" href="https://pgbadger.darold.net/" target="_top"><span class="productname">pgBadger</span></a>
    is an external project that does sophisticated log file analysis.
-   <A
-HREF="https://bucardo.org/check_postgres/"
-TARGET="_top"
-><SPAN
-CLASS="PRODUCTNAME"
->check_postgres</SPAN
-></A
->
+   <a class="ulink" href="https://bucardo.org/check_postgres/" target="_top"><span class="productname">check_postgres</span></a>
    provides Nagios alerts when important messages appear in the log
    files, as well as detection of many other extraordinary conditions.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="routine-reindex.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="backup.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Routine Reindexing</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="maintenance.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Backup and Restore</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="routine-reindex.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="maintenance.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="backup.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">24.2. Routine Reindexing </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 25. Backup and Restore</td></tr></table></div></body></html>

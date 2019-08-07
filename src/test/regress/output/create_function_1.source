@@ -55,11 +55,16 @@ CREATE FUNCTION test_atomic_ops()
     RETURNS bool
     AS '@libdir@/regress@DLSUFFIX@'
     LANGUAGE C;
+-- Tests creating a FDW handler
+CREATE FUNCTION test_fdw_handler()
+    RETURNS fdw_handler
+    AS '@libdir@/regress@DLSUFFIX@', 'test_fdw_handler'
+    LANGUAGE C;
 -- Things that shouldn't work:
 CREATE FUNCTION test1 (int) RETURNS int LANGUAGE SQL
     AS 'SELECT ''not an integer'';';
 ERROR:  return type mismatch in function declared to return integer
-DETAIL:  Actual return type is unknown.
+DETAIL:  Actual return type is text.
 CONTEXT:  SQL function "test1"
 CREATE FUNCTION test1 (int) RETURNS int LANGUAGE SQL
     AS 'not even SQL';

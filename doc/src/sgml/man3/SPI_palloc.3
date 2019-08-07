@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SPI_PALLOC" "3" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SPI_PALLOC" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,6 +38,8 @@ void * SPI_palloc(Size \fIsize\fR)
 .PP
 \fBSPI_palloc\fR
 allocates memory in the upper executor context\&.
+.PP
+This function can only be used while connected to SPI\&. Otherwise, it throws an error\&.
 .SH "ARGUMENTS"
 .PP
 Size \fIsize\fR

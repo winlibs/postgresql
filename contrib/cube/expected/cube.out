@@ -2,6 +2,14 @@
 --  Test cube datatype
 --
 CREATE EXTENSION cube;
+-- Check whether any of our opclasses fail amvalidate
+SELECT amname, opcname
+FROM pg_opclass opc LEFT JOIN pg_am am ON am.oid = opcmethod
+WHERE opc.oid >= 16384 AND NOT amvalidate(opc.oid);
+ amname | opcname 
+--------+---------
+(0 rows)
+
 --
 -- testing the input and output functions
 --
@@ -54,6 +62,24 @@ SELECT '-1.0'::cube AS cube;
  (-1)
 (1 row)
 
+SELECT 'infinity'::cube AS cube;
+    cube    
+------------
+ (Infinity)
+(1 row)
+
+SELECT '-infinity'::cube AS cube;
+    cube     
+-------------
+ (-Infinity)
+(1 row)
+
+SELECT 'NaN'::cube AS cube;
+ cube  
+-------
+ (NaN)
+(1 row)
+
 SELECT '.1234567890123456'::cube AS cube;
         cube         
 ---------------------
@@ -73,6 +99,12 @@ SELECT '-.1234567890123456'::cube AS cube;
 (1 row)
 
 -- simple lists (points)
+SELECT '()'::cube AS cube;
+ cube 
+------
+ ()
+(1 row)
+
 SELECT '1,2'::cube AS cube;
   cube  
 --------
@@ -98,6 +130,12 @@ SELECT '(1,2,3,4,5)'::cube AS cube;
 (1 row)
 
 -- double lists (cubes)
+SELECT '(),()'::cube AS cube;
+ cube 
+------
+ ()
+(1 row)
+
 SELECT '(0),(0)'::cube AS cube;
  cube 
 ------
@@ -148,146 +186,145 @@ SELECT '[(0,0,0,0),(1,0,0,0)]'::cube AS cube;
 
 -- invalid input: parse errors
 SELECT ''::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT ''::cube AS cube;
                ^
 DETAIL:  syntax error at end of input
 SELECT 'ABC'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT 'ABC'::cube AS cube;
                ^
 DETAIL:  syntax error at or near "A"
-SELECT '()'::cube AS cube;
-ERROR:  bad cube representation
-LINE 1: SELECT '()'::cube AS cube;
-               ^
-DETAIL:  syntax error at or near ")"
 SELECT '[]'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '[]'::cube AS cube;
                ^
 DETAIL:  syntax error at or near "]"
 SELECT '[()]'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '[()]'::cube AS cube;
                ^
-DETAIL:  syntax error at or near ")"
+DETAIL:  syntax error at or near "]"
 SELECT '[(1)]'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '[(1)]'::cube AS cube;
                ^
 DETAIL:  syntax error at or near "]"
 SELECT '[(1),]'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '[(1),]'::cube AS cube;
                ^
 DETAIL:  syntax error at or near "]"
 SELECT '[(1),2]'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '[(1),2]'::cube AS cube;
                ^
 DETAIL:  syntax error at or near "2"
 SELECT '[(1),(2),(3)]'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '[(1),(2),(3)]'::cube AS cube;
                ^
 DETAIL:  syntax error at or near ","
 SELECT '1,'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '1,'::cube AS cube;
                ^
 DETAIL:  syntax error at end of input
 SELECT '1,2,'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '1,2,'::cube AS cube;
                ^
 DETAIL:  syntax error at end of input
 SELECT '1,,2'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '1,,2'::cube AS cube;
                ^
 DETAIL:  syntax error at or near ","
 SELECT '(1,)'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '(1,)'::cube AS cube;
                ^
 DETAIL:  syntax error at or near ")"
 SELECT '(1,2,)'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '(1,2,)'::cube AS cube;
                ^
 DETAIL:  syntax error at or near ")"
 SELECT '(1,,2)'::cube AS cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '(1,,2)'::cube AS cube;
                ^
 DETAIL:  syntax error at or near ","
 -- invalid input: semantic errors and trailing garbage
 SELECT '[(1),(2)],'::cube AS cube; -- 0
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '[(1),(2)],'::cube AS cube;
                ^
 DETAIL:  syntax error at or near ","
 SELECT '[(1,2,3),(2,3)]'::cube AS cube; -- 1
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '[(1,2,3),(2,3)]'::cube AS cube;
                ^
 DETAIL:  Different point dimensions in (1,2,3) and (2,3).
 SELECT '[(1,2),(1,2,3)]'::cube AS cube; -- 1
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '[(1,2),(1,2,3)]'::cube AS cube;
                ^
 DETAIL:  Different point dimensions in (1,2) and (1,2,3).
 SELECT '(1),(2),'::cube AS cube; -- 2
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '(1),(2),'::cube AS cube;
                ^
 DETAIL:  syntax error at or near ","
 SELECT '(1,2,3),(2,3)'::cube AS cube; -- 3
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '(1,2,3),(2,3)'::cube AS cube;
                ^
 DETAIL:  Different point dimensions in (1,2,3) and (2,3).
 SELECT '(1,2),(1,2,3)'::cube AS cube; -- 3
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '(1,2),(1,2,3)'::cube AS cube;
                ^
 DETAIL:  Different point dimensions in (1,2) and (1,2,3).
 SELECT '(1,2,3)ab'::cube AS cube; -- 4
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '(1,2,3)ab'::cube AS cube;
                ^
 DETAIL:  syntax error at or near "a"
 SELECT '(1,2,3)a'::cube AS cube; -- 5
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '(1,2,3)a'::cube AS cube;
                ^
 DETAIL:  syntax error at or near "a"
 SELECT '(1,2)('::cube AS cube; -- 5
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '(1,2)('::cube AS cube;
                ^
 DETAIL:  syntax error at or near "("
 SELECT '1,2ab'::cube AS cube; -- 6
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '1,2ab'::cube AS cube;
                ^
 DETAIL:  syntax error at or near "a"
 SELECT '1 e7'::cube AS cube; -- 6
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '1 e7'::cube AS cube;
                ^
 DETAIL:  syntax error at or near "e"
 SELECT '1,2a'::cube AS cube; -- 7
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '1,2a'::cube AS cube;
                ^
 DETAIL:  syntax error at or near "a"
 SELECT '1..2'::cube AS cube; -- 7
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: SELECT '1..2'::cube AS cube;
                ^
 DETAIL:  syntax error at or near ".2"
+SELECT '-1e-700'::cube AS cube; -- out of range
+ERROR:  "-1e-700" is out of range for type double precision
+LINE 1: SELECT '-1e-700'::cube AS cube;
+               ^
 --
 -- Testing building cubes from float8 values
 --
@@ -466,12 +503,12 @@ SELECT cube(cube(1,2), 42, 24); -- cube_c_f8_f8
 --
 -- create too big cube from literal
 select '(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)'::cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: select '(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0...
                ^
 DETAIL:  A cube cannot have more than 100 dimensions.
 select '(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0),(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0)'::cube;
-ERROR:  bad cube representation
+ERROR:  invalid input syntax for cube
 LINE 1: select '(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0...
                ^
 DETAIL:  A cube cannot have more than 100 dimensions.
@@ -1455,7 +1492,7 @@ SELECT cube(array[40,50,60], array[10,20,30])~>3;
 (1 row)
 
 SELECT cube(array[40,50,60], array[10,20,30])~>0;
-ERROR:  cube index 0 is out of bounds
+ERROR:  zero cube index is not defined
 SELECT cube(array[40,50,60], array[10,20,30])~>4;
  ?column? 
 ----------
@@ -1463,7 +1500,11 @@ SELECT cube(array[40,50,60], array[10,20,30])~>4;
 (1 row)
 
 SELECT cube(array[40,50,60], array[10,20,30])~>(-1);
-ERROR:  cube index -1 is out of bounds
+ ?column? 
+----------
+      -10
+(1 row)
+
 -- Load some example data and build the index
 --
 CREATE TABLE test_cube (c cube);
@@ -1490,6 +1531,28 @@ SELECT * FROM test_cube WHERE c && '(3000,1000),(0,0)' GROUP BY c ORDER BY c;
  (2424, 160),(2424, 81)
 (5 rows)
 
+-- Test index-only scans
+SET enable_bitmapscan = false;
+EXPLAIN (COSTS OFF)
+SELECT c FROM test_cube WHERE c <@ '(3000,1000),(0,0)' ORDER BY c;
+                       QUERY PLAN                       
+--------------------------------------------------------
+ Sort
+   Sort Key: c
+   ->  Index Only Scan using test_cube_ix on test_cube
+         Index Cond: (c <@ '(3000, 1000),(0, 0)'::cube)
+(4 rows)
+
+SELECT c FROM test_cube WHERE c <@ '(3000,1000),(0,0)' ORDER BY c;
+            c            
+-------------------------
+ (337, 455),(240, 359)
+ (759, 187),(662, 163)
+ (1444, 403),(1346, 344)
+ (2424, 160),(2424, 81)
+(4 rows)
+
+RESET enable_bitmapscan;
 -- Test kNN
 INSERT INTO test_cube VALUES ('(1,1)'), ('(100000)'), ('(0, 100000)'); -- Some corner cases
 SET enable_seqscan = false;
@@ -1605,6 +1668,86 @@ SELECT c~>4, c FROM test_cube ORDER BY c~>4 LIMIT 15; -- ascending by upper boun
       266 | (22684, 266),(22656, 181)
 (15 rows)
 
+SELECT c~>(-1), c FROM test_cube ORDER BY c~>(-1) LIMIT 15; -- descending by left bound
+ ?column? |               c               
+----------+-------------------------------
+  -100000 | (100000)
+   -49951 | (50027, 49230),(49951, 49214)
+   -49937 | (49980, 35004),(49937, 34963)
+   -49927 | (49985, 6436),(49927, 6338)
+   -49908 | (49999, 27218),(49908, 27176)
+   -49905 | (49954, 1340),(49905, 1294)
+   -49902 | (49944, 25163),(49902, 25153)
+   -49898 | (49981, 34876),(49898, 34786)
+   -49897 | (49957, 43390),(49897, 43384)
+   -49848 | (49853, 18504),(49848, 18503)
+   -49818 | (49902, 41752),(49818, 41746)
+   -49810 | (49907, 30225),(49810, 30158)
+   -49808 | (49843, 5175),(49808, 5145)
+   -49805 | (49887, 24274),(49805, 24184)
+   -49798 | (49847, 7128),(49798, 7067)
+(15 rows)
+
+SELECT c~>(-2), c FROM test_cube ORDER BY c~>(-2) LIMIT 15; -- descending by right bound
+ ?column? |               c               
+----------+-------------------------------
+  -100000 | (100000)
+   -50027 | (50027, 49230),(49951, 49214)
+   -49999 | (49999, 27218),(49908, 27176)
+   -49985 | (49985, 6436),(49927, 6338)
+   -49981 | (49981, 34876),(49898, 34786)
+   -49980 | (49980, 35004),(49937, 34963)
+   -49957 | (49957, 43390),(49897, 43384)
+   -49954 | (49954, 1340),(49905, 1294)
+   -49944 | (49944, 25163),(49902, 25153)
+   -49907 | (49907, 30225),(49810, 30158)
+   -49902 | (49902, 41752),(49818, 41746)
+   -49887 | (49887, 24274),(49805, 24184)
+   -49853 | (49853, 18504),(49848, 18503)
+   -49847 | (49847, 7128),(49798, 7067)
+   -49843 | (49843, 5175),(49808, 5145)
+(15 rows)
+
+SELECT c~>(-3), c FROM test_cube ORDER BY c~>(-3) LIMIT 15; -- descending by lower bound
+ ?column? |               c               
+----------+-------------------------------
+  -100000 | (0, 100000)
+   -49992 | (30746, 50040),(30727, 49992)
+   -49987 | (36311, 50073),(36258, 49987)
+   -49934 | (3531, 49962),(3463, 49934)
+   -49915 | (17954, 49975),(17865, 49915)
+   -49914 | (2168, 50012),(2108, 49914)
+   -49913 | (31287, 49923),(31236, 49913)
+   -49885 | (21551, 49983),(21492, 49885)
+   -49878 | (43925, 49912),(43888, 49878)
+   -49849 | (19128, 49932),(19112, 49849)
+   -49844 | (38266, 49852),(38233, 49844)
+   -49836 | (14913, 49873),(14849, 49836)
+   -49834 | (37595, 49849),(37581, 49834)
+   -49830 | (46151, 49848),(46058, 49830)
+   -49818 | (29261, 49910),(29247, 49818)
+(15 rows)
+
+SELECT c~>(-4), c FROM test_cube ORDER BY c~>(-4) LIMIT 15; -- descending by upper bound
+ ?column? |               c               
+----------+-------------------------------
+  -100000 | (0, 100000)
+   -50073 | (36311, 50073),(36258, 49987)
+   -50040 | (30746, 50040),(30727, 49992)
+   -50012 | (2168, 50012),(2108, 49914)
+   -49983 | (21551, 49983),(21492, 49885)
+   -49975 | (17954, 49975),(17865, 49915)
+   -49962 | (3531, 49962),(3463, 49934)
+   -49932 | (19128, 49932),(19112, 49849)
+   -49923 | (31287, 49923),(31236, 49913)
+   -49912 | (43925, 49912),(43888, 49878)
+   -49910 | (29261, 49910),(29247, 49818)
+   -49873 | (14913, 49873),(14849, 49836)
+   -49858 | (20007, 49858),(19921, 49778)
+   -49852 | (38266, 49852),(38233, 49844)
+   -49849 | (37595, 49849),(37581, 49834)
+(15 rows)
+
 -- Same queries with sequential scan (should give the same results as above)
 RESET enable_seqscan;
 SET enable_indexscan = OFF;
@@ -1716,6 +1859,86 @@ SELECT c~>4, c FROM test_cube ORDER BY c~>4 LIMIT 15; -- ascending by upper boun
       249 | (45989, 249),(45910, 222)
       255 | (24423, 255),(24360, 213)
       266 | (22684, 266),(22656, 181)
+(15 rows)
+
+SELECT c~>(-1), c FROM test_cube ORDER BY c~>(-1) LIMIT 15; -- descending by left bound
+ ?column? |               c               
+----------+-------------------------------
+  -100000 | (100000)
+   -49951 | (50027, 49230),(49951, 49214)
+   -49937 | (49980, 35004),(49937, 34963)
+   -49927 | (49985, 6436),(49927, 6338)
+   -49908 | (49999, 27218),(49908, 27176)
+   -49905 | (49954, 1340),(49905, 1294)
+   -49902 | (49944, 25163),(49902, 25153)
+   -49898 | (49981, 34876),(49898, 34786)
+   -49897 | (49957, 43390),(49897, 43384)
+   -49848 | (49853, 18504),(49848, 18503)
+   -49818 | (49902, 41752),(49818, 41746)
+   -49810 | (49907, 30225),(49810, 30158)
+   -49808 | (49843, 5175),(49808, 5145)
+   -49805 | (49887, 24274),(49805, 24184)
+   -49798 | (49847, 7128),(49798, 7067)
+(15 rows)
+
+SELECT c~>(-2), c FROM test_cube ORDER BY c~>(-2) LIMIT 15; -- descending by right bound
+ ?column? |               c               
+----------+-------------------------------
+  -100000 | (100000)
+   -50027 | (50027, 49230),(49951, 49214)
+   -49999 | (49999, 27218),(49908, 27176)
+   -49985 | (49985, 6436),(49927, 6338)
+   -49981 | (49981, 34876),(49898, 34786)
+   -49980 | (49980, 35004),(49937, 34963)
+   -49957 | (49957, 43390),(49897, 43384)
+   -49954 | (49954, 1340),(49905, 1294)
+   -49944 | (49944, 25163),(49902, 25153)
+   -49907 | (49907, 30225),(49810, 30158)
+   -49902 | (49902, 41752),(49818, 41746)
+   -49887 | (49887, 24274),(49805, 24184)
+   -49853 | (49853, 18504),(49848, 18503)
+   -49847 | (49847, 7128),(49798, 7067)
+   -49843 | (49843, 5175),(49808, 5145)
+(15 rows)
+
+SELECT c~>(-3), c FROM test_cube ORDER BY c~>(-3) LIMIT 15; -- descending by lower bound
+ ?column? |               c               
+----------+-------------------------------
+  -100000 | (0, 100000)
+   -49992 | (30746, 50040),(30727, 49992)
+   -49987 | (36311, 50073),(36258, 49987)
+   -49934 | (3531, 49962),(3463, 49934)
+   -49915 | (17954, 49975),(17865, 49915)
+   -49914 | (2168, 50012),(2108, 49914)
+   -49913 | (31287, 49923),(31236, 49913)
+   -49885 | (21551, 49983),(21492, 49885)
+   -49878 | (43925, 49912),(43888, 49878)
+   -49849 | (19128, 49932),(19112, 49849)
+   -49844 | (38266, 49852),(38233, 49844)
+   -49836 | (14913, 49873),(14849, 49836)
+   -49834 | (37595, 49849),(37581, 49834)
+   -49830 | (46151, 49848),(46058, 49830)
+   -49818 | (29261, 49910),(29247, 49818)
+(15 rows)
+
+SELECT c~>(-4), c FROM test_cube ORDER BY c~>(-4) LIMIT 15; -- descending by upper bound
+ ?column? |               c               
+----------+-------------------------------
+  -100000 | (0, 100000)
+   -50073 | (36311, 50073),(36258, 49987)
+   -50040 | (30746, 50040),(30727, 49992)
+   -50012 | (2168, 50012),(2108, 49914)
+   -49983 | (21551, 49983),(21492, 49885)
+   -49975 | (17954, 49975),(17865, 49915)
+   -49962 | (3531, 49962),(3463, 49934)
+   -49932 | (19128, 49932),(19112, 49849)
+   -49923 | (31287, 49923),(31236, 49913)
+   -49912 | (43925, 49912),(43888, 49878)
+   -49910 | (29261, 49910),(29247, 49818)
+   -49873 | (14913, 49873),(14849, 49836)
+   -49858 | (20007, 49858),(19921, 49778)
+   -49852 | (38266, 49852),(38233, 49844)
+   -49849 | (37595, 49849),(37581, 49834)
 (15 rows)
 
 RESET enable_indexscan;

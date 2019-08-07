@@ -1,430 +1,111 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->PL/Perl Under the Hood</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="PL/Perl - Perl Procedural Language"
-HREF="plperl.html"><LINK
-REL="PREVIOUS"
-TITLE="PL/Perl Event Triggers"
-HREF="plperl-event-triggers.html"><LINK
-REL="NEXT"
-TITLE="PL/Python - Python Procedural Language"
-HREF="plpython.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="PL/Perl Event Triggers"
-HREF="plperl-event-triggers.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plperl.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 43. PL/Perl - Perl Procedural Language</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="PL/Python - Python Procedural Language"
-HREF="plpython.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="PLPERL-UNDER-THE-HOOD"
->43.8. PL/Perl Under the Hood</A
-></H1
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="PLPERL-CONFIG"
->43.8.1. Configuration</A
-></H2
-><P
->  This section lists configuration parameters that affect <SPAN
-CLASS="APPLICATION"
->PL/Perl</SPAN
->.
-  </P
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><A
-NAME="GUC-PLPERL-ON-INIT"
-></A
-><TT
-CLASS="VARNAME"
->plperl.on_init</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)
-      </DT
-><DD
-><P
->        Specifies Perl code to be executed when a Perl interpreter is first
-        initialized, before it is specialized for use by <TT
-CLASS="LITERAL"
->plperl</TT
-> or
-        <TT
-CLASS="LITERAL"
->plperlu</TT
->.
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>45.8. PL/Perl Under the Hood</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plperl-event-triggers.html" title="45.7. PL/Perl Event Triggers" /><link rel="next" href="plpython.html" title="Chapter 46. PL/Python - Python Procedural Language" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">45.8. PL/Perl Under the Hood</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plperl-event-triggers.html" title="45.7. PL/Perl Event Triggers">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plperl.html" title="Chapter 45. PL/Perl - Perl Procedural Language">Up</a></td><th width="60%" align="center">Chapter 45. PL/Perl - Perl Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpython.html" title="Chapter 46. PL/Python - Python Procedural Language">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPERL-UNDER-THE-HOOD"><div class="titlepage"><div><div><h2 class="title" style="clear: both">45.8. PL/Perl Under the Hood</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plperl-under-the-hood.html#PLPERL-CONFIG">45.8.1. Configuration</a></span></dt><dt><span class="sect2"><a href="plperl-under-the-hood.html#PLPERL-MISSING">45.8.2. Limitations and Missing Features</a></span></dt></dl></div><div class="sect2" id="PLPERL-CONFIG"><div class="titlepage"><div><div><h3 class="title">45.8.1. Configuration</h3></div></div></div><p>
+  This section lists configuration parameters that affect <span class="application">PL/Perl</span>.
+  </p><div class="variablelist"><dl class="variablelist"><dt id="GUC-PLPERL-ON-INIT"><span class="term">
+       <code class="varname">plperl.on_init</code> (<code class="type">string</code>)
+      <a id="id-1.8.10.16.2.3.1.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Specifies Perl code to be executed when a Perl interpreter is first
+        initialized, before it is specialized for use by <code class="literal">plperl</code> or
+        <code class="literal">plperlu</code>.
         The SPI functions are not available when this code is executed.
         If the code fails with an error it will abort the initialization of
         the interpreter and propagate out to the calling query, causing the
         current transaction or subtransaction to be aborted.
-       </P
-><P
->       The Perl code is limited to a single string. Longer code can be placed
-       into a module and loaded by the <TT
-CLASS="LITERAL"
->on_init</TT
-> string.
+       </p><p>
+       The Perl code is limited to a single string. Longer code can be placed
+       into a module and loaded by the <code class="literal">on_init</code> string.
        Examples:
-</P><PRE
-CLASS="PROGRAMLISTING"
->plperl.on_init = 'require "plperlinit.pl"'
-plperl.on_init = 'use lib "/my/app"; use MyApp::PgInit;'</PRE
-><P>
-       </P
-><P
->       Any modules loaded by <TT
-CLASS="LITERAL"
->plperl.on_init</TT
->, either directly or
-       indirectly, will be available for use by <TT
-CLASS="LITERAL"
->plperl</TT
->.  This may
+</p><pre class="programlisting">
+plperl.on_init = 'require "plperlinit.pl"'
+plperl.on_init = 'use lib "/my/app"; use MyApp::PgInit;'
+</pre><p>
+       </p><p>
+       Any modules loaded by <code class="literal">plperl.on_init</code>, either directly or
+       indirectly, will be available for use by <code class="literal">plperl</code>.  This may
        create a security risk. To see what modules have been loaded you can use:
-</P><PRE
-CLASS="PROGRAMLISTING"
->DO 'elog(WARNING, join ", ", sort keys %INC)' LANGUAGE plperl;</PRE
-><P>
-       </P
-><P
->        Initialization will happen in the postmaster if the plperl library is
-        included in <A
-HREF="runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES"
->shared_preload_libraries</A
->, in which
+</p><pre class="programlisting">
+DO 'elog(WARNING, join ", ", sort keys %INC)' LANGUAGE plperl;
+</pre><p>
+       </p><p>
+        Initialization will happen in the postmaster if the <code class="literal">plperl</code> library is
+        included in <a class="xref" href="runtime-config-client.html#GUC-SHARED-PRELOAD-LIBRARIES">shared_preload_libraries</a>, in which
         case extra consideration should be given to the risk of destabilizing
         the postmaster.  The principal reason for making use of this feature
-        is that Perl modules loaded by <TT
-CLASS="LITERAL"
->plperl.on_init</TT
-> need be
+        is that Perl modules loaded by <code class="literal">plperl.on_init</code> need be
         loaded only at postmaster start, and will be instantly available
         without loading overhead in individual database sessions.  However,
         keep in mind that the overhead is avoided only for the first Perl
-        interpreter used by a database session &mdash; either PL/PerlU, or
+        interpreter used by a database session — either PL/PerlU, or
         PL/Perl for the first SQL role that calls a PL/Perl function.  Any
         additional Perl interpreters created in a database session will have
-        to execute <TT
-CLASS="LITERAL"
->plperl.on_init</TT
-> afresh.  Also, on Windows there
+        to execute <code class="literal">plperl.on_init</code> afresh.  Also, on Windows there
         will be no savings whatsoever from preloading, since the Perl
         interpreter created in the postmaster process does not propagate to
         child processes.
-       </P
-><P
->       This parameter can only be set in the <TT
-CLASS="FILENAME"
->postgresql.conf</TT
-> file or on the server command line.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-PLPERL-ON-PLPERL-INIT"
-></A
-><TT
-CLASS="VARNAME"
->plperl.on_plperl_init</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)
-       <BR><TT
-CLASS="VARNAME"
->plperl.on_plperlu_init</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)
-       </DT
-><DD
-><P
->        These parameters specify Perl code to be executed when a Perl
-        interpreter is specialized for <TT
-CLASS="LITERAL"
->plperl</TT
-> or
-        <TT
-CLASS="LITERAL"
->plperlu</TT
-> respectively.  This will happen when a PL/Perl or
+       </p><p>
+       This parameter can only be set in the <code class="filename">postgresql.conf</code> file or on the server command line.
+       </p></dd><dt id="GUC-PLPERL-ON-PLPERL-INIT"><span class="term">
+       <code class="varname">plperl.on_plperl_init</code> (<code class="type">string</code>)
+       <a id="id-1.8.10.16.2.3.2.1.3" class="indexterm"></a>
+      <br /></span><span class="term">
+       <code class="varname">plperl.on_plperlu_init</code> (<code class="type">string</code>)
+       <a id="id-1.8.10.16.2.3.2.2.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        These parameters specify Perl code to be executed when a Perl
+        interpreter is specialized for <code class="literal">plperl</code> or
+        <code class="literal">plperlu</code> respectively.  This will happen when a PL/Perl or
         PL/PerlU function is first executed in a database session, or when
         an additional interpreter has to be created because the other language
         is called or a PL/Perl function is called by a new SQL role.  This
-        follows any initialization done by <TT
-CLASS="LITERAL"
->plperl.on_init</TT
->.
+        follows any initialization done by <code class="literal">plperl.on_init</code>.
         The SPI functions are not available when this code is executed.
-        The Perl code in <TT
-CLASS="LITERAL"
->plperl.on_plperl_init</TT
-> is executed after
-        <SPAN
-CLASS="QUOTE"
->"locking down"</SPAN
-> the interpreter, and thus it can only perform
+        The Perl code in <code class="literal">plperl.on_plperl_init</code> is executed after
+        <span class="quote">“<span class="quote">locking down</span>”</span> the interpreter, and thus it can only perform
         trusted operations.
-       </P
-><P
->        If the code fails with an error it will abort the initialization and
+       </p><p>
+        If the code fails with an error it will abort the initialization and
         propagate out to the calling query, causing the current transaction or
         subtransaction to be aborted.  Any actions already done within Perl
         won't be undone; however, that interpreter won't be used again.
         If the language is used again the initialization will be attempted
         again within a fresh Perl interpreter.
-       </P
-><P
->        Only superusers can change these settings.  Although these settings
+       </p><p>
+        Only superusers can change these settings.  Although these settings
         can be changed within a session, such changes will not affect Perl
         interpreters that have already been used to execute functions.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-PLPERL-USE-STRICT"
-></A
-><TT
-CLASS="VARNAME"
->plperl.use_strict</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-       </DT
-><DD
-><P
->        When set true subsequent compilations of PL/Perl functions will have
-        the <TT
-CLASS="LITERAL"
->strict</TT
-> pragma enabled.  This parameter does not affect
+       </p></dd><dt id="GUC-PLPERL-USE-STRICT"><span class="term">
+       <code class="varname">plperl.use_strict</code> (<code class="type">boolean</code>)
+       <a id="id-1.8.10.16.2.3.3.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        When set true subsequent compilations of PL/Perl functions will have
+        the <code class="literal">strict</code> pragma enabled.  This parameter does not affect
         functions already compiled in the current session.
-       </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="PLPERL-MISSING"
->43.8.2. Limitations and Missing Features</A
-></H2
-><P
->   The following features are currently missing from PL/Perl, but they
+       </p></dd></dl></div></div><div class="sect2" id="PLPERL-MISSING"><div class="titlepage"><div><div><h3 class="title">45.8.2. Limitations and Missing Features</h3></div></div></div><p>
+   The following features are currently missing from PL/Perl, but they
    would make welcome contributions.
 
-   <P
-></P
-></P><UL
-><LI
-><P
->      PL/Perl functions cannot call each other directly.
-     </P
-></LI
-><LI
-><P
->      SPI is not yet fully implemented.
-     </P
-></LI
-><LI
-><P
->      If you are fetching very large data sets using
-      <TT
-CLASS="LITERAL"
->spi_exec_query</TT
->, you should be aware that
+   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      PL/Perl functions cannot call each other directly.
+     </p></li><li class="listitem"><p>
+      SPI is not yet fully implemented.
+     </p></li><li class="listitem"><p>
+      If you are fetching very large data sets using
+      <code class="literal">spi_exec_query</code>, you should be aware that
       these will all go into memory.  You can avoid this by using
-      <TT
-CLASS="LITERAL"
->spi_query</TT
->/<TT
-CLASS="LITERAL"
->spi_fetchrow</TT
-> as
+      <code class="literal">spi_query</code>/<code class="literal">spi_fetchrow</code> as
       illustrated earlier.
-     </P
-><P
->        A similar problem occurs if a set-returning function passes a
-        large set of rows back to PostgreSQL via <TT
-CLASS="LITERAL"
->return</TT
->. You
+     </p><p>
+        A similar problem occurs if a set-returning function passes a
+        large set of rows back to PostgreSQL via <code class="literal">return</code>. You
         can avoid this problem too by instead using
-        <TT
-CLASS="LITERAL"
->return_next</TT
-> for each row returned, as shown
+        <code class="literal">return_next</code> for each row returned, as shown
         previously.
-     </P
-></LI
-><LI
-><P
->        When a session ends normally, not due to a fatal error, any
-        <TT
-CLASS="LITERAL"
->END</TT
-> blocks that have been defined are executed.
+     </p></li><li class="listitem"><p>
+        When a session ends normally, not due to a fatal error, any
+        <code class="literal">END</code> blocks that have been defined are executed.
         Currently no other actions are performed. Specifically,
         file handles are not automatically flushed and objects are
         not automatically destroyed.
-      </P
-></LI
-></UL
-><P>
-  </P
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plperl-event-triggers.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="plpython.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->PL/Perl Event Triggers</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="plperl.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->PL/Python - Python Procedural Language</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+      </p></li></ul></div><p>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plperl-event-triggers.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plperl.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpython.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">45.7. PL/Perl Event Triggers </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> Chapter 46. PL/Python - Python Procedural Language</td></tr></table></div></body></html>

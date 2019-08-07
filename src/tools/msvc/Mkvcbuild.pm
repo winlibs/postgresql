@@ -36,14 +36,15 @@ my @contrib_uselibpq = ('dblink', 'oid2name', 'postgres_fdw', 'vacuumlo');
 my @contrib_uselibpgport   = ('oid2name', 'pg_standby', 'vacuumlo');
 my @contrib_uselibpgcommon = ('oid2name', 'pg_standby', 'vacuumlo');
 my $contrib_extralibs      = undef;
-my $contrib_extraincludes =
-  { 'tsearch2' => ['contrib/tsearch2'], 'dblink' => ['src/backend'] };
+my $contrib_extraincludes = { 'dblink' => ['src/backend'] };
 my $contrib_extrasource = {
 	'cube' => [ 'contrib/cube/cubescan.l', 'contrib/cube/cubeparse.y' ],
-	'seg'  => [ 'contrib/seg/segscan.l',   'contrib/seg/segparse.y' ], };
+	'seg'  => [ 'contrib/seg/segscan.l',   'contrib/seg/segparse.y' ],
+};
 my @contrib_excludes = (
 	'commit_ts',       'hstore_plperl',
 	'hstore_plpython', 'intagg',
+	'jsonb_plperl',    'jsonb_plpython',
 	'ltree_plpython',  'pgcrypto',
 	'sepgsql',         'brin',
 	'test_extensions', 'test_pg_dump',
@@ -51,30 +52,33 @@ my @contrib_excludes = (
 
 # Set of variables for frontend modules
 my $frontend_defines = { 'initdb' => 'FRONTEND' };
-my @frontend_uselibpq = ('pg_ctl', 'pg_upgrade', 'pgbench', 'psql');
+my @frontend_uselibpq = ('pg_ctl', 'pg_upgrade', 'pgbench', 'psql', 'initdb');
 my @frontend_uselibpgport = (
 	'pg_archivecleanup', 'pg_test_fsync',
 	'pg_test_timing',    'pg_upgrade',
-	'pg_xlogdump',       'pgbench');
+	'pg_waldump',        'pgbench');
 my @frontend_uselibpgcommon = (
 	'pg_archivecleanup', 'pg_test_fsync',
 	'pg_test_timing',    'pg_upgrade',
-	'pg_xlogdump',       'pgbench');
+	'pg_waldump',        'pgbench');
 my $frontend_extralibs = {
 	'initdb'     => ['ws2_32.lib'],
 	'pg_restore' => ['ws2_32.lib'],
 	'pgbench'    => ['ws2_32.lib'],
-	'psql'       => ['ws2_32.lib'] };
+	'psql'       => ['ws2_32.lib']
+};
 my $frontend_extraincludes = {
 	'initdb' => ['src/timezone'],
-	'psql'   => ['src/backend'] };
+	'psql'   => ['src/backend']
+};
 my $frontend_extrasource = {
 	'psql' => ['src/bin/psql/psqlscanslash.l'],
 	'pgbench' =>
-	  [ 'src/bin/pgbench/exprscan.l', 'src/bin/pgbench/exprparse.y' ] };
+	  [ 'src/bin/pgbench/exprscan.l', 'src/bin/pgbench/exprparse.y' ]
+};
 my @frontend_excludes = (
-	'pgevent',     'pg_basebackup', 'pg_rewind', 'pg_dump',
-	'pg_xlogdump', 'scripts');
+	'pgevent',    'pg_basebackup', 'pg_rewind', 'pg_dump',
+	'pg_waldump', 'scripts');
 
 sub mkvcbuild
 {
@@ -92,8 +96,8 @@ sub mkvcbuild
 	  chklocale.c crypt.c fls.c fseeko.c getrusage.c inet_aton.c random.c
 	  srandom.c getaddrinfo.c gettimeofday.c inet_net_ntop.c kill.c open.c
 	  erand48.c snprintf.c strlcat.c strlcpy.c dirmod.c noblock.c path.c
-	  pgcheckdir.c pgmkdirp.c pgsleep.c pgstrcasecmp.c pqsignal.c
-	  mkdtemp.c qsort.c qsort_arg.c quotes.c system.c
+	  pg_strong_random.c pgcheckdir.c pgmkdirp.c pgsleep.c pgstrcasecmp.c
+	  pqsignal.c mkdtemp.c qsort.c qsort_arg.c quotes.c system.c
 	  sprompt.c tar.c thread.c getopt.c getopt_long.c dirent.c
 	  win32env.c win32error.c win32security.c win32setlocale.c);
 
@@ -101,7 +105,7 @@ sub mkvcbuild
 
 	if ($vsVersion >= '9.00')
 	{
-		push(@pgportfiles, 'pg_crc32c_choose.c');
+		push(@pgportfiles, 'pg_crc32c_sse42_choose.c');
 		push(@pgportfiles, 'pg_crc32c_sse42.c');
 		push(@pgportfiles, 'pg_crc32c_sb8.c');
 	}
@@ -111,18 +115,28 @@ sub mkvcbuild
 	}
 
 	our @pgcommonallfiles = qw(
-	  config_info.c controldata_utils.c exec.c keywords.c
-	  pg_lzcompress.c pgfnames.c psprintf.c relpath.c rmtree.c
-	  string.c username.c wait_error.c);
+	  base64.c config_info.c controldata_utils.c exec.c file_perm.c ip.c
+	  keywords.c md5.c pg_lzcompress.c pgfnames.c psprintf.c relpath.c rmtree.c
+	  saslprep.c scram-common.c string.c unicode_norm.c username.c
+	  wait_error.c);
+
+	if ($solution->{options}->{openssl})
+	{
+		push(@pgcommonallfiles, 'sha2_openssl.c');
+	}
+	else
+	{
+		push(@pgcommonallfiles, 'sha2.c');
+	}
 
 	our @pgcommonfrontendfiles = (
-		@pgcommonallfiles, qw(fe_memutils.c
+		@pgcommonallfiles, qw(fe_memutils.c file_utils.c
 		  restricted_token.c));
 
 	our @pgcommonbkndfiles = @pgcommonallfiles;
 
 	our @pgfeutilsfiles = qw(
-	  mbprint.c print.c psqlscan.l psqlscan.c simple_list.c string_utils.c);
+	  conditional.c mbprint.c print.c psqlscan.l psqlscan.c simple_list.c string_utils.c);
 
 	$libpgport = $solution->AddProject('libpgport', 'lib', 'misc');
 	$libpgport->AddDefine('FRONTEND');
@@ -169,10 +183,11 @@ sub mkvcbuild
 	$postgres->AddLibrary('wldap32.lib') if ($solution->{options}->{ldap});
 	$postgres->FullExportDLL('postgres.lib');
 
-   # The OBJS scraper doesn't know about ifdefs, so remove be-secure-openssl.c
-   # if building without OpenSSL
+	# The OBJS scraper doesn't know about ifdefs, so remove be-secure-openssl.c
+	# if building without OpenSSL
 	if (!$solution->{options}->{openssl})
 	{
+		$postgres->RemoveFile('src/backend/libpq/be-secure-common.c');
 		$postgres->RemoveFile('src/backend/libpq/be-secure-openssl.c');
 	}
 
@@ -212,7 +227,7 @@ sub mkvcbuild
 			}
 		}
 		die "Unable to find $solution->{options}->{tcl}/lib/tcl<version>.lib"
-			unless $found;
+		  unless $found;
 	}
 
 	$libpq = $solution->AddProject('libpq', 'dll', 'interfaces',
@@ -228,11 +243,18 @@ sub mkvcbuild
 		'src/interfaces/libpq/libpq.rc');
 	$libpq->AddReference($libpgport);
 
-   # The OBJS scraper doesn't know about ifdefs, so remove fe-secure-openssl.c
-   # if building without OpenSSL
+	# The OBJS scraper doesn't know about ifdefs, so remove fe-secure-openssl.c
+	# and sha2_openssl.c if building without OpenSSL, and remove sha2.c if
+	# building with OpenSSL.
 	if (!$solution->{options}->{openssl})
 	{
+		$libpq->RemoveFile('src/interfaces/libpq/fe-secure-common.c');
 		$libpq->RemoveFile('src/interfaces/libpq/fe-secure-openssl.c');
+		$libpq->RemoveFile('src/common/sha2_openssl.c');
+	}
+	else
+	{
+		$libpq->RemoveFile('src/common/sha2.c');
 	}
 
 	my $libpqwalreceiver =
@@ -240,6 +262,10 @@ sub mkvcbuild
 		'src/backend/replication/libpqwalreceiver');
 	$libpqwalreceiver->AddIncludeDir('src/interfaces/libpq');
 	$libpqwalreceiver->AddReference($postgres, $libpq);
+
+	my $pgoutput = $solution->AddProject('pgoutput', 'dll', '',
+		'src/backend/replication/pgoutput');
+	$pgoutput->AddReference($postgres);
 
 	my $pgtypes = $solution->AddProject(
 		'libpgtypes', 'dll',
@@ -274,9 +300,6 @@ sub mkvcbuild
 	$ecpg->AddIncludeDir('src/interfaces/libpq');
 	$ecpg->AddPrefixInclude('src/interfaces/ecpg/preproc');
 	$ecpg->AddFiles('src/interfaces/ecpg/preproc', 'pgc.l', 'preproc.y');
-	$ecpg->AddDefine('MAJOR_VERSION=4');
-	$ecpg->AddDefine('MINOR_VERSION=12');
-	$ecpg->AddDefine('PATCHLEVEL=0');
 	$ecpg->AddDefine('ECPG_COMPILE');
 	$ecpg->AddReference($libpgcommon, $libpgport);
 
@@ -332,10 +355,10 @@ sub mkvcbuild
 	$pgbasebackup->AddFile('src/bin/pg_basebackup/pg_basebackup.c');
 	$pgbasebackup->AddLibrary('ws2_32.lib');
 
-	my $pgreceivexlog = AddSimpleFrontend('pg_basebackup', 1);
-	$pgreceivexlog->{name} = 'pg_receivexlog';
-	$pgreceivexlog->AddFile('src/bin/pg_basebackup/pg_receivexlog.c');
-	$pgreceivexlog->AddLibrary('ws2_32.lib');
+	my $pgreceivewal = AddSimpleFrontend('pg_basebackup', 1);
+	$pgreceivewal->{name} = 'pg_receivewal';
+	$pgreceivewal->AddFile('src/bin/pg_basebackup/pg_receivewal.c');
+	$pgreceivewal->AddLibrary('ws2_32.lib');
 
 	my $pgrecvlogical = AddSimpleFrontend('pg_basebackup', 1);
 	$pgrecvlogical->{name} = 'pg_recvlogical';
@@ -389,18 +412,7 @@ sub mkvcbuild
 	$zic->AddDirResourceFile('src/timezone');
 	$zic->AddReference($libpgcommon, $libpgport);
 
-	if ($solution->{options}->{xml})
-	{
-		$contrib_extraincludes->{'pgxml'} = [
-			$solution->{options}->{xml} . '/include',
-			$solution->{options}->{xslt} . '/include',
-			$solution->{options}->{iconv} . '/include' ];
-
-		$contrib_extralibs->{'pgxml'} = [
-			$solution->{options}->{xml} . '/lib/libxml2.lib',
-			$solution->{options}->{xslt} . '/lib/libxslt.lib' ];
-	}
-	else
+	if (!$solution->{options}->{xml})
 	{
 		push @contrib_excludes, 'xml2';
 	}
@@ -410,14 +422,7 @@ sub mkvcbuild
 		push @contrib_excludes, 'sslinfo';
 	}
 
-	if ($solution->{options}->{uuid})
-	{
-		$contrib_extraincludes->{'uuid-ossp'} =
-		  [ $solution->{options}->{uuid} . '/include' ];
-		$contrib_extralibs->{'uuid-ossp'} =
-		  [ $solution->{options}->{uuid} . '/lib/uuid.lib' ];
-	}
-	else
+	if (!$solution->{options}->{uuid})
 	{
 		push @contrib_excludes, 'uuid-ossp';
 	}
@@ -447,12 +452,11 @@ sub mkvcbuild
 	else
 	{
 		$pgcrypto->AddFiles(
-			'contrib/pgcrypto',   'md5.c',
-			'sha1.c',             'sha2.c',
-			'internal.c',         'internal-sha2.c',
-			'blf.c',              'rijndael.c',
-			'fortuna.c',          'random.c',
-			'pgp-mpi-internal.c', 'imath.c');
+			'contrib/pgcrypto', 'md5.c',
+			'sha1.c',           'internal.c',
+			'internal-sha2.c',  'blf.c',
+			'rijndael.c',       'pgp-mpi-internal.c',
+			'imath.c');
 	}
 	$pgcrypto->AddReference($postgres);
 	$pgcrypto->AddLibrary('ws2_32.lib');
@@ -501,14 +505,23 @@ sub mkvcbuild
 		$plpython->AddReference($postgres);
 
 		# Add transform modules dependent on plpython
-		AddTransformModule(
+		my $hstore_plpython = AddTransformModule(
 			'hstore_plpython' . $pymajorver, 'contrib/hstore_plpython',
 			'plpython' . $pymajorver,        'src/pl/plpython',
-			'hstore',                        'contrib/hstore');
-		AddTransformModule(
+			'hstore',                        'contrib');
+		$hstore_plpython->AddDefine(
+			'PLPYTHON_LIBNAME="plpython' . $pymajorver . '"');
+		my $jsonb_plpython = AddTransformModule(
+			'jsonb_plpython' . $pymajorver, 'contrib/jsonb_plpython',
+			'plpython' . $pymajorver,       'src/pl/plpython');
+		$jsonb_plpython->AddDefine(
+			'PLPYTHON_LIBNAME="plpython' . $pymajorver . '"');
+		my $ltree_plpython = AddTransformModule(
 			'ltree_plpython' . $pymajorver, 'contrib/ltree_plpython',
 			'plpython' . $pymajorver,       'src/pl/plpython',
-			'ltree',                        'contrib/ltree');
+			'ltree',                        'contrib');
+		$ltree_plpython->AddDefine(
+			'PLPYTHON_LIBNAME="plpython' . $pymajorver . '"');
 	}
 
 	if ($solution->{options}->{perl})
@@ -522,16 +535,19 @@ sub mkvcbuild
 		my $perl_path = $solution->{options}->{perl} . '\lib\CORE\*perl*';
 
 		# ActivePerl 5.16 provided perl516.lib; 5.18 provided libperl518.a
+		# Starting with ActivePerl 5.24, both  perlnn.lib and libperlnn.a are provided.
+		# In this case, prefer .lib.
 		my @perl_libs =
-		  grep { /perl\d+\.lib$|libperl\d+\.a$/ } glob($perl_path);
-		if (@perl_libs == 1)
+		  reverse sort grep { /perl\d+\.lib$|libperl\d+\.a$/ }
+		  glob($perl_path);
+		if (@perl_libs > 0)
 		{
 			$plperl->AddLibrary($perl_libs[0]);
 		}
 		else
 		{
 			die
-"could not identify perl library version matching pattern $perl_path\n";
+			  "could not identify perl library version matching pattern $perl_path\n";
 		}
 
 		# Add defines from Perl's ccflags; see PGAC_CHECK_PERL_EMBED_CCFLAGS
@@ -675,7 +691,7 @@ sub mkvcbuild
 			(my $xsc = $xs) =~ s/\.xs/.c/;
 			if (Solution::IsNewer("$plperlsrc$xsc", "$plperlsrc$xs"))
 			{
-				my $xsubppdir = first { -e "$_/ExtUtils/xsubpp" } @INC;
+				my $xsubppdir = first { -e "$_/ExtUtils/xsubpp" } (@INC);
 				print "Building $plperlsrc$xsc...\n";
 				system( $solution->{options}->{perl}
 					  . '/bin/perl '
@@ -735,15 +751,19 @@ sub mkvcbuild
 			}
 		}
 
-		# Add transform module dependent on plperl
+		# Add transform modules dependent on plperl
 		my $hstore_plperl = AddTransformModule(
 			'hstore_plperl', 'contrib/hstore_plperl',
 			'plperl',        'src/pl/plperl',
-			'hstore',        'contrib/hstore');
+			'hstore',        'contrib');
+		my $jsonb_plperl = AddTransformModule(
+			'jsonb_plperl', 'contrib/jsonb_plperl',
+			'plperl',       'src/pl/plperl');
 
 		foreach my $f (@perl_embed_ccflags)
 		{
 			$hstore_plperl->AddDefine($f);
+			$jsonb_plperl->AddDefine($f);
 		}
 	}
 
@@ -799,15 +819,15 @@ sub mkvcbuild
 	$pgregress->AddDirResourceFile('src/test/regress');
 	$pgregress->AddReference($libpgcommon, $libpgport);
 
-	# fix up pg_xlogdump once it's been set up
+	# fix up pg_waldump once it's been set up
 	# files symlinked on Unix are copied on windows
-	my $pg_xlogdump = AddSimpleFrontend('pg_xlogdump');
-	$pg_xlogdump->AddDefine('FRONTEND');
+	my $pg_waldump = AddSimpleFrontend('pg_waldump');
+	$pg_waldump->AddDefine('FRONTEND');
 	foreach my $xf (glob('src/backend/access/rmgrdesc/*desc.c'))
 	{
-		$pg_xlogdump->AddFile($xf);
+		$pg_waldump->AddFile($xf);
 	}
-	$pg_xlogdump->AddFile('src/backend/access/transam/xlogreader.c');
+	$pg_waldump->AddFile('src/backend/access/transam/xlogreader.c');
 
 	$solution->Save();
 	return $solution->{vcver};
@@ -841,24 +861,27 @@ sub AddSimpleFrontend
 # Add a simple transform module
 sub AddTransformModule
 {
-	my $n              = shift;
-	my $n_src          = shift;
-	my $pl_proj_name   = shift;
-	my $pl_src         = shift;
-	my $transform_name = shift;
-	my $transform_src  = shift;
+	my $n            = shift;
+	my $n_src        = shift;
+	my $pl_proj_name = shift;
+	my $pl_src       = shift;
+	my $type_name    = shift;
+	my $type_src     = shift;
 
-	my $transform_proj = undef;
-	foreach my $proj (@{ $solution->{projects}->{'contrib'} })
+	my $type_proj = undef;
+	if ($type_name)
 	{
-		if ($proj->{name} eq $transform_name)
+		foreach my $proj (@{ $solution->{projects}->{'contrib'} })
 		{
-			$transform_proj = $proj;
-			last;
+			if ($proj->{name} eq $type_name)
+			{
+				$type_proj = $proj;
+				last;
+			}
 		}
+		die "could not find base module $type_name for transform module $n"
+		  if (!defined($type_proj));
 	}
-	die "could not find base module $transform_name for transform module $n"
-	  if (!defined($transform_proj));
 
 	my $pl_proj = undef;
 	foreach my $proj (@{ $solution->{projects}->{'PLs'} })
@@ -889,13 +912,16 @@ sub AddTransformModule
 	}
 
 	# Add base module dependencies
-	$p->AddIncludeDir($transform_src);
-	$p->AddIncludeDir($transform_proj->{includes});
-	foreach my $trans_lib (@{ $transform_proj->{libraries} })
+	if ($type_proj)
 	{
-		$p->AddLibrary($trans_lib);
+		$p->AddIncludeDir($type_src);
+		$p->AddIncludeDir($type_proj->{includes});
+		foreach my $type_lib (@{ $type_proj->{libraries} })
+		{
+			$p->AddLibrary($type_lib);
+		}
+		$p->AddReference($type_proj);
 	}
-	$p->AddReference($transform_proj);
 
 	return $p;
 }
@@ -938,6 +964,7 @@ sub AddContrib
 
 	# Are there any output data files to build?
 	GenerateContribSqlFiles($n, $mf);
+	return;
 }
 
 sub GenerateContribSqlFiles
@@ -974,16 +1001,17 @@ sub GenerateContribSqlFiles
 				print "Building $out from $in (contrib/$n)...\n";
 				my $cont = Project::read_file("contrib/$n/$in");
 				my $dn   = $out;
-				$dn   =~ s/\.sql$//;
+				$dn =~ s/\.sql$//;
 				$cont =~ s/MODULE_PATHNAME/\$libdir\/$dn/g;
 				my $o;
-				open($o, ">contrib/$n/$out")
+				open($o, '>', "contrib/$n/$out")
 				  || croak "Could not write to contrib/$n/$d";
 				print $o $cont;
 				close($o);
 			}
 		}
 	}
+	return;
 }
 
 sub AdjustContribProj
@@ -994,6 +1022,7 @@ sub AdjustContribProj
 		\@contrib_uselibpq,       \@contrib_uselibpgport,
 		\@contrib_uselibpgcommon, $contrib_extralibs,
 		$contrib_extrasource,     $contrib_extraincludes);
+	return;
 }
 
 sub AdjustFrontendProj
@@ -1004,6 +1033,7 @@ sub AdjustFrontendProj
 		\@frontend_uselibpq,       \@frontend_uselibpgport,
 		\@frontend_uselibpgcommon, $frontend_extralibs,
 		$frontend_extrasource,     $frontend_extraincludes);
+	return;
 }
 
 sub AdjustModule
@@ -1060,6 +1090,7 @@ sub AdjustModule
 			$proj->AddFile($i);
 		}
 	}
+	return;
 }
 
 END

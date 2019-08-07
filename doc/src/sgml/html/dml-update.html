@@ -1,138 +1,16 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Updating Data</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Data Manipulation"
-HREF="dml.html"><LINK
-REL="PREVIOUS"
-TITLE="Inserting Data"
-HREF="dml-insert.html"><LINK
-REL="NEXT"
-TITLE="Deleting Data"
-HREF="dml-delete.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Inserting Data"
-HREF="dml-insert.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="dml.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 6. Data Manipulation</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Deleting Data"
-HREF="dml-delete.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="DML-UPDATE"
->6.2. Updating Data</A
-></H1
-><P
->   The modification of data that is already in the database is
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>6.2. Updating Data</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="dml-insert.html" title="6.1. Inserting Data" /><link rel="next" href="dml-delete.html" title="6.3. Deleting Data" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">6.2. Updating Data</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="dml-insert.html" title="6.1. Inserting Data">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="dml.html" title="Chapter 6. Data Manipulation">Up</a></td><th width="60%" align="center">Chapter 6. Data Manipulation</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="dml-delete.html" title="6.3. Deleting Data">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="DML-UPDATE"><div class="titlepage"><div><div><h2 class="title" style="clear: both">6.2. Updating Data</h2></div></div></div><a id="id-1.5.5.4.2" class="indexterm"></a><a id="id-1.5.5.4.3" class="indexterm"></a><p>
+   The modification of data that is already in the database is
    referred to as updating.  You can update individual rows, all the
    rows in a table, or a subset of all rows.  Each column can be
    updated separately; the other columns are not affected.
-  </P
-><P
->   To update existing rows, use the <A
-HREF="sql-update.html"
->UPDATE</A
->
+  </p><p>
+   To update existing rows, use the <a class="xref" href="sql-update.html" title="UPDATE"><span class="refentrytitle">UPDATE</span></a>
    command.  This requires
    three pieces of information:
-   <P
-></P
-></P><OL
-COMPACT="COMPACT"
-TYPE="1"
-><LI
-><P
->The name of the table and column to update</P
-></LI
-><LI
-><P
->The new value of the column</P
-></LI
-><LI
-><P
->Which row(s) to update</P
-></LI
-></OL
-><P>
-  </P
-><P
->   Recall from <A
-HREF="ddl.html"
->Chapter 5</A
-> that SQL does not, in general,
+   </p><div class="orderedlist"><ol class="orderedlist compact" type="1"><li class="listitem"><p>The name of the table and column to update</p></li><li class="listitem"><p>The new value of the column</p></li><li class="listitem"><p>Which row(s) to update</p></li></ol></div><p>
+  </p><p>
+   Recall from <a class="xref" href="ddl.html" title="Chapter 5. Data Definition">Chapter 5</a> that SQL does not, in general,
    provide a unique identifier for rows.  Therefore it is not
    always possible to directly specify which row to update.
    Instead, you specify which conditions a row must meet in order to
@@ -141,145 +19,43 @@ HREF="ddl.html"
    by choosing a condition that matches the primary key.
    Graphical database access tools rely on this fact to allow you to
    update rows individually.
-  </P
-><P
->   For example, this command updates all products that have a price of
+  </p><p>
+   For example, this command updates all products that have a price of
    5 to have a price of 10:
-</P><PRE
-CLASS="PROGRAMLISTING"
->UPDATE products SET price = 10 WHERE price = 5;</PRE
-><P>
+</p><pre class="programlisting">
+UPDATE products SET price = 10 WHERE price = 5;
+</pre><p>
     This might cause zero, one, or many rows to be updated.  It is not
     an error to attempt an update that does not match any rows.
-  </P
-><P
->   Let's look at that command in detail. First is the key word
-   <TT
-CLASS="LITERAL"
->UPDATE</TT
-> followed by the table name.  As usual,
+  </p><p>
+   Let's look at that command in detail. First is the key word
+   <code class="literal">UPDATE</code> followed by the table name.  As usual,
    the table name can be schema-qualified, otherwise it is looked up
-   in the path.  Next is the key word <TT
-CLASS="LITERAL"
->SET</TT
-> followed
+   in the path.  Next is the key word <code class="literal">SET</code> followed
    by the column name, an equal sign, and the new column value.  The
    new column value can be any scalar expression, not just a constant.
    For example, if you want to raise the price of all products by 10%
    you could use:
-</P><PRE
-CLASS="PROGRAMLISTING"
->UPDATE products SET price = price * 1.10;</PRE
-><P>
+</p><pre class="programlisting">
+UPDATE products SET price = price * 1.10;
+</pre><p>
    As you see, the expression for the new value can refer to the existing
-   value(s) in the row.  We also left out the <TT
-CLASS="LITERAL"
->WHERE</TT
-> clause.
+   value(s) in the row.  We also left out the <code class="literal">WHERE</code> clause.
    If it is omitted, it means that all rows in the table are updated.
    If it is present, only those rows that match the
-   <TT
-CLASS="LITERAL"
->WHERE</TT
-> condition are updated.  Note that the equals
-   sign in the <TT
-CLASS="LITERAL"
->SET</TT
-> clause is an assignment while
-   the one in the <TT
-CLASS="LITERAL"
->WHERE</TT
-> clause is a comparison, but
+   <code class="literal">WHERE</code> condition are updated.  Note that the equals
+   sign in the <code class="literal">SET</code> clause is an assignment while
+   the one in the <code class="literal">WHERE</code> clause is a comparison, but
    this does not create any ambiguity.  Of course, the
-   <TT
-CLASS="LITERAL"
->WHERE</TT
-> condition does
+   <code class="literal">WHERE</code> condition does
    not have to be an equality test.  Many other operators are
-   available (see <A
-HREF="functions.html"
->Chapter 9</A
->).  But the expression
+   available (see <a class="xref" href="functions.html" title="Chapter 9. Functions and Operators">Chapter 9</a>).  But the expression
    needs to evaluate to a Boolean result.
-  </P
-><P
->   You can update more than one column in an
-   <TT
-CLASS="COMMAND"
->UPDATE</TT
-> command by listing more than one
-   assignment in the <TT
-CLASS="LITERAL"
->SET</TT
-> clause.  For example:
-</P><PRE
-CLASS="PROGRAMLISTING"
->UPDATE mytable SET a = 5, b = 3, c = 1 WHERE a &gt; 0;</PRE
-><P>
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="dml-insert.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="dml-delete.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Inserting Data</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="dml.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Deleting Data</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p><p>
+   You can update more than one column in an
+   <code class="command">UPDATE</code> command by listing more than one
+   assignment in the <code class="literal">SET</code> clause.  For example:
+</p><pre class="programlisting">
+UPDATE mytable SET a = 5, b = 3, c = 1 WHERE a &gt; 0;
+</pre><p>
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="dml-insert.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="dml.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="dml-delete.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">6.1. Inserting Data </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 6.3. Deleting Data</td></tr></table></div></body></html>

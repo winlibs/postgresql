@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "DROP SERVER" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "DROP SERVER" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ DROP_SERVER \- remove a foreign server descriptor
 .SH "SYNOPSIS"
 .sp
 .nf
-DROP SERVER [ IF EXISTS ] \fIname\fR [ CASCADE | RESTRICT ]
+DROP SERVER [ IF EXISTS ] \fIname\fR [, \&.\&.\&.] [ CASCADE | RESTRICT ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -53,7 +53,7 @@ The name of an existing server\&.
 CASCADE
 .RS 4
 Automatically drop objects that depend on the server (such as user mappings), and in turn all objects that depend on those objects (see
-Section 5.13, \(lqDependency Tracking\(rq, in the documentation)\&.
+Section\ \&5.13)\&.
 .RE
 .PP
 RESTRICT

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SPI_EXECUTE" "3" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SPI_EXECUTE" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -44,7 +44,7 @@ rows\&. If
 is
 true, the command must be read\-only, and execution overhead is somewhat reduced\&.
 .PP
-This function can only be called from a connected procedure\&.
+This function can only be called from a connected C function\&.
 .PP
 If
 \fIcount\fR
@@ -180,7 +180,7 @@ are internal fields not intended for use by SPI callers\&.
 .PP
 \fBSPI_finish\fR
 frees all
-SPITupleTables allocated during the current procedure\&. You can free a particular result table earlier, if you are done with it, by calling
+SPITupleTables allocated during the current C function\&. You can free a particular result table earlier, if you are done with it, by calling
 \fBSPI_freetuptable\fR\&.
 .SH "ARGUMENTS"
 .PP
@@ -317,7 +317,7 @@ if the command type is unknown (shouldn\*(Aqt happen)
 .PP
 SPI_ERROR_UNCONNECTED
 .RS 4
-if called from an unconnected procedure
+if called from an unconnected C function
 .RE
 .SH "NOTES"
 .PP
@@ -325,6 +325,6 @@ All SPI query\-execution functions set both
 \fISPI_processed\fR
 and
 \fISPI_tuptable\fR
-(just the pointer, not the contents of the structure)\&. Save these two global variables into local procedure variables if you need to access the result table of
+(just the pointer, not the contents of the structure)\&. Save these two global variables into local C function variables if you need to access the result table of
 \fBSPI_execute\fR
 or another query\-execution function across later calls\&.

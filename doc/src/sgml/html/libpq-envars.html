@@ -1,614 +1,136 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Environment Variables</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="libpq - C Library"
-HREF="libpq.html"><LINK
-REL="PREVIOUS"
-TITLE="Event System"
-HREF="libpq-events.html"><LINK
-REL="NEXT"
-TITLE="The Password File"
-HREF="libpq-pgpass.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Event System"
-HREF="libpq-events.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="libpq.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 32. <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> - C Library</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="The Password File"
-HREF="libpq-pgpass.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="LIBPQ-ENVARS"
->32.14. Environment Variables</A
-></H1
-><P
->   The following environment variables can be used to select default
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>34.14. Environment Variables</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="libpq-events.html" title="34.13. Event System" /><link rel="next" href="libpq-pgpass.html" title="34.15. The Password File" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">34.14. Environment Variables</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="libpq-events.html" title="34.13. Event System">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="libpq.html" title="Chapter 34. libpq - C Library">Up</a></td><th width="60%" align="center">Chapter 34. <span xmlns="http://www.w3.org/1999/xhtml" class="application">libpq</span> - C Library</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="libpq-pgpass.html" title="34.15. The Password File">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="LIBPQ-ENVARS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">34.14. Environment Variables</h2></div></div></div><a id="id-1.7.3.21.2" class="indexterm"></a><p>
+   The following environment variables can be used to select default
    connection parameter values, which will be used by
-   <CODE
-CLASS="FUNCTION"
->PQconnectdb</CODE
->, <CODE
-CLASS="FUNCTION"
->PQsetdbLogin</CODE
-> and
-   <CODE
-CLASS="FUNCTION"
->PQsetdb</CODE
-> if no value is directly specified by the calling
+   <code class="function">PQconnectdb</code>, <code class="function">PQsetdbLogin</code> and
+   <code class="function">PQsetdb</code> if no value is directly specified by the calling
    code.  These are useful to avoid hard-coding database connection
    information into simple client applications, for example.
 
-   <P
-></P
-></P><UL
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGHOST</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-HOST"
->host</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGHOSTADDR</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-HOSTADDR"
->hostaddr</A
-> connection parameter.
-      This can be set instead of or in addition to <TT
-CLASS="ENVAR"
->PGHOST</TT
->
+   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.1.1.1" class="indexterm"></a>
+      <code class="envar">PGHOST</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-HOST">host</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.2.1.1" class="indexterm"></a>
+      <code class="envar">PGHOSTADDR</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-HOSTADDR">hostaddr</a> connection parameter.
+      This can be set instead of or in addition to <code class="envar">PGHOST</code>
       to avoid DNS lookup overhead.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGPORT</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-PORT"
->port</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGDATABASE</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-DBNAME"
->dbname</A
-> connection parameter.
-      </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGUSER</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-USER"
->user</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGPASSWORD</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-PASSWORD"
->password</A
-> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.3.1.1" class="indexterm"></a>
+      <code class="envar">PGPORT</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-PORT">port</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.4.1.1" class="indexterm"></a>
+      <code class="envar">PGDATABASE</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-DBNAME">dbname</a> connection parameter.
+      </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.5.1.1" class="indexterm"></a>
+      <code class="envar">PGUSER</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-USER">user</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.6.1.1" class="indexterm"></a>
+      <code class="envar">PGPASSWORD</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-PASSWORD">password</a> connection parameter.
       Use of this environment variable
       is not recommended for security reasons, as some operating systems
       allow non-root users to see process environment variables via
-      <SPAN
-CLASS="APPLICATION"
->ps</SPAN
->; instead consider using the
-      <TT
-CLASS="FILENAME"
->~/.pgpass</TT
-> file (see <A
-HREF="libpq-pgpass.html"
->Section 32.15</A
->).
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGPASSFILE</TT
-> specifies the name of the password file to
-      use for lookups.  If not set, it defaults to <TT
-CLASS="FILENAME"
->~/.pgpass</TT
->
-      (see <A
-HREF="libpq-pgpass.html"
->Section 32.15</A
->).
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGSERVICE</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-SERVICE"
->service</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGSERVICEFILE</TT
-> specifies the name of the per-user
+      <span class="application">ps</span>; instead consider using a password file
+      (see <a class="xref" href="libpq-pgpass.html" title="34.15. The Password File">Section 34.15</a>).
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.7.1.1" class="indexterm"></a>
+      <code class="envar">PGPASSFILE</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-PASSFILE">passfile</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.8.1.1" class="indexterm"></a>
+      <code class="envar">PGSERVICE</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-SERVICE">service</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.9.1.1" class="indexterm"></a>
+      <code class="envar">PGSERVICEFILE</code> specifies the name of the per-user
       connection service file.  If not set, it defaults
-      to <TT
-CLASS="FILENAME"
->~/.pg_service.conf</TT
->
-      (see <A
-HREF="libpq-pgservice.html"
->Section 32.16</A
->).
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGOPTIONS</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-OPTIONS"
->options</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGAPPNAME</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-APPLICATION-NAME"
->application_name</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGSSLMODE</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-SSLMODE"
->sslmode</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGREQUIRESSL</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-REQUIRESSL"
->requiressl</A
-> connection parameter.
+      to <code class="filename">~/.pg_service.conf</code>
+      (see <a class="xref" href="libpq-pgservice.html" title="34.16. The Connection Service File">Section 34.16</a>).
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.10.1.1" class="indexterm"></a>
+      <code class="envar">PGOPTIONS</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-OPTIONS">options</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.11.1.1" class="indexterm"></a>
+      <code class="envar">PGAPPNAME</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-APPLICATION-NAME">application_name</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.12.1.1" class="indexterm"></a>
+      <code class="envar">PGSSLMODE</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-SSLMODE">sslmode</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.13.1.1" class="indexterm"></a>
+      <code class="envar">PGREQUIRESSL</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-REQUIRESSL">requiressl</a> connection parameter.
       This environment variable is deprecated in favor of the
-      <TT
-CLASS="ENVAR"
->PGSSLMODE</TT
-> variable; setting both variables suppresses the
+      <code class="envar">PGSSLMODE</code> variable; setting both variables suppresses the
       effect of this one.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGSSLCOMPRESSION</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-SSLCOMPRESSION"
->sslcompression</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGSSLCERT</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-SSLCERT"
->sslcert</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGSSLKEY</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-SSLKEY"
->sslkey</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGSSLROOTCERT</TT
->  behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-SSLROOTCERT"
->sslrootcert</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGSSLCRL</TT
->  behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-SSLCRL"
->sslcrl</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGREQUIREPEER</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-REQUIREPEER"
->requirepeer</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGKRBSRVNAME</TT
->  behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-KRBSRVNAME"
->krbsrvname</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGGSSLIB</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-GSSLIB"
->gsslib</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGCONNECT_TIMEOUT</TT
->  behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-CONNECT-TIMEOUT"
->connect_timeout</A
-> connection parameter.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGCLIENTENCODING</TT
-> behaves the same as the <A
-HREF="libpq-connect.html#LIBPQ-CONNECT-CLIENT-ENCODING"
->client_encoding</A
-> connection parameter.
-     </P
-></LI
-></UL
-><P>
-  </P
-><P
->   The following environment variables can be used to specify default
-   behavior for each <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> session.  (See
-   also the <A
-HREF="sql-alterrole.html"
->ALTER ROLE</A
->
-   and <A
-HREF="sql-alterdatabase.html"
->ALTER DATABASE</A
->
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.14.1.1" class="indexterm"></a>
+      <code class="envar">PGSSLCOMPRESSION</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-SSLCOMPRESSION">sslcompression</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.15.1.1" class="indexterm"></a>
+      <code class="envar">PGSSLCERT</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-SSLCERT">sslcert</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.16.1.1" class="indexterm"></a>
+      <code class="envar">PGSSLKEY</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-SSLKEY">sslkey</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.17.1.1" class="indexterm"></a>
+      <code class="envar">PGSSLROOTCERT</code>  behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-SSLROOTCERT">sslrootcert</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.18.1.1" class="indexterm"></a>
+      <code class="envar">PGSSLCRL</code>  behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-SSLCRL">sslcrl</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.19.1.1" class="indexterm"></a>
+      <code class="envar">PGREQUIREPEER</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-REQUIREPEER">requirepeer</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.20.1.1" class="indexterm"></a>
+      <code class="envar">PGKRBSRVNAME</code>  behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-KRBSRVNAME">krbsrvname</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.21.1.1" class="indexterm"></a>
+      <code class="envar">PGGSSLIB</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-GSSLIB">gsslib</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.22.1.1" class="indexterm"></a>
+      <code class="envar">PGCONNECT_TIMEOUT</code>  behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-CONNECT-TIMEOUT">connect_timeout</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.23.1.1" class="indexterm"></a>
+      <code class="envar">PGCLIENTENCODING</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-CLIENT-ENCODING">client_encoding</a> connection parameter.
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.3.4.24.1.1" class="indexterm"></a>
+      <code class="envar">PGTARGETSESSIONATTRS</code> behaves the same as the <a class="xref" href="libpq-connect.html#LIBPQ-CONNECT-TARGET-SESSION-ATTRS">target_session_attrs</a> connection parameter.
+     </p></li></ul></div><p>
+  </p><p>
+   The following environment variables can be used to specify default
+   behavior for each <span class="productname">PostgreSQL</span> session.  (See
+   also the <a class="xref" href="sql-alterrole.html" title="ALTER ROLE"><span class="refentrytitle">ALTER ROLE</span></a>
+   and <a class="xref" href="sql-alterdatabase.html" title="ALTER DATABASE"><span class="refentrytitle">ALTER DATABASE</span></a>
    commands for ways to set default behavior on a per-user or per-database
    basis.)
 
-   <P
-></P
-></P><UL
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGDATESTYLE</TT
-> sets the default style of date/time
-      representation.  (Equivalent to <TT
-CLASS="LITERAL"
->SET datestyle TO
-      ...</TT
->.)
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGTZ</TT
-> sets the default time zone.  (Equivalent to
-      <TT
-CLASS="LITERAL"
->SET timezone TO ...</TT
->.)
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGGEQO</TT
-> sets the default mode for the genetic query
-      optimizer.  (Equivalent to <TT
-CLASS="LITERAL"
->SET geqo TO ...</TT
->.)
-     </P
-></LI
-></UL
-><P>
+   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      <a id="id-1.7.3.21.4.4.1.1.1" class="indexterm"></a>
+      <code class="envar">PGDATESTYLE</code> sets the default style of date/time
+      representation.  (Equivalent to <code class="literal">SET datestyle TO
+      ...</code>.)
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.4.4.2.1.1" class="indexterm"></a>
+      <code class="envar">PGTZ</code> sets the default time zone.  (Equivalent to
+      <code class="literal">SET timezone TO ...</code>.)
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.4.4.3.1.1" class="indexterm"></a>
+      <code class="envar">PGGEQO</code> sets the default mode for the genetic query
+      optimizer.  (Equivalent to <code class="literal">SET geqo TO ...</code>.)
+     </p></li></ul></div><p>
 
-   Refer to the <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> command <A
-HREF="sql-set.html"
->SET</A
->
+   Refer to the <acronym class="acronym">SQL</acronym> command <a class="xref" href="sql-set.html" title="SET"><span class="refentrytitle">SET</span></a>
    for information on correct values for these
    environment variables.
-  </P
-><P
->   The following environment variables determine internal behavior of
-   <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
->; they override compiled-in defaults.
+  </p><p>
+   The following environment variables determine internal behavior of
+   <span class="application">libpq</span>; they override compiled-in defaults.
 
-   <P
-></P
-></P><UL
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGSYSCONFDIR</TT
-> sets the directory containing the
-      <TT
-CLASS="FILENAME"
->pg_service.conf</TT
-> file and in a future version
+   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>
+      <a id="id-1.7.3.21.5.2.1.1.1" class="indexterm"></a>
+      <code class="envar">PGSYSCONFDIR</code> sets the directory containing the
+      <code class="filename">pg_service.conf</code> file and in a future version
       possibly other system-wide configuration files.
-     </P
-></LI
-><LI
-><P
->      
-      <TT
-CLASS="ENVAR"
->PGLOCALEDIR</TT
-> sets the directory containing the
-      <TT
-CLASS="LITERAL"
->locale</TT
-> files for message localization.
-     </P
-></LI
-></UL
-><P>
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="libpq-events.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="libpq-pgpass.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Event System</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="libpq.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->The Password File</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+     </p></li><li class="listitem"><p>
+      <a id="id-1.7.3.21.5.2.2.1.1" class="indexterm"></a>
+      <code class="envar">PGLOCALEDIR</code> sets the directory containing the
+      <code class="literal">locale</code> files for message localization.
+     </p></li></ul></div><p>
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="libpq-events.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="libpq.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="libpq-pgpass.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">34.13. Event System </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 34.15. The Password File</td></tr></table></div></body></html>

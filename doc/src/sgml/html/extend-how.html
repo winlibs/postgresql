@@ -1,241 +1,33 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->How Extensibility Works</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Extending SQL"
-HREF="extend.html"><LINK
-REL="PREVIOUS"
-TITLE="Extending SQL"
-HREF="extend.html"><LINK
-REL="NEXT"
-TITLE="The PostgreSQL Type System"
-HREF="extend-type-system.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Extending SQL"
-HREF="extend.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="extend.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 36. Extending <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="The PostgreSQL Type System"
-HREF="extend-type-system.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="EXTEND-HOW"
->36.1. How Extensibility Works</A
-></H1
-><P
->    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> is extensible because its operation  is
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>38.1. How Extensibility Works</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="extend.html" title="Chapter 38. Extending SQL" /><link rel="next" href="extend-type-system.html" title="38.2. The PostgreSQL Type System" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">38.1. How Extensibility Works</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="extend.html" title="Chapter 38. Extending SQL">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="extend.html" title="Chapter 38. Extending SQL">Up</a></td><th width="60%" align="center">Chapter 38. Extending <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym></th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="extend-type-system.html" title="38.2. The PostgreSQL Type System">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="EXTEND-HOW"><div class="titlepage"><div><div><h2 class="title" style="clear: both">38.1. How Extensibility Works</h2></div></div></div><p>
+    <span class="productname">PostgreSQL</span> is extensible because its operation  is
     catalog-driven.   If  you  are familiar with standard
     relational database systems, you know that  they  store  information
     about  databases,  tables,  columns,  etc., in what are
     commonly known as system catalogs.  (Some systems  call
     this  the data dictionary.)  The catalogs appear to the
-    user as tables like any other, but  the  <ACRONYM
-CLASS="ACRONYM"
->DBMS</ACRONYM
->  stores
+    user as tables like any other, but  the  <acronym class="acronym">DBMS</acronym>  stores
     its  internal  bookkeeping in them.  One key difference
-    between <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> and  standard  relational database systems  is
-    that <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> stores much more information in its
+    between <span class="productname">PostgreSQL</span> and  standard  relational database systems  is
+    that <span class="productname">PostgreSQL</span> stores much more information in its
     catalogs: not only information about tables and  columns,
     but also information about data types, functions, access
     methods, and so on.  These tables can be  modified  by
-    the  user, and since <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> bases its operation
-    on these tables, this means that <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> can  be
+    the  user, and since <span class="productname">PostgreSQL</span> bases its operation
+    on these tables, this means that <span class="productname">PostgreSQL</span> can  be
     extended   by   users.    By  comparison,  conventional
     database systems can only be extended by changing hardcoded
     procedures in the source code or by loading modules
-    specially written by the <ACRONYM
-CLASS="ACRONYM"
->DBMS</ACRONYM
-> vendor.
-   </P
-><P
->    The <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> server can moreover
+    specially written by the <acronym class="acronym">DBMS</acronym> vendor.
+   </p><p>
+    The <span class="productname">PostgreSQL</span> server can moreover
     incorporate user-written code into itself through dynamic loading.
     That is, the user can specify an object code file (e.g., a shared
     library) that implements a new type or function, and
-    <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> will load it as required.
-    Code written in <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> is even more trivial to add
-    to the server.  This ability to modify its operation <SPAN
-CLASS="QUOTE"
->"on the
-    fly"</SPAN
-> makes <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> uniquely
+    <span class="productname">PostgreSQL</span> will load it as required.
+    Code written in <acronym class="acronym">SQL</acronym> is even more trivial to add
+    to the server.  This ability to modify its operation <span class="quote">“<span class="quote">on the
+    fly</span>”</span> makes <span class="productname">PostgreSQL</span> uniquely
     suited for rapid prototyping of new applications and storage
     structures.
-   </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="extend.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="extend-type-system.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Extending <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="extend.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->The <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> Type System</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="extend.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="extend.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="extend-type-system.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Chapter 38. Extending <acronym class="acronym">SQL</acronym> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 38.2. The <span class="productname">PostgreSQL</span> Type System</td></tr></table></div></body></html>

@@ -1,144 +1,14 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Run-time Statistics</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Server Configuration"
-HREF="runtime-config.html"><LINK
-REL="PREVIOUS"
-TITLE="Error Reporting and Logging"
-HREF="runtime-config-logging.html"><LINK
-REL="NEXT"
-TITLE="Automatic Vacuuming"
-HREF="runtime-config-autovacuum.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Error Reporting and Logging"
-HREF="runtime-config-logging.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="runtime-config.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 19. Server Configuration</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Automatic Vacuuming"
-HREF="runtime-config-autovacuum.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="RUNTIME-CONFIG-STATISTICS"
->19.9. Run-time Statistics</A
-></H1
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="RUNTIME-CONFIG-STATISTICS-COLLECTOR"
->19.9.1. Query and Index Statistics Collector</A
-></H2
-><P
->      These parameters control server-wide statistics collection features.
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>19.9. Run-time Statistics</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="runtime-config-logging.html" title="19.8. Error Reporting and Logging" /><link rel="next" href="runtime-config-autovacuum.html" title="19.10. Automatic Vacuuming" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">19.9. Run-time Statistics</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="runtime-config-logging.html" title="19.8. Error Reporting and Logging">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime-config.html" title="Chapter 19. Server Configuration">Up</a></td><th width="60%" align="center">Chapter 19. Server Configuration</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="runtime-config-autovacuum.html" title="19.10. Automatic Vacuuming">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="RUNTIME-CONFIG-STATISTICS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">19.9. Run-time Statistics</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="runtime-config-statistics.html#RUNTIME-CONFIG-STATISTICS-COLLECTOR">19.9.1. Query and Index Statistics Collector</a></span></dt><dt><span class="sect2"><a href="runtime-config-statistics.html#RUNTIME-CONFIG-STATISTICS-MONITOR">19.9.2. Statistics Monitoring</a></span></dt></dl></div><div class="sect2" id="RUNTIME-CONFIG-STATISTICS-COLLECTOR"><div class="titlepage"><div><div><h3 class="title">19.9.1. Query and Index Statistics Collector</h3></div></div></div><p>
+      These parameters control server-wide statistics collection features.
       When statistics collection is enabled, the data that is produced can be
-      accessed via the <TT
-CLASS="STRUCTNAME"
->pg_stat</TT
-> and
-      <TT
-CLASS="STRUCTNAME"
->pg_statio</TT
-> family of system views.
-      Refer to <A
-HREF="monitoring.html"
->Chapter 28</A
-> for more information.
-     </P
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><A
-NAME="GUC-TRACK-ACTIVITIES"
-></A
-><TT
-CLASS="VARNAME"
->track_activities</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-      </DT
-><DD
-><P
->        Enables the collection of information on the currently
+      accessed via the <code class="structname">pg_stat</code> and
+      <code class="structname">pg_statio</code> family of system views.
+      Refer to <a class="xref" href="monitoring.html" title="Chapter 28. Monitoring Database Activity">Chapter 28</a> for more information.
+     </p><div class="variablelist"><dl class="variablelist"><dt id="GUC-TRACK-ACTIVITIES"><span class="term"><code class="varname">track_activities</code> (<code class="type">boolean</code>)
+      <a id="id-1.6.6.12.2.3.1.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Enables the collection of information on the currently
         executing command of each session, along with the time when
         that command began execution. This parameter is on by
         default. Note that even when enabled, this information is not
@@ -146,307 +16,71 @@ CLASS="TYPE"
         the session being reported on, so it should not represent a
         security risk.
         Only superusers can change this setting.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-TRACK-ACTIVITY-QUERY-SIZE"
-></A
-><TT
-CLASS="VARNAME"
->track_activity_query_size</TT
-> (<TT
-CLASS="TYPE"
->integer</TT
->)
-      </DT
-><DD
-><P
->       Specifies the number of bytes reserved to track the currently
+       </p></dd><dt id="GUC-TRACK-ACTIVITY-QUERY-SIZE"><span class="term"><code class="varname">track_activity_query_size</code> (<code class="type">integer</code>)
+      <a id="id-1.6.6.12.2.3.2.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+       Specifies the number of bytes reserved to track the currently
        executing command for each active session, for the
-       <TT
-CLASS="STRUCTNAME"
->pg_stat_activity</TT
->.<TT
-CLASS="STRUCTFIELD"
->query</TT
-> field.
+       <code class="structname">pg_stat_activity</code>.<code class="structfield">query</code> field.
        The default value is 1024. This parameter can only be set at server
        start.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-TRACK-COUNTS"
-></A
-><TT
-CLASS="VARNAME"
->track_counts</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-      </DT
-><DD
-><P
->        Enables collection of statistics on database activity.
+       </p></dd><dt id="GUC-TRACK-COUNTS"><span class="term"><code class="varname">track_counts</code> (<code class="type">boolean</code>)
+      <a id="id-1.6.6.12.2.3.3.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Enables collection of statistics on database activity.
         This parameter is on by default, because the autovacuum
         daemon needs the collected information.
         Only superusers can change this setting.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-TRACK-IO-TIMING"
-></A
-><TT
-CLASS="VARNAME"
->track_io_timing</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-      </DT
-><DD
-><P
->        Enables timing of database I/O calls.  This parameter is off by
+       </p></dd><dt id="GUC-TRACK-IO-TIMING"><span class="term"><code class="varname">track_io_timing</code> (<code class="type">boolean</code>)
+      <a id="id-1.6.6.12.2.3.4.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Enables timing of database I/O calls.  This parameter is off by
         default, because it will repeatedly query the operating system for
         the current time, which may cause significant overhead on some
-        platforms.  You can use the <A
-HREF="pgtesttiming.html"
-><SPAN
-CLASS="APPLICATION"
->pg_test_timing</SPAN
-></A
-> tool to
+        platforms.  You can use the <a class="xref" href="pgtesttiming.html" title="pg_test_timing"><span class="refentrytitle"><span class="application">pg_test_timing</span></span></a> tool to
         measure the overhead of timing on your system.
         I/O timing information is
-        displayed in <A
-HREF="monitoring-stats.html#PG-STAT-DATABASE-VIEW"
->pg_stat_database</A
->, in the output of
-        <A
-HREF="sql-explain.html"
->EXPLAIN</A
-> when the <TT
-CLASS="LITERAL"
->BUFFERS</TT
-> option is
-        used, and by <A
-HREF="pgstatstatements.html"
->pg_stat_statements</A
->.  Only superusers can
+        displayed in <a class="xref" href="monitoring-stats.html#PG-STAT-DATABASE-VIEW" title="Table 28.11. pg_stat_database View">pg_stat_database</a>, in the output of
+        <a class="xref" href="sql-explain.html" title="EXPLAIN"><span class="refentrytitle">EXPLAIN</span></a> when the <code class="literal">BUFFERS</code> option is
+        used, and by <a class="xref" href="pgstatstatements.html" title="F.29. pg_stat_statements">pg_stat_statements</a>.  Only superusers can
         change this setting.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-TRACK-FUNCTIONS"
-></A
-><TT
-CLASS="VARNAME"
->track_functions</TT
-> (<TT
-CLASS="TYPE"
->enum</TT
->)
-      </DT
-><DD
-><P
->        Enables tracking of function call counts and time used. Specify
-        <TT
-CLASS="LITERAL"
->pl</TT
-> to track only procedural-language functions,
-        <TT
-CLASS="LITERAL"
->all</TT
-> to also track SQL and C language functions.
-        The default is <TT
-CLASS="LITERAL"
->none</TT
->, which disables function
+       </p></dd><dt id="GUC-TRACK-FUNCTIONS"><span class="term"><code class="varname">track_functions</code> (<code class="type">enum</code>)
+      <a id="id-1.6.6.12.2.3.5.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Enables tracking of function call counts and time used. Specify
+        <code class="literal">pl</code> to track only procedural-language functions,
+        <code class="literal">all</code> to also track SQL and C language functions.
+        The default is <code class="literal">none</code>, which disables function
         statistics tracking.  Only superusers can change this setting.
-       </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->         SQL-language functions that are simple enough to be <SPAN
-CLASS="QUOTE"
->"inlined"</SPAN
->
+       </p><div class="note"><h3 class="title">Note</h3><p>
+         SQL-language functions that are simple enough to be <span class="quote">“<span class="quote">inlined</span>”</span>
          into the calling query will not be tracked, regardless of this
          setting.
-        </P
-></BLOCKQUOTE
-></DIV
-></DD
-><DT
-><A
-NAME="GUC-STATS-TEMP-DIRECTORY"
-></A
-><TT
-CLASS="VARNAME"
->stats_temp_directory</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)
-      </DT
-><DD
-><P
->        Sets the directory to store temporary statistics data in. This can be
+        </p></div></dd><dt id="GUC-STATS-TEMP-DIRECTORY"><span class="term"><code class="varname">stats_temp_directory</code> (<code class="type">string</code>)
+      <a id="id-1.6.6.12.2.3.6.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Sets the directory to store temporary statistics data in. This can be
         a path relative to the data directory or an absolute path. The default
-        is <TT
-CLASS="FILENAME"
->pg_stat_tmp</TT
->. Pointing this at a RAM-based
+        is <code class="filename">pg_stat_tmp</code>. Pointing this at a RAM-based
         file system will decrease physical I/O requirements and can lead to
         improved performance.
-        This parameter can only be set in the <TT
-CLASS="FILENAME"
->postgresql.conf</TT
->
+        This parameter can only be set in the <code class="filename">postgresql.conf</code>
         file or on the server command line.
-       </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="RUNTIME-CONFIG-STATISTICS-MONITOR"
->19.9.2. Statistics Monitoring</A
-></H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="VARNAME"
->log_statement_stats</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-      <BR><TT
-CLASS="VARNAME"
->log_parser_stats</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-      <BR><TT
-CLASS="VARNAME"
->log_planner_stats</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-      <BR><TT
-CLASS="VARNAME"
->log_executor_stats</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-      </DT
-><DD
-><P
->        For each query, output performance statistics of the respective
+       </p></dd></dl></div></div><div class="sect2" id="RUNTIME-CONFIG-STATISTICS-MONITOR"><div class="titlepage"><div><div><h3 class="title">19.9.2. Statistics Monitoring</h3></div></div></div><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="varname">log_statement_stats</code> (<code class="type">boolean</code>)
+      <a id="id-1.6.6.12.3.2.1.1.3" class="indexterm"></a>
+      <br /></span><span class="term"><code class="varname">log_parser_stats</code> (<code class="type">boolean</code>)
+      <a id="id-1.6.6.12.3.2.1.2.3" class="indexterm"></a>
+      <br /></span><span class="term"><code class="varname">log_planner_stats</code> (<code class="type">boolean</code>)
+      <a id="id-1.6.6.12.3.2.1.3.3" class="indexterm"></a>
+      <br /></span><span class="term"><code class="varname">log_executor_stats</code> (<code class="type">boolean</code>)
+      <a id="id-1.6.6.12.3.2.1.4.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        For each query, output performance statistics of the respective
         module to the server log. This is a crude profiling
-        instrument, similar to the Unix <CODE
-CLASS="FUNCTION"
->getrusage()</CODE
-> operating
-        system facility.  <TT
-CLASS="VARNAME"
->log_statement_stats</TT
-> reports total
+        instrument, similar to the Unix <code class="function">getrusage()</code> operating
+        system facility.  <code class="varname">log_statement_stats</code> reports total
         statement statistics, while the others report per-module statistics.
-        <TT
-CLASS="VARNAME"
->log_statement_stats</TT
-> cannot be enabled together with
+        <code class="varname">log_statement_stats</code> cannot be enabled together with
         any of the per-module options.  All of these options are disabled by
         default.   Only superusers can change these settings.
-       </P
-></DD
-></DL
-></DIV
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="runtime-config-logging.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="runtime-config-autovacuum.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Error Reporting and Logging</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="runtime-config.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Automatic Vacuuming</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+       </p></dd></dl></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="runtime-config-logging.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime-config.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="runtime-config-autovacuum.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">19.8. Error Reporting and Logging </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 19.10. Automatic Vacuuming</td></tr></table></div></body></html>

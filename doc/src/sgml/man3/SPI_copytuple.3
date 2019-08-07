@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SPI_COPYTUPLE" "3" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SPI_COPYTUPLE" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,6 +40,11 @@ HeapTuple SPI_copytuple(HeapTuple \fIrow\fR)
 makes a copy of a row in the upper executor context\&. This is normally used to return a modified row from a trigger\&. In a function declared to return a composite type, use
 \fBSPI_returntuple\fR
 instead\&.
+.PP
+This function can only be used while connected to SPI\&. Otherwise, it returns NULL and sets
+\fISPI_result\fR
+to
+SPI_ERROR_UNCONNECTED\&.
 .SH "ARGUMENTS"
 .PP
 HeapTuple \fIrow\fR
@@ -48,9 +53,8 @@ row to be copied
 .RE
 .SH "RETURN VALUE"
 .PP
-the copied row;
+the copied row, or
 NULL
-only if
-\fItuple\fR
-is
-NULL
+on error (see
+\fISPI_result\fR
+for an error indication)

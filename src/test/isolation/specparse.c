@@ -77,7 +77,7 @@
  * specparse.y
  *	  bison grammar for the isolation test file format
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *-------------------------------------------------------------------------
@@ -1284,8 +1284,8 @@ yyreduce:
   case 4:
 #line 75 "specparse.y" /* yacc.c:1646  */
     {
-				(yyval.ptr_list).elements = realloc((yyvsp[-1].ptr_list).elements,
-									  ((yyvsp[-1].ptr_list).nelements + 1) * sizeof(void *));
+				(yyval.ptr_list).elements = pg_realloc((yyvsp[-1].ptr_list).elements,
+										 ((yyvsp[-1].ptr_list).nelements + 1) * sizeof(void *));
 				(yyval.ptr_list).elements[(yyvsp[-1].ptr_list).nelements] = (yyvsp[0].str);
 				(yyval.ptr_list).nelements = (yyvsp[-1].ptr_list).nelements + 1;
 			}
@@ -1325,8 +1325,8 @@ yyreduce:
   case 10:
 #line 99 "specparse.y" /* yacc.c:1646  */
     {
-				(yyval.ptr_list).elements = realloc((yyvsp[-1].ptr_list).elements,
-									  ((yyvsp[-1].ptr_list).nelements + 1) * sizeof(void *));
+				(yyval.ptr_list).elements = pg_realloc((yyvsp[-1].ptr_list).elements,
+										 ((yyvsp[-1].ptr_list).nelements + 1) * sizeof(void *));
 				(yyval.ptr_list).elements[(yyvsp[-1].ptr_list).nelements] = (yyvsp[0].session);
 				(yyval.ptr_list).nelements = (yyvsp[-1].ptr_list).nelements + 1;
 			}
@@ -1337,7 +1337,7 @@ yyreduce:
 #line 106 "specparse.y" /* yacc.c:1646  */
     {
 				(yyval.ptr_list).nelements = 1;
-				(yyval.ptr_list).elements = malloc(sizeof(void *));
+				(yyval.ptr_list).elements = pg_malloc(sizeof(void *));
 				(yyval.ptr_list).elements[0] = (yyvsp[0].session);
 			}
 #line 1344 "specparse.c" /* yacc.c:1646  */
@@ -1346,7 +1346,7 @@ yyreduce:
   case 12:
 #line 115 "specparse.y" /* yacc.c:1646  */
     {
-				(yyval.session) = malloc(sizeof(Session));
+				(yyval.session) = pg_malloc(sizeof(Session));
 				(yyval.session)->name = (yyvsp[-3].str);
 				(yyval.session)->setupsql = (yyvsp[-2].str);
 				(yyval.session)->steps = (Step **) (yyvsp[-1].ptr_list).elements;
@@ -1359,8 +1359,8 @@ yyreduce:
   case 13:
 #line 127 "specparse.y" /* yacc.c:1646  */
     {
-				(yyval.ptr_list).elements = realloc((yyvsp[-1].ptr_list).elements,
-									  ((yyvsp[-1].ptr_list).nelements + 1) * sizeof(void *));
+				(yyval.ptr_list).elements = pg_realloc((yyvsp[-1].ptr_list).elements,
+										 ((yyvsp[-1].ptr_list).nelements + 1) * sizeof(void *));
 				(yyval.ptr_list).elements[(yyvsp[-1].ptr_list).nelements] = (yyvsp[0].step);
 				(yyval.ptr_list).nelements = (yyvsp[-1].ptr_list).nelements + 1;
 			}
@@ -1371,7 +1371,7 @@ yyreduce:
 #line 134 "specparse.y" /* yacc.c:1646  */
     {
 				(yyval.ptr_list).nelements = 1;
-				(yyval.ptr_list).elements = malloc(sizeof(void *));
+				(yyval.ptr_list).elements = pg_malloc(sizeof(void *));
 				(yyval.ptr_list).elements[0] = (yyvsp[0].step);
 			}
 #line 1378 "specparse.c" /* yacc.c:1646  */
@@ -1380,7 +1380,7 @@ yyreduce:
   case 15:
 #line 144 "specparse.y" /* yacc.c:1646  */
     {
-				(yyval.step) = malloc(sizeof(Step));
+				(yyval.step) = pg_malloc(sizeof(Step));
 				(yyval.step)->name = (yyvsp[-1].str);
 				(yyval.step)->sql = (yyvsp[0].str);
 				(yyval.step)->errormsg = NULL;
@@ -1408,8 +1408,8 @@ yyreduce:
   case 18:
 #line 166 "specparse.y" /* yacc.c:1646  */
     {
-				(yyval.ptr_list).elements = realloc((yyvsp[-1].ptr_list).elements,
-									  ((yyvsp[-1].ptr_list).nelements + 1) * sizeof(void *));
+				(yyval.ptr_list).elements = pg_realloc((yyvsp[-1].ptr_list).elements,
+										 ((yyvsp[-1].ptr_list).nelements + 1) * sizeof(void *));
 				(yyval.ptr_list).elements[(yyvsp[-1].ptr_list).nelements] = (yyvsp[0].permutation);
 				(yyval.ptr_list).nelements = (yyvsp[-1].ptr_list).nelements + 1;
 			}
@@ -1420,7 +1420,7 @@ yyreduce:
 #line 173 "specparse.y" /* yacc.c:1646  */
     {
 				(yyval.ptr_list).nelements = 1;
-				(yyval.ptr_list).elements = malloc(sizeof(void *));
+				(yyval.ptr_list).elements = pg_malloc(sizeof(void *));
 				(yyval.ptr_list).elements[0] = (yyvsp[0].permutation);
 			}
 #line 1427 "specparse.c" /* yacc.c:1646  */
@@ -1429,7 +1429,7 @@ yyreduce:
   case 20:
 #line 183 "specparse.y" /* yacc.c:1646  */
     {
-				(yyval.permutation) = malloc(sizeof(Permutation));
+				(yyval.permutation) = pg_malloc(sizeof(Permutation));
 				(yyval.permutation)->stepnames = (char **) (yyvsp[0].ptr_list).elements;
 				(yyval.permutation)->nsteps = (yyvsp[0].ptr_list).nelements;
 			}
@@ -1439,8 +1439,8 @@ yyreduce:
   case 21:
 #line 192 "specparse.y" /* yacc.c:1646  */
     {
-				(yyval.ptr_list).elements = realloc((yyvsp[-1].ptr_list).elements,
-									  ((yyvsp[-1].ptr_list).nelements + 1) * sizeof(void *));
+				(yyval.ptr_list).elements = pg_realloc((yyvsp[-1].ptr_list).elements,
+										 ((yyvsp[-1].ptr_list).nelements + 1) * sizeof(void *));
 				(yyval.ptr_list).elements[(yyvsp[-1].ptr_list).nelements] = (yyvsp[0].str);
 				(yyval.ptr_list).nelements = (yyvsp[-1].ptr_list).nelements + 1;
 			}
@@ -1451,7 +1451,7 @@ yyreduce:
 #line 199 "specparse.y" /* yacc.c:1646  */
     {
 				(yyval.ptr_list).nelements = 1;
-				(yyval.ptr_list).elements = malloc(sizeof(void *));
+				(yyval.ptr_list).elements = pg_malloc(sizeof(void *));
 				(yyval.ptr_list).elements[0] = (yyvsp[0].str);
 			}
 #line 1458 "specparse.c" /* yacc.c:1646  */

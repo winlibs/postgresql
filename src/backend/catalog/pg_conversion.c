@@ -3,7 +3,7 @@
  * pg_conversion.c
  *	  routines to support manipulation of the pg_conversion relation
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -21,7 +21,6 @@
 #include "catalog/indexing.h"
 #include "catalog/objectaccess.h"
 #include "catalog/pg_conversion.h"
-#include "catalog/pg_conversion_fn.h"
 #include "catalog/pg_namespace.h"
 #include "catalog/pg_proc.h"
 #include "mb/pg_wchar.h"
@@ -105,10 +104,7 @@ ConversionCreate(const char *conname, Oid connamespace,
 	tup = heap_form_tuple(tupDesc, values, nulls);
 
 	/* insert a new tuple */
-	simple_heap_insert(rel, tup);
-
-	/* update the index if any */
-	CatalogUpdateIndexes(rel, tup);
+	CatalogTupleInsert(rel, tup);
 
 	myself.classId = ConversionRelationId;
 	myself.objectId = HeapTupleGetOid(tup);
@@ -168,7 +164,7 @@ RemoveConversionById(Oid conversionOid)
 
 	/* search for the target tuple */
 	if (HeapTupleIsValid(tuple = heap_getnext(scan, ForwardScanDirection)))
-		simple_heap_delete(rel, &tuple->t_self);
+		CatalogTupleDelete(rel, &tuple->t_self);
 	else
 		elog(ERROR, "could not find tuple for conversion %u", conversionOid);
 	heap_endscan(scan);

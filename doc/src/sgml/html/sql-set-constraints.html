@@ -1,388 +1,71 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->SET CONSTRAINTS</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="SET"
-HREF="sql-set.html"><LINK
-REL="NEXT"
-TITLE="SET ROLE"
-HREF="sql-set-role.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="SET"
-HREF="sql-set.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="SET ROLE"
-HREF="sql-set-role.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-SET-CONSTRAINTS"
-></A
->SET CONSTRAINTS</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN92139"
-></A
-><H2
->Name</H2
->SET CONSTRAINTS&nbsp;--&nbsp;set constraint check timing for the current transaction</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN92142"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->SET CONSTRAINTS { ALL | <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> [, ...] } { DEFERRED | IMMEDIATE }</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN92145"
-></A
-><H2
->Description</H2
-><P
->   <TT
-CLASS="COMMAND"
->SET CONSTRAINTS</TT
-> sets the behavior of constraint
-   checking within the current transaction. <TT
-CLASS="LITERAL"
->IMMEDIATE</TT
->
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>SET CONSTRAINTS</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-set.html" title="SET" /><link rel="next" href="sql-set-role.html" title="SET ROLE" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">SET CONSTRAINTS</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-set.html" title="SET">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-set-role.html" title="SET ROLE">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-SET-CONSTRAINTS"><div class="titlepage"></div><a id="id-1.9.3.174.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">SET CONSTRAINTS</span></h2><p>SET CONSTRAINTS — set constraint check timing for the current transaction</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+SET CONSTRAINTS { ALL | <em class="replaceable"><code>name</code></em> [, ...] } { DEFERRED | IMMEDIATE }
+</pre></div><div class="refsect1" id="id-1.9.3.174.5"><h2>Description</h2><p>
+   <code class="command">SET CONSTRAINTS</code> sets the behavior of constraint
+   checking within the current transaction. <code class="literal">IMMEDIATE</code>
    constraints are checked at the end of each
-   statement. <TT
-CLASS="LITERAL"
->DEFERRED</TT
-> constraints are not checked until
+   statement. <code class="literal">DEFERRED</code> constraints are not checked until
    transaction commit.  Each constraint has its own
-   <TT
-CLASS="LITERAL"
->IMMEDIATE</TT
-> or <TT
-CLASS="LITERAL"
->DEFERRED</TT
-> mode.
-  </P
-><P
->   Upon creation, a constraint is given one of three
-   characteristics: <TT
-CLASS="LITERAL"
->DEFERRABLE INITIALLY DEFERRED</TT
->,
-   <TT
-CLASS="LITERAL"
->DEFERRABLE INITIALLY IMMEDIATE</TT
->, or
-   <TT
-CLASS="LITERAL"
->NOT DEFERRABLE</TT
->. The third
-   class is always <TT
-CLASS="LITERAL"
->IMMEDIATE</TT
-> and is not affected by the
-   <TT
-CLASS="COMMAND"
->SET CONSTRAINTS</TT
-> command.  The first two classes start
+   <code class="literal">IMMEDIATE</code> or <code class="literal">DEFERRED</code> mode.
+  </p><p>
+   Upon creation, a constraint is given one of three
+   characteristics: <code class="literal">DEFERRABLE INITIALLY DEFERRED</code>,
+   <code class="literal">DEFERRABLE INITIALLY IMMEDIATE</code>, or
+   <code class="literal">NOT DEFERRABLE</code>. The third
+   class is always <code class="literal">IMMEDIATE</code> and is not affected by the
+   <code class="command">SET CONSTRAINTS</code> command.  The first two classes start
    every transaction in the indicated mode, but their behavior can be changed
-   within a transaction by <TT
-CLASS="COMMAND"
->SET CONSTRAINTS</TT
->.
-  </P
-><P
->   <TT
-CLASS="COMMAND"
->SET CONSTRAINTS</TT
-> with a list of constraint names changes
+   within a transaction by <code class="command">SET CONSTRAINTS</code>.
+  </p><p>
+   <code class="command">SET CONSTRAINTS</code> with a list of constraint names changes
    the mode of just those constraints (which must all be deferrable).  Each
    constraint name can be schema-qualified.  The
    current schema search path is used to find the first matching name if
-   no schema name is specified.  <TT
-CLASS="COMMAND"
->SET CONSTRAINTS ALL</TT
->
+   no schema name is specified.  <code class="command">SET CONSTRAINTS ALL</code>
    changes the mode of all deferrable constraints.
-  </P
-><P
->   When <TT
-CLASS="COMMAND"
->SET CONSTRAINTS</TT
-> changes the mode of a constraint
-   from <TT
-CLASS="LITERAL"
->DEFERRED</TT
->
-   to <TT
-CLASS="LITERAL"
->IMMEDIATE</TT
->, the new mode takes effect
+  </p><p>
+   When <code class="command">SET CONSTRAINTS</code> changes the mode of a constraint
+   from <code class="literal">DEFERRED</code>
+   to <code class="literal">IMMEDIATE</code>, the new mode takes effect
    retroactively: any outstanding data modifications that would have
    been checked at the end of the transaction are instead checked during the
-   execution of the <TT
-CLASS="COMMAND"
->SET CONSTRAINTS</TT
-> command.
-   If any such constraint is violated, the <TT
-CLASS="COMMAND"
->SET CONSTRAINTS</TT
->
-   fails (and does not change the constraint mode).  Thus, <TT
-CLASS="COMMAND"
->SET
-   CONSTRAINTS</TT
-> can be used to force checking of constraints to
+   execution of the <code class="command">SET CONSTRAINTS</code> command.
+   If any such constraint is violated, the <code class="command">SET CONSTRAINTS</code>
+   fails (and does not change the constraint mode).  Thus, <code class="command">SET
+   CONSTRAINTS</code> can be used to force checking of constraints to
    occur at a specific point in a transaction.
-  </P
-><P
->   Currently, only <TT
-CLASS="LITERAL"
->UNIQUE</TT
->, <TT
-CLASS="LITERAL"
->PRIMARY KEY</TT
->,
-   <TT
-CLASS="LITERAL"
->REFERENCES</TT
-> (foreign key), and <TT
-CLASS="LITERAL"
->EXCLUDE</TT
->
+  </p><p>
+   Currently, only <code class="literal">UNIQUE</code>, <code class="literal">PRIMARY KEY</code>,
+   <code class="literal">REFERENCES</code> (foreign key), and <code class="literal">EXCLUDE</code>
    constraints are affected by this setting.
-   <TT
-CLASS="LITERAL"
->NOT NULL</TT
-> and <TT
-CLASS="LITERAL"
->CHECK</TT
-> constraints are
+   <code class="literal">NOT NULL</code> and <code class="literal">CHECK</code> constraints are
    always checked immediately when a row is inserted or modified
-   (<SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->not</I
-></SPAN
-> at the end of the statement).
+   (<span class="emphasis"><em>not</em></span> at the end of the statement).
    Uniqueness and exclusion constraints that have not been declared
-   <TT
-CLASS="LITERAL"
->DEFERRABLE</TT
-> are also checked immediately.
-  </P
-><P
->   The firing of triggers that are declared as <SPAN
-CLASS="QUOTE"
->"constraint triggers"</SPAN
->
-   is also controlled by this setting &mdash; they fire at the same time
+   <code class="literal">DEFERRABLE</code> are also checked immediately.
+  </p><p>
+   The firing of triggers that are declared as <span class="quote">“<span class="quote">constraint triggers</span>”</span>
+   is also controlled by this setting — they fire at the same time
    that the associated constraint should be checked.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN92181"
-></A
-><H2
->Notes</H2
-><P
->   Because <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> does not require constraint
+  </p></div><div class="refsect1" id="id-1.9.3.174.6"><h2>Notes</h2><p>
+   Because <span class="productname">PostgreSQL</span> does not require constraint
    names to be unique within a schema (but only per-table), it is possible
    that there is more than one match for a specified constraint name.
-   In this case <TT
-CLASS="COMMAND"
->SET CONSTRAINTS</TT
-> will act on all matches.
+   In this case <code class="command">SET CONSTRAINTS</code> will act on all matches.
    For a non-schema-qualified name, once a match or matches have been found in
    some schema in the search path, schemas appearing later in the path are not
    searched.
-  </P
-><P
->   This command only alters the behavior of constraints within the
+  </p><p>
+   This command only alters the behavior of constraints within the
    current transaction.  Issuing this outside of a transaction block
    emits a warning and otherwise has no effect.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN92187"
-></A
-><H2
->Compatibility</H2
-><P
->   This command complies with the behavior defined in the SQL
+  </p></div><div class="refsect1" id="id-1.9.3.174.7"><h2>Compatibility</h2><p>
+   This command complies with the behavior defined in the SQL
    standard, except for the limitation that, in
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->, it does not apply to
-   <TT
-CLASS="LITERAL"
->NOT NULL</TT
-> and <TT
-CLASS="LITERAL"
->CHECK</TT
-> constraints.
-   Also, <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> checks non-deferrable
+   <span class="productname">PostgreSQL</span>, it does not apply to
+   <code class="literal">NOT NULL</code> and <code class="literal">CHECK</code> constraints.
+   Also, <span class="productname">PostgreSQL</span> checks non-deferrable
    uniqueness constraints immediately, not at end of statement as the
    standard would suggest.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-set.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-set-role.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->SET</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->SET ROLE</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-set.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-set-role.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">SET </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> SET ROLE</td></tr></table></div></body></html>

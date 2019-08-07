@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SPI_RETURNTUPLE" "3" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SPI_RETURNTUPLE" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -44,6 +44,11 @@ via
 \fBPointerGetDatum\fR
 before returning\&.
 .PP
+This function can only be used while connected to SPI\&. Otherwise, it returns NULL and sets
+\fISPI_result\fR
+to
+SPI_ERROR_UNCONNECTED\&.
+.PP
 Note that this should be used for functions that are declared to return composite types\&. It is not used for triggers; use
 \fBSPI_copytuple\fR
 for returning a modified row in a trigger\&.
@@ -61,11 +66,8 @@ descriptor for row (pass the same descriptor each time for most effective cachin
 .SH "RETURN VALUE"
 .PP
 HeapTupleHeader
-pointing to copied row;
+pointing to copied row, or
 NULL
-only if
-\fIrow\fR
-or
-\fIrowdesc\fR
-is
-NULL
+on error (see
+\fISPI_result\fR
+for an error indication)

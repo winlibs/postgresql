@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ALTER INDEX" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ALTER INDEX" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -34,9 +34,12 @@ ALTER_INDEX \- change the definition of an index
 .nf
 ALTER INDEX [ IF EXISTS ] \fIname\fR RENAME TO \fInew_name\fR
 ALTER INDEX [ IF EXISTS ] \fIname\fR SET TABLESPACE \fItablespace_name\fR
+ALTER INDEX \fIname\fR ATTACH PARTITION \fIindex_name\fR
 ALTER INDEX \fIname\fR DEPENDS ON EXTENSION \fIextension_name\fR
 ALTER INDEX [ IF EXISTS ] \fIname\fR SET ( \fIstorage_parameter\fR = \fIvalue\fR [, \&.\&.\&. ] )
 ALTER INDEX [ IF EXISTS ] \fIname\fR RESET ( \fIstorage_parameter\fR [, \&.\&.\&. ] )
+ALTER INDEX [ IF EXISTS ] \fIname\fR ALTER [ COLUMN ] \fIcolumn_number\fR
+    SET STATISTICS \fIinteger\fR
 ALTER INDEX ALL IN TABLESPACE \fIname\fR [ OWNED BY \fIrole_name\fR [, \&.\&.\&. ] ]
     SET TABLESPACE \fInew_tablespace\fR [ NOWAIT ]
 .fi
@@ -49,7 +52,10 @@ RENAME
 .RS 4
 The
 RENAME
-form changes the name of the index\&. There is no effect on the stored data\&.
+form changes the name of the index\&. If the index is associated with a table constraint (either
+UNIQUE,
+PRIMARY KEY, or
+EXCLUDE), the constraint is renamed as well\&. There is no effect on the stored data\&.
 .RE
 .PP
 SET TABLESPACE
@@ -67,6 +73,11 @@ or explicit
 \fBALTER INDEX\fR
 invocations instead if desired\&. See also
 CREATE TABLESPACE (\fBCREATE_TABLESPACE\fR(7))\&.
+.RE
+.PP
+ATTACH PARTITION
+.RS 4
+Causes the named index to become attached to the altered index\&. The named index must be on a partition of the table containing the index being altered, and have an equivalent definition\&. An attached index cannot be dropped by itself, and will automatically be dropped if its parent index is dropped\&.
 .RE
 .PP
 DEPENDS ON EXTENSION
@@ -90,11 +101,26 @@ SET, a
 REINDEX
 might be needed to update the index entirely\&.
 .RE
+.PP
+ALTER [ COLUMN ] \fIcolumn_number\fR SET STATISTICS \fIinteger\fR
+.RS 4
+This form sets the per\-column statistics\-gathering target for subsequent
+\fBANALYZE\fR(7)
+operations, though can be used only on index columns that are defined as an expression\&. Since expressions lack a unique name, we refer to them using the ordinal number of the index column\&. The target can be set in the range 0 to 10000; alternatively, set it to \-1 to revert to using the system default statistics target (default_statistics_target)\&. For more information on the use of statistics by the
+PostgreSQL
+query planner, refer to
+Section\ \&14.2\&.
+.RE
 .SH "PARAMETERS"
 .PP
 IF EXISTS
 .RS 4
 Do not throw an error if the index does not exist\&. A notice is issued in this case\&.
+.RE
+.PP
+\fIcolumn_number\fR
+.RS 4
+The ordinal number refers to the ordinal (left\-to\-right) position of the index column\&.
 .RE
 .PP
 \fIname\fR
@@ -174,6 +200,19 @@ To change an index\*(Aqs fill factor (assuming that the index method supports it
 .nf
 ALTER INDEX distributors SET (fillfactor = 75);
 REINDEX INDEX distributors;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+Set the statistics\-gathering target for an expression index:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE INDEX coord_idx ON measured (x, y, (z + t));
+ALTER INDEX coord_idx ALTER COLUMN 3 SET STATISTICS 1000;
 .fi
 .if n \{\
 .RE

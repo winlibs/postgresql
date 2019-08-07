@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SPI_KEEPPLAN" "3" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SPI_KEEPPLAN" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,7 +40,7 @@ int SPI_keepplan(SPIPlanPtr \fIplan\fR)
 saves a passed statement (prepared by
 \fBSPI_prepare\fR) so that it will not be freed by
 \fBSPI_finish\fR
-nor by the transaction manager\&. This gives you the ability to reuse prepared statements in the subsequent invocations of your procedure in the current session\&.
+nor by the transaction manager\&. This gives you the ability to reuse prepared statements in the subsequent invocations of your C function in the current session\&.
 .SH "ARGUMENTS"
 .PP
 SPIPlanPtr \fIplan\fR

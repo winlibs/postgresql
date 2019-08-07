@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "PG_STANDBY" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "PG_STANDBY" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -31,7 +31,7 @@
 pg_standby \- supports the creation of a PostgreSQL warm standby server
 .SH "SYNOPSIS"
 .HP \w'\fBpg_standby\fR\ 'u
-\fBpg_standby\fR [\fIoption\fR...] \fIarchivelocation\fR \fInextwalfile\fR \fIxlogfilepath\fR [\fIrestartwalfile\fR]
+\fBpg_standby\fR [\fIoption\fR...] \fIarchivelocation\fR \fInextwalfile\fR \fIwalfilepath\fR [\fIrestartwalfile\fR]
 .SH "DESCRIPTION"
 .PP
 pg_standby
@@ -42,7 +42,7 @@ database server\&. It is designed to be a production\-ready program, as well as 
 pg_standby
 is designed to be a waiting
 \fIrestore_command\fR, which is needed to turn a standard archive recovery into a warm standby operation\&. Other configuration is required as well, all of which is described in the main server manual (see
-Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation)\&.
+Section\ \&26.2)\&.
 .PP
 To configure a standby server to use
 pg_standby, put this into its
@@ -152,7 +152,7 @@ so that the wait time increases progressively\&. So by default, we will wait 5 s
 \fB\-s\fR \fIsleeptime\fR
 .RS 4
 Set the number of seconds (up to 60, default 5) to sleep between tests to see if the WAL file to be restored is available in the archive yet\&. The default setting is not necessarily recommended; consult
-Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation
+Section\ \&26.2
 for discussion\&.
 .RE
 .PP
@@ -174,7 +174,7 @@ version and exit\&.
 \fB\-w\fR \fImaxwaittime\fR
 .RS 4
 Set the maximum number of seconds to wait for the next WAL file, after which a fast failover will be performed\&. A setting of zero (the default) means wait forever\&. The default setting is not necessarily recommended; consult
-Section 26.2, \(lqLog-Shipping Standby Servers\(rq, in the documentation
+Section\ \&26.2
 for discussion\&.
 .RE
 .PP

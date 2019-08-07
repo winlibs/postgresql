@@ -1,318 +1,63 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Implementation</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="GIN Indexes"
-HREF="gin.html"><LINK
-REL="PREVIOUS"
-TITLE="Extensibility"
-HREF="gin-extensibility.html"><LINK
-REL="NEXT"
-TITLE="GIN Tips and Tricks"
-HREF="gin-tips.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Extensibility"
-HREF="gin-extensibility.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="gin.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 63. GIN Indexes</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="GIN Tips and Tricks"
-HREF="gin-tips.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="GIN-IMPLEMENTATION"
->63.4. Implementation</A
-></H1
-><P
->  Internally, a <ACRONYM
-CLASS="ACRONYM"
->GIN</ACRONYM
-> index contains a B-tree index
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>66.4. Implementation</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="gin-extensibility.html" title="66.3. Extensibility" /><link rel="next" href="gin-tips.html" title="66.5. GIN Tips and Tricks" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">66.4. Implementation</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="gin-extensibility.html" title="66.3. Extensibility">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="gin.html" title="Chapter 66. GIN Indexes">Up</a></td><th width="60%" align="center">Chapter 66. GIN Indexes</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="gin-tips.html" title="66.5. GIN Tips and Tricks">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="GIN-IMPLEMENTATION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">66.4. Implementation</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="gin-implementation.html#GIN-FAST-UPDATE">66.4.1. GIN Fast Update Technique</a></span></dt><dt><span class="sect2"><a href="gin-implementation.html#GIN-PARTIAL-MATCH">66.4.2. Partial Match Algorithm</a></span></dt></dl></div><p>
+  Internally, a <acronym class="acronym">GIN</acronym> index contains a B-tree index
   constructed over keys, where each key is an element of one or more indexed
   items (a member of an array, for example) and where each tuple in a leaf
   page contains either a pointer to a B-tree of heap pointers (a
-  <SPAN
-CLASS="QUOTE"
->"posting tree"</SPAN
->), or a simple list of heap pointers (a <SPAN
-CLASS="QUOTE"
->"posting
-  list"</SPAN
->) when the list is small enough to fit into a single index tuple along
+  <span class="quote">“<span class="quote">posting tree</span>”</span>), or a simple list of heap pointers (a <span class="quote">“<span class="quote">posting
+  list</span>”</span>) when the list is small enough to fit into a single index tuple along
   with the key value.
- </P
-><P
->  As of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 9.1, null key values can be
+ </p><p>
+  As of <span class="productname">PostgreSQL</span> 9.1, null key values can be
   included in the index.  Also, placeholder nulls are included in the index
   for indexed items that are null or contain no keys according to
-  <CODE
-CLASS="FUNCTION"
->extractValue</CODE
->.  This allows searches that should find empty
+  <code class="function">extractValue</code>.  This allows searches that should find empty
   items to do so.
- </P
-><P
->  Multicolumn <ACRONYM
-CLASS="ACRONYM"
->GIN</ACRONYM
-> indexes are implemented by building
+ </p><p>
+  Multicolumn <acronym class="acronym">GIN</acronym> indexes are implemented by building
   a single B-tree over composite values (column number, key value).  The
   key values for different columns can be of different types.
- </P
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="GIN-FAST-UPDATE"
->63.4.1. GIN Fast Update Technique</A
-></H2
-><P
->   Updating a <ACRONYM
-CLASS="ACRONYM"
->GIN</ACRONYM
-> index tends to be slow because of the
+ </p><div class="sect2" id="GIN-FAST-UPDATE"><div class="titlepage"><div><div><h3 class="title">66.4.1. GIN Fast Update Technique</h3></div></div></div><p>
+   Updating a <acronym class="acronym">GIN</acronym> index tends to be slow because of the
    intrinsic nature of inverted indexes: inserting or updating one heap row
    can cause many inserts into the index (one for each key extracted
-   from the indexed item). As of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 8.4,
-   <ACRONYM
-CLASS="ACRONYM"
->GIN</ACRONYM
-> is capable of postponing much of this work by inserting
+   from the indexed item). As of <span class="productname">PostgreSQL</span> 8.4,
+   <acronym class="acronym">GIN</acronym> is capable of postponing much of this work by inserting
    new tuples into a temporary, unsorted list of pending entries.
    When the table is vacuumed or autoanalyzed, or when
-   <CODE
-CLASS="FUNCTION"
->gin_clean_pending_list</CODE
-> function is called, or if the
+   <code class="function">gin_clean_pending_list</code> function is called, or if the
    pending list becomes larger than
-   <A
-HREF="runtime-config-client.html#GUC-GIN-PENDING-LIST-LIMIT"
->gin_pending_list_limit</A
->, the entries are moved to the
-   main <ACRONYM
-CLASS="ACRONYM"
->GIN</ACRONYM
-> data structure using the same bulk insert
+   <a class="xref" href="runtime-config-client.html#GUC-GIN-PENDING-LIST-LIMIT">gin_pending_list_limit</a>, the entries are moved to the
+   main <acronym class="acronym">GIN</acronym> data structure using the same bulk insert
    techniques used during initial index creation.  This greatly improves
-   <ACRONYM
-CLASS="ACRONYM"
->GIN</ACRONYM
-> index update speed, even counting the additional
+   <acronym class="acronym">GIN</acronym> index update speed, even counting the additional
    vacuum overhead.  Moreover the overhead work can be done by a background
    process instead of in foreground query processing.
-  </P
-><P
->   The main disadvantage of this approach is that searches must scan the list
+  </p><p>
+   The main disadvantage of this approach is that searches must scan the list
    of pending entries in addition to searching the regular index, and so
    a large list of pending entries will slow searches significantly.
    Another disadvantage is that, while most updates are fast, an update
-   that causes the pending list to become <SPAN
-CLASS="QUOTE"
->"too large"</SPAN
-> will incur an
+   that causes the pending list to become <span class="quote">“<span class="quote">too large</span>”</span> will incur an
    immediate cleanup cycle and thus be much slower than other updates.
    Proper use of autovacuum can minimize both of these problems.
-  </P
-><P
->   If consistent response time is more important than update speed,
+  </p><p>
+   If consistent response time is more important than update speed,
    use of pending entries can be disabled by turning off the
-   <TT
-CLASS="LITERAL"
->fastupdate</TT
-> storage parameter for a
-   <ACRONYM
-CLASS="ACRONYM"
->GIN</ACRONYM
-> index.  See <A
-HREF="sql-createindex.html"
->CREATE INDEX</A
->
+   <code class="literal">fastupdate</code> storage parameter for a
+   <acronym class="acronym">GIN</acronym> index.  See <a class="xref" href="sql-createindex.html" title="CREATE INDEX"><span class="refentrytitle">CREATE INDEX</span></a>
    for details.
-  </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="GIN-PARTIAL-MATCH"
->63.4.2. Partial Match Algorithm</A
-></H2
-><P
->   GIN can support <SPAN
-CLASS="QUOTE"
->"partial match"</SPAN
-> queries, in which the query
+  </p></div><div class="sect2" id="GIN-PARTIAL-MATCH"><div class="titlepage"><div><div><h3 class="title">66.4.2. Partial Match Algorithm</h3></div></div></div><p>
+   GIN can support <span class="quote">“<span class="quote">partial match</span>”</span> queries, in which the query
    does not determine an exact match for one or more keys, but the possible
    matches fall within a reasonably narrow range of key values (within the
-   key sorting order determined by the <CODE
-CLASS="FUNCTION"
->compare</CODE
-> support method).
-   The <CODE
-CLASS="FUNCTION"
->extractQuery</CODE
-> method, instead of returning a key value
+   key sorting order determined by the <code class="function">compare</code> support method).
+   The <code class="function">extractQuery</code> method, instead of returning a key value
    to be matched exactly, returns a key value that is the lower bound of
-   the range to be searched, and sets the <TT
-CLASS="LITERAL"
->pmatch</TT
-> flag true.
-   The key range is then scanned using the <CODE
-CLASS="FUNCTION"
->comparePartial</CODE
->
-   method.  <CODE
-CLASS="FUNCTION"
->comparePartial</CODE
-> must return zero for a matching
+   the range to be searched, and sets the <code class="literal">pmatch</code> flag true.
+   The key range is then scanned using the <code class="function">comparePartial</code>
+   method.  <code class="function">comparePartial</code> must return zero for a matching
    index key, less than zero for a non-match that is still within the range
    to be searched, or greater than zero if the index key is past the range
    that could match.
-  </P
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="gin-extensibility.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="gin-tips.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Extensibility</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="gin.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->GIN Tips and Tricks</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="gin-extensibility.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="gin.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="gin-tips.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">66.3. Extensibility </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 66.5. GIN Tips and Tricks</td></tr></table></div></body></html>

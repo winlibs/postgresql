@@ -1,363 +1,46 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Memory Management</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Server Programming Interface"
-HREF="spi.html"><LINK
-REL="PREVIOUS"
-TITLE="SPI_getnspname"
-HREF="spi-spi-getnspname.html"><LINK
-REL="NEXT"
-TITLE="SPI_palloc"
-HREF="spi-spi-palloc.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="SPI_getnspname"
-HREF="spi-spi-getnspname.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="spi.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 45. Server Programming Interface</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="SPI_palloc"
-HREF="spi-spi-palloc.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="SPI-MEMORY"
->45.3. Memory Management</A
-></H1
-><DIV
-CLASS="TOC"
-><DL
-><DT
-><B
->Table of Contents</B
-></DT
-><DT
-><A
-HREF="spi-spi-palloc.html"
->SPI_palloc</A
->&nbsp;--&nbsp;allocate memory in the upper executor context</DT
-><DT
-><A
-HREF="spi-realloc.html"
->SPI_repalloc</A
->&nbsp;--&nbsp;reallocate memory in the upper executor context</DT
-><DT
-><A
-HREF="spi-spi-pfree.html"
->SPI_pfree</A
->&nbsp;--&nbsp;free memory in the upper executor context</DT
-><DT
-><A
-HREF="spi-spi-copytuple.html"
->SPI_copytuple</A
->&nbsp;--&nbsp;make a copy of a row in the upper executor context</DT
-><DT
-><A
-HREF="spi-spi-returntuple.html"
->SPI_returntuple</A
->&nbsp;--&nbsp;prepare to return a tuple as a Datum</DT
-><DT
-><A
-HREF="spi-spi-modifytuple.html"
->SPI_modifytuple</A
->&nbsp;--&nbsp;create a row by replacing selected fields of a given row</DT
-><DT
-><A
-HREF="spi-spi-freetuple.html"
->SPI_freetuple</A
->&nbsp;--&nbsp;free a row allocated in the upper executor context</DT
-><DT
-><A
-HREF="spi-spi-freetupletable.html"
->SPI_freetuptable</A
->&nbsp;--&nbsp;free a row set created by <CODE
-CLASS="FUNCTION"
->SPI_execute</CODE
-> or a similar
-  function</DT
-><DT
-><A
-HREF="spi-spi-freeplan.html"
->SPI_freeplan</A
->&nbsp;--&nbsp;free a previously saved prepared statement</DT
-></DL
-></DIV
-><P
->    
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> allocates memory within
-   <I
-CLASS="FIRSTTERM"
->memory contexts</I
->, which provide a convenient method of
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>47.3. Memory Management</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="spi-spi-result-code-string.html" title="SPI_result_code_string" /><link rel="next" href="spi-spi-palloc.html" title="SPI_palloc" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">47.3. Memory Management</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="spi-spi-result-code-string.html" title="SPI_result_code_string">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="spi.html" title="Chapter 47. Server Programming Interface">Up</a></td><th width="60%" align="center">Chapter 47. Server Programming Interface</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="spi-spi-palloc.html" title="SPI_palloc">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="SPI-MEMORY"><div class="titlepage"><div><div><h2 class="title" style="clear: both">47.3. Memory Management</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="refentrytitle"><a href="spi-spi-palloc.html">SPI_palloc</a></span><span class="refpurpose"> — allocate memory in the upper executor context</span></dt><dt><span class="refentrytitle"><a href="spi-realloc.html">SPI_repalloc</a></span><span class="refpurpose"> — reallocate memory in the upper executor context</span></dt><dt><span class="refentrytitle"><a href="spi-spi-pfree.html">SPI_pfree</a></span><span class="refpurpose"> — free memory in the upper executor context</span></dt><dt><span class="refentrytitle"><a href="spi-spi-copytuple.html">SPI_copytuple</a></span><span class="refpurpose"> — make a copy of a row in the upper executor context</span></dt><dt><span class="refentrytitle"><a href="spi-spi-returntuple.html">SPI_returntuple</a></span><span class="refpurpose"> — prepare to return a tuple as a Datum</span></dt><dt><span class="refentrytitle"><a href="spi-spi-modifytuple.html">SPI_modifytuple</a></span><span class="refpurpose"> — create a row by replacing selected fields of a given row</span></dt><dt><span class="refentrytitle"><a href="spi-spi-freetuple.html">SPI_freetuple</a></span><span class="refpurpose"> — free a row allocated in the upper executor context</span></dt><dt><span class="refentrytitle"><a href="spi-spi-freetupletable.html">SPI_freetuptable</a></span><span class="refpurpose"> — free a row set created by <code class="function">SPI_execute</code> or a similar
+  function</span></dt><dt><span class="refentrytitle"><a href="spi-spi-freeplan.html">SPI_freeplan</a></span><span class="refpurpose"> — free a previously saved prepared statement</span></dt></dl></div><p>
+    <a id="id-1.8.12.10.2.1" class="indexterm"></a>
+   <span class="productname">PostgreSQL</span> allocates memory within
+   <em class="firstterm">memory contexts</em>, which provide a convenient method of
    managing allocations made in many different places that need to
    live for differing amounts of time.  Destroying a context releases
    all the memory that was allocated in it.  Thus, it is not necessary
    to keep track of individual objects to avoid memory leaks; instead
    only a relatively small number of contexts have to be managed.
-   <CODE
-CLASS="FUNCTION"
->palloc</CODE
-> and related functions allocate memory
-   from the <SPAN
-CLASS="QUOTE"
->"current"</SPAN
-> context.
-  </P
-><P
->   <CODE
-CLASS="FUNCTION"
->SPI_connect</CODE
-> creates a new memory context and
-   makes it current.  <CODE
-CLASS="FUNCTION"
->SPI_finish</CODE
-> restores the
+   <code class="function">palloc</code> and related functions allocate memory
+   from the <span class="quote">“<span class="quote">current</span>”</span> context.
+  </p><p>
+   <code class="function">SPI_connect</code> creates a new memory context and
+   makes it current.  <code class="function">SPI_finish</code> restores the
    previous current memory context and destroys the context created by
-   <CODE
-CLASS="FUNCTION"
->SPI_connect</CODE
->.  These actions ensure that
-   transient memory allocations made inside your procedure are
-   reclaimed at procedure exit, avoiding memory leakage.
-  </P
-><P
->   However, if your procedure needs to return an object in allocated
+   <code class="function">SPI_connect</code>.  These actions ensure that
+   transient memory allocations made inside your C function are
+   reclaimed at C function exit, avoiding memory leakage.
+  </p><p>
+   However, if your C function needs to return an object in allocated
    memory (such as a value of a pass-by-reference data type), you
-   cannot allocate that memory using <CODE
-CLASS="FUNCTION"
->palloc</CODE
->, at
+   cannot allocate that memory using <code class="function">palloc</code>, at
    least not while you are connected to SPI.  If you try, the object
-   will be deallocated by <CODE
-CLASS="FUNCTION"
->SPI_finish</CODE
->, and your
-   procedure will not work reliably.  To solve this problem, use
-   <CODE
-CLASS="FUNCTION"
->SPI_palloc</CODE
-> to allocate memory for your return
-   object.  <CODE
-CLASS="FUNCTION"
->SPI_palloc</CODE
-> allocates memory in the
-   <SPAN
-CLASS="QUOTE"
->"upper executor context"</SPAN
->, that is, the memory context
-   that was current when <CODE
-CLASS="FUNCTION"
->SPI_connect</CODE
-> was called,
+   will be deallocated by <code class="function">SPI_finish</code>, and your
+   C function will not work reliably.  To solve this problem, use
+   <code class="function">SPI_palloc</code> to allocate memory for your return
+   object.  <code class="function">SPI_palloc</code> allocates memory in the
+   <span class="quote">“<span class="quote">upper executor context</span>”</span>, that is, the memory context
+   that was current when <code class="function">SPI_connect</code> was called,
    which is precisely the right context for a value returned from your
-   procedure.
-  </P
-><P
->   If <CODE
-CLASS="FUNCTION"
->SPI_palloc</CODE
-> is called while the procedure is
-   not connected to SPI, then it acts the same as a normal
-   <CODE
-CLASS="FUNCTION"
->palloc</CODE
->.  Before a procedure connects to the
-   SPI manager, the current memory context is the upper executor
-   context, so all allocations made by the procedure via
-   <CODE
-CLASS="FUNCTION"
->palloc</CODE
-> or by SPI utility functions are made in
-   this context.
-  </P
-><P
->   When <CODE
-CLASS="FUNCTION"
->SPI_connect</CODE
-> is called, the private
-   context of the procedure, which is created by
-   <CODE
-CLASS="FUNCTION"
->SPI_connect</CODE
->, is made the current context.  All
-   allocations made by <CODE
-CLASS="FUNCTION"
->palloc</CODE
->,
-   <CODE
-CLASS="FUNCTION"
->repalloc</CODE
->, or SPI utility functions (except for
-   <CODE
-CLASS="FUNCTION"
->SPI_copytuple</CODE
->,
-   <CODE
-CLASS="FUNCTION"
->SPI_returntuple</CODE
->,
-   <CODE
-CLASS="FUNCTION"
->SPI_modifytuple</CODE
->, and
-   <CODE
-CLASS="FUNCTION"
->SPI_palloc</CODE
->) are made in this context.  When a
-   procedure disconnects from the SPI manager (via
-   <CODE
-CLASS="FUNCTION"
->SPI_finish</CODE
->) the current context is restored to
+   C function.  Several of the other utility functions described in
+   this section also return objects created in the upper executor context.
+  </p><p>
+   When <code class="function">SPI_connect</code> is called, the private
+   context of the C function, which is created by
+   <code class="function">SPI_connect</code>, is made the current context.  All
+   allocations made by <code class="function">palloc</code>,
+   <code class="function">repalloc</code>, or SPI utility functions (except as
+   described in this section) are made in this context.  When a
+   C function disconnects from the SPI manager (via
+   <code class="function">SPI_finish</code>) the current context is restored to
    the upper executor context, and all allocations made in the
-   procedure memory context are freed and cannot be used any more.
-  </P
-><P
->   All functions described in this section can be used by both
-   connected and unconnected procedures.  In an unconnected procedure,
-   they act the same as the underlying ordinary server functions
-   (<CODE
-CLASS="FUNCTION"
->palloc</CODE
->, etc.).
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="spi-spi-getnspname.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="spi-spi-palloc.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->SPI_getnspname</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="spi.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->SPI_palloc</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   C function memory context are freed and cannot be used any more.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="spi-spi-result-code-string.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="spi.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="spi-spi-palloc.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">SPI_result_code_string </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> SPI_palloc</td></tr></table></div></body></html>

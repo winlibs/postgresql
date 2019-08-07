@@ -491,6 +491,8 @@ char *seg_yytext;
  * A scanner for EMP-style numeric ranges
  */
 
+/* LCOV_EXCL_START */
+
 /* No reason to constrain amount of data slurped */
 #define YY_READ_BUF_SIZE 16777216
 
@@ -509,7 +511,7 @@ static YY_BUFFER_STATE scanbufhandle;
 static char *scanbuf;
 static int	scanbuflen;
 #define YY_NO_INPUT 1
-#line 513 "segscan.c"
+#line 515 "segscan.c"
 
 #define INITIAL 0
 
@@ -725,10 +727,10 @@ YY_DECL
 		}
 
 	{
-#line 41 "segscan.l"
+#line 43 "segscan.l"
 
 
-#line 732 "segscan.c"
+#line 734 "segscan.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -783,51 +785,51 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 43 "segscan.l"
+#line 45 "segscan.l"
 yylval.text = seg_yytext; return RANGE;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 44 "segscan.l"
+#line 46 "segscan.l"
 yylval.text = seg_yytext; return PLUMIN;
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 45 "segscan.l"
+#line 47 "segscan.l"
 yylval.text = seg_yytext; return SEGFLOAT;
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 46 "segscan.l"
+#line 48 "segscan.l"
 yylval.text = "<"; return EXTENSION;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 47 "segscan.l"
+#line 49 "segscan.l"
 yylval.text = ">"; return EXTENSION;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 48 "segscan.l"
+#line 50 "segscan.l"
 yylval.text = "~"; return EXTENSION;
 	YY_BREAK
 case 7:
 /* rule 7 can match eol */
 YY_RULE_SETUP
-#line 49 "segscan.l"
+#line 51 "segscan.l"
 /* discard spaces */
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 50 "segscan.l"
+#line 52 "segscan.l"
 return seg_yytext[0]; /* alert parser of the garbage */
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 52 "segscan.l"
+#line 54 "segscan.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 831 "segscan.c"
+#line 833 "segscan.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1792,9 +1794,11 @@ void seg_yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 52 "segscan.l"
+#line 54 "segscan.l"
 
 
+
+/* LCOV_EXCL_STOP */
 
 void
 yyerror(SEG *result, const char *message)

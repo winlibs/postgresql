@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SPI_FREETUPTABLE" "3" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SPI_FREETUPTABLE" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -42,8 +42,8 @@ frees a row set created by a prior SPI command execution function, such as
 \fISPI_tuptable\fR
 as argument\&.
 .PP
-This function is useful if a SPI procedure needs to execute multiple commands and does not want to keep the results of earlier commands around until it ends\&. Note that any unfreed row sets will be freed anyway at
-\fBSPI_finish\fR\&. Also, if a subtransaction is started and then aborted within execution of a SPI procedure, SPI automatically frees any row sets created while the subtransaction was running\&.
+This function is useful if an SPI\-using C function needs to execute multiple commands and does not want to keep the results of earlier commands around until it ends\&. Note that any unfreed row sets will be freed anyway at
+\fBSPI_finish\fR\&. Also, if a subtransaction is started and then aborted within execution of an SPI\-using C function, SPI automatically frees any row sets created while the subtransaction was running\&.
 .PP
 Beginning in
 PostgreSQL

@@ -1,330 +1,42 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->dblink_build_sql_delete</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="dblink"
-HREF="dblink.html"><LINK
-REL="PREVIOUS"
-TITLE="dblink_build_sql_insert"
-HREF="contrib-dblink-build-sql-insert.html"><LINK
-REL="NEXT"
-TITLE="dblink_build_sql_update"
-HREF="contrib-dblink-build-sql-update.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="dblink_build_sql_insert"
-HREF="contrib-dblink-build-sql-insert.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="dblink.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="dblink_build_sql_update"
-HREF="contrib-dblink-build-sql-update.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="CONTRIB-DBLINK-BUILD-SQL-DELETE"
-></A
->dblink_build_sql_delete</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN136392"
-></A
-><H2
->Name</H2
->dblink_build_sql_delete&nbsp;--&nbsp;builds a DELETE statement using supplied values for primary
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>dblink_build_sql_delete</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="contrib-dblink-build-sql-insert.html" title="dblink_build_sql_insert" /><link rel="next" href="contrib-dblink-build-sql-update.html" title="dblink_build_sql_update" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">dblink_build_sql_delete</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="contrib-dblink-build-sql-insert.html" title="dblink_build_sql_insert">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="dblink.html" title="F.10. dblink">Up</a></td><th width="60%" align="center">F.10. dblink</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="contrib-dblink-build-sql-update.html" title="dblink_build_sql_update">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="CONTRIB-DBLINK-BUILD-SQL-DELETE"><div class="titlepage"></div><a id="id-1.11.7.19.22.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">dblink_build_sql_delete</span></h2><p>dblink_build_sql_delete — builds a DELETE statement using supplied values for primary
     key field values
-   </DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN136395"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->dblink_build_sql_delete(text relname,
+   </p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+dblink_build_sql_delete(text relname,
                         int2vector primary_key_attnums,
                         integer num_primary_key_atts,
-                        text[] tgt_pk_att_vals_array) returns text</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN136397"
-></A
-><H2
->Description</H2
-><P
->    <CODE
-CLASS="FUNCTION"
->dblink_build_sql_delete</CODE
-> can be useful in doing selective
+                        text[] tgt_pk_att_vals_array) returns text
+</pre></div><div class="refsect1" id="id-1.11.7.19.22.5"><h2>Description</h2><p>
+    <code class="function">dblink_build_sql_delete</code> can be useful in doing selective
     replication of a local table to a remote database.  It builds a SQL
-    <TT
-CLASS="COMMAND"
->DELETE</TT
-> command that will delete the row with the given
+    <code class="command">DELETE</code> command that will delete the row with the given
     primary key values.
-   </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN136402"
-></A
-><H2
->Arguments</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="PARAMETER"
->relname</TT
-></DT
-><DD
-><P
->       Name of a local relation, for example <TT
-CLASS="LITERAL"
->foo</TT
-> or
-       <TT
-CLASS="LITERAL"
->myschema.mytab</TT
->.  Include double quotes if the
+   </p></div><div class="refsect1" id="id-1.11.7.19.22.6"><h2>Arguments</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="parameter"><code>relname</code></em></span></dt><dd><p>
+       Name of a local relation, for example <code class="literal">foo</code> or
+       <code class="literal">myschema.mytab</code>.  Include double quotes if the
        name is mixed-case or contains special characters, for
-       example <TT
-CLASS="LITERAL"
->"FooBar"</TT
->; without quotes, the string
+       example <code class="literal">"FooBar"</code>; without quotes, the string
        will be folded to lower case.
-      </P
-></DD
-><DT
-><TT
-CLASS="PARAMETER"
->primary_key_attnums</TT
-></DT
-><DD
-><P
->       Attribute numbers (1-based) of the primary key fields,
-       for example <TT
-CLASS="LITERAL"
->1 2</TT
->.
-      </P
-></DD
-><DT
-><TT
-CLASS="PARAMETER"
->num_primary_key_atts</TT
-></DT
-><DD
-><P
->       The number of primary key fields.
-      </P
-></DD
-><DT
-><TT
-CLASS="PARAMETER"
->tgt_pk_att_vals_array</TT
-></DT
-><DD
-><P
->       Values of the primary key fields to be used in the resulting
-       <TT
-CLASS="COMMAND"
->DELETE</TT
-> command.  Each field is represented in text form.
-      </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN136430"
-></A
-><H2
->Return Value</H2
-><P
->Returns the requested SQL statement as text.</P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN136433"
-></A
-><H2
->Notes</H2
-><P
->    As of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 9.0, the attribute numbers in
-    <TT
-CLASS="PARAMETER"
->primary_key_attnums</TT
-> are interpreted as logical
+      </p></dd><dt><span class="term"><em class="parameter"><code>primary_key_attnums</code></em></span></dt><dd><p>
+       Attribute numbers (1-based) of the primary key fields,
+       for example <code class="literal">1 2</code>.
+      </p></dd><dt><span class="term"><em class="parameter"><code>num_primary_key_atts</code></em></span></dt><dd><p>
+       The number of primary key fields.
+      </p></dd><dt><span class="term"><em class="parameter"><code>tgt_pk_att_vals_array</code></em></span></dt><dd><p>
+       Values of the primary key fields to be used in the resulting
+       <code class="command">DELETE</code> command.  Each field is represented in text form.
+      </p></dd></dl></div></div><div class="refsect1" id="id-1.11.7.19.22.7"><h2>Return Value</h2><p>Returns the requested SQL statement as text.</p></div><div class="refsect1" id="id-1.11.7.19.22.8"><h2>Notes</h2><p>
+    As of <span class="productname">PostgreSQL</span> 9.0, the attribute numbers in
+    <em class="parameter"><code>primary_key_attnums</code></em> are interpreted as logical
     column numbers, corresponding to the column's position in
-    <TT
-CLASS="LITERAL"
->SELECT * FROM relname</TT
->.  Previous versions interpreted the
+    <code class="literal">SELECT * FROM relname</code>.  Previous versions interpreted the
     numbers as physical column positions.  There is a difference if any
     column(s) to the left of the indicated column have been dropped during
     the lifetime of the table.
-   </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN136439"
-></A
-><H2
->Examples</H2
-><PRE
-CLASS="SCREEN"
->SELECT dblink_build_sql_delete('"MyFoo"', '1 2', 2, '{"1", "b"}');
+   </p></div><div class="refsect1" id="id-1.11.7.19.22.9"><h2>Examples</h2><pre class="screen">
+SELECT dblink_build_sql_delete('"MyFoo"', '1 2', 2, '{"1", "b"}');
            dblink_build_sql_delete
 ---------------------------------------------
  DELETE FROM "MyFoo" WHERE f1='1' AND f2='b'
-(1 row)</PRE
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="contrib-dblink-build-sql-insert.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="contrib-dblink-build-sql-update.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->dblink_build_sql_insert</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="dblink.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->dblink_build_sql_update</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+(1 row)
+</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="contrib-dblink-build-sql-insert.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="dblink.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="contrib-dblink-build-sql-update.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">dblink_build_sql_insert </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> dblink_build_sql_update</td></tr></table></div></body></html>

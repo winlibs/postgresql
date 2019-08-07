@@ -6,7 +6,7 @@
 # runs the regression tests (to put in some data), runs pg_dumpall,
 # runs pg_upgrade, runs pg_dumpall again, compares the dumps.
 #
-# Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+# Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
 # Portions Copyright (c) 1994, Regents of the University of California
 
 set -e
@@ -20,7 +20,9 @@ unset MAKELEVEL
 # Run a given "initdb" binary and overlay the regression testing
 # authentication configuration.
 standard_initdb() {
-	"$1" -N
+	# To increase coverage of non-standard segment size and group access
+	# without increasing test runtime, run these tests with a custom setting.
+	"$1" -N --wal-segsize 1 -g
 	if [ -n "$TEMP_CONFIG" -a -r "$TEMP_CONFIG" ]
 	then
 		cat "$TEMP_CONFIG" >> "$PGDATA/postgresql.conf"
@@ -61,11 +63,13 @@ case $testhost in
 		;;
 esac
 
-POSTMASTER_OPTS="-F -c listen_addresses=$LISTEN_ADDRESSES -k \"$PGHOST\""
+POSTMASTER_OPTS="-F -c listen_addresses=\"$LISTEN_ADDRESSES\" -k \"$PGHOST\""
 export PGHOST
 
 # don't rely on $PWD here, as old shells don't set it
 temp_root=`pwd`/tmp_check
+rm -rf "$temp_root"
+mkdir "$temp_root"
 
 if [ "$1" = '--install' ]; then
 	temp_install=$temp_root/install
@@ -81,15 +85,9 @@ if [ "$1" = '--install' ]; then
 	export DYLD_LIBRARY_PATH
 	LIBPATH=$libdir:$LIBPATH
 	export LIBPATH
+	SHLIB_PATH=$libdir:$SHLIB_PATH
+	export SHLIB_PATH
 	PATH=$libdir:$PATH
-
-	# We need to make it use psql from our temporary installation,
-	# because otherwise the installcheck run below would try to
-	# use psql from the proper installation directory, which might
-	# be outdated or missing. But don't override anything else that's
-	# already in EXTRA_REGRESS_OPTS.
-	EXTRA_REGRESS_OPTS="$EXTRA_REGRESS_OPTS --bindir='$bindir'"
-	export EXTRA_REGRESS_OPTS
 fi
 
 : ${oldbindir=$bindir}
@@ -98,13 +96,31 @@ fi
 oldsrc=`cd "$oldsrc" && pwd`
 newsrc=`cd ../../.. && pwd`
 
+# We need to make pg_regress use psql from the desired installation
+# (likely a temporary one), because otherwise the installcheck run
+# below would try to use psql from the proper installation directory
+# of the target version, which might be outdated or not exist. But
+# don't override anything else that's already in EXTRA_REGRESS_OPTS.
+EXTRA_REGRESS_OPTS="$EXTRA_REGRESS_OPTS --bindir='$oldbindir'"
+export EXTRA_REGRESS_OPTS
+
 PATH=$bindir:$PATH
 export PATH
 
-BASE_PGDATA=$temp_root/data
-PGDATA="$BASE_PGDATA.old"
+BASE_PGDATA="$temp_root/data"
+PGDATA="${BASE_PGDATA}.old"
 export PGDATA
-rm -rf "$BASE_PGDATA" "$PGDATA"
+
+# Send installcheck outputs to a private directory.  This avoids conflict when
+# check-world runs pg_upgrade check concurrently with src/test/regress check.
+# To retrieve interesting files after a run, use pattern tmp_check/*/*.diffs.
+outputdir="$temp_root/regress"
+EXTRA_REGRESS_OPTS="$EXTRA_REGRESS_OPTS --outputdir=$outputdir"
+export EXTRA_REGRESS_OPTS
+mkdir "$outputdir"
+mkdir "$outputdir"/sql
+mkdir "$outputdir"/expected
+mkdir "$outputdir"/testtablespace
 
 logdir=`pwd`/log
 rm -rf "$logdir"
@@ -166,18 +182,32 @@ createdb "$dbname2" || createdb_status=$?
 createdb "$dbname3" || createdb_status=$?
 
 if "$MAKE" -C "$oldsrc" installcheck; then
-	pg_dumpall -f "$temp_root"/dump1.sql || pg_dumpall1_status=$?
+	oldpgversion=`psql -X -A -t -d regression -c "SHOW server_version_num"`
+
+	# before dumping, get rid of objects not existing in later versions
 	if [ "$newsrc" != "$oldsrc" ]; then
-		oldpgversion=`psql -X -A -t -d regression -c "SHOW server_version_num"`
 		fix_sql=""
 		case $oldpgversion in
 			804??)
-				fix_sql="UPDATE pg_proc SET probin = replace(probin::text, '$oldsrc', '$newsrc')::bytea WHERE probin LIKE '$oldsrc%'; DROP FUNCTION public.myfunc(integer);"
+				fix_sql="DROP FUNCTION public.myfunc(integer); DROP FUNCTION public.oldstyle_length(integer, text);"
 				;;
-			900??)
-				fix_sql="SET bytea_output TO escape; UPDATE pg_proc SET probin = replace(probin::text, '$oldsrc', '$newsrc')::bytea WHERE probin LIKE '$oldsrc%';"
+			*)
+				fix_sql="DROP FUNCTION public.oldstyle_length(integer, text);"
 				;;
-			901??)
+		esac
+		psql -X -d regression -c "$fix_sql;" || psql_fix_sql_status=$?
+	fi
+
+	pg_dumpall --no-sync -f "$temp_root"/dump1.sql || pg_dumpall1_status=$?
+
+	if [ "$newsrc" != "$oldsrc" ]; then
+		# update references to old source tree's regress.so etc
+		fix_sql=""
+		case $oldpgversion in
+			804??)
+				fix_sql="UPDATE pg_proc SET probin = replace(probin::text, '$oldsrc', '$newsrc')::bytea WHERE probin LIKE '$oldsrc%';"
+				;;
+			*)
 				fix_sql="UPDATE pg_proc SET probin = replace(probin, '$oldsrc', '$newsrc') WHERE probin LIKE '$oldsrc%';"
 				;;
 		esac
@@ -204,11 +234,29 @@ if [ -n "$pg_dumpall1_status" ]; then
 	exit 1
 fi
 
-PGDATA=$BASE_PGDATA
+PGDATA="$BASE_PGDATA"
 
 standard_initdb 'initdb'
 
-pg_upgrade $PG_UPGRADE_OPTS -d "${PGDATA}.old" -D "${PGDATA}" -b "$oldbindir" -B "$bindir" -p "$PGPORT" -P "$PGPORT"
+pg_upgrade $PG_UPGRADE_OPTS -d "${PGDATA}.old" -D "$PGDATA" -b "$oldbindir" -B "$bindir" -p "$PGPORT" -P "$PGPORT"
+
+# make sure all directories and files have group permissions, on Unix hosts
+# Windows hosts don't support Unix-y permissions.
+case $testhost in
+	MINGW*) ;;
+	*)	if [ `find "$PGDATA" -type f ! -perm 640 | wc -l` -ne 0 ]; then
+			echo "files in PGDATA with permission != 640";
+			exit 1;
+		fi ;;
+esac
+
+case $testhost in
+	MINGW*) ;;
+	*)	if [ `find "$PGDATA" -type d ! -perm 750 | wc -l` -ne 0 ]; then
+			echo "directories in PGDATA with permission != 750";
+			exit 1;
+		fi ;;
+esac
 
 pg_ctl start -l "$logdir/postmaster2.log" -o "$POSTMASTER_OPTS" -w
 
@@ -217,7 +265,7 @@ case $testhost in
 	*)		sh ./analyze_new_cluster.sh ;;
 esac
 
-pg_dumpall -f "$temp_root"/dump2.sql || pg_dumpall2_status=$?
+pg_dumpall --no-sync -f "$temp_root"/dump2.sql || pg_dumpall2_status=$?
 pg_ctl -m fast stop
 
 # no need to echo commands anymore

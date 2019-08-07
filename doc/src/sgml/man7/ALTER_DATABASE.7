@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ALTER DATABASE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ALTER DATABASE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -112,6 +112,8 @@ The new owner of the database\&.
 \fInew_tablespace\fR
 .RS 4
 The new default tablespace of the database\&.
+.sp
+This form of the command cannot be executed inside a transaction block\&.
 .RE
 .PP
 \fIconfiguration_parameter\fR
@@ -133,7 +135,7 @@ saves the session\*(Aqs current value of the parameter as the database\-specific
 See
 \fBSET\fR(7)
 and
-Chapter 19, Server Configuration, in the documentation
+Chapter\ \&19
 for more information about allowed parameter names and values\&.
 .RE
 .SH "NOTES"

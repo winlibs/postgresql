@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SPI_MODIFYTUPLE" "3" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SPI_MODIFYTUPLE" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,7 +38,12 @@ HeapTuple SPI_modifytuple(Relation \fIrel\fR, HeapTuple \fIrow\fR, int \fIncols\
 .SH "DESCRIPTION"
 .PP
 \fBSPI_modifytuple\fR
-creates a new row by substituting new values for selected columns, copying the original row\*(Aqs columns at other positions\&. The input row is not modified\&.
+creates a new row by substituting new values for selected columns, copying the original row\*(Aqs columns at other positions\&. The input row is not modified\&. The new row is returned in the upper executor context\&.
+.PP
+This function can only be used while connected to SPI\&. Otherwise, it returns NULL and sets
+\fISPI_result\fR
+to
+SPI_ERROR_UNCONNECTED\&.
 .SH "ARGUMENTS"
 .PP
 Relation \fIrel\fR
@@ -95,12 +100,11 @@ terminator\&.
 .RE
 .SH "RETURN VALUE"
 .PP
-new row with modifications, allocated in the upper executor context;
+new row with modifications, allocated in the upper executor context, or
 NULL
-only if
-\fIrow\fR
-is
-NULL
+on error (see
+\fISPI_result\fR
+for an error indication)
 .PP
 On error,
 \fISPI_result\fR
@@ -129,6 +133,11 @@ SPI_ERROR_NOATTRIBUTE
 .RS 4
 if
 \fIcolnum\fR
-contains an invalid column number (less than or equal to 0 or greater than the number of column in
+contains an invalid column number (less than or equal to 0 or greater than the number of columns in
 \fIrow\fR)
+.RE
+.PP
+SPI_ERROR_UNCONNECTED
+.RS 4
+if SPI is not active
 .RE

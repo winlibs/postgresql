@@ -2,7 +2,7 @@
  *	common.h
  *		Common support routines for bin/scripts/
  *
- *	Copyright (c) 2003-2016, PostgreSQL Global Development Group
+ *	Copyright (c) 2003-2018, PostgreSQL Global Development Group
  *
  *	src/bin/scripts/common.h
  */
@@ -59,4 +59,4 @@ extern void SetCancelConn(PGconn *conn);
 extern void ResetCancelConn(void);
 
 
-#endif   /* COMMON_H */
+#endif							/* COMMON_H */

@@ -1,800 +1,220 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->REVOKE</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="RESET"
-HREF="sql-reset.html"><LINK
-REL="NEXT"
-TITLE="ROLLBACK"
-HREF="sql-rollback.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="RESET"
-HREF="sql-reset.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="ROLLBACK"
-HREF="sql-rollback.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-REVOKE"
-></A
->REVOKE</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN90146"
-></A
-><H2
->Name</H2
->REVOKE&nbsp;--&nbsp;remove access privileges</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN90149"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->REVOKE [ GRANT OPTION FOR ]
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>REVOKE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-reset.html" title="RESET" /><link rel="next" href="sql-rollback.html" title="ROLLBACK" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">REVOKE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-reset.html" title="RESET">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-rollback.html" title="ROLLBACK">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-REVOKE"><div class="titlepage"></div><a id="id-1.9.3.165.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">REVOKE</span></h2><p>REVOKE — remove access privileges</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+REVOKE [ GRANT OPTION FOR ]
     { { SELECT | INSERT | UPDATE | DELETE | TRUNCATE | REFERENCES | TRIGGER }
     [, ...] | ALL [ PRIVILEGES ] }
-    ON { [ TABLE ] <TT
-CLASS="REPLACEABLE"
-><I
->table_name</I
-></TT
-> [, ...]
-         | ALL TABLES IN SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> [, ...] }
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON { [ TABLE ] <em class="replaceable"><code>table_name</code></em> [, ...]
+         | ALL TABLES IN SCHEMA <em class="replaceable"><code>schema_name</code></em> [, ...] }
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
-    { { SELECT | INSERT | UPDATE | REFERENCES } ( <TT
-CLASS="REPLACEABLE"
-><I
->column_name</I
-></TT
-> [, ...] )
-    [, ...] | ALL [ PRIVILEGES ] ( <TT
-CLASS="REPLACEABLE"
-><I
->column_name</I
-></TT
-> [, ...] ) }
-    ON [ TABLE ] <TT
-CLASS="REPLACEABLE"
-><I
->table_name</I
-></TT
-> [, ...]
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    { { SELECT | INSERT | UPDATE | REFERENCES } ( <em class="replaceable"><code>column_name</code></em> [, ...] )
+    [, ...] | ALL [ PRIVILEGES ] ( <em class="replaceable"><code>column_name</code></em> [, ...] ) }
+    ON [ TABLE ] <em class="replaceable"><code>table_name</code></em> [, ...]
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { { USAGE | SELECT | UPDATE }
     [, ...] | ALL [ PRIVILEGES ] }
-    ON { SEQUENCE <TT
-CLASS="REPLACEABLE"
-><I
->sequence_name</I
-></TT
-> [, ...]
-         | ALL SEQUENCES IN SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> [, ...] }
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON { SEQUENCE <em class="replaceable"><code>sequence_name</code></em> [, ...]
+         | ALL SEQUENCES IN SCHEMA <em class="replaceable"><code>schema_name</code></em> [, ...] }
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { { CREATE | CONNECT | TEMPORARY | TEMP } [, ...] | ALL [ PRIVILEGES ] }
-    ON DATABASE <TT
-CLASS="REPLACEABLE"
-><I
->database_name</I
-></TT
-> [, ...]
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON DATABASE <em class="replaceable"><code>database_name</code></em> [, ...]
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { USAGE | ALL [ PRIVILEGES ] }
-    ON DOMAIN <TT
-CLASS="REPLACEABLE"
-><I
->domain_name</I
-></TT
-> [, ...]
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON DOMAIN <em class="replaceable"><code>domain_name</code></em> [, ...]
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { USAGE | ALL [ PRIVILEGES ] }
-    ON FOREIGN DATA WRAPPER <TT
-CLASS="REPLACEABLE"
-><I
->fdw_name</I
-></TT
-> [, ...]
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON FOREIGN DATA WRAPPER <em class="replaceable"><code>fdw_name</code></em> [, ...]
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { USAGE | ALL [ PRIVILEGES ] }
-    ON FOREIGN SERVER <TT
-CLASS="REPLACEABLE"
-><I
->server_name</I
-></TT
-> [, ...]
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON FOREIGN SERVER <em class="replaceable"><code>server_name</code></em> [, ...]
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { EXECUTE | ALL [ PRIVILEGES ] }
-    ON { FUNCTION <TT
-CLASS="REPLACEABLE"
-><I
->function_name</I
-></TT
-> ( [ [ <TT
-CLASS="REPLACEABLE"
-><I
->argmode</I
-></TT
-> ] [ <TT
-CLASS="REPLACEABLE"
-><I
->arg_name</I
-></TT
-> ] <TT
-CLASS="REPLACEABLE"
-><I
->arg_type</I
-></TT
-> [, ...] ] ) [, ...]
-         | ALL FUNCTIONS IN SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> [, ...] }
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON { { FUNCTION | PROCEDURE | ROUTINE } <em class="replaceable"><code>function_name</code></em> [ ( [ [ <em class="replaceable"><code>argmode</code></em> ] [ <em class="replaceable"><code>arg_name</code></em> ] <em class="replaceable"><code>arg_type</code></em> [, ...] ] ) ] [, ...]
+         | ALL { FUNCTIONS | PROCEDURES | ROUTINES } IN SCHEMA <em class="replaceable"><code>schema_name</code></em> [, ...] }
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { USAGE | ALL [ PRIVILEGES ] }
-    ON LANGUAGE <TT
-CLASS="REPLACEABLE"
-><I
->lang_name</I
-></TT
-> [, ...]
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON LANGUAGE <em class="replaceable"><code>lang_name</code></em> [, ...]
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { { SELECT | UPDATE } [, ...] | ALL [ PRIVILEGES ] }
-    ON LARGE OBJECT <TT
-CLASS="REPLACEABLE"
-><I
->loid</I
-></TT
-> [, ...]
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON LARGE OBJECT <em class="replaceable"><code>loid</code></em> [, ...]
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { { CREATE | USAGE } [, ...] | ALL [ PRIVILEGES ] }
-    ON SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->schema_name</I
-></TT
-> [, ...]
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON SCHEMA <em class="replaceable"><code>schema_name</code></em> [, ...]
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { CREATE | ALL [ PRIVILEGES ] }
-    ON TABLESPACE <TT
-CLASS="REPLACEABLE"
-><I
->tablespace_name</I
-></TT
-> [, ...]
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON TABLESPACE <em class="replaceable"><code>tablespace_name</code></em> [, ...]
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ GRANT OPTION FOR ]
     { USAGE | ALL [ PRIVILEGES ] }
-    ON TYPE <TT
-CLASS="REPLACEABLE"
-><I
->type_name</I
-></TT
-> [, ...]
-    FROM { [ GROUP ] <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> | PUBLIC } [, ...]
+    ON TYPE <em class="replaceable"><code>type_name</code></em> [, ...]
+    FROM { [ GROUP ] <em class="replaceable"><code>role_name</code></em> | PUBLIC } [, ...]
     [ CASCADE | RESTRICT ]
 
 REVOKE [ ADMIN OPTION FOR ]
-    <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> [, ...] FROM <TT
-CLASS="REPLACEABLE"
-><I
->role_name</I
-></TT
-> [, ...]
-    [ CASCADE | RESTRICT ]</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-REVOKE-DESCRIPTION"
-></A
-><H2
->Description</H2
-><P
->   The <TT
-CLASS="COMMAND"
->REVOKE</TT
-> command revokes previously granted
+    <em class="replaceable"><code>role_name</code></em> [, ...] FROM <em class="replaceable"><code>role_name</code></em> [, ...]
+    [ CASCADE | RESTRICT ]
+</pre></div><div class="refsect1" id="SQL-REVOKE-DESCRIPTION"><h2>Description</h2><p>
+   The <code class="command">REVOKE</code> command revokes previously granted
    privileges from one or more roles.  The key word
-   <TT
-CLASS="LITERAL"
->PUBLIC</TT
-> refers to the implicitly defined group of
+   <code class="literal">PUBLIC</code> refers to the implicitly defined group of
    all roles.
-  </P
-><P
->   See the description of the <A
-HREF="sql-grant.html"
->GRANT</A
-> command for
+  </p><p>
+   See the description of the <a class="xref" href="sql-grant.html" title="GRANT"><span class="refentrytitle">GRANT</span></a> command for
    the meaning of the privilege types.
-  </P
-><P
->   Note that any particular role will have the sum
+  </p><p>
+   Note that any particular role will have the sum
    of privileges granted directly to it, privileges granted to any role it
    is presently a member of, and privileges granted to
-   <TT
-CLASS="LITERAL"
->PUBLIC</TT
->.  Thus, for example, revoking <TT
-CLASS="LITERAL"
->SELECT</TT
-> privilege
-   from <TT
-CLASS="LITERAL"
->PUBLIC</TT
-> does not necessarily mean that all roles
-   have lost <TT
-CLASS="LITERAL"
->SELECT</TT
-> privilege on the object: those who have it granted
+   <code class="literal">PUBLIC</code>.  Thus, for example, revoking <code class="literal">SELECT</code> privilege
+   from <code class="literal">PUBLIC</code> does not necessarily mean that all roles
+   have lost <code class="literal">SELECT</code> privilege on the object: those who have it granted
    directly or via another role will still have it.  Similarly, revoking
-   <TT
-CLASS="LITERAL"
->SELECT</TT
-> from a user might not prevent that user from using
-   <TT
-CLASS="LITERAL"
->SELECT</TT
-> if <TT
-CLASS="LITERAL"
->PUBLIC</TT
-> or another membership
-   role still has <TT
-CLASS="LITERAL"
->SELECT</TT
-> rights.
-  </P
-><P
->   If <TT
-CLASS="LITERAL"
->GRANT OPTION FOR</TT
-> is specified, only the grant
+   <code class="literal">SELECT</code> from a user might not prevent that user from using
+   <code class="literal">SELECT</code> if <code class="literal">PUBLIC</code> or another membership
+   role still has <code class="literal">SELECT</code> rights.
+  </p><p>
+   If <code class="literal">GRANT OPTION FOR</code> is specified, only the grant
    option for the privilege is revoked, not the privilege itself.
    Otherwise, both the privilege and the grant option are revoked.
-  </P
-><P
->   If a user holds a privilege with grant option and has granted it to
+  </p><p>
+   If a user holds a privilege with grant option and has granted it to
    other users then the privileges held by those other users are
    called dependent privileges. If the privilege or the grant option
    held by the first user is being revoked and dependent privileges
    exist, those dependent privileges are also revoked if
-   <TT
-CLASS="LITERAL"
->CASCADE</TT
-> is specified; if it is not, the revoke action
+   <code class="literal">CASCADE</code> is specified; if it is not, the revoke action
    will fail.  This recursive revocation only affects privileges that
    were granted through a chain of users that is traceable to the user
-   that is the subject of this <TT
-CLASS="LITERAL"
->REVOKE</TT
-> command.
+   that is the subject of this <code class="literal">REVOKE</code> command.
    Thus, the affected users might effectively keep the privilege if it
    was also granted through other users.
-  </P
-><P
->   When revoking privileges on a table, the corresponding column privileges
+  </p><p>
+   When revoking privileges on a table, the corresponding column privileges
    (if any) are automatically revoked on each column of the table, as well.
    On the other hand, if a role has been granted privileges on a table, then
    revoking the same privileges from individual columns will have no effect.
-  </P
-><P
->   When revoking membership in a role, <TT
-CLASS="LITERAL"
->GRANT OPTION</TT
-> is instead
-   called <TT
-CLASS="LITERAL"
->ADMIN OPTION</TT
->, but the behavior is similar.
+  </p><p>
+   When revoking membership in a role, <code class="literal">GRANT OPTION</code> is instead
+   called <code class="literal">ADMIN OPTION</code>, but the behavior is similar.
    Note also that this form of the command does not
-   allow the noise word <TT
-CLASS="LITERAL"
->GROUP</TT
->.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-REVOKE-NOTES"
-></A
-><H2
->Notes</H2
-><P
->   Use <A
-HREF="app-psql.html"
-><SPAN
-CLASS="APPLICATION"
->psql</SPAN
-></A
->'s <TT
-CLASS="COMMAND"
->\dp</TT
-> command to
-   display the privileges granted on existing tables and columns.  See <A
-HREF="sql-grant.html"
->GRANT</A
-> for information about the
-   format.  For non-table objects there are other <TT
-CLASS="COMMAND"
->\d</TT
-> commands
+   allow the noise word <code class="literal">GROUP</code>.
+  </p></div><div class="refsect1" id="SQL-REVOKE-NOTES"><h2>Notes</h2><p>
+   Use <a class="xref" href="app-psql.html" title="psql"><span class="refentrytitle"><span class="application">psql</span></span></a>'s <code class="command">\dp</code> command to
+   display the privileges granted on existing tables and columns.  See <a class="xref" href="sql-grant.html" title="GRANT"><span class="refentrytitle">GRANT</span></a> for information about the
+   format.  For non-table objects there are other <code class="command">\d</code> commands
    that can display their privileges.
-  </P
-><P
->   A user can only revoke privileges that were granted directly by
+  </p><p>
+   A user can only revoke privileges that were granted directly by
    that user.  If, for example, user A has granted a privilege with
    grant option to user B, and user B has in turn granted it to user
    C, then user A cannot revoke the privilege directly from C.
    Instead, user A could revoke the grant option from user B and use
-   the <TT
-CLASS="LITERAL"
->CASCADE</TT
-> option so that the privilege is
+   the <code class="literal">CASCADE</code> option so that the privilege is
    in turn revoked from user C.  For another example, if both A and B
    have granted the same privilege to C, A can revoke their own grant
    but not B's grant, so C will still effectively have the privilege.
-  </P
-><P
->    When a non-owner of an object attempts to <TT
-CLASS="COMMAND"
->REVOKE</TT
-> privileges
+  </p><p>
+    When a non-owner of an object attempts to <code class="command">REVOKE</code> privileges
     on the object, the command will fail outright if the user has no
     privileges whatsoever on the object.  As long as some privilege is
     available, the command will proceed, but it will revoke only those
-    privileges for which the user has grant options.  The <TT
-CLASS="COMMAND"
->REVOKE ALL
-    PRIVILEGES</TT
-> forms will issue a warning message if no grant options are
+    privileges for which the user has grant options.  The <code class="command">REVOKE ALL
+    PRIVILEGES</code> forms will issue a warning message if no grant options are
     held, while the other forms will issue a warning if grant options for
     any of the privileges specifically named in the command are not held.
     (In principle these statements apply to the object owner as well, but
     since the owner is always treated as holding all grant options, the
     cases can never occur.)
-   </P
-><P
->    If a superuser chooses to issue a <TT
-CLASS="COMMAND"
->GRANT</TT
-> or <TT
-CLASS="COMMAND"
->REVOKE</TT
->
+   </p><p>
+    If a superuser chooses to issue a <code class="command">GRANT</code> or <code class="command">REVOKE</code>
     command, the command is performed as though it were issued by the
     owner of the affected object.  Since all privileges ultimately come
     from the object owner (possibly indirectly via chains of grant options),
     it is possible for a superuser to revoke all privileges, but this might
-    require use of <TT
-CLASS="LITERAL"
->CASCADE</TT
-> as stated above.
-   </P
-><P
->    <TT
-CLASS="COMMAND"
->REVOKE</TT
-> can also be done by a role
+    require use of <code class="literal">CASCADE</code> as stated above.
+   </p><p>
+    <code class="command">REVOKE</code> can also be done by a role
     that is not the owner of the affected object, but is a member of the role
     that owns the object, or is a member of a role that holds privileges
-    <TT
-CLASS="LITERAL"
->WITH GRANT OPTION</TT
-> on the object.  In this case the
+    <code class="literal">WITH GRANT OPTION</code> on the object.  In this case the
     command is performed as though it were issued by the containing role that
     actually owns the object or holds the privileges
-    <TT
-CLASS="LITERAL"
->WITH GRANT OPTION</TT
->.  For example, if table
-    <TT
-CLASS="LITERAL"
->t1</TT
-> is owned by role <TT
-CLASS="LITERAL"
->g1</TT
->, of which role
-    <TT
-CLASS="LITERAL"
->u1</TT
-> is a member, then <TT
-CLASS="LITERAL"
->u1</TT
-> can revoke privileges
-    on <TT
-CLASS="LITERAL"
->t1</TT
-> that are recorded as being granted by <TT
-CLASS="LITERAL"
->g1</TT
->.
-    This would include grants made by <TT
-CLASS="LITERAL"
->u1</TT
-> as well as by other
-    members of role <TT
-CLASS="LITERAL"
->g1</TT
->.
-   </P
-><P
->    If the role executing <TT
-CLASS="COMMAND"
->REVOKE</TT
-> holds privileges
+    <code class="literal">WITH GRANT OPTION</code>.  For example, if table
+    <code class="literal">t1</code> is owned by role <code class="literal">g1</code>, of which role
+    <code class="literal">u1</code> is a member, then <code class="literal">u1</code> can revoke privileges
+    on <code class="literal">t1</code> that are recorded as being granted by <code class="literal">g1</code>.
+    This would include grants made by <code class="literal">u1</code> as well as by other
+    members of role <code class="literal">g1</code>.
+   </p><p>
+    If the role executing <code class="command">REVOKE</code> holds privileges
     indirectly via more than one role membership path, it is unspecified
     which containing role will be used to perform the command.  In such cases
-    it is best practice to use <TT
-CLASS="COMMAND"
->SET ROLE</TT
-> to become the specific
-    role you want to do the <TT
-CLASS="COMMAND"
->REVOKE</TT
-> as.  Failure to do so might
+    it is best practice to use <code class="command">SET ROLE</code> to become the specific
+    role you want to do the <code class="command">REVOKE</code> as.  Failure to do so might
     lead to revoking privileges other than the ones you intended, or not
     revoking anything at all.
-   </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-REVOKE-EXAMPLES"
-></A
-><H2
->Examples</H2
-><P
->   Revoke insert privilege for the public on table
-   <TT
-CLASS="LITERAL"
->films</TT
->:
+   </p></div><div class="refsect1" id="SQL-REVOKE-EXAMPLES"><h2>Examples</h2><p>
+   Revoke insert privilege for the public on table
+   <code class="literal">films</code>:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->REVOKE INSERT ON films FROM PUBLIC;</PRE
-><P>
-  </P
-><P
->   Revoke all privileges from user <TT
-CLASS="LITERAL"
->manuel</TT
-> on view
-   <TT
-CLASS="LITERAL"
->kinds</TT
->:
+</p><pre class="programlisting">
+REVOKE INSERT ON films FROM PUBLIC;
+</pre><p>
+  </p><p>
+   Revoke all privileges from user <code class="literal">manuel</code> on view
+   <code class="literal">kinds</code>:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->REVOKE ALL PRIVILEGES ON kinds FROM manuel;</PRE
-><P>
+</p><pre class="programlisting">
+REVOKE ALL PRIVILEGES ON kinds FROM manuel;
+</pre><p>
 
-   Note that this actually means <SPAN
-CLASS="QUOTE"
->"revoke all privileges that I
-   granted"</SPAN
->.
-  </P
-><P
->   Revoke membership in role <TT
-CLASS="LITERAL"
->admins</TT
-> from user <TT
-CLASS="LITERAL"
->joe</TT
->:
+   Note that this actually means <span class="quote">“<span class="quote">revoke all privileges that I
+   granted</span>”</span>.
+  </p><p>
+   Revoke membership in role <code class="literal">admins</code> from user <code class="literal">joe</code>:
 
-</P><PRE
-CLASS="PROGRAMLISTING"
->REVOKE admins FROM joe;</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="SQL-REVOKE-COMPATIBILITY"
-></A
-><H2
->Compatibility</H2
-><P
->    The compatibility notes of the <A
-HREF="sql-grant.html"
->GRANT</A
-> command
-    apply analogously to <TT
-CLASS="COMMAND"
->REVOKE</TT
->.
-    The keyword <TT
-CLASS="LITERAL"
->RESTRICT</TT
-> or <TT
-CLASS="LITERAL"
->CASCADE</TT
->
-    is required according to the standard, but <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
-    assumes <TT
-CLASS="LITERAL"
->RESTRICT</TT
-> by default.
-   </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN90268"
-></A
-><H2
->See Also</H2
-><P
->   <A
-HREF="sql-grant.html"
->GRANT</A
->
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-reset.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-rollback.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->RESET</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->ROLLBACK</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+</p><pre class="programlisting">
+REVOKE admins FROM joe;
+</pre></div><div class="refsect1" id="SQL-REVOKE-COMPATIBILITY"><h2>Compatibility</h2><p>
+    The compatibility notes of the <a class="xref" href="sql-grant.html" title="GRANT"><span class="refentrytitle">GRANT</span></a> command
+    apply analogously to <code class="command">REVOKE</code>.
+    The keyword <code class="literal">RESTRICT</code> or <code class="literal">CASCADE</code>
+    is required according to the standard, but <span class="productname">PostgreSQL</span>
+    assumes <code class="literal">RESTRICT</code> by default.
+   </p></div><div class="refsect1" id="id-1.9.3.165.9"><h2>See Also</h2><p>
+   <a class="xref" href="sql-grant.html" title="GRANT"><span class="refentrytitle">GRANT</span></a>
+  </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-reset.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-rollback.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">RESET </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> ROLLBACK</td></tr></table></div></body></html>

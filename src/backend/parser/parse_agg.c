@@ -3,7 +3,7 @@
  * parse_agg.c
  *	  handle aggregates and window functions in parser
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -15,7 +15,7 @@
 #include "postgres.h"
 
 #include "catalog/pg_aggregate.h"
-#include "catalog/pg_constraint_fn.h"
+#include "catalog/pg_constraint.h"
 #include "catalog/pg_type.h"
 #include "nodes/makefuncs.h"
 #include "nodes/nodeFuncs.h"
@@ -155,8 +155,7 @@ transformAggregateCall(ParseState *pstate, Aggref *agg,
 			tlist = lappend(tlist, tle);
 
 			torder = addTargetToSortList(pstate, tle,
-										 torder, tlist, sortby,
-										 true /* fix unknowns */ );
+										 torder, tlist, sortby);
 		}
 
 		/* Never any DISTINCT in an ordered-set agg */
@@ -196,7 +195,6 @@ transformAggregateCall(ParseState *pstate, Aggref *agg,
 									 aggorder,
 									 &tlist,
 									 EXPR_KIND_ORDER_BY,
-									 true /* fix unknowns */ ,
 									 true /* force SQL99 rules */ );
 
 		/*
@@ -422,6 +420,13 @@ check_agglevels_and_constraints(ParseState *pstate, Node *expr)
 				err = _("grouping operations are not allowed in window ROWS");
 
 			break;
+		case EXPR_KIND_WINDOW_FRAME_GROUPS:
+			if (isAgg)
+				err = _("aggregate functions are not allowed in window GROUPS");
+			else
+				err = _("grouping operations are not allowed in window GROUPS");
+
+			break;
 		case EXPR_KIND_SELECT_TARGET:
 			/* okay */
 			break;
@@ -447,6 +452,7 @@ check_agglevels_and_constraints(ParseState *pstate, Node *expr)
 			errkind = true;
 			break;
 		case EXPR_KIND_VALUES:
+		case EXPR_KIND_VALUES_SINGLE:
 			errkind = true;
 			break;
 		case EXPR_KIND_CHECK_CONSTRAINT:
@@ -499,6 +505,21 @@ check_agglevels_and_constraints(ParseState *pstate, Node *expr)
 				err = _("aggregate functions are not allowed in trigger WHEN conditions");
 			else
 				err = _("grouping operations are not allowed in trigger WHEN conditions");
+
+			break;
+		case EXPR_KIND_PARTITION_EXPRESSION:
+			if (isAgg)
+				err = _("aggregate functions are not allowed in partition key expressions");
+			else
+				err = _("grouping operations are not allowed in partition key expressions");
+
+			break;
+
+		case EXPR_KIND_CALL_ARGUMENT:
+			if (isAgg)
+				err = _("aggregate functions are not allowed in CALL arguments");
+			else
+				err = _("grouping operations are not allowed in CALL arguments");
 
 			break;
 
@@ -634,15 +655,15 @@ check_agg_arguments(ParseState *pstate,
 					(errcode(ERRCODE_GROUPING_ERROR),
 					 errmsg("outer-level aggregate cannot contain a lower-level variable in its direct arguments"),
 					 parser_errposition(pstate,
-									 locate_var_of_level((Node *) directargs,
-													context.min_varlevel))));
+										locate_var_of_level((Node *) directargs,
+															context.min_varlevel))));
 		if (context.min_agglevel >= 0 && context.min_agglevel <= agglevel)
 			ereport(ERROR,
 					(errcode(ERRCODE_GROUPING_ERROR),
 					 errmsg("aggregate function calls cannot be nested"),
 					 parser_errposition(pstate,
-									 locate_agg_of_level((Node *) directargs,
-													context.min_agglevel))));
+										locate_agg_of_level((Node *) directargs,
+															context.min_agglevel))));
 	}
 	return agglevel;
 }
@@ -699,13 +720,28 @@ check_agg_arguments_walker(Node *node,
 		}
 		/* Continue and descend into subtree */
 	}
-	/* We can throw error on sight for a window function */
-	if (IsA(node, WindowFunc) && context->sublevels_up == 0)
-		ereport(ERROR,
-				(errcode(ERRCODE_GROUPING_ERROR),
-				 errmsg("aggregate function calls cannot contain window function calls"),
-				 parser_errposition(context->pstate,
-									((WindowFunc *) node)->location)));
+
+	/*
+	 * SRFs and window functions can be rejected immediately, unless we are
+	 * within a sub-select within the aggregate's arguments; in that case
+	 * they're OK.
+	 */
+	if (context->sublevels_up == 0)
+	{
+		if ((IsA(node, FuncExpr) &&((FuncExpr *) node)->funcretset) ||
+			(IsA(node, OpExpr) &&((OpExpr *) node)->opretset))
+			ereport(ERROR,
+					(errcode(ERRCODE_FEATURE_NOT_SUPPORTED),
+					 errmsg("aggregate function calls cannot contain set-returning function calls"),
+					 errhint("You might be able to move the set-returning function into a LATERAL FROM item."),
+					 parser_errposition(context->pstate, exprLocation(node))));
+		if (IsA(node, WindowFunc))
+			ereport(ERROR,
+					(errcode(ERRCODE_GROUPING_ERROR),
+					 errmsg("aggregate function calls cannot contain window function calls"),
+					 parser_errposition(context->pstate,
+										((WindowFunc *) node)->location)));
+	}
 	if (IsA(node, Query))
 	{
 		/* Recurse into subselects */
@@ -757,7 +793,7 @@ transformWindowFuncCall(ParseState *pstate, WindowFunc *wfunc,
 				(errcode(ERRCODE_WINDOWING_ERROR),
 				 errmsg("window function calls cannot be nested"),
 				 parser_errposition(pstate,
-								  locate_windowfunc((Node *) wfunc->args))));
+									locate_windowfunc((Node *) wfunc->args))));
 
 	/*
 	 * Check to see if the window function is in an invalid place within the
@@ -806,6 +842,7 @@ transformWindowFuncCall(ParseState *pstate, WindowFunc *wfunc,
 		case EXPR_KIND_WINDOW_ORDER:
 		case EXPR_KIND_WINDOW_FRAME_RANGE:
 		case EXPR_KIND_WINDOW_FRAME_ROWS:
+		case EXPR_KIND_WINDOW_FRAME_GROUPS:
 			err = _("window functions are not allowed in window definitions");
 			break;
 		case EXPR_KIND_SELECT_TARGET:
@@ -833,6 +870,7 @@ transformWindowFuncCall(ParseState *pstate, WindowFunc *wfunc,
 			errkind = true;
 			break;
 		case EXPR_KIND_VALUES:
+		case EXPR_KIND_VALUES_SINGLE:
 			errkind = true;
 			break;
 		case EXPR_KIND_CHECK_CONSTRAINT:
@@ -857,6 +895,12 @@ transformWindowFuncCall(ParseState *pstate, WindowFunc *wfunc,
 			break;
 		case EXPR_KIND_TRIGGER_WHEN:
 			err = _("window functions are not allowed in trigger WHEN conditions");
+			break;
+		case EXPR_KIND_PARTITION_EXPRESSION:
+			err = _("window functions are not allowed in partition key expressions");
+			break;
+		case EXPR_KIND_CALL_ARGUMENT:
+			err = _("window functions are not allowed in CALL arguments");
 			break;
 
 			/*
@@ -998,8 +1042,8 @@ parseCheckAggregates(ParseState *pstate, Query *qry)
 					 errmsg("too many grouping sets present (maximum 4096)"),
 					 parser_errposition(pstate,
 										qry->groupClause
-									? exprLocation((Node *) qry->groupClause)
-							   : exprLocation((Node *) qry->groupingSets))));
+										? exprLocation((Node *) qry->groupClause)
+										: exprLocation((Node *) qry->groupingSets))));
 
 		/*
 		 * The intersection will often be empty, so help things along by
@@ -1077,7 +1121,7 @@ parseCheckAggregates(ParseState *pstate, Query *qry)
 		root->hasJoinRTEs = true;
 
 		groupClauses = (List *) flatten_join_alias_vars(root,
-													  (Node *) groupClauses);
+														(Node *) groupClauses);
 	}
 
 	/*
@@ -1292,7 +1336,7 @@ check_ungrouped_columns_walker(Node *node,
 					gvar->varno == var->varno &&
 					gvar->varattno == var->varattno &&
 					gvar->varlevelsup == 0)
-					return false;		/* acceptable, we're okay */
+					return false;	/* acceptable, we're okay */
 			}
 		}
 

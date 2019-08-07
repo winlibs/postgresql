@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SET" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SET" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -40,7 +40,7 @@ SET [ SESSION | LOCAL ] TIME ZONE { \fItimezone\fR | LOCAL | DEFAULT }
 The
 \fBSET\fR
 command changes run\-time configuration parameters\&. Many of the run\-time parameters listed in
-Chapter 19, Server Configuration, in the documentation
+Chapter\ \&19
 can be changed on\-the\-fly with
 \fBSET\fR\&. (But some require superuser privileges to change, and others cannot be changed after server or session start\&.)
 \fBSET\fR
@@ -132,7 +132,7 @@ or
 \fIconfiguration_parameter\fR
 .RS 4
 Name of a settable run\-time parameter\&. Available parameters are documented in
-Chapter 19, Server Configuration, in the documentation
+Chapter\ \&19
 and below\&.
 .RE
 .PP
@@ -146,7 +146,7 @@ had been executed in the current session)\&.
 .RE
 .PP
 Besides the configuration parameters documented in
-Chapter 19, Server Configuration, in the documentation, there are a few that can only be adjusted using the
+Chapter\ \&19, there are a few that can only be adjusted using the
 \fBSET\fR
 command or that have a special syntax:
 .PP
@@ -226,7 +226,7 @@ would report
 <\-07>+07\&.
 .sp
 See
-Section 8.5.3, \(lqTime Zones\(rq, in the documentation
+Section\ \&8.5.3
 for more information about time zones\&.
 .RE
 .SH "NOTES"
@@ -234,7 +234,7 @@ for more information about time zones\&.
 The function
 \fBset_config\fR
 provides equivalent functionality; see
-Section 9.26, \(lqSystem Administration Functions\(rq, in the documentation\&. Also, it is possible to UPDATE the
+Section\ \&9.26\&. Also, it is possible to UPDATE the
 pg_settings
 system view to perform the equivalent of
 \fBSET\fR\&.

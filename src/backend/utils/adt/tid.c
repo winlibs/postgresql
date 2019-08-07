@@ -3,7 +3,7 @@
  * tid.c
  *	  Functions for the built-in type tuple id
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -32,6 +32,7 @@
 #include "utils/rel.h"
 #include "utils/snapmgr.h"
 #include "utils/tqual.h"
+#include "utils/varlena.h"
 
 
 #define DatumGetItemPointer(X)	 ((ItemPointer) DatumGetPointer(X))
@@ -68,24 +69,24 @@ tidin(PG_FUNCTION_ARGS)
 	if (i < NTIDARGS)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type tid: \"%s\"",
-						str)));
+				 errmsg("invalid input syntax for type %s: \"%s\"",
+						"tid", str)));
 
 	errno = 0;
 	blockNumber = strtoul(coord[0], &badp, 10);
 	if (errno || *badp != DELIM)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type tid: \"%s\"",
-						str)));
+				 errmsg("invalid input syntax for type %s: \"%s\"",
+						"tid", str)));
 
 	hold_offset = strtol(coord[1], &badp, 10);
 	if (errno || *badp != RDELIM ||
 		hold_offset > USHRT_MAX || hold_offset < 0)
 		ereport(ERROR,
 				(errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-				 errmsg("invalid input syntax for type tid: \"%s\"",
-						str)));
+				 errmsg("invalid input syntax for type %s: \"%s\"",
+						"tid", str)));
 
 	offsetNumber = hold_offset;
 
@@ -108,8 +109,8 @@ tidout(PG_FUNCTION_ARGS)
 	OffsetNumber offsetNumber;
 	char		buf[32];
 
-	blockNumber = BlockIdGetBlockNumber(&(itemPtr->ip_blkid));
-	offsetNumber = itemPtr->ip_posid;
+	blockNumber = ItemPointerGetBlockNumberNoCheck(itemPtr);
+	offsetNumber = ItemPointerGetOffsetNumberNoCheck(itemPtr);
 
 	/* Perhaps someday we should output this as a record. */
 	snprintf(buf, sizeof(buf), "(%u,%u)", blockNumber, offsetNumber);
@@ -145,18 +146,11 @@ Datum
 tidsend(PG_FUNCTION_ARGS)
 {
 	ItemPointer itemPtr = PG_GETARG_ITEMPOINTER(0);
-	BlockId		blockId;
-	BlockNumber blockNumber;
-	OffsetNumber offsetNumber;
 	StringInfoData buf;
 
-	blockId = &(itemPtr->ip_blkid);
-	blockNumber = BlockIdGetBlockNumber(blockId);
-	offsetNumber = itemPtr->ip_posid;
-
 	pq_begintypsend(&buf);
-	pq_sendint(&buf, blockNumber, sizeof(blockNumber));
-	pq_sendint(&buf, offsetNumber, sizeof(offsetNumber));
+	pq_sendint32(&buf, ItemPointerGetBlockNumberNoCheck(itemPtr));
+	pq_sendint16(&buf, ItemPointerGetOffsetNumberNoCheck(itemPtr));
 	PG_RETURN_BYTEA_P(pq_endtypsend(&buf));
 }
 
@@ -277,9 +271,11 @@ currtid_for_view(Relation viewrel, ItemPointer tid)
 
 	for (i = 0; i < natts; i++)
 	{
-		if (strcmp(NameStr(att->attrs[i]->attname), "ctid") == 0)
+		Form_pg_attribute attr = TupleDescAttr(att, i);
+
+		if (strcmp(NameStr(attr->attname), "ctid") == 0)
 		{
-			if (att->attrs[i]->atttypid != TIDOID)
+			if (attr->atttypid != TIDOID)
 				elog(ERROR, "ctid isn't of type TID");
 			tididx = i;
 			break;
@@ -347,7 +343,7 @@ currtid_byreloid(PG_FUNCTION_ARGS)
 	aclresult = pg_class_aclcheck(RelationGetRelid(rel), GetUserId(),
 								  ACL_SELECT);
 	if (aclresult != ACLCHECK_OK)
-		aclcheck_error(aclresult, ACL_KIND_CLASS,
+		aclcheck_error(aclresult, get_relkind_objtype(rel->rd_rel->relkind),
 					   RelationGetRelationName(rel));
 
 	if (rel->rd_rel->relkind == RELKIND_VIEW)
@@ -367,7 +363,7 @@ currtid_byreloid(PG_FUNCTION_ARGS)
 Datum
 currtid_byrelname(PG_FUNCTION_ARGS)
 {
-	text	   *relname = PG_GETARG_TEXT_P(0);
+	text	   *relname = PG_GETARG_TEXT_PP(0);
 	ItemPointer tid = PG_GETARG_ITEMPOINTER(1);
 	ItemPointer result;
 	RangeVar   *relrv;
@@ -381,7 +377,7 @@ currtid_byrelname(PG_FUNCTION_ARGS)
 	aclresult = pg_class_aclcheck(RelationGetRelid(rel), GetUserId(),
 								  ACL_SELECT);
 	if (aclresult != ACLCHECK_OK)
-		aclcheck_error(aclresult, ACL_KIND_CLASS,
+		aclcheck_error(aclresult, get_relkind_objtype(rel->rd_rel->relkind),
 					   RelationGetRelationName(rel));
 
 	if (rel->rd_rel->relkind == RELKIND_VIEW)

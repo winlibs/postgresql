@@ -1,367 +1,73 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Creating a Database</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Managing Databases"
-HREF="managing-databases.html"><LINK
-REL="PREVIOUS"
-TITLE="Overview"
-HREF="manage-ag-overview.html"><LINK
-REL="NEXT"
-TITLE="Template Databases"
-HREF="manage-ag-templatedbs.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Overview"
-HREF="manage-ag-overview.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="managing-databases.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 22. Managing Databases</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Template Databases"
-HREF="manage-ag-templatedbs.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="MANAGE-AG-CREATEDB"
->22.2. Creating a Database</A
-></H1
-><P
->   In order to create a database, the <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
-   server must be up and running (see <A
-HREF="server-start.html"
->Section 18.3</A
->).
-  </P
-><P
->   Databases are created with the SQL command
-   <A
-HREF="sql-createdatabase.html"
->CREATE DATABASE</A
->:
-</P><PRE
-CLASS="SYNOPSIS"
->CREATE DATABASE <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
->;</PRE
-><P>
-   where <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> follows the usual rules for
-   <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> identifiers.  The current role automatically
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>22.2. Creating a Database</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="manage-ag-overview.html" title="22.1. Overview" /><link rel="next" href="manage-ag-templatedbs.html" title="22.3. Template Databases" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">22.2. Creating a Database</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="manage-ag-overview.html" title="22.1. Overview">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="managing-databases.html" title="Chapter 22. Managing Databases">Up</a></td><th width="60%" align="center">Chapter 22. Managing Databases</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="manage-ag-templatedbs.html" title="22.3. Template Databases">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="MANAGE-AG-CREATEDB"><div class="titlepage"><div><div><h2 class="title" style="clear: both">22.2. Creating a Database</h2></div></div></div><a id="id-1.6.9.5.2" class="indexterm"></a><p>
+   In order to create a database, the <span class="productname">PostgreSQL</span>
+   server must be up and running (see <a class="xref" href="server-start.html" title="18.3. Starting the Database Server">Section 18.3</a>).
+  </p><p>
+   Databases are created with the SQL command
+   <a class="xref" href="sql-createdatabase.html" title="CREATE DATABASE"><span class="refentrytitle">CREATE DATABASE</span></a>:
+</p><pre class="synopsis">
+CREATE DATABASE <em class="replaceable"><code>name</code></em>;
+</pre><p>
+   where <em class="replaceable"><code>name</code></em> follows the usual rules for
+   <acronym class="acronym">SQL</acronym> identifiers.  The current role automatically
    becomes the owner of the new database. It is the privilege of the
    owner of a database to remove it later (which also removes all
    the objects in it, even if they have a different owner).
-  </P
-><P
->   The creation of databases is a restricted operation. See <A
-HREF="role-attributes.html"
->Section 21.2</A
-> for how to grant permission.
-  </P
-><P
->   Since you need to be connected to the database server in order to
-   execute the <TT
-CLASS="COMMAND"
->CREATE DATABASE</TT
-> command, the
-   question remains how the <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->first</I
-></SPAN
-> database at any given
+  </p><p>
+   The creation of databases is a restricted operation. See <a class="xref" href="role-attributes.html" title="21.2. Role Attributes">Section 21.2</a> for how to grant permission.
+  </p><p>
+   Since you need to be connected to the database server in order to
+   execute the <code class="command">CREATE DATABASE</code> command, the
+   question remains how the <span class="emphasis"><em>first</em></span> database at any given
    site can be created. The first database is always created by the
-   <TT
-CLASS="COMMAND"
->initdb</TT
-> command when the data storage area is
-   initialized. (See <A
-HREF="creating-cluster.html"
->Section 18.2</A
->.)  This
+   <code class="command">initdb</code> command when the data storage area is
+   initialized. (See <a class="xref" href="creating-cluster.html" title="18.2. Creating a Database Cluster">Section 18.2</a>.)  This
    database is called
-   <TT
-CLASS="LITERAL"
->postgres</TT
->. So to
-   create the first <SPAN
-CLASS="QUOTE"
->"ordinary"</SPAN
-> database you can connect to
-   <TT
-CLASS="LITERAL"
->postgres</TT
->.
-  </P
-><P
->   A second database,
-   <TT
-CLASS="LITERAL"
->template1</TT
->,
+   <code class="literal">postgres</code>.<a id="id-1.6.9.5.6.6" class="indexterm"></a> So to
+   create the first <span class="quote">“<span class="quote">ordinary</span>”</span> database you can connect to
+   <code class="literal">postgres</code>.
+  </p><p>
+   A second database,
+   <code class="literal">template1</code>,<a id="id-1.6.9.5.7.2" class="indexterm"></a>
    is also created during database cluster initialization.  Whenever a
    new database is created within the
-   cluster, <TT
-CLASS="LITERAL"
->template1</TT
-> is essentially cloned.
-   This means that any changes you make in <TT
-CLASS="LITERAL"
->template1</TT
-> are
+   cluster, <code class="literal">template1</code> is essentially cloned.
+   This means that any changes you make in <code class="literal">template1</code> are
    propagated to all subsequently created databases. Because of this,
-   avoid creating objects in <TT
-CLASS="LITERAL"
->template1</TT
-> unless you want them
+   avoid creating objects in <code class="literal">template1</code> unless you want them
    propagated to every newly created database.  More details
-   appear in <A
-HREF="manage-ag-templatedbs.html"
->Section 22.3</A
->.
-  </P
-><P
->   As a convenience, there is a program you can
+   appear in <a class="xref" href="manage-ag-templatedbs.html" title="22.3. Template Databases">Section 22.3</a>.
+  </p><p>
+   As a convenience, there is a program you can
    execute from the shell to create new databases,
-   <TT
-CLASS="COMMAND"
->createdb</TT
->.
+   <code class="command">createdb</code>.<a id="id-1.6.9.5.8.2" class="indexterm"></a>
 
-</P><PRE
-CLASS="SYNOPSIS"
->createdb <TT
-CLASS="REPLACEABLE"
-><I
->dbname</I
-></TT
-></PRE
-><P>
+</p><pre class="synopsis">
+createdb <em class="replaceable"><code>dbname</code></em>
+</pre><p>
 
-   <TT
-CLASS="COMMAND"
->createdb</TT
-> does no magic. It connects to the <TT
-CLASS="LITERAL"
->postgres</TT
->
-   database and issues the <TT
-CLASS="COMMAND"
->CREATE DATABASE</TT
-> command,
+   <code class="command">createdb</code> does no magic. It connects to the <code class="literal">postgres</code>
+   database and issues the <code class="command">CREATE DATABASE</code> command,
    exactly as described above.
-   The <A
-HREF="app-createdb.html"
-><SPAN
-CLASS="APPLICATION"
->createdb</SPAN
-></A
-> reference page contains the invocation
-   details. Note that <TT
-CLASS="COMMAND"
->createdb</TT
-> without any arguments will create
+   The <a class="xref" href="app-createdb.html" title="createdb"><span class="refentrytitle"><span class="application">createdb</span></span></a> reference page contains the invocation
+   details. Note that <code class="command">createdb</code> without any arguments will create
    a database with the current user name.
-  </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->    <A
-HREF="client-authentication.html"
->Chapter 20</A
-> contains information about
+  </p><div class="note"><h3 class="title">Note</h3><p>
+    <a class="xref" href="client-authentication.html" title="Chapter 20. Client Authentication">Chapter 20</a> contains information about
     how to restrict who can connect to a given database.
-   </P
-></BLOCKQUOTE
-></DIV
-><P
->   Sometimes you want to create a database for someone else, and have them
+   </p></div><p>
+   Sometimes you want to create a database for someone else, and have them
    become the owner of the new database, so they can
    configure and manage it themselves.  To achieve that, use one of the
    following commands:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE DATABASE <TT
-CLASS="REPLACEABLE"
-><I
->dbname</I
-></TT
-> OWNER <TT
-CLASS="REPLACEABLE"
-><I
->rolename</I
-></TT
->;</PRE
-><P>
+</p><pre class="programlisting">
+CREATE DATABASE <em class="replaceable"><code>dbname</code></em> OWNER <em class="replaceable"><code>rolename</code></em>;
+</pre><p>
    from the SQL environment, or:
-</P><PRE
-CLASS="PROGRAMLISTING"
->createdb -O <TT
-CLASS="REPLACEABLE"
-><I
->rolename</I
-></TT
-> <TT
-CLASS="REPLACEABLE"
-><I
->dbname</I
-></TT
-></PRE
-><P>
+</p><pre class="programlisting">
+createdb -O <em class="replaceable"><code>rolename</code></em> <em class="replaceable"><code>dbname</code></em>
+</pre><p>
    from the shell.
    Only the superuser is allowed to create a database for
    someone else (that is, for a role you are not a member of).
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="manage-ag-overview.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="manage-ag-templatedbs.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Overview</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="managing-databases.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Template Databases</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="manage-ag-overview.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="managing-databases.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="manage-ag-templatedbs.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">22.1. Overview </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 22.3. Template Databases</td></tr></table></div></body></html>

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ALTER DOMAIN" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ALTER DOMAIN" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -141,7 +141,7 @@ New domain constraint for the domain\&.
 Name of an existing constraint to drop or rename\&.
 .RE
 .PP
-\fINOT VALID\fR
+NOT VALID
 .RS 4
 Do not verify existing column data for constraint validity\&.
 .RE
@@ -149,7 +149,7 @@ Do not verify existing column data for constraint validity\&.
 CASCADE
 .RS 4
 Automatically drop objects that depend on the constraint, and in turn all objects that depend on those objects (see
-Section 5.13, \(lqDependency Tracking\(rq, in the documentation)\&.
+Section\ \&5.13)\&.
 .RE
 .PP
 RESTRICT
@@ -182,7 +182,7 @@ Currently,
 \fBALTER DOMAIN ADD CONSTRAINT\fR,
 \fBALTER DOMAIN VALIDATE CONSTRAINT\fR, and
 \fBALTER DOMAIN SET NOT NULL\fR
-will fail if the validated named domain or any derived domain is used within a composite\-type column of any table in the database\&. They should eventually be improved to be able to verify the new constraint for such nested columns\&.
+will fail if the named domain or any derived domain is used within a container\-type column (a composite, array, or range column) in any table in the database\&. They should eventually be improved to be able to verify the new constraint for such nested values\&.
 .SH "EXAMPLES"
 .PP
 To add a

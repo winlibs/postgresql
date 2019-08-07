@@ -8,13 +8,15 @@
  *
  * This code is released under the terms of the PostgreSQL License.
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/test/regress/pg_regress_main.c
  *
  *-------------------------------------------------------------------------
  */
+
+#include "postgres_fe.h"
 
 #include "pg_regress.h"
 
@@ -34,6 +36,7 @@ psql_start_test(const char *testname,
 	char		expectfile[MAXPGPATH];
 	char		psql_cmd[MAXPGPATH * 3];
 	size_t		offset = 0;
+	char	   *appnameenv;
 
 	/*
 	 * Look for files in the output dir first, consistent with a vpath search.
@@ -83,6 +86,9 @@ psql_start_test(const char *testname,
 		exit(2);
 	}
 
+	appnameenv = psprintf("PGAPPNAME=pg_regress/%s", testname);
+	putenv(appnameenv);
+
 	pid = spawn_process(psql_cmd);
 
 	if (pid == INVALID_PID)
@@ -91,6 +97,9 @@ psql_start_test(const char *testname,
 				testname);
 		exit(2);
 	}
+
+	unsetenv("PGAPPNAME");
+	free(appnameenv);
 
 	return pid;
 }

@@ -1,4 +1,4 @@
-; DEF file for win32.mak debug build
+; DEF file for Makefile.shlib (MinGW)
 LIBRARY LIBECPGD.dll
 EXPORTS
     ECPGallocate_desc                @ 1

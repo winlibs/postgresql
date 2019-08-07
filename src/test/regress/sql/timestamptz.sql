@@ -248,21 +248,25 @@ SELECT '' AS to_char_10, to_char(d1, 'IYYY IYY IY I IW IDDD ID')
 SELECT '' AS to_char_11, to_char(d1, 'FMIYYY FMIYY FMIY FMI FMIW FMIDDD FMID')
    FROM TIMESTAMPTZ_TBL;
 
--- Check OF with various zone offsets, particularly fractional hours
+-- Check OF, TZH, TZM with various zone offsets, particularly fractional hours
 SET timezone = '00:00';
-SELECT to_char(now(), 'OF');
+SELECT to_char(now(), 'OF') as "OF", to_char(now(), 'TZH:TZM') as "TZH:TZM";
 SET timezone = '+02:00';
-SELECT to_char(now(), 'OF');
+SELECT to_char(now(), 'OF') as "OF", to_char(now(), 'TZH:TZM') as "TZH:TZM";
 SET timezone = '-13:00';
-SELECT to_char(now(), 'OF');
+SELECT to_char(now(), 'OF') as "OF", to_char(now(), 'TZH:TZM') as "TZH:TZM";
 SET timezone = '-00:30';
-SELECT to_char(now(), 'OF');
+SELECT to_char(now(), 'OF') as "OF", to_char(now(), 'TZH:TZM') as "TZH:TZM";
 SET timezone = '00:30';
-SELECT to_char(now(), 'OF');
+SELECT to_char(now(), 'OF') as "OF", to_char(now(), 'TZH:TZM') as "TZH:TZM";
 SET timezone = '-04:30';
-SELECT to_char(now(), 'OF');
+SELECT to_char(now(), 'OF') as "OF", to_char(now(), 'TZH:TZM') as "TZH:TZM";
 SET timezone = '04:30';
-SELECT to_char(now(), 'OF');
+SELECT to_char(now(), 'OF') as "OF", to_char(now(), 'TZH:TZM') as "TZH:TZM";
+SET timezone = '-04:15';
+SELECT to_char(now(), 'OF') as "OF", to_char(now(), 'TZH:TZM') as "TZH:TZM";
+SET timezone = '04:15';
+SELECT to_char(now(), 'OF') as "OF", to_char(now(), 'TZH:TZM') as "TZH:TZM";
 RESET timezone;
 
 CREATE TABLE TIMESTAMPTZ_TST (a int , b timestamptz);
@@ -447,22 +451,6 @@ SELECT '2014-10-25 21:59:59 UTC'::timestamptz AT TIME ZONE 'MSK';
 SELECT '2014-10-25 22:00:00 UTC'::timestamptz AT TIME ZONE 'MSK';
 SELECT '2014-10-25 22:00:01 UTC'::timestamptz AT TIME ZONE 'MSK';
 SELECT '2014-10-25 23:00:00 UTC'::timestamptz AT TIME ZONE 'MSK';
-
---
--- Test that the pg_timezone_names and pg_timezone_abbrevs views are
--- more-or-less working.  We can't test their contents in any great detail
--- without the outputs changing anytime IANA updates the underlying data,
--- but it seems reasonable to expect at least one entry per major meridian.
--- (At the time of writing, the actual counts are around 38 because of
--- zones using fractional GMT offsets, so this is a pretty loose test.)
---
-select count(distinct utc_offset) >= 24 as ok from pg_timezone_names;
-select count(distinct utc_offset) >= 24 as ok from pg_timezone_abbrevs;
--- Let's check the non-default timezone abbreviation sets, too
-set timezone_abbreviations = 'Australia';
-select count(distinct utc_offset) >= 24 as ok from pg_timezone_abbrevs;
-set timezone_abbreviations = 'India';
-select count(distinct utc_offset) >= 24 as ok from pg_timezone_abbrevs;
 
 --
 -- Test that AT TIME ZONE isn't misoptimized when using an index (bug #14504)

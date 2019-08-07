@@ -1,782 +1,153 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->SET</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="SELECT INTO"
-HREF="sql-selectinto.html"><LINK
-REL="NEXT"
-TITLE="SET CONSTRAINTS"
-HREF="sql-set-constraints.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="SELECT INTO"
-HREF="sql-selectinto.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="SET CONSTRAINTS"
-HREF="sql-set-constraints.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-SET"
-></A
->SET</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN91946"
-></A
-><H2
->Name</H2
->SET&nbsp;--&nbsp;change a run-time parameter</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN91949"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->SET [ SESSION | LOCAL ] <TT
-CLASS="REPLACEABLE"
-><I
->configuration_parameter</I
-></TT
-> { TO | = } { <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-> | '<TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
->' | DEFAULT }
-SET [ SESSION | LOCAL ] TIME ZONE { <TT
-CLASS="REPLACEABLE"
-><I
->timezone</I
-></TT
-> | LOCAL | DEFAULT }</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN91955"
-></A
-><H2
->Description</H2
-><P
->   The <TT
-CLASS="COMMAND"
->SET</TT
-> command changes run-time configuration
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>SET</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-selectinto.html" title="SELECT INTO" /><link rel="next" href="sql-set-constraints.html" title="SET CONSTRAINTS" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">SET</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-selectinto.html" title="SELECT INTO">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-set-constraints.html" title="SET CONSTRAINTS">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-SET"><div class="titlepage"></div><a id="id-1.9.3.173.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">SET</span></h2><p>SET — change a run-time parameter</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+SET [ SESSION | LOCAL ] <em class="replaceable"><code>configuration_parameter</code></em> { TO | = } { <em class="replaceable"><code>value</code></em> | '<em class="replaceable"><code>value</code></em>' | DEFAULT }
+SET [ SESSION | LOCAL ] TIME ZONE { <em class="replaceable"><code>timezone</code></em> | LOCAL | DEFAULT }
+</pre></div><div class="refsect1" id="id-1.9.3.173.5"><h2>Description</h2><p>
+   The <code class="command">SET</code> command changes run-time configuration
    parameters.  Many of the run-time parameters listed in
-   <A
-HREF="runtime-config.html"
->Chapter 19</A
-> can be changed on-the-fly with
-   <TT
-CLASS="COMMAND"
->SET</TT
->.
+   <a class="xref" href="runtime-config.html" title="Chapter 19. Server Configuration">Chapter 19</a> can be changed on-the-fly with
+   <code class="command">SET</code>.
    (But some require superuser privileges to change, and others cannot
    be changed after server or session start.)
-   <TT
-CLASS="COMMAND"
->SET</TT
-> only affects the value used by the current
+   <code class="command">SET</code> only affects the value used by the current
    session.
-  </P
-><P
->   If <TT
-CLASS="COMMAND"
->SET</TT
-> (or equivalently <TT
-CLASS="COMMAND"
->SET SESSION</TT
->)
+  </p><p>
+   If <code class="command">SET</code> (or equivalently <code class="command">SET SESSION</code>)
    is issued within a transaction that is later aborted, the effects of the
-   <TT
-CLASS="COMMAND"
->SET</TT
-> command disappear when the transaction is rolled
+   <code class="command">SET</code> command disappear when the transaction is rolled
    back.  Once the surrounding transaction is committed, the effects
    will persist until the end of the session, unless overridden by another
-   <TT
-CLASS="COMMAND"
->SET</TT
->.
-  </P
-><P
->   The effects of <TT
-CLASS="COMMAND"
->SET LOCAL</TT
-> last only till the end of
+   <code class="command">SET</code>.
+  </p><p>
+   The effects of <code class="command">SET LOCAL</code> last only till the end of
    the current transaction, whether committed or not.  A special case is
-   <TT
-CLASS="COMMAND"
->SET</TT
-> followed by <TT
-CLASS="COMMAND"
->SET LOCAL</TT
-> within
-   a single transaction: the <TT
-CLASS="COMMAND"
->SET LOCAL</TT
-> value will be
+   <code class="command">SET</code> followed by <code class="command">SET LOCAL</code> within
+   a single transaction: the <code class="command">SET LOCAL</code> value will be
    seen until the end of the transaction, but afterwards (if the transaction
-   is committed) the <TT
-CLASS="COMMAND"
->SET</TT
-> value will take effect.
-  </P
-><P
->   The effects of <TT
-CLASS="COMMAND"
->SET</TT
-> or <TT
-CLASS="COMMAND"
->SET LOCAL</TT
-> are
+   is committed) the <code class="command">SET</code> value will take effect.
+  </p><p>
+   The effects of <code class="command">SET</code> or <code class="command">SET LOCAL</code> are
    also canceled by rolling back to a savepoint that is earlier than the
    command.
-  </P
-><P
->   If <TT
-CLASS="COMMAND"
->SET LOCAL</TT
-> is used within a function that has a
-   <TT
-CLASS="LITERAL"
->SET</TT
-> option for the same variable (see
-   <A
-HREF="sql-createfunction.html"
->CREATE FUNCTION</A
->),
-   the effects of the <TT
-CLASS="COMMAND"
->SET LOCAL</TT
-> command disappear at
+  </p><p>
+   If <code class="command">SET LOCAL</code> is used within a function that has a
+   <code class="literal">SET</code> option for the same variable (see
+   <a class="xref" href="sql-createfunction.html" title="CREATE FUNCTION"><span class="refentrytitle">CREATE FUNCTION</span></a>),
+   the effects of the <code class="command">SET LOCAL</code> command disappear at
    function exit; that is, the value in effect when the function was called is
-   restored anyway.  This allows <TT
-CLASS="COMMAND"
->SET LOCAL</TT
-> to be used for
+   restored anyway.  This allows <code class="command">SET LOCAL</code> to be used for
    dynamic or repeated changes of a parameter within a function, while still
-   having the convenience of using the <TT
-CLASS="LITERAL"
->SET</TT
-> option to save and
-   restore the caller's value.  However, a regular <TT
-CLASS="COMMAND"
->SET</TT
-> command
-   overrides any surrounding function's <TT
-CLASS="LITERAL"
->SET</TT
-> option; its effects
+   having the convenience of using the <code class="literal">SET</code> option to save and
+   restore the caller's value.  However, a regular <code class="command">SET</code> command
+   overrides any surrounding function's <code class="literal">SET</code> option; its effects
    will persist unless rolled back.
-  </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->    In <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> versions 8.0 through 8.2,
-    the effects of a <TT
-CLASS="COMMAND"
->SET LOCAL</TT
-> would be canceled by
+  </p><div class="note"><h3 class="title">Note</h3><p>
+    In <span class="productname">PostgreSQL</span> versions 8.0 through 8.2,
+    the effects of a <code class="command">SET LOCAL</code> would be canceled by
     releasing an earlier savepoint, or by successful exit from a
-    <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> exception block.  This behavior
+    <span class="application">PL/pgSQL</span> exception block.  This behavior
     has been changed because it was deemed unintuitive.
-   </P
-></BLOCKQUOTE
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN91990"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="LITERAL"
->SESSION</TT
-></DT
-><DD
-><P
->      Specifies that the command takes effect for the current session.
-      (This is the default if neither <TT
-CLASS="LITERAL"
->SESSION</TT
-> nor
-      <TT
-CLASS="LITERAL"
->LOCAL</TT
-> appears.)
-     </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->LOCAL</TT
-></DT
-><DD
-><P
->      Specifies that the command takes effect for only the current
-      transaction.  After <TT
-CLASS="COMMAND"
->COMMIT</TT
-> or <TT
-CLASS="COMMAND"
->ROLLBACK</TT
->,
+   </p></div></div><div class="refsect1" id="id-1.9.3.173.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">SESSION</code></span></dt><dd><p>
+      Specifies that the command takes effect for the current session.
+      (This is the default if neither <code class="literal">SESSION</code> nor
+      <code class="literal">LOCAL</code> appears.)
+     </p></dd><dt><span class="term"><code class="literal">LOCAL</code></span></dt><dd><p>
+      Specifies that the command takes effect for only the current
+      transaction.  After <code class="command">COMMIT</code> or <code class="command">ROLLBACK</code>,
       the session-level setting takes effect again.  Issuing this
       outside of a transaction block emits a warning and otherwise has
       no effect.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->configuration_parameter</I
-></TT
-></DT
-><DD
-><P
->      Name of a settable run-time parameter.  Available parameters are
-      documented in <A
-HREF="runtime-config.html"
->Chapter 19</A
-> and below.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-></DT
-><DD
-><P
->      New value of parameter.  Values can be specified as string
+     </p></dd><dt><span class="term"><em class="replaceable"><code>configuration_parameter</code></em></span></dt><dd><p>
+      Name of a settable run-time parameter.  Available parameters are
+      documented in <a class="xref" href="runtime-config.html" title="Chapter 19. Server Configuration">Chapter 19</a> and below.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>value</code></em></span></dt><dd><p>
+      New value of parameter.  Values can be specified as string
       constants, identifiers, numbers, or comma-separated lists of
       these, as appropriate for the particular parameter.
-      <TT
-CLASS="LITERAL"
->DEFAULT</TT
-> can be written to specify
+      <code class="literal">DEFAULT</code> can be written to specify
       resetting the parameter to its default value (that is, whatever
-      value it would have had if no <TT
-CLASS="COMMAND"
->SET</TT
-> had been executed
+      value it would have had if no <code class="command">SET</code> had been executed
       in the current session).
-     </P
-></DD
-></DL
-></DIV
-><P
->   Besides the configuration parameters documented in <A
-HREF="runtime-config.html"
->Chapter 19</A
->, there are a few that can only be
-   adjusted using the <TT
-CLASS="COMMAND"
->SET</TT
-> command or that have a
+     </p></dd></dl></div><p>
+   Besides the configuration parameters documented in <a class="xref" href="runtime-config.html" title="Chapter 19. Server Configuration">Chapter 19</a>, there are a few that can only be
+   adjusted using the <code class="command">SET</code> command or that have a
    special syntax:
 
-   <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="LITERAL"
->SCHEMA</TT
-></DT
-><DD
-><P
-><TT
-CLASS="LITERAL"
->SET SCHEMA '<TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
->'</TT
-> is an alias for
-       <TT
-CLASS="LITERAL"
->SET search_path TO <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-></TT
->.  Only one
+   </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">SCHEMA</code></span></dt><dd><p><code class="literal">SET SCHEMA '<em class="replaceable"><code>value</code></em>'</code> is an alias for
+       <code class="literal">SET search_path TO <em class="replaceable"><code>value</code></em></code>.  Only one
        schema can be specified using this syntax.
-      </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->NAMES</TT
-></DT
-><DD
-><P
-><TT
-CLASS="LITERAL"
->SET NAMES <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-></TT
-> is an alias for
-       <TT
-CLASS="LITERAL"
->SET client_encoding TO <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-></TT
->.
-      </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->SEED</TT
-></DT
-><DD
-><P
->       Sets the internal seed for the random number generator (the
-       function <CODE
-CLASS="FUNCTION"
->random</CODE
->).  Allowed values are
+      </p></dd><dt><span class="term"><code class="literal">NAMES</code></span></dt><dd><p><code class="literal">SET NAMES <em class="replaceable"><code>value</code></em></code> is an alias for
+       <code class="literal">SET client_encoding TO <em class="replaceable"><code>value</code></em></code>.
+      </p></dd><dt><span class="term"><code class="literal">SEED</code></span></dt><dd><p>
+       Sets the internal seed for the random number generator (the
+       function <code class="function">random</code>).  Allowed values are
        floating-point numbers between -1 and 1, which are then
-       multiplied by 2<SUP
->31</SUP
->-1.
-      </P
-><P
->       The seed can also be set by invoking the function
-       <CODE
-CLASS="FUNCTION"
->setseed</CODE
->:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SELECT setseed(<TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
->);</PRE
-><P></P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->TIME ZONE</TT
-></DT
-><DD
-><P
-><TT
-CLASS="LITERAL"
->SET TIME ZONE <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-></TT
-> is an alias
-       for <TT
-CLASS="LITERAL"
->SET timezone TO <TT
-CLASS="REPLACEABLE"
-><I
->value</I
-></TT
-></TT
->.  The
-       syntax <TT
-CLASS="LITERAL"
->SET TIME ZONE</TT
-> allows special syntax
+       multiplied by 2<sup>31</sup>-1.
+      </p><p>
+       The seed can also be set by invoking the function
+       <code class="function">setseed</code>:
+</p><pre class="programlisting">
+SELECT setseed(<em class="replaceable"><code>value</code></em>);
+</pre></dd><dt><span class="term"><code class="literal">TIME ZONE</code></span></dt><dd><p><code class="literal">SET TIME ZONE <em class="replaceable"><code>value</code></em></code> is an alias
+       for <code class="literal">SET timezone TO <em class="replaceable"><code>value</code></em></code>.  The
+       syntax <code class="literal">SET TIME ZONE</code> allows special syntax
        for the time zone specification.  Here are examples of valid
        values:
 
-       <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="LITERAL"
->'PST8PDT'</TT
-></DT
-><DD
-><P
->           The time zone for Berkeley, California.
-          </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->'Europe/Rome'</TT
-></DT
-><DD
-><P
->           The time zone for Italy.
-          </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->-7</TT
-></DT
-><DD
-><P
->           The time zone 7 hours west from UTC (equivalent
+       </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">'PST8PDT'</code></span></dt><dd><p>
+           The time zone for Berkeley, California.
+          </p></dd><dt><span class="term"><code class="literal">'Europe/Rome'</code></span></dt><dd><p>
+           The time zone for Italy.
+          </p></dd><dt><span class="term"><code class="literal">-7</code></span></dt><dd><p>
+           The time zone 7 hours west from UTC (equivalent
            to PDT).  Positive values are east from UTC.
-          </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->INTERVAL '-08:00' HOUR TO MINUTE</TT
-></DT
-><DD
-><P
->           The time zone 8 hours west from UTC (equivalent
+          </p></dd><dt><span class="term"><code class="literal">INTERVAL '-08:00' HOUR TO MINUTE</code></span></dt><dd><p>
+           The time zone 8 hours west from UTC (equivalent
            to PST).
-          </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->LOCAL</TT
-><BR><TT
-CLASS="LITERAL"
->DEFAULT</TT
-></DT
-><DD
-><P
->           Set the time zone to your local time zone (that is, the
-           server's default value of <TT
-CLASS="VARNAME"
->timezone</TT
->).
-          </P
-></DD
-></DL
-></DIV
-><P>
-      </P
-><P
->       Timezone settings given as numbers or intervals are internally
+          </p></dd><dt><span class="term"><code class="literal">LOCAL</code><br /></span><span class="term"><code class="literal">DEFAULT</code></span></dt><dd><p>
+           Set the time zone to your local time zone (that is, the
+           server's default value of <code class="varname">timezone</code>).
+          </p></dd></dl></div><p>
+      </p><p>
+       Timezone settings given as numbers or intervals are internally
        translated to POSIX timezone syntax.  For example, after
-       <TT
-CLASS="LITERAL"
->SET TIME ZONE -7</TT
->, <TT
-CLASS="COMMAND"
->SHOW TIME ZONE</TT
-> would
-       report <TT
-CLASS="LITERAL"
->&lt;-07&gt;+07</TT
->.
-      </P
-><P
->       See <A
-HREF="datatype-datetime.html#DATATYPE-TIMEZONES"
->Section 8.5.3</A
-> for more information
+       <code class="literal">SET TIME ZONE -7</code>, <code class="command">SHOW TIME ZONE</code> would
+       report <code class="literal">&lt;-07&gt;+07</code>.
+      </p><p>
+       See <a class="xref" href="datatype-datetime.html#DATATYPE-TIMEZONES" title="8.5.3. Time Zones">Section 8.5.3</a> for more information
        about time zones.
-      </P
-></DD
-></DL
-></DIV
-><P>
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN92098"
-></A
-><H2
->Notes</H2
-><P
->   The function <CODE
-CLASS="FUNCTION"
->set_config</CODE
-> provides equivalent
-   functionality; see <A
-HREF="functions-admin.html"
->Section 9.26</A
->.
+      </p></dd></dl></div><p>
+  </p></div><div class="refsect1" id="id-1.9.3.173.7"><h2>Notes</h2><p>
+   The function <code class="function">set_config</code> provides equivalent
+   functionality; see <a class="xref" href="functions-admin.html" title="9.26. System Administration Functions">Section 9.26</a>.
    Also, it is possible to UPDATE the
-   <A
-HREF="view-pg-settings.html"
-><TT
-CLASS="STRUCTNAME"
->pg_settings</TT
-></A
->
-   system view to perform the equivalent of <TT
-CLASS="COMMAND"
->SET</TT
->.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN92106"
-></A
-><H2
->Examples</H2
-><P
->   Set the schema search path:
-</P><PRE
-CLASS="PROGRAMLISTING"
->SET search_path TO my_schema, public;</PRE
-><P>
-  </P
-><P
->   Set the style of date to traditional
-   <SPAN
-CLASS="PRODUCTNAME"
->POSTGRES</SPAN
-> with <SPAN
-CLASS="QUOTE"
->"day before month"</SPAN
->
+   <a class="link" href="view-pg-settings.html" title="52.85. pg_settings"><code class="structname">pg_settings</code></a>
+   system view to perform the equivalent of <code class="command">SET</code>.
+  </p></div><div class="refsect1" id="id-1.9.3.173.8"><h2>Examples</h2><p>
+   Set the schema search path:
+</p><pre class="programlisting">
+SET search_path TO my_schema, public;
+</pre><p>
+  </p><p>
+   Set the style of date to traditional
+   <span class="productname">POSTGRES</span> with <span class="quote">“<span class="quote">day before month</span>”</span>
    input convention:
-</P><PRE
-CLASS="SCREEN"
->SET datestyle TO postgres, dmy;</PRE
-><P>
-  </P
-><P
->   Set the time zone for Berkeley, California:
-</P><PRE
-CLASS="SCREEN"
->SET TIME ZONE 'PST8PDT';</PRE
-><P>
-  </P
-><P
->   Set the time zone for Italy:
-</P><PRE
-CLASS="SCREEN"
->SET TIME ZONE 'Europe/Rome';</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN92118"
-></A
-><H2
->Compatibility</H2
-><P
->   <TT
-CLASS="LITERAL"
->SET TIME ZONE</TT
-> extends syntax defined in the SQL
+</p><pre class="screen">
+SET datestyle TO postgres, dmy;
+</pre><p>
+  </p><p>
+   Set the time zone for Berkeley, California:
+</p><pre class="screen">
+SET TIME ZONE 'PST8PDT';
+</pre><p>
+  </p><p>
+   Set the time zone for Italy:
+</p><pre class="screen">
+SET TIME ZONE 'Europe/Rome';
+</pre></div><div class="refsect1" id="id-1.9.3.173.9"><h2>Compatibility</h2><p>
+   <code class="literal">SET TIME ZONE</code> extends syntax defined in the SQL
    standard.  The standard allows only numeric time zone offsets while
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> allows more flexible
-   time-zone specifications.  All other <TT
-CLASS="LITERAL"
->SET</TT
->
-   features are <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> extensions.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN92125"
-></A
-><H2
->See Also</H2
-><A
-HREF="sql-reset.html"
->RESET</A
->, <A
-HREF="sql-show.html"
->SHOW</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-selectinto.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-set-constraints.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->SELECT INTO</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->SET CONSTRAINTS</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   <span class="productname">PostgreSQL</span> allows more flexible
+   time-zone specifications.  All other <code class="literal">SET</code>
+   features are <span class="productname">PostgreSQL</span> extensions.
+  </p></div><div class="refsect1" id="id-1.9.3.173.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-reset.html" title="RESET"><span class="refentrytitle">RESET</span></a>, <a class="xref" href="sql-show.html" title="SHOW"><span class="refentrytitle">SHOW</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-selectinto.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-set-constraints.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">SELECT INTO </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> SET CONSTRAINTS</td></tr></table></div></body></html>

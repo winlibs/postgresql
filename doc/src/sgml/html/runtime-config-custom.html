@@ -1,193 +1,20 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Customized Options</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Server Configuration"
-HREF="runtime-config.html"><LINK
-REL="PREVIOUS"
-TITLE="Preset Options"
-HREF="runtime-config-preset.html"><LINK
-REL="NEXT"
-TITLE="Developer Options"
-HREF="runtime-config-developer.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Preset Options"
-HREF="runtime-config-preset.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="runtime-config.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 19. Server Configuration</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Developer Options"
-HREF="runtime-config-developer.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="RUNTIME-CONFIG-CUSTOM"
->19.16. Customized Options</A
-></H1
-><P
->     This feature was designed to allow parameters not normally known to
-     <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> to be added by add-on modules
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>19.16. Customized Options</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="runtime-config-preset.html" title="19.15. Preset Options" /><link rel="next" href="runtime-config-developer.html" title="19.17. Developer Options" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">19.16. Customized Options</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="runtime-config-preset.html" title="19.15. Preset Options">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime-config.html" title="Chapter 19. Server Configuration">Up</a></td><th width="60%" align="center">Chapter 19. Server Configuration</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="runtime-config-developer.html" title="19.17. Developer Options">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="RUNTIME-CONFIG-CUSTOM"><div class="titlepage"><div><div><h2 class="title" style="clear: both">19.16. Customized Options</h2></div></div></div><p>
+     This feature was designed to allow parameters not normally known to
+     <span class="productname">PostgreSQL</span> to be added by add-on modules
      (such as procedural languages).  This allows extension modules to be
      configured in the standard ways.
-    </P
-><P
->     Custom options have two-part names: an extension name, then a dot, then
+    </p><p>
+     Custom options have two-part names: an extension name, then a dot, then
      the parameter name proper, much like qualified names in SQL.  An example
-     is <TT
-CLASS="LITERAL"
->plpgsql.variable_conflict</TT
->.
-    </P
-><P
->     Because custom options may need to be set in processes that have not
-     loaded the relevant extension module, <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
+     is <code class="literal">plpgsql.variable_conflict</code>.
+    </p><p>
+     Because custom options may need to be set in processes that have not
+     loaded the relevant extension module, <span class="productname">PostgreSQL</span>
      will accept a setting for any two-part parameter name.  Such variables
      are treated as placeholders and have no function until the module that
      defines them is loaded. When an extension module is loaded, it will add
      its variable definitions, convert any placeholder values according to
      those definitions, and issue warnings for any unrecognized placeholders
      that begin with its extension name.
-    </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="runtime-config-preset.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="runtime-config-developer.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Preset Options</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="runtime-config.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Developer Options</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+    </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="runtime-config-preset.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime-config.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="runtime-config-developer.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">19.15. Preset Options </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 19.17. Developer Options</td></tr></table></div></body></html>

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "REINDEXDB" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "REINDEXDB" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -226,7 +226,7 @@ PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section\ \&34.14)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see
@@ -244,7 +244,7 @@ PostgreSQL
 server, asking for a password each time\&. It is convenient to have a
 ~/\&.pgpass
 file in such cases\&. See
-Section 32.15, \(lqThe Password File\(rq, in the documentation
+Section\ \&34.15
 for more information\&.
 .SH "EXAMPLES"
 .PP
@@ -272,7 +272,7 @@ abcd:
 .RS 4
 .\}
 .nf
-$ \fBreindexdb \-\-table foo \-\-index bar abcd\fR
+$ \fBreindexdb \-\-table=foo \-\-index=bar abcd\fR
 .fi
 .if n \{\
 .RE

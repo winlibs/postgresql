@@ -1,1023 +1,112 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->pg_proc</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="System Catalogs"
-HREF="catalogs.html"><LINK
-REL="PREVIOUS"
-TITLE="pg_policy"
-HREF="catalog-pg-policy.html"><LINK
-REL="NEXT"
-TITLE="pg_range"
-HREF="catalog-pg-range.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="pg_policy"
-HREF="catalog-pg-policy.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="catalogs.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 50. System Catalogs</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="pg_range"
-HREF="catalog-pg-range.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="CATALOG-PG-PROC"
->50.38. <TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
-></H1
-><P
->   The catalog <TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-> stores information about functions (or procedures).
-   See <A
-HREF="sql-createfunction.html"
->CREATE FUNCTION</A
->
-   and <A
-HREF="xfunc.html"
->Section 36.3</A
-> for more information.
-  </P
-><P
->   The table contains data for aggregate functions as well as plain functions.
-   If <TT
-CLASS="STRUCTFIELD"
->proisagg</TT
-> is true, there should be a matching
-   row in <TT
-CLASS="STRUCTFIELD"
->pg_aggregate</TT
->.
-  </P
-><DIV
-CLASS="TABLE"
-><A
-NAME="AEN108750"
-></A
-><P
-><B
->Table 50-38. <TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-> Columns</B
-></P
-><TABLE
-BORDER="1"
-CLASS="CALSTABLE"
-><COL><COL><COL><COL><THEAD
-><TR
-><TH
->Name</TH
-><TH
->Type</TH
-><TH
->References</TH
-><TH
->Description</TH
-></TR
-></THEAD
-><TBODY
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->oid</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Row identifier (hidden attribute; must be explicitly selected)</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proname</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->name</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Name of the function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->pronamespace</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-namespace.html"
-><TT
-CLASS="STRUCTNAME"
->pg_namespace</TT
-></A
->.oid</TT
-></TD
-><TD
->       The OID of the namespace that contains this function
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proowner</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-authid.html"
-><TT
-CLASS="STRUCTNAME"
->pg_authid</TT
-></A
->.oid</TT
-></TD
-><TD
->Owner of the function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->prolang</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-language.html"
-><TT
-CLASS="STRUCTNAME"
->pg_language</TT
-></A
->.oid</TT
-></TD
-><TD
->Implementation language or call interface of this function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->procost</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->float4</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Estimated execution cost (in units of
-       <A
-HREF="runtime-config-query.html#GUC-CPU-OPERATOR-COST"
->cpu_operator_cost</A
->); if <TT
-CLASS="STRUCTFIELD"
->proretset</TT
->,
-       this is cost per row returned</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->prorows</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->float4</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Estimated number of result rows (zero if not <TT
-CLASS="STRUCTFIELD"
->proretset</TT
->)</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->provariadic</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-type.html"
-><TT
-CLASS="STRUCTNAME"
->pg_type</TT
-></A
->.oid</TT
-></TD
-><TD
->Data type of the variadic array parameter's elements,
-       or zero if the function does not have a variadic parameter</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->protransform</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->regproc</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-proc.html"
-><TT
-CLASS="STRUCTNAME"
->pg_proc</TT
-></A
->.oid</TT
-></TD
-><TD
->Calls to this function can be simplified by this other function
-       (see <A
-HREF="xfunc-c.html#XFUNC-TRANSFORM-FUNCTIONS"
->Section 36.9.11</A
->)</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proisagg</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Function is an aggregate function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proiswindow</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Function is a window function</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->prosecdef</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Function is a security definer (i.e., a <SPAN
-CLASS="QUOTE"
->"setuid"</SPAN
->
-      function)</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proleakproof</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->       The function has no side effects.  No information about the
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>52.39. pg_proc</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="catalog-pg-policy.html" title="52.38. pg_policy" /><link rel="next" href="catalog-pg-publication.html" title="52.40. pg_publication" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">52.39. <code xmlns="http://www.w3.org/1999/xhtml" class="structname">pg_proc</code></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="catalog-pg-policy.html" title="52.38. pg_policy">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="catalogs.html" title="Chapter 52. System Catalogs">Up</a></td><th width="60%" align="center">Chapter 52. System Catalogs</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="catalog-pg-publication.html" title="52.40. pg_publication">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="CATALOG-PG-PROC"><div class="titlepage"><div><div><h2 class="title" style="clear: both">52.39. <code class="structname">pg_proc</code></h2></div></div></div><a id="id-1.10.4.41.2" class="indexterm"></a><p>
+   The catalog <code class="structname">pg_proc</code> stores information about
+   functions, procedures, aggregate functions, and window functions
+   (collectively also known as routines).  See <a class="xref" href="sql-createfunction.html" title="CREATE FUNCTION"><span class="refentrytitle">CREATE FUNCTION</span></a>, <a class="xref" href="sql-createprocedure.html" title="CREATE PROCEDURE"><span class="refentrytitle">CREATE PROCEDURE</span></a>, and
+   <a class="xref" href="xfunc.html" title="38.3. User-defined Functions">Section 38.3</a> for more information.
+  </p><p>
+   If <code class="structfield">prokind</code> indicates that the entry is for an
+   aggregate function, there should be a matching row in
+   <code class="structfield">pg_aggregate</code>.
+  </p><div class="table" id="id-1.10.4.41.5"><p class="title"><strong>Table 52.39. <code class="structname">pg_proc</code> Columns</strong></p><div class="table-contents"><table class="table" summary="pg_proc Columns" border="1"><colgroup><col /><col /><col /><col /></colgroup><thead><tr><th>Name</th><th>Type</th><th>References</th><th>Description</th></tr></thead><tbody><tr><td><code class="structfield">oid</code></td><td><code class="type">oid</code></td><td> </td><td>Row identifier (hidden attribute; must be explicitly selected)</td></tr><tr><td><code class="structfield">proname</code></td><td><code class="type">name</code></td><td> </td><td>Name of the function</td></tr><tr><td><code class="structfield">pronamespace</code></td><td><code class="type">oid</code></td><td><code class="literal"><a class="link" href="catalog-pg-namespace.html" title="52.32. pg_namespace"><code class="structname">pg_namespace</code></a>.oid</code></td><td>
+       The OID of the namespace that contains this function
+      </td></tr><tr><td><code class="structfield">proowner</code></td><td><code class="type">oid</code></td><td><code class="literal"><a class="link" href="catalog-pg-authid.html" title="52.8. pg_authid"><code class="structname">pg_authid</code></a>.oid</code></td><td>Owner of the function</td></tr><tr><td><code class="structfield">prolang</code></td><td><code class="type">oid</code></td><td><code class="literal"><a class="link" href="catalog-pg-language.html" title="52.29. pg_language"><code class="structname">pg_language</code></a>.oid</code></td><td>Implementation language or call interface of this function</td></tr><tr><td><code class="structfield">procost</code></td><td><code class="type">float4</code></td><td> </td><td>Estimated execution cost (in units of
+       <a class="xref" href="runtime-config-query.html#GUC-CPU-OPERATOR-COST">cpu_operator_cost</a>); if <code class="structfield">proretset</code>,
+       this is cost per row returned</td></tr><tr><td><code class="structfield">prorows</code></td><td><code class="type">float4</code></td><td> </td><td>Estimated number of result rows (zero if not <code class="structfield">proretset</code>)</td></tr><tr><td><code class="structfield">provariadic</code></td><td><code class="type">oid</code></td><td><code class="literal"><a class="link" href="catalog-pg-type.html" title="52.62. pg_type"><code class="structname">pg_type</code></a>.oid</code></td><td>Data type of the variadic array parameter's elements,
+       or zero if the function does not have a variadic parameter</td></tr><tr><td><code class="structfield">protransform</code></td><td><code class="type">regproc</code></td><td><code class="literal"><a class="link" href="catalog-pg-proc.html" title="52.39. pg_proc"><code class="structname">pg_proc</code></a>.oid</code></td><td>Calls to this function can be simplified by this other function
+       (see <a class="xref" href="xfunc-c.html#XFUNC-TRANSFORM-FUNCTIONS" title="38.10.10. Transform Functions">Section 38.10.10</a>)</td></tr><tr><td><code class="structfield">prokind</code></td><td><code class="type">char</code></td><td> </td><td><code class="literal">f</code> for a normal function, <code class="literal">p</code>
+      for a procedure, <code class="literal">a</code> for an aggregate function, or
+      <code class="literal">w</code> for a window function</td></tr><tr><td><code class="structfield">prosecdef</code></td><td><code class="type">bool</code></td><td> </td><td>Function is a security definer (i.e., a <span class="quote">“<span class="quote">setuid</span>”</span>
+      function)</td></tr><tr><td><code class="structfield">proleakproof</code></td><td><code class="type">bool</code></td><td> </td><td>
+       The function has no side effects.  No information about the
        arguments is conveyed except via the return value.  Any function
        that might throw an error depending on the values of its arguments
        is not leak-proof.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proisstrict</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->       Function returns null if any call argument is null.  In that
+      </td></tr><tr><td><code class="structfield">proisstrict</code></td><td><code class="type">bool</code></td><td> </td><td>
+       Function returns null if any call argument is null.  In that
        case the function won't actually be called at all.  Functions
-       that are not <SPAN
-CLASS="QUOTE"
->"strict"</SPAN
-> must be prepared to handle
+       that are not <span class="quote">“<span class="quote">strict</span>”</span> must be prepared to handle
        null inputs.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proretset</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->bool</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Function returns a set (i.e., multiple values of the specified
-      data type)</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->provolatile</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->char</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->       <TT
-CLASS="STRUCTFIELD"
->provolatile</TT
-> tells whether the function's
+      </td></tr><tr><td><code class="structfield">proretset</code></td><td><code class="type">bool</code></td><td> </td><td>Function returns a set (i.e., multiple values of the specified
+      data type)</td></tr><tr><td><code class="structfield">provolatile</code></td><td><code class="type">char</code></td><td> </td><td>
+       <code class="structfield">provolatile</code> tells whether the function's
        result depends only on its input arguments, or is affected by outside
        factors.
-       It is <TT
-CLASS="LITERAL"
->i</TT
-> for <SPAN
-CLASS="QUOTE"
->"immutable"</SPAN
-> functions,
+       It is <code class="literal">i</code> for <span class="quote">“<span class="quote">immutable</span>”</span> functions,
        which always deliver the same result for the same inputs.
-       It is <TT
-CLASS="LITERAL"
->s</TT
-> for <SPAN
-CLASS="QUOTE"
->"stable"</SPAN
-> functions,
+       It is <code class="literal">s</code> for <span class="quote">“<span class="quote">stable</span>”</span> functions,
        whose results (for fixed inputs) do not change within a scan.
-       It is <TT
-CLASS="LITERAL"
->v</TT
-> for <SPAN
-CLASS="QUOTE"
->"volatile"</SPAN
-> functions,
-       whose results might change at any time.  (Use <TT
-CLASS="LITERAL"
->v</TT
-> also
+       It is <code class="literal">v</code> for <span class="quote">“<span class="quote">volatile</span>”</span> functions,
+       whose results might change at any time.  (Use <code class="literal">v</code> also
        for functions with side-effects, so that calls to them cannot get
        optimized away.)
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proparallel</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->char</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->       <TT
-CLASS="STRUCTFIELD"
->proparallel</TT
-> tells whether the function
+      </td></tr><tr><td><code class="structfield">proparallel</code></td><td><code class="type">char</code></td><td> </td><td>
+       <code class="structfield">proparallel</code> tells whether the function
        can be safely run in parallel mode.
-       It is <TT
-CLASS="LITERAL"
->s</TT
-> for functions which are safe to run in
+       It is <code class="literal">s</code> for functions which are safe to run in
        parallel mode without restriction.
-       It is <TT
-CLASS="LITERAL"
->r</TT
-> for functions which can be run in parallel
+       It is <code class="literal">r</code> for functions which can be run in parallel
        mode, but their execution is restricted to the parallel group leader;
        parallel worker processes cannot invoke these functions.
-       It is <TT
-CLASS="LITERAL"
->u</TT
-> for functions which are unsafe in parallel
+       It is <code class="literal">u</code> for functions which are unsafe in parallel
        mode; the presence of such a function forces a serial execution plan.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->pronargs</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->int2</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Number of input arguments</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->pronargdefaults</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->int2</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Number of arguments that have defaults</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->prorettype</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-type.html"
-><TT
-CLASS="STRUCTNAME"
->pg_type</TT
-></A
->.oid</TT
-></TD
-><TD
->Data type of the return value</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proargtypes</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oidvector</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-type.html"
-><TT
-CLASS="STRUCTNAME"
->pg_type</TT
-></A
->.oid</TT
-></TD
-><TD
->       An array with the data types of the function arguments.  This includes
-       only input arguments (including <TT
-CLASS="LITERAL"
->INOUT</TT
-> and
-       <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> arguments), and thus represents
+      </td></tr><tr><td><code class="structfield">pronargs</code></td><td><code class="type">int2</code></td><td> </td><td>Number of input arguments</td></tr><tr><td><code class="structfield">pronargdefaults</code></td><td><code class="type">int2</code></td><td> </td><td>Number of arguments that have defaults</td></tr><tr><td><code class="structfield">prorettype</code></td><td><code class="type">oid</code></td><td><code class="literal"><a class="link" href="catalog-pg-type.html" title="52.62. pg_type"><code class="structname">pg_type</code></a>.oid</code></td><td>Data type of the return value</td></tr><tr><td><code class="structfield">proargtypes</code></td><td><code class="type">oidvector</code></td><td><code class="literal"><a class="link" href="catalog-pg-type.html" title="52.62. pg_type"><code class="structname">pg_type</code></a>.oid</code></td><td>
+       An array with the data types of the function arguments.  This includes
+       only input arguments (including <code class="literal">INOUT</code> and
+       <code class="literal">VARIADIC</code> arguments), and thus represents
        the call signature of the function.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proallargtypes</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid[]</TT
-></TD
-><TD
-><TT
-CLASS="LITERAL"
-><A
-HREF="catalog-pg-type.html"
-><TT
-CLASS="STRUCTNAME"
->pg_type</TT
-></A
->.oid</TT
-></TD
-><TD
->       An array with the data types of the function arguments.  This includes
-       all arguments (including <TT
-CLASS="LITERAL"
->OUT</TT
-> and
-       <TT
-CLASS="LITERAL"
->INOUT</TT
-> arguments); however, if all the
-       arguments are <TT
-CLASS="LITERAL"
->IN</TT
-> arguments, this field will be null.
+      </td></tr><tr><td><code class="structfield">proallargtypes</code></td><td><code class="type">oid[]</code></td><td><code class="literal"><a class="link" href="catalog-pg-type.html" title="52.62. pg_type"><code class="structname">pg_type</code></a>.oid</code></td><td>
+       An array with the data types of the function arguments.  This includes
+       all arguments (including <code class="literal">OUT</code> and
+       <code class="literal">INOUT</code> arguments); however, if all the
+       arguments are <code class="literal">IN</code> arguments, this field will be null.
        Note that subscripting is 1-based, whereas for historical reasons
-       <TT
-CLASS="STRUCTFIELD"
->proargtypes</TT
-> is subscripted from 0.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proargmodes</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->char[]</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->        An array with the modes of the function arguments, encoded as
-        <TT
-CLASS="LITERAL"
->i</TT
-> for <TT
-CLASS="LITERAL"
->IN</TT
-> arguments,
-        <TT
-CLASS="LITERAL"
->o</TT
-> for <TT
-CLASS="LITERAL"
->OUT</TT
-> arguments,
-        <TT
-CLASS="LITERAL"
->b</TT
-> for <TT
-CLASS="LITERAL"
->INOUT</TT
-> arguments,
-        <TT
-CLASS="LITERAL"
->v</TT
-> for <TT
-CLASS="LITERAL"
->VARIADIC</TT
-> arguments,
-        <TT
-CLASS="LITERAL"
->t</TT
-> for <TT
-CLASS="LITERAL"
->TABLE</TT
-> arguments.
-        If all the arguments are <TT
-CLASS="LITERAL"
->IN</TT
-> arguments,
+       <code class="structfield">proargtypes</code> is subscripted from 0.
+      </td></tr><tr><td><code class="structfield">proargmodes</code></td><td><code class="type">char[]</code></td><td> </td><td>
+        An array with the modes of the function arguments, encoded as
+        <code class="literal">i</code> for <code class="literal">IN</code> arguments,
+        <code class="literal">o</code> for <code class="literal">OUT</code> arguments,
+        <code class="literal">b</code> for <code class="literal">INOUT</code> arguments,
+        <code class="literal">v</code> for <code class="literal">VARIADIC</code> arguments,
+        <code class="literal">t</code> for <code class="literal">TABLE</code> arguments.
+        If all the arguments are <code class="literal">IN</code> arguments,
         this field will be null.
         Note that subscripts correspond to positions of
-        <TT
-CLASS="STRUCTFIELD"
->proallargtypes</TT
-> not <TT
-CLASS="STRUCTFIELD"
->proargtypes</TT
->.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proargnames</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text[]</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->        An array with the names of the function arguments.
+        <code class="structfield">proallargtypes</code> not <code class="structfield">proargtypes</code>.
+      </td></tr><tr><td><code class="structfield">proargnames</code></td><td><code class="type">text[]</code></td><td> </td><td>
+        An array with the names of the function arguments.
         Arguments without a name are set to empty strings in the array.
         If none of the arguments have a name, this field will be null.
         Note that subscripts correspond to positions of
-        <TT
-CLASS="STRUCTFIELD"
->proallargtypes</TT
-> not <TT
-CLASS="STRUCTFIELD"
->proargtypes</TT
->.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proargdefaults</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->pg_node_tree</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->       Expression trees (in <CODE
-CLASS="FUNCTION"
->nodeToString()</CODE
-> representation)
+        <code class="structfield">proallargtypes</code> not <code class="structfield">proargtypes</code>.
+      </td></tr><tr><td><code class="structfield">proargdefaults</code></td><td><code class="type">pg_node_tree</code></td><td> </td><td>
+       Expression trees (in <code class="function">nodeToString()</code> representation)
        for default values.  This is a list with
-       <TT
-CLASS="STRUCTFIELD"
->pronargdefaults</TT
-> elements, corresponding to the last
-       <TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
-> <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->input</I
-></SPAN
-> arguments (i.e., the last
-       <TT
-CLASS="REPLACEABLE"
-><I
->N</I
-></TT
-> <TT
-CLASS="STRUCTFIELD"
->proargtypes</TT
-> positions).
+       <code class="structfield">pronargdefaults</code> elements, corresponding to the last
+       <em class="replaceable"><code>N</code></em> <span class="emphasis"><em>input</em></span> arguments (i.e., the last
+       <em class="replaceable"><code>N</code></em> <code class="structfield">proargtypes</code> positions).
        If none of the arguments have defaults, this field will be null.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->protrftypes</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->oid[]</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->       Data type OIDs for which to apply transforms.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->prosrc</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->       This tells the function handler how to invoke the function.  It
+      </td></tr><tr><td><code class="structfield">protrftypes</code></td><td><code class="type">oid[]</code></td><td> </td><td>
+       Data type OIDs for which to apply transforms.
+      </td></tr><tr><td><code class="structfield">prosrc</code></td><td><code class="type">text</code></td><td> </td><td>
+       This tells the function handler how to invoke the function.  It
        might be the actual source code of the function for interpreted
        languages, a link symbol, a file name, or just about anything
        else, depending on the implementation language/call convention.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->probin</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->       Additional information about how to invoke the function.
+      </td></tr><tr><td><code class="structfield">probin</code></td><td><code class="type">text</code></td><td> </td><td>
+       Additional information about how to invoke the function.
        Again, the interpretation is language-specific.
-      </TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proconfig</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->text[]</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->Function's local settings for run-time configuration variables</TD
-></TR
-><TR
-><TD
-><TT
-CLASS="STRUCTFIELD"
->proacl</TT
-></TD
-><TD
-><TT
-CLASS="TYPE"
->aclitem[]</TT
-></TD
-><TD
->&nbsp;</TD
-><TD
->       Access privileges; see
-       <A
-HREF="sql-grant.html"
->GRANT</A
-> and
-       <A
-HREF="sql-revoke.html"
->REVOKE</A
->
+      </td></tr><tr><td><code class="structfield">proconfig</code></td><td><code class="type">text[]</code></td><td> </td><td>Function's local settings for run-time configuration variables</td></tr><tr><td><code class="structfield">proacl</code></td><td><code class="type">aclitem[]</code></td><td> </td><td>
+       Access privileges; see
+       <a class="xref" href="sql-grant.html" title="GRANT"><span class="refentrytitle">GRANT</span></a> and
+       <a class="xref" href="sql-revoke.html" title="REVOKE"><span class="refentrytitle">REVOKE</span></a>
        for details
-      </TD
-></TR
-></TBODY
-></TABLE
-></DIV
-><P
->   For compiled functions, both built-in and dynamically loaded,
-   <TT
-CLASS="STRUCTFIELD"
->prosrc</TT
-> contains the function's C-language
+      </td></tr></tbody></table></div></div><br class="table-break" /><p>
+   For compiled functions, both built-in and dynamically loaded,
+   <code class="structfield">prosrc</code> contains the function's C-language
    name (link symbol).  For all other currently-known language types,
-   <TT
-CLASS="STRUCTFIELD"
->prosrc</TT
-> contains the function's source
-   text.  <TT
-CLASS="STRUCTFIELD"
->probin</TT
-> is unused except for
+   <code class="structfield">prosrc</code> contains the function's source
+   text.  <code class="structfield">probin</code> is unused except for
    dynamically-loaded C functions, for which it gives the name of the
    shared library file containing the function.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="catalog-pg-policy.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="catalog-pg-range.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><TT
-CLASS="STRUCTNAME"
->pg_policy</TT
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="catalogs.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><TT
-CLASS="STRUCTNAME"
->pg_range</TT
-></TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="catalog-pg-policy.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="catalogs.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="catalog-pg-publication.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">52.38. <code class="structname">pg_policy</code> </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 52.40. <code class="structname">pg_publication</code></td></tr></table></div></body></html>

@@ -74,16 +74,16 @@ SELECT '-1.0e-7'::cube AS cube;
  (-1e-07)
 (1 row)
 
-SELECT '1e-700'::cube AS cube;
- cube 
-------
- (0)
+SELECT '1e-300'::cube AS cube;
+   cube   
+----------
+ (1e-300)
 (1 row)
 
-SELECT '-1e-700'::cube AS cube;
- cube 
-------
- (0)
+SELECT '-1e-300'::cube AS cube;
+   cube    
+-----------
+ (-1e-300)
 (1 row)
 
 SELECT '1234567890123456'::cube AS cube;

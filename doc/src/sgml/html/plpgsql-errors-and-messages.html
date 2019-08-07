@@ -1,783 +1,148 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Errors and Messages</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="PL/pgSQL - SQL Procedural Language"
-HREF="plpgsql.html"><LINK
-REL="PREVIOUS"
-TITLE="Cursors"
-HREF="plpgsql-cursors.html"><LINK
-REL="NEXT"
-TITLE="Trigger Procedures"
-HREF="plpgsql-trigger.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Cursors"
-HREF="plpgsql-cursors.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plpgsql.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 41. <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> - <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> Procedural Language</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Trigger Procedures"
-HREF="plpgsql-trigger.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="PLPGSQL-ERRORS-AND-MESSAGES"
->41.8. Errors and Messages</A
-></H1
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="PLPGSQL-STATEMENTS-RAISE"
->41.8.1. Reporting Errors and Messages</A
-></H2
-><P
->    Use the <TT
-CLASS="COMMAND"
->RAISE</TT
-> statement to report messages and
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.9. Errors and Messages</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpgsql-transactions.html" title="43.8. Transaction Management" /><link rel="next" href="plpgsql-trigger.html" title="43.10. Trigger Functions" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.9. Errors and Messages</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-transactions.html" title="43.8. Transaction Management">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL - SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> - <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-trigger.html" title="43.10. Trigger Functions">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-ERRORS-AND-MESSAGES"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.9. Errors and Messages</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpgsql-errors-and-messages.html#PLPGSQL-STATEMENTS-RAISE">43.9.1. Reporting Errors and Messages</a></span></dt><dt><span class="sect2"><a href="plpgsql-errors-and-messages.html#PLPGSQL-STATEMENTS-ASSERT">43.9.2. Checking Assertions</a></span></dt></dl></div><div class="sect2" id="PLPGSQL-STATEMENTS-RAISE"><div class="titlepage"><div><div><h3 class="title">43.9.1. Reporting Errors and Messages</h3></div></div></div><a id="id-1.8.8.11.2.2" class="indexterm"></a><a id="id-1.8.8.11.2.3" class="indexterm"></a><p>
+    Use the <code class="command">RAISE</code> statement to report messages and
     raise errors.
 
-</P><PRE
-CLASS="SYNOPSIS"
->RAISE [<SPAN
-CLASS="OPTIONAL"
-> <TT
-CLASS="REPLACEABLE"
-><I
->level</I
-></TT
-> </SPAN
->] '<TT
-CLASS="REPLACEABLE"
-><I
->format</I
-></TT
->' [<SPAN
-CLASS="OPTIONAL"
->, <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> [<SPAN
-CLASS="OPTIONAL"
->, ... </SPAN
->]</SPAN
->] [<SPAN
-CLASS="OPTIONAL"
-> USING <TT
-CLASS="REPLACEABLE"
-><I
->option</I
-></TT
-> = <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> [<SPAN
-CLASS="OPTIONAL"
->, ... </SPAN
->] </SPAN
->];
-RAISE [<SPAN
-CLASS="OPTIONAL"
-> <TT
-CLASS="REPLACEABLE"
-><I
->level</I
-></TT
-> </SPAN
->] <TT
-CLASS="REPLACEABLE"
-><I
->condition_name</I
-></TT
-> [<SPAN
-CLASS="OPTIONAL"
-> USING <TT
-CLASS="REPLACEABLE"
-><I
->option</I
-></TT
-> = <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> [<SPAN
-CLASS="OPTIONAL"
->, ... </SPAN
->] </SPAN
->];
-RAISE [<SPAN
-CLASS="OPTIONAL"
-> <TT
-CLASS="REPLACEABLE"
-><I
->level</I
-></TT
-> </SPAN
->] SQLSTATE '<TT
-CLASS="REPLACEABLE"
-><I
->sqlstate</I
-></TT
->' [<SPAN
-CLASS="OPTIONAL"
-> USING <TT
-CLASS="REPLACEABLE"
-><I
->option</I
-></TT
-> = <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> [<SPAN
-CLASS="OPTIONAL"
->, ... </SPAN
->] </SPAN
->];
-RAISE [<SPAN
-CLASS="OPTIONAL"
-> <TT
-CLASS="REPLACEABLE"
-><I
->level</I
-></TT
-> </SPAN
->] USING <TT
-CLASS="REPLACEABLE"
-><I
->option</I
-></TT
-> = <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> [<SPAN
-CLASS="OPTIONAL"
->, ... </SPAN
->];
-RAISE ;</PRE
-><P>
+</p><pre class="synopsis">
+RAISE [<span class="optional"> <em class="replaceable"><code>level</code></em> </span>] '<em class="replaceable"><code>format</code></em>' [<span class="optional">, <em class="replaceable"><code>expression</code></em> [<span class="optional">, ... </span>]</span>] [<span class="optional"> USING <em class="replaceable"><code>option</code></em> = <em class="replaceable"><code>expression</code></em> [<span class="optional">, ... </span>] </span>];
+RAISE [<span class="optional"> <em class="replaceable"><code>level</code></em> </span>] <em class="replaceable"><code>condition_name</code></em> [<span class="optional"> USING <em class="replaceable"><code>option</code></em> = <em class="replaceable"><code>expression</code></em> [<span class="optional">, ... </span>] </span>];
+RAISE [<span class="optional"> <em class="replaceable"><code>level</code></em> </span>] SQLSTATE '<em class="replaceable"><code>sqlstate</code></em>' [<span class="optional"> USING <em class="replaceable"><code>option</code></em> = <em class="replaceable"><code>expression</code></em> [<span class="optional">, ... </span>] </span>];
+RAISE [<span class="optional"> <em class="replaceable"><code>level</code></em> </span>] USING <em class="replaceable"><code>option</code></em> = <em class="replaceable"><code>expression</code></em> [<span class="optional">, ... </span>];
+RAISE ;
+</pre><p>
 
-    The <TT
-CLASS="REPLACEABLE"
-><I
->level</I
-></TT
-> option specifies
-    the error severity.  Allowed levels are <TT
-CLASS="LITERAL"
->DEBUG</TT
->,
-    <TT
-CLASS="LITERAL"
->LOG</TT
->, <TT
-CLASS="LITERAL"
->INFO</TT
->,
-    <TT
-CLASS="LITERAL"
->NOTICE</TT
->, <TT
-CLASS="LITERAL"
->WARNING</TT
->,
-    and <TT
-CLASS="LITERAL"
->EXCEPTION</TT
->, with <TT
-CLASS="LITERAL"
->EXCEPTION</TT
->
+    The <em class="replaceable"><code>level</code></em> option specifies
+    the error severity.  Allowed levels are <code class="literal">DEBUG</code>,
+    <code class="literal">LOG</code>, <code class="literal">INFO</code>,
+    <code class="literal">NOTICE</code>, <code class="literal">WARNING</code>,
+    and <code class="literal">EXCEPTION</code>, with <code class="literal">EXCEPTION</code>
     being the default.
-    <TT
-CLASS="LITERAL"
->EXCEPTION</TT
-> raises an error (which normally aborts the
+    <code class="literal">EXCEPTION</code> raises an error (which normally aborts the
     current transaction); the other levels only generate messages of different
     priority levels.
     Whether messages of a particular priority are reported to the client,
     written to the server log, or both is controlled by the
-    <A
-HREF="runtime-config-logging.html#GUC-LOG-MIN-MESSAGES"
->log_min_messages</A
-> and
-    <A
-HREF="runtime-config-client.html#GUC-CLIENT-MIN-MESSAGES"
->client_min_messages</A
-> configuration
-    variables. See <A
-HREF="runtime-config.html"
->Chapter 19</A
-> for more
+    <a class="xref" href="runtime-config-logging.html#GUC-LOG-MIN-MESSAGES">log_min_messages</a> and
+    <a class="xref" href="runtime-config-client.html#GUC-CLIENT-MIN-MESSAGES">client_min_messages</a> configuration
+    variables. See <a class="xref" href="runtime-config.html" title="Chapter 19. Server Configuration">Chapter 19</a> for more
     information.
-   </P
-><P
->    After <TT
-CLASS="REPLACEABLE"
-><I
->level</I
-></TT
-> if any,
-    you can write a <TT
-CLASS="REPLACEABLE"
-><I
->format</I
-></TT
->
+   </p><p>
+    After <em class="replaceable"><code>level</code></em> if any,
+    you can write a <em class="replaceable"><code>format</code></em>
     (which must be a simple string literal, not an expression).  The
     format string specifies the error message text to be reported.
     The format string can be followed
     by optional argument expressions to be inserted into the message.
-    Inside the format string, <TT
-CLASS="LITERAL"
->%</TT
-> is replaced by the
+    Inside the format string, <code class="literal">%</code> is replaced by the
     string representation of the next optional argument's value. Write
-    <TT
-CLASS="LITERAL"
->%%</TT
-> to emit a literal <TT
-CLASS="LITERAL"
->%</TT
->.
-    The number of arguments must match the number of <TT
-CLASS="LITERAL"
->%</TT
->
+    <code class="literal">%%</code> to emit a literal <code class="literal">%</code>.
+    The number of arguments must match the number of <code class="literal">%</code>
     placeholders in the format string, or an error is raised during
     the compilation of the function.
-   </P
-><P
->    In this example, the value of <TT
-CLASS="LITERAL"
->v_job_id</TT
-> will replace the
-    <TT
-CLASS="LITERAL"
->%</TT
-> in the string:
-</P><PRE
-CLASS="PROGRAMLISTING"
->RAISE NOTICE 'Calling cs_create_job(%)', v_job_id;</PRE
-><P>
-   </P
-><P
->    You can attach additional information to the error report by writing
-    <TT
-CLASS="LITERAL"
->USING</TT
-> followed by <TT
-CLASS="REPLACEABLE"
-><I
->option</I
-></TT
-> = <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> items.  Each
-    <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> can be any
-    string-valued expression.  The allowed <TT
-CLASS="REPLACEABLE"
-><I
->option</I
-></TT
-> key words are:
+   </p><p>
+    In this example, the value of <code class="literal">v_job_id</code> will replace the
+    <code class="literal">%</code> in the string:
+</p><pre class="programlisting">
+RAISE NOTICE 'Calling cs_create_job(%)', v_job_id;
+</pre><p>
+   </p><p>
+    You can attach additional information to the error report by writing
+    <code class="literal">USING</code> followed by <em class="replaceable"><code>option</code></em> = <em class="replaceable"><code>expression</code></em> items.  Each
+    <em class="replaceable"><code>expression</code></em> can be any
+    string-valued expression.  The allowed <em class="replaceable"><code>option</code></em> key words are:
 
-    <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="LITERAL"
->MESSAGE</TT
-></DT
-><DD
-><P
->Sets the error message text.  This option can't be used in the
-        form of <TT
-CLASS="COMMAND"
->RAISE</TT
-> that includes a format string
-        before <TT
-CLASS="LITERAL"
->USING</TT
->.</P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->DETAIL</TT
-></DT
-><DD
-><P
->Supplies an error detail message.</P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->HINT</TT
-></DT
-><DD
-><P
->Supplies a hint message.</P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->ERRCODE</TT
-></DT
-><DD
-><P
->Specifies the error code (SQLSTATE) to report, either by condition
-        name, as shown in <A
-HREF="errcodes-appendix.html"
->Appendix A</A
->, or directly as a
-        five-character SQLSTATE code.</P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->COLUMN</TT
-><BR><TT
-CLASS="LITERAL"
->CONSTRAINT</TT
-><BR><TT
-CLASS="LITERAL"
->DATATYPE</TT
-><BR><TT
-CLASS="LITERAL"
->TABLE</TT
-><BR><TT
-CLASS="LITERAL"
->SCHEMA</TT
-></DT
-><DD
-><P
->Supplies the name of a related object.</P
-></DD
-></DL
-></DIV
-><P>
-   </P
-><P
->    This example will abort the transaction with the given error message
+    </p><div class="variablelist" id="RAISE-USING-OPTIONS"><dl class="variablelist"><dt><span class="term"><code class="literal">MESSAGE</code></span></dt><dd><p>Sets the error message text.  This option can't be used in the
+        form of <code class="command">RAISE</code> that includes a format string
+        before <code class="literal">USING</code>.</p></dd><dt><span class="term"><code class="literal">DETAIL</code></span></dt><dd><p>Supplies an error detail message.</p></dd><dt><span class="term"><code class="literal">HINT</code></span></dt><dd><p>Supplies a hint message.</p></dd><dt><span class="term"><code class="literal">ERRCODE</code></span></dt><dd><p>Specifies the error code (SQLSTATE) to report, either by condition
+        name, as shown in <a class="xref" href="errcodes-appendix.html" title="Appendix A. PostgreSQL Error Codes">Appendix A</a>, or directly as a
+        five-character SQLSTATE code.</p></dd><dt><span class="term"><code class="literal">COLUMN</code><br /></span><span class="term"><code class="literal">CONSTRAINT</code><br /></span><span class="term"><code class="literal">DATATYPE</code><br /></span><span class="term"><code class="literal">TABLE</code><br /></span><span class="term"><code class="literal">SCHEMA</code></span></dt><dd><p>Supplies the name of a related object.</p></dd></dl></div><p>
+   </p><p>
+    This example will abort the transaction with the given error message
     and hint:
-</P><PRE
-CLASS="PROGRAMLISTING"
->RAISE EXCEPTION 'Nonexistent ID --&#62; %', user_id
-      USING HINT = 'Please check your user ID';</PRE
-><P>
-   </P
-><P
->    These two examples show equivalent ways of setting the SQLSTATE:
-</P><PRE
-CLASS="PROGRAMLISTING"
->RAISE 'Duplicate user ID: %', user_id USING ERRCODE = 'unique_violation';
-RAISE 'Duplicate user ID: %', user_id USING ERRCODE = '23505';</PRE
-><P>
-   </P
-><P
->    There is a second <TT
-CLASS="COMMAND"
->RAISE</TT
-> syntax in which the main argument
+</p><pre class="programlisting">
+RAISE EXCEPTION 'Nonexistent ID --&gt; %', user_id
+      USING HINT = 'Please check your user ID';
+</pre><p>
+   </p><p>
+    These two examples show equivalent ways of setting the SQLSTATE:
+</p><pre class="programlisting">
+RAISE 'Duplicate user ID: %', user_id USING ERRCODE = 'unique_violation';
+RAISE 'Duplicate user ID: %', user_id USING ERRCODE = '23505';
+</pre><p>
+   </p><p>
+    There is a second <code class="command">RAISE</code> syntax in which the main argument
     is the condition name or SQLSTATE to be reported, for example:
-</P><PRE
-CLASS="PROGRAMLISTING"
->RAISE division_by_zero;
-RAISE SQLSTATE '22012';</PRE
-><P>
-    In this syntax, <TT
-CLASS="LITERAL"
->USING</TT
-> can be used to supply a custom
+</p><pre class="programlisting">
+RAISE division_by_zero;
+RAISE SQLSTATE '22012';
+</pre><p>
+    In this syntax, <code class="literal">USING</code> can be used to supply a custom
     error message, detail, or hint.  Another way to do the earlier
     example is
-</P><PRE
-CLASS="PROGRAMLISTING"
->RAISE unique_violation USING MESSAGE = 'Duplicate user ID: ' || user_id;</PRE
-><P>
-   </P
-><P
->    Still another variant is to write <TT
-CLASS="LITERAL"
->RAISE USING</TT
-> or <TT
-CLASS="LITERAL"
->RAISE
-    <TT
-CLASS="REPLACEABLE"
-><I
->level</I
-></TT
-> USING</TT
-> and put
-    everything else into the <TT
-CLASS="LITERAL"
->USING</TT
-> list.
-   </P
-><P
->    The last variant of <TT
-CLASS="COMMAND"
->RAISE</TT
-> has no parameters at all.
-    This form can only be used inside a <TT
-CLASS="LITERAL"
->BEGIN</TT
-> block's
-    <TT
-CLASS="LITERAL"
->EXCEPTION</TT
-> clause;
+</p><pre class="programlisting">
+RAISE unique_violation USING MESSAGE = 'Duplicate user ID: ' || user_id;
+</pre><p>
+   </p><p>
+    Still another variant is to write <code class="literal">RAISE USING</code> or <code class="literal">RAISE
+    <em class="replaceable"><code>level</code></em> USING</code> and put
+    everything else into the <code class="literal">USING</code> list.
+   </p><p>
+    The last variant of <code class="command">RAISE</code> has no parameters at all.
+    This form can only be used inside a <code class="literal">BEGIN</code> block's
+    <code class="literal">EXCEPTION</code> clause;
     it causes the error currently being handled to be re-thrown.
-   </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->     Before <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> 9.1, <TT
-CLASS="COMMAND"
->RAISE</TT
-> without
+   </p><div class="note"><h3 class="title">Note</h3><p>
+     Before <span class="productname">PostgreSQL</span> 9.1, <code class="command">RAISE</code> without
      parameters was interpreted as re-throwing the error from the block
-     containing the active exception handler.  Thus an <TT
-CLASS="LITERAL"
->EXCEPTION</TT
->
+     containing the active exception handler.  Thus an <code class="literal">EXCEPTION</code>
      clause nested within that handler could not catch it, even if the
-     <TT
-CLASS="COMMAND"
->RAISE</TT
-> was within the nested <TT
-CLASS="LITERAL"
->EXCEPTION</TT
-> clause's
+     <code class="command">RAISE</code> was within the nested <code class="literal">EXCEPTION</code> clause's
      block. This was deemed surprising as well as being incompatible with
      Oracle's PL/SQL.
-    </P
-></BLOCKQUOTE
-></DIV
-><P
->    If no condition name nor SQLSTATE is specified in a
-    <TT
-CLASS="COMMAND"
->RAISE EXCEPTION</TT
-> command, the default is to use
-    <TT
-CLASS="LITERAL"
->RAISE_EXCEPTION</TT
-> (<TT
-CLASS="LITERAL"
->P0001</TT
->).  If no message
+    </p></div><p>
+    If no condition name nor SQLSTATE is specified in a
+    <code class="command">RAISE EXCEPTION</code> command, the default is to use
+    <code class="literal">RAISE_EXCEPTION</code> (<code class="literal">P0001</code>).  If no message
     text is specified, the default is to use the condition name or
     SQLSTATE as message text.
-   </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->     When specifying an error code by SQLSTATE code, you are not
+   </p><div class="note"><h3 class="title">Note</h3><p>
+     When specifying an error code by SQLSTATE code, you are not
      limited to the predefined error codes, but can select any
      error code consisting of five digits and/or upper-case ASCII
-     letters, other than <TT
-CLASS="LITERAL"
->00000</TT
->.  It is recommended that
+     letters, other than <code class="literal">00000</code>.  It is recommended that
      you avoid throwing error codes that end in three zeroes, because
      these are category codes and can only be trapped by trapping
      the whole category.
-    </P
-></BLOCKQUOTE
-></DIV
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="PLPGSQL-STATEMENTS-ASSERT"
->41.8.2. Checking Assertions</A
-></H2
-><P
->    The <TT
-CLASS="COMMAND"
->ASSERT</TT
-> statement is a convenient shorthand for
-    inserting debugging checks into <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->
+    </p></div></div><div class="sect2" id="PLPGSQL-STATEMENTS-ASSERT"><div class="titlepage"><div><div><h3 class="title">43.9.2. Checking Assertions</h3></div></div></div><a id="id-1.8.8.11.3.2" class="indexterm"></a><a id="id-1.8.8.11.3.3" class="indexterm"></a><a id="id-1.8.8.11.3.4" class="indexterm"></a><p>
+    The <code class="command">ASSERT</code> statement is a convenient shorthand for
+    inserting debugging checks into <span class="application">PL/pgSQL</span>
     functions.
 
-</P><PRE
-CLASS="SYNOPSIS"
->ASSERT <TT
-CLASS="REPLACEABLE"
-><I
->condition</I
-></TT
-> [<SPAN
-CLASS="OPTIONAL"
-> , <TT
-CLASS="REPLACEABLE"
-><I
->message</I
-></TT
-> </SPAN
->];</PRE
-><P>
+</p><pre class="synopsis">
+ASSERT <em class="replaceable"><code>condition</code></em> [<span class="optional"> , <em class="replaceable"><code>message</code></em> </span>];
+</pre><p>
 
-    The <TT
-CLASS="REPLACEABLE"
-><I
->condition</I
-></TT
-> is a Boolean
+    The <em class="replaceable"><code>condition</code></em> is a Boolean
     expression that is expected to always evaluate to true; if it does,
-    the <TT
-CLASS="COMMAND"
->ASSERT</TT
-> statement does nothing further.  If the
-    result is false or null, then an <TT
-CLASS="LITERAL"
->ASSERT_FAILURE</TT
-> exception
+    the <code class="command">ASSERT</code> statement does nothing further.  If the
+    result is false or null, then an <code class="literal">ASSERT_FAILURE</code> exception
     is raised.  (If an error occurs while evaluating
-    the <TT
-CLASS="REPLACEABLE"
-><I
->condition</I
-></TT
->, it is
+    the <em class="replaceable"><code>condition</code></em>, it is
     reported as a normal error.)
-   </P
-><P
->    If the optional <TT
-CLASS="REPLACEABLE"
-><I
->message</I
-></TT
-> is
+   </p><p>
+    If the optional <em class="replaceable"><code>message</code></em> is
     provided, it is an expression whose result (if not null) replaces the
-    default error message text <SPAN
-CLASS="QUOTE"
->"assertion failed"</SPAN
->, should
-    the <TT
-CLASS="REPLACEABLE"
-><I
->condition</I
-></TT
-> fail.
-    The <TT
-CLASS="REPLACEABLE"
-><I
->message</I
-></TT
-> expression is
+    default error message text <span class="quote">“<span class="quote">assertion failed</span>”</span>, should
+    the <em class="replaceable"><code>condition</code></em> fail.
+    The <em class="replaceable"><code>message</code></em> expression is
     not evaluated in the normal case where the assertion succeeds.
-   </P
-><P
->    Testing of assertions can be enabled or disabled via the configuration
-    parameter <TT
-CLASS="LITERAL"
->plpgsql.check_asserts</TT
->, which takes a Boolean
-    value; the default is <TT
-CLASS="LITERAL"
->on</TT
->.  If this parameter
-    is <TT
-CLASS="LITERAL"
->off</TT
-> then <TT
-CLASS="COMMAND"
->ASSERT</TT
-> statements do nothing.
-   </P
-><P
->    Note that <TT
-CLASS="COMMAND"
->ASSERT</TT
-> is meant for detecting program
+   </p><p>
+    Testing of assertions can be enabled or disabled via the configuration
+    parameter <code class="literal">plpgsql.check_asserts</code>, which takes a Boolean
+    value; the default is <code class="literal">on</code>.  If this parameter
+    is <code class="literal">off</code> then <code class="command">ASSERT</code> statements do nothing.
+   </p><p>
+    Note that <code class="command">ASSERT</code> is meant for detecting program
     bugs, not for reporting ordinary error conditions.  Use
-    the <TT
-CLASS="COMMAND"
->RAISE</TT
-> statement, described above, for that.
-   </P
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plpgsql-cursors.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="plpgsql-trigger.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Cursors</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="plpgsql.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Trigger Procedures</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+    the <code class="command">RAISE</code> statement, described above, for that.
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-transactions.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-trigger.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.8. Transaction Management </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 43.10. Trigger Functions</td></tr></table></div></body></html>

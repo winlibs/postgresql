@@ -3,7 +3,7 @@
  * pg_rewind.c
  *	  Synchronizes a PostgreSQL data directory to a new timeline
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  *
  *-------------------------------------------------------------------------
  */
@@ -24,6 +24,7 @@
 #include "access/xlog_internal.h"
 #include "catalog/catversion.h"
 #include "catalog/pg_control.h"
+#include "common/file_perm.h"
 #include "common/restricted_token.h"
 #include "getopt_long.h"
 #include "storage/bufpage.h"
@@ -44,6 +45,7 @@ static ControlFileData ControlFile_target;
 static ControlFileData ControlFile_source;
 
 const char *progname;
+int			WalSegSz;
 
 /* Configuration options */
 char	   *datadir_target = NULL;
@@ -196,10 +198,21 @@ main(int argc, char **argv)
 		fprintf(stderr, _("cannot be executed by \"root\"\n"));
 		fprintf(stderr, _("You must run %s as the PostgreSQL superuser.\n"),
 				progname);
+		exit(1);
 	}
 #endif
 
 	get_restricted_token(progname);
+
+	/* Set mask based on PGDATA permissions */
+	if (!GetDataDirectoryCreatePerm(datadir_target))
+	{
+		fprintf(stderr, _("%s: could not read permissions of directory \"%s\": %s\n"),
+				progname, datadir_target, strerror(errno));
+		exit(1);
+	}
+
+	umask(pg_mode_mask);
 
 	/* Connect to remote server */
 	if (connstr_source)
@@ -231,7 +244,7 @@ main(int argc, char **argv)
 	else
 	{
 		findCommonAncestorTimeline(&divergerec, &lastcommontliIndex);
-		printf(_("servers diverged at WAL position %X/%X on timeline %u\n"),
+		printf(_("servers diverged at WAL location %X/%X on timeline %u\n"),
 			   (uint32) (divergerec >> 32), (uint32) divergerec,
 			   targetHistory[lastcommontliIndex].tli);
 
@@ -415,9 +428,9 @@ sanityChecks(void)
 }
 
 /*
- * Find minimum from two XLOG positions assuming InvalidXLogRecPtr means
+ * Find minimum from two WAL locations assuming InvalidXLogRecPtr means
  * infinity as src/include/access/timeline.h states. This routine should
- * be used only when comparing XLOG positions related to history files.
+ * be used only when comparing WAL locations related to history files.
  */
 static XLogRecPtr
 MinXLogRecPtr(XLogRecPtr a, XLogRecPtr b)
@@ -572,8 +585,8 @@ createBackupLabel(XLogRecPtr startpoint, TimeLineID starttli, XLogRecPtr checkpo
 	char		buf[1000];
 	int			len;
 
-	XLByteToSeg(startpoint, startsegno);
-	XLogFileName(xlogfilename, starttli, startsegno);
+	XLByteToSeg(startpoint, startsegno, WalSegSz);
+	XLogFileName(xlogfilename, starttli, startsegno, WalSegSz);
 
 	/*
 	 * Construct backup label file
@@ -589,14 +602,14 @@ createBackupLabel(XLogRecPtr startpoint, TimeLineID starttli, XLogRecPtr checkpo
 				   "BACKUP FROM: standby\n"
 				   "START TIME: %s\n",
 	/* omit LABEL: line */
-			  (uint32) (startpoint >> 32), (uint32) startpoint, xlogfilename,
+				   (uint32) (startpoint >> 32), (uint32) startpoint, xlogfilename,
 				   (uint32) (checkpointloc >> 32), (uint32) checkpointloc,
 				   strfbuf);
 	if (len >= sizeof(buf))
 		pg_fatal("backup label buffer too small\n");	/* shouldn't happen */
 
 	/* TODO: move old file out of the way, if any. */
-	open_target_file("backup_label", true);		/* BACKUP_LABEL_FILE */
+	open_target_file("backup_label", true); /* BACKUP_LABEL_FILE */
 	write_target_range(buf, 0, len);
 	close_target_file();
 }
@@ -625,11 +638,20 @@ checkControlFile(ControlFileData *ControlFile)
 static void
 digestControlFile(ControlFileData *ControlFile, char *src, size_t size)
 {
-	if (size != PG_CONTROL_SIZE)
+	if (size != PG_CONTROL_FILE_SIZE)
 		pg_fatal("unexpected control file size %d, expected %d\n",
-				 (int) size, PG_CONTROL_SIZE);
+				 (int) size, PG_CONTROL_FILE_SIZE);
 
 	memcpy(ControlFile, src, sizeof(ControlFileData));
+
+	/* set and validate WalSegSz */
+	WalSegSz = ControlFile->xlog_seg_size;
+
+	if (!IsValidWalSegSize(WalSegSz))
+		pg_fatal(ngettext("WAL segment size must be a power of two between 1 MB and 1 GB, but the control file specifies %d byte\n",
+						  "WAL segment size must be a power of two between 1 MB and 1 GB, but the control file specifies %d bytes\n",
+						  WalSegSz),
+				 WalSegSz);
 
 	/* Additional checks on control file */
 	checkControlFile(ControlFile);
@@ -641,7 +663,16 @@ digestControlFile(ControlFileData *ControlFile, char *src, size_t size)
 static void
 updateControlFile(ControlFileData *ControlFile)
 {
-	char		buffer[PG_CONTROL_SIZE];
+	char		buffer[PG_CONTROL_FILE_SIZE];
+
+	/*
+	 * For good luck, apply the same static assertions as in backend's
+	 * WriteControlFile().
+	 */
+	StaticAssertStmt(sizeof(ControlFileData) <= PG_CONTROL_MAX_SAFE_SIZE,
+					 "pg_control is too large for atomic disk writes");
+	StaticAssertStmt(sizeof(ControlFileData) <= PG_CONTROL_FILE_SIZE,
+					 "sizeof(ControlFileData) exceeds PG_CONTROL_FILE_SIZE");
 
 	/* Recalculate CRC of control file */
 	INIT_CRC32C(ControlFile->crc);
@@ -651,16 +682,16 @@ updateControlFile(ControlFileData *ControlFile)
 	FIN_CRC32C(ControlFile->crc);
 
 	/*
-	 * Write out PG_CONTROL_SIZE bytes into pg_control by zero-padding the
-	 * excess over sizeof(ControlFileData) to avoid premature EOF related
+	 * Write out PG_CONTROL_FILE_SIZE bytes into pg_control by zero-padding
+	 * the excess over sizeof(ControlFileData), to avoid premature EOF related
 	 * errors when reading it.
 	 */
-	memset(buffer, 0, PG_CONTROL_SIZE);
+	memset(buffer, 0, PG_CONTROL_FILE_SIZE);
 	memcpy(buffer, ControlFile, sizeof(ControlFileData));
 
 	open_target_file("global/pg_control", false);
 
-	write_target_range(buffer, 0, PG_CONTROL_SIZE);
+	write_target_range(buffer, 0, PG_CONTROL_FILE_SIZE);
 
 	close_target_file();
 }

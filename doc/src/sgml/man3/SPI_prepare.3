@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SPI_PREPARE" "3" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SPI_PREPARE" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -51,7 +51,7 @@ is called\&. This allows the prepared command to be used over a wider range of s
 .PP
 The statement returned by
 \fBSPI_prepare\fR
-can be used only in the current invocation of the procedure, since
+can be used only in the current invocation of the C function, since
 \fBSPI_finish\fR
 frees memory allocated for such a statement\&. But the statement can be saved for longer using the functions
 \fBSPI_keepplan\fR
@@ -122,7 +122,7 @@ PostgreSQL
 \fBPREPARE\fR(7)
 for more information about the behavior of prepared statements\&.
 .PP
-This function should only be called from a connected procedure\&.
+This function should only be called from a connected C function\&.
 .PP
 SPIPlanPtr
 is declared as a pointer to an opaque struct type in

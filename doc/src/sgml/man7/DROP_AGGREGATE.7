@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "DROP AGGREGATE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "DROP AGGREGATE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,7 @@ DROP_AGGREGATE \- remove an aggregate function
 .SH "SYNOPSIS"
 .sp
 .nf
-DROP AGGREGATE [ IF EXISTS ] \fIname\fR ( \fIaggregate_signature\fR ) [ CASCADE | RESTRICT ]
+DROP AGGREGATE [ IF EXISTS ] \fIname\fR ( \fIaggregate_signature\fR ) [, \&.\&.\&.] [ CASCADE | RESTRICT ]
 
 where \fIaggregate_signature\fR is:
 
@@ -84,7 +84,7 @@ between the direct and aggregated argument specifications\&.
 CASCADE
 .RS 4
 Automatically drop objects that depend on the aggregate function (such as views using it), and in turn all objects that depend on those objects (see
-Section 5.13, \(lqDependency Tracking\(rq, in the documentation)\&.
+Section\ \&5.13)\&.
 .RE
 .PP
 RESTRICT
@@ -124,7 +124,18 @@ DROP AGGREGATE myrank(VARIADIC "any" ORDER BY VARIADIC "any");
 .if n \{\
 .RE
 .\}
+.PP
+To remove multiple aggregate functions in one command:
 .sp
+.if n \{\
+.RS 4
+.\}
+.nf
+DROP AGGREGATE myavg(integer), myavg(bigint);
+.fi
+.if n \{\
+.RE
+.\}
 .SH "COMPATIBILITY"
 .PP
 There is no

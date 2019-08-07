@@ -9,7 +9,7 @@
  * shorn of features like subselects, inheritance, aggregates, grouping,
  * and so on.  (Those are the things planner.c deals with.)
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -71,14 +71,13 @@ query_planner(PlannerInfo *root, List *tlist,
 
 		/*
 		 * If query allows parallelism in general, check whether the quals are
-		 * parallel-restricted.  There's currently no real benefit to setting
-		 * this flag correctly because we can't yet reference subplans from
-		 * parallel workers.  But that might change someday, so set this
-		 * correctly anyway.
+		 * parallel-restricted.  (We need not check final_rel->reltarget
+		 * because it's empty at this point.  Anything parallel-restricted in
+		 * the query tlist will be dealt with later.)
 		 */
 		if (root->glob->parallelModeOK)
 			final_rel->consider_parallel =
-				!has_parallel_hazard(parse->jointree->quals, false);
+				is_parallel_safe(root, parse->jointree->quals);
 
 		/* The only path for it is a trivial Result path */
 		add_path(final_rel, (Path *)
@@ -124,6 +123,12 @@ query_planner(PlannerInfo *root, List *tlist,
 	 * array for indexing base relations.
 	 */
 	setup_simple_rel_arrays(root);
+
+	/*
+	 * Populate append_rel_array with each AppendRelInfo to allow direct
+	 * lookups by child relid.
+	 */
+	setup_append_rel_array(root);
 
 	/*
 	 * Construct RelOptInfo nodes for all base relations in query, and
@@ -194,6 +199,12 @@ query_planner(PlannerInfo *root, List *tlist,
 	joinlist = remove_useless_joins(root, joinlist);
 
 	/*
+	 * Also, reduce any semijoins with unique inner rels to plain inner joins.
+	 * Likewise, this can't be done until now for lack of needed info.
+	 */
+	reduce_unique_semijoins(root);
+
+	/*
 	 * Now distribute "placeholders" to base rels as needed.  This has to be
 	 * done after join removal because removal could change whether a
 	 * placeholder is evaluable at a base rel.
@@ -241,10 +252,9 @@ query_planner(PlannerInfo *root, List *tlist,
 		if (brel == NULL)
 			continue;
 
-		Assert(brel->relid == rti);		/* sanity check on array */
+		Assert(brel->relid == rti); /* sanity check on array */
 
-		if (brel->reloptkind == RELOPT_BASEREL ||
-			brel->reloptkind == RELOPT_OTHER_MEMBER_REL)
+		if (IS_SIMPLE_REL(brel))
 			total_pages += (double) brel->pages;
 	}
 	root->total_table_pages = total_pages;

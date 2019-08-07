@@ -3,7 +3,7 @@
  * pg_type.c
  *	  routines to support manipulation of the pg_type relation
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -25,7 +25,6 @@
 #include "catalog/pg_namespace.h"
 #include "catalog/pg_proc.h"
 #include "catalog/pg_type.h"
-#include "catalog/pg_type_fn.h"
 #include "commands/typecmds.h"
 #include "miscadmin.h"
 #include "parser/scansup.h"
@@ -79,7 +78,7 @@ TypeShellMake(const char *typeName, Oid typeNamespace, Oid ownerId)
 	for (i = 0; i < Natts_pg_type; ++i)
 	{
 		nulls[i] = false;
-		values[i] = (Datum) NULL;		/* redundant, but safe */
+		values[i] = (Datum) NULL;	/* redundant, but safe */
 	}
 
 	/*
@@ -133,7 +132,7 @@ TypeShellMake(const char *typeName, Oid typeNamespace, Oid ownerId)
 		if (!OidIsValid(binary_upgrade_next_pg_type_oid))
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_PARAMETER_VALUE),
-			errmsg("pg_type OID value not set when in binary upgrade mode")));
+					 errmsg("pg_type OID value not set when in binary upgrade mode")));
 
 		HeapTupleSetOid(tup, binary_upgrade_next_pg_type_oid);
 		binary_upgrade_next_pg_type_oid = InvalidOid;
@@ -142,9 +141,7 @@ TypeShellMake(const char *typeName, Oid typeNamespace, Oid ownerId)
 	/*
 	 * insert the tuple in the relation and get the tuple's oid.
 	 */
-	typoid = simple_heap_insert(pg_type_desc, tup);
-
-	CatalogUpdateIndexes(pg_type_desc, tup);
+	typoid = CatalogTupleInsert(pg_type_desc, tup);
 
 	/*
 	 * Create dependencies.  We can/must skip this in bootstrap mode.
@@ -206,7 +203,7 @@ TypeCreate(Oid newTypeOid,
 		   bool isImplicitArray,
 		   Oid arrayType,
 		   Oid baseType,
-		   const char *defaultTypeValue,		/* human readable rep */
+		   const char *defaultTypeValue,	/* human readable rep */
 		   char *defaultTypeBin,	/* cooked rep */
 		   bool passedByValue,
 		   char alignment,
@@ -289,8 +286,8 @@ TypeCreate(Oid newTypeOid,
 		else
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-			   errmsg("internal size %d is invalid for passed-by-value type",
-					  internalSize)));
+					 errmsg("internal size %d is invalid for passed-by-value type",
+							internalSize)));
 	}
 	else
 	{
@@ -298,14 +295,14 @@ TypeCreate(Oid newTypeOid,
 		if (internalSize == -1 && !(alignment == 'i' || alignment == 'd'))
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-			   errmsg("alignment \"%c\" is invalid for variable-length type",
-					  alignment)));
+					 errmsg("alignment \"%c\" is invalid for variable-length type",
+							alignment)));
 		/* cstring must have char alignment */
 		if (internalSize == -2 && !(alignment == 'c'))
 			ereport(ERROR,
 					(errcode(ERRCODE_INVALID_OBJECT_DEFINITION),
-			   errmsg("alignment \"%c\" is invalid for variable-length type",
-					  alignment)));
+					 errmsg("alignment \"%c\" is invalid for variable-length type",
+							alignment)));
 	}
 
 	/* Only varlena types can be toasted */
@@ -390,7 +387,7 @@ TypeCreate(Oid newTypeOid,
 	if (isDependentType)
 		typacl = NULL;
 	else
-		typacl = get_user_default_acl(ACL_OBJECT_TYPE, ownerId,
+		typacl = get_user_default_acl(OBJECT_TYPE, ownerId,
 									  typeNamespace);
 	if (typacl != NULL)
 		values[Anum_pg_type_typacl - 1] = PointerGetDatum(typacl);
@@ -423,7 +420,7 @@ TypeCreate(Oid newTypeOid,
 		 * shell type must have been created by same owner
 		 */
 		if (((Form_pg_type) GETSTRUCT(tup))->typowner != ownerId)
-			aclcheck_error(ACLCHECK_NOT_OWNER, ACL_KIND_TYPE, typeName);
+			aclcheck_error(ACLCHECK_NOT_OWNER, OBJECT_TYPE, typeName);
 
 		/* trouble if caller wanted to force the OID */
 		if (OidIsValid(newTypeOid))
@@ -438,7 +435,7 @@ TypeCreate(Oid newTypeOid,
 								nulls,
 								replaces);
 
-		simple_heap_update(pg_type_desc, &tup->t_self, tup);
+		CatalogTupleUpdate(pg_type_desc, &tup->t_self, tup);
 
 		typeObjectId = HeapTupleGetOid(tup);
 
@@ -466,11 +463,8 @@ TypeCreate(Oid newTypeOid,
 		}
 		/* else allow system to assign oid */
 
-		typeObjectId = simple_heap_insert(pg_type_desc, tup);
+		typeObjectId = CatalogTupleInsert(pg_type_desc, tup);
 	}
-
-	/* Update indexes */
-	CatalogUpdateIndexes(pg_type_desc, tup);
 
 	/*
 	 * Create dependencies.  We can/must skip this in bootstrap mode.
@@ -741,10 +735,7 @@ RenameTypeInternal(Oid typeOid, const char *newTypeName, Oid typeNamespace)
 	/* OK, do the rename --- tuple is a copy, so OK to scribble on it */
 	namestrcpy(&(typ->typname), newTypeName);
 
-	simple_heap_update(pg_type_desc, &tuple->t_self, tuple);
-
-	/* update the system catalog indexes */
-	CatalogUpdateIndexes(pg_type_desc, tuple);
+	CatalogTupleUpdate(pg_type_desc, &tuple->t_self, tuple);
 
 	InvokeObjectPostAlterHook(TypeRelationId, typeOid, 0);
 
@@ -830,9 +821,9 @@ makeArrayTypeName(const char *typeName, Oid typeNamespace)
  * determine the new type's own array type name; else the latter will
  * certainly pick the same name.
  *
- * Returns TRUE if successfully moved the type, FALSE if not.
+ * Returns true if successfully moved the type, false if not.
  *
- * We also return TRUE if the given type is a shell type.  In this case
+ * We also return true if the given type is a shell type.  In this case
  * the type has not been renamed out of the way, but nonetheless it can
  * be expected that TypeCreate will succeed.  This behavior is convenient
  * for most callers --- those that need to distinguish the shell-type case

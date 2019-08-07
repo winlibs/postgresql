@@ -1,274 +1,39 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Expressions</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="PL/pgSQL - SQL Procedural Language"
-HREF="plpgsql.html"><LINK
-REL="PREVIOUS"
-TITLE="Declarations"
-HREF="plpgsql-declarations.html"><LINK
-REL="NEXT"
-TITLE="Basic Statements"
-HREF="plpgsql-statements.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Declarations"
-HREF="plpgsql-declarations.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plpgsql.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 41. <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> - <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> Procedural Language</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Basic Statements"
-HREF="plpgsql-statements.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="PLPGSQL-EXPRESSIONS"
->41.4. Expressions</A
-></H1
-><P
->     All expressions used in <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
->
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>43.4. Expressions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpgsql-declarations.html" title="43.3. Declarations" /><link rel="next" href="plpgsql-statements.html" title="43.5. Basic Statements" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">43.4. Expressions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpgsql-declarations.html" title="43.3. Declarations">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpgsql.html" title="Chapter 43. PL/pgSQL - SQL Procedural Language">Up</a></td><th width="60%" align="center">Chapter 43. <span xmlns="http://www.w3.org/1999/xhtml" class="application">PL/pgSQL</span> - <acronym xmlns="http://www.w3.org/1999/xhtml" class="acronym">SQL</acronym> Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpgsql-statements.html" title="43.5. Basic Statements">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPGSQL-EXPRESSIONS"><div class="titlepage"><div><div><h2 class="title" style="clear: both">43.4. Expressions</h2></div></div></div><p>
+     All expressions used in <span class="application">PL/pgSQL</span>
      statements are processed using the server's main
-     <ACRONYM
-CLASS="ACRONYM"
->SQL</ACRONYM
-> executor.  For example, when you write
-     a <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> statement like
-</P><PRE
-CLASS="SYNOPSIS"
->IF <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-> THEN ...</PRE
-><P>
-     <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> will evaluate the expression by
+     <acronym class="acronym">SQL</acronym> executor.  For example, when you write
+     a <span class="application">PL/pgSQL</span> statement like
+</p><pre class="synopsis">
+IF <em class="replaceable"><code>expression</code></em> THEN ...
+</pre><p>
+     <span class="application">PL/pgSQL</span> will evaluate the expression by
      feeding a query like
-</P><PRE
-CLASS="SYNOPSIS"
->SELECT <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
-></PRE
-><P>
-     to the main SQL engine.  While forming the <TT
-CLASS="COMMAND"
->SELECT</TT
-> command,
-     any occurrences of <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> variable names
+</p><pre class="synopsis">
+SELECT <em class="replaceable"><code>expression</code></em>
+</pre><p>
+     to the main SQL engine.  While forming the <code class="command">SELECT</code> command,
+     any occurrences of <span class="application">PL/pgSQL</span> variable names
      are replaced by parameters, as discussed in detail in
-     <A
-HREF="plpgsql-implementation.html#PLPGSQL-VAR-SUBST"
->Section 41.10.1</A
->.
-     This allows the query plan for the <TT
-CLASS="COMMAND"
->SELECT</TT
-> to
+     <a class="xref" href="plpgsql-implementation.html#PLPGSQL-VAR-SUBST" title="43.11.1. Variable Substitution">Section 43.11.1</a>.
+     This allows the query plan for the <code class="command">SELECT</code> to
      be prepared just once and then reused for subsequent
      evaluations with different values of the variables.  Thus, what
      really happens on first use of an expression is essentially a
-     <TT
-CLASS="COMMAND"
->PREPARE</TT
-> command.  For example, if we have declared
-     two integer variables <TT
-CLASS="LITERAL"
->x</TT
-> and <TT
-CLASS="LITERAL"
->y</TT
->, and we write
-</P><PRE
-CLASS="PROGRAMLISTING"
->IF x &lt; y THEN ...</PRE
-><P>
+     <code class="command">PREPARE</code> command.  For example, if we have declared
+     two integer variables <code class="literal">x</code> and <code class="literal">y</code>, and we write
+</p><pre class="programlisting">
+IF x &lt; y THEN ...
+</pre><p>
      what happens behind the scenes is equivalent to
-</P><PRE
-CLASS="PROGRAMLISTING"
->PREPARE <TT
-CLASS="REPLACEABLE"
-><I
->statement_name</I
-></TT
->(integer, integer) AS SELECT $1 &lt; $2;</PRE
-><P>
-     and then this prepared statement is <TT
-CLASS="COMMAND"
->EXECUTE</TT
->d for each
-     execution of the <TT
-CLASS="COMMAND"
->IF</TT
-> statement, with the current values
-     of the <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> variables supplied as
+</p><pre class="programlisting">
+PREPARE <em class="replaceable"><code>statement_name</code></em>(integer, integer) AS SELECT $1 &lt; $2;
+</pre><p>
+     and then this prepared statement is <code class="command">EXECUTE</code>d for each
+     execution of the <code class="command">IF</code> statement, with the current values
+     of the <span class="application">PL/pgSQL</span> variables supplied as
      parameter values.  Normally these details are
-     not important to a <SPAN
-CLASS="APPLICATION"
->PL/pgSQL</SPAN
-> user, but
+     not important to a <span class="application">PL/pgSQL</span> user, but
      they are useful to know when trying to diagnose a problem.
-     More information appears in <A
-HREF="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING"
->Section 41.10.2</A
->.
-    </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plpgsql-declarations.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="plpgsql-statements.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Declarations</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="plpgsql.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Basic Statements</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+     More information appears in <a class="xref" href="plpgsql-implementation.html#PLPGSQL-PLAN-CACHING" title="43.11.2. Plan Caching">Section 43.11.2</a>.
+    </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpgsql-declarations.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpgsql.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpgsql-statements.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">43.3. Declarations </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 43.5. Basic Statements</td></tr></table></div></body></html>

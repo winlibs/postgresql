@@ -1,193 +1,27 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Index Access Method Interface Definition</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Internals"
-HREF="internals.html"><LINK
-REL="PREVIOUS"
-TITLE="Further Reading"
-HREF="geqo-biblio.html"><LINK
-REL="NEXT"
-TITLE="Basic API Structure for Indexes"
-HREF="index-api.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="CHAPTER"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Further Reading"
-HREF="geqo-biblio.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="internals.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Basic API Structure for Indexes"
-HREF="index-api.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="CHAPTER"
-><H1
-><A
-NAME="INDEXAM"
-></A
->Chapter 59. Index Access Method Interface Definition</H1
-><DIV
-CLASS="TOC"
-><DL
-><DT
-><B
->Table of Contents</B
-></DT
-><DT
->59.1. <A
-HREF="index-api.html"
->Basic API Structure for Indexes</A
-></DT
-><DT
->59.2. <A
-HREF="index-functions.html"
->Index Access Method Functions</A
-></DT
-><DT
->59.3. <A
-HREF="index-scanning.html"
->Index Scanning</A
-></DT
-><DT
->59.4. <A
-HREF="index-locking.html"
->Index Locking Considerations</A
-></DT
-><DT
->59.5. <A
-HREF="index-unique-checks.html"
->Index Uniqueness Checks</A
-></DT
-><DT
->59.6. <A
-HREF="index-cost-estimation.html"
->Index Cost Estimation Functions</A
-></DT
-></DL
-></DIV
-><P
->   This chapter defines the interface between the core
-   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> system and <I
-CLASS="FIRSTTERM"
->index access
-   methods</I
->, which manage individual index types.  The core system
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 61. Index Access Method Interface Definition</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="geqo-biblio.html" title="60.4. Further Reading" /><link rel="next" href="index-api.html" title="61.1. Basic API Structure for Indexes" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">Chapter 61. Index Access Method Interface Definition</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="geqo-biblio.html" title="60.4. Further Reading">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="internals.html" title="Part VII. Internals">Up</a></td><th width="60%" align="center">Part VII. Internals</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="index-api.html" title="61.1. Basic API Structure for Indexes">Next</a></td></tr></table><hr></hr></div><div class="chapter" id="INDEXAM"><div class="titlepage"><div><div><h2 class="title">Chapter 61. Index Access Method Interface Definition</h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="sect1"><a href="index-api.html">61.1. Basic API Structure for Indexes</a></span></dt><dt><span class="sect1"><a href="index-functions.html">61.2. Index Access Method Functions</a></span></dt><dt><span class="sect1"><a href="index-scanning.html">61.3. Index Scanning</a></span></dt><dt><span class="sect1"><a href="index-locking.html">61.4. Index Locking Considerations</a></span></dt><dt><span class="sect1"><a href="index-unique-checks.html">61.5. Index Uniqueness Checks</a></span></dt><dt><span class="sect1"><a href="index-cost-estimation.html">61.6. Index Cost Estimation Functions</a></span></dt></dl></div><p>
+   This chapter defines the interface between the core
+   <span class="productname">PostgreSQL</span> system and <em class="firstterm">index access
+   methods</em>, which manage individual index types.  The core system
    knows nothing about indexes beyond what is specified here, so it is
    possible to develop entirely new index types by writing add-on code.
-  </P
-><P
->   All indexes in <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> are what are known
-   technically as <I
-CLASS="FIRSTTERM"
->secondary indexes</I
->; that is, the index is
+  </p><p>
+   All indexes in <span class="productname">PostgreSQL</span> are what are known
+   technically as <em class="firstterm">secondary indexes</em>; that is, the index is
    physically separate from the table file that it describes.  Each index
-   is stored as its own physical <I
-CLASS="FIRSTTERM"
->relation</I
-> and so is described
-   by an entry in the <TT
-CLASS="STRUCTNAME"
->pg_class</TT
-> catalog.  The contents of an
+   is stored as its own physical <em class="firstterm">relation</em> and so is described
+   by an entry in the <code class="structname">pg_class</code> catalog.  The contents of an
    index are entirely under the control of its index access method.  In
    practice, all index access methods divide indexes into standard-size
    pages so that they can use the regular storage manager and buffer manager
    to access the index contents.  (All the existing index access methods
-   furthermore use the standard page layout described in <A
-HREF="storage-page-layout.html"
->Section 65.6</A
->, and most use the same format for index
+   furthermore use the standard page layout described in <a class="xref" href="storage-page-layout.html" title="68.6. Database Page Layout">Section 68.6</a>, and most use the same format for index
    tuple headers; but these decisions are not forced on an access method.)
-  </P
-><P
->   An index is effectively a mapping from some data key values to
-   <I
-CLASS="FIRSTTERM"
->tuple identifiers</I
->, or <ACRONYM
-CLASS="ACRONYM"
->TIDs</ACRONYM
->, of row versions
+  </p><p>
+   An index is effectively a mapping from some data key values to
+   <em class="firstterm">tuple identifiers</em>, or <acronym class="acronym">TIDs</acronym>, of row versions
    (tuples) in the index's parent table.  A TID consists of a
-   block number and an item number within that block (see <A
-HREF="storage-page-layout.html"
->Section 65.6</A
->).  This is sufficient
+   block number and an item number within that block (see <a class="xref" href="storage-page-layout.html" title="68.6. Database Page Layout">Section 68.6</a>).  This is sufficient
    information to fetch a particular row version from the table.
    Indexes are not directly aware that under MVCC, there might be multiple
    extant versions of the same logical row; to an index, each tuple is
@@ -197,70 +31,4 @@ HREF="storage-page-layout.html"
    statement; but indexes do not deal with those, either.)  Index entries for
    dead tuples are reclaimed (by vacuuming) when the dead tuples themselves
    are reclaimed.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="geqo-biblio.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="index-api.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Further Reading</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="internals.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Basic API Structure for Indexes</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="geqo-biblio.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="internals.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="index-api.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">60.4. Further Reading </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 61.1. Basic API Structure for Indexes</td></tr></table></div></body></html>

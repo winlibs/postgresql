@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SPI_CURSOR_OPEN" "3" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SPI_CURSOR_OPEN" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -43,7 +43,7 @@ sets up a cursor (internally, a portal) that will execute a statement prepared b
 \fBSPI_prepare\fR\&. The parameters have the same meanings as the corresponding parameters to
 \fBSPI_execute_plan\fR\&.
 .PP
-Using a cursor instead of executing the statement directly has two benefits\&. First, the result rows can be retrieved a few at a time, avoiding memory overrun for queries that return many rows\&. Second, a portal can outlive the current procedure (it can, in fact, live to the end of the current transaction)\&. Returning the portal name to the procedure\*(Aqs caller provides a way of returning a row set as result\&.
+Using a cursor instead of executing the statement directly has two benefits\&. First, the result rows can be retrieved a few at a time, avoiding memory overrun for queries that return many rows\&. Second, a portal can outlive the current C function (it can, in fact, live to the end of the current transaction)\&. Returning the portal name to the C function\*(Aqs caller provides a way of returning a row set as result\&.
 .PP
 The passed\-in parameter data will be copied into the cursor\*(Aqs portal, so it can be freed while the cursor still exists\&.
 .SH "ARGUMENTS"

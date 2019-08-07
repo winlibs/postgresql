@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE AGGREGATE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE AGGREGATE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -38,6 +38,7 @@ CREATE AGGREGATE \fIname\fR ( [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_ty
     [ , SSPACE = \fIstate_data_size\fR ]
     [ , FINALFUNC = \fIffunc\fR ]
     [ , FINALFUNC_EXTRA ]
+    [ , FINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE } ]
     [ , COMBINEFUNC = \fIcombinefunc\fR ]
     [ , SERIALFUNC = \fIserialfunc\fR ]
     [ , DESERIALFUNC = \fIdeserialfunc\fR ]
@@ -48,6 +49,7 @@ CREATE AGGREGATE \fIname\fR ( [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_ty
     [ , MSSPACE = \fImstate_data_size\fR ]
     [ , MFINALFUNC = \fImffunc\fR ]
     [ , MFINALFUNC_EXTRA ]
+    [ , MFINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE } ]
     [ , MINITCOND = \fIminitial_condition\fR ]
     [ , SORTOP = \fIsort_operator\fR ]
     [ , PARALLEL = { SAFE | RESTRICTED | UNSAFE } ]
@@ -60,6 +62,7 @@ CREATE AGGREGATE \fIname\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIarg_data_
     [ , SSPACE = \fIstate_data_size\fR ]
     [ , FINALFUNC = \fIffunc\fR ]
     [ , FINALFUNC_EXTRA ]
+    [ , FINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE } ]
     [ , INITCOND = \fIinitial_condition\fR ]
     [ , PARALLEL = { SAFE | RESTRICTED | UNSAFE } ]
     [ , HYPOTHETICAL ]
@@ -74,6 +77,7 @@ CREATE AGGREGATE \fIname\fR (
     [ , SSPACE = \fIstate_data_size\fR ]
     [ , FINALFUNC = \fIffunc\fR ]
     [ , FINALFUNC_EXTRA ]
+    [ , FINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE } ]
     [ , COMBINEFUNC = \fIcombinefunc\fR ]
     [ , SERIALFUNC = \fIserialfunc\fR ]
     [ , DESERIALFUNC = \fIdeserialfunc\fR ]
@@ -84,6 +88,7 @@ CREATE AGGREGATE \fIname\fR (
     [ , MSSPACE = \fImstate_data_size\fR ]
     [ , MFINALFUNC = \fImffunc\fR ]
     [ , MFINALFUNC_EXTRA ]
+    [ , MFINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE } ]
     [ , MINITCOND = \fIminitial_condition\fR ]
     [ , SORTOP = \fIsort_operator\fR ]
 )
@@ -92,7 +97,7 @@ CREATE AGGREGATE \fIname\fR (
 .PP
 \fBCREATE AGGREGATE\fR
 defines a new aggregate function\&. Some basic and commonly\-used aggregate functions are included with the distribution; they are documented in
-Section 9.20, \(lqAggregate Functions\(rq, in the documentation\&. If one defines new types or needs an aggregate function not already provided, then
+Section\ \&9.20\&. If one defines new types or needs an aggregate function not already provided, then
 \fBCREATE AGGREGATE\fR
 can be used to provide the desired features\&.
 .PP
@@ -147,14 +152,15 @@ to identify the actual argument type in the current call\&.
 .PP
 An aggregate can optionally support
 moving\-aggregate mode, as described in
-Section 36.10.1, \(lqMoving-Aggregate Mode\(rq, in the documentation\&. This requires specifying the
+Section\ \&38.11.1\&. This requires specifying the
 MSFUNC,
 MINVFUNC, and
 MSTYPE
 parameters, and optionally the
 MSPACE,
 MFINALFUNC,
-MFINALFUNC_EXTRA, and
+MFINALFUNC_EXTRA,
+MFINALFUNC_MODIFY, and
 MINITCOND
 parameters\&. Except for
 MINVFUNC, these parameters work like the corresponding simple\-aggregate parameters without
@@ -175,7 +181,7 @@ row\&.
 .PP
 An aggregate can optionally support
 partial aggregation, as described in
-Section 36.10.4, \(lqPartial Aggregation\(rq, in the documentation\&. This requires specifying the
+Section\ \&38.11.4\&. This requires specifying the
 COMBINEFUNC
 parameter\&. If the
 \fIstate_data_type\fR
@@ -320,6 +326,17 @@ FINALFUNC_EXTRA
 is specified, then in addition to the final state value and any direct arguments, the final function receives extra NULL values corresponding to the aggregate\*(Aqs regular (aggregated) arguments\&. This is mainly useful to allow correct resolution of the aggregate result type when a polymorphic aggregate is being defined\&.
 .RE
 .PP
+FINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE }
+.RS 4
+This option specifies whether the final function is a pure function that does not modify its arguments\&.
+READ_ONLY
+indicates it does not; the other two values indicate that it may change the transition state value\&. See
+NOTES
+below for more detail\&. The default is
+READ_ONLY, except for ordered\-set aggregates, for which the default is
+READ_WRITE\&.
+.RE
+.PP
 \fIcombinefunc\fR
 .RS 4
 The
@@ -424,6 +441,12 @@ or
 must match that determined by the aggregate\*(Aqs regular implementation\&.
 .RE
 .PP
+MFINALFUNC_MODIFY = { READ_ONLY | SHAREABLE | READ_WRITE }
+.RS 4
+This option is like
+FINALFUNC_MODIFY, but it describes the behavior of the moving\-aggregate final function\&.
+.RE
+.PP
 \fIminitial_condition\fR
 .RS 4
 The initial setting for the state value, when using moving\-aggregate mode\&. This works the same as
@@ -437,13 +460,13 @@ The associated sort operator for a
 \fBMAX\fR\-like aggregate\&. This is just an operator name (possibly schema\-qualified)\&. The operator is assumed to have the same input data types as the aggregate (which must be a single\-argument normal aggregate)\&.
 .RE
 .PP
-PARALLEL
+PARALLEL = { SAFE | RESTRICTED | UNSAFE }
 .RS 4
 The meanings of
 PARALLEL SAFE,
 PARALLEL RESTRICTED, and
 PARALLEL UNSAFE
-are the same as for
+are the same as in
 CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7))\&. An aggregate will not be considered for parallelization if it is marked
 PARALLEL UNSAFE
 (which is the default!) or
@@ -465,6 +488,18 @@ can be written in any order, not just the order illustrated above\&.
 In parameters that specify support function names, you can write a schema name if needed, for example
 SFUNC = public\&.sum\&. Do not write argument types there, however \(em the argument types of the support functions are determined from other parameters\&.
 .PP
+Ordinarily, PostgreSQL functions are expected to be true functions that do not modify their input values\&. However, an aggregate transition function,
+\fIwhen used in the context of an aggregate\fR, is allowed to cheat and modify its transition\-state argument in place\&. This can provide substantial performance benefits compared to making a fresh copy of the transition state each time\&.
+.PP
+Likewise, while an aggregate final function is normally expected not to modify its input values, sometimes it is impractical to avoid modifying the transition\-state argument\&. Such behavior must be declared using the
+FINALFUNC_MODIFY
+parameter\&. The
+READ_WRITE
+value indicates that the final function modifies the transition state in unspecified ways\&. This value prevents use of the aggregate as a window function, and it also prevents merging of transition states for aggregate calls that share the same input values and transition functions\&. The
+SHAREABLE
+value indicates that the transition function cannot be applied after the final function, but multiple final\-function calls can be performed on the ending transition state value\&. This value prevents use of the aggregate as a window function, but it allows merging of transition states\&. (That is, the optimization of interest here is not applying the same final function repeatedly, but applying different final functions to the same ending transition state value\&. This is allowed as long as none of the final functions are marked
+READ_WRITE\&.)
+.PP
 If an aggregate supports moving\-aggregate mode, it will improve calculation efficiency when the aggregate is used as a window function for a window with moving frame start (that is, a frame start mode other than
 UNBOUNDED PRECEDING)\&. Conceptually, the forward transition function adds input values to the aggregate\*(Aqs state when they enter the window frame from the bottom, and the inverse transition function removes them again when they leave the frame at the top\&. So, when values are removed, they are always removed in the same order they were added\&. Whenever the inverse transition function is invoked, it will thus receive the earliest added but not yet removed argument value(s)\&. The inverse transition function can assume that at least one row will remain in the current state after it removes the oldest row\&. (When this would not be the case, the window function mechanism simply starts a fresh aggregation, rather than using the inverse transition function\&.)
 .PP
@@ -474,7 +509,7 @@ If no moving\-aggregate implementation is supplied, the aggregate can still be u
 PostgreSQL
 will recompute the whole aggregation whenever the start of the frame moves\&. Note that whether or not the aggregate supports moving\-aggregate mode,
 PostgreSQL
-can handle a moving frame end without recalculation; this is done by continuing to add new values to the aggregate\*(Aqs state\&. It is assumed that the final function does not damage the aggregate\*(Aqs state value, so that the aggregation can be continued even after an aggregate result value has been obtained for one set of frame boundaries\&.
+can handle a moving frame end without recalculation; this is done by continuing to add new values to the aggregate\*(Aqs state\&. This is why use of an aggregate as a window function requires that the final function be read\-only: it must not damage the aggregate\*(Aqs state value, so that the aggregation can be continued even after an aggregate result value has been obtained for one set of frame boundaries\&.
 .PP
 The syntax for ordered\-set aggregates allows
 VARIADIC
@@ -503,7 +538,7 @@ clauses, since those semantics cannot be supported during partial aggregation\&.
 .SH "EXAMPLES"
 .PP
 See
-Section 36.10, \(lqUser-defined Aggregates\(rq, in the documentation\&.
+Section\ \&38.11\&.
 .SH "COMPATIBILITY"
 .PP
 \fBCREATE AGGREGATE\fR

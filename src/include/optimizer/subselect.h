@@ -3,7 +3,7 @@
  * subselect.h
  *	  Planning routines for subselects.
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/optimizer/subselect.h
@@ -40,4 +40,4 @@ extern void SS_make_initplan_from_plan(PlannerInfo *root,
 /* XXX deprecated: */
 extern int	SS_assign_special_param(PlannerInfo *root);
 
-#endif   /* SUBSELECT_H */
+#endif							/* SUBSELECT_H */

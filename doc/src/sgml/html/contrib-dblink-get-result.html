@@ -1,264 +1,47 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->dblink_get_result</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="dblink"
-HREF="dblink.html"><LINK
-REL="PREVIOUS"
-TITLE="dblink_get_notify"
-HREF="contrib-dblink-get-notify.html"><LINK
-REL="NEXT"
-TITLE="dblink_cancel_query"
-HREF="contrib-dblink-cancel-query.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="dblink_get_notify"
-HREF="contrib-dblink-get-notify.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="dblink.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="dblink_cancel_query"
-HREF="contrib-dblink-cancel-query.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="CONTRIB-DBLINK-GET-RESULT"
-></A
->dblink_get_result</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN136215"
-></A
-><H2
->Name</H2
->dblink_get_result&nbsp;--&nbsp;gets an async query result</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN136218"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->dblink_get_result(text connname [, bool fail_on_error]) returns setof record</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN136220"
-></A
-><H2
->Description</H2
-><P
->    <CODE
-CLASS="FUNCTION"
->dblink_get_result</CODE
-> collects the results of an
-    asynchronous query previously sent with <CODE
-CLASS="FUNCTION"
->dblink_send_query</CODE
->.
-    If the query is not already completed, <CODE
-CLASS="FUNCTION"
->dblink_get_result</CODE
->
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>dblink_get_result</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="contrib-dblink-get-notify.html" title="dblink_get_notify" /><link rel="next" href="contrib-dblink-cancel-query.html" title="dblink_cancel_query" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">dblink_get_result</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="contrib-dblink-get-notify.html" title="dblink_get_notify">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="dblink.html" title="F.10. dblink">Up</a></td><th width="60%" align="center">F.10. dblink</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="contrib-dblink-cancel-query.html" title="dblink_cancel_query">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="CONTRIB-DBLINK-GET-RESULT"><div class="titlepage"></div><a id="id-1.11.7.19.18.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">dblink_get_result</span></h2><p>dblink_get_result — gets an async query result</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+dblink_get_result(text connname [, bool fail_on_error]) returns setof record
+</pre></div><div class="refsect1" id="id-1.11.7.19.18.5"><h2>Description</h2><p>
+    <code class="function">dblink_get_result</code> collects the results of an
+    asynchronous query previously sent with <code class="function">dblink_send_query</code>.
+    If the query is not already completed, <code class="function">dblink_get_result</code>
     will wait until it is.
-   </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN136226"
-></A
-><H2
->Arguments</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="PARAMETER"
->connname</TT
-></DT
-><DD
-><P
->       Name of the connection to use.
-      </P
-></DD
-><DT
-><TT
-CLASS="PARAMETER"
->fail_on_error</TT
-></DT
-><DD
-><P
->       If true (the default when omitted) then an error thrown on the
+   </p></div><div class="refsect1" id="id-1.11.7.19.18.6"><h2>Arguments</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="parameter"><code>connname</code></em></span></dt><dd><p>
+       Name of the connection to use.
+      </p></dd><dt><span class="term"><em class="parameter"><code>fail_on_error</code></em></span></dt><dd><p>
+       If true (the default when omitted) then an error thrown on the
        remote side of the connection causes an error to also be thrown
        locally. If false, the remote error is locally reported as a NOTICE,
        and the function returns no rows.
-      </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN136239"
-></A
-><H2
->Return Value</H2
-><P
->    For an async query (that is, a SQL statement returning rows),
+      </p></dd></dl></div></div><div class="refsect1" id="id-1.11.7.19.18.7"><h2>Return Value</h2><p>
+    For an async query (that is, a SQL statement returning rows),
     the function returns the row(s) produced by the query.  To use this
     function, you will need to specify the expected set of columns,
-    as previously discussed for <CODE
-CLASS="FUNCTION"
->dblink</CODE
->.
-   </P
-><P
->    For an async command (that is, a SQL statement not returning rows),
+    as previously discussed for <code class="function">dblink</code>.
+   </p><p>
+    For an async command (that is, a SQL statement not returning rows),
     the function returns a single row with a single text column containing
     the command's status string.  It is still necessary to specify that
-    the result will have a single text column in the calling <TT
-CLASS="LITERAL"
->FROM</TT
->
+    the result will have a single text column in the calling <code class="literal">FROM</code>
     clause.
-   </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN136245"
-></A
-><H2
->Notes</H2
-><P
->    This function <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->must</I
-></SPAN
-> be called if
-    <CODE
-CLASS="FUNCTION"
->dblink_send_query</CODE
-> returned 1.
+   </p></div><div class="refsect1" id="id-1.11.7.19.18.8"><h2>Notes</h2><p>
+    This function <span class="emphasis"><em>must</em></span> be called if
+    <code class="function">dblink_send_query</code> returned 1.
     It must be called once for each query
     sent, and one additional time to obtain an empty set result,
     before the connection can be used again.
-   </P
-><P
->    When using <CODE
-CLASS="FUNCTION"
->dblink_send_query</CODE
-> and
-    <CODE
-CLASS="FUNCTION"
->dblink_get_result</CODE
->, <SPAN
-CLASS="APPLICATION"
->dblink</SPAN
-> fetches the entire
+   </p><p>
+    When using <code class="function">dblink_send_query</code> and
+    <code class="function">dblink_get_result</code>, <span class="application">dblink</span> fetches the entire
     remote query result before returning any of it to the local query
     processor.  If the query returns a large number of rows, this can result
     in transient memory bloat in the local session.  It may be better to open
-    such a query as a cursor with <CODE
-CLASS="FUNCTION"
->dblink_open</CODE
-> and then fetch a
+    such a query as a cursor with <code class="function">dblink_open</code> and then fetch a
     manageable number of rows at a time.  Alternatively, use plain
-    <CODE
-CLASS="FUNCTION"
->dblink()</CODE
->, which avoids memory bloat by spooling large result
+    <code class="function">dblink()</code>, which avoids memory bloat by spooling large result
     sets to disk.
-   </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN136256"
-></A
-><H2
->Examples</H2
-><PRE
-CLASS="SCREEN"
->contrib_regression=# SELECT dblink_connect('dtest1', 'dbname=contrib_regression');
+   </p></div><div class="refsect1" id="id-1.11.7.19.18.9"><h2>Examples</h2><pre class="screen">
+contrib_regression=# SELECT dblink_connect('dtest1', 'dbname=contrib_regression');
  dblink_connect
 ----------------
  OK
@@ -311,70 +94,5 @@ contrib_regression=# SELECT * FROM dblink_get_result('dtest1') AS t1(f1 int, f2 
 contrib_regression=# SELECT * FROM dblink_get_result('dtest1') AS t1(f1 int, f2 text, f3 text[]);
  f1 | f2 | f3
 ----+----+----
-(0 rows)</PRE
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="contrib-dblink-get-notify.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="contrib-dblink-cancel-query.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->dblink_get_notify</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="dblink.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->dblink_cancel_query</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+(0 rows)
+</pre></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="contrib-dblink-get-notify.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="dblink.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="contrib-dblink-cancel-query.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">dblink_get_notify </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> dblink_cancel_query</td></tr></table></div></body></html>

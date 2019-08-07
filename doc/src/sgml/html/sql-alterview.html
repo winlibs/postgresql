@@ -1,560 +1,72 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->ALTER VIEW</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="ALTER USER MAPPING"
-HREF="sql-alterusermapping.html"><LINK
-REL="NEXT"
-TITLE="ANALYZE"
-HREF="sql-analyze.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="ALTER USER MAPPING"
-HREF="sql-alterusermapping.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="ANALYZE"
-HREF="sql-analyze.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-ALTERVIEW"
-></A
->ALTER VIEW</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN76979"
-></A
-><H2
->Name</H2
->ALTER VIEW&nbsp;--&nbsp;change the definition of a view</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN76982"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->ALTER VIEW [ IF EXISTS ] <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> ALTER [ COLUMN ] <TT
-CLASS="REPLACEABLE"
-><I
->column_name</I
-></TT
-> SET DEFAULT <TT
-CLASS="REPLACEABLE"
-><I
->expression</I
-></TT
->
-ALTER VIEW [ IF EXISTS ] <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> ALTER [ COLUMN ] <TT
-CLASS="REPLACEABLE"
-><I
->column_name</I
-></TT
-> DROP DEFAULT
-ALTER VIEW [ IF EXISTS ] <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> OWNER TO { <TT
-CLASS="REPLACEABLE"
-><I
->new_owner</I
-></TT
-> | CURRENT_USER | SESSION_USER }
-ALTER VIEW [ IF EXISTS ] <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> RENAME TO <TT
-CLASS="REPLACEABLE"
-><I
->new_name</I
-></TT
->
-ALTER VIEW [ IF EXISTS ] <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> SET SCHEMA <TT
-CLASS="REPLACEABLE"
-><I
->new_schema</I
-></TT
->
-ALTER VIEW [ IF EXISTS ] <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> SET ( <TT
-CLASS="REPLACEABLE"
-><I
->view_option_name</I
-></TT
-> [= <TT
-CLASS="REPLACEABLE"
-><I
->view_option_value</I
-></TT
->] [, ... ] )
-ALTER VIEW [ IF EXISTS ] <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> RESET ( <TT
-CLASS="REPLACEABLE"
-><I
->view_option_name</I
-></TT
-> [, ... ] )</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77000"
-></A
-><H2
->Description</H2
-><P
->   <TT
-CLASS="COMMAND"
->ALTER VIEW</TT
-> changes various auxiliary properties
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>ALTER VIEW</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-alterusermapping.html" title="ALTER USER MAPPING" /><link rel="next" href="sql-analyze.html" title="ANALYZE" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">ALTER VIEW</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-alterusermapping.html" title="ALTER USER MAPPING">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-analyze.html" title="ANALYZE">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-ALTERVIEW"><div class="titlepage"></div><a id="id-1.9.3.45.1" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">ALTER VIEW</span></h2><p>ALTER VIEW — change the definition of a view</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+ALTER VIEW [ IF EXISTS ] <em class="replaceable"><code>name</code></em> ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> SET DEFAULT <em class="replaceable"><code>expression</code></em>
+ALTER VIEW [ IF EXISTS ] <em class="replaceable"><code>name</code></em> ALTER [ COLUMN ] <em class="replaceable"><code>column_name</code></em> DROP DEFAULT
+ALTER VIEW [ IF EXISTS ] <em class="replaceable"><code>name</code></em> OWNER TO { <em class="replaceable"><code>new_owner</code></em> | CURRENT_USER | SESSION_USER }
+ALTER VIEW [ IF EXISTS ] <em class="replaceable"><code>name</code></em> RENAME TO <em class="replaceable"><code>new_name</code></em>
+ALTER VIEW [ IF EXISTS ] <em class="replaceable"><code>name</code></em> SET SCHEMA <em class="replaceable"><code>new_schema</code></em>
+ALTER VIEW [ IF EXISTS ] <em class="replaceable"><code>name</code></em> SET ( <em class="replaceable"><code>view_option_name</code></em> [= <em class="replaceable"><code>view_option_value</code></em>] [, ... ] )
+ALTER VIEW [ IF EXISTS ] <em class="replaceable"><code>name</code></em> RESET ( <em class="replaceable"><code>view_option_name</code></em> [, ... ] )
+</pre></div><div class="refsect1" id="id-1.9.3.45.5"><h2>Description</h2><p>
+   <code class="command">ALTER VIEW</code> changes various auxiliary properties
    of a view.  (If you want to modify the view's defining query,
-   use <TT
-CLASS="COMMAND"
->CREATE OR REPLACE VIEW</TT
->.)
-  </P
-><P
->   You must own the view to use <TT
-CLASS="COMMAND"
->ALTER VIEW</TT
->.
-   To change a view's schema, you must also have <TT
-CLASS="LITERAL"
->CREATE</TT
->
+   use <code class="command">CREATE OR REPLACE VIEW</code>.)
+  </p><p>
+   You must own the view to use <code class="command">ALTER VIEW</code>.
+   To change a view's schema, you must also have <code class="literal">CREATE</code>
    privilege on the new schema.
    To alter the owner, you must also be a direct or indirect member of the new
-   owning role, and that role must have <TT
-CLASS="LITERAL"
->CREATE</TT
-> privilege on
+   owning role, and that role must have <code class="literal">CREATE</code> privilege on
    the view's schema.  (These restrictions enforce that altering the owner
    doesn't do anything you couldn't do by dropping and recreating the view.
    However, a superuser can alter ownership of any view anyway.)
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77009"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-></DT
-><DD
-><P
->      The name (optionally schema-qualified) of an existing view.
-     </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->IF EXISTS</TT
-></DT
-><DD
-><P
->      Do not throw an error if the view does not exist. A notice is issued
+  </p></div><div class="refsect1" id="id-1.9.3.45.6"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
+      The name (optionally schema-qualified) of an existing view.
+     </p></dd><dt><span class="term"><code class="literal">IF EXISTS</code></span></dt><dd><p>
+      Do not throw an error if the view does not exist. A notice is issued
       in this case.
-     </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->SET</TT
->/<TT
-CLASS="LITERAL"
->DROP DEFAULT</TT
-></DT
-><DD
-><P
->      These forms set or remove the default value for a column.
+     </p></dd><dt><span class="term"><code class="literal">SET</code>/<code class="literal">DROP DEFAULT</code></span></dt><dd><p>
+      These forms set or remove the default value for a column.
       A view column's default value is substituted into any
-      <TT
-CLASS="COMMAND"
->INSERT</TT
-> or <TT
-CLASS="COMMAND"
->UPDATE</TT
-> command whose target is the
+      <code class="command">INSERT</code> or <code class="command">UPDATE</code> command whose target is the
       view, before applying any rules or triggers for the view.  The view's
       default will therefore take precedence over any default values from
       underlying relations.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->new_owner</I
-></TT
-></DT
-><DD
-><P
->      The user name of the new owner of the view.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->new_name</I
-></TT
-></DT
-><DD
-><P
->      The new name for the view.
-     </P
-></DD
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->new_schema</I
-></TT
-></DT
-><DD
-><P
->      The new schema for the view.
-     </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->SET ( <TT
-CLASS="REPLACEABLE"
-><I
->view_option_name</I
-></TT
-> [= <TT
-CLASS="REPLACEABLE"
-><I
->view_option_value</I
-></TT
->] [, ... ] )</TT
-><BR><TT
-CLASS="LITERAL"
->RESET ( <TT
-CLASS="REPLACEABLE"
-><I
->view_option_name</I
-></TT
-> [, ... ] )</TT
-></DT
-><DD
-><P
->      Sets or resets a view option.  Currently supported options are:
-      <P
-></P
-></P><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="LITERAL"
->check_option</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)</DT
-><DD
-><P
->          Changes the check option of the view.  The value must
-          be <TT
-CLASS="LITERAL"
->local</TT
-> or <TT
-CLASS="LITERAL"
->cascaded</TT
->.
-         </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->security_barrier</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)</DT
-><DD
-><P
->          Changes the security-barrier property of the view.  The value must
-          be Boolean value, such as <TT
-CLASS="LITERAL"
->true</TT
->
-          or <TT
-CLASS="LITERAL"
->false</TT
->.
-         </P
-></DD
-></DL
-></DIV
-><P>
-     </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77072"
-></A
-><H2
->Notes</H2
-><P
->   For historical reasons, <TT
-CLASS="COMMAND"
->ALTER TABLE</TT
-> can be used with
-   views too; but the only variants of <TT
-CLASS="COMMAND"
->ALTER TABLE</TT
->
+     </p></dd><dt><span class="term"><em class="replaceable"><code>new_owner</code></em></span></dt><dd><p>
+      The user name of the new owner of the view.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>new_name</code></em></span></dt><dd><p>
+      The new name for the view.
+     </p></dd><dt><span class="term"><em class="replaceable"><code>new_schema</code></em></span></dt><dd><p>
+      The new schema for the view.
+     </p></dd><dt><span class="term"><code class="literal">SET ( <em class="replaceable"><code>view_option_name</code></em> [= <em class="replaceable"><code>view_option_value</code></em>] [, ... ] )</code><br /></span><span class="term"><code class="literal">RESET ( <em class="replaceable"><code>view_option_name</code></em> [, ... ] )</code></span></dt><dd><p>
+      Sets or resets a view option.  Currently supported options are:
+      </p><div class="variablelist"><dl class="variablelist"><dt><span class="term"><code class="literal">check_option</code> (<code class="type">string</code>)</span></dt><dd><p>
+          Changes the check option of the view.  The value must
+          be <code class="literal">local</code> or <code class="literal">cascaded</code>.
+         </p></dd><dt><span class="term"><code class="literal">security_barrier</code> (<code class="type">boolean</code>)</span></dt><dd><p>
+          Changes the security-barrier property of the view.  The value must
+          be Boolean value, such as <code class="literal">true</code>
+          or <code class="literal">false</code>.
+         </p></dd></dl></div><p>
+     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.45.7"><h2>Notes</h2><p>
+   For historical reasons, <code class="command">ALTER TABLE</code> can be used with
+   views too; but the only variants of <code class="command">ALTER TABLE</code>
    that are allowed with views are equivalent to the ones shown above.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77077"
-></A
-><H2
->Examples</H2
-><P
->   To rename the view <TT
-CLASS="LITERAL"
->foo</TT
-> to
-   <TT
-CLASS="LITERAL"
->bar</TT
->:
-</P><PRE
-CLASS="PROGRAMLISTING"
->ALTER VIEW foo RENAME TO bar;</PRE
-><P>
-  </P
-><P
->   To attach a default column value to an updatable view:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE TABLE base_table (id int, ts timestamptz);
+  </p></div><div class="refsect1" id="id-1.9.3.45.8"><h2>Examples</h2><p>
+   To rename the view <code class="literal">foo</code> to
+   <code class="literal">bar</code>:
+</p><pre class="programlisting">
+ALTER VIEW foo RENAME TO bar;
+</pre><p>
+  </p><p>
+   To attach a default column value to an updatable view:
+</p><pre class="programlisting">
+CREATE TABLE base_table (id int, ts timestamptz);
 CREATE VIEW a_view AS SELECT * FROM base_table;
 ALTER VIEW a_view ALTER COLUMN ts SET DEFAULT now();
 INSERT INTO base_table(id) VALUES(1);  -- ts will receive a NULL
-INSERT INTO a_view(id) VALUES(2);  -- ts will receive the current time</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77085"
-></A
-><H2
->Compatibility</H2
-><P
->   <TT
-CLASS="COMMAND"
->ALTER VIEW</TT
-> is a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
+INSERT INTO a_view(id) VALUES(2);  -- ts will receive the current time
+</pre></div><div class="refsect1" id="id-1.9.3.45.9"><h2>Compatibility</h2><p>
+   <code class="command">ALTER VIEW</code> is a <span class="productname">PostgreSQL</span>
    extension of the SQL standard.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77090"
-></A
-><H2
->See Also</H2
-><A
-HREF="sql-createview.html"
->CREATE VIEW</A
->, <A
-HREF="sql-dropview.html"
->DROP VIEW</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-alterusermapping.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-analyze.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->ALTER USER MAPPING</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->ANALYZE</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="refsect1" id="id-1.9.3.45.10"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-createview.html" title="CREATE VIEW"><span class="refentrytitle">CREATE VIEW</span></a>, <a class="xref" href="sql-dropview.html" title="DROP VIEW"><span class="refentrytitle">DROP VIEW</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-alterusermapping.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-analyze.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">ALTER USER MAPPING </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> ANALYZE</td></tr></table></div></body></html>

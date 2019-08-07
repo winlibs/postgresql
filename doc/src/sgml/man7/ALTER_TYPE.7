@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ALTER TYPE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ALTER TYPE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -37,7 +37,8 @@ ALTER TYPE \fIname\fR OWNER TO { \fInew_owner\fR | CURRENT_USER | SESSION_USER }
 ALTER TYPE \fIname\fR RENAME ATTRIBUTE \fIattribute_name\fR TO \fInew_attribute_name\fR [ CASCADE | RESTRICT ]
 ALTER TYPE \fIname\fR RENAME TO \fInew_name\fR
 ALTER TYPE \fIname\fR SET SCHEMA \fInew_schema\fR
-ALTER TYPE \fIname\fR ADD VALUE [ IF NOT EXISTS ] \fInew_enum_value\fR [ { BEFORE | AFTER } \fIexisting_enum_value\fR ]
+ALTER TYPE \fIname\fR ADD VALUE [ IF NOT EXISTS ] \fInew_enum_value\fR [ { BEFORE | AFTER } \fIneighbor_enum_value\fR ]
+ALTER TYPE \fIname\fR RENAME VALUE \fIexisting_enum_value\fR TO \fInew_enum_value\fR
 
 where \fIaction\fR is one of:
 
@@ -96,14 +97,9 @@ IF NOT EXISTS
 is specified, it is not an error if the type already contains the new value: a notice is issued but no other action is taken\&. Otherwise, an error will occur if the new value is already present\&.
 .RE
 .PP
-CASCADE
+RENAME VALUE
 .RS 4
-Automatically propagate the operation to typed tables of the type being altered, and their descendants\&.
-.RE
-.PP
-RESTRICT
-.RS 4
-Refuse the operation if the type being altered is the type of a typed table\&. This is the default\&.
+This form renames a value of an enum type\&. The value\*(Aqs place in the enum\*(Aqs ordering is not affected\&. An error will occur if the specified value is not present or the new name is already present\&.
 .RE
 .PP
 The
@@ -160,12 +156,27 @@ The data type of the attribute to add, or the new type of the attribute to alter
 .PP
 \fInew_enum_value\fR
 .RS 4
-The new value to be added to an enum type\*(Aqs list of values\&. Like all enum literals, it needs to be quoted\&.
+The new value to be added to an enum type\*(Aqs list of values, or the new name to be given to an existing value\&. Like all enum literals, it needs to be quoted\&.
+.RE
+.PP
+\fIneighbor_enum_value\fR
+.RS 4
+The existing enum value that the new value should be added immediately before or after in the enum type\*(Aqs sort ordering\&. Like all enum literals, it needs to be quoted\&.
 .RE
 .PP
 \fIexisting_enum_value\fR
 .RS 4
-The existing enum value that the new value should be added immediately before or after in the enum type\*(Aqs sort ordering\&. Like all enum literals, it needs to be quoted\&.
+The existing enum value that should be renamed\&. Like all enum literals, it needs to be quoted\&.
+.RE
+.PP
+CASCADE
+.RS 4
+Automatically propagate the operation to typed tables of the type being altered, and their descendants\&.
+.RE
+.PP
+RESTRICT
+.RS 4
+Refuse the operation if the type being altered is the type of a typed table\&. This is the default\&.
 .RE
 .SH "NOTES"
 .PP
@@ -242,6 +253,18 @@ To add a new value to an enum type in a particular sort position:
 .\}
 .nf
 ALTER TYPE colors ADD VALUE \*(Aqorange\*(Aq AFTER \*(Aqred\*(Aq;
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To rename an enum value:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+ALTER TYPE colors RENAME VALUE \*(Aqpurple\*(Aq TO \*(Aqmauve\*(Aq;
 .fi
 .if n \{\
 .RE

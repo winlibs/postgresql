@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SELECT" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SELECT" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -347,7 +347,7 @@ where the recursive self\-reference must appear on the right\-hand side of the
 UNION\&. Only one recursive self\-reference is permitted per query\&. Recursive data\-modifying statements are not supported, but you can use the results of a recursive
 \fBSELECT\fR
 query in a data\-modifying statement\&. See
-Section 7.8, \(lqWITH Queries (Common Table Expressions)\(rq, in the documentation
+Section\ \&7.8
 for an example\&.
 .PP
 Another effect of
@@ -376,7 +376,7 @@ RETURNING
 output\&. If two such data\-modifying statements attempt to modify the same row, the results are unspecified\&.
 .PP
 See
-Section 7.8, \(lqWITH Queries (Common Table Expressions)\(rq, in the documentation
+Section\ \&7.8
 for additional information\&.
 .SS "FROM Clause"
 .PP
@@ -788,14 +788,14 @@ UNION ALL
 between subqueries with the individual grouping sets as their
 GROUP BY
 clauses\&. For further details on the handling of grouping sets see
-Section 7.2.4, \(lqGROUPING SETS, CUBE, and ROLLUP\(rq, in the documentation\&.
+Section\ \&7.2.4\&.
 .PP
 Aggregate functions, if any are used, are computed across all rows making up each group, producing a separate value for each group\&. (If there are aggregate functions but no
 GROUP BY
 clause, the query is treated as having a single group comprising all the selected rows\&.) The set of rows fed to each aggregate function can be further filtered by attaching a
 FILTER
 clause to the aggregate function call; see
-Section 4.2.7, \(lqAggregate Expressions\(rq, in the documentation
+Section\ \&4.2.7
 for more information\&. When a
 FILTER
 clause is present, only those rows matching it are included in the input to that aggregate function\&.
@@ -815,7 +815,7 @@ SELECT
 list\&. This means that, for example, a
 CASE
 expression cannot be used to skip evaluation of an aggregate function; see
-Section 4.2.14, \(lqExpression Evaluation Rules\(rq, in the documentation\&.
+Section\ \&4.2.14\&.
 .PP
 Currently,
 FOR NO KEY UPDATE,
@@ -955,8 +955,8 @@ can be one of
 .RS 4
 .\}
 .nf
-{ RANGE | ROWS } \fIframe_start\fR
-{ RANGE | ROWS } BETWEEN \fIframe_start\fR AND \fIframe_end\fR
+{ RANGE | ROWS | GROUPS } \fIframe_start\fR [ \fIframe_exclusion\fR ]
+{ RANGE | ROWS | GROUPS } BETWEEN \fIframe_start\fR AND \fIframe_end\fR [ \fIframe_exclusion\fR ]
 .fi
 .if n \{\
 .RE
@@ -973,10 +973,27 @@ can be one of
 .\}
 .nf
 UNBOUNDED PRECEDING
-\fIvalue\fR PRECEDING
+\fIoffset\fR PRECEDING
 CURRENT ROW
-\fIvalue\fR FOLLOWING
+\fIoffset\fR FOLLOWING
 UNBOUNDED FOLLOWING
+.fi
+.if n \{\
+.RE
+.\}
+.sp
+and
+\fIframe_exclusion\fR
+can be one of
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+EXCLUDE CURRENT ROW
+EXCLUDE GROUP
+EXCLUDE TIES
+EXCLUDE NO OTHERS
 .fi
 .if n \{\
 .RE
@@ -993,54 +1010,102 @@ UNBOUNDED FOLLOWING,
 cannot be
 UNBOUNDED PRECEDING, and the
 \fIframe_end\fR
-choice cannot appear earlier in the above list than the
+choice cannot appear earlier in the above list of
 \fIframe_start\fR
-choice \(em for example
-RANGE BETWEEN CURRENT ROW AND \fIvalue\fR PRECEDING
+and
+\fIframe_end\fR
+options than the
+\fIframe_start\fR
+choice does \(em for example
+RANGE BETWEEN CURRENT ROW AND \fIoffset\fR PRECEDING
 is not allowed\&.
 .PP
 The default framing option is
 RANGE UNBOUNDED PRECEDING, which is the same as
-RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW; it sets the frame to be all rows from the partition start up through the current row\*(Aqs last peer (a row that
+RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW; it sets the frame to be all rows from the partition start up through the current row\*(Aqs last
+peer
+(a row that the window\*(Aqs
 ORDER BY
-considers equivalent to the current row, or all rows if there is no
+clause considers equivalent to the current row; all rows are peers if there is no
 ORDER BY)\&. In general,
 UNBOUNDED PRECEDING
 means that the frame starts with the first row of the partition, and similarly
 UNBOUNDED FOLLOWING
-means that the frame ends with the last row of the partition (regardless of
-RANGE
-or
+means that the frame ends with the last row of the partition, regardless of
+RANGE,
 ROWS
-mode)\&. In
+or
+GROUPS
+mode\&. In
 ROWS
 mode,
 CURRENT ROW
 means that the frame starts or ends with the current row; but in
 RANGE
+or
+GROUPS
 mode it means that the frame starts or ends with the current row\*(Aqs first or last peer in the
 ORDER BY
 ordering\&. The
-\fIvalue\fR
+\fIoffset\fR
 PRECEDING
 and
-\fIvalue\fR
+\fIoffset\fR
 FOLLOWING
-cases are currently only allowed in
+options vary in meaning depending on the frame mode\&. In
 ROWS
-mode\&. They indicate that the frame starts or ends with the row that many rows before or after the current row\&.
-\fIvalue\fR
-must be an integer expression not containing any variables, aggregate functions, or window functions\&. The value must not be null or negative; but it can be zero, which selects the current row itself\&.
+mode, the
+\fIoffset\fR
+is an integer indicating that the frame starts or ends that many rows before or after the current row\&. In
+GROUPS
+mode, the
+\fIoffset\fR
+is an integer indicating that the frame starts or ends that many peer groups before or after the current row\*(Aqs peer group, where a
+peer group
+is a group of rows that are equivalent according to the window\*(Aqs
+ORDER BY
+clause\&. In
+RANGE
+mode, use of an
+\fIoffset\fR
+option requires that there be exactly one
+ORDER BY
+column in the window definition\&. Then the frame contains those rows whose ordering column value is no more than
+\fIoffset\fR
+less than (for
+PRECEDING) or more than (for
+FOLLOWING) the current row\*(Aqs ordering column value\&. In these cases the data type of the
+\fIoffset\fR
+expression depends on the data type of the ordering column\&. For numeric ordering columns it is typically of the same type as the ordering column, but for datetime ordering columns it is an
+interval\&. In all these cases, the value of the
+\fIoffset\fR
+must be non\-null and non\-negative\&. Also, while the
+\fIoffset\fR
+does not have to be a simple constant, it cannot contain variables, aggregate functions, or window functions\&.
+.PP
+The
+\fIframe_exclusion\fR
+option allows rows around the current row to be excluded from the frame, even if they would be included according to the frame start and frame end options\&.
+EXCLUDE CURRENT ROW
+excludes the current row from the frame\&.
+EXCLUDE GROUP
+excludes the current row and its ordering peers from the frame\&.
+EXCLUDE TIES
+excludes any peers of the current row from the frame, but not the current row itself\&.
+EXCLUDE NO OTHERS
+simply specifies explicitly the default behavior of not excluding the current row or its peers\&.
 .PP
 Beware that the
 ROWS
-options can produce unpredictable results if the
+mode can produce unpredictable results if the
 ORDER BY
 ordering does not order the rows uniquely\&. The
 RANGE
-options are designed to ensure that rows that are peers in the
+and
+GROUPS
+modes are designed to ensure that rows that are peers in the
 ORDER BY
-ordering are treated alike; all peer rows will be in the same frame\&.
+ordering are treated alike: all rows of a given peer group will be in the frame or excluded from it\&.
 .PP
 The purpose of a
 WINDOW
@@ -1073,9 +1138,9 @@ cannot be specified with
 WINDOW\&.
 .PP
 Window functions are described in detail in
-Section 3.5, \(lqWindow Functions\(rq, in the documentation,
-Section 4.2.8, \(lqWindow Function Calls\(rq, in the documentation, and
-Section 7.2.5, \(lqWindow Function Processing\(rq, in the documentation\&.
+Section\ \&3.5,
+Section\ \&4.2.8, and
+Section\ \&7.2.5\&.
 .SS "SELECT List"
 .PP
 The
@@ -1102,7 +1167,7 @@ after the column\*(Aqs expression\&. (You can omit
 AS, but only if the desired output name does not match any
 PostgreSQL
 keyword (see
-Appendix\ \&C, SQL Key Words)\&. For protection against possible future keyword additions, it is recommended that you always either write
+Appendix\ \&C)\&. For protection against possible future keyword additions, it is recommended that you always either write
 AS
 or double\-quote the output name\&.) If you do not specify a column name, a name is chosen automatically by
 PostgreSQL\&. If the column\*(Aqs expression is a simple column reference then the chosen name is the same as that column\*(Aqs name\&. In more complex cases a function or type name may be used, or the system may fall back on a generated name such as
@@ -1529,9 +1594,9 @@ COLLATE
 clause in the
 \fIexpression\fR, for example
 ORDER BY mycolumn COLLATE "en_US"\&. For more information see
-Section 4.2.10, \(lqCollation Expressions\(rq, in the documentation
+Section\ \&4.2.10
 and
-Section 23.2, \(lqCollation Support\(rq, in the documentation\&.
+Section\ \&23.2\&.
 .SS "LIMIT Clause"
 .PP
 The
@@ -1675,7 +1740,7 @@ KEY SHARE
 .\}
 .PP
 For more information on each row\-level lock mode, refer to
-Section 13.3.2, \(lqRow-level Locks\(rq, in the documentation\&.
+Section\ \&13.3.2\&.
 .PP
 To prevent the operation from waiting for other transactions to commit, use either the
 NOWAIT
@@ -1690,7 +1755,7 @@ SKIP LOCKED
 apply only to the row\-level lock(s) \(em the required
 ROW SHARE
 table\-level lock is still taken in the ordinary way (see
-Chapter 13, Concurrency Control, in the documentation)\&. You can use
+Chapter\ \&13)\&. You can use
 \fBLOCK\fR(7)
 with the
 NOWAIT
@@ -2103,7 +2168,7 @@ SELECT distance, employee_name FROM employee_recursive;
 .sp
 Notice the typical form of recursive queries: an initial condition, followed by
 UNION, followed by the recursive part of the query\&. Be sure that the recursive part of the query will eventually return no tuples, or else the query will loop indefinitely\&. (See
-Section 7.8, \(lqWITH Queries (Common Table Expressions)\(rq, in the documentation
+Section\ \&7.8
 for more examples\&.)
 .PP
 This example uses
@@ -2285,12 +2350,6 @@ recognizes functional dependency (allowing columns to be omitted from
 GROUP BY) only when a table\*(Aqs primary key is included in the
 GROUP BY
 list\&. The SQL standard specifies additional conditions that should be recognized\&.
-.SS "WINDOW Clause Restrictions"
-.PP
-The SQL standard provides additional options for the window
-\fIframe_clause\fR\&.
-PostgreSQL
-currently supports only the options listed above\&.
 .SS "LIMIT and OFFSET"
 .PP
 The clauses

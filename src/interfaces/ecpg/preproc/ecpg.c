@@ -1,12 +1,12 @@
 /* src/interfaces/ecpg/preproc/ecpg.c */
 
 /* Main for ecpg, the PostgreSQL embedded SQL precompiler. */
-/* Copyright (c) 1996-2016, PostgreSQL Global Development Group */
+/* Copyright (c) 1996-2018, PostgreSQL Global Development Group */
 
 #include "postgres_fe.h"
 
 #include <unistd.h>
-#include <string.h>
+
 #include "getopt_long.h"
 
 #include "extern.h"
@@ -41,7 +41,7 @@ help(const char *progname)
 	printf(_("  -c             automatically generate C code from embedded SQL code;\n"
 			 "                 this affects EXEC SQL TYPE\n"));
 	printf(_("  -C MODE        set compatibility mode; MODE can be one of\n"
-			 "                 \"INFORMIX\", \"INFORMIX_SE\"\n"));
+			 "                 \"INFORMIX\", \"INFORMIX_SE\", \"ORACLE\"\n"));
 #ifdef YYDEBUG
 	printf(_("  -d             generate parser debug output\n"));
 #endif
@@ -51,7 +51,7 @@ help(const char *progname)
 	printf(_("  -I DIRECTORY   search DIRECTORY for include files\n"));
 	printf(_("  -o OUTFILE     write result to OUTFILE\n"));
 	printf(_("  -r OPTION      specify run-time behavior; OPTION can be:\n"
-	 "                 \"no_indicator\", \"prepare\", \"questionmarks\"\n"));
+			 "                 \"no_indicator\", \"prepare\", \"questionmarks\"\n"));
 	printf(_("  --regression   run in regression testing mode\n"));
 	printf(_("  -t             turn on autocommit of transactions\n"));
 	printf(_("  -V, --version  output version information, then exit\n"));
@@ -137,7 +137,7 @@ main(int argc, char *const argv[])
 	if (find_my_exec(argv[0], my_exec_path) < 0)
 	{
 		fprintf(stderr, _("%s: could not locate my own executable path\n"), argv[0]);
-		return (ILLEGAL_OPTION);
+		return ILLEGAL_OPTION;
 	}
 
 	if (argc > 1)
@@ -149,8 +149,7 @@ main(int argc, char *const argv[])
 		}
 		if (strcmp(argv[1], "--version") == 0 || strcmp(argv[1], "-V") == 0)
 		{
-			printf("ecpg (PostgreSQL %s) %d.%d.%d\n", PG_VERSION,
-				   MAJOR_VERSION, MINOR_VERSION, PATCHLEVEL);
+			printf("ecpg (PostgreSQL) %s\n", PG_VERSION);
 			exit(0);
 		}
 	}
@@ -190,8 +189,8 @@ main(int argc, char *const argv[])
 				break;
 			case 'h':
 				header_mode = true;
-				/* this must include "-c" to make sense */
-				/* so do not place a "break;" here */
+				/* this must include "-c" to make sense, so fall through */
+				/* FALLTHROUGH */
 			case 'c':
 				auto_create_c = true;
 				break;
@@ -199,15 +198,19 @@ main(int argc, char *const argv[])
 				system_includes = true;
 				break;
 			case 'C':
-				if (strncmp(optarg, "INFORMIX", strlen("INFORMIX")) == 0)
+				if (pg_strcasecmp(optarg, "INFORMIX") == 0 || pg_strcasecmp(optarg, "INFORMIX_SE") == 0)
 				{
 					char		pkginclude_path[MAXPGPATH];
 					char		informix_path[MAXPGPATH];
 
-					compat = (strcmp(optarg, "INFORMIX") == 0) ? ECPG_COMPAT_INFORMIX : ECPG_COMPAT_INFORMIX_SE;
+					compat = (pg_strcasecmp(optarg, "INFORMIX") == 0) ? ECPG_COMPAT_INFORMIX : ECPG_COMPAT_INFORMIX_SE;
 					get_pkginclude_path(my_exec_path, pkginclude_path);
 					snprintf(informix_path, MAXPGPATH, "%s/informix/esql", pkginclude_path);
 					add_include_path(informix_path);
+				}
+				else if (strncmp(optarg, "ORACLE", strlen("ORACLE")) == 0)
+				{
+					compat = ECPG_COMPAT_ORACLE;
 				}
 				else
 				{
@@ -253,8 +256,9 @@ main(int argc, char *const argv[])
 
 	if (verbose)
 	{
-		fprintf(stderr, _("%s, the PostgreSQL embedded C preprocessor, version %d.%d.%d\n"),
-				progname, MAJOR_VERSION, MINOR_VERSION, PATCHLEVEL);
+		fprintf(stderr,
+				_("%s, the PostgreSQL embedded C preprocessor, version %s\n"),
+				progname, PG_VERSION);
 		fprintf(stderr, _("EXEC SQL INCLUDE ... search starts here:\n"));
 		for (ip = include_paths; ip != NULL; ip = ip->next)
 			fprintf(stderr, " %s\n", ip->path);
@@ -266,7 +270,7 @@ main(int argc, char *const argv[])
 	{
 		fprintf(stderr, _("%s: no input files specified\n"), progname);
 		fprintf(stderr, _("Try \"%s --help\" for more information.\n"), argv[0]);
-		return (ILLEGAL_OPTION);
+		return ILLEGAL_OPTION;
 	}
 	else
 	{
@@ -431,7 +435,7 @@ main(int argc, char *const argv[])
 				if (regression_mode)
 					fprintf(base_yyout, "/* Processed by ecpg (regression mode) */\n");
 				else
-					fprintf(base_yyout, "/* Processed by ecpg (%d.%d.%d) */\n", MAJOR_VERSION, MINOR_VERSION, PATCHLEVEL);
+					fprintf(base_yyout, "/* Processed by ecpg (%s) */\n", PG_VERSION);
 
 				if (header_mode == false)
 				{
@@ -475,7 +479,8 @@ main(int argc, char *const argv[])
 				}
 			}
 
-			if (output_filename && out_option == 0) {
+			if (output_filename && out_option == 0)
+			{
 				free(output_filename);
 				output_filename = NULL;
 			}

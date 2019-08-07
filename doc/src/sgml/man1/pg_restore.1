@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "PG_RESTORE" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "PG_RESTORE" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -96,6 +96,17 @@ is used, this might generate some harmless error messages, if any objects were n
 Create the database before restoring into it\&. If
 \fB\-\-clean\fR
 is also specified, drop and recreate the target database before connecting to it\&.
+.sp
+With
+\fB\-\-create\fR,
+pg_restore
+also restores the database\*(Aqs comment if any, and any configuration variable settings that are specific to this database, that is, any
+\fBALTER DATABASE \&.\&.\&. SET \&.\&.\&.\fR
+and
+\fBALTER ROLE \&.\&.\&. IN DATABASE \&.\&.\&. SET \&.\&.\&.\fR
+commands that mention this database\&. Access privileges for the database itself are also restored, unless
+\fB\-\-no\-acl\fR
+is specified\&.
 .sp
 When this option is used, the database named with
 \fB\-d\fR
@@ -192,7 +203,7 @@ Only the custom and directory archive formats are supported with this option\&. 
 .br
 \fB\-\-list\fR
 .RS 4
-List the contents of the archive\&. The output of this operation can be used as input to the
+List the table of contents of the archive\&. The output of this operation can be used as input to the
 \fB\-L\fR
 option\&. Note that if filtering switches such as
 \fB\-n\fR
@@ -220,7 +231,7 @@ is normally created by editing the output of a previous
 operation\&. Lines can be moved or removed, and can also be commented out by placing a semicolon (;) at the start of the line\&. See below for examples\&.
 .RE
 .PP
-\fB\-n \fR\fB\fInamespace\fR\fR
+\fB\-n \fR\fB\fIschema\fR\fR
 .br
 \fB\-\-schema=\fR\fB\fIschema\fR\fR
 .RS 4
@@ -229,6 +240,23 @@ Restore only objects that are in the named schema\&. Multiple schemas may be spe
 switches\&. This can be combined with the
 \fB\-t\fR
 option to restore just a specific table\&.
+.RE
+.PP
+\fB\-N \fR\fB\fIschema\fR\fR
+.br
+\fB\-\-exclude\-schema=\fR\fB\fIschema\fR\fR
+.RS 4
+Do not restore objects that are in the named schema\&. Multiple schemas to be excluded may be specified with multiple
+\fB\-N\fR
+switches\&.
+.sp
+When both
+\fB\-n\fR
+and
+\fB\-N\fR
+are given for the same schema name, the
+\fB\-N\fR
+switch wins and the schema is excluded\&.
 .RE
 .PP
 \fB\-O\fR
@@ -334,7 +362,13 @@ This flag does not behave identically to the
 flag of
 pg_dump\&. There is not currently any provision for wild\-card matching in
 pg_restore, nor can you include a schema name within its
-\fB\-t\fR\&.
+\fB\-t\fR\&. And, while
+pg_dump\*(Aqs
+\fB\-t\fR
+flag will also dump subsidiary objects (such as indexes) of the selected table(s),
+pg_restore\*(Aqs
+\fB\-t\fR
+flag does not include such subsidiary objects\&.
 .sp .5v
 .RE
 .if n \{\
@@ -439,9 +473,14 @@ does not support row security\&.
 .RS 4
 Use conditional commands (i\&.e\&. add an
 IF EXISTS
-clause) when cleaning database objects\&. This option is not valid unless
+clause) to drop database objects\&. This option is not valid unless
 \fB\-\-clean\fR
 is also specified\&.
+.RE
+.PP
+\fB\-\-no\-comments\fR
+.RS 4
+Do not output commands to restore comments, even if the archive contains them\&.
 .RE
 .PP
 \fB\-\-no\-data\-for\-failed\-tables\fR
@@ -455,9 +494,19 @@ might already be loaded in the target database; specifying this option prevents 
 This option is effective only when restoring directly into a database, not when producing SQL script output\&.
 .RE
 .PP
+\fB\-\-no\-publications\fR
+.RS 4
+Do not output commands to restore publications, even if the archive contains them\&.
+.RE
+.PP
 \fB\-\-no\-security\-labels\fR
 .RS 4
 Do not output commands to restore security labels, even if the archive contains them\&.
+.RE
+.PP
+\fB\-\-no\-subscriptions\fR
+.RS 4
+Do not output commands to restore subscriptions, even if the archive contains them\&.
 .RE
 .PP
 \fB\-\-no\-tablespaces\fR
@@ -581,7 +630,7 @@ PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&. However, it does not read
+Section\ \&34.14)\&. However, it does not read
 \fBPGDATABASE\fR
 when a database name is not supplied\&.
 .SH "DIAGNOSTICS"
@@ -659,9 +708,9 @@ pg_dump\&.
 Once restored, it is wise to run
 \fBANALYZE\fR
 on each restored table so the optimizer has useful statistics; see
-Section 24.1.3, \(lqUpdating Planner Statistics\(rq, in the documentation
+Section\ \&24.1.3
 and
-Section 24.1.6, \(lqThe Autovacuum Daemon\(rq, in the documentation
+Section\ \&24.1.6
 for more information\&.
 .SH "EXAMPLES"
 .PP

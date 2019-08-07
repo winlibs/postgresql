@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "LOAD" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "LOAD" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -44,9 +44,9 @@ is usually only needed to load a library that modifies the server\*(Aqs behavior
 \(lqhooks\(rq
 rather than providing a set of functions\&.
 .PP
-The file name is specified in the same way as for shared library names in
-CREATE FUNCTION (\fBCREATE_FUNCTION\fR(7)); in particular, one can rely on a search path and automatic addition of the system\*(Aqs standard shared library file name extension\&. See
-Section 36.9, \(lqC-Language Functions\(rq, in the documentation
+The library file name is typically given as just a bare file name, which is sought in the server\*(Aqs library search path (set by
+dynamic_library_path)\&. Alternatively it can be given as a full path name\&. In either case the platform\*(Aqs standard shared library file name extension may be omitted\&. See
+Section\ \&38.10.1
 for more information on this topic\&.
 .PP
 Non\-superusers can only apply

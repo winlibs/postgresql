@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SPI_FINISH" "3" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SPI_FINISH" "3" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -28,7 +28,7 @@
 .\" * MAIN CONTENT STARTS HERE *
 .\" -----------------------------------------------------------------
 .SH "NAME"
-SPI_finish \- disconnect a procedure from the SPI manager
+SPI_finish \- disconnect a C function from the SPI manager
 .SH "SYNOPSIS"
 .sp
 .nf
@@ -37,13 +37,8 @@ int SPI_finish(void)
 .SH "DESCRIPTION"
 .PP
 \fBSPI_finish\fR
-closes an existing connection to the SPI manager\&. You must call this function after completing the SPI operations needed during your procedure\*(Aqs current invocation\&. You do not need to worry about making this happen, however, if you abort the transaction via
+closes an existing connection to the SPI manager\&. You must call this function after completing the SPI operations needed during your C function\*(Aqs current invocation\&. You do not need to worry about making this happen, however, if you abort the transaction via
 elog(ERROR)\&. In that case SPI will clean itself up automatically\&.
-.PP
-If
-\fBSPI_finish\fR
-is called without having a valid connection, it will return
-SPI_ERROR_UNCONNECTED\&. There is no fundamental problem with this; it means that the SPI manager has nothing to do\&.
 .SH "RETURN VALUE"
 .PP
 SPI_OK_FINISH
@@ -53,5 +48,5 @@ if properly disconnected
 .PP
 SPI_ERROR_UNCONNECTED
 .RS 4
-if called from an unconnected procedure
+if called from an unconnected C function
 .RE

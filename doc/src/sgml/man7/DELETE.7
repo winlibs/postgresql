@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "DELETE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "DELETE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -60,9 +60,7 @@ clause is absent, the effect is to delete all rows in the table\&. The result is
 .br
 .PP
 \fBTRUNCATE\fR(7)
-is a
-PostgreSQL
-extension that provides a faster mechanism to remove all rows from a table\&.
+provides a faster mechanism to remove all rows from a table\&.
 .sp .5v
 .RE
 .PP
@@ -97,7 +95,7 @@ WITH
 clause allows you to specify one or more subqueries that can be referenced by name in the
 \fBDELETE\fR
 query\&. See
-Section 7.8, \(lqWITH Queries (Common Table Expressions)\(rq, in the documentation
+Section\ \&7.8
 and
 \fBSELECT\fR(7)
 for details\&.
@@ -316,3 +314,5 @@ extensions, as is the ability to use
 WITH
 with
 \fBDELETE\fR\&.
+.SH "SEE ALSO"
+\fBTRUNCATE\fR(7)

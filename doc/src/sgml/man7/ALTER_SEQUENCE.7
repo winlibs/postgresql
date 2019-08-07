@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ALTER SEQUENCE" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ALTER SEQUENCE" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,7 +32,9 @@ ALTER_SEQUENCE \- change the definition of a sequence generator
 .SH "SYNOPSIS"
 .sp
 .nf
-ALTER SEQUENCE [ IF EXISTS ] \fIname\fR [ INCREMENT [ BY ] \fIincrement\fR ]
+ALTER SEQUENCE [ IF EXISTS ] \fIname\fR
+    [ AS \fIdata_type\fR ]
+    [ INCREMENT [ BY ] \fIincrement\fR ]
     [ MINVALUE \fIminvalue\fR | NO MINVALUE ] [ MAXVALUE \fImaxvalue\fR | NO MAXVALUE ]
     [ START [ WITH ] \fIstart\fR ]
     [ RESTART [ [ WITH ] \fIrestart\fR ] ]
@@ -68,6 +70,21 @@ IF EXISTS
 Do not throw an error if the sequence does not exist\&. A notice is issued in this case\&.
 .RE
 .PP
+\fIdata_type\fR
+.RS 4
+The optional clause
+AS \fIdata_type\fR
+changes the data type of the sequence\&. Valid types are
+smallint,
+integer, and
+bigint\&.
+.sp
+Changing the data type automatically changes the minimum and maximum values of the sequence if and only if the previous minimum and maximum values were the minimum or maximum value of the old data type (in other words, if the sequence had been created using
+NO MINVALUE
+or
+NO MAXVALUE, implicitly or explicitly)\&. Otherwise, the minimum and maximum values are preserved, unless new values are given as part of the same command\&. If the minimum and maximum values do not fit into the new data type, an error will be generated\&.
+.RE
+.PP
 \fIincrement\fR
 .RS 4
 The clause
@@ -83,7 +100,7 @@ The optional clause
 MINVALUE \fIminvalue\fR
 determines the minimum value a sequence can generate\&. If
 NO MINVALUE
-is specified, the defaults of 1 and \-2^63\-1 for ascending and descending sequences, respectively, will be used\&. If neither option is specified, the current minimum value will be maintained\&.
+is specified, the defaults of 1 and the minimum value of the data type for ascending and descending sequences, respectively, will be used\&. If neither option is specified, the current minimum value will be maintained\&.
 .RE
 .PP
 \fImaxvalue\fR
@@ -94,7 +111,7 @@ The optional clause
 MAXVALUE \fImaxvalue\fR
 determines the maximum value for the sequence\&. If
 NO MAXVALUE
-is specified, the defaults are 2^63\-1 and \-1 for ascending and descending sequences, respectively, will be used\&. If neither option is specified, the current maximum value will be maintained\&.
+is specified, the defaults of the maximum value of the data type and \-1 for ascending and descending sequences, respectively, will be used\&. If neither option is specified, the current maximum value will be maintained\&.
 .RE
 .PP
 \fIstart\fR
@@ -112,7 +129,7 @@ commands will use\&.
 .RS 4
 The optional clause
 RESTART [ WITH \fIrestart\fR ]
-changes the current value of the sequence\&. This is equivalent to calling the
+changes the current value of the sequence\&. This is similar to calling the
 \fBsetval\fR
 function with
 is_called
@@ -128,6 +145,14 @@ value is equivalent to supplying the start value that was recorded by
 \fBCREATE SEQUENCE\fR
 or last set by
 \fBALTER SEQUENCE START WITH\fR\&.
+.sp
+In contrast to a
+\fBsetval\fR
+call, a
+RESTART
+operation on a sequence is transactional and blocks concurrent transactions from obtaining numbers from the same sequence\&. If that\*(Aqs not the desired mode of operation,
+\fBsetval\fR
+should be used\&.
 .RE
 .PP
 \fIcache\fR
@@ -192,14 +217,6 @@ The new schema for the sequence\&.
 .RE
 .SH "NOTES"
 .PP
-To avoid blocking of concurrent transactions that obtain numbers from the same sequence,
-\fBALTER SEQUENCE\fR\*(Aqs effects on the sequence generation parameters are never rolled back; those changes take effect immediately and are not reversible\&. However, the
-OWNED BY,
-OWNER TO,
-RENAME TO, and
-SET SCHEMA
-clauses cause ordinary catalog updates that can be rolled back\&.
-.PP
 \fBALTER SEQUENCE\fR
 will not immediately affect
 \fBnextval\fR
@@ -211,6 +228,14 @@ does not affect the
 status for the sequence\&. (Before
 PostgreSQL
 8\&.3, it sometimes did\&.)
+.PP
+\fBALTER SEQUENCE\fR
+blocks concurrent
+\fBnextval\fR,
+\fBcurrval\fR,
+\fBlastval\fR, and
+\fBsetval\fR
+calls\&.
 .PP
 For historical reasons,
 \fBALTER TABLE\fR
@@ -237,6 +262,7 @@ ALTER SEQUENCE serial RESTART WITH 105;
 conforms to the
 SQL
 standard, except for the
+AS,
 START WITH,
 OWNED BY,
 OWNER TO,

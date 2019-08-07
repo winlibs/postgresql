@@ -3,7 +3,7 @@
  * parse_target.c
  *	  handle target lists
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -91,7 +91,17 @@ transformTargetEntry(ParseState *pstate,
 {
 	/* Transform the node if caller didn't do it already */
 	if (expr == NULL)
-		expr = transformExpr(pstate, node, exprKind);
+	{
+		/*
+		 * If it's a SetToDefault node and we should allow that, pass it
+		 * through unmodified.  (transformExpr will throw the appropriate
+		 * error if we're disallowing it.)
+		 */
+		if (exprKind == EXPR_KIND_UPDATE_SOURCE && IsA(node, SetToDefault))
+			expr = node;
+		else
+			expr = transformExpr(pstate, node, exprKind);
+	}
 
 	if (colname == NULL && !resjunk)
 	{
@@ -210,10 +220,13 @@ transformTargetList(ParseState *pstate, List *targetlist,
  * the input list elements are bare expressions without ResTarget decoration,
  * and the output elements are likewise just expressions without TargetEntry
  * decoration.  We use this for ROW() and VALUES() constructs.
+ *
+ * exprKind is not enough to tell us whether to allow SetToDefault, so
+ * an additional flag is needed for that.
  */
 List *
 transformExpressionList(ParseState *pstate, List *exprlist,
-						ParseExprKind exprKind)
+						ParseExprKind exprKind, bool allowDefault)
 {
 	List	   *result = NIL;
 	ListCell   *lc;
@@ -255,10 +268,17 @@ transformExpressionList(ParseState *pstate, List *exprlist,
 		}
 
 		/*
-		 * Not "something.*", so transform as a single expression
+		 * Not "something.*", so transform as a single expression.  If it's a
+		 * SetToDefault node and we should allow that, pass it through
+		 * unmodified.  (transformExpr will throw the appropriate error if
+		 * we're disallowing it.)
 		 */
-		result = lappend(result,
-						 transformExpr(pstate, e, exprKind));
+		if (allowDefault && IsA(e, SetToDefault))
+			 /* do nothing */ ;
+		else
+			e = transformExpr(pstate, e, exprKind);
+
+		result = lappend(result, e);
 	}
 
 	/* Shouldn't have any multiassign items here */
@@ -269,12 +289,41 @@ transformExpressionList(ParseState *pstate, List *exprlist,
 
 
 /*
+ * resolveTargetListUnknowns()
+ *		Convert any unknown-type targetlist entries to type TEXT.
+ *
+ * We do this after we've exhausted all other ways of identifying the output
+ * column types of a query.
+ */
+void
+resolveTargetListUnknowns(ParseState *pstate, List *targetlist)
+{
+	ListCell   *l;
+
+	foreach(l, targetlist)
+	{
+		TargetEntry *tle = (TargetEntry *) lfirst(l);
+		Oid			restype = exprType((Node *) tle->expr);
+
+		if (restype == UNKNOWNOID)
+		{
+			tle->expr = (Expr *) coerce_type(pstate, (Node *) tle->expr,
+											 restype, TEXTOID, -1,
+											 COERCION_IMPLICIT,
+											 COERCE_IMPLICIT_CAST,
+											 -1);
+		}
+	}
+}
+
+
+/*
  * markTargetListOrigins()
  *		Mark targetlist columns that are simple Vars with the source
  *		table's OID and column number.
  *
- * Currently, this is done only for SELECT targetlists, since we only
- * need the info if we are going to send it to the frontend.
+ * Currently, this is done only for SELECT targetlists and RETURNING lists,
+ * since we only need the info if we are going to send it to the frontend.
  */
 void
 markTargetListOrigins(ParseState *pstate, List *targetlist)
@@ -347,6 +396,8 @@ markTargetListOrigin(ParseState *pstate, TargetEntry *tle,
 			break;
 		case RTE_FUNCTION:
 		case RTE_VALUES:
+		case RTE_TABLEFUNC:
+		case RTE_NAMEDTUPLESTORE:
 			/* not a simple relation, leave it unmarked */
 			break;
 		case RTE_CTE:
@@ -404,7 +455,7 @@ Expr *
 transformAssignedExpr(ParseState *pstate,
 					  Expr *expr,
 					  ParseExprKind exprKind,
-					  char *colname,
+					  const char *colname,
 					  int attrno,
 					  List *indirection,
 					  int location)
@@ -433,8 +484,8 @@ transformAssignedExpr(ParseState *pstate,
 						colname),
 				 parser_errposition(pstate, location)));
 	attrtype = attnumTypeId(rd, attrno);
-	attrtypmod = rd->rd_att->attrs[attrno - 1]->atttypmod;
-	attrcollation = rd->rd_att->attrs[attrno - 1]->attcollation;
+	attrtypmod = TupleDescAttr(rd->rd_att, attrno - 1)->atttypmod;
+	attrcollation = TupleDescAttr(rd->rd_att, attrno - 1)->attcollation;
 
 	/*
 	 * If the expression is a DEFAULT placeholder, insert the attribute's
@@ -536,7 +587,7 @@ transformAssignedExpr(ParseState *pstate,
 							colname,
 							format_type_be(attrtype),
 							format_type_be(type_id)),
-				 errhint("You will need to rewrite or cast the expression."),
+					 errhint("You will need to rewrite or cast the expression."),
 					 parser_errposition(pstate, exprLocation(orig_expr))));
 	}
 
@@ -640,7 +691,13 @@ transformAssignmentIndirection(ParseState *pstate,
 
 	if (indirection && !basenode)
 	{
-		/* Set up a substitution.  We reuse CaseTestExpr for this. */
+		/*
+		 * Set up a substitution.  We abuse CaseTestExpr for this.  It's safe
+		 * to do so because the only nodes that will be above the CaseTestExpr
+		 * in the finished expression will be FieldStore and ArrayRef nodes.
+		 * (There could be other stuff in the tree, but it will be within
+		 * other child fields of those node types.)
+		 */
 		CaseTestExpr *ctest = makeNode(CaseTestExpr);
 
 		ctest->typeId = targetTypeId;
@@ -674,6 +731,8 @@ transformAssignmentIndirection(ParseState *pstate,
 		else
 		{
 			FieldStore *fstore;
+			Oid			baseTypeId;
+			int32		baseTypeMod;
 			Oid			typrelid;
 			AttrNumber	attnum;
 			Oid			fieldTypeId;
@@ -701,7 +760,14 @@ transformAssignmentIndirection(ParseState *pstate,
 
 			/* No subscripts, so can process field selection here */
 
-			typrelid = typeidTypeRelid(targetTypeId);
+			/*
+			 * Look up the composite type, accounting for possibility that
+			 * what we are given is a domain over composite.
+			 */
+			baseTypeMod = targetTypMod;
+			baseTypeId = getBaseTypeAndTypmod(targetTypeId, &baseTypeMod);
+
+			typrelid = typeidTypeRelid(baseTypeId);
 			if (!typrelid)
 				ereport(ERROR,
 						(errcode(ERRCODE_DATATYPE_MISMATCH),
@@ -726,7 +792,7 @@ transformAssignmentIndirection(ParseState *pstate,
 						 parser_errposition(pstate, location)));
 
 			get_atttypetypmodcoll(typrelid, attnum,
-								&fieldTypeId, &fieldTypMod, &fieldCollation);
+								  &fieldTypeId, &fieldTypMod, &fieldCollation);
 
 			/* recurse to create appropriate RHS for field assign */
 			rhs = transformAssignmentIndirection(pstate,
@@ -745,7 +811,17 @@ transformAssignmentIndirection(ParseState *pstate,
 			fstore->arg = (Expr *) basenode;
 			fstore->newvals = list_make1(rhs);
 			fstore->fieldnums = list_make1_int(attnum);
-			fstore->resulttype = targetTypeId;
+			fstore->resulttype = baseTypeId;
+
+			/* If target is a domain, apply constraints */
+			if (baseTypeId != targetTypeId)
+				return coerce_to_domain((Node *) fstore,
+										baseTypeId, baseTypeMod,
+										targetTypeId,
+										COERCION_IMPLICIT,
+										COERCE_IMPLICIT_CAST,
+										location,
+										false);
 
 			return (Node *) fstore;
 		}
@@ -786,7 +862,7 @@ transformAssignmentIndirection(ParseState *pstate,
 							targetName,
 							format_type_be(targetTypeId),
 							format_type_be(exprType(rhs))),
-				 errhint("You will need to rewrite or cast the expression."),
+					 errhint("You will need to rewrite or cast the expression."),
 					 parser_errposition(pstate, location)));
 		else
 			ereport(ERROR,
@@ -796,7 +872,7 @@ transformAssignmentIndirection(ParseState *pstate,
 							targetName,
 							format_type_be(targetTypeId),
 							format_type_be(exprType(rhs))),
-				 errhint("You will need to rewrite or cast the expression."),
+					 errhint("You will need to rewrite or cast the expression."),
 					 parser_errposition(pstate, location)));
 	}
 
@@ -908,19 +984,22 @@ checkInsertTargets(ParseState *pstate, List *cols, List **attrnos)
 		/*
 		 * Generate default column list for INSERT.
 		 */
-		Form_pg_attribute *attr = pstate->p_target_relation->rd_att->attrs;
-		int			numcol = pstate->p_target_relation->rd_rel->relnatts;
+		int			numcol = RelationGetNumberOfAttributes(pstate->p_target_relation);
+
 		int			i;
 
 		for (i = 0; i < numcol; i++)
 		{
 			ResTarget  *col;
+			Form_pg_attribute attr;
 
-			if (attr[i]->attisdropped)
+			attr = TupleDescAttr(pstate->p_target_relation->rd_att, i);
+
+			if (attr->attisdropped)
 				continue;
 
 			col = makeNode(ResTarget);
-			col->name = pstrdup(NameStr(attr[i]->attname));
+			col->name = pstrdup(NameStr(attr->attname));
 			col->indirection = NIL;
 			col->val = NULL;
 			col->location = -1;
@@ -948,9 +1027,9 @@ checkInsertTargets(ParseState *pstate, List *cols, List **attrnos)
 			if (attrno == InvalidAttrNumber)
 				ereport(ERROR,
 						(errcode(ERRCODE_UNDEFINED_COLUMN),
-					errmsg("column \"%s\" of relation \"%s\" does not exist",
-						   name,
-						 RelationGetRelationName(pstate->p_target_relation)),
+						 errmsg("column \"%s\" of relation \"%s\" does not exist",
+								name,
+								RelationGetRelationName(pstate->p_target_relation)),
 						 parser_errposition(pstate, col->location)));
 
 			/*
@@ -1055,7 +1134,7 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		{
 			Node	   *node;
 
-			node = (*pstate->p_pre_columnref_hook) (pstate, cref);
+			node = pstate->p_pre_columnref_hook(pstate, cref);
 			if (node != NULL)
 				return ExpandRowReference(pstate, node, make_target_entry);
 		}
@@ -1110,8 +1189,8 @@ ExpandColumnRefStar(ParseState *pstate, ColumnRef *cref,
 		{
 			Node	   *node;
 
-			node = (*pstate->p_post_columnref_hook) (pstate, cref,
-													 (Node *) rte);
+			node = pstate->p_post_columnref_hook(pstate, cref,
+												 (Node *) rte);
 			if (node != NULL)
 			{
 				if (rte != NULL)
@@ -1334,29 +1413,25 @@ ExpandRowReference(ParseState *pstate, Node *expr,
 	 * (This can be pretty inefficient if the expression involves nontrivial
 	 * computation :-(.)
 	 *
-	 * Verify it's a composite type, and get the tupdesc.  We use
-	 * get_expr_result_type() because that can handle references to functions
-	 * returning anonymous record types.  If that fails, use
-	 * lookup_rowtype_tupdesc(), which will almost certainly fail as well, but
-	 * it will give an appropriate error message.
+	 * Verify it's a composite type, and get the tupdesc.
+	 * get_expr_result_tupdesc() handles this conveniently.
 	 *
 	 * If it's a Var of type RECORD, we have to work even harder: we have to
-	 * find what the Var refers to, and pass that to get_expr_result_type.
+	 * find what the Var refers to, and pass that to get_expr_result_tupdesc.
 	 * That task is handled by expandRecordVariable().
 	 */
 	if (IsA(expr, Var) &&
 		((Var *) expr)->vartype == RECORDOID)
 		tupleDesc = expandRecordVariable(pstate, (Var *) expr, 0);
-	else if (get_expr_result_type(expr, NULL, &tupleDesc) != TYPEFUNC_COMPOSITE)
-		tupleDesc = lookup_rowtype_tupdesc_copy(exprType(expr),
-												exprTypmod(expr));
+	else
+		tupleDesc = get_expr_result_tupdesc(expr, false);
 	Assert(tupleDesc);
 
 	/* Generate a list of references to the individual fields */
 	numAttrs = tupleDesc->natts;
 	for (i = 0; i < numAttrs; i++)
 	{
-		Form_pg_attribute att = tupleDesc->attrs[i];
+		Form_pg_attribute att = TupleDescAttr(tupleDesc, i);
 		FieldSelect *fselect;
 
 		if (att->attisdropped)
@@ -1455,10 +1530,11 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 	{
 		case RTE_RELATION:
 		case RTE_VALUES:
+		case RTE_NAMEDTUPLESTORE:
 
 			/*
-			 * This case should not occur: a column of a table or values list
-			 * shouldn't have type RECORD.  Fall through and fail (most
+			 * This case should not occur: a column of a table, values list,
+			 * or ENR shouldn't have type RECORD.  Fall through and fail (most
 			 * likely) at the bottom.
 			 */
 			break;
@@ -1508,6 +1584,12 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 			 * its result columns as RECORD, which is not allowed.
 			 */
 			break;
+		case RTE_TABLEFUNC:
+
+			/*
+			 * Table function cannot have columns with RECORD type.
+			 */
+			break;
 		case RTE_CTE:
 			/* CTE reference: examine subquery's output expr */
 			if (!rte->self_reference)
@@ -1550,15 +1632,9 @@ expandRecordVariable(ParseState *pstate, Var *var, int levelsup)
 
 	/*
 	 * We now have an expression we can't expand any more, so see if
-	 * get_expr_result_type() can do anything with it.  If not, pass to
-	 * lookup_rowtype_tupdesc() which will probably fail, but will give an
-	 * appropriate error message while failing.
+	 * get_expr_result_tupdesc() can do anything with it.
 	 */
-	if (get_expr_result_type(expr, NULL, &tupleDesc) != TYPEFUNC_COMPOSITE)
-		tupleDesc = lookup_rowtype_tupdesc_copy(exprType(expr),
-												exprTypmod(expr));
-
-	return tupleDesc;
+	return get_expr_result_tupdesc(expr, false);
 }
 
 
@@ -1769,6 +1845,49 @@ FigureColnameInternal(Node *node, char **name)
 					return 2;
 				case IS_LEAST:
 					*name = "least";
+					return 2;
+			}
+			break;
+		case T_SQLValueFunction:
+			/* make these act like a function or variable */
+			switch (((SQLValueFunction *) node)->op)
+			{
+				case SVFOP_CURRENT_DATE:
+					*name = "current_date";
+					return 2;
+				case SVFOP_CURRENT_TIME:
+				case SVFOP_CURRENT_TIME_N:
+					*name = "current_time";
+					return 2;
+				case SVFOP_CURRENT_TIMESTAMP:
+				case SVFOP_CURRENT_TIMESTAMP_N:
+					*name = "current_timestamp";
+					return 2;
+				case SVFOP_LOCALTIME:
+				case SVFOP_LOCALTIME_N:
+					*name = "localtime";
+					return 2;
+				case SVFOP_LOCALTIMESTAMP:
+				case SVFOP_LOCALTIMESTAMP_N:
+					*name = "localtimestamp";
+					return 2;
+				case SVFOP_CURRENT_ROLE:
+					*name = "current_role";
+					return 2;
+				case SVFOP_CURRENT_USER:
+					*name = "current_user";
+					return 2;
+				case SVFOP_USER:
+					*name = "user";
+					return 2;
+				case SVFOP_SESSION_USER:
+					*name = "session_user";
+					return 2;
+				case SVFOP_CURRENT_CATALOG:
+					*name = "current_catalog";
+					return 2;
+				case SVFOP_CURRENT_SCHEMA:
+					*name = "current_schema";
 					return 2;
 			}
 			break;

@@ -3,7 +3,7 @@
  * parallel.h
  *	  Infrastructure for launching parallel workers
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/access/parallel.h
@@ -35,7 +35,6 @@ typedef struct ParallelContext
 	SubTransactionId subid;
 	int			nworkers;
 	int			nworkers_launched;
-	parallel_worker_main_type entrypoint;
 	char	   *library_name;
 	char	   *function_name;
 	ErrorContextCallback *error_context_stack;
@@ -44,20 +43,29 @@ typedef struct ParallelContext
 	void	   *private_memory;
 	shm_toc    *toc;
 	ParallelWorkerInfo *worker;
-	bool	   *any_message_received;
+	int			nknown_attached_workers;
+	bool	   *known_attached_workers;
 } ParallelContext;
 
+typedef struct ParallelWorkerContext
+{
+	dsm_segment *seg;
+	shm_toc    *toc;
+} ParallelWorkerContext;
+
 extern volatile bool ParallelMessagePending;
-extern int	ParallelWorkerNumber;
-extern bool InitializingParallelWorker;
+extern PGDLLIMPORT int ParallelWorkerNumber;
+extern PGDLLIMPORT bool InitializingParallelWorker;
 
 #define		IsParallelWorker()		(ParallelWorkerNumber >= 0)
 
-extern ParallelContext *CreateParallelContext(parallel_worker_main_type entrypoint, int nworkers);
-extern ParallelContext *CreateParallelContextForExternalFunction(char *library_name, char *function_name, int nworkers);
+extern ParallelContext *CreateParallelContext(const char *library_name,
+					  const char *function_name, int nworkers,
+					  bool serializable_okay);
 extern void InitializeParallelDSM(ParallelContext *pcxt);
 extern void ReinitializeParallelDSM(ParallelContext *pcxt);
 extern void LaunchParallelWorkers(ParallelContext *pcxt);
+extern void WaitForParallelWorkersToAttach(ParallelContext *pcxt);
 extern void WaitForParallelWorkersToFinish(ParallelContext *pcxt);
 extern void DestroyParallelContext(ParallelContext *pcxt);
 extern bool ParallelContextActive(void);
@@ -70,4 +78,4 @@ extern void ParallelWorkerReportLastRecEnd(XLogRecPtr last_xlog_end);
 
 extern void ParallelWorkerMain(Datum main_arg);
 
-#endif   /* PARALLEL_H */
+#endif							/* PARALLEL_H */

@@ -6,7 +6,7 @@
  * assorted contexts.
  *
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  * src/include/fe_utils/string_utils.h
@@ -19,16 +19,13 @@
 #include "libpq-fe.h"
 #include "pqexpbuffer.h"
 
-#define atooid(x)  ((Oid) strtoul((x), NULL, 10))
-
 /* Global variables controlling behavior of fmtId() and fmtQualifiedId() */
 extern int	quote_all_identifiers;
 extern PQExpBuffer (*getLocalPQExpBuffer) (void);
 
 /* Functions */
 extern const char *fmtId(const char *identifier);
-extern const char *fmtQualifiedId(int remoteVersion,
-			   const char *schema, const char *id);
+extern const char *fmtQualifiedId(const char *schema, const char *id);
 
 extern char *formatPGVersionNumber(int version_number, bool include_minor,
 					  char *buf, size_t buflen);
@@ -44,6 +41,7 @@ extern void appendByteaLiteral(PQExpBuffer buf,
 				   bool std_strings);
 
 extern void appendShellString(PQExpBuffer buf, const char *str);
+extern bool appendShellStringNoError(PQExpBuffer buf, const char *str);
 extern void appendConnStrVal(PQExpBuffer buf, const char *str);
 extern void appendPsqlMetaConnect(PQExpBuffer buf, const char *dbname);
 
@@ -58,4 +56,4 @@ extern bool processSQLNamePattern(PGconn *conn, PQExpBuffer buf,
 					  const char *schemavar, const char *namevar,
 					  const char *altnamevar, const char *visibilityrule);
 
-#endif   /* STRING_UTILS_H */
+#endif							/* STRING_UTILS_H */

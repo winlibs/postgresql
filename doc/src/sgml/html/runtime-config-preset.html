@@ -1,591 +1,119 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Preset Options</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Server Configuration"
-HREF="runtime-config.html"><LINK
-REL="PREVIOUS"
-TITLE="Error Handling"
-HREF="runtime-config-error-handling.html"><LINK
-REL="NEXT"
-TITLE="Customized Options"
-HREF="runtime-config-custom.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Error Handling"
-HREF="runtime-config-error-handling.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="runtime-config.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 19. Server Configuration</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Customized Options"
-HREF="runtime-config-custom.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="RUNTIME-CONFIG-PRESET"
->19.15. Preset Options</A
-></H1
-><P
->     The following <SPAN
-CLASS="QUOTE"
->"parameters"</SPAN
-> are read-only, and are determined
-     when <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> is compiled or when it is
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>19.15. Preset Options</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="runtime-config-error-handling.html" title="19.14. Error Handling" /><link rel="next" href="runtime-config-custom.html" title="19.16. Customized Options" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">19.15. Preset Options</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="runtime-config-error-handling.html" title="19.14. Error Handling">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="runtime-config.html" title="Chapter 19. Server Configuration">Up</a></td><th width="60%" align="center">Chapter 19. Server Configuration</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="runtime-config-custom.html" title="19.16. Customized Options">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="RUNTIME-CONFIG-PRESET"><div class="titlepage"><div><div><h2 class="title" style="clear: both">19.15. Preset Options</h2></div></div></div><p>
+     The following <span class="quote">“<span class="quote">parameters</span>”</span> are read-only, and are determined
+     when <span class="productname">PostgreSQL</span> is compiled or when it is
      installed. As such, they have been excluded from the sample
-     <TT
-CLASS="FILENAME"
->postgresql.conf</TT
-> file.  These options report
-     various aspects of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> behavior
+     <code class="filename">postgresql.conf</code> file.  These options report
+     various aspects of <span class="productname">PostgreSQL</span> behavior
      that might be of interest to certain applications, particularly
      administrative front-ends.
-    </P
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><A
-NAME="GUC-BLOCK-SIZE"
-></A
-><TT
-CLASS="VARNAME"
->block_size</TT
-> (<TT
-CLASS="TYPE"
->integer</TT
->)
-      </DT
-><DD
-><P
->        Reports the size of a disk block.  It is determined by the value
-        of <TT
-CLASS="LITERAL"
->BLCKSZ</TT
-> when building the server. The default
+    </p><div class="variablelist"><dl class="variablelist"><dt id="GUC-BLOCK-SIZE"><span class="term"><code class="varname">block_size</code> (<code class="type">integer</code>)
+      <a id="id-1.6.6.18.3.1.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the size of a disk block.  It is determined by the value
+        of <code class="literal">BLCKSZ</code> when building the server. The default
         value is 8192 bytes.  The meaning of some configuration
-        variables (such as <A
-HREF="runtime-config-resource.html#GUC-SHARED-BUFFERS"
->shared_buffers</A
->) is
-        influenced by <TT
-CLASS="VARNAME"
->block_size</TT
->. See <A
-HREF="runtime-config-resource.html"
->Section 19.4</A
-> for information.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-DATA-CHECKSUMS"
-></A
-><TT
-CLASS="VARNAME"
->data_checksums</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-      </DT
-><DD
-><P
->        Reports whether data checksums are enabled for this cluster.
-        See <A
-HREF="app-initdb.html#APP-INITDB-DATA-CHECKSUMS"
->data checksums</A
-> for more information.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-DEBUG-ASSERTIONS"
-></A
-><TT
-CLASS="VARNAME"
->debug_assertions</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-      </DT
-><DD
-><P
->        Reports whether <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> has been built
+        variables (such as <a class="xref" href="runtime-config-resource.html#GUC-SHARED-BUFFERS">shared_buffers</a>) is
+        influenced by <code class="varname">block_size</code>. See <a class="xref" href="runtime-config-resource.html" title="19.4. Resource Consumption">Section 19.4</a> for information.
+       </p></dd><dt id="GUC-DATA-CHECKSUMS"><span class="term"><code class="varname">data_checksums</code> (<code class="type">boolean</code>)
+      <a id="id-1.6.6.18.3.2.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports whether data checksums are enabled for this cluster.
+        See <a class="xref" href="app-initdb.html#APP-INITDB-DATA-CHECKSUMS">data checksums</a> for more information.
+       </p></dd><dt id="GUC-DATA-DIRECTORY-MODE"><span class="term"><code class="varname">data_directory_mode</code> (<code class="type">integer</code>)
+      <a id="id-1.6.6.18.3.3.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        On Unix systems this parameter reports the permissions of the data
+        directory defined by (<a class="xref" href="runtime-config-file-locations.html#GUC-DATA-DIRECTORY">data_directory</a>) at startup.
+        (On Microsoft Windows this parameter will always display
+        <code class="literal">0700</code>). See
+        <a class="xref" href="app-initdb.html#APP-INITDB-ALLOW-GROUP-ACCESS">group access</a> for more information.
+       </p></dd><dt id="GUC-DEBUG-ASSERTIONS"><span class="term"><code class="varname">debug_assertions</code> (<code class="type">boolean</code>)
+      <a id="id-1.6.6.18.3.4.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports whether <span class="productname">PostgreSQL</span> has been built
         with assertions enabled. That is the case if the
-        macro <TT
-CLASS="SYMBOL"
->USE_ASSERT_CHECKING</TT
-> is defined
-        when <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> is built (accomplished
-        e.g. by the <TT
-CLASS="COMMAND"
->configure</TT
-> option
-        <TT
-CLASS="OPTION"
->--enable-cassert</TT
->). By
-        default <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> is built without
+        macro <code class="symbol">USE_ASSERT_CHECKING</code> is defined
+        when <span class="productname">PostgreSQL</span> is built (accomplished
+        e.g. by the <code class="command">configure</code> option
+        <code class="option">--enable-cassert</code>). By
+        default <span class="productname">PostgreSQL</span> is built without
         assertions.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-INTEGER-DATETIMES"
-></A
-><TT
-CLASS="VARNAME"
->integer_datetimes</TT
-> (<TT
-CLASS="TYPE"
->boolean</TT
->)
-      </DT
-><DD
-><P
->        Reports whether <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> was built with
-        support for 64-bit-integer dates and times.  This can be
-        disabled by configuring with <TT
-CLASS="LITERAL"
->--disable-integer-datetimes</TT
->
-        when building <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->.  The default value is
-        <TT
-CLASS="LITERAL"
->on</TT
->.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-LC-COLLATE"
-></A
-><TT
-CLASS="VARNAME"
->lc_collate</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)
-      </DT
-><DD
-><P
->        Reports the locale in which sorting of textual data is done.
-        See <A
-HREF="locale.html"
->Section 23.1</A
-> for more information.
+       </p></dd><dt id="GUC-INTEGER-DATETIMES"><span class="term"><code class="varname">integer_datetimes</code> (<code class="type">boolean</code>)
+      <a id="id-1.6.6.18.3.5.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports whether <span class="productname">PostgreSQL</span> was built with support for
+        64-bit-integer dates and times.  As of <span class="productname">PostgreSQL</span> 10,
+        this is always <code class="literal">on</code>.
+       </p></dd><dt id="GUC-LC-COLLATE"><span class="term"><code class="varname">lc_collate</code> (<code class="type">string</code>)
+      <a id="id-1.6.6.18.3.6.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the locale in which sorting of textual data is done.
+        See <a class="xref" href="locale.html" title="23.1. Locale Support">Section 23.1</a> for more information.
         This value is determined when a database is created.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-LC-CTYPE"
-></A
-><TT
-CLASS="VARNAME"
->lc_ctype</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)
-      </DT
-><DD
-><P
->        Reports the locale that determines character classifications.
-        See <A
-HREF="locale.html"
->Section 23.1</A
-> for more information.
+       </p></dd><dt id="GUC-LC-CTYPE"><span class="term"><code class="varname">lc_ctype</code> (<code class="type">string</code>)
+      <a id="id-1.6.6.18.3.7.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the locale that determines character classifications.
+        See <a class="xref" href="locale.html" title="23.1. Locale Support">Section 23.1</a> for more information.
         This value is determined when a database is created.
-        Ordinarily this will be the same as <TT
-CLASS="VARNAME"
->lc_collate</TT
->,
+        Ordinarily this will be the same as <code class="varname">lc_collate</code>,
         but for special applications it might be set differently.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-MAX-FUNCTION-ARGS"
-></A
-><TT
-CLASS="VARNAME"
->max_function_args</TT
-> (<TT
-CLASS="TYPE"
->integer</TT
->)
-      </DT
-><DD
-><P
->        Reports the maximum number of function arguments. It is determined by
-        the value of <TT
-CLASS="LITERAL"
->FUNC_MAX_ARGS</TT
-> when building the server. The
+       </p></dd><dt id="GUC-MAX-FUNCTION-ARGS"><span class="term"><code class="varname">max_function_args</code> (<code class="type">integer</code>)
+      <a id="id-1.6.6.18.3.8.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the maximum number of function arguments. It is determined by
+        the value of <code class="literal">FUNC_MAX_ARGS</code> when building the server. The
         default value is 100 arguments.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-MAX-IDENTIFIER-LENGTH"
-></A
-><TT
-CLASS="VARNAME"
->max_identifier_length</TT
-> (<TT
-CLASS="TYPE"
->integer</TT
->)
-      </DT
-><DD
-><P
->        Reports the maximum identifier length. It is determined as one
-        less than the value of <TT
-CLASS="LITERAL"
->NAMEDATALEN</TT
-> when building
-        the server. The default value of <TT
-CLASS="LITERAL"
->NAMEDATALEN</TT
-> is
+       </p></dd><dt id="GUC-MAX-IDENTIFIER-LENGTH"><span class="term"><code class="varname">max_identifier_length</code> (<code class="type">integer</code>)
+      <a id="id-1.6.6.18.3.9.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the maximum identifier length. It is determined as one
+        less than the value of <code class="literal">NAMEDATALEN</code> when building
+        the server. The default value of <code class="literal">NAMEDATALEN</code> is
         64; therefore the default
-        <TT
-CLASS="VARNAME"
->max_identifier_length</TT
-> is 63 bytes, which
+        <code class="varname">max_identifier_length</code> is 63 bytes, which
         can be less than 63 characters when using multibyte encodings.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-MAX-INDEX-KEYS"
-></A
-><TT
-CLASS="VARNAME"
->max_index_keys</TT
-> (<TT
-CLASS="TYPE"
->integer</TT
->)
-      </DT
-><DD
-><P
->        Reports the maximum number of index keys. It is determined by
-        the value of <TT
-CLASS="LITERAL"
->INDEX_MAX_KEYS</TT
-> when building the server. The
+       </p></dd><dt id="GUC-MAX-INDEX-KEYS"><span class="term"><code class="varname">max_index_keys</code> (<code class="type">integer</code>)
+      <a id="id-1.6.6.18.3.10.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the maximum number of index keys. It is determined by
+        the value of <code class="literal">INDEX_MAX_KEYS</code> when building the server. The
         default value is 32 keys.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-SEGMENT-SIZE"
-></A
-><TT
-CLASS="VARNAME"
->segment_size</TT
-> (<TT
-CLASS="TYPE"
->integer</TT
->)
-      </DT
-><DD
-><P
->        Reports the number of blocks (pages) that can be stored within a file
-        segment.  It is determined by the value of <TT
-CLASS="LITERAL"
->RELSEG_SIZE</TT
->
+       </p></dd><dt id="GUC-SEGMENT-SIZE"><span class="term"><code class="varname">segment_size</code> (<code class="type">integer</code>)
+      <a id="id-1.6.6.18.3.11.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the number of blocks (pages) that can be stored within a file
+        segment.  It is determined by the value of <code class="literal">RELSEG_SIZE</code>
         when building the server.  The maximum size of a segment file in bytes
-        is equal to <TT
-CLASS="VARNAME"
->segment_size</TT
-> multiplied by
-        <TT
-CLASS="VARNAME"
->block_size</TT
->; by default this is 1GB.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-SERVER-ENCODING"
-></A
-><TT
-CLASS="VARNAME"
->server_encoding</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)
-      
-      </DT
-><DD
-><P
->        Reports the database encoding (character set).
+        is equal to <code class="varname">segment_size</code> multiplied by
+        <code class="varname">block_size</code>; by default this is 1GB.
+       </p></dd><dt id="GUC-SERVER-ENCODING"><span class="term"><code class="varname">server_encoding</code> (<code class="type">string</code>)
+      <a id="id-1.6.6.18.3.12.1.3" class="indexterm"></a>
+      <a id="id-1.6.6.18.3.12.1.4" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the database encoding (character set).
         It is determined when the database is created.  Ordinarily,
-        clients need only be concerned with the value of <A
-HREF="runtime-config-client.html#GUC-CLIENT-ENCODING"
->client_encoding</A
->.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-SERVER-VERSION"
-></A
-><TT
-CLASS="VARNAME"
->server_version</TT
-> (<TT
-CLASS="TYPE"
->string</TT
->)
-      </DT
-><DD
-><P
->        Reports the version number of the server. It is determined by the
-        value of <TT
-CLASS="LITERAL"
->PG_VERSION</TT
-> when building the server.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-SERVER-VERSION-NUM"
-></A
-><TT
-CLASS="VARNAME"
->server_version_num</TT
-> (<TT
-CLASS="TYPE"
->integer</TT
->)
-      </DT
-><DD
-><P
->        Reports the version number of the server as an integer. It is determined
-        by the value of <TT
-CLASS="LITERAL"
->PG_VERSION_NUM</TT
-> when building the server.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-WAL-BLOCK-SIZE"
-></A
-><TT
-CLASS="VARNAME"
->wal_block_size</TT
-> (<TT
-CLASS="TYPE"
->integer</TT
->)
-      </DT
-><DD
-><P
->        Reports the size of a WAL disk block.  It is determined by the value
-        of <TT
-CLASS="LITERAL"
->XLOG_BLCKSZ</TT
-> when building the server. The default value
+        clients need only be concerned with the value of <a class="xref" href="runtime-config-client.html#GUC-CLIENT-ENCODING">client_encoding</a>.
+       </p></dd><dt id="GUC-SERVER-VERSION"><span class="term"><code class="varname">server_version</code> (<code class="type">string</code>)
+      <a id="id-1.6.6.18.3.13.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the version number of the server. It is determined by the
+        value of <code class="literal">PG_VERSION</code> when building the server.
+       </p></dd><dt id="GUC-SERVER-VERSION-NUM"><span class="term"><code class="varname">server_version_num</code> (<code class="type">integer</code>)
+      <a id="id-1.6.6.18.3.14.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the version number of the server as an integer. It is determined
+        by the value of <code class="literal">PG_VERSION_NUM</code> when building the server.
+       </p></dd><dt id="GUC-WAL-BLOCK-SIZE"><span class="term"><code class="varname">wal_block_size</code> (<code class="type">integer</code>)
+      <a id="id-1.6.6.18.3.15.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the size of a WAL disk block.  It is determined by the value
+        of <code class="literal">XLOG_BLCKSZ</code> when building the server. The default value
         is 8192 bytes.
-       </P
-></DD
-><DT
-><A
-NAME="GUC-WAL-SEGMENT-SIZE"
-></A
-><TT
-CLASS="VARNAME"
->wal_segment_size</TT
-> (<TT
-CLASS="TYPE"
->integer</TT
->)
-      </DT
-><DD
-><P
->        Reports the number of blocks (pages) in a WAL segment file.
-        The total size of a WAL segment file in bytes is equal to
-        <TT
-CLASS="VARNAME"
->wal_segment_size</TT
-> multiplied by <TT
-CLASS="VARNAME"
->wal_block_size</TT
->;
-        by default this is 16MB.  See <A
-HREF="wal-configuration.html"
->Section 30.4</A
-> for
-        more information.
-       </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="runtime-config-error-handling.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="runtime-config-custom.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Error Handling</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="runtime-config.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Customized Options</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+       </p></dd><dt id="GUC-WAL-SEGMENT-SIZE"><span class="term"><code class="varname">wal_segment_size</code> (<code class="type">integer</code>)
+      <a id="id-1.6.6.18.3.16.1.3" class="indexterm"></a>
+      </span></dt><dd><p>
+        Reports the size of write ahead log segments.  The default value is
+        16MB. See <a class="xref" href="wal-configuration.html" title="30.4. WAL Configuration">Section 30.4</a> for more information.
+       </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="runtime-config-error-handling.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="runtime-config.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="runtime-config-custom.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">19.14. Error Handling </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 19.16. Customized Options</td></tr></table></div></body></html>

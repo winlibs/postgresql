@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "INITDB" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "INITDB" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -67,6 +67,12 @@ creates\&. Since the server cannot be run as root, you must not run
 \fBinitdb\fR
 as root either\&. (It will in fact refuse to do so\&.)
 .PP
+For security reasons the new cluster created by
+\fBinitdb\fR
+will only be accessible by the cluster owner by default\&. The
+\fB\-\-allow\-group\-access\fR
+option allows any user in the same group as the cluster owner to read files in the cluster\&. This is useful for performing backups as a non\-privileged user\&.
+.PP
 \fBinitdb\fR
 initializes the database cluster\*(Aqs default locale and character set encoding\&. The character set encoding, collation order (LC_COLLATE) and character set classes (LC_CTYPE, e\&.g\&. upper, lower, digit) can be set separately for a database when it is created\&.
 \fBinitdb\fR
@@ -89,11 +95,11 @@ The remaining locale categories can be changed later when the server is started\
 \fB\-\-locale\fR
 to set the default for all locale categories, including collation order and character set classes\&. All server locale values (lc_*) can be displayed via
 \fBSHOW ALL\fR\&. More details can be found in
-Section 23.1, \(lqLocale Support\(rq, in the documentation\&.
+Section\ \&23.1\&.
 .PP
 To alter the default encoding, use the
 \fB\-\-encoding\fR\&. More details can be found in
-Section 23.3, \(lqCharacter Set Support\(rq, in the documentation\&.
+Section\ \&23.3\&.
 .SH "OPTIONS"
 .PP
 .PP
@@ -101,12 +107,18 @@ Section 23.3, \(lqCharacter Set Support\(rq, in the documentation\&.
 .br
 \fB\-\-auth=\fR\fB\fIauthmethod\fR\fR
 .RS 4
-This option specifies the authentication method for local users used in
+This option specifies the default authentication method for local users used in
 pg_hba\&.conf
 (host
 and
 local
-lines)\&. Do not use
+lines)\&.
+\fBinitdb\fR
+will prepopulate
+pg_hba\&.conf
+entries using the specified authentication method for non\-replication as well as replication connections\&.
+.sp
+Do not use
 trust
 unless you trust all local users on your system\&.
 trust
@@ -148,7 +160,18 @@ SQL_ASCII
 if that does not work\&. The character sets supported by the
 PostgreSQL
 server are described in
-Section 23.3.1, \(lqSupported Character Sets\(rq, in the documentation\&.
+Section\ \&23.3.1\&.
+.RE
+.PP
+\fB\-g\fR
+.br
+\fB\-\-allow\-group\-access\fR
+.RS 4
+Allows users in the same group as the cluster owner to read all cluster files created by
+\fBinitdb\fR\&. This option is ignored on
+Windows
+as it does not support
+POSIX\-style group permissions\&.
 .RE
 .PP
 \fB\-k\fR
@@ -163,7 +186,7 @@ Use checksums on data pages to help detect corruption by the I/O system that wou
 Sets the default locale for the database cluster\&. If this option is not specified, the locale is inherited from the environment that
 \fBinitdb\fR
 runs in\&. Locale support is described in
-Section 23.1, \(lqLocale Support\(rq, in the documentation\&.
+Section\ \&23.1\&.
 .RE
 .PP
 \fB\-\-lc\-collate=\fR\fB\fIlocale\fR\fR
@@ -190,7 +213,7 @@ Equivalent to
 .PP
 \fB\-N\fR
 .br
-\fB\-\-nosync\fR
+\fB\-\-no\-sync\fR
 .RS 4
 By default,
 \fBinitdb\fR
@@ -215,9 +238,9 @@ initdb
 operations\&.
 .RE
 .PP
-\fB\-T \fR\fB\fICFG\fR\fR
+\fB\-T \fR\fB\fIconfig\fR\fR
 .br
-\fB\-\-text\-search\-config=\fR\fB\fICFG\fR\fR
+\fB\-\-text\-search\-config=\fR\fB\fIconfig\fR\fR
 .RS 4
 Sets the default text search configuration\&. See
 default_text_search_config
@@ -244,9 +267,17 @@ prompt for a password to give the database superuser\&. If you don\*(Aqt plan on
 .PP
 \fB\-X \fR\fB\fIdirectory\fR\fR
 .br
-\fB\-\-xlogdir=\fR\fB\fIdirectory\fR\fR
+\fB\-\-waldir=\fR\fB\fIdirectory\fR\fR
 .RS 4
-This option specifies the directory where the transaction log should be stored\&.
+This option specifies the directory where the write\-ahead log should be stored\&.
+.RE
+.PP
+\fB\-\-wal\-segsize=\fR\fB\fIsize\fR\fR
+.RS 4
+Set the
+WAL segment size, in megabytes\&. This is the size of each individual file in the WAL log\&. The default size is 16 megabytes\&. The value must be a power of 2 between 1 and 1024 (megabytes)\&. This option can only be set during initialization, and cannot be changed later\&.
+.sp
+It may be useful to adjust this size to control the granularity of WAL log shipping or archiving\&. Also, in databases with a high volume of WAL, the sheer number of WAL files per directory can become a performance and management problem\&. Increasing the WAL file size will reduce the number of WAL files\&.
 .RE
 .PP
 Other, less commonly used, options are also available:
@@ -269,7 +300,7 @@ should find its input files to initialize the database cluster\&. This is normal
 .PP
 \fB\-n\fR
 .br
-\fB\-\-noclean\fR
+\fB\-\-no\-clean\fR
 .RS 4
 By default, when
 \fBinitdb\fR
@@ -307,7 +338,7 @@ option\&.
 \fBTZ\fR
 .RS 4
 Specifies the default time zone of the created database cluster\&. The value should be a full time zone name (see
-Section 8.5.3, \(lqTime Zones\(rq, in the documentation)\&.
+Section\ \&8.5.3)\&.
 .RE
 .PP
 This utility, like most other
@@ -315,7 +346,7 @@ PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section\ \&34.14)\&.
 .SH "NOTES"
 .PP
 \fBinitdb\fR

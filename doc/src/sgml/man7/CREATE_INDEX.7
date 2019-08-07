@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE INDEX" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE INDEX" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,8 +32,9 @@ CREATE_INDEX \- define a new index
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] \fIname\fR ] ON \fItable_name\fR [ USING \fImethod\fR ]
+CREATE [ UNIQUE ] INDEX [ CONCURRENTLY ] [ [ IF NOT EXISTS ] \fIname\fR ] ON [ ONLY ] \fItable_name\fR [ USING \fImethod\fR ]
     ( { \fIcolumn_name\fR | ( \fIexpression\fR ) } [ COLLATE \fIcollation\fR ] [ \fIopclass\fR ] [ ASC | DESC ] [ NULLS { FIRST | LAST } ] [, \&.\&.\&.] )
+    [ INCLUDE ( \fIcolumn_name\fR [, \&.\&.\&.] ) ]
     [ WITH ( \fIstorage_parameter\fR = \fIvalue\fR [, \&.\&.\&. ] ) ]
     [ TABLESPACE \fItablespace_name\fR ]
     [ WHERE \fIpredicate\fR ]
@@ -63,7 +64,7 @@ WHERE
 with
 UNIQUE
 to enforce uniqueness over a subset of a table\&. See
-Section 11.8, \(lqPartial Indexes\(rq, in the documentation
+Section\ \&11.8
 for more discussion\&.
 .PP
 The expression used in the
@@ -80,6 +81,9 @@ clause, remember to mark the function immutable when you create it\&.
 UNIQUE
 .RS 4
 Causes the system to check for duplicate values in the table when the index is created (if data already exist) and each time data is added\&. Attempts to insert or update data which would result in duplicate entries will generate an error\&.
+.sp
+Additional restrictions apply when unique indexes are applied to partitioned tables; see
+CREATE TABLE (\fBCREATE_TABLE\fR(7))\&.
 .RE
 .PP
 CONCURRENTLY
@@ -97,11 +101,37 @@ IF NOT EXISTS
 is specified\&.
 .RE
 .PP
+INCLUDE
+.RS 4
+The optional
+INCLUDE
+clause specifies a list of columns which will be included in the index as
+non\-key
+columns\&. A non\-key column cannot be used in an index scan search qualification, and it is disregarded for purposes of any uniqueness or exclusion constraint enforced by the index\&. However, an index\-only scan can return the contents of non\-key columns without having to visit the index\*(Aqs table, since they are available directly from the index entry\&. Thus, addition of non\-key columns allows index\-only scans to be used for queries that otherwise could not use them\&.
+.sp
+It\*(Aqs wise to be conservative about adding non\-key columns to an index, especially wide columns\&. If an index tuple exceeds the maximum size allowed for the index type, data insertion will fail\&. In any case, non\-key columns duplicate data from the index\*(Aqs table and bloat the size of the index, thus potentially slowing searches\&.
+.sp
+Columns listed in the
+INCLUDE
+clause don\*(Aqt need appropriate operator classes; the clause can include columns whose data types don\*(Aqt have operator classes defined for a given access method\&.
+.sp
+Expressions are not supported as included columns since they cannot be used in index\-only scans\&.
+.sp
+Currently, only the B\-tree index access method supports this feature\&. In B\-tree indexes, the values of columns listed in the
+INCLUDE
+clause are included in leaf tuples which correspond to heap tuples, but are not included in upper\-level index entries used for tree navigation\&.
+.RE
+.PP
 \fIname\fR
 .RS 4
 The name of the index to be created\&. No schema name can be included here; the index is always created in the same schema as its parent table\&. If the name is omitted,
 PostgreSQL
 chooses a suitable name based on the parent table\*(Aqs name and the indexed column name(s)\&.
+.RE
+.PP
+ONLY
+.RS 4
+Indicates not to recurse creating indexes on partitions, if the table is partitioned\&. The default is to recurse\&.
 .RE
 .PP
 \fItable_name\fR
@@ -198,12 +228,20 @@ fillfactor
 The fillfactor for an index is a percentage that determines how full the index method will try to pack index pages\&. For B\-trees, leaf pages are filled to this percentage during initial index build, and also when extending the index at the right (adding new largest key values)\&. If pages subsequently become completely full, they will be split, leading to gradual degradation in the index\*(Aqs efficiency\&. B\-trees use a default fillfactor of 90, but any integer value from 10 to 100 can be selected\&. If the table is static then fillfactor 100 is best to minimize the index\*(Aqs physical size, but for heavily updated tables a smaller fillfactor is better to minimize the need for page splits\&. The other index methods use fillfactor in different but roughly analogous ways; the default fillfactor varies between methods\&.
 .RE
 .PP
+B\-tree indexes additionally accept this parameter:
+.PP
+vacuum_cleanup_index_scale_factor
+.RS 4
+Per\-index value for
+vacuum_cleanup_index_scale_factor\&.
+.RE
+.PP
 GiST indexes additionally accept this parameter:
 .PP
 buffering
 .RS 4
 Determines whether the buffering build technique described in
-Section 61.4.1, \(lqGiST buffering build\(rq, in the documentation
+Section\ \&64.4.1
 is used to build the index\&. With
 OFF
 it is disabled, with
@@ -220,7 +258,7 @@ GIN indexes accept different parameters:
 fastupdate
 .RS 4
 This setting controls usage of the fast update technique described in
-Section 63.4.1, \(lqGIN Fast Update Technique\(rq, in the documentation\&. It is a Boolean parameter:
+Section\ \&66.4.1\&. It is a Boolean parameter:
 ON
 enables fast update,
 OFF
@@ -229,7 +267,7 @@ ON
 and
 OFF
 are allowed as described in
-Section 19.1, \(lqSetting Parameters\(rq, in the documentation\&.) The default is
+Section\ \&19.1\&.) The default is
 ON\&.
 .if n \{\
 .sp
@@ -264,16 +302,21 @@ parameter\&. This value is specified in kilobytes\&.
 .RE
 .PP
 BRIN
-indexes accept a different parameter:
+indexes accept different parameters:
 .PP
 pages_per_range
 .RS 4
 Defines the number of table blocks that make up one block range for each entry of a
 BRIN
 index (see
-Section 64.1, \(lqIntroduction\(rq, in the documentation
+Section\ \&67.1
 for more details)\&. The default is
 128\&.
+.RE
+.PP
+autosummarize
+.RS 4
+Defines whether a summarization run is invoked for the previous page range whenever an insertion is detected on the next one\&.
 .RE
 .SS "Building Indexes Concurrently"
 .PP
@@ -290,7 +333,7 @@ PostgreSQL
 must perform two scans of the table, and in addition it must wait for all existing transactions that could potentially modify or use the index to terminate\&. Thus this method requires more total work than a standard index build and takes significantly longer to complete\&. However, since it allows normal operations to continue while the index is built, this method is useful for adding new indexes in a production environment\&. Of course, the extra CPU and I/O load imposed by the index creation might slow other operations\&.
 .PP
 In a concurrent index build, the index is actually entered into the system catalogs in one transaction, then two table scans occur in two more transactions\&. Before each table scan, the index build must wait for existing transactions that have modified the table to terminate\&. After the second scan, the index build must wait for any transactions that have a snapshot (see
-Chapter 13, Concurrency Control, in the documentation) predating the second scan to terminate\&. Then finally the index can be marked ready for use, and the
+Chapter\ \&13) predating the second scan to terminate\&. Then finally the index can be marked ready for use, and the
 \fBCREATE INDEX\fR
 command terminates\&. Even then, however, the index may not be immediately usable for queries: in the worst case, it cannot be used as long as transactions exist that predate the start of the index build\&.
 .PP
@@ -310,9 +353,9 @@ INVALID:
 .nf
 postgres=# \ed tab
        Table "public\&.tab"
- Column |  Type   | Modifiers 
-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-
- col    | integer | 
+ Column |  Type   | Collation | Nullable | Default 
+\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-\-+\-\-\-\-\-\-\-\-\-
+ col    | integer |           |          | 
 Indexes:
     "idx" btree (col) INVALID
 .fi
@@ -332,34 +375,18 @@ index continues to enforce its uniqueness constraint afterwards\&.
 .PP
 Concurrent builds of expression indexes and partial indexes are supported\&. Errors occurring in the evaluation of these expressions could cause behavior similar to that described above for unique constraint violations\&.
 .PP
-Regular index builds permit other regular index builds on the same table to occur in parallel, but only one concurrent index build can occur on a table at a time\&. In both cases, no other types of schema modification on the table are allowed meanwhile\&. Another difference is that a regular
+Regular index builds permit other regular index builds on the same table to occur simultaneously, but only one concurrent index build can occur on a table at a time\&. In either case, schema modification of the table is not allowed while the index is being built\&. Another difference is that a regular
 \fBCREATE INDEX\fR
 command can be performed within a transaction block, but
 \fBCREATE INDEX CONCURRENTLY\fR
 cannot\&.
+.PP
+Concurrent builds for indexes on partitioned tables are currently not supported\&. However, you may concurrently build the index on each partition individually and then finally create the partitioned index non\-concurrently in order to reduce the time where writes to the partitioned table will be locked out\&. In this case, building the partitioned index is a metadata only operation\&.
 .SH "NOTES"
 .PP
 See
-Chapter 11, Indexes, in the documentation
+Chapter\ \&11
 for information about when indexes can be used, when they are not used, and in which particular situations they can be useful\&.
-.if n \{\
-.sp
-.\}
-.RS 4
-.it 1 an-trap
-.nr an-no-space-flag 1
-.nr an-break-flag 1
-.br
-.ps +1
-\fBCaution\fR
-.ps -1
-.br
-.PP
-Hash index operations are not presently WAL\-logged, so hash indexes might need to be rebuilt with
-\fBREINDEX\fR
-after a database crash if there were unwritten changes\&. Also, changes to hash indexes are not replicated over streaming or file\-based replication after the initial base backup, so they give wrong answers to queries that subsequently use them\&. Hash indexes are also not properly restored during point\-in\-time recovery\&. For these reasons, hash index use is presently discouraged\&.
-.sp .5v
-.RE
 .PP
 Currently, only the B\-tree, GiST, GIN, and BRIN index methods support multicolumn indexes\&. Up to 32 fields can be specified by default\&. (This limit can be altered when building
 PostgreSQL\&.) Only B\-tree currently supports unique indexes\&.
@@ -368,10 +395,21 @@ An
 operator class
 can be specified for each column of an index\&. The operator class identifies the operators to be used by the index for that column\&. For example, a B\-tree index on four\-byte integers would use the
 int4_ops
-class; this operator class includes comparison functions for four\-byte integers\&. In practice the default operator class for the column\*(Aqs data type is usually sufficient\&. The main point of having operator classes is that for some data types, there could be more than one meaningful ordering\&. For example, we might want to sort a complex\-number data type either by absolute value or by real part\&. We could do this by defining two operator classes for the data type and then selecting the proper class when making an index\&. More information about operator classes is in
-Section 11.9, \(lqOperator Classes and Operator Families\(rq, in the documentation
+class; this operator class includes comparison functions for four\-byte integers\&. In practice the default operator class for the column\*(Aqs data type is usually sufficient\&. The main point of having operator classes is that for some data types, there could be more than one meaningful ordering\&. For example, we might want to sort a complex\-number data type either by absolute value or by real part\&. We could do this by defining two operator classes for the data type and then selecting the proper class when creating an index\&. More information about operator classes is in
+Section\ \&11.10
 and in
-Section 36.14, \(lqInterfacing Extensions To Indexes\(rq, in the documentation\&.
+Section\ \&38.15\&.
+.PP
+When
+CREATE INDEX
+is invoked on a partitioned table, the default behavior is to recurse to all partitions to ensure they all have matching indexes\&. Each partition is first checked to determine whether an equivalent index already exists, and if so, that index will become attached as a partition index to the index being created, which will become its parent index\&. If no matching index exists, a new index will be created and automatically attached; the name of the new index in each partition will be determined as if no index name had been specified in the command\&. If the
+ONLY
+option is specified, no recursion is done, and the index is marked invalid\&. (\fBALTER INDEX \&.\&.\&. ATTACH PARTITION\fR
+marks the index valid, once all partitions acquire matching indexes\&.) Note, however, that any partition that is created in the future using
+\fBCREATE TABLE \&.\&.\&. PARTITION OF\fR
+will automatically have a matching index, regardless of whether
+ONLY
+is specified\&.
 .PP
 For index methods that support ordered scans (currently, only B\-tree), the optional clauses
 ASC,
@@ -391,6 +429,68 @@ behavior, rather than the default
 For most index methods, the speed of creating an index is dependent on the setting of
 maintenance_work_mem\&. Larger values will reduce the time needed for index creation, so long as you don\*(Aqt make it larger than the amount of memory really available, which would drive the machine into swapping\&.
 .PP
+PostgreSQL
+can build indexes while leveraging multiple CPUs in order to process the table rows faster\&. This feature is known as
+parallel index build\&. For index methods that support building indexes in parallel (currently, only B\-tree),
+\fImaintenance_work_mem\fR
+specifies the maximum amount of memory that can be used by each index build operation as a whole, regardless of how many worker processes were started\&. Generally, a cost model automatically determines how many worker processes should be requested, if any\&.
+.PP
+Parallel index builds may benefit from increasing
+\fImaintenance_work_mem\fR
+where an equivalent serial index build will see little or no benefit\&. Note that
+\fImaintenance_work_mem\fR
+may influence the number of worker processes requested, since parallel workers must have at least a
+32MB
+share of the total
+\fImaintenance_work_mem\fR
+budget\&. There must also be a remaining
+32MB
+share for the leader process\&. Increasing
+max_parallel_maintenance_workers
+may allow more workers to be used, which will reduce the time needed for index creation, so long as the index build is not already I/O bound\&. Of course, there should also be sufficient CPU capacity that would otherwise lie idle\&.
+.PP
+Setting a value for
+parallel_workers
+via
+ALTER TABLE (\fBALTER_TABLE\fR(7))
+directly controls how many parallel worker processes will be requested by a
+\fBCREATE INDEX\fR
+against the table\&. This bypasses the cost model completely, and prevents
+\fImaintenance_work_mem\fR
+from affecting how many parallel workers are requested\&. Setting
+parallel_workers
+to 0 via
+\fBALTER TABLE\fR
+will disable parallel index builds on the table in all cases\&.
+.if n \{\
+.sp
+.\}
+.RS 4
+.it 1 an-trap
+.nr an-no-space-flag 1
+.nr an-break-flag 1
+.br
+.ps +1
+\fBTip\fR
+.ps -1
+.br
+.PP
+You might want to reset
+parallel_workers
+after setting it as part of tuning an index build\&. This avoids inadvertent changes to query plans, since
+parallel_workers
+affects
+\fIall\fR
+parallel table scans\&.
+.sp .5v
+.RE
+.PP
+While
+\fBCREATE INDEX\fR
+with the
+CONCURRENTLY
+option supports parallel builds without special restrictions, only the first table scan is actually performed in parallel\&.
+.PP
 Use
 DROP INDEX (\fBDROP_INDEX\fR(7))
 to remove an index\&.
@@ -405,7 +505,7 @@ will interpret it as
 USING gist, to simplify conversion of old databases to GiST\&.
 .SH "EXAMPLES"
 .PP
-To create a B\-tree index on the column
+To create a unique B\-tree index on the column
 title
 in the table
 films:
@@ -415,6 +515,25 @@ films:
 .\}
 .nf
 CREATE UNIQUE INDEX title_idx ON films (title);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To create a unique B\-tree index on the column
+title
+with included columns
+director
+and
+rating
+in the table
+films:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE UNIQUE INDEX title_idx ON films (title) INCLUDE (director, rating);
 .fi
 .if n \{\
 .RE

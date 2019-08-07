@@ -1,125 +1,16 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Explicit Subtransactions</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="PL/Python - Python Procedural Language"
-HREF="plpython.html"><LINK
-REL="PREVIOUS"
-TITLE="Database Access"
-HREF="plpython-database.html"><LINK
-REL="NEXT"
-TITLE="Utility Functions"
-HREF="plpython-util.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Database Access"
-HREF="plpython-database.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plpython.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 44. PL/Python - Python Procedural Language</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Utility Functions"
-HREF="plpython-util.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="PLPYTHON-SUBTRANSACTION"
->44.8. Explicit Subtransactions</A
-></H1
-><P
->   Recovering from errors caused by database access as described in
-   <A
-HREF="plpython-database.html#PLPYTHON-TRAPPING"
->Section 44.7.2</A
-> can lead to an undesirable
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>46.8. Explicit Subtransactions</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="plpython-database.html" title="46.7. Database Access" /><link rel="next" href="plpython-transactions.html" title="46.9. Transaction Management" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">46.8. Explicit Subtransactions</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="plpython-database.html" title="46.7. Database Access">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="plpython.html" title="Chapter 46. PL/Python - Python Procedural Language">Up</a></td><th width="60%" align="center">Chapter 46. PL/Python - Python Procedural Language</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="plpython-transactions.html" title="46.9. Transaction Management">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="PLPYTHON-SUBTRANSACTION"><div class="titlepage"><div><div><h2 class="title" style="clear: both">46.8. Explicit Subtransactions</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="plpython-subtransaction.html#id-1.8.11.16.3">46.8.1. Subtransaction Context Managers</a></span></dt><dt><span class="sect2"><a href="plpython-subtransaction.html#id-1.8.11.16.4">46.8.2. Older Python Versions</a></span></dt></dl></div><p>
+   Recovering from errors caused by database access as described in
+   <a class="xref" href="plpython-database.html#PLPYTHON-TRAPPING" title="46.7.2. Trapping Errors">Section 46.7.2</a> can lead to an undesirable
    situation where some operations succeed before one of them fails,
    and after recovering from that error the data is left in an
    inconsistent state.  PL/Python offers a solution to this problem in
    the form of explicit subtransactions.
-  </P
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN69392"
->44.8.1. Subtransaction Context Managers</A
-></H2
-><P
->    Consider a function that implements a transfer between two
+  </p><div class="sect2" id="id-1.8.11.16.3"><div class="titlepage"><div><div><h3 class="title">46.8.1. Subtransaction Context Managers</h3></div></div></div><p>
+    Consider a function that implements a transfer between two
     accounts:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION transfer_funds() RETURNS void AS $$
+</p><pre class="programlisting">
+CREATE FUNCTION transfer_funds() RETURNS void AS $$
 try:
     plpy.execute("UPDATE accounts SET balance = balance - 100 WHERE account_name = 'joe'")
     plpy.execute("UPDATE accounts SET balance = balance + 100 WHERE account_name = 'mary'")
@@ -129,46 +20,26 @@ else:
     result = "funds transferred correctly"
 plan = plpy.prepare("INSERT INTO operations (result) VALUES ($1)", ["text"])
 plpy.execute(plan, [result])
-$$ LANGUAGE plpythonu;</PRE
-><P>
-    If the second <TT
-CLASS="LITERAL"
->UPDATE</TT
-> statement results in an
+$$ LANGUAGE plpythonu;
+</pre><p>
+    If the second <code class="literal">UPDATE</code> statement results in an
     exception being raised, this function will report the error, but
-    the result of the first <TT
-CLASS="LITERAL"
->UPDATE</TT
-> will
+    the result of the first <code class="literal">UPDATE</code> will
     nevertheless be committed.  In other words, the funds will be
     withdrawn from Joe's account, but will not be transferred to
     Mary's account.
-   </P
-><P
->    To avoid such issues, you can wrap your
-    <TT
-CLASS="LITERAL"
->plpy.execute</TT
-> calls in an explicit
-    subtransaction.  The <TT
-CLASS="LITERAL"
->plpy</TT
-> module provides a
+   </p><p>
+    To avoid such issues, you can wrap your
+    <code class="literal">plpy.execute</code> calls in an explicit
+    subtransaction.  The <code class="literal">plpy</code> module provides a
     helper object to manage explicit subtransactions that gets created
-    with the <TT
-CLASS="LITERAL"
->plpy.subtransaction()</TT
-> function.
+    with the <code class="literal">plpy.subtransaction()</code> function.
     Objects created by this function implement the
-    <A
-HREF="http://docs.python.org/library/stdtypes.html#context-manager-types"
-TARGET="_top"
->    context manager interface</A
->.  Using explicit subtransactions
+    <a class="ulink" href="https://docs.python.org/library/stdtypes.html#context-manager-types" target="_top">
+    context manager interface</a>.  Using explicit subtransactions
     we can rewrite our function as:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION transfer_funds2() RETURNS void AS $$
+</p><pre class="programlisting">
+CREATE FUNCTION transfer_funds2() RETURNS void AS $$
 try:
     with plpy.subtransaction():
         plpy.execute("UPDATE accounts SET balance = balance - 100 WHERE account_name = 'joe'")
@@ -179,22 +50,13 @@ else:
     result = "funds transferred correctly"
 plan = plpy.prepare("INSERT INTO operations (result) VALUES ($1)", ["text"])
 plpy.execute(plan, [result])
-$$ LANGUAGE plpythonu;</PRE
-><P>
-    Note that the use of <TT
-CLASS="LITERAL"
->try/catch</TT
-> is still
+$$ LANGUAGE plpythonu;
+</pre><p>
+    Note that the use of <code class="literal">try/catch</code> is still
     required.  Otherwise the exception would propagate to the top of
     the Python stack and would cause the whole function to abort with
-    a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> error, so that the
-    <TT
-CLASS="LITERAL"
->operations</TT
-> table would not have any row
+    a <span class="productname">PostgreSQL</span> error, so that the
+    <code class="literal">operations</code> table would not have any row
     inserted into it.  The subtransaction context manager does not
     trap errors, it only assures that all database operations executed
     inside its scope will be atomically committed or rolled back.  A
@@ -203,44 +65,18 @@ CLASS="LITERAL"
     database access.  A regular Python exception raised inside an
     explicit subtransaction block would also cause the subtransaction
     to be rolled back.
-   </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN69407"
->44.8.2. Older Python Versions</A
-></H2
-><P
->    Context managers syntax using the <TT
-CLASS="LITERAL"
->with</TT
-> keyword
+   </p></div><div class="sect2" id="id-1.8.11.16.4"><div class="titlepage"><div><div><h3 class="title">46.8.2. Older Python Versions</h3></div></div></div><p>
+    Context managers syntax using the <code class="literal">with</code> keyword
     is available by default in Python 2.6.  If using PL/Python with an
     older Python version, it is still possible to use explicit
     subtransactions, although not as transparently.  You can call the
-    subtransaction manager's <TT
-CLASS="LITERAL"
->__enter__</TT
-> and
-    <TT
-CLASS="LITERAL"
->__exit__</TT
-> functions using the
-    <TT
-CLASS="LITERAL"
->enter</TT
-> and <TT
-CLASS="LITERAL"
->exit</TT
-> convenience
+    subtransaction manager's <code class="literal">__enter__</code> and
+    <code class="literal">__exit__</code> functions using the
+    <code class="literal">enter</code> and <code class="literal">exit</code> convenience
     aliases.  The example function that transfers funds could be
     written as:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE FUNCTION transfer_funds_old() RETURNS void AS $$
+</p><pre class="programlisting">
+CREATE FUNCTION transfer_funds_old() RETURNS void AS $$
 try:
     subxact = plpy.subtransaction()
     subxact.enter()
@@ -260,95 +96,12 @@ else:
 
 plan = plpy.prepare("INSERT INTO operations (result) VALUES ($1)", ["text"])
 plpy.execute(plan, [result])
-$$ LANGUAGE plpythonu;</PRE
-><P>
-   </P
-><DIV
-CLASS="NOTE"
-><BLOCKQUOTE
-CLASS="NOTE"
-><P
-><B
->Note: </B
->     Although context managers were implemented in Python 2.5, to use
-     the <TT
-CLASS="LITERAL"
->with</TT
-> syntax in that version you need to
-     use a <A
-HREF="http://docs.python.org/release/2.5/ref/future.html"
-TARGET="_top"
->future
-     statement</A
->.  Because of implementation details, however,
+$$ LANGUAGE plpythonu;
+</pre><p>
+   </p><div class="note"><h3 class="title">Note</h3><p>
+     Although context managers were implemented in Python 2.5, to use
+     the <code class="literal">with</code> syntax in that version you need to
+     use a <a class="ulink" href="https://docs.python.org/release/2.5/ref/future.html" target="_top">future
+     statement</a>.  Because of implementation details, however,
      you cannot use future statements in PL/Python functions.
-    </P
-></BLOCKQUOTE
-></DIV
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="plpython-database.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="plpython-util.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Database Access</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="plpython.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Utility Functions</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+    </p></div></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="plpython-database.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="plpython.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="plpython-transactions.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">46.7. Database Access </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 46.9. Transaction Management</td></tr></table></div></body></html>

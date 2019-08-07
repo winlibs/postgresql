@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "EXPLAIN" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "EXPLAIN" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -42,6 +42,7 @@ where \fIoption\fR can be one of:
     COSTS [ \fIboolean\fR ]
     BUFFERS [ \fIboolean\fR ]
     TIMING [ \fIboolean\fR ]
+    SUMMARY [ \fIboolean\fR ]
     FORMAT { TEXT | XML | JSON | YAML }
 .fi
 .SH "DESCRIPTION"
@@ -152,6 +153,15 @@ is also enabled\&. It defaults to
 TRUE\&.
 .RE
 .PP
+SUMMARY
+.RS 4
+Include summary information (e\&.g\&., totaled timing information) after the query plan\&. Summary information is included by default when
+ANALYZE
+is used but otherwise is not included by default, but can be enabled using this option\&. Planning time in
+\fBEXPLAIN EXECUTE\fR
+includes the time required to fetch the plan from the cache and the time required for re\-planning, if necessary\&.
+.RE
+.PP
 FORMAT
 .RS 4
 Specify the output format, which can be TEXT, XML, JSON, or YAML\&. Non\-text output contains the same information as the text output format, but is easier for programs to parse\&. This parameter defaults to
@@ -193,7 +203,7 @@ statement, whose execution plan you wish to see\&.
 .PP
 The command\*(Aqs result is a textual description of the plan selected for the
 \fIstatement\fR, optionally annotated with execution statistics\&.
-Section 14.1, \(lqUsing EXPLAIN\(rq, in the documentation
+Section\ \&14.1
 describes the information provided\&.
 .SH "NOTES"
 .PP

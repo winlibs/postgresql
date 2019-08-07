@@ -1,262 +1,49 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Default Values</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Data Definition"
-HREF="ddl.html"><LINK
-REL="PREVIOUS"
-TITLE="Table Basics"
-HREF="ddl-basics.html"><LINK
-REL="NEXT"
-TITLE="Constraints"
-HREF="ddl-constraints.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Table Basics"
-HREF="ddl-basics.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="ddl.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 5. Data Definition</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Constraints"
-HREF="ddl-constraints.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="DDL-DEFAULT"
->5.2. Default Values</A
-></H1
-><P
->   A column can be assigned a default value.  When a new row is
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>5.2. Default Values</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="ddl-basics.html" title="5.1. Table Basics" /><link rel="next" href="ddl-constraints.html" title="5.3. Constraints" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">5.2. Default Values</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="ddl-basics.html" title="5.1. Table Basics">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="ddl.html" title="Chapter 5. Data Definition">Up</a></td><th width="60%" align="center">Chapter 5. Data Definition</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="ddl-constraints.html" title="5.3. Constraints">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="DDL-DEFAULT"><div class="titlepage"><div><div><h2 class="title" style="clear: both">5.2. Default Values</h2></div></div></div><a id="id-1.5.4.4.2" class="indexterm"></a><p>
+   A column can be assigned a default value.  When a new row is
    created and no values are specified for some of the columns, those
    columns will be filled with their respective default values.  A
    data manipulation command can also request explicitly that a column
    be set to its default value, without having to know what that value is.
-   (Details about data manipulation commands are in <A
-HREF="dml.html"
->Chapter 6</A
->.)
-  </P
-><P
->   
+   (Details about data manipulation commands are in <a class="xref" href="dml.html" title="Chapter 6. Data Manipulation">Chapter 6</a>.)
+  </p><p>
+   <a id="id-1.5.4.4.4.1" class="indexterm"></a>
    If no default value is declared explicitly, the default value is the
    null value.  This usually makes sense because a null value can
    be considered to represent unknown data.
-  </P
-><P
->   In a table definition, default values are listed after the column
+  </p><p>
+   In a table definition, default values are listed after the column
    data type.  For example:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE TABLE products (
+</p><pre class="programlisting">
+CREATE TABLE products (
     product_no integer,
     name text,
-    price numeric <B
-CLASS="EMPHASIS"
->DEFAULT 9.99</B
->
-);</PRE
-><P>
-  </P
-><P
->   The default value can be an expression, which will be
+    price numeric <span class="emphasis"><strong>DEFAULT 9.99</strong></span>
+);
+</pre><p>
+  </p><p>
+   The default value can be an expression, which will be
    evaluated whenever the default value is inserted
-   (<SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->not</I
-></SPAN
-> when the table is created).  A common example
-   is for a <TT
-CLASS="TYPE"
->timestamp</TT
-> column to have a default of <TT
-CLASS="LITERAL"
->CURRENT_TIMESTAMP</TT
->,
+   (<span class="emphasis"><em>not</em></span> when the table is created).  A common example
+   is for a <code class="type">timestamp</code> column to have a default of <code class="literal">CURRENT_TIMESTAMP</code>,
    so that it gets set to the time of row insertion.  Another common
-   example is generating a <SPAN
-CLASS="QUOTE"
->"serial number"</SPAN
-> for each row.
-   In <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> this is typically done by
+   example is generating a <span class="quote">“<span class="quote">serial number</span>”</span> for each row.
+   In <span class="productname">PostgreSQL</span> this is typically done by
    something like:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE TABLE products (
-    product_no integer <B
-CLASS="EMPHASIS"
->DEFAULT nextval('products_product_no_seq')</B
->,
+</p><pre class="programlisting">
+CREATE TABLE products (
+    product_no integer <span class="emphasis"><strong>DEFAULT nextval('products_product_no_seq')</strong></span>,
     ...
-);</PRE
-><P>
-   where the <TT
-CLASS="LITERAL"
->nextval()</TT
-> function supplies successive values
-   from a <I
-CLASS="FIRSTTERM"
->sequence object</I
-> (see <A
-HREF="functions-sequence.html"
->Section 9.16</A
->). This arrangement is sufficiently common
+);
+</pre><p>
+   where the <code class="literal">nextval()</code> function supplies successive values
+   from a <em class="firstterm">sequence object</em> (see <a class="xref" href="functions-sequence.html" title="9.16. Sequence Manipulation Functions">Section 9.16</a>). This arrangement is sufficiently common
    that there's a special shorthand for it:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CREATE TABLE products (
-    product_no <B
-CLASS="EMPHASIS"
->SERIAL</B
->,
+</p><pre class="programlisting">
+CREATE TABLE products (
+    product_no <span class="emphasis"><strong>SERIAL</strong></span>,
     ...
-);</PRE
-><P>
-   The <TT
-CLASS="LITERAL"
->SERIAL</TT
-> shorthand is discussed further in <A
-HREF="datatype-numeric.html#DATATYPE-SERIAL"
->Section 8.1.4</A
->.
-  </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="ddl-basics.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="ddl-constraints.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Table Basics</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="ddl.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Constraints</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+);
+</pre><p>
+   The <code class="literal">SERIAL</code> shorthand is discussed further in <a class="xref" href="datatype-numeric.html#DATATYPE-SERIAL" title="8.1.4. Serial Types">Section 8.1.4</a>.
+  </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="ddl-basics.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="ddl.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="ddl-constraints.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">5.1. Table Basics </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 5.3. Constraints</td></tr></table></div></body></html>

@@ -4,7 +4,7 @@
  *	  creator functions for primitive nodes. The functions here are for
  *	  the most frequently created nodes.
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -120,8 +120,10 @@ makeVarFromTargetEntry(Index varno,
  * table entry, and varattno == 0 to signal that it references the whole
  * tuple.  (Use of zero here is unclean, since it could easily be confused
  * with error cases, but it's not worth changing now.)  The vartype indicates
- * a rowtype; either a named composite type, or RECORD.  This function
- * encapsulates the logic for determining the correct rowtype OID to use.
+ * a rowtype; either a named composite type, or a domain over a named
+ * composite type (only possible if the RTE is a function returning that),
+ * or RECORD.  This function encapsulates the logic for determining the
+ * correct rowtype OID to use.
  *
  * If allowScalar is true, then for the case where the RTE is a single function
  * returning a non-composite result type, we produce a normal Var referencing
@@ -210,10 +212,10 @@ makeWholeRowVar(RangeTblEntry *rte,
 		default:
 
 			/*
-			 * RTE is a join, subselect, or VALUES.  We represent this as a
-			 * whole-row Var of RECORD type. (Note that in most cases the Var
-			 * will be expanded to a RowExpr during planning, but that is not
-			 * our concern here.)
+			 * RTE is a join, subselect, tablefunc, or VALUES.  We represent
+			 * this as a whole-row Var of RECORD type. (Note that in most
+			 * cases the Var will be expanded to a RowExpr during planning,
+			 * but that is not our concern here.)
 			 */
 			result = makeVar(varno,
 							 InvalidAttrNumber,
@@ -423,7 +425,7 @@ makeRangeVar(char *schemaname, char *relname, int location)
 	r->catalogname = NULL;
 	r->schemaname = schemaname;
 	r->relname = relname;
-	r->inhOpt = INH_DEFAULT;
+	r->inh = true;
 	r->relpersistence = RELPERSISTENCE_PERMANENT;
 	r->alias = NULL;
 	r->location = location;
@@ -521,8 +523,8 @@ makeFuncExpr(Oid funcid, Oid rettype, List *args,
 	funcexpr = makeNode(FuncExpr);
 	funcexpr->funcid = funcid;
 	funcexpr->funcresulttype = rettype;
-	funcexpr->funcretset = false;		/* only allowed case here */
-	funcexpr->funcvariadic = false;		/* only allowed case here */
+	funcexpr->funcretset = false;	/* only allowed case here */
+	funcexpr->funcvariadic = false; /* only allowed case here */
 	funcexpr->funcformat = fformat;
 	funcexpr->funccollid = funccollid;
 	funcexpr->inputcollid = inputcollid;
@@ -540,7 +542,7 @@ makeFuncExpr(Oid funcid, Oid rettype, List *args,
  * and no special action.
  */
 DefElem *
-makeDefElem(char *name, Node *arg)
+makeDefElem(char *name, Node *arg, int location)
 {
 	DefElem    *res = makeNode(DefElem);
 
@@ -548,6 +550,7 @@ makeDefElem(char *name, Node *arg)
 	res->defname = name;
 	res->arg = arg;
 	res->defaction = DEFELEM_UNSPEC;
+	res->location = location;
 
 	return res;
 }
@@ -558,7 +561,7 @@ makeDefElem(char *name, Node *arg)
  */
 DefElem *
 makeDefElemExtended(char *nameSpace, char *name, Node *arg,
-					DefElemAction defaction)
+					DefElemAction defaction, int location)
 {
 	DefElem    *res = makeNode(DefElem);
 
@@ -566,6 +569,7 @@ makeDefElemExtended(char *nameSpace, char *name, Node *arg,
 	res->defname = name;
 	res->arg = arg;
 	res->defaction = defaction;
+	res->location = location;
 
 	return res;
 }
@@ -607,4 +611,19 @@ makeGroupingSet(GroupingSetKind kind, List *content, int location)
 	n->content = content;
 	n->location = location;
 	return n;
+}
+
+/*
+ * makeVacuumRelation -
+ *	  create a VacuumRelation node
+ */
+VacuumRelation *
+makeVacuumRelation(RangeVar *relation, Oid oid, List *va_cols)
+{
+	VacuumRelation *v = makeNode(VacuumRelation);
+
+	v->relation = relation;
+	v->oid = oid;
+	v->va_cols = va_cols;
+	return v;
 }

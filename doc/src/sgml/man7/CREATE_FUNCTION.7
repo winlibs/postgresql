@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE FUNCTION" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE FUNCTION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -49,7 +49,6 @@ CREATE [ OR REPLACE ] FUNCTION
     | AS \*(Aq\fIdefinition\fR\*(Aq
     | AS \*(Aq\fIobj_file\fR\*(Aq, \*(Aq\fIlink_symbol\fR\*(Aq
   } \&.\&.\&.
-    [ WITH ( \fIattribute\fR [, \&.\&.\&.] ) ]
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -60,7 +59,7 @@ will either create a new function, or replace an existing definition\&. To be ab
 USAGE
 privilege on the language\&.
 .PP
-If a schema name is included, then the function is created in the specified schema\&. Otherwise it is created in the current schema\&. The name of the new function must not match any existing function with the same input argument types in the same schema\&. However, functions of different argument types can share a name (this is called
+If a schema name is included, then the function is created in the specified schema\&. Otherwise it is created in the current schema\&. The name of the new function must not match any existing function or procedure with the same input argument types in the same schema\&. However, functions and procedures of different argument types can share a name (this is called
 overloading)\&.
 .PP
 To replace the current definition of an existing function, use
@@ -117,7 +116,7 @@ notation\&.
 \fIargname\fR
 .RS 4
 The name of an argument\&. Some languages (including SQL and PL/pgSQL) let you use the name in the function body\&. For other languages the name of an input argument is just extra documentation, so far as the function itself is concerned; but you can use input argument names when calling a function to improve readability (see
-Section 4.3, \(lqCalling Functions\(rq, in the documentation)\&. In any case, the name of an output argument is significant, because it defines the column name in the result row type\&. (If you omit the name for an output argument, the system will choose a default column name\&.)
+Section\ \&4.3)\&. In any case, the name of an output argument is significant, because it defines the column name in the result row type\&. (If you omit the name for an output argument, the system will choose a default column name\&.)
 .RE
 .PP
 \fIargtype\fR
@@ -125,9 +124,9 @@ Section 4.3, \(lqCalling Functions\(rq, in the documentation)\&. In any case, th
 The data type(s) of the function\*(Aqs arguments (optionally schema\-qualified), if any\&. The argument types can be base, composite, or domain types, or can reference the type of a table column\&.
 .sp
 Depending on the implementation language it might also be allowed to specify
-\(lqpseudotypes\(rq
+\(lqpseudo\-types\(rq
 such as
-cstring\&. Pseudotypes indicate that the actual argument type is either incompletely specified, or outside the set of ordinary SQL data types\&.
+cstring\&. Pseudo\-types indicate that the actual argument type is either incompletely specified, or outside the set of ordinary SQL data types\&.
 .sp
 The type of a column is referenced by writing
 \fItable_name\fR\&.\fIcolumn_name\fR%TYPE\&. Using this feature can sometimes help make a function independent of changes to the definition of a table\&.
@@ -142,7 +141,7 @@ INOUT) parameters can have a default value\&. All input parameters following a p
 \fIrettype\fR
 .RS 4
 The return data type (optionally schema\-qualified)\&. The return type can be a base, composite, or domain type, or can reference the type of a table column\&. Depending on the implementation language it might also be allowed to specify
-\(lqpseudotypes\(rq
+\(lqpseudo\-types\(rq
 such as
 cstring\&. If the function is not supposed to return a value, specify
 void
@@ -238,7 +237,7 @@ timeofday()\&. But note that any function that has side\-effects must be classif
 setval()\&.
 .sp
 For additional details see
-Section 36.6, \(lqFunction Volatility Categories\(rq, in the documentation\&.
+Section\ \&38.7\&.
 .RE
 .PP
 LEAKPROOF
@@ -249,7 +248,7 @@ security_barrier
 option or tables with row level security enabled\&. The system will enforce conditions from security policies and security barrier views before any user\-supplied conditions from the query itself that contain non\-leakproof functions, in order to prevent the inadvertent exposure of data\&. Functions and operators marked as leakproof are assumed to be trustworthy, and may be executed before conditions from security policies and security barrier views\&. In addition, functions which do not take arguments or which are not passed any arguments from the security barrier view or table do not have to be marked as leakproof to be executed before security conditions\&. See
 CREATE VIEW (\fBCREATE_VIEW\fR(7))
 and
-Section 39.5, \(lqRules and Privileges\(rq, in the documentation\&. This option can only be set by the superuser\&.
+Section\ \&41.5\&. This option can only be set by the superuser\&.
 .RE
 .PP
 CALLED ON NULL INPUT
@@ -274,7 +273,7 @@ indicates that the function always returns null whenever any of its arguments ar
 SECURITY INVOKER
 indicates that the function is to be executed with the privileges of the user that calls it\&. That is the default\&.
 SECURITY DEFINER
-specifies that the function is to be executed with the privileges of the user that created it\&.
+specifies that the function is to be executed with the privileges of the user that owns it\&.
 .sp
 The key word
 EXTERNAL
@@ -297,13 +296,13 @@ cannot be executed other than by the group leader because a change made by anoth
 UNSAFE, which is the default\&.
 .RE
 .PP
-\fIexecution_cost\fR
+COST \fIexecution_cost\fR
 .RS 4
 A positive number giving the estimated execution cost for the function, in units of
 cpu_operator_cost\&. If the function returns a set, this is the cost per returned row\&. If the cost is not specified, 1 unit is assumed for C\-language and internal functions, and 100 units for functions in all other languages\&. Larger values cause the planner to try to avoid evaluating the function more often than necessary\&.
 .RE
 .PP
-\fIresult_rows\fR
+ROWS \fIresult_rows\fR
 .RS 4
 A positive number giving the estimated number of rows that the planner should expect the function to return\&. This is only allowed when the function is declared to return a set\&. The default assumption is 1000 rows\&.
 .RE
@@ -336,7 +335,7 @@ command: the effects of such a command will persist after function exit, unless 
 See
 \fBSET\fR(7)
 and
-Chapter 19, Server Configuration, in the documentation
+Chapter\ \&19
 for more information about allowed parameter names and values\&.
 .RE
 .PP
@@ -345,7 +344,7 @@ for more information about allowed parameter names and values\&.
 A string constant defining the function; the meaning depends on the language\&. It can be an internal function name, the path to an object file, an SQL command, or text in a procedural language\&.
 .sp
 It is often helpful to use dollar quoting (see
-Section 4.1.2.4, \(lqDollar-quoted String Constants\(rq, in the documentation) to write the function definition string, rather than the normal single quote syntax\&. Without dollar quoting, any single quotes or backslashes in the function definition must be escaped by doubling them\&.
+Section\ \&4.1.2.4) to write the function definition string, rather than the normal single quote syntax\&. Without dollar quoting, any single quotes or backslashes in the function definition must be escaped by doubling them\&.
 .RE
 .PP
 \fIobj_file\fR, \fIlink_symbol\fR
@@ -354,7 +353,9 @@ This form of the
 AS
 clause is used for dynamically loadable C language functions when the function name in the C language source code is not the same as the name of the SQL function\&. The string
 \fIobj_file\fR
-is the name of the file containing the dynamically loadable object, and
+is the name of the shared library file containing the compiled C function, and is interpreted as for the
+\fBLOAD\fR(7)
+command\&. The string
 \fIlink_symbol\fR
 is the function\*(Aqs link symbol, that is, the name of the function in the C language source code\&. If the link symbol is omitted, it is assumed to be the same as the name of the SQL function being defined\&. The C names of all functions must be different, so you must give overloaded C functions different C names (for example, use the argument types as part of the C names)\&.
 .sp
@@ -363,37 +364,15 @@ When repeated
 calls refer to the same object file, the file is only loaded once per session\&. To unload and reload the file (perhaps during development), start a new session\&.
 .RE
 .PP
-\fIattribute\fR
-.RS 4
-The historical way to specify optional pieces of information about the function\&. The following attributes can appear here:
-.PP
-isStrict
-.RS 4
-Equivalent to
-STRICT
-or
-RETURNS NULL ON NULL INPUT\&.
-.RE
-.PP
-isCachable
-.RS 4
-isCachable
-is an obsolete equivalent of
-IMMUTABLE; it\*(Aqs still accepted for backwards\-compatibility reasons\&.
-.RE
-.sp
-Attribute names are not case\-sensitive\&.
-.RE
-.PP
 Refer to
-Section 36.3, \(lqUser-defined Functions\(rq, in the documentation
+Section\ \&38.3
 for further information on writing functions\&.
 .SH "OVERLOADING"
 .PP
 PostgreSQL
 allows function
 overloading; that is, the same name can be used for several different functions so long as they have distinct input argument types\&. Whether or not you use it, this capability entails security precautions when calling functions in databases where some users mistrust other users; see
-Section 10.3, \(lqFunctions\(rq, in the documentation\&.
+Section\ \&10.3\&.
 .PP
 Two functions are considered the same if they have the same names and
 \fIinput\fR
@@ -452,7 +431,7 @@ is non\-null\&. The function will still be called if the array has null elements
 .SH "EXAMPLES"
 .PP
 Here are some trivial examples to help you get started\&. For more information and examples, see
-Section 36.3, \(lqUser-defined Functions\(rq, in the documentation\&.
+Section\ \&38.3\&.
 .sp
 .if n \{\
 .RS 4
@@ -546,7 +525,7 @@ of records, not just one record\&.
 .PP
 Because a
 SECURITY DEFINER
-function is executed with the privileges of the user that created it, care is needed to ensure that the function cannot be misused\&. For security,
+function is executed with the privileges of the user that owns it, care is needed to ensure that the function cannot be misused\&. For security,
 search_path
 should be set to exclude any schemas writable by untrusted users\&. This prevents malicious users from creating objects (e\&.g\&., tables, functions, and operators) that mask objects intended to be used by the function\&. Particularly important in this regard is the temporary\-table schema, which is searched first by default, and is normally writable by anyone\&. A secure arrangement can be obtained by forcing the temporary schema to be searched last\&. To do this, write
 pg_temp
@@ -619,7 +598,7 @@ COMMIT;
 .PP
 A
 \fBCREATE FUNCTION\fR
-command is defined in SQL:1999 and later\&. The
+command is defined in the SQL standard\&. The
 PostgreSQL
 version is similar but not fully compatible\&. The attributes are not portable, neither are the different available languages\&.
 .PP
@@ -634,4 +613,4 @@ key word\&. The syntax with
 =
 is used in T\-SQL and Firebird\&.
 .SH "SEE ALSO"
-ALTER FUNCTION (\fBALTER_FUNCTION\fR(7)), DROP FUNCTION (\fBDROP_FUNCTION\fR(7)), \fBGRANT\fR(7), \fBLOAD\fR(7), \fBREVOKE\fR(7), \fBcreatelang\fR(1)
+ALTER FUNCTION (\fBALTER_FUNCTION\fR(7)), DROP FUNCTION (\fBDROP_FUNCTION\fR(7)), \fBGRANT\fR(7), \fBLOAD\fR(7), \fBREVOKE\fR(7)

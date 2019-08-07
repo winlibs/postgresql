@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ALTER EXTENSION" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ALTER EXTENSION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -48,12 +48,14 @@ where \fImember_object\fR is:
   EVENT TRIGGER \fIobject_name\fR |
   FOREIGN DATA WRAPPER \fIobject_name\fR |
   FOREIGN TABLE \fIobject_name\fR |
-  FUNCTION \fIfunction_name\fR ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) |
+  FUNCTION \fIfunction_name\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ] |
   MATERIALIZED VIEW \fIobject_name\fR |
   OPERATOR \fIoperator_name\fR (\fIleft_type\fR, \fIright_type\fR) |
   OPERATOR CLASS \fIobject_name\fR USING \fIindex_method\fR |
   OPERATOR FAMILY \fIobject_name\fR USING \fIindex_method\fR |
   [ PROCEDURAL ] LANGUAGE \fIobject_name\fR |
+  PROCEDURE \fIprocedure_name\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ] |
+  ROUTINE \fIroutine_name\fR [ ( [ [ \fIargmode\fR ] [ \fIargname\fR ] \fIargtype\fR [, \&.\&.\&.] ] ) ] |
   SCHEMA \fIobject_name\fR |
   SEQUENCE \fIobject_name\fR |
   SERVER \fIobject_name\fR |
@@ -99,7 +101,7 @@ DROP \fImember_object\fR
 This form removes a member object from the extension\&. This is mainly useful in extension update scripts\&. The object is not dropped, only disassociated from the extension\&.
 .RE
 See
-Section 36.15, \(lqPackaging Related Objects into an Extension\(rq, in the documentation
+Section\ \&38.16
 for more information about these operations\&.
 .PP
 You must own the extension to use
@@ -133,8 +135,12 @@ The new schema for the extension\&.
 \fIfunction_name\fR
 .br
 \fIoperator_name\fR
+.br
+\fIprocedure_name\fR
+.br
+\fIroutine_name\fR
 .RS 4
-The name of an object to be added to or removed from the extension\&. Names of tables, aggregates, domains, foreign tables, functions, operators, operator classes, operator families, sequences, text search objects, types, and views can be schema\-qualified\&.
+The name of an object to be added to or removed from the extension\&. Names of tables, aggregates, domains, foreign tables, functions, operators, operator classes, operator families, procedures, routines, sequences, text search objects, types, and views can be schema\-qualified\&.
 .RE
 .PP
 \fIsource_type\fR
@@ -149,7 +155,7 @@ The name of the target data type of the cast\&.
 .PP
 \fIargmode\fR
 .RS 4
-The mode of a function or aggregate argument:
+The mode of a function, procedure, or aggregate argument:
 IN,
 OUT,
 INOUT, or
@@ -167,14 +173,14 @@ arguments\&.
 .PP
 \fIargname\fR
 .RS 4
-The name of a function or aggregate argument\&. Note that
+The name of a function, procedure, or aggregate argument\&. Note that
 \fBALTER EXTENSION\fR
 does not actually pay any attention to argument names, since only the argument data types are needed to determine the function\*(Aqs identity\&.
 .RE
 .PP
 \fIargtype\fR
 .RS 4
-The data type of a function or aggregate argument\&.
+The data type of a function, procedure, or aggregate argument\&.
 .RE
 .PP
 \fIleft_type\fR

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE VIEW" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE VIEW" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -115,7 +115,7 @@ ALTER VIEW (\fBALTER_VIEW\fR(7))\&.
 security_barrier (boolean)
 .RS 4
 This should be used if the view is intended to provide row\-level security\&. See
-Section 39.5, \(lqRules and Privileges\(rq, in the documentation
+Section\ \&41.5
 for full details\&.
 .RE
 .sp
@@ -209,9 +209,9 @@ CREATE VIEW vista AS SELECT \*(AqHello World\*(Aq;
 .RE
 .\}
 .sp
-is bad form in two ways: the column name defaults to
-?column?, and the column data type defaults to
-unknown\&. If you want a string literal in a view\*(Aqs result, use something like:
+is bad form because the column name defaults to
+?column?; also, the column data type defaults to
+text, which might not be what you wanted\&. Better style for a string literal in a view\*(Aqs result is something like:
 .sp
 .if n \{\
 .RS 4
@@ -224,7 +224,7 @@ CREATE VIEW vista AS SELECT text \*(AqHello World\*(Aq AS hello;
 .\}
 .PP
 Access to tables referenced in the view is determined by permissions of the view owner\&. In some cases, this can be used to provide secure but restricted access to the underlying tables\&. However, not all views are secure against tampering; see
-Section 39.5, \(lqRules and Privileges\(rq, in the documentation
+Section\ \&41.5
 for details\&. Functions called in the view are treated the same as if they had been called directly from the query using the view\&. Therefore the user of a view must have permissions to call all functions used by the view\&.
 .PP
 When
@@ -341,7 +341,7 @@ property then all the view\*(Aqs
 WHERE
 conditions (and any conditions using operators which are marked as
 LEAKPROOF) will always be evaluated before any conditions that a user of the view has added\&. See
-Section 39.5, \(lqRules and Privileges\(rq, in the documentation
+Section\ \&41.5
 for full details\&. Note that, due to this, rows which are not ultimately returned (because they do not pass the user\*(Aqs
 WHERE
 conditions) may still end up being locked\&.
@@ -355,7 +355,7 @@ CREATE TRIGGER (\fBCREATE_TRIGGER\fR(7))\&. Another possibility is to create rul
 CREATE RULE (\fBCREATE_RULE\fR(7))), but in practice triggers are easier to understand and use correctly\&.
 .PP
 Note that the user performing the insert, update or delete on the view must have the corresponding insert, update or delete privilege on the view\&. In addition the view\*(Aqs owner must have the relevant privileges on the underlying base relations, but the user performing the update does not need any permissions on the underlying base relations (see
-Section 39.5, \(lqRules and Privileges\(rq, in the documentation)\&.
+Section\ \&41.5)\&.
 .SH "EXAMPLES"
 .PP
 Create a view consisting of all comedy films:

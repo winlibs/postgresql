@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "PG_TEST_TIMING" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "PG_TEST_TIMING" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -77,9 +77,9 @@ Good results will show most (>90%) individual timing calls take less than one mi
 .\}
 .nf
 Testing timing overhead for 3 seconds\&.
-Per loop time including overhead: 35\&.96 nsec
+Per loop time including overhead: 35\&.96 ns
 Histogram of timing durations:
-< usec   % of total      count
+  < us   % of total      count
      1     96\&.40465   80435604
      2      3\&.59518    2999652
      4      0\&.00015        126
@@ -90,7 +90,7 @@ Histogram of timing durations:
 .RE
 .\}
 .PP
-Note that different units are used for the per loop time than the histogram\&. The loop can have resolution within a few nanoseconds (nsec), while the individual timing calls can only resolve down to one microsecond (usec)\&.
+Note that different units are used for the per loop time than the histogram\&. The loop can have resolution within a few nanoseconds (ns), while the individual timing calls can only resolve down to one microsecond (us)\&.
 .SS "Measuring executor timing overhead"
 .PP
 When the query executor is running a statement using
@@ -126,9 +126,9 @@ On some newer Linux systems, it\*(Aqs possible to change the clock source used t
 tsc hpet acpi_pm
 # echo acpi_pm > /sys/devices/system/clocksource/clocksource0/current_clocksource
 # pg_test_timing
-Per loop time including overhead: 722\&.92 nsec
+Per loop time including overhead: 722\&.92 ns
 Histogram of timing durations:
-< usec   % of total      count
+  < us   % of total      count
      1     27\&.84870    1155682
      2     72\&.05956    2990371
      4      0\&.07810       3241
@@ -141,7 +141,7 @@ Histogram of timing durations:
 .PP
 In this configuration, the sample
 \fBEXPLAIN ANALYZE\fR
-above takes 115\&.9 ms\&. That\*(Aqs 1061 nsec of timing overhead, again a small multiple of what\*(Aqs measured directly by this utility\&. That much timing overhead means the actual query itself is only taking a tiny fraction of the accounted for time, most of it is being consumed in overhead instead\&. In this configuration, any
+above takes 115\&.9 ms\&. That\*(Aqs 1061 ns of timing overhead, again a small multiple of what\*(Aqs measured directly by this utility\&. That much timing overhead means the actual query itself is only taking a tiny fraction of the accounted for time, most of it is being consumed in overhead instead\&. In this configuration, any
 \fBEXPLAIN ANALYZE\fR
 totals involving many timed operations would be inflated significantly by timing overhead\&.
 .PP
@@ -178,7 +178,7 @@ $ pg_test_timing
 Testing timing overhead for 3 seconds\&.
 Per timing duration including loop overhead: 97\&.75 ns
 Histogram of timing durations:
-< usec   % of total      count
+  < us   % of total      count
      1     90\&.23734   27694571
      2      9\&.75277    2993204
      4      0\&.00981       3010

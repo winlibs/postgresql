@@ -36,7 +36,7 @@
  *
  * As ever, Windows requires its own implementation.
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -50,7 +50,6 @@
 #include "miscadmin.h"
 
 #include <fcntl.h>
-#include <string.h>
 #include <unistd.h>
 #ifndef WIN32
 #include <sys/mman.h>
@@ -62,6 +61,8 @@
 #ifdef HAVE_SYS_SHM_H
 #include <sys/shm.h>
 #endif
+#include "common/file_perm.h"
+#include "pgstat.h"
 
 #include "portability/mem.h"
 #include "storage/dsm_impl.h"
@@ -260,8 +261,8 @@ dsm_impl_posix(dsm_op op, dsm_handle handle, Size request_size,
 		{
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				   errmsg("could not unmap shared memory segment \"%s\": %m",
-						  name)));
+					 errmsg("could not unmap shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 		*mapped_address = NULL;
@@ -270,8 +271,8 @@ dsm_impl_posix(dsm_op op, dsm_handle handle, Size request_size,
 		{
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				  errmsg("could not remove shared memory segment \"%s\": %m",
-						 name)));
+					 errmsg("could not remove shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 		return true;
@@ -286,7 +287,7 @@ dsm_impl_posix(dsm_op op, dsm_handle handle, Size request_size,
 	 * returning.
 	 */
 	flags = O_RDWR | (op == DSM_OP_CREATE ? O_CREAT | O_EXCL : 0);
-	if ((fd = shm_open(name, flags, 0600)) == -1)
+	if ((fd = shm_open(name, flags, PG_FILE_MODE_OWNER)) == -1)
 	{
 		if (errno != EEXIST)
 			ereport(elevel,
@@ -369,8 +370,8 @@ dsm_impl_posix(dsm_op op, dsm_handle handle, Size request_size,
 
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				   errmsg("could not unmap shared memory segment \"%s\": %m",
-						  name)));
+					 errmsg("could not unmap shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 		*mapped_address = NULL;
@@ -590,8 +591,8 @@ dsm_impl_sysv(dsm_op op, dsm_handle handle, Size request_size,
 		{
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				   errmsg("could not unmap shared memory segment \"%s\": %m",
-						  name)));
+					 errmsg("could not unmap shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 		*mapped_address = NULL;
@@ -600,8 +601,8 @@ dsm_impl_sysv(dsm_op op, dsm_handle handle, Size request_size,
 		{
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				  errmsg("could not remove shared memory segment \"%s\": %m",
-						 name)));
+					 errmsg("could not remove shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 		return true;
@@ -695,7 +696,7 @@ dsm_impl_windows(dsm_op op, dsm_handle handle, Size request_size,
 
 	/*
 	 * Handle teardown cases.  Since Windows automatically destroys the object
-	 * when no references reamin, we can treat it the same as detach.
+	 * when no references remain, we can treat it the same as detach.
 	 */
 	if (op == DSM_OP_DETACH || op == DSM_OP_DESTROY)
 	{
@@ -705,8 +706,8 @@ dsm_impl_windows(dsm_op op, dsm_handle handle, Size request_size,
 			_dosmaperr(GetLastError());
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				   errmsg("could not unmap shared memory segment \"%s\": %m",
-						  name)));
+					 errmsg("could not unmap shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 		if (*impl_private != NULL
@@ -715,8 +716,8 @@ dsm_impl_windows(dsm_op op, dsm_handle handle, Size request_size,
 			_dosmaperr(GetLastError());
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				  errmsg("could not remove shared memory segment \"%s\": %m",
-						 name)));
+					 errmsg("could not remove shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 
@@ -746,9 +747,9 @@ dsm_impl_windows(dsm_op op, dsm_handle handle, Size request_size,
 
 		hmap = CreateFileMapping(INVALID_HANDLE_VALUE,	/* Use the pagefile */
 								 NULL,	/* Default security attrs */
-								 PAGE_READWRITE,		/* Memory is read/write */
-								 size_high,		/* Upper 32 bits of size */
-								 size_low,		/* Lower 32 bits of size */
+								 PAGE_READWRITE,	/* Memory is read/write */
+								 size_high, /* Upper 32 bits of size */
+								 size_low,	/* Lower 32 bits of size */
 								 name);
 
 		errcode = GetLastError();
@@ -771,8 +772,8 @@ dsm_impl_windows(dsm_op op, dsm_handle handle, Size request_size,
 			_dosmaperr(errcode);
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				  errmsg("could not create shared memory segment \"%s\": %m",
-						 name)));
+					 errmsg("could not create shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 	}
@@ -876,8 +877,8 @@ dsm_impl_mmap(dsm_op op, dsm_handle handle, Size request_size,
 		{
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				   errmsg("could not unmap shared memory segment \"%s\": %m",
-						  name)));
+					 errmsg("could not unmap shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 		*mapped_address = NULL;
@@ -886,8 +887,8 @@ dsm_impl_mmap(dsm_op op, dsm_handle handle, Size request_size,
 		{
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				  errmsg("could not remove shared memory segment \"%s\": %m",
-						 name)));
+					 errmsg("could not remove shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 		return true;
@@ -895,7 +896,7 @@ dsm_impl_mmap(dsm_op op, dsm_handle handle, Size request_size,
 
 	/* Create new segment or open an existing one for attach or resize. */
 	flags = O_RDWR | (op == DSM_OP_CREATE ? O_CREAT | O_EXCL : 0);
-	if ((fd = OpenTransientFile(name, flags, 0600)) == -1)
+	if ((fd = OpenTransientFile(name, flags)) == -1)
 	{
 		if (errno != EEXIST)
 			ereport(elevel,
@@ -972,10 +973,12 @@ dsm_impl_mmap(dsm_op op, dsm_handle handle, Size request_size,
 
 			if (goal > ZBUFFER_SIZE)
 				goal = ZBUFFER_SIZE;
+			pgstat_report_wait_start(WAIT_EVENT_DSM_FILL_ZERO_WRITE);
 			if (write(fd, zbuffer, goal) == goal)
 				remaining -= goal;
 			else
 				success = false;
+			pgstat_report_wait_end();
 		}
 
 		if (!success)
@@ -1018,8 +1021,8 @@ dsm_impl_mmap(dsm_op op, dsm_handle handle, Size request_size,
 
 			ereport(elevel,
 					(errcode_for_dynamic_shared_memory(),
-				   errmsg("could not unmap shared memory segment \"%s\": %m",
-						  name)));
+					 errmsg("could not unmap shared memory segment \"%s\": %m",
+							name)));
 			return false;
 		}
 		*mapped_address = NULL;
@@ -1055,8 +1058,8 @@ dsm_impl_mmap(dsm_op op, dsm_handle handle, Size request_size,
 #endif
 
 /*
- * Implementation-specific actions that must be performed when a segment
- * is to be preserved until postmaster shutdown.
+ * Implementation-specific actions that must be performed when a segment is to
+ * be preserved even when no backend has it attached.
  *
  * Except on Windows, we don't need to do anything at all.  But since Windows
  * cleans up segments automatically when no references remain, we duplicate
@@ -1064,7 +1067,8 @@ dsm_impl_mmap(dsm_op op, dsm_handle handle, Size request_size,
  * do anything to receive the handle; Windows transfers it automatically.
  */
 void
-dsm_impl_pin_segment(dsm_handle handle, void *impl_private)
+dsm_impl_pin_segment(dsm_handle handle, void *impl_private,
+					 void **impl_private_pm_handle)
 {
 	switch (dynamic_shared_memory_type)
 	{
@@ -1083,9 +1087,59 @@ dsm_impl_pin_segment(dsm_handle handle, void *impl_private)
 					_dosmaperr(GetLastError());
 					ereport(ERROR,
 							(errcode_for_dynamic_shared_memory(),
-						  errmsg("could not duplicate handle for \"%s\": %m",
-								 name)));
+							 errmsg("could not duplicate handle for \"%s\": %m",
+									name)));
 				}
+
+				/*
+				 * Here, we remember the handle that we created in the
+				 * postmaster process.  This handle isn't actually usable in
+				 * any process other than the postmaster, but that doesn't
+				 * matter.  We're just holding onto it so that, if the segment
+				 * is unpinned, dsm_impl_unpin_segment can close it.
+				 */
+				*impl_private_pm_handle = hmap;
+				break;
+			}
+#endif
+		default:
+			break;
+	}
+}
+
+/*
+ * Implementation-specific actions that must be performed when a segment is no
+ * longer to be preserved, so that it will be cleaned up when all backends
+ * have detached from it.
+ *
+ * Except on Windows, we don't need to do anything at all.  For Windows, we
+ * close the extra handle that dsm_impl_pin_segment created in the
+ * postmaster's process space.
+ */
+void
+dsm_impl_unpin_segment(dsm_handle handle, void **impl_private)
+{
+	switch (dynamic_shared_memory_type)
+	{
+#ifdef USE_DSM_WINDOWS
+		case DSM_IMPL_WINDOWS:
+			{
+				if (*impl_private &&
+					!DuplicateHandle(PostmasterHandle, *impl_private,
+									 NULL, NULL, 0, FALSE,
+									 DUPLICATE_CLOSE_SOURCE))
+				{
+					char		name[64];
+
+					snprintf(name, 64, "%s.%u", SEGMENT_NAME_PREFIX, handle);
+					_dosmaperr(GetLastError());
+					ereport(ERROR,
+							(errcode_for_dynamic_shared_memory(),
+							 errmsg("could not duplicate handle for \"%s\": %m",
+									name)));
+				}
+
+				*impl_private = NULL;
 				break;
 			}
 #endif

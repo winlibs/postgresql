@@ -512,7 +512,7 @@ char *spec_yytext;
  * specscanner.l
  *	  a lexical scanner for an isolation test specification
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *-------------------------------------------------------------------------
@@ -527,10 +527,12 @@ static size_t litbufpos = 0;
 
 static void addlitchar(char c);
 
+/* LCOV_EXCL_START */
+
 #define YY_NO_INPUT 1
 
 
-#line 534 "specscanner.c"
+#line 536 "specscanner.c"
 
 #define INITIAL 0
 #define sql 1
@@ -748,7 +750,7 @@ YY_DECL
 		}
 
 	{
-#line 42 "specscanner.l"
+#line 44 "specscanner.l"
 
 
 
@@ -756,7 +758,7 @@ YY_DECL
 	litbufsize = LITBUF_INIT;
 
 
-#line 760 "specscanner.c"
+#line 762 "specscanner.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -811,49 +813,49 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 49 "specscanner.l"
-{ return(PERMUTATION); }
+#line 51 "specscanner.l"
+{ return PERMUTATION; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 50 "specscanner.l"
-{ return(SESSION); }
+#line 52 "specscanner.l"
+{ return SESSION; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 51 "specscanner.l"
-{ return(SETUP); }
+#line 53 "specscanner.l"
+{ return SETUP; }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 52 "specscanner.l"
-{ return(STEP); }
+#line 54 "specscanner.l"
+{ return STEP; }
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 53 "specscanner.l"
-{ return(TEARDOWN); }
+#line 55 "specscanner.l"
+{ return TEARDOWN; }
 	YY_BREAK
 case 6:
 /* rule 6 can match eol */
 YY_RULE_SETUP
-#line 55 "specscanner.l"
+#line 57 "specscanner.l"
 { yyline++; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 56 "specscanner.l"
+#line 58 "specscanner.l"
 { /* ignore */ }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 57 "specscanner.l"
+#line 59 "specscanner.l"
 { /* ignore */ }
 	YY_BREAK
 /* Quoted strings: "foo" */
 case 9:
 YY_RULE_SETUP
-#line 60 "specscanner.l"
+#line 62 "specscanner.l"
 {
 					litbufpos = 0;
 					BEGIN(qstr);
@@ -861,33 +863,33 @@ YY_RULE_SETUP
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 64 "specscanner.l"
+#line 66 "specscanner.l"
 {
 					litbuf[litbufpos] = '\0';
-					yylval.str = strdup(litbuf);
+					yylval.str = pg_strdup(litbuf);
 					BEGIN(INITIAL);
 					return(string_literal);
 				}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 70 "specscanner.l"
+#line 72 "specscanner.l"
 { addlitchar(spec_yytext[0]); }
 	YY_BREAK
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 71 "specscanner.l"
+#line 73 "specscanner.l"
 { yyerror("unexpected newline in quoted string"); }
 	YY_BREAK
 case YY_STATE_EOF(qstr):
-#line 72 "specscanner.l"
+#line 74 "specscanner.l"
 { yyerror("unterminated quoted string"); }
 	YY_BREAK
 /* SQL blocks: { UPDATE ... } */
 case 13:
 YY_RULE_SETUP
-#line 75 "specscanner.l"
+#line 77 "specscanner.l"
 {
 
 					litbufpos = 0;
@@ -896,17 +898,17 @@ YY_RULE_SETUP
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 80 "specscanner.l"
+#line 82 "specscanner.l"
 {
 					litbuf[litbufpos] = '\0';
-					yylval.str = strdup(litbuf);
+					yylval.str = pg_strdup(litbuf);
 					BEGIN(INITIAL);
 					return(sqlblock);
 				}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 86 "specscanner.l"
+#line 88 "specscanner.l"
 {
 					addlitchar(spec_yytext[0]);
 				}
@@ -914,21 +916,21 @@ YY_RULE_SETUP
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 89 "specscanner.l"
+#line 91 "specscanner.l"
 {
 					yyline++;
 					addlitchar(spec_yytext[0]);
 				}
 	YY_BREAK
 case YY_STATE_EOF(sql):
-#line 93 "specscanner.l"
+#line 95 "specscanner.l"
 {
 					yyerror("unterminated sql block");
 				}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 97 "specscanner.l"
+#line 99 "specscanner.l"
 {
 					fprintf(stderr, "syntax error at line %d: unexpected character \"%s\"\n", yyline, spec_yytext);
 					exit(1);
@@ -936,10 +938,10 @@ YY_RULE_SETUP
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 101 "specscanner.l"
+#line 103 "specscanner.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 943 "specscanner.c"
+#line 945 "specscanner.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1904,9 +1906,11 @@ void spec_yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 101 "specscanner.l"
+#line 103 "specscanner.l"
 
 
+
+/* LCOV_EXCL_STOP */
 
 static void
 addlitchar(char c)

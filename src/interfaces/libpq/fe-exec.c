@@ -3,7 +3,7 @@
  * fe-exec.c
  *	  functions related to sending a query down to the backend
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -60,7 +60,7 @@ static int PQsendQueryGuts(PGconn *conn,
 				const char *stmtName,
 				int nParams,
 				const Oid *paramTypes,
-				const char *const * paramValues,
+				const char *const *paramValues,
 				const int *paramLengths,
 				const int *paramFormats,
 				int resultFormat);
@@ -127,7 +127,7 @@ static int	check_field_number(const PGresult *res, int field_num);
  */
 
 #define PGRESULT_DATA_BLOCKSIZE		2048
-#define PGRESULT_ALIGN_BOUNDARY		MAXIMUM_ALIGNOF		/* from configure */
+#define PGRESULT_ALIGN_BOUNDARY		MAXIMUM_ALIGNOF /* from configure */
 #define PGRESULT_BLOCK_OVERHEAD		Max(sizeof(PGresult_data), PGRESULT_ALIGN_BOUNDARY)
 #define PGRESULT_SEP_ALLOC_THRESHOLD	(PGRESULT_DATA_BLOCKSIZE / 2)
 
@@ -231,17 +231,17 @@ PQsetResultAttrs(PGresult *res, int numAttributes, PGresAttDesc *attDescs)
 
 	/* If attrs already exist, they cannot be overwritten. */
 	if (!res || res->numAttributes > 0)
-		return FALSE;
+		return false;
 
 	/* ignore no-op request */
 	if (numAttributes <= 0 || !attDescs)
-		return TRUE;
+		return true;
 
 	res->attDescs = (PGresAttDesc *)
 		PQresultAlloc(res, numAttributes * sizeof(PGresAttDesc));
 
 	if (!res->attDescs)
-		return FALSE;
+		return false;
 
 	res->numAttributes = numAttributes;
 	memcpy(res->attDescs, attDescs, numAttributes * sizeof(PGresAttDesc));
@@ -256,13 +256,13 @@ PQsetResultAttrs(PGresult *res, int numAttributes, PGresAttDesc *attDescs)
 			res->attDescs[i].name = res->null_field;
 
 		if (!res->attDescs[i].name)
-			return FALSE;
+			return false;
 
 		if (res->attDescs[i].format == 0)
 			res->binary = 0;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /*
@@ -368,7 +368,7 @@ PQcopyResult(const PGresult *src, int flags)
 				PQclear(dest);
 				return NULL;
 			}
-			dest->events[i].resultInitialized = TRUE;
+			dest->events[i].resultInitialized = true;
 		}
 	}
 
@@ -398,7 +398,7 @@ dupEvents(PGEvent *events, int count)
 		newEvents[i].proc = events[i].proc;
 		newEvents[i].passThrough = events[i].passThrough;
 		newEvents[i].data = NULL;
-		newEvents[i].resultInitialized = FALSE;
+		newEvents[i].resultInitialized = false;
 		newEvents[i].name = strdup(events[i].name);
 		if (!newEvents[i].name)
 		{
@@ -428,7 +428,7 @@ PQsetvalue(PGresult *res, int tup_num, int field_num, char *value, int len)
 
 	/* Note that this check also protects us against null "res" */
 	if (!check_field_number(res, field_num))
-		return FALSE;
+		return false;
 
 	/* Invalid tup_num, must be <= ntups */
 	if (tup_num < 0 || tup_num > res->ntups)
@@ -436,7 +436,7 @@ PQsetvalue(PGresult *res, int tup_num, int field_num, char *value, int len)
 		pqInternalNotice(&res->noticeHooks,
 						 "row number %d is out of range 0..%d",
 						 tup_num, res->ntups);
-		return FALSE;
+		return false;
 	}
 
 	/* need to allocate a new tuple? */
@@ -447,7 +447,7 @@ PQsetvalue(PGresult *res, int tup_num, int field_num, char *value, int len)
 
 		tup = (PGresAttValue *)
 			pqResultAlloc(res, res->numAttributes * sizeof(PGresAttValue),
-						  TRUE);
+						  true);
 
 		if (!tup)
 			goto fail;
@@ -479,7 +479,7 @@ PQsetvalue(PGresult *res, int tup_num, int field_num, char *value, int len)
 	}
 	else
 	{
-		attval->value = (char *) pqResultAlloc(res, len + 1, TRUE);
+		attval->value = (char *) pqResultAlloc(res, len + 1, true);
 		if (!attval->value)
 			goto fail;
 		attval->len = len;
@@ -487,7 +487,7 @@ PQsetvalue(PGresult *res, int tup_num, int field_num, char *value, int len)
 		attval->value[len] = '\0';
 	}
 
-	return TRUE;
+	return true;
 
 	/*
 	 * Report failure via pqInternalNotice.  If preceding code didn't provide
@@ -498,7 +498,7 @@ fail:
 		errmsg = libpq_gettext("out of memory");
 	pqInternalNotice(&res->noticeHooks, "%s", errmsg);
 
-	return FALSE;
+	return false;
 }
 
 /*
@@ -510,7 +510,7 @@ fail:
 void *
 PQresultAlloc(PGresult *res, size_t nBytes)
 {
-	return pqResultAlloc(res, nBytes, TRUE);
+	return pqResultAlloc(res, nBytes, true);
 }
 
 /*
@@ -622,7 +622,7 @@ pqResultAlloc(PGresult *res, size_t nBytes, bool isBinary)
 char *
 pqResultStrdup(PGresult *res, const char *str)
 {
-	char	   *space = (char *) pqResultAlloc(res, strlen(str) + 1, FALSE);
+	char	   *space = (char *) pqResultAlloc(res, strlen(str) + 1, false);
 
 	if (space)
 		strcpy(space, str);
@@ -852,7 +852,7 @@ pqInternalNotice(const PGNoticeHooks *hooks, const char *fmt,...)
 	 * Result text is always just the primary message + newline. If we can't
 	 * allocate it, don't bother invoking the receiver.
 	 */
-	res->errMsg = (char *) pqResultAlloc(res, strlen(msgBuf) + 2, FALSE);
+	res->errMsg = (char *) pqResultAlloc(res, strlen(msgBuf) + 2, false);
 	if (res->errMsg)
 	{
 		sprintf(res->errMsg, "%s\n", msgBuf);
@@ -860,7 +860,7 @@ pqInternalNotice(const PGNoticeHooks *hooks, const char *fmt,...)
 		/*
 		 * Pass to receiver, then free it.
 		 */
-		(*res->noticeHooks.noticeRec) (res->noticeHooks.noticeRecArg, res);
+		res->noticeHooks.noticeRec(res->noticeHooks.noticeRecArg, res);
 	}
 	PQclear(res);
 }
@@ -868,7 +868,7 @@ pqInternalNotice(const PGNoticeHooks *hooks, const char *fmt,...)
 /*
  * pqAddTuple
  *	  add a row pointer to the PGresult structure, growing it if necessary
- *	  Returns TRUE if OK, FALSE if an error prevented adding the row
+ *	  Returns true if OK, false if an error prevented adding the row
  *
  * On error, *errmsgp can be set to an error string to be returned.
  * If it is left NULL, the error is presumed to be "out of memory".
@@ -903,7 +903,7 @@ pqAddTuple(PGresult *res, PGresAttValue *tup, const char **errmsgp)
 		else
 		{
 			*errmsgp = libpq_gettext("PGresult cannot support more than INT_MAX tuples");
-			return FALSE;
+			return false;
 		}
 
 		/*
@@ -915,7 +915,7 @@ pqAddTuple(PGresult *res, PGresAttValue *tup, const char **errmsgp)
 		if (newSize > SIZE_MAX / sizeof(PGresAttValue *))
 		{
 			*errmsgp = libpq_gettext("size_t overflow");
-			return FALSE;
+			return false;
 		}
 #endif
 
@@ -926,13 +926,13 @@ pqAddTuple(PGresult *res, PGresAttValue *tup, const char **errmsgp)
 			newTuples = (PGresAttValue **)
 				realloc(res->tuples, newSize * sizeof(PGresAttValue *));
 		if (!newTuples)
-			return FALSE;		/* malloc or realloc failed */
+			return false;		/* malloc or realloc failed */
 		res->tupArrSize = newSize;
 		res->tuples = newTuples;
 	}
 	res->tuples[res->ntups] = tup;
 	res->ntups++;
-	return TRUE;
+	return true;
 }
 
 /*
@@ -947,7 +947,7 @@ pqSaveMessageField(PGresult *res, char code, const char *value)
 		pqResultAlloc(res,
 					  offsetof(PGMessageField, contents) +
 					  strlen(value) + 1,
-					  TRUE);
+					  true);
 	if (!pfield)
 		return;					/* out of memory? */
 	pfield->code = code;
@@ -991,7 +991,7 @@ pqSaveParameterStatus(PGconn *conn, const char *name, const char *value)
 	 * Store new info as a single malloc block
 	 */
 	pstatus = (pgParameterStatus *) malloc(sizeof(pgParameterStatus) +
-										   strlen(name) +strlen(value) + 2);
+										   strlen(name) + strlen(value) + 2);
 	if (pstatus)
 	{
 		char	   *ptr;
@@ -1111,7 +1111,7 @@ pqRowProcessor(PGconn *conn, const char **errmsgp)
 	 * memory for gettext() to do anything.
 	 */
 	tup = (PGresAttValue *)
-		pqResultAlloc(res, nfields * sizeof(PGresAttValue), TRUE);
+		pqResultAlloc(res, nfields * sizeof(PGresAttValue), true);
 	if (tup == NULL)
 		goto fail;
 
@@ -1189,7 +1189,7 @@ PQsendQuery(PGconn *conn, const char *query)
 	if (!query)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-						libpq_gettext("command string is a null pointer\n"));
+						  libpq_gettext("command string is a null pointer\n"));
 		return 0;
 	}
 
@@ -1235,7 +1235,7 @@ PQsendQueryParams(PGconn *conn,
 				  const char *command,
 				  int nParams,
 				  const Oid *paramTypes,
-				  const char *const * paramValues,
+				  const char *const *paramValues,
 				  const int *paramLengths,
 				  const int *paramFormats,
 				  int resultFormat)
@@ -1247,13 +1247,13 @@ PQsendQueryParams(PGconn *conn,
 	if (!command)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-						libpq_gettext("command string is a null pointer\n"));
+						  libpq_gettext("command string is a null pointer\n"));
 		return 0;
 	}
 	if (nParams < 0 || nParams > 65535)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-		libpq_gettext("number of parameters must be between 0 and 65535\n"));
+						  libpq_gettext("number of parameters must be between 0 and 65535\n"));
 		return 0;
 	}
 
@@ -1287,19 +1287,19 @@ PQsendPrepare(PGconn *conn,
 	if (!stmtName)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-						libpq_gettext("statement name is a null pointer\n"));
+						  libpq_gettext("statement name is a null pointer\n"));
 		return 0;
 	}
 	if (!query)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-						libpq_gettext("command string is a null pointer\n"));
+						  libpq_gettext("command string is a null pointer\n"));
 		return 0;
 	}
 	if (nParams < 0 || nParams > 65535)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-		libpq_gettext("number of parameters must be between 0 and 65535\n"));
+						  libpq_gettext("number of parameters must be between 0 and 65535\n"));
 		return 0;
 	}
 
@@ -1307,7 +1307,7 @@ PQsendPrepare(PGconn *conn,
 	if (PG_PROTOCOL_MAJOR(conn->pversion) < 3)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-		 libpq_gettext("function requires at least protocol version 3.0\n"));
+						  libpq_gettext("function requires at least protocol version 3.0\n"));
 		return 0;
 	}
 
@@ -1376,7 +1376,7 @@ int
 PQsendQueryPrepared(PGconn *conn,
 					const char *stmtName,
 					int nParams,
-					const char *const * paramValues,
+					const char *const *paramValues,
 					const int *paramLengths,
 					const int *paramFormats,
 					int resultFormat)
@@ -1388,13 +1388,13 @@ PQsendQueryPrepared(PGconn *conn,
 	if (!stmtName)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-						libpq_gettext("statement name is a null pointer\n"));
+						  libpq_gettext("statement name is a null pointer\n"));
 		return 0;
 	}
 	if (nParams < 0 || nParams > 65535)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-		libpq_gettext("number of parameters must be between 0 and 65535\n"));
+						  libpq_gettext("number of parameters must be between 0 and 65535\n"));
 		return 0;
 	}
 
@@ -1432,7 +1432,7 @@ PQsendQueryStart(PGconn *conn)
 	if (conn->asyncStatus != PGASYNC_IDLE)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-				  libpq_gettext("another command is already in progress\n"));
+						  libpq_gettext("another command is already in progress\n"));
 		return false;
 	}
 
@@ -1459,7 +1459,7 @@ PQsendQueryGuts(PGconn *conn,
 				const char *stmtName,
 				int nParams,
 				const Oid *paramTypes,
-				const char *const * paramValues,
+				const char *const *paramValues,
 				const int *paramLengths,
 				const int *paramFormats,
 				int resultFormat)
@@ -1470,7 +1470,7 @@ PQsendQueryGuts(PGconn *conn,
 	if (PG_PROTOCOL_MAJOR(conn->pversion) < 3)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-		 libpq_gettext("function requires at least protocol version 3.0\n"));
+						  libpq_gettext("function requires at least protocol version 3.0\n"));
 		return 0;
 	}
 
@@ -1725,14 +1725,14 @@ parseInput(PGconn *conn)
 
 /*
  * PQisBusy
- *	 Return TRUE if PQgetResult would block waiting for input.
+ *	 Return true if PQgetResult would block waiting for input.
  */
 
 int
 PQisBusy(PGconn *conn)
 {
 	if (!conn)
-		return FALSE;
+		return false;
 
 	/* Parse any available data, if our state permits. */
 	parseInput(conn);
@@ -1771,7 +1771,7 @@ PQgetResult(PGconn *conn)
 		 */
 		while ((flushResult = pqFlush(conn)) > 0)
 		{
-			if (pqWait(FALSE, TRUE, conn))
+			if (pqWait(false, true, conn))
 			{
 				flushResult = -1;
 				break;
@@ -1780,7 +1780,7 @@ PQgetResult(PGconn *conn)
 
 		/* Wait for some more data, and load it. */
 		if (flushResult ||
-			pqWait(TRUE, FALSE, conn) ||
+			pqWait(true, false, conn) ||
 			pqReadData(conn) < 0)
 		{
 			/*
@@ -1844,7 +1844,7 @@ PQgetResult(PGconn *conn)
 				res->resultStatus = PGRES_FATAL_ERROR;
 				break;
 			}
-			res->events[i].resultInitialized = TRUE;
+			res->events[i].resultInitialized = true;
 		}
 	}
 
@@ -1912,7 +1912,7 @@ PQexecParams(PGconn *conn,
 			 const char *command,
 			 int nParams,
 			 const Oid *paramTypes,
-			 const char *const * paramValues,
+			 const char *const *paramValues,
 			 const int *paramLengths,
 			 const int *paramFormats,
 			 int resultFormat)
@@ -1958,7 +1958,7 @@ PGresult *
 PQexecPrepared(PGconn *conn,
 			   const char *stmtName,
 			   int nParams,
-			   const char *const * paramValues,
+			   const char *const *paramValues,
 			   const int *paramLengths,
 			   const int *paramFormats,
 			   int resultFormat)
@@ -1998,7 +1998,7 @@ PQexecStart(PGconn *conn)
 			{
 				/* In protocol 3, we can get out of a COPY IN state */
 				if (PQputCopyEnd(conn,
-						 libpq_gettext("COPY terminated by new PQexec")) < 0)
+								 libpq_gettext("COPY terminated by new PQexec")) < 0)
 					return false;
 				/* keep waiting to swallow the copy's failure message */
 			}
@@ -2006,7 +2006,7 @@ PQexecStart(PGconn *conn)
 			{
 				/* In older protocols we have to punt */
 				printfPQExpBuffer(&conn->errorMessage,
-				  libpq_gettext("COPY IN state must be terminated first\n"));
+								  libpq_gettext("COPY IN state must be terminated first\n"));
 				return false;
 			}
 		}
@@ -2026,7 +2026,7 @@ PQexecStart(PGconn *conn)
 			{
 				/* In older protocols we have to punt */
 				printfPQExpBuffer(&conn->errorMessage,
-				 libpq_gettext("COPY OUT state must be terminated first\n"));
+								  libpq_gettext("COPY OUT state must be terminated first\n"));
 				return false;
 			}
 		}
@@ -2034,7 +2034,7 @@ PQexecStart(PGconn *conn)
 		{
 			/* We don't allow PQexec during COPY BOTH */
 			printfPQExpBuffer(&conn->errorMessage,
-					 libpq_gettext("PQexec not allowed during COPY BOTH\n"));
+							  libpq_gettext("PQexec not allowed during COPY BOTH\n"));
 			return false;
 		}
 		/* check for loss of connection, too */
@@ -2188,7 +2188,7 @@ PQsendDescribe(PGconn *conn, char desc_type, const char *desc_target)
 	if (PG_PROTOCOL_MAJOR(conn->pversion) < 3)
 	{
 		printfPQExpBuffer(&conn->errorMessage,
-		 libpq_gettext("function requires at least protocol version 3.0\n"));
+						  libpq_gettext("function requires at least protocol version 3.0\n"));
 		return 0;
 	}
 
@@ -2388,7 +2388,7 @@ PQputCopyEnd(PGconn *conn, const char *errormsg)
 	{
 		if (errormsg)
 		{
-			/* Ooops, no way to do this in 2.0 */
+			/* Oops, no way to do this in 2.0 */
 			printfPQExpBuffer(&conn->errorMessage,
 							  libpq_gettext("function requires at least protocol version 3.0\n"));
 			return -1;
@@ -2749,22 +2749,22 @@ PQbinaryTuples(const PGresult *res)
 
 /*
  * Helper routines to range-check field numbers and tuple numbers.
- * Return TRUE if OK, FALSE if not
+ * Return true if OK, false if not
  */
 
 static int
 check_field_number(const PGresult *res, int field_num)
 {
 	if (!res)
-		return FALSE;			/* no way to display error message... */
+		return false;			/* no way to display error message... */
 	if (field_num < 0 || field_num >= res->numAttributes)
 	{
 		pqInternalNotice(&res->noticeHooks,
 						 "column number %d is out of range 0..%d",
 						 field_num, res->numAttributes - 1);
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 static int
@@ -2772,38 +2772,38 @@ check_tuple_field_number(const PGresult *res,
 						 int tup_num, int field_num)
 {
 	if (!res)
-		return FALSE;			/* no way to display error message... */
+		return false;			/* no way to display error message... */
 	if (tup_num < 0 || tup_num >= res->ntups)
 	{
 		pqInternalNotice(&res->noticeHooks,
 						 "row number %d is out of range 0..%d",
 						 tup_num, res->ntups - 1);
-		return FALSE;
+		return false;
 	}
 	if (field_num < 0 || field_num >= res->numAttributes)
 	{
 		pqInternalNotice(&res->noticeHooks,
 						 "column number %d is out of range 0..%d",
 						 field_num, res->numAttributes - 1);
-		return FALSE;
+		return false;
 	}
-	return TRUE;
+	return true;
 }
 
 static int
 check_param_number(const PGresult *res, int param_num)
 {
 	if (!res)
-		return FALSE;			/* no way to display error message... */
+		return false;			/* no way to display error message... */
 	if (param_num < 0 || param_num >= res->numParameters)
 	{
 		pqInternalNotice(&res->noticeHooks,
 						 "parameter number %d is out of range 0..%d",
 						 param_num, res->numParameters - 1);
-		return FALSE;
+		return false;
 	}
 
-	return TRUE;
+	return true;
 }
 
 /*
@@ -3080,7 +3080,7 @@ PQcmdTuples(PGresult *res)
 		while (*p && *p != ' ')
 			p++;
 		if (*p == 0)
-			goto interpret_error;		/* no space? */
+			goto interpret_error;	/* no space? */
 		p++;
 	}
 	else if (strncmp(res->cmdStatus, "SELECT ", 7) == 0 ||
@@ -3180,8 +3180,8 @@ PQparamtype(const PGresult *res, int param_num)
 
 
 /* PQsetnonblocking:
- *	sets the PGconn's database connection non-blocking if the arg is TRUE
- *	or makes it blocking if the arg is FALSE, this will not protect
+ *	sets the PGconn's database connection non-blocking if the arg is true
+ *	or makes it blocking if the arg is false, this will not protect
  *	you from PQexec(), you'll only be safe when using the non-blocking API.
  *	Needs to be called only on a connected database connection.
  */
@@ -3193,7 +3193,7 @@ PQsetnonblocking(PGconn *conn, int arg)
 	if (!conn || conn->status == CONNECTION_BAD)
 		return -1;
 
-	barg = (arg ? TRUE : FALSE);
+	barg = (arg ? true : false);
 
 	/* early out if the socket is already in the state requested */
 	if (barg == conn->nonblocking)
@@ -3216,7 +3216,7 @@ PQsetnonblocking(PGconn *conn, int arg)
 
 /*
  * return the blocking status of the database connection
- *		TRUE == nonblocking, FALSE == blocking
+ *		true == nonblocking, false == blocking
  */
 int
 PQisnonblocking(const PGconn *conn)
@@ -3347,7 +3347,7 @@ PQescapeStringInternal(PGconn *conn,
 				*error = 1;
 			if (conn)
 				printfPQExpBuffer(&conn->errorMessage,
-						  libpq_gettext("incomplete multibyte character\n"));
+								  libpq_gettext("incomplete multibyte character\n"));
 			for (; i < len; i++)
 			{
 				if (((size_t) (target - to)) / 2 >= length)
@@ -3431,7 +3431,7 @@ PQescapeInternal(PGconn *conn, const char *str, size_t len, bool as_ident)
 			if ((s - str) + charlen > len || memchr(s, 0, charlen) != NULL)
 			{
 				printfPQExpBuffer(&conn->errorMessage,
-						  libpq_gettext("incomplete multibyte character\n"));
+								  libpq_gettext("incomplete multibyte character\n"));
 				return NULL;
 			}
 

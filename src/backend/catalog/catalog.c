@@ -5,7 +5,7 @@
  *		bits of hard-wired knowledge
  *
  *
- * Portions Copyright (c) 1996-2016, PostgreSQL Global Development Group
+ * Portions Copyright (c) 1996-2018, PostgreSQL Global Development Group
  * Portions Copyright (c) 1994, Regents of the University of California
  *
  *
@@ -36,6 +36,7 @@
 #include "catalog/pg_shdepend.h"
 #include "catalog/pg_shdescription.h"
 #include "catalog/pg_shseclabel.h"
+#include "catalog/pg_subscription.h"
 #include "catalog/pg_tablespace.h"
 #include "catalog/pg_type.h"
 #include "catalog/toasting.h"
@@ -119,7 +120,7 @@ IsCatalogClass(Oid relid, Form_pg_class reltuple)
 	 * this is noticeably cheaper and doesn't require catalog access.
 	 *
 	 * This test is safe since even an oid wraparound will preserve this
-	 * property (c.f. GetNewObjectId()) and it has the advantage that it works
+	 * property (cf. GetNewObjectId()) and it has the advantage that it works
 	 * correctly even if a user decides to create a relation in the pg_catalog
 	 * namespace.
 	 * ----
@@ -228,7 +229,8 @@ IsSharedRelation(Oid relationId)
 		relationId == SharedSecLabelRelationId ||
 		relationId == TableSpaceRelationId ||
 		relationId == DbRoleSettingRelationId ||
-		relationId == ReplicationOriginRelationId)
+		relationId == ReplicationOriginRelationId ||
+		relationId == SubscriptionRelationId)
 		return true;
 	/* These are their indexes (see indexing.h) */
 	if (relationId == AuthIdRolnameIndexId ||
@@ -246,7 +248,9 @@ IsSharedRelation(Oid relationId)
 		relationId == TablespaceNameIndexId ||
 		relationId == DbRoleSettingDatidRolidIndexId ||
 		relationId == ReplicationOriginIdentIndex ||
-		relationId == ReplicationOriginNameIndex)
+		relationId == ReplicationOriginNameIndex ||
+		relationId == SubscriptionObjectIndexId ||
+		relationId == SubscriptionNameIndexId)
 		return true;
 	/* These are their toast tables and toast indexes (see toasting.h) */
 	if (relationId == PgShdescriptionToastTable ||
@@ -441,7 +445,7 @@ GetNewRelFileNode(Oid reltablespace, Relation pg_class, char relpersistence)
 
 		/* Check for existing file of same name */
 		rpath = relpath(rnode, MAIN_FORKNUM);
-		fd = BasicOpenFile(rpath, O_RDONLY | PG_BINARY, 0);
+		fd = BasicOpenFile(rpath, O_RDONLY | PG_BINARY);
 
 		if (fd >= 0)
 		{

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "ALTER DEFAULT PRIVILEGES" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "ALTER DEFAULT PRIVILEGES" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -50,11 +50,15 @@ GRANT { { USAGE | SELECT | UPDATE }
     TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { EXECUTE | ALL [ PRIVILEGES ] }
-    ON FUNCTIONS
+    ON { FUNCTIONS | ROUTINES }
     TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 GRANT { USAGE | ALL [ PRIVILEGES ] }
     ON TYPES
+    TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
+
+GRANT { USAGE | CREATE | ALL [ PRIVILEGES ] }
+    ON SCHEMAS
     TO { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.] [ WITH GRANT OPTION ]
 
 REVOKE [ GRANT OPTION FOR ]
@@ -73,7 +77,7 @@ REVOKE [ GRANT OPTION FOR ]
 
 REVOKE [ GRANT OPTION FOR ]
     { EXECUTE | ALL [ PRIVILEGES ] }
-    ON FUNCTIONS
+    ON { FUNCTIONS | ROUTINES }
     FROM { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.]
     [ CASCADE | RESTRICT ]
 
@@ -82,11 +86,24 @@ REVOKE [ GRANT OPTION FOR ]
     ON TYPES
     FROM { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.]
     [ CASCADE | RESTRICT ]
+
+REVOKE [ GRANT OPTION FOR ]
+    { USAGE | CREATE | ALL [ PRIVILEGES ] }
+    ON SCHEMAS
+    FROM { [ GROUP ] \fIrole_name\fR | PUBLIC } [, \&.\&.\&.]
+    [ CASCADE | RESTRICT ]
 .fi
 .SH "DESCRIPTION"
 .PP
 \fBALTER DEFAULT PRIVILEGES\fR
-allows you to set the privileges that will be applied to objects created in the future\&. (It does not affect privileges assigned to already\-existing objects\&.) Currently, only the privileges for tables (including views and foreign tables), sequences, functions, and types (including domains) can be altered\&.
+allows you to set the privileges that will be applied to objects created in the future\&. (It does not affect privileges assigned to already\-existing objects\&.) Currently, only the privileges for schemas, tables (including views and foreign tables), sequences, functions, and types (including domains) can be altered\&. For this command, functions include aggregates and procedures\&. The words
+FUNCTIONS
+and
+ROUTINES
+are equivalent in this command\&. (ROUTINES
+is preferred going forward as the standard term for functions and procedures taken together\&. In earlier PostgreSQL releases, only the word
+FUNCTIONS
+was allowed\&. It is not possible to set default privileges for functions and procedures separately\&.)
 .PP
 You can change default privileges only for objects that will be created by yourself or by roles that you are a member of\&. The privileges can be set globally (i\&.e\&., for all objects created in the current database), or just for objects created in specified schemas\&. Default privileges that are specified per\-schema are added to whatever the global default privileges are for the particular object type\&.
 .PP
@@ -109,6 +126,10 @@ is omitted, the current role is assumed\&.
 The name of an existing schema\&. If specified, the default privileges are altered for objects later created in that schema\&. If
 IN SCHEMA
 is omitted, the global default privileges are altered\&.
+IN SCHEMA
+is not allowed when using
+ON SCHEMAS
+as schemas can\*(Aqt be nested\&.
 .RE
 .PP
 \fIrole_name\fR

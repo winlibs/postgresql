@@ -8,7 +8,7 @@
  *
  * See src/tools/testint128.c for a simple test harness for this file.
  *
- * Copyright (c) 2017, PostgreSQL Global Development Group
+ * Copyright (c) 2017-2018, PostgreSQL Global Development Group
  *
  * src/include/common/int128.h
  *
@@ -61,7 +61,7 @@ int128_add_int64(INT128 *i128, int64 v)
 static inline void
 int128_add_int64_mul_int64(INT128 *i128, int64 x, int64 y)
 {
-	*i128 += (int128) x *(int128) y;
+	*i128 += (int128) x * (int128) y;
 }
 
 /*
@@ -271,6 +271,6 @@ int128_to_int64(INT128 val)
 	return (int64) val.lo;
 }
 
-#endif   /* USE_NATIVE_INT128 */
+#endif							/* USE_NATIVE_INT128 */
 
-#endif   /* INT128_H */
+#endif							/* INT128_H */

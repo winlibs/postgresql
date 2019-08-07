@@ -34,7 +34,7 @@
 
 #if defined(LIBC_SCCS) && !defined(lint)
 static char sccsid[] = "@(#)getopt.c	8.3 (Berkeley) 4/27/95";
-#endif   /* LIBC_SCCS and not lint */
+#endif							/* LIBC_SCCS and not lint */
 
 
 /*
@@ -68,7 +68,7 @@ char	   *optarg;				/* argument associated with option */
  * returning -1.)
  */
 int
-getopt(int nargc, char *const * nargv, const char *ostr)
+getopt(int nargc, char *const *nargv, const char *ostr)
 {
 	static char *place = EMSG;	/* option letter processing */
 	char	   *oli;			/* option letter list index */

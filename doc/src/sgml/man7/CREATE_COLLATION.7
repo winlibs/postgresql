@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATE COLLATION" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATE COLLATION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -32,12 +32,14 @@ CREATE_COLLATION \- define a new collation
 .SH "SYNOPSIS"
 .sp
 .nf
-CREATE COLLATION \fIname\fR (
+CREATE COLLATION [ IF NOT EXISTS ] \fIname\fR (
     [ LOCALE = \fIlocale\fR, ]
     [ LC_COLLATE = \fIlc_collate\fR, ]
-    [ LC_CTYPE = \fIlc_ctype\fR ]
+    [ LC_CTYPE = \fIlc_ctype\fR, ]
+    [ PROVIDER = \fIprovider\fR, ]
+    [ VERSION = \fIversion\fR ]
 )
-CREATE COLLATION \fIname\fR FROM \fIexisting_collation\fR
+CREATE COLLATION [ IF NOT EXISTS ] \fIname\fR FROM \fIexisting_collation\fR
 .fi
 .SH "DESCRIPTION"
 .PP
@@ -48,6 +50,11 @@ To be able to create a collation, you must have
 CREATE
 privilege on the destination schema\&.
 .SH "PARAMETERS"
+.PP
+IF NOT EXISTS
+.RS 4
+Do not throw an error if a collation with the same name already exists\&. A notice is issued in this case\&. Note that there is no guarantee that the existing collation is anything like the one that would have been created\&.
+.RE
 .PP
 \fIname\fR
 .RS 4
@@ -67,18 +74,34 @@ at once\&. If you specify this, you cannot specify either of those parameters\&.
 .RS 4
 Use the specified operating system locale for the
 LC_COLLATE
-locale category\&. The locale must be applicable to the current database encoding\&. (See
-CREATE DATABASE (\fBCREATE_DATABASE\fR(7))
-for the precise rules\&.)
+locale category\&.
 .RE
 .PP
 \fIlc_ctype\fR
 .RS 4
 Use the specified operating system locale for the
 LC_CTYPE
-locale category\&. The locale must be applicable to the current database encoding\&. (See
-CREATE DATABASE (\fBCREATE_DATABASE\fR(7))
-for the precise rules\&.)
+locale category\&.
+.RE
+.PP
+\fIprovider\fR
+.RS 4
+Specifies the provider to use for locale services associated with this collation\&. Possible values are:
+icu,
+libc\&.
+libc
+is the default\&. The available choices depend on the operating system and build options\&.
+.RE
+.PP
+\fIversion\fR
+.RS 4
+Specifies the version string to store with the collation\&. Normally, this should be omitted, which will cause the version to be computed from the actual version of the collation as provided by the operating system\&. This option is intended to be used by
+\fBpg_upgrade\fR
+for copying the version from an existing installation\&.
+.sp
+See also
+ALTER COLLATION (\fBALTER_COLLATION\fR(7))
+for how to handle collation version mismatches\&.
 .RE
 .PP
 \fIexisting_collation\fR
@@ -92,8 +115,14 @@ Use
 to remove user\-defined collations\&.
 .PP
 See
-Section 23.2, \(lqCollation Support\(rq, in the documentation
-for more information about collation support in PostgreSQL\&.
+Section\ \&23.2.2.3
+for more information on how to create collations\&.
+.PP
+When using the
+libc
+collation provider, the locale must be applicable to the current database encoding\&. See
+CREATE DATABASE (\fBCREATE_DATABASE\fR(7))
+for the precise rules\&.
 .SH "EXAMPLES"
 .PP
 To create a collation from the operating system locale
@@ -105,7 +134,19 @@ UTF8):
 .RS 4
 .\}
 .nf
-CREATE COLLATION french (LOCALE = \*(Aqfr_FR\&.utf8\*(Aq);
+CREATE COLLATION french (locale = \*(Aqfr_FR\&.utf8\*(Aq);
+.fi
+.if n \{\
+.RE
+.\}
+.PP
+To create a collation using the ICU provider using German phone book sort order:
+.sp
+.if n \{\
+.RS 4
+.\}
+.nf
+CREATE COLLATION german_phonebook (provider = icu, locale = \*(Aqde\-u\-co\-phonebk\*(Aq);
 .fi
 .if n \{\
 .RE

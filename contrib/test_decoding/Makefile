@@ -5,7 +5,7 @@ PGFILEDESC = "test_decoding - example of a logical decoding output plugin"
 
 # Note: because we don't tell the Makefile there are any regression tests,
 # we have to clean those result files explicitly
-EXTRA_CLEAN = $(pg_regress_clean_files) ./regression_output ./isolation_output
+EXTRA_CLEAN = $(pg_regress_clean_files)
 
 ifdef USE_PGXS
 PG_CONFIG = pg_config
@@ -39,14 +39,11 @@ submake-test_decoding:
 
 REGRESSCHECKS=ddl xact rewrite toast permissions decoding_in_xact \
 	decoding_into_rel binary prepared replorigin time messages \
-	spill
+	spill slot truncate
 
 regresscheck: | submake-regress submake-test_decoding temp-install
-	$(MKDIR_P) regression_output
 	$(pg_regress_check) \
 	    --temp-config $(top_srcdir)/contrib/test_decoding/logical.conf \
-	    --temp-instance=./tmp_check \
-	    --outputdir=./regression_output \
 	    $(REGRESSCHECKS)
 
 regresscheck-install-force: | submake-regress submake-test_decoding temp-install
@@ -57,10 +54,8 @@ ISOLATIONCHECKS=mxact delayed_startup ondisk_startup concurrent_ddl_dml \
 	oldest_xmin snapshot_transfer
 
 isolationcheck: | submake-isolation submake-test_decoding temp-install
-	$(MKDIR_P) isolation_output
 	$(pg_isolation_regress_check) \
 	    --temp-config $(top_srcdir)/contrib/test_decoding/logical.conf \
-	    --outputdir=./isolation_output \
 	    $(ISOLATIONCHECKS)
 
 isolationcheck-install-force: all | submake-isolation submake-test_decoding temp-install
@@ -70,5 +65,3 @@ isolationcheck-install-force: all | submake-isolation submake-test_decoding temp
 .PHONY: submake-test_decoding submake-regress check \
 	regresscheck regresscheck-install-force \
 	isolationcheck isolationcheck-install-force
-
-temp-install: EXTRA_INSTALL=contrib/test_decoding

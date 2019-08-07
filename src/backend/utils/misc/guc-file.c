@@ -519,7 +519,7 @@ char *GUC_yytext;
 /*
  * Scanner for the configuration file
  *
- * Copyright (c) 2000-2016, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2018, PostgreSQL Global Development Group
  *
  * src/backend/utils/misc/guc-file.l
  */
@@ -573,8 +573,10 @@ static void record_config_file_error(const char *errmsg,
 static int	GUC_flex_fatal(const char *msg);
 static char *GUC_scanstr(const char *s);
 
+/* LCOV_EXCL_START */
+
 #define YY_NO_INPUT 1
-#line 578 "guc-file.c"
+#line 580 "guc-file.c"
 
 #define INITIAL 0
 
@@ -790,10 +792,10 @@ YY_DECL
 		}
 
 	{
-#line 92 "guc-file.l"
+#line 94 "guc-file.l"
 
 
-#line 797 "guc-file.c"
+#line 799 "guc-file.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -849,65 +851,65 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 94 "guc-file.l"
+#line 96 "guc-file.l"
 ConfigFileLineno++; return GUC_EOL;
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 95 "guc-file.l"
+#line 97 "guc-file.l"
 /* eat whitespace */
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 96 "guc-file.l"
+#line 98 "guc-file.l"
 /* eat comment (.* matches anything until newline) */
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 98 "guc-file.l"
+#line 100 "guc-file.l"
 return GUC_ID;
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 99 "guc-file.l"
+#line 101 "guc-file.l"
 return GUC_QUALIFIED_ID;
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 100 "guc-file.l"
+#line 102 "guc-file.l"
 return GUC_STRING;
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 101 "guc-file.l"
+#line 103 "guc-file.l"
 return GUC_UNQUOTED_STRING;
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 102 "guc-file.l"
+#line 104 "guc-file.l"
 return GUC_INTEGER;
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 103 "guc-file.l"
+#line 105 "guc-file.l"
 return GUC_REAL;
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 104 "guc-file.l"
+#line 106 "guc-file.l"
 return GUC_EQUALS;
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 106 "guc-file.l"
+#line 108 "guc-file.l"
 return GUC_ERROR;
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 108 "guc-file.l"
+#line 110 "guc-file.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 911 "guc-file.c"
+#line 913 "guc-file.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1872,11 +1874,11 @@ void GUC_yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 108 "guc-file.l"
+#line 110 "guc-file.l"
 
 
 
-
+/* LCOV_EXCL_STOP */
 
 /*
  * Exported function to read and process the configuration file. The

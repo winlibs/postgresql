@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "SET TRANSACTION" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "SET TRANSACTION" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -85,7 +85,7 @@ The transaction isolation level cannot be changed after the first query or data\
 \fBUPDATE\fR,
 \fBFETCH\fR, or
 \fBCOPY\fR) of a transaction has been executed\&. See
-Chapter 13, Concurrency Control, in the documentation
+Chapter\ \&13
 for more information about transaction isolation and concurrency control\&.
 .PP
 The transaction access mode determines whether the transaction is read/write or read\-only\&. Read/write is the default\&. When a transaction is read\-only, the following SQL commands are disallowed:
@@ -123,7 +123,7 @@ snapshot
 as an existing transaction\&. The pre\-existing transaction must have exported its snapshot with the
 pg_export_snapshot
 function (see
-Section 9.26.5, \(lqSnapshot Synchronization Functions\(rq, in the documentation)\&. That function returns a snapshot identifier, which must be given to
+Section\ \&9.26.5)\&. That function returns a snapshot identifier, which must be given to
 SET TRANSACTION SNAPSHOT
 to specify which snapshot is to be imported\&. The identifier must be written as a string literal in this command, for example
 \*(Aq000003A1\-1\*(Aq\&.
@@ -169,7 +169,7 @@ default_transaction_deferrable\&. (In fact
 is just a verbose equivalent for setting these variables with
 \fBSET\fR\&.) This means the defaults can be set in the configuration file, via
 \fBALTER DATABASE\fR, etc\&. Consult
-Chapter 19, Server Configuration, in the documentation
+Chapter\ \&19
 for more information\&.
 .SH "EXAMPLES"
 .PP
@@ -182,8 +182,8 @@ To begin a new transaction with the same snapshot as an already existing transac
 BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
 SELECT pg_export_snapshot();
  pg_export_snapshot
-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
- 000003A1\-1
+\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-
+ 00000003\-0000001B\-1
 (1 row)
 .fi
 .if n \{\
@@ -199,7 +199,7 @@ command at the beginning of the newly opened transaction:
 .\}
 .nf
 BEGIN TRANSACTION ISOLATION LEVEL REPEATABLE READ;
-SET TRANSACTION SNAPSHOT \*(Aq000003A1\-1\*(Aq;
+SET TRANSACTION SNAPSHOT \*(Aq00000003\-0000001B\-1\*(Aq;
 .fi
 .if n \{\
 .RE

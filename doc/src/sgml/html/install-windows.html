@@ -1,382 +1,45 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Installation from Source Code on Windows</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="Server Administration"
-HREF="admin.html"><LINK
-REL="PREVIOUS"
-TITLE="Platform-specific Notes"
-HREF="installation-platform-notes.html"><LINK
-REL="NEXT"
-TITLE="Building with Visual C++ or the
-  Microsoft Windows SDK"
-HREF="install-windows-full.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="CHAPTER"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Platform-specific Notes"
-HREF="installation-platform-notes.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="admin.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Building with Visual C++ or the
-  Microsoft Windows SDK"
-HREF="install-windows-full.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="CHAPTER"
-><H1
-><A
-NAME="INSTALL-WINDOWS"
-></A
->Chapter 17. Installation from Source Code on <SPAN
-CLASS="PRODUCTNAME"
->Windows</SPAN
-></H1
-><DIV
-CLASS="TOC"
-><DL
-><DT
-><B
->Table of Contents</B
-></DT
-><DT
->17.1. <A
-HREF="install-windows-full.html"
->Building with <SPAN
-CLASS="PRODUCTNAME"
->Visual C++</SPAN
-> or the
-  <SPAN
-CLASS="PRODUCTNAME"
->Microsoft Windows SDK</SPAN
-></A
-></DT
-><DD
-><DL
-><DT
->17.1.1. <A
-HREF="install-windows-full.html#AEN30990"
->Requirements</A
-></DT
-><DT
->17.1.2. <A
-HREF="install-windows-full.html#AEN31107"
->Special Considerations for 64-bit Windows</A
-></DT
-><DT
->17.1.3. <A
-HREF="install-windows-full.html#AEN31115"
->Building</A
-></DT
-><DT
->17.1.4. <A
-HREF="install-windows-full.html#AEN31131"
->Cleaning and Installing</A
-></DT
-><DT
->17.1.5. <A
-HREF="install-windows-full.html#AEN31145"
->Running the Regression Tests</A
-></DT
-><DT
->17.1.6. <A
-HREF="install-windows-full.html#AEN31179"
->Building the Documentation</A
-></DT
-></DL
-></DD
-><DT
->17.2. <A
-HREF="install-windows-libpq.html"
->Building <SPAN
-CLASS="APPLICATION"
->libpq</SPAN
-> with
-  <SPAN
-CLASS="PRODUCTNAME"
->Visual C++</SPAN
-> or
-  <SPAN
-CLASS="PRODUCTNAME"
->Borland C++</SPAN
-></A
-></DT
-></DL
-></DIV
-><P
->  It is recommended that most users download the binary distribution for
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Chapter 17. Installation from Source Code on Windows</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="installation-platform-notes.html" title="16.7. Platform-specific Notes" /><link rel="next" href="install-windows-full.html" title="17.1. Building with Visual C++ or the Microsoft Windows SDK" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">Chapter 17. Installation from Source Code on <span xmlns="http://www.w3.org/1999/xhtml" class="productname">Windows</span></th></tr><tr><td width="10%" align="left"><a accesskey="p" href="installation-platform-notes.html" title="16.7. Platform-specific Notes">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="admin.html" title="Part III. Server Administration">Up</a></td><th width="60%" align="center">Part III. Server Administration</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="install-windows-full.html" title="17.1. Building with Visual C++ or the&#10;  Microsoft Windows SDK">Next</a></td></tr></table><hr></hr></div><div class="chapter" id="INSTALL-WINDOWS"><div class="titlepage"><div><div><h2 class="title">Chapter 17. Installation from Source Code on <span class="productname">Windows</span></h2></div></div></div><div class="toc"><p><strong>Table of Contents</strong></p><dl class="toc"><dt><span class="sect1"><a href="install-windows-full.html">17.1. Building with <span class="productname">Visual C++</span> or the
+  <span class="productname">Microsoft Windows SDK</span></a></span></dt><dd><dl><dt><span class="sect2"><a href="install-windows-full.html#id-1.6.4.8.8">17.1.1. Requirements</a></span></dt><dt><span class="sect2"><a href="install-windows-full.html#id-1.6.4.8.9">17.1.2. Special Considerations for 64-bit Windows</a></span></dt><dt><span class="sect2"><a href="install-windows-full.html#id-1.6.4.8.10">17.1.3. Building</a></span></dt><dt><span class="sect2"><a href="install-windows-full.html#id-1.6.4.8.11">17.1.4. Cleaning and Installing</a></span></dt><dt><span class="sect2"><a href="install-windows-full.html#id-1.6.4.8.12">17.1.5. Running the Regression Tests</a></span></dt><dt><span class="sect2"><a href="install-windows-full.html#id-1.6.4.8.13">17.1.6. Building the Documentation</a></span></dt></dl></dd></dl></div><a id="id-1.6.4.2" class="indexterm"></a><p>
+  It is recommended that most users download the binary distribution for
   Windows, available as a graphical installer package
-  from the <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> website. Building from source
-  is only intended for people developing <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
+  from the <span class="productname">PostgreSQL</span> website. Building from source
+  is only intended for people developing <span class="productname">PostgreSQL</span>
   or extensions.
- </P
-><P
->  There are several different ways of building PostgreSQL on
-  <SPAN
-CLASS="PRODUCTNAME"
->Windows</SPAN
->. The simplest way to build with
-  Microsoft tools is to install <SPAN
-CLASS="PRODUCTNAME"
->Visual Studio Express 2017
-  for Windows Desktop</SPAN
-> and use the included
+ </p><p>
+  There are several different ways of building PostgreSQL on
+  <span class="productname">Windows</span>. The simplest way to build with
+  Microsoft tools is to install <span class="productname">Visual Studio Express 2017
+  for Windows Desktop</span> and use the included
   compiler. It is also possible to build with the full
-  <SPAN
-CLASS="PRODUCTNAME"
->Microsoft Visual C++ 2005 to 2017</SPAN
->.
+  <span class="productname">Microsoft Visual C++ 2005 to 2017</span>.
   In some cases that requires the installation of the
-  <SPAN
-CLASS="PRODUCTNAME"
->Windows SDK</SPAN
-> in addition to the compiler.
- </P
-><P
->  It is also possible to build PostgreSQL using the GNU compiler tools
-  provided by <SPAN
-CLASS="PRODUCTNAME"
->MinGW</SPAN
->, or using
-  <SPAN
-CLASS="PRODUCTNAME"
->Cygwin</SPAN
-> for older versions of
-  <SPAN
-CLASS="PRODUCTNAME"
->Windows</SPAN
->.
- </P
-><P
->  Finally, the client access library
-  (<SPAN
-CLASS="APPLICATION"
->libpq</SPAN
->) can be built using
-  <SPAN
-CLASS="PRODUCTNAME"
->Visual C++ 7.1</SPAN
-> or
-  <SPAN
-CLASS="PRODUCTNAME"
->Borland C++</SPAN
-> for compatibility with statically
-  linked applications built using these tools.
- </P
-><P
->  Building using <SPAN
-CLASS="PRODUCTNAME"
->MinGW</SPAN
-> or
-  <SPAN
-CLASS="PRODUCTNAME"
->Cygwin</SPAN
-> uses the normal build system, see
-  <A
-HREF="installation.html"
->Chapter 16</A
-> and the specific notes in
-  <A
-HREF="installation-platform-notes.html#INSTALLATION-NOTES-MINGW"
->Section 16.7.5</A
-> and <A
-HREF="installation-platform-notes.html#INSTALLATION-NOTES-CYGWIN"
->Section 16.7.2</A
->.
+  <span class="productname">Windows SDK</span> in addition to the compiler.
+ </p><p>
+  It is also possible to build PostgreSQL using the GNU compiler tools
+  provided by <span class="productname">MinGW</span>, or using
+  <span class="productname">Cygwin</span> for older versions of
+  <span class="productname">Windows</span>.
+ </p><p>
+  Building using <span class="productname">MinGW</span> or
+  <span class="productname">Cygwin</span> uses the normal build system, see
+  <a class="xref" href="installation.html" title="Chapter 16. Installation from Source Code">Chapter 16</a> and the specific notes in
+  <a class="xref" href="installation-platform-notes.html#INSTALLATION-NOTES-MINGW" title="16.7.5. MinGW/Native Windows">Section 16.7.5</a> and <a class="xref" href="installation-platform-notes.html#INSTALLATION-NOTES-CYGWIN" title="16.7.2. Cygwin">Section 16.7.2</a>.
   To produce native 64 bit binaries in these environments, use the tools from
-  <SPAN
-CLASS="PRODUCTNAME"
->MinGW-w64</SPAN
->. These tools can also be used to
-  cross-compile for 32 bit and 64 bit <SPAN
-CLASS="PRODUCTNAME"
->Windows</SPAN
->
-  targets on other hosts, such as <SPAN
-CLASS="PRODUCTNAME"
->Linux</SPAN
-> and
-  <SPAN
-CLASS="PRODUCTNAME"
->Darwin</SPAN
->.
-  <SPAN
-CLASS="PRODUCTNAME"
->Cygwin</SPAN
-> is not recommended for running a
+  <span class="productname">MinGW-w64</span>. These tools can also be used to
+  cross-compile for 32 bit and 64 bit <span class="productname">Windows</span>
+  targets on other hosts, such as <span class="productname">Linux</span> and
+  <span class="productname">macOS</span>.
+  <span class="productname">Cygwin</span> is not recommended for running a
   production server, and it should only be used for running on
-  older versions of <SPAN
-CLASS="PRODUCTNAME"
->Windows</SPAN
-> where
+  older versions of <span class="productname">Windows</span> where
   the native build does not work, such as
-  <SPAN
-CLASS="PRODUCTNAME"
->Windows 98</SPAN
->. The official
-  binaries are built using <SPAN
-CLASS="PRODUCTNAME"
->Visual Studio</SPAN
->.
- </P
-><P
->  Native builds of <SPAN
-CLASS="APPLICATION"
->psql</SPAN
-> don't support command
-  line editing. The <SPAN
-CLASS="PRODUCTNAME"
->Cygwin</SPAN
-> build does support
+  <span class="productname">Windows 98</span>. The official
+  binaries are built using <span class="productname">Visual Studio</span>.
+ </p><p>
+  Native builds of <span class="application">psql</span> don't support command
+  line editing. The <span class="productname">Cygwin</span> build does support
   command line editing, so it should be used where psql is needed for
-  interactive use on  <SPAN
-CLASS="PRODUCTNAME"
->Windows</SPAN
->.
- </P
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="installation-platform-notes.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="install-windows-full.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Platform-specific Notes</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="admin.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Building with <SPAN
-CLASS="PRODUCTNAME"
->Visual C++</SPAN
-> or the
-  <SPAN
-CLASS="PRODUCTNAME"
->Microsoft Windows SDK</SPAN
-></TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  interactive use on  <span class="productname">Windows</span>.
+ </p></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="installation-platform-notes.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="admin.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="install-windows-full.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">16.7. Platform-specific Notes </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 17.1. Building with <span class="productname">Visual C++</span> or the
+  <span class="productname">Microsoft Windows SDK</span></td></tr></table></div></body></html>

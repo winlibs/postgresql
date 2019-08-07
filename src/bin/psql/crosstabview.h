@@ -1,7 +1,7 @@
 /*
  * psql - the PostgreSQL interactive terminal
  *
- * Copyright (c) 2000-2016, PostgreSQL Global Development Group
+ * Copyright (c) 2000-2018, PostgreSQL Global Development Group
  *
  * src/bin/psql/crosstabview.h
  */
@@ -17,11 +17,11 @@
  * too much time if the crosstab to generate happens to be unreasonably large
  * (worst case: a NxN cartesian product with N=number of tuples).
  * The value of 1600 corresponds to the maximum columns per table in storage,
- * but it could be as much as INT_MAX theorically.
+ * but it could be as much as INT_MAX theoretically.
  */
 #define CROSSTABVIEW_MAX_COLUMNS 1600
 
 /* prototypes */
 extern bool PrintResultsInCrosstab(const PGresult *res);
 
-#endif   /* CROSSTABVIEW_H */
+#endif							/* CROSSTABVIEW_H */

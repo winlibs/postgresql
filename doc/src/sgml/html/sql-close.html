@@ -1,356 +1,42 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->CLOSE</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="SQL Commands"
-HREF="sql-commands.html"><LINK
-REL="PREVIOUS"
-TITLE="CHECKPOINT"
-HREF="sql-checkpoint.html"><LINK
-REL="NEXT"
-TITLE="CLUSTER"
-HREF="sql-cluster.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="REFENTRY"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="CHECKPOINT"
-HREF="sql-checkpoint.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
-></TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="CLUSTER"
-HREF="sql-cluster.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><H1
-><A
-NAME="SQL-CLOSE"
-></A
->CLOSE</H1
-><DIV
-CLASS="REFNAMEDIV"
-><A
-NAME="AEN77323"
-></A
-><H2
->Name</H2
->CLOSE&nbsp;--&nbsp;close a cursor</DIV
-><DIV
-CLASS="REFSYNOPSISDIV"
-><A
-NAME="AEN77326"
-></A
-><H2
->Synopsis</H2
-><PRE
-CLASS="SYNOPSIS"
->CLOSE { <TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-> | ALL }</PRE
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77329"
-></A
-><H2
->Description</H2
-><P
->   <TT
-CLASS="COMMAND"
->CLOSE</TT
-> frees the resources associated with an open cursor.
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>CLOSE</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="sql-checkpoint.html" title="CHECKPOINT" /><link rel="next" href="sql-cluster.html" title="CLUSTER" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">CLOSE</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="sql-checkpoint.html" title="CHECKPOINT">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="sql-commands.html" title="SQL Commands">Up</a></td><th width="60%" align="center">SQL Commands</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="sql-cluster.html" title="CLUSTER">Next</a></td></tr></table><hr></hr></div><div class="refentry" id="SQL-CLOSE"><div class="titlepage"></div><a id="id-1.9.3.50.1" class="indexterm"></a><a id="id-1.9.3.50.2" class="indexterm"></a><div class="refnamediv"><h2><span class="refentrytitle">CLOSE</span></h2><p>CLOSE — close a cursor</p></div><div class="refsynopsisdiv"><h2>Synopsis</h2><pre class="synopsis">
+CLOSE { <em class="replaceable"><code>name</code></em> | ALL }
+</pre></div><div class="refsect1" id="id-1.9.3.50.6"><h2>Description</h2><p>
+   <code class="command">CLOSE</code> frees the resources associated with an open cursor.
    After the cursor is closed, no subsequent operations
    are allowed on it. A cursor should be closed when it is
    no longer needed.
-  </P
-><P
->   Every non-holdable open cursor is implicitly closed when a
-   transaction is terminated by <TT
-CLASS="COMMAND"
->COMMIT</TT
-> or
-   <TT
-CLASS="COMMAND"
->ROLLBACK</TT
->.  A holdable cursor is implicitly
+  </p><p>
+   Every non-holdable open cursor is implicitly closed when a
+   transaction is terminated by <code class="command">COMMIT</code> or
+   <code class="command">ROLLBACK</code>.  A holdable cursor is implicitly
    closed if the transaction that created it aborts via
-   <TT
-CLASS="COMMAND"
->ROLLBACK</TT
->.  If the creating transaction
+   <code class="command">ROLLBACK</code>.  If the creating transaction
    successfully commits, the holdable cursor remains open until an
-   explicit <TT
-CLASS="COMMAND"
->CLOSE</TT
-> is executed, or the client
+   explicit <code class="command">CLOSE</code> is executed, or the client
    disconnects.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77338"
-></A
-><H2
->Parameters</H2
-><P
-></P
-><DIV
-CLASS="VARIABLELIST"
-><DL
-><DT
-><TT
-CLASS="REPLACEABLE"
-><I
->name</I
-></TT
-></DT
-><DD
-><P
->      The name of an open cursor to close.
-     </P
-></DD
-><DT
-><TT
-CLASS="LITERAL"
->ALL</TT
-></DT
-><DD
-><P
->      Close all open cursors.
-     </P
-></DD
-></DL
-></DIV
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77351"
-></A
-><H2
->Notes</H2
-><P
->   <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
-> does not have an explicit
-   <TT
-CLASS="COMMAND"
->OPEN</TT
-> cursor statement; a cursor is considered
+  </p></div><div class="refsect1" id="id-1.9.3.50.7"><h2>Parameters</h2><div class="variablelist"><dl class="variablelist"><dt><span class="term"><em class="replaceable"><code>name</code></em></span></dt><dd><p>
+      The name of an open cursor to close.
+     </p></dd><dt><span class="term"><code class="literal">ALL</code></span></dt><dd><p>
+      Close all open cursors.
+     </p></dd></dl></div></div><div class="refsect1" id="id-1.9.3.50.8"><h2>Notes</h2><p>
+   <span class="productname">PostgreSQL</span> does not have an explicit
+   <code class="command">OPEN</code> cursor statement; a cursor is considered
    open when it is declared.  Use the
-   <A
-HREF="sql-declare.html"
->DECLARE</A
->
+   <a class="xref" href="sql-declare.html" title="DECLARE"><span class="refentrytitle">DECLARE</span></a>
    statement to declare a cursor.
-  </P
-><P
->   You can see all available cursors by querying the <A
-HREF="view-pg-cursors.html"
-><TT
-CLASS="STRUCTNAME"
->pg_cursors</TT
-></A
-> system view.
-  </P
-><P
->   If a cursor is closed after a savepoint which is later rolled back,
-   the <TT
-CLASS="COMMAND"
->CLOSE</TT
-> is not rolled back; that is, the cursor
+  </p><p>
+   You can see all available cursors by querying the <a class="link" href="view-pg-cursors.html" title="52.68. pg_cursors"><code class="structname">pg_cursors</code></a> system view.
+  </p><p>
+   If a cursor is closed after a savepoint which is later rolled back,
+   the <code class="command">CLOSE</code> is not rolled back; that is, the cursor
    remains closed.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77362"
-></A
-><H2
->Examples</H2
-><P
->   Close the cursor <TT
-CLASS="LITERAL"
->liahona</TT
->:
-</P><PRE
-CLASS="PROGRAMLISTING"
->CLOSE liahona;</PRE
-><P></P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77367"
-></A
-><H2
->Compatibility</H2
-><P
->   <TT
-CLASS="COMMAND"
->CLOSE</TT
-> is fully conforming with the SQL
-   standard. <TT
-CLASS="COMMAND"
->CLOSE ALL</TT
-> is a <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
+  </p></div><div class="refsect1" id="id-1.9.3.50.9"><h2>Examples</h2><p>
+   Close the cursor <code class="literal">liahona</code>:
+</p><pre class="programlisting">
+CLOSE liahona;
+</pre></div><div class="refsect1" id="id-1.9.3.50.10"><h2>Compatibility</h2><p>
+   <code class="command">CLOSE</code> is fully conforming with the SQL
+   standard. <code class="command">CLOSE ALL</code> is a <span class="productname">PostgreSQL</span>
    extension.
-  </P
-></DIV
-><DIV
-CLASS="REFSECT1"
-><A
-NAME="AEN77373"
-></A
-><H2
->See Also</H2
-><A
-HREF="sql-declare.html"
->DECLARE</A
->, <A
-HREF="sql-fetch.html"
->FETCH</A
->, <A
-HREF="sql-move.html"
->MOVE</A
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="sql-checkpoint.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="sql-cluster.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->CHECKPOINT</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="sql-commands.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->CLUSTER</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+  </p></div><div class="refsect1" id="id-1.9.3.50.11"><h2>See Also</h2><span class="simplelist"><a class="xref" href="sql-declare.html" title="DECLARE"><span class="refentrytitle">DECLARE</span></a>, <a class="xref" href="sql-fetch.html" title="FETCH"><span class="refentrytitle">FETCH</span></a>, <a class="xref" href="sql-move.html" title="MOVE"><span class="refentrytitle">MOVE</span></a></span></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="sql-checkpoint.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="sql-commands.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="sql-cluster.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">CHECKPOINT </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> CLUSTER</td></tr></table></div></body></html>

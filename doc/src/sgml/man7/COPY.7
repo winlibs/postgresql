@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "COPY" "7" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "COPY" "7" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -194,7 +194,9 @@ FREEZE
 .RS 4
 Requests copying the data with rows already frozen, just as they would be after running the
 \fBVACUUM FREEZE\fR
-command\&. This is intended as a performance option for initial data loading\&. Rows will be frozen only if the table being loaded has been created or truncated in the current subtransaction, there are no cursors open and there are no older snapshots held by this transaction\&.
+command\&. This is intended as a performance option for initial data loading\&. Rows will be frozen only if the table being loaded has been created or truncated in the current subtransaction, there are no cursors open and there are no older snapshots held by this transaction\&. It is currently not possible to perform a
+\fBCOPY FREEZE\fR
+on a partitioned table\&.
 .sp
 Note that all other sessions will immediately be able to see the data once it has been successfully loaded\&. This violates the normal rules of MVCC visibility and users specifying should be aware of the potential problems this might cause\&.
 .RE
@@ -339,9 +341,15 @@ meta\-command
 .RE
 .SH "NOTES"
 .PP
-\fBCOPY\fR
+\fBCOPY TO\fR
 can only be used with plain tables, not with views\&. However, you can write
-COPY (SELECT * FROM \fIviewname\fR) TO \&.\&.\&.\&.
+COPY (SELECT * FROM \fIviewname\fR) TO \&.\&.\&.
+to copy the current contents of a view\&.
+.PP
+\fBCOPY FROM\fR
+can be used with plain, foreign, or partitioned tables or with views that have
+INSTEAD OF INSERT
+triggers\&.
 .PP
 \fBCOPY\fR
 only deals with the specific table named; it does not copy data to or from child tables\&. Thus for example
@@ -375,7 +383,10 @@ is executed directly by the server, not by the client application, must be execu
 PostgreSQL
 user\&.
 \fBCOPY\fR
-naming a file or command is only allowed to database superusers, since it allows reading or writing any file that the server has privileges to access\&.
+naming a file or command is only allowed to database superusers or users who are granted one of the default roles
+pg_read_server_files,
+pg_write_server_files, or
+pg_execute_server_program, since it allows reading or writing any file or running a program that the server has privileges to access\&.
 .PP
 Do not confuse
 \fBCOPY\fR
@@ -406,6 +417,13 @@ might be restricted by the operating system\*(Aqs access control mechanisms, suc
 .PP
 \fBCOPY FROM\fR
 will invoke any triggers and check constraints on the destination table\&. However, it will not invoke rules\&.
+.PP
+For identity columns, the
+\fBCOPY FROM\fR
+command will always write the column values provided in the input data, like the
+\fBINSERT\fR
+option
+OVERRIDING SYSTEM VALUE\&.
 .PP
 \fBCOPY\fR
 input and output is affected by

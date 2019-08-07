@@ -169,6 +169,10 @@
 },
 
 {
+	"invalid_preceding_or_following_size", ERRCODE_INVALID_PRECEDING_OR_FOLLOWING_SIZE
+},
+
+{
 	"invalid_regular_expression", ERRCODE_INVALID_REGULAR_EXPRESSION
 },
 
@@ -210,6 +214,10 @@
 
 {
 	"numeric_value_out_of_range", ERRCODE_NUMERIC_VALUE_OUT_OF_RANGE
+},
+
+{
+	"sequence_generator_limit_exceeded", ERRCODE_SEQUENCE_GENERATOR_LIMIT_EXCEEDED
 },
 
 {
@@ -550,6 +558,10 @@
 
 {
 	"wrong_object_type", ERRCODE_WRONG_OBJECT_TYPE
+},
+
+{
+	"generated_always", ERRCODE_GENERATED_ALWAYS
 },
 
 {

@@ -3,11 +3,11 @@
 .\"    Author: The PostgreSQL Global Development Group
 .\" Generator: DocBook XSL Stylesheets v1.79.1 <http://docbook.sf.net/>
 .\"      Date: 2019
-.\"    Manual: PostgreSQL 9.6.12 Documentation
-.\"    Source: PostgreSQL 9.6.12
+.\"    Manual: PostgreSQL 11.4 Documentation
+.\"    Source: PostgreSQL 11.4
 .\"  Language: English
 .\"
-.TH "CREATEUSER" "1" "2019" "PostgreSQL 9.6.12" "PostgreSQL 9.6.12 Documentation"
+.TH "CREATEUSER" "1" "2019" "PostgreSQL 11.4" "PostgreSQL 11.4 Documentation"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -102,7 +102,7 @@ generates and sends to the server\&.
 .br
 \fB\-\-encrypted\fR
 .RS 4
-Encrypts the user\*(Aqs password stored in the database\&. If not specified, the default password behavior is used\&.
+This option is obsolete but still accepted for backward compatibility\&.
 .RE
 .PP
 \fB\-g \fR\fB\fIrole\fR\fR
@@ -149,13 +149,6 @@ The new user will be allowed to log in (that is, the user name can be used as th
 \fB\-\-no\-login\fR
 .RS 4
 The new user will not be allowed to log in\&. (A role without login privilege is still useful as a means of managing database permissions\&.)
-.RE
-.PP
-\fB\-N\fR
-.br
-\fB\-\-unencrypted\fR
-.RS 4
-Does not encrypt the user\*(Aqs password stored in the database\&. If not specified, the default password behavior is used\&.
 .RE
 .PP
 \fB\-P\fR
@@ -296,7 +289,7 @@ PostgreSQL
 utilities, also uses the environment variables supported by
 libpq
 (see
-Section 32.14, \(lqEnvironment Variables\(rq, in the documentation)\&.
+Section\ \&34.14)\&.
 .SH "DIAGNOSTICS"
 .PP
 In case of difficulty, see
@@ -372,12 +365,6 @@ CREATE ROLE joe PASSWORD \*(Aqmd5b5f5ba1a423792b526f799ae4eb3d59e\*(Aq SUPERUSER
 .RE
 .\}
 .sp
-In the above example, the new password isn\*(Aqt actually echoed when typed, but we show what was typed for clarity\&. As you see, the password is encrypted before it is sent to the client\&. If the option
-\fB\-\-unencrypted\fR
-is used, the password
-\fIwill\fR
-appear in the echoed command (and possibly also in the server log and elsewhere), so you don\*(Aqt want to use
-\fB\-e\fR
-in that case, if anyone else can see your screen\&.
+In the above example, the new password isn\*(Aqt actually echoed when typed, but we show what was typed for clarity\&. As you see, the password is encrypted before it is sent to the client\&.
 .SH "SEE ALSO"
 \fBdropuser\fR(1), CREATE ROLE (\fBCREATE_ROLE\fR(7))

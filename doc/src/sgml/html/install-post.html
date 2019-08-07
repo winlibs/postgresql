@@ -1,454 +1,103 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-<HTML
-><HEAD
-><TITLE
->Post-Installation Setup</TITLE
-><META
-NAME="GENERATOR"
-CONTENT="Modular DocBook HTML Stylesheet Version 1.79"><LINK
-REV="MADE"
-HREF="mailto:pgsql-docs@postgresql.org"><LINK
-REL="HOME"
-TITLE="PostgreSQL 9.6.12 Documentation"
-HREF="index.html"><LINK
-REL="UP"
-TITLE="  Installation from Source Code"
-HREF="installation.html"><LINK
-REL="PREVIOUS"
-TITLE="Installation Procedure"
-HREF="install-procedure.html"><LINK
-REL="NEXT"
-TITLE="Supported Platforms"
-HREF="supported-platforms.html"><LINK
-REL="STYLESHEET"
-TYPE="text/css"
-HREF="stylesheet.css"><META
-HTTP-EQUIV="Content-Type"
-CONTENT="text/html; charset=ISO-8859-1"><META
-NAME="creation"
-CONTENT="2019-02-11T21:31:11"></HEAD
-><BODY
-CLASS="SECT1"
-><DIV
-CLASS="NAVHEADER"
-><TABLE
-SUMMARY="Header navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TH
-COLSPAN="4"
-ALIGN="center"
-VALIGN="bottom"
-><A
-HREF="index.html"
->PostgreSQL 9.6.12 Documentation</A
-></TH
-></TR
-><TR
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-TITLE="Installation Procedure"
-HREF="install-procedure.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="10%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="installation.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="60%"
-ALIGN="center"
-VALIGN="bottom"
->Chapter 16. Installation from Source Code</TD
-><TD
-WIDTH="20%"
-ALIGN="right"
-VALIGN="top"
-><A
-TITLE="Supported Platforms"
-HREF="supported-platforms.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-></TABLE
-><HR
-ALIGN="LEFT"
-WIDTH="100%"></DIV
-><DIV
-CLASS="SECT1"
-><H1
-CLASS="SECT1"
-><A
-NAME="INSTALL-POST"
->16.5. Post-Installation Setup</A
-></H1
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN30404"
->16.5.1. Shared Libraries</A
-></H2
-><P
->    On some systems with shared libraries
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>16.5. Post-Installation Setup</title><link rel="stylesheet" type="text/css" href="stylesheet.css" /><link rev="made" href="pgsql-docs@lists.postgresql.org" /><meta name="generator" content="DocBook XSL Stylesheets V1.79.1" /><link rel="prev" href="install-procedure.html" title="16.4. Installation Procedure" /><link rel="next" href="supported-platforms.html" title="16.6. Supported Platforms" /></head><body><div xmlns="http://www.w3.org/TR/xhtml1/transitional" class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="5" align="center">16.5. Post-Installation Setup</th></tr><tr><td width="10%" align="left"><a accesskey="p" href="install-procedure.html" title="16.4. Installation Procedure">Prev</a> </td><td width="10%" align="left"><a accesskey="u" href="installation.html" title="Chapter 16. Installation from Source Code">Up</a></td><th width="60%" align="center">Chapter 16. Installation from Source Code</th><td width="10%" align="right"><a accesskey="h" href="index.html" title="PostgreSQL 11.4 Documentation">Home</a></td><td width="10%" align="right"> <a accesskey="n" href="supported-platforms.html" title="16.6. Supported Platforms">Next</a></td></tr></table><hr></hr></div><div class="sect1" id="INSTALL-POST"><div class="titlepage"><div><div><h2 class="title" style="clear: both">16.5. Post-Installation Setup</h2></div></div></div><div class="toc"><dl class="toc"><dt><span class="sect2"><a href="install-post.html#id-1.6.3.8.2">16.5.1. Shared Libraries</a></span></dt><dt><span class="sect2"><a href="install-post.html#id-1.6.3.8.3">16.5.2. Environment Variables</a></span></dt></dl></div><div class="sect2" id="id-1.6.3.8.2"><div class="titlepage"><div><div><h3 class="title">16.5.1. Shared Libraries</h3></div></div></div><a id="id-1.6.3.8.2.2" class="indexterm"></a><p>
+    On some systems with shared libraries
     you need to tell the system how to find the newly installed
     shared libraries.  The systems on which this is
-    <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->not</I
-></SPAN
-> necessary include
-    <SPAN
-CLASS="SYSTEMITEM"
->FreeBSD</SPAN
->,
-    <SPAN
-CLASS="SYSTEMITEM"
->HP-UX</SPAN
->,
-    <SPAN
-CLASS="SYSTEMITEM"
->Linux</SPAN
->,
-    <SPAN
-CLASS="SYSTEMITEM"
->NetBSD</SPAN
->, <SPAN
-CLASS="SYSTEMITEM"
->OpenBSD</SPAN
->, and
-    <SPAN
-CLASS="SYSTEMITEM"
->Solaris</SPAN
->.
-   </P
-><P
->    The method to set the shared library search path varies between
+    <span class="emphasis"><em>not</em></span> necessary include
+    <span class="systemitem">FreeBSD</span>,
+    <span class="systemitem">HP-UX</span>,
+    <span class="systemitem">Linux</span>,
+    <span class="systemitem">NetBSD</span>, <span class="systemitem">OpenBSD</span>, and
+    <span class="systemitem">Solaris</span>.
+   </p><p>
+    The method to set the shared library search path varies between
     platforms, but the most widely-used method is to set the
-    environment variable <TT
-CLASS="ENVAR"
->LD_LIBRARY_PATH</TT
-> like so: In Bourne
-    shells (<TT
-CLASS="COMMAND"
->sh</TT
->, <TT
-CLASS="COMMAND"
->ksh</TT
->, <TT
-CLASS="COMMAND"
->bash</TT
->, <TT
-CLASS="COMMAND"
->zsh</TT
->):
-</P><PRE
-CLASS="PROGRAMLISTING"
->LD_LIBRARY_PATH=/usr/local/pgsql/lib
-export LD_LIBRARY_PATH</PRE
-><P>
-    or in <TT
-CLASS="COMMAND"
->csh</TT
-> or <TT
-CLASS="COMMAND"
->tcsh</TT
->:
-</P><PRE
-CLASS="PROGRAMLISTING"
->setenv LD_LIBRARY_PATH /usr/local/pgsql/lib</PRE
-><P>
-    Replace <TT
-CLASS="LITERAL"
->/usr/local/pgsql/lib</TT
-> with whatever you set
-    <TT
-CLASS="OPTION"
-><TT
-CLASS="LITERAL"
->--libdir</TT
-></TT
-> to in <A
-HREF="install-procedure.html#CONFIGURE"
->step 1</A
->.
+    environment variable <code class="envar">LD_LIBRARY_PATH</code> like so: In Bourne
+    shells (<code class="command">sh</code>, <code class="command">ksh</code>, <code class="command">bash</code>, <code class="command">zsh</code>):
+</p><pre class="programlisting">
+LD_LIBRARY_PATH=/usr/local/pgsql/lib
+export LD_LIBRARY_PATH
+</pre><p>
+    or in <code class="command">csh</code> or <code class="command">tcsh</code>:
+</p><pre class="programlisting">
+setenv LD_LIBRARY_PATH /usr/local/pgsql/lib
+</pre><p>
+    Replace <code class="literal">/usr/local/pgsql/lib</code> with whatever you set
+    <code class="option"><code class="literal">--libdir</code></code> to in <a class="xref" href="install-procedure.html#CONFIGURE" title="Configuration">Step 1</a>.
     You should put these commands into a shell start-up file such as
-    <TT
-CLASS="FILENAME"
->/etc/profile</TT
-> or <TT
-CLASS="FILENAME"
->~/.bash_profile</TT
->.  Some
+    <code class="filename">/etc/profile</code> or <code class="filename">~/.bash_profile</code>.  Some
     good information about the caveats associated with this method can
-    be found at <A
-HREF="http://xahlee.org/UnixResource_dir/_/ldpath.html"
-TARGET="_top"
->http://xahlee.org/UnixResource_dir/_/ldpath.html</A
->.
-   </P
-><P
->    On some systems it might be preferable to set the environment
-    variable <TT
-CLASS="ENVAR"
->LD_RUN_PATH</TT
-> <SPAN
-CLASS="emphasis"
-><I
-CLASS="EMPHASIS"
->before</I
-></SPAN
->
+    be found at <a class="ulink" href="http://xahlee.info/UnixResource_dir/_/ldpath.html" target="_top">http://xahlee.info/UnixResource_dir/_/ldpath.html</a>.
+   </p><p>
+    On some systems it might be preferable to set the environment
+    variable <code class="envar">LD_RUN_PATH</code> <span class="emphasis"><em>before</em></span>
     building.
-   </P
-><P
->    On <SPAN
-CLASS="SYSTEMITEM"
->Cygwin</SPAN
->, put the library
-    directory in the <TT
-CLASS="ENVAR"
->PATH</TT
-> or move the
-    <TT
-CLASS="FILENAME"
->.dll</TT
-> files into the <TT
-CLASS="FILENAME"
->bin</TT
->
+   </p><p>
+    On <span class="systemitem">Cygwin</span>, put the library
+    directory in the <code class="envar">PATH</code> or move the
+    <code class="filename">.dll</code> files into the <code class="filename">bin</code>
     directory.
-   </P
-><P
->    If in doubt, refer to the manual pages of your system (perhaps
-    <TT
-CLASS="COMMAND"
->ld.so</TT
-> or <TT
-CLASS="COMMAND"
->rld</TT
->). If you later
+   </p><p>
+    If in doubt, refer to the manual pages of your system (perhaps
+    <code class="command">ld.so</code> or <code class="command">rld</code>). If you later
     get a message like:
-</P><PRE
-CLASS="SCREEN"
->psql: error in loading shared libraries
-libpq.so.2.1: cannot open shared object file: No such file or directory</PRE
-><P>
+</p><pre class="screen">
+psql: error in loading shared libraries
+libpq.so.2.1: cannot open shared object file: No such file or directory
+</pre><p>
     then this step was necessary.  Simply take care of it then.
-   </P
-><P
->    
-    If you are on <SPAN
-CLASS="SYSTEMITEM"
->Linux</SPAN
-> and you have root
+   </p><p>
+    <a id="id-1.6.3.8.2.8.1" class="indexterm"></a>
+    If you are on <span class="systemitem">Linux</span> and you have root
     access, you can run:
-</P><PRE
-CLASS="PROGRAMLISTING"
->/sbin/ldconfig /usr/local/pgsql/lib</PRE
-><P>
+</p><pre class="programlisting">
+/sbin/ldconfig /usr/local/pgsql/lib
+</pre><p>
     (or equivalent directory) after installation to enable the
     run-time linker to find the shared libraries faster.  Refer to the
-    manual page of <TT
-CLASS="COMMAND"
->ldconfig</TT
-> for more information.  On
-    <SPAN
-CLASS="SYSTEMITEM"
->FreeBSD</SPAN
->, <SPAN
-CLASS="SYSTEMITEM"
->NetBSD</SPAN
->, and <SPAN
-CLASS="SYSTEMITEM"
->OpenBSD</SPAN
-> the command is:
-</P><PRE
-CLASS="PROGRAMLISTING"
->/sbin/ldconfig -m /usr/local/pgsql/lib</PRE
-><P>
+    manual page of <code class="command">ldconfig</code> for more information.  On
+    <span class="systemitem">FreeBSD</span>, <span class="systemitem">NetBSD</span>, and <span class="systemitem">OpenBSD</span> the command is:
+</p><pre class="programlisting">
+/sbin/ldconfig -m /usr/local/pgsql/lib
+</pre><p>
     instead.  Other systems are not known to have an equivalent
     command.
-   </P
-></DIV
-><DIV
-CLASS="SECT2"
-><H2
-CLASS="SECT2"
-><A
-NAME="AEN30455"
->16.5.2. Environment Variables</A
-></H2
-><P
->    If you installed into <TT
-CLASS="FILENAME"
->/usr/local/pgsql</TT
-> or some other
+   </p></div><div class="sect2" id="id-1.6.3.8.3"><div class="titlepage"><div><div><h3 class="title">16.5.2. Environment Variables</h3></div></div></div><a id="id-1.6.3.8.3.2" class="indexterm"></a><p>
+    If you installed into <code class="filename">/usr/local/pgsql</code> or some other
     location that is not searched for programs by default, you should
-    add <TT
-CLASS="FILENAME"
->/usr/local/pgsql/bin</TT
-> (or whatever you set
-    <TT
-CLASS="OPTION"
-><TT
-CLASS="LITERAL"
->--bindir</TT
-></TT
-> to in <A
-HREF="install-procedure.html#CONFIGURE"
->step 1</A
->)
-    into your <TT
-CLASS="ENVAR"
->PATH</TT
->.  Strictly speaking, this is not
-    necessary, but it will make the use of <SPAN
-CLASS="PRODUCTNAME"
->PostgreSQL</SPAN
->
+    add <code class="filename">/usr/local/pgsql/bin</code> (or whatever you set
+    <code class="option"><code class="literal">--bindir</code></code> to in <a class="xref" href="install-procedure.html#CONFIGURE" title="Configuration">Step 1</a>)
+    into your <code class="envar">PATH</code>.  Strictly speaking, this is not
+    necessary, but it will make the use of <span class="productname">PostgreSQL</span>
     much more convenient.
-   </P
-><P
->    To do this, add the following to your shell start-up file, such as
-    <TT
-CLASS="FILENAME"
->~/.bash_profile</TT
-> (or <TT
-CLASS="FILENAME"
->/etc/profile</TT
->, if you
+   </p><p>
+    To do this, add the following to your shell start-up file, such as
+    <code class="filename">~/.bash_profile</code> (or <code class="filename">/etc/profile</code>, if you
     want it to affect all users):
-</P><PRE
-CLASS="PROGRAMLISTING"
->PATH=/usr/local/pgsql/bin:$PATH
-export PATH</PRE
-><P>
-    If you are using <TT
-CLASS="COMMAND"
->csh</TT
-> or <TT
-CLASS="COMMAND"
->tcsh</TT
->, then use this command:
-</P><PRE
-CLASS="PROGRAMLISTING"
->set path = ( /usr/local/pgsql/bin $path )</PRE
-><P>
-   </P
-><P
->    
-    To enable your system to find the <SPAN
-CLASS="APPLICATION"
->man</SPAN
->
+</p><pre class="programlisting">
+PATH=/usr/local/pgsql/bin:$PATH
+export PATH
+</pre><p>
+    If you are using <code class="command">csh</code> or <code class="command">tcsh</code>, then use this command:
+</p><pre class="programlisting">
+set path = ( /usr/local/pgsql/bin $path )
+</pre><p>
+   </p><p>
+    <a id="id-1.6.3.8.3.5.1" class="indexterm"></a>
+    To enable your system to find the <span class="application">man</span>
     documentation, you need to add lines like the following to a
     shell start-up file unless you installed into a location that is
     searched by default:
-</P><PRE
-CLASS="PROGRAMLISTING"
->MANPATH=/usr/local/pgsql/share/man:$MANPATH
-export MANPATH</PRE
-><P>
-   </P
-><P
->    The environment variables <TT
-CLASS="ENVAR"
->PGHOST</TT
-> and <TT
-CLASS="ENVAR"
->PGPORT</TT
->
+</p><pre class="programlisting">
+MANPATH=/usr/local/pgsql/share/man:$MANPATH
+export MANPATH
+</pre><p>
+   </p><p>
+    The environment variables <code class="envar">PGHOST</code> and <code class="envar">PGPORT</code>
     specify to client applications the host and port of the database
     server, overriding the compiled-in defaults. If you are going to
     run client applications remotely then it is convenient if every
-    user that plans to use the database sets <TT
-CLASS="ENVAR"
->PGHOST</TT
->.  This
+    user that plans to use the database sets <code class="envar">PGHOST</code>.  This
     is not required, however; the settings can be communicated via command
     line options to most client programs.
-   </P
-></DIV
-></DIV
-><DIV
-CLASS="NAVFOOTER"
-><HR
-ALIGN="LEFT"
-WIDTH="100%"><TABLE
-SUMMARY="Footer navigation table"
-WIDTH="100%"
-BORDER="0"
-CELLPADDING="0"
-CELLSPACING="0"
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
-><A
-HREF="install-procedure.html"
-ACCESSKEY="P"
->Prev</A
-></TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="index.html"
-ACCESSKEY="H"
->Home</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
-><A
-HREF="supported-platforms.html"
-ACCESSKEY="N"
->Next</A
-></TD
-></TR
-><TR
-><TD
-WIDTH="33%"
-ALIGN="left"
-VALIGN="top"
->Installation Procedure</TD
-><TD
-WIDTH="34%"
-ALIGN="center"
-VALIGN="top"
-><A
-HREF="installation.html"
-ACCESSKEY="U"
->Up</A
-></TD
-><TD
-WIDTH="33%"
-ALIGN="right"
-VALIGN="top"
->Supported Platforms</TD
-></TR
-></TABLE
-></DIV
-></BODY
-></HTML
->
+   </p></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="install-procedure.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="installation.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="supported-platforms.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">16.4. Installation Procedure </td><td width="20%" align="center"><a accesskey="h" href="index.html">Home</a></td><td width="40%" align="right" valign="top"> 16.6. Supported Platforms</td></tr></table></div></body></html>

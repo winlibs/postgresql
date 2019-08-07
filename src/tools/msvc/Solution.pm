@@ -162,7 +162,7 @@ sub GenerateFiles
 		{
 			s{PG_VERSION "[^"]+"}{PG_VERSION "$self->{strver}$extraver"};
 			s{PG_VERSION_NUM \d+}{PG_VERSION_NUM $self->{numver}};
-			s{PG_VERSION_STR "[^"]+"}{PG_VERSION_STR "PostgreSQL $self->{strver}$extraver, compiled by Visual C++ build " CppAsString2(_MSC_VER) ", $bits-bit"};
+s{PG_VERSION_STR "[^"]+"}{PG_VERSION_STR "PostgreSQL $self->{strver}$extraver, compiled by Visual C++" ", $bits-bit"};
 			print $o $_;
 		}
 		print $o "#define PG_MAJORVERSION \"$self->{majorver}\"\n";
@@ -591,9 +591,9 @@ sub AddProject
 			# We don't expect the config-specific library to be here,
 			# so don't ask for it in last parameter
 			$proj->AddLibrary(
-				$self->{options}->{openssl} . '\lib\ssleay32.lib', 0);
+				$self->{options}->{openssl} . '\lib\libssl.lib', 0);
 			$proj->AddLibrary(
-				$self->{options}->{openssl} . '\lib\libeay32.lib', 0);
+				$self->{options}->{openssl} . '\lib\libcrypto.lib', 0);
 		}
 	}
 	if ($self->{options}->{nls})

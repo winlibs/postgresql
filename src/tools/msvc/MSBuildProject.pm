@@ -310,7 +310,7 @@ sub WriteItemDefinitionGroup
       <StringPooling>$p->{strpool}</StringPooling>
       <RuntimeLibrary>$p->{runtime}</RuntimeLibrary>
       <DisableSpecificWarnings>$self->{disablewarnings};\%(DisableSpecificWarnings)</DisableSpecificWarnings>
-      <AdditionalOptions>/MP \%(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/MP /D HAVE_BIO_GET_DATA /D HAVE_BIO_METH_NEW \%(AdditionalOptions)</AdditionalOptions>
       <AssemblerOutput>
       </AssemblerOutput>
       <AssemblerListingLocation>.\\$cfgname\\$self->{name}\\</AssemblerListingLocation>
@@ -323,16 +323,13 @@ sub WriteItemDefinitionGroup
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <Link>
-      <OutputFile>.\\$cfgname\\$self->{name}\\$self->{name}.$self->{type}</OutputFile>
       <AdditionalDependencies>$libs;\%(AdditionalDependencies)</AdditionalDependencies>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>\%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc;\%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <StackReserveSize>4194304</StackReserveSize>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>.\\$cfgname\\$self->{name}\\$self->{name}.pdb</ProgramDatabaseFile>
       <GenerateMapFile>false</GenerateMapFile>
-      <MapFileName>.\\$cfgname\\$self->{name}\\$self->{name}.map</MapFileName>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <!-- Permit links to MinGW-built, 32-bit DLLs (default before VS2012). -->
       <ImageHasSafeExceptionHandlers/>
